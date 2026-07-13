@@ -285,7 +285,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         ]),
         requiredPermission: 'community.surface.payments.read',
       ),
-    if (experience.workflows.any((workflow) => workflow.architecturalRequest != null))
+    if (experience.workflows.any(
+      (workflow) => workflow.architecturalRequest != null,
+    ))
       LoomAppShellTabSpec(
         tabId: 'requests',
         label: 'Requests',
@@ -296,7 +298,11 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         pinningPolicyRationale:
             'Request tabs pin the active case so homeowners can see status and next actions.',
         sectionTitles: const ['Requests and approvals'],
-        cardSurfaceFamilies: const ['formEntry', 'statusTimeline', 'workflow-status'],
+        cardSurfaceFamilies: const [
+          'formEntry',
+          'statusTimeline',
+          'workflow-status',
+        ],
         pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
           experience,
           const ['formEntry', 'statusTimeline', 'workflow-status', 'approval'],
@@ -348,6 +354,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         ),
         visiblePersonaIds: [personaId],
         requiredPermission: 'community.surface.navigation.configure',
+      ),
+    if (experience.notifications?.isNotEmpty ?? false)
+      const LoomAppShellTabSpec(
+        tabId: 'notifications',
+        label: 'Notifications',
+        icon: Icons.notifications_outlined,
+        description: 'Updates, reminders, and member notices.',
+        rendererContractId: 'notification-inbox',
+        pinningPolicy: 'none-declared-for-notifications',
+        pinningPolicyRationale:
+            'Notifications are chronological inbox items rather than pinned workflow cards.',
+        requiredPermission: 'community.surface.messages.read',
       ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
@@ -557,14 +575,133 @@ IconData _tabIconForKey(String iconKey) {
 
 const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>{
   'ext_youth_soccer': [
-    LoomDeclarativeTabSpec(tabId: 'registration', label: 'Registration', iconKey: 'documents', description: 'Guardian guided registration wizard and reviewer timeline on the same engine instance.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-active-registration', pinningPolicyRationale: 'Youth Soccer pins registration because waiver and payment gates block roster participation.', sectionTitles: ['Registration'], cardSurfaceFamilies: ['guidedProcess', 'statusTimeline'], pinnedWorkflowIds: ['soccer-guardian-join-approval'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'schedule', label: 'Schedule', iconKey: 'calendar', description: 'Practice and game agenda with RSVP, reminder, field, opponent, and attendance state.', rendererContractId: 'calendar-agenda-event-detail', pinningPolicy: 'pin-next-practice', pinningPolicyRationale: 'Schedule-first is the top Youth Soccer hierarchy.', sectionTitles: ['Schedule'], cardSurfaceFamilies: ['calendarAgenda'], pinnedWorkflowIds: ['soccer-practice-schedule'], requiredPermission: 'community.surface.calendar.read'),
-    LoomDeclarativeTabSpec(tabId: 'team', label: 'Team', iconKey: 'groups', description: 'Guardian roster card, coach roster table, and protected minor detail.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-my-player', pinningPolicyRationale: 'The team tab pins the player roster surface and protected detail card.', sectionTitles: ['Team'], cardSurfaceFamilies: ['stateMachineGrid', 'table', 'protectedDetail', 'documentLibrary'], pinnedWorkflowIds: ['soccer-team-roster'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'payments', label: 'Payments', iconKey: 'payment', description: 'Guardian registration checkout with receipt, failed payment recovery, refund, and subscription management.', rendererContractId: 'payment-giving-ledger', pinningPolicy: 'pin-registration-fee', pinningPolicyRationale: 'Guardians need the amount, receipt, and next payment action before roster confirmation.', sectionTitles: ['Payments'], cardSurfaceFamilies: ['paymentCheckout'], pinnedWorkflowIds: ['soccer-registration-payment'], visiblePersonaIds: ['guardian'], requiredPermission: 'community.surface.payments.read'),
-    LoomDeclarativeTabSpec(tabId: 'documents', label: 'Waivers', iconKey: 'documents', description: 'Waiver library with embedded/external open, acknowledgement, access request, and audit trail.', rendererContractId: 'documents-library-detail', pinningPolicy: 'pin-current-waiver', pinningPolicyRationale: 'The current waiver is the primary document.', sectionTitles: ['Documents'], cardSurfaceFamilies: ['documentLibrary'], pinnedWorkflowIds: ['soccer-waiver-document'], visiblePersonaIds: ['guardian', 'coach'], requiredPermission: 'community.surface.documents.read'),
-    LoomDeclarativeTabSpec(tabId: 'coach', label: 'Coach', iconKey: 'admin', description: 'Coach dashboard combining roster, schedule controls, and reminder inbox.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-roster-and-reminders', pinningPolicyRationale: 'Coach-only work belongs off the guardian tabs.', sectionTitles: ['Coach'], cardSurfaceFamilies: ['dashboard', 'notificationInbox'], pinnedWorkflowIds: ['soccer-reminder-notification'], visiblePersonaIds: ['coach'], requiredPermission: 'community.surface.navigation.configure'),
-    LoomDeclarativeTabSpec(tabId: 'messages', label: 'Messages', iconKey: 'messages', description: 'Team discussion thread for guardian and coach coordination.', rendererContractId: 'messages-inbox-thread-composer', pinningPolicy: 'none-declared-for-messages', pinningPolicyRationale: 'Messages uses threads rather than pinned workflow cards.', sectionTitles: ['Messages'], cardSurfaceFamilies: ['discussionThread'], pinnedWorkflowIds: ['soccer-team-discussion'], requiredPermission: 'community.surface.messages.read'),
-    LoomDeclarativeTabSpec(tabId: 'admin', label: 'Export', iconKey: 'admin', description: 'Owner export wizard with minor redaction preview, checksum, transfer, rollback, and retry.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-redaction-preview', pinningPolicyRationale: 'Owner export must foreground redaction before transfer.', sectionTitles: ['Admin'], cardSurfaceFamilies: ['exportWizard'], pinnedWorkflowIds: ['soccer-export-metadata'], visiblePersonaIds: ['owner'], requiredPermission: 'community.surface.navigation.configure'),
+    LoomDeclarativeTabSpec(
+      tabId: 'registration',
+      label: 'Registration',
+      iconKey: 'documents',
+      description:
+          'Guardian guided registration wizard and reviewer timeline on the same engine instance.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-active-registration',
+      pinningPolicyRationale:
+          'Youth Soccer pins registration because waiver and payment gates block roster participation.',
+      sectionTitles: ['Registration'],
+      cardSurfaceFamilies: ['guidedProcess', 'statusTimeline'],
+      pinnedWorkflowIds: ['soccer-guardian-join-approval'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'schedule',
+      label: 'Schedule',
+      iconKey: 'calendar',
+      description:
+          'Practice and game agenda with RSVP, reminder, field, opponent, and attendance state.',
+      rendererContractId: 'calendar-agenda-event-detail',
+      pinningPolicy: 'pin-next-practice',
+      pinningPolicyRationale:
+          'Schedule-first is the top Youth Soccer hierarchy.',
+      sectionTitles: ['Schedule'],
+      cardSurfaceFamilies: ['calendarAgenda'],
+      pinnedWorkflowIds: ['soccer-practice-schedule'],
+      requiredPermission: 'community.surface.calendar.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'team',
+      label: 'Team',
+      iconKey: 'groups',
+      description:
+          'Guardian roster card, coach roster table, and protected minor detail.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-my-player',
+      pinningPolicyRationale:
+          'The team tab pins the player roster surface and protected detail card.',
+      sectionTitles: ['Team'],
+      cardSurfaceFamilies: [
+        'stateMachineGrid',
+        'table',
+        'protectedDetail',
+        'documentLibrary',
+      ],
+      pinnedWorkflowIds: ['soccer-team-roster'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'payments',
+      label: 'Payments',
+      iconKey: 'payment',
+      description:
+          'Guardian registration checkout with receipt, failed payment recovery, refund, and subscription management.',
+      rendererContractId: 'payment-giving-ledger',
+      pinningPolicy: 'pin-registration-fee',
+      pinningPolicyRationale:
+          'Guardians need the amount, receipt, and next payment action before roster confirmation.',
+      sectionTitles: ['Payments'],
+      cardSurfaceFamilies: ['paymentCheckout'],
+      pinnedWorkflowIds: ['soccer-registration-payment'],
+      visiblePersonaIds: ['guardian'],
+      requiredPermission: 'community.surface.payments.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'documents',
+      label: 'Waivers',
+      iconKey: 'documents',
+      description:
+          'Waiver library with embedded/external open, acknowledgement, access request, and audit trail.',
+      rendererContractId: 'documents-library-detail',
+      pinningPolicy: 'pin-current-waiver',
+      pinningPolicyRationale: 'The current waiver is the primary document.',
+      sectionTitles: ['Documents'],
+      cardSurfaceFamilies: ['documentLibrary'],
+      pinnedWorkflowIds: ['soccer-waiver-document'],
+      visiblePersonaIds: ['guardian', 'coach'],
+      requiredPermission: 'community.surface.documents.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'coach',
+      label: 'Coach',
+      iconKey: 'admin',
+      description:
+          'Coach dashboard combining roster, schedule controls, and reminder inbox.',
+      rendererContractId: 'admin-review-compose-queue',
+      pinningPolicy: 'pin-roster-and-reminders',
+      pinningPolicyRationale: 'Coach-only work belongs off the guardian tabs.',
+      sectionTitles: ['Coach'],
+      cardSurfaceFamilies: ['dashboard', 'notificationInbox'],
+      pinnedWorkflowIds: ['soccer-reminder-notification'],
+      visiblePersonaIds: ['coach'],
+      requiredPermission: 'community.surface.navigation.configure',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'messages',
+      label: 'Messages',
+      iconKey: 'messages',
+      description:
+          'Team discussion thread for guardian and coach coordination.',
+      rendererContractId: 'messages-inbox-thread-composer',
+      pinningPolicy: 'none-declared-for-messages',
+      pinningPolicyRationale:
+          'Messages uses threads rather than pinned workflow cards.',
+      sectionTitles: ['Messages'],
+      cardSurfaceFamilies: ['discussionThread'],
+      pinnedWorkflowIds: ['soccer-team-discussion'],
+      requiredPermission: 'community.surface.messages.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'admin',
+      label: 'Export',
+      iconKey: 'admin',
+      description:
+          'Owner export wizard with minor redaction preview, checksum, transfer, rollback, and retry.',
+      rendererContractId: 'admin-review-compose-queue',
+      pinningPolicy: 'pin-redaction-preview',
+      pinningPolicyRationale:
+          'Owner export must foreground redaction before transfer.',
+      sectionTitles: ['Admin'],
+      cardSurfaceFamilies: ['exportWizard'],
+      pinnedWorkflowIds: ['soccer-export-metadata'],
+      visiblePersonaIds: ['owner'],
+      requiredPermission: 'community.surface.navigation.configure',
+    ),
   ],
   'ext_camera_club': [
     LoomDeclarativeTabSpec(
@@ -592,7 +729,11 @@ const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>
       pinningPolicyRationale:
           'Critique pins the active photo submission so members see submission state and reviewer feedback together.',
       sectionTitles: ['Critique'],
-      cardSurfaceFamilies: ['form-entry', 'state-machine-grid', 'discussion-thread'],
+      cardSurfaceFamilies: [
+        'form-entry',
+        'state-machine-grid',
+        'discussion-thread',
+      ],
       pinnedWorkflowIds: ['critique-submission'],
       requiredPermission: 'community.surface.workflow.read',
     ),
@@ -743,20 +884,202 @@ const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>
     ),
   ],
   'ext_mosque': [
-    LoomDeclarativeTabSpec(tabId: 'calendar', label: 'Calendar', iconKey: 'calendar', description: 'Admin event creation and member RSVP agenda share the same event workflow instance with audience-selected delivery.', rendererContractId: 'calendar-agenda-event-detail', pinningPolicy: 'pin-next-friday-service', pinningPolicyRationale: 'The Friday service and selected-audience invitations are the time-sensitive Mosque surface.', sectionTitles: ['Calendar'], cardSurfaceFamilies: ['formEntry', 'calendarAgenda'], pinnedWorkflowIds: ['mosque-event-rsvp'], requiredPermission: 'community.surface.calendar.read'),
-    LoomDeclarativeTabSpec(tabId: 'giving', label: 'Giving', iconKey: 'giving', description: 'Donation checkout, receipts, recurring controls, and durable donor visibility preference.', rendererContractId: 'payment-giving-ledger', pinningPolicy: 'pin-current-donation', pinningPolicyRationale: 'Members need amount, receipt, and privacy state before donating.', sectionTitles: ['Giving'], cardSurfaceFamilies: ['paymentCheckout', 'singleItem'], pinnedWorkflowIds: ['mosque-donation-payment', 'mosque-donor-visibility'], requiredPermission: 'community.surface.payments.read'),
-    LoomDeclarativeTabSpec(tabId: 'care', label: 'Care', iconKey: 'care', description: 'Member care request form, private field flags, own volunteer signup, and protected review status.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-active-care-request', pinningPolicyRationale: 'Care and volunteer follow-up are member-owned status surfaces outside Admin.', sectionTitles: ['Care'], cardSurfaceFamilies: ['formEntry', 'protectedDetail', 'volunteerRoster'], pinnedWorkflowIds: ['mosque-care-request', 'mosque-volunteer-signup'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'admin', label: 'Admin', iconKey: 'admin', description: 'Announcement composer, volunteer roster controls, donation status, and protected care review.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-composer-and-review-queue', pinningPolicyRationale: 'Admin-only publish, volunteer coordination, and assigned care review must stay off member tabs.', sectionTitles: ['Admin'], cardSurfaceFamilies: ['formEntry', 'notificationInbox', 'volunteerRoster', 'protectedDetail'], pinnedWorkflowIds: ['mosque-announcement', 'mosque-volunteer-signup', 'mosque-care-request'], visiblePersonaIds: ['mosque-admin'], requiredPermission: 'community.surface.navigation.configure'),
-    LoomDeclarativeTabSpec(tabId: 'search', label: 'Search', iconKey: 'search', description: 'Permission-guarded cited answers over announcements and member-visible sources.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-current-answer', pinningPolicyRationale: 'Search pins the current cited answer so users can inspect and report sources.', sectionTitles: ['Search'], cardSurfaceFamilies: ['searchAiAnswer'], pinnedWorkflowIds: ['mosque-search-ai-citation'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'messages', label: 'Messages', iconKey: 'messages', description: 'Discussion threads plus privacy-safe care notifications and announcement inbox.', rendererContractId: 'messages-inbox-thread-composer', pinningPolicy: 'none-declared-for-messages', pinningPolicyRationale: 'Messages uses inbox/thread surfaces rather than pinned workflow cards.', sectionTitles: ['Messages'], cardSurfaceFamilies: ['discussionThread', 'notificationInbox'], pinnedWorkflowIds: ['mosque-discussion-thread', 'mosque-neutral-notification', 'mosque-announcement'], requiredPermission: 'community.surface.messages.read'),
+    LoomDeclarativeTabSpec(
+      tabId: 'calendar',
+      label: 'Calendar',
+      iconKey: 'calendar',
+      description:
+          'Admin event creation and member RSVP agenda share the same event workflow instance with audience-selected delivery.',
+      rendererContractId: 'calendar-agenda-event-detail',
+      pinningPolicy: 'pin-next-friday-service',
+      pinningPolicyRationale:
+          'The Friday service and selected-audience invitations are the time-sensitive Mosque surface.',
+      sectionTitles: ['Calendar'],
+      cardSurfaceFamilies: ['formEntry', 'calendarAgenda'],
+      pinnedWorkflowIds: ['mosque-event-rsvp'],
+      requiredPermission: 'community.surface.calendar.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'giving',
+      label: 'Giving',
+      iconKey: 'giving',
+      description:
+          'Donation checkout, receipts, recurring controls, and durable donor visibility preference.',
+      rendererContractId: 'payment-giving-ledger',
+      pinningPolicy: 'pin-current-donation',
+      pinningPolicyRationale:
+          'Members need amount, receipt, and privacy state before donating.',
+      sectionTitles: ['Giving'],
+      cardSurfaceFamilies: ['paymentCheckout', 'singleItem'],
+      pinnedWorkflowIds: ['mosque-donation-payment', 'mosque-donor-visibility'],
+      requiredPermission: 'community.surface.payments.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'care',
+      label: 'Care',
+      iconKey: 'care',
+      description:
+          'Member care request form, private field flags, own volunteer signup, and protected review status.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-active-care-request',
+      pinningPolicyRationale:
+          'Care and volunteer follow-up are member-owned status surfaces outside Admin.',
+      sectionTitles: ['Care'],
+      cardSurfaceFamilies: ['formEntry', 'protectedDetail', 'volunteerRoster'],
+      pinnedWorkflowIds: ['mosque-care-request', 'mosque-volunteer-signup'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'admin',
+      label: 'Admin',
+      iconKey: 'admin',
+      description:
+          'Announcement composer, volunteer roster controls, donation status, and protected care review.',
+      rendererContractId: 'admin-review-compose-queue',
+      pinningPolicy: 'pin-composer-and-review-queue',
+      pinningPolicyRationale:
+          'Admin-only publish, volunteer coordination, and assigned care review must stay off member tabs.',
+      sectionTitles: ['Admin'],
+      cardSurfaceFamilies: [
+        'formEntry',
+        'notificationInbox',
+        'volunteerRoster',
+        'protectedDetail',
+      ],
+      pinnedWorkflowIds: [
+        'mosque-announcement',
+        'mosque-volunteer-signup',
+        'mosque-care-request',
+      ],
+      visiblePersonaIds: ['mosque-admin'],
+      requiredPermission: 'community.surface.navigation.configure',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'search',
+      label: 'Search',
+      iconKey: 'search',
+      description:
+          'Permission-guarded cited answers over announcements and member-visible sources.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-current-answer',
+      pinningPolicyRationale:
+          'Search pins the current cited answer so users can inspect and report sources.',
+      sectionTitles: ['Search'],
+      cardSurfaceFamilies: ['searchAiAnswer'],
+      pinnedWorkflowIds: ['mosque-search-ai-citation'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'messages',
+      label: 'Messages',
+      iconKey: 'messages',
+      description:
+          'Discussion threads plus privacy-safe care notifications and announcement inbox.',
+      rendererContractId: 'messages-inbox-thread-composer',
+      pinningPolicy: 'none-declared-for-messages',
+      pinningPolicyRationale:
+          'Messages uses inbox/thread surfaces rather than pinned workflow cards.',
+      sectionTitles: ['Messages'],
+      cardSurfaceFamilies: ['discussionThread', 'notificationInbox'],
+      pinnedWorkflowIds: [
+        'mosque-discussion-thread',
+        'mosque-neutral-notification',
+        'mosque-announcement',
+      ],
+      requiredPermission: 'community.surface.messages.read',
+    ),
   ],
   'ext_chess_club': [
-    LoomDeclarativeTabSpec(tabId: 'matches', label: 'Matches', iconKey: 'board', description: 'Propose, negotiate, confirm, report, correct, and dispute ladder matches.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-active-match', pinningPolicyRationale: 'Chess Club pins the active match because the proposal, timeline, and confirmed event are one engine instance.', sectionTitles: ['Matches'], cardSurfaceFamilies: ['formEntry', 'statusTimeline', 'calendarAgenda'], pinnedWorkflowIds: ['chess-match-meetup'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'calendar', label: 'Calendar', iconKey: 'calendar', description: 'Confirmed ladder matches, club nights, tournaments, locations, and reminders.', rendererContractId: 'calendar-agenda-event-detail', pinningPolicy: 'pin-next-club-night', pinningPolicyRationale: 'The next club night is the time-sensitive chess surface.', sectionTitles: ['Calendar'], cardSurfaceFamilies: ['calendarAgenda'], pinnedWorkflowIds: ['chess-club-night'], requiredPermission: 'community.surface.calendar.read'),
-    LoomDeclarativeTabSpec(tabId: 'rankings', label: 'Rankings', iconKey: 'board', description: 'Live ladder table with rankingMode emphasis.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-live-rankings', pinningPolicyRationale: 'Rankings pins the table that is updated by match-result effects.', sectionTitles: ['Rankings'], cardSurfaceFamilies: ['table'], pinnedWorkflowIds: ['chess-rankings-table'], requiredPermission: 'community.surface.workflow.read'),
-    LoomDeclarativeTabSpec(tabId: 'documents', label: 'Rules', iconKey: 'documents', description: 'Club rules, ladder policy, embedded open, external open, and download.', rendererContractId: 'documents-library-detail', pinningPolicy: 'pin-club-rules', pinningPolicyRationale: 'The club rules document is the primary documents surface.', sectionTitles: ['Documents'], cardSurfaceFamilies: ['documentLibrary'], pinnedWorkflowIds: ['chess-rules-documents'], visiblePersonaIds: ['chess-organizer'], requiredPermission: 'community.surface.documents.read'),
-    LoomDeclarativeTabSpec(tabId: 'admin', label: 'Admin', iconKey: 'admin', description: 'Organizer pairing queue, disputes, rankings publication, and export.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-pairing-queue', pinningPolicyRationale: 'Organizer admin pins the pairing queue and export work.', sectionTitles: ['Admin'], cardSurfaceFamilies: ['dashboard', 'statusTimeline', 'exportWizard'], pinnedWorkflowIds: ['chess-pairing-queue'], visiblePersonaIds: ['chess-organizer'], requiredPermission: 'community.surface.navigation.configure'),
-    LoomDeclarativeTabSpec(tabId: 'messages', label: 'Messages', iconKey: 'messages', description: 'Pairing discussion threads and club messages.', rendererContractId: 'messages-inbox-thread-composer', pinningPolicy: 'none-declared-for-messages', pinningPolicyRationale: 'Messages uses discussion threads instead of a pinned workflow card.', sectionTitles: ['Messages'], cardSurfaceFamilies: ['discussionThread'], pinnedWorkflowIds: ['chess-discussion-thread'], requiredPermission: 'community.surface.messages.read'),
+    LoomDeclarativeTabSpec(
+      tabId: 'matches',
+      label: 'Matches',
+      iconKey: 'board',
+      description:
+          'Propose, negotiate, confirm, report, correct, and dispute ladder matches.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-active-match',
+      pinningPolicyRationale:
+          'Chess Club pins the active match because the proposal, timeline, and confirmed event are one engine instance.',
+      sectionTitles: ['Matches'],
+      cardSurfaceFamilies: ['formEntry', 'statusTimeline', 'calendarAgenda'],
+      pinnedWorkflowIds: ['chess-match-meetup'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'calendar',
+      label: 'Calendar',
+      iconKey: 'calendar',
+      description:
+          'Confirmed ladder matches, club nights, tournaments, locations, and reminders.',
+      rendererContractId: 'calendar-agenda-event-detail',
+      pinningPolicy: 'pin-next-club-night',
+      pinningPolicyRationale:
+          'The next club night is the time-sensitive chess surface.',
+      sectionTitles: ['Calendar'],
+      cardSurfaceFamilies: ['calendarAgenda'],
+      pinnedWorkflowIds: ['chess-club-night'],
+      requiredPermission: 'community.surface.calendar.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'rankings',
+      label: 'Rankings',
+      iconKey: 'board',
+      description: 'Live ladder table with rankingMode emphasis.',
+      rendererContractId: 'workflow-status-timeline-actions',
+      pinningPolicy: 'pin-live-rankings',
+      pinningPolicyRationale:
+          'Rankings pins the table that is updated by match-result effects.',
+      sectionTitles: ['Rankings'],
+      cardSurfaceFamilies: ['table'],
+      pinnedWorkflowIds: ['chess-rankings-table'],
+      requiredPermission: 'community.surface.workflow.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'documents',
+      label: 'Rules',
+      iconKey: 'documents',
+      description:
+          'Club rules, ladder policy, embedded open, external open, and download.',
+      rendererContractId: 'documents-library-detail',
+      pinningPolicy: 'pin-club-rules',
+      pinningPolicyRationale:
+          'The club rules document is the primary documents surface.',
+      sectionTitles: ['Documents'],
+      cardSurfaceFamilies: ['documentLibrary'],
+      pinnedWorkflowIds: ['chess-rules-documents'],
+      visiblePersonaIds: ['chess-organizer'],
+      requiredPermission: 'community.surface.documents.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'admin',
+      label: 'Admin',
+      iconKey: 'admin',
+      description:
+          'Organizer pairing queue, disputes, rankings publication, and export.',
+      rendererContractId: 'admin-review-compose-queue',
+      pinningPolicy: 'pin-pairing-queue',
+      pinningPolicyRationale:
+          'Organizer admin pins the pairing queue and export work.',
+      sectionTitles: ['Admin'],
+      cardSurfaceFamilies: ['dashboard', 'statusTimeline', 'exportWizard'],
+      pinnedWorkflowIds: ['chess-pairing-queue'],
+      visiblePersonaIds: ['chess-organizer'],
+      requiredPermission: 'community.surface.navigation.configure',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'messages',
+      label: 'Messages',
+      iconKey: 'messages',
+      description: 'Pairing discussion threads and club messages.',
+      rendererContractId: 'messages-inbox-thread-composer',
+      pinningPolicy: 'none-declared-for-messages',
+      pinningPolicyRationale:
+          'Messages uses discussion threads instead of a pinned workflow card.',
+      sectionTitles: ['Messages'],
+      cardSurfaceFamilies: ['discussionThread'],
+      pinnedWorkflowIds: ['chess-discussion-thread'],
+      requiredPermission: 'community.surface.messages.read',
+    ),
   ],
   'ext_garden_club': [
     LoomDeclarativeTabSpec(

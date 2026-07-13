@@ -1019,6 +1019,467 @@ class _MessagesEngineStore {
   );
 }
 
+class _NotificationInboxTabSurface extends StatefulWidget {
+  const _NotificationInboxTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_NotificationInboxTabSurface> createState() =>
+      _NotificationInboxTabSurfaceState();
+}
+
+class _NotificationInboxTabSurfaceState
+    extends State<_NotificationInboxTabSurface> {
+  static final _stores = <String, _NotificationInboxEngineStore>{};
+
+  late final _NotificationInboxEngineStore _store;
+  var _loaded = false;
+  var _visibleCount = 0;
+  var _unreadCount = 0;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _NotificationInboxEngineStore(
+        communityId: widget.experience.extensionId,
+        seedNotifications: widget.experience.notifications,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_NotificationInboxTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId) {
+      unawaited(_load());
+    }
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final notifications = await _store.notificationsFor(
+        widget.persona.personaId,
+      );
+      final unreadCount = await _store.unreadCount();
+      if (!mounted) return;
+      setState(() {
+        _visibleCount = notifications.length;
+        _unreadCount = unreadCount;
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = '$error';
+      });
+    }
+  }
+
+  Future<void> _markRead(WorkflowInstance notification) async {
+    if (!_store.isUnread(notification)) return;
+    await _store.markRead(
+      notification: notification,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  Future<void> _dismiss(WorkflowInstance notification) async {
+    await _store.setArchived(
+      notification: notification,
+      archived: true,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(_loadError!, key: const ValueKey('notifications-load-error'));
+    }
+    if (_visibleCount == 0) {
+      return _TabEmptyState(
+        icon: Icons.notifications_none_outlined,
+        title: 'No notifications',
+        body: 'New Tabletop Club updates and reminders will appear here.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    final fill = widget.modernTheme?.resolvedFill ?? widget.accent;
+    final border =
+        widget.modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    return Column(
+      key: const ValueKey('notifications-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(Icons.notifications_outlined, color: foreground),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${widget.experience.displayName} notifications',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Text(
+                  '$_unreadCount unread',
+                  key: const ValueKey('notification-unread-count'),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: foreground.withValues(alpha: 0.82),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        RepeaterSurface.live(
+          key: ValueKey('notifications-repeater-${widget.persona.personaId}'),
+          refreshInterval: const Duration(milliseconds: 50),
+          querySource: RepeaterQuerySource(
+            engine: _store.engine,
+            workflowType: _NotificationInboxEngineStore.workflowType,
+            personaId: widget.persona.personaId,
+            tabId: 'notifications',
+          ),
+          listShrinkWrap: true,
+          listScrollable: false,
+          itemBuilder: (context, item) {
+            final instance = item as WorkflowInstance;
+            if (!_store.isVisibleTo(instance, widget.persona.personaId) ||
+                _store.isArchived(instance)) {
+              return const SizedBox.shrink();
+            }
+            final notification = _store.toNotification(instance);
+            final unread = _store.isUnread(instance);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Dismissible(
+                key: ValueKey(
+                  'notification-dismiss-${notification.notificationId}',
+                ),
+                direction: DismissDirection.endToStart,
+                background: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade700,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: Icon(Icons.close_outlined, color: Colors.white),
+                    ),
+                  ),
+                ),
+                onDismissed: (_) => unawaited(_dismiss(instance)),
+                child: InkWell(
+                  key: ValueKey(
+                    'notification-row-${notification.notificationId}',
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => unawaited(_markRead(instance)),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: foreground.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: foreground.withValues(alpha: 0.14),
+                      ),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: foreground.withValues(alpha: 0.14),
+                        child: Icon(
+                          unread
+                              ? Icons.mark_chat_unread_outlined
+                              : Icons.notifications_none_outlined,
+                          color: foreground,
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          if (unread) ...[
+                            Container(
+                              key: ValueKey(
+                                'notification-unread-${notification.notificationId}',
+                              ),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color:
+                                    widget.modernTheme?.accent ?? widget.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              notification.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: foreground,
+                                    fontWeight: unread
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        '${notification.source} - ${notification.body}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.80),
+                        ),
+                      ),
+                      trailing: Text(
+                        _formatNotificationTime(notification.timestamp),
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String _formatNotificationTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:${time.minute.toString().padLeft(2, '0')} $period';
+  }
+}
+
+class _NotificationInboxEngineStore {
+  _NotificationInboxEngineStore({
+    required this.communityId,
+    List<LoomNotificationItem>? seedNotifications,
+  }) : _seedNotifications = seedNotifications ?? const [];
+
+  static const workflowType = 'notification-inbox-item';
+
+  final String communityId;
+  final List<LoomNotificationItem> _seedNotifications;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  WorkflowEngineApi get engine => _engine;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    for (final notification in _seedNotifications) {
+      await _engine.createInstance(
+        workflowType: workflowType,
+        personaId: notification.source,
+        initialInstanceData: {
+          'notificationId': notification.notificationId,
+          'title': notification.title,
+          'body': notification.body,
+          'source': notification.source,
+          'timestamp': notification.timestamp.toUtc().toIso8601String(),
+          'recipientPersonaIds': notification.recipientPersonaIds,
+          'readByPersonaIds': const <String>[],
+          'isUnread': notification.isUnread,
+          'archived': false,
+        },
+      );
+    }
+    _ready = true;
+  }
+
+  Future<List<WorkflowInstance>> notificationsFor(String personaId) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: 'notifications',
+      personaId: personaId,
+      limit: 1000,
+      query: const SurfaceQuery(sort: SortSpec(key: 'timestamp')),
+    );
+    return page.items
+        .where(
+          (notification) =>
+              notification.workflowType == workflowType &&
+              isVisibleTo(notification, personaId) &&
+              !isArchived(notification),
+        )
+        .toList(growable: false);
+  }
+
+  Future<int> unreadCount() async {
+    await ensureReady();
+    final count = await _engine.aggregate(
+      workflowType: workflowType,
+      column: 'notificationId',
+      op: 'count',
+      filter: const {'isUnread': true, 'archived': false},
+    );
+    return (count as num).toInt();
+  }
+
+  Future<void> markRead({
+    required WorkflowInstance notification,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: workflowType,
+    instanceId: notification.instanceId,
+    transitionId: 'mark-read',
+    personaId: personaId,
+  );
+
+  Future<void> setArchived({
+    required WorkflowInstance notification,
+    required bool archived,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: notification.instanceId,
+    fieldUpdates: {'archived': archived},
+    personaId: personaId,
+  );
+
+  bool isVisibleTo(WorkflowInstance notification, String personaId) {
+    final recipients =
+        notification.instanceData['recipientPersonaIds'] as List?;
+    return recipients == null ||
+        recipients.isEmpty ||
+        recipients.contains(personaId);
+  }
+
+  bool isUnread(WorkflowInstance notification) =>
+      notification.instanceData['isUnread'] == true;
+  bool isArchived(WorkflowInstance notification) =>
+      notification.instanceData['archived'] == true;
+
+  LoomNotificationItem toNotification(WorkflowInstance notification) =>
+      LoomNotificationItem(
+        notificationId: '${notification.instanceData['notificationId'] ?? ''}',
+        title: '${notification.instanceData['title'] ?? ''}',
+        body: '${notification.instanceData['body'] ?? ''}',
+        source: '${notification.instanceData['source'] ?? ''}',
+        timestamp:
+            DateTime.tryParse(
+              '${notification.instanceData['timestamp'] ?? ''}',
+            )?.toLocal() ??
+            DateTime.fromMillisecondsSinceEpoch(0),
+        recipientPersonaIds: [
+          for (final id
+              in notification.instanceData['recipientPersonaIds'] as List? ??
+                  const [])
+            '$id',
+        ],
+        isUnread: isUnread(notification),
+      );
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'open',
+    states: {
+      'open': LoomWorkflowState(label: 'Open', editableFields: ['archived']),
+    },
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'mark-read',
+        label: 'Mark read',
+        from: ['open'],
+        to: 'open',
+        effects: [
+          WorkflowEffect(
+            op: 'appendUnique',
+            key: 'readByPersonaIds',
+            value: r'$actor',
+          ),
+          WorkflowEffect(op: 'set', key: 'isUnread', value: false),
+        ],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: ['open'],
+        role: 'any',
+        tabId: 'notifications',
+        cardSurfaceFamily: 'notificationInbox',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'notificationId': InstanceDataField(type: 'string', required: true),
+      'title': InstanceDataField(
+        type: 'text',
+        required: true,
+        searchable: true,
+        sortable: true,
+      ),
+      'body': InstanceDataField(type: 'text', required: true),
+      'source': InstanceDataField(type: 'text', required: true),
+      'timestamp': InstanceDataField(
+        type: 'text',
+        required: true,
+        sortable: true,
+      ),
+      'recipientPersonaIds': InstanceDataField(type: 'list'),
+      'readByPersonaIds': InstanceDataField(type: 'list', writableBy: 'effect'),
+      'isUnread': InstanceDataField(type: 'boolean', writableBy: 'effect'),
+      'archived': InstanceDataField(type: 'boolean'),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -1134,6 +1595,13 @@ class _TabNativeRenderer extends StatelessWidget {
           reminderEnabledWorkflowIds: reminderEnabledWorkflowIds,
           onToggleReminder: onToggleReminder,
           onSelectCalendarDate: onSelectCalendarDate,
+        );
+      case 'NotificationInboxTabSurface':
+        return _NotificationInboxTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
         );
       case 'MessagesTabSurface':
         if (_isCameraEngineExperience(experience)) {

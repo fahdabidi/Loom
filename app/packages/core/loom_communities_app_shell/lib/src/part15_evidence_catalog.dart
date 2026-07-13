@@ -100,6 +100,18 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     if (parsed.isNotEmpty) threads = parsed;
   }
 
+  List<LoomNotificationItem>? notifications;
+  final notificationsRaw = experienceConfiguration['notifications'];
+  if (notificationsRaw is List) {
+    final parsed = <LoomNotificationItem>[
+      for (final entry in notificationsRaw)
+        if (entry is Map<String, Object?>)
+          if (_parseNotificationItem(entry) case final notification?)
+            notification,
+    ];
+    if (parsed.isNotEmpty) notifications = parsed;
+  }
+
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
   final Map<String, LoomListingStateMachine> marketplaceTemplateMap = {};
@@ -127,7 +139,8 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     final parsed = <LoomMarketplaceListing>[
       for (final entry in listingsRaw)
         if (entry is Map<String, Object?>)
-          if (_parseListing(entry, marketplaceTemplateMap) case final listing?) listing,
+          if (_parseListing(entry, marketplaceTemplateMap) case final listing?)
+            listing,
     ];
     if (parsed.isNotEmpty) marketplaceListings = parsed;
   }
@@ -153,6 +166,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
     threads: threads,
+    notifications: notifications,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -401,9 +415,7 @@ LoomDocumentLibrary? _parseDocumentLibrary(Object? value) {
   final declaredCategories = _shellStringList(value['categories']);
   final categories = declaredCategories.isNotEmpty
       ? declaredCategories
-      : <String>{
-          for (final document in documents) document.category,
-        }.toList();
+      : <String>{for (final document in documents) document.category}.toList();
   return LoomDocumentLibrary(categories: categories, documents: documents);
 }
 
@@ -411,7 +423,9 @@ LoomArchitecturalRequest? _parseArchitecturalRequest(Object? value) {
   if (value is! Map<String, Object?>) return null;
   final projectTypes = _shellStringList(value['projectTypes']);
   return LoomArchitecturalRequest(
-    projectTypes: projectTypes.isEmpty ? const ['Exterior change'] : projectTypes,
+    projectTypes: projectTypes.isEmpty
+        ? const ['Exterior change']
+        : projectTypes,
     defaultProjectDescription: _shellStringOr(
       value['defaultProjectDescription'],
       'Fence color update with matching trim sample.',
@@ -463,14 +477,16 @@ LoomDocumentItem? _parseDocumentItem(Map<String, Object?> map) {
     embeddedLabel: map['embeddedLabel'] as String? ?? 'Open embedded',
     externalLabel: map['externalLabel'] as String? ?? 'Open external',
     acknowledgeLabel: map['acknowledgeLabel'] as String? ?? 'Acknowledge',
-    requestAccessLabel: map['requestAccessLabel'] as String? ?? 'Request access',
+    requestAccessLabel:
+        map['requestAccessLabel'] as String? ?? 'Request access',
   );
 }
 
 LoomMessageThread? _parseThread(Map<String, Object?> map) {
   final threadId = map['threadId'];
   final subject = map['subject'];
-  if (threadId is! String || threadId.isEmpty || subject is! String) return null;
+  if (threadId is! String || threadId.isEmpty || subject is! String)
+    return null;
   final participantPersonaIds = _shellStringList(map['participantPersonaIds']);
   final messagesRaw = map['messages'];
   final messages = <LoomMessage>[];
@@ -496,9 +512,47 @@ LoomMessage? _parseMessage(Map<String, Object?> map) {
   final messageId = map['messageId'];
   final senderPersonaId = map['senderPersonaId'];
   final body = map['body'];
-  if (messageId is! String || messageId.isEmpty || senderPersonaId is! String || body is! String) return null;
-  final timestamp = DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now();
-  return LoomMessage(messageId: messageId, senderPersonaId: senderPersonaId, body: body, timestamp: timestamp);
+  if (messageId is! String ||
+      messageId.isEmpty ||
+      senderPersonaId is! String ||
+      body is! String)
+    return null;
+  final timestamp =
+      DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now();
+  return LoomMessage(
+    messageId: messageId,
+    senderPersonaId: senderPersonaId,
+    body: body,
+    timestamp: timestamp,
+  );
+}
+
+LoomNotificationItem? _parseNotificationItem(Map<String, Object?> map) {
+  final notificationId = map['notificationId'];
+  final title = map['title'];
+  final body = map['body'];
+  final source = map['source'];
+  final timestamp = DateTime.tryParse(map['timestamp'] as String? ?? '');
+  if (notificationId is! String ||
+      notificationId.isEmpty ||
+      title is! String ||
+      title.isEmpty ||
+      body is! String ||
+      body.isEmpty ||
+      source is! String ||
+      source.isEmpty ||
+      timestamp == null) {
+    return null;
+  }
+  return LoomNotificationItem(
+    notificationId: notificationId,
+    title: title,
+    body: body,
+    source: source,
+    timestamp: timestamp,
+    recipientPersonaIds: _shellStringList(map['recipientPersonaIds']),
+    isUnread: map['isUnread'] != false,
+  );
 }
 
 LoomMarketplaceListing? _parseListing(
@@ -507,7 +561,11 @@ LoomMarketplaceListing? _parseListing(
 ) {
   final listingId = map['listingId'];
   final title = map['title'];
-  if (listingId is! String || listingId.isEmpty || title is! String || title.isEmpty) return null;
+  if (listingId is! String ||
+      listingId.isEmpty ||
+      title is! String ||
+      title.isEmpty)
+    return null;
 
   LoomListingStateMachine? resolvedStateMachine;
   // 1) Inline stateMachine overrides everything
@@ -523,8 +581,8 @@ LoomMarketplaceListing? _parseListing(
     }
   }
   // 3) Runtime state override, defaulting to machine's initialState
-  final stateOverride = map['state'] as String? ??
-      resolvedStateMachine?.initialState;
+  final stateOverride =
+      map['state'] as String? ?? resolvedStateMachine?.initialState;
 
   return LoomMarketplaceListing(
     listingId: listingId,
@@ -550,7 +608,8 @@ LoomListingStateMachine? _parseListingStateMachine(Map<String, Object?> map) {
   if (initialState is! String) return null;
   final statesRaw = map['states'];
   final transitionsRaw = map['transitions'];
-  if (statesRaw is! Map<String, Object?> || transitionsRaw is! List) return null;
+  if (statesRaw is! Map<String, Object?> || transitionsRaw is! List)
+    return null;
   final states = <String, LoomListingState>{};
   for (final entry in statesRaw.entries) {
     final value = entry.value;
@@ -643,7 +702,10 @@ List<String> _shellStringList(Object? value) {
   if (value is! List) {
     return const [];
   }
-  return [for (final entry in value) if (entry is String) entry];
+  return [
+    for (final entry in value)
+      if (entry is String) entry,
+  ];
 }
 
 int? _parseShellHexColor(Object? value) {
@@ -860,7 +922,8 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'coach',
       label: 'Coach',
       roleLabel: 'Team staff',
-      description: 'Approves guardians, manages rosters, and publishes team operations.',
+      description:
+          'Approves guardians, manages rosters, and publishes team operations.',
     ),
     LoomPersonaDefinition(
       personaId: 'owner',
