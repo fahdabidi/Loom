@@ -252,7 +252,10 @@ that instance transitioned to `done` while the first remained in its own distinc
 proving the action closes over the correct item, not the first/all.
 
 ### Milestone 1.4 — Scheduled notifications + cross-instance eligibility guard
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12. Design refinement made at
+kickoff: `dueNotifications` will be implemented as a real `dueAt <= asOf` comparison over seeded
+instances rather than canned/fake data — genuinely no harder to build and more honest than a stub that
+ignores its own `asOf` parameter.
 - [ ] `WorkflowEngineApi.dueNotifications({required DateTime asOf})` — real API shape, demo
   implementation returns pre-seeded canned "due" instances.
 - [ ] `WorkflowTransition.guard` extended to express "actor must appear in `<field>` on the instance
