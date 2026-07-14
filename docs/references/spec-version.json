@@ -17,9 +17,9 @@
 
   "status": "provisional",
   "statusReason": [
-    "PROVISIONAL, not frozen. Phase A.4 now parses the engine-native experience schema (v2) into the",
-    "app-shell model with real-package compatibility coverage. It is not yet registered and seeded in",
-    "the shared runtime engine or rendered by the running app; those gates are Phase A.5-A.10. Phase A",
+    "PROVISIONAL, not frozen. Phase A.5 now parses the engine-native experience schema (v2), registers",
+    "its definitions, and seeds its instances into one shared runtime engine per extension. It is not yet",
+    "rendered by the running app; the generic card through live UI gates are Phase A.6-A.10. Phase A",
     "ends in a deliberate human review gate whose EXPECTED outcome is that this specification changes.",
     "",
     "Do not treat any version number here as stable until Phase A's gate closes and this file's status",
@@ -77,7 +77,7 @@
   "knownGaps": {
     "$comment": "Capabilities the docs describe as needed but the grammar does NOT yet support. Each must be closed or explicitly deferred before the Skill (Phase 3) can rely on this spec.",
     "transitionInputs": "GAP-1 (BLOCKING). A transition cannot receive user input. A per-item action (a Vote button for a specific candidate) has no way to tell the transition WHICH item. The only expressible flow is to write a shared scratch field (e.g. `pendingChoice`) then fire the transition -- two calls, orchestrated outside the JSON, and racy under concurrency. Proposed: transition `inputs` + `{input.x}` interpolation + `renderBindings[].repeater.itemActions`. Additive. Blocks tracker-3 Phase B. See Loom_Communities_Workflow_Engine_3_LanguageGaps.md.",
-    "queryBackedSources": "GAP-4 (BLOCKING). `instanceDataSchema[].source` is not parsed or evaluated, so a parent workflow cannot query child-row instances and formulas cannot compute over them. Proposed: query-backed source fields. Additive. Blocks tracker-3 Phase B tally. See Loom_Communities_Workflow_Engine_3_LanguageGaps.md.",
+    "queryBackedSources": "GAP-4 (BLOCKING). A.5 preserves `instanceDataSchema[].source` as metadata so formulas can safely defer when its value is unavailable, but the query is not hydrated or evaluated. A parent workflow still cannot load child-row instances for formulas. Proposed: execute query-backed source fields. Additive. Blocks tracker-3 Phase B tally. See Loom_Communities_Workflow_Engine_3_LanguageGaps.md.",
     "instanceCreation": "GAP-2 (BLOCKING). No declarative way to say 'this workflowType is member-creatable, show a + New affordance'. The engine can only createInstance as an EFFECT of a transition on an existing instance -- a user cannot transition into existence. Blocks member-authored proposals and starting a message thread. Proposed: `renderBindings[].creatable`. Additive. Blocks tracker-3 Phases E and F.",
     "listMinusActor": "GAP-3 (non-blocking). 'All participants except the actor' is not expressible -- no set-difference effect op. Consequence: thread unread state is a single bool rather than per-persona. Proposed: `setFromFormula` effect op + a `removeAll(list, value)` formula function. Additive.",
     "responseModel": "The `responseModel: { kind: simpleRsvp }` sugar in V2's Calendar_RSVP design doc is NOT parsed by the engine. RSVP must be modeled with plain transitions + effects + formulas instead.",

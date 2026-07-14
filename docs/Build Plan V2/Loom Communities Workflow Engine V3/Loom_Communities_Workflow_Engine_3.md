@@ -84,7 +84,7 @@ dispatches are not wasted rediscovering known gaps.
 | Gap | Blocks | Proposed correction | Additive? |
 |---|---|---|---|
 | **GAP-1** — a transition cannot receive user input (so a per-candidate Vote button cannot say *which* candidate; `pendingChoice` is a shared, racy scratch field) | **Phase B** | Grammar: transition `inputs` + `renderBindings[].repeater.itemActions` | Yes |
-| **GAP-4** — query-backed `source` fields are not parsed or evaluated, so a parent cannot compute over its child-row instances | **Phase B** | Grammar: `instanceDataSchema[].source` | Yes |
+| **GAP-4** — query-backed `source` metadata is preserved but its query is not hydrated/evaluated, so a parent cannot compute over its child-row instances | **Phase B** | Grammar/runtime: hydrate `instanceDataSchema[].source` | Yes |
 | **GAP-2** — no declarative instance creation (a member cannot create a proposal or start a thread) | **Phase E, F** | Grammar: `renderBindings[].creatable` | Yes |
 | **GAP-3** — "all participants except the actor" is not expressible (thread unread is a single bool) | Phase F (degraded) | Effect op `setFromFormula` + `removeAll()` | Yes |
 
@@ -99,7 +99,7 @@ remains an explicitly degraded, non-blocking Phase F capability.**
 
 | Phase | Scope | Doc | Status |
 |---|---|---|---|
-| **A** | **Foundation + Calendar tab** (validator, JSON loading, shared engine, generic renderer, binding dispatch, Calendar end-to-end) — **ends in a human JSON-review gate** | [PhaseA_Calendar](./Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md) | `[ ]` In progress — A.1–A.4 complete; A.5 in implementation |
+| **A** | **Foundation + Calendar tab** (validator, JSON loading, shared engine, generic renderer, binding dispatch, Calendar end-to-end) — **ends in a human JSON-review gate** | [PhaseA_Calendar](./Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md) | `[ ]` In progress — A.1–A.5 complete; A.6 in implementation |
 | **A′** | **Grammar extensions** — close **GAP-1** (transition `inputs` + repeater `itemActions`), **GAP-4** (query-backed `source` fields), and **GAP-2** (`creatable` binding). Small, additive, engine+grammar only. **Required before B and E/F.** | [LanguageGaps](./Loom_Communities_Workflow_Engine_3_LanguageGaps.md) | `[ ]` Blocked on A |
 | **B** | **Home tab** — tournament ballot (cross-instance eligibility guard, tally/tie/**real runoff** via branch+createInstance, deadline/reminder), tournament attendance card, published announcements | [PhaseB_Home](./Loom_Communities_Workflow_Engine_3_PhaseB_Home.md) | `[ ]` Blocked on A′ (GAP-1) |
 | **C** | **Marketplace tab** — equipment-loan lifecycle (borrow/queue/return, cross-workflow dues guard), giveaway | [PhaseC_Marketplace](./Loom_Communities_Workflow_Engine_3_PhaseC_Marketplace.md) | `[ ]` Blocked on A |
@@ -120,7 +120,7 @@ because A builds the pipeline they all use — and because A's gate may change t
 | A.2 | Validator: `CommunityPackageValidator` + CLI (envelope, schema versions, personas, instances, cross-instance refs) | `[x]` |
 | A.3 | Run the validator on the Tabletop Club JSON; fix real findings (**JSON edits only**) | `[x]` |
 | A.4 | Parse `workflowDefinitions`/`workflowInstances` into `LoomExperienceDefinition` (parsing only, no UI) | `[x]` |
-| A.5 | One shared engine per community: register definitions + seed instances at install (no UI) | `[ ]` |
+| A.5 | One shared engine per community: register definitions + seed instances at install (no UI) | `[x]` |
 | A.6 | Generic schema-driven instance card (fields from `instanceDataSchema`, buttons from `availableTransitionsAsync`) | `[ ]` |
 | A.7 | `renderBindings` → tab dispatch, **Calendar only** | `[ ]` |
 | A.8 | Calendar tab end-to-end from JSON: both events, real RSVP + waitlist, formula-driven capacity | `[ ]` |

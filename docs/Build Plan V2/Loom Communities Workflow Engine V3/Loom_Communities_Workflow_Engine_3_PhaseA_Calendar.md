@@ -165,7 +165,7 @@ closes the no-legacy-`workflows[]` early-return regression. The Tabletop SHA-256
 
 ---
 
-### A.5 — One shared engine per community  `[ ]`  *(no UI)*
+### A.5 — One shared engine per community  `[x]`  *(no UI)*
 
 Today every bespoke store creates its **own private** `WorkflowDatabase.memory()` +
 `LocalWorkflowEngineApi` (~20 of them). The engine-native path needs **one shared engine per community**,
@@ -188,6 +188,21 @@ including a **computed field** (`event-rsvp.goingCount == 12`) proving the formu
 seeded data. Still no UI change.
 
 **Do not:** modify or delete any existing bespoke store yet (Phase G retires them). Additive only.
+
+**Closed 2026-07-14.** Initial implementation/evidence commits `a646f768` and `52d47676` added the
+per-extension shared store, real definition registration, and transactional/idempotent seed import.
+Acceptance remediation/evidence commits `07ef1ed8` and `dc452687` replaced the rejected broad formula
+fallback with source-aware deferral plus static syntax/function/reference/cycle checks, strengthened
+conflict atomicity, and exercised the real local package-install seam. Final formatting/manifest evidence
+commits `d8db2b9a` and `2477cae2` established a formatter-clean baseline for both touched packages and a
+canonical extension manifest. Independent validation read the implementation, reran formatting and both
+analyzers, and passed all 120 engine tests plus all 41 app-shell tests. The real frozen package resolves
+exactly 11 definitions and 17 seed rows; every raw seed field survives, Friday's unseeded `goingCount`
+computes to 12, repeat install reuses the same engine without duplicate rows, and the unseeded
+`tabletop-game-loan` definition creates successfully. `source` is preserved only as metadata so formulas
+depending on an unavailable source are deferred safely; query hydration/evaluation remains open GAP-4 for
+Phase A′. The Tabletop SHA-256 remains
+`822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`, with no post-baseline diff.
 
 ---
 

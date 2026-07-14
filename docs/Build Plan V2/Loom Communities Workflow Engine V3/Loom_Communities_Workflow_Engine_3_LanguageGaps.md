@@ -300,10 +300,16 @@ re-model note below). The ballot still needs its tally:
 
 ### Why the language cannot express it
 
-`InstanceDataField` has **no `source` attribute** (`workflow_models.dart:268-321`). A formula can only
-see fields on **its own instance**. So the moment votes become rows in another table, the tally formulas
-have nothing to read — and `isTie` is needed *inside the engine*, by `close-vote`'s `branch` effect, so
-it cannot be computed in the UI either.
+**A.5 integration update (2026-07-14):** `InstanceDataField` now preserves the nullable `source` string
+as metadata through parsing and persisted definition reload. This lets the read path distinguish a
+deliberately unavailable query-backed field from an ordinary missing/typo field and defer only its
+dependent formulas without swallowing unrelated formula errors. The engine still does **not** parse or
+execute the query expression, load matching rows, or supply the source value. This metadata-only step
+does not close GAP-4.
+
+A formula can otherwise only see fields on **its own instance**. So the moment votes become rows in
+another table, the tally formulas have nothing to read — and `isTie` is needed *inside the engine*, by
+`close-vote`'s `branch` effect, so it cannot be computed in the UI either.
 
 The read-side `aggregate({workflowType, column, op, groupBy})` API **does** exist and works
 (`local_workflow_engine_api.dart:169-199`) — but it is a *read* API. The effect evaluator cannot call it.
@@ -329,9 +335,10 @@ Populated at read time by the same engine that already backs `aggregate`/`queryI
 
 ### Blast radius
 
-`InstanceDataField` (+1 attribute) · `_withComputedFields` (resolve `source` before formulas) · the
-validator (treat `source` fields as derived). Unlocks **every** parent↔child table relationship: a
-ballot's votes, a table's rows, a thread's messages, an event's attendees.
+`InstanceDataField.source` metadata preservation is complete. Remaining work: parse/execute its bounded
+query, resolve the source before formulas in `_withComputedFields`, and make the validator treat source
+fields as derived. This unlocks **every** parent↔child table relationship: a ballot's votes, a table's
+rows, a thread's messages, an event's attendees.
 
 ---
 
