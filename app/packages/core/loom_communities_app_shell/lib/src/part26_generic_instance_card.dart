@@ -16,6 +16,8 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     this.onInstanceChanged,
     this.accent,
     this.foreground,
+    this.visibleFieldKeys,
+    this.showEditors = true,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final WorkflowInstance instance;
@@ -26,6 +28,11 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final Color? accent;
   final Color? foreground;
+
+  /// Optional bounded presentation filter. Null preserves the schema-driven
+  /// presentation used by existing callers.
+  final Set<String>? visibleFieldKeys;
+  final bool showEditors;
 
   @override
   State<GenericWorkflowInstanceCard> createState() =>
@@ -319,6 +326,9 @@ class _GenericWorkflowInstanceCardState
   }
 
   bool _isVisibleField(String key, InstanceDataField schema) {
+    if (widget.visibleFieldKeys != null &&
+        !widget.visibleFieldKeys!.contains(key))
+      return false;
     if (schema.displayContexts != null &&
         schema.displayContexts!.isNotEmpty &&
         !schema.displayContexts!.contains(widget.displayContext)) {
@@ -361,7 +371,7 @@ class _GenericWorkflowInstanceCardState
                       accent: widget.accent,
                     ),
                   ),
-              if (editable.isNotEmpty) ...[
+              if (widget.showEditors && editable.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 for (final key in editable)
                   _editor(key, widget.machine.instanceDataSchema[key]!),

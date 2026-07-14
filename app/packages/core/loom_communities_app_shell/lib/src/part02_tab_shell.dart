@@ -3975,6 +3975,13 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_hasEngineNativeCalendarBinding(experience)) {
+          return EngineNativeCalendarSurface(
+            experience: experience,
+            persona: persona,
+            accent: accent,
+          );
+        }
         return _CalendarTabSurface(
           experience: experience,
           communityId: experience.extensionId,

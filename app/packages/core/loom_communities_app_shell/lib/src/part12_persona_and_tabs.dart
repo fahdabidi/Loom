@@ -210,7 +210,8 @@ List<LoomAppShellTabSpec> appShellTabsFor({
           'Home intentionally keeps the first visible surface in focus instead of pinning one workflow across every community.',
       requiredPermission: 'community.surface.navigation.read',
     ),
-    if (_hasAnySection(experience, const ['Upcoming events']))
+    if (_hasAnySection(experience, const ['Upcoming events']) ||
+        _hasEngineNativeCalendarBinding(experience))
       LoomAppShellTabSpec(
         tabId: 'calendar',
         label: 'Calendar',
@@ -495,6 +496,14 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       if (tab.isVisibleFor(personaId)) tab,
   ];
 }
+
+bool _hasEngineNativeCalendarBinding(LoomExperienceDefinition experience) =>
+    experience.workflowDefinitions?.values.any(
+      (definition) => definition.renderBindings.any(
+        (binding) => binding.tabId == 'calendar',
+      ),
+    ) ??
+    false;
 
 List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   required LoomExperienceDefinition experience,
