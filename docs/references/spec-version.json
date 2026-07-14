@@ -17,13 +17,14 @@
 
   "status": "provisional",
   "statusReason": [
-    "PROVISIONAL, not frozen. The engine-native experience schema (v2) has never been loaded by the",
-    "running app — the pipeline that loads it is built in Phase A of tracker 3. Phase A ends in a",
-    "deliberate human review gate whose EXPECTED outcome is that this specification changes.",
+    "PROVISIONAL, not frozen. Phase A.4 now parses the engine-native experience schema (v2) into the",
+    "app-shell model with real-package compatibility coverage. It is not yet registered and seeded in",
+    "the shared runtime engine or rendered by the running app; those gates are Phase A.5-A.10. Phase A",
+    "ends in a deliberate human review gate whose EXPECTED outcome is that this specification changes.",
     "",
     "Do not treat any version number here as stable until Phase A's gate closes and this file's status",
     "flips to `stable`. Until then, docs in this tree describe an intended contract, verified against",
-    "the engine's parser and evaluator but not yet against a running app."
+    "the engine's parser and evaluator and the app-shell parser, but not yet end-to-end in the running UI."
   ],
 
   "released": "2026-07-14",

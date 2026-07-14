@@ -137,7 +137,7 @@ cross-instance write resolve. **No new Tabletop-JSON or JSON-language gap was di
 
 ---
 
-### A.4 — Parse `workflowDefinitions` / `workflowInstances` at install  `[ ]`  *(parsing only — no UI, no engine)*
+### A.4 — Parse `workflowDefinitions` / `workflowInstances` at install  `[x]`  *(parsing only — no UI, no engine)*
 
 - Add `workflowDefinitions: Map<String, LoomWorkflowStateMachine>?` and
   `workflowInstances: List<SeedInstance>?` to `LoomExperienceDefinition`
@@ -154,6 +154,15 @@ cross-instance write resolve. **No new Tabletop-JSON or JSON-language gap was di
 
 **Do not:** touch any existing community's parsing, or the `workflows[]` shallow branch.
 
+**Closed 2026-07-14.** Production parsing commit `9cecf12`; permanent-coverage commit `4f4d4bb`;
+real-existing-legacy-package coverage commit `4c3daf9`; evidence commits `355f8c2` and `bc2deb1`.
+Independent validation read every scoped diff, confirmed the tracked `verify-tabletop-club` shallow package
+keeps its exact projection both unstamped and explicitly stamped v1, and reran package formatting,
+analysis, and all 40 app-shell tests successfully. The v2 test parses the real frozen Tabletop package
+into exactly 11 definitions and 17 seeds, covers version failures and malformed-entry isolation, and
+closes the no-legacy-`workflows[]` early-return regression. The Tabletop SHA-256 remains
+`822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`; its post-baseline diff is empty.
+
 ---
 
 ### A.5 — One shared engine per community  `[ ]`  *(no UI)*
@@ -166,6 +175,12 @@ read the event's `goingPersonaIds`).
 - One `LocalWorkflowEngineApi` per `extensionId`, created at install.
 - Register every parsed definition; seed every parsed `workflowInstances` entry via the real engine.
 - Reuse the established `static _stores`-keyed-by-`extensionId` memoization pattern.
+
+**Implementation discovery (2026-07-14):** the current `createInstance` API generates a new ID and
+always starts at the definition's initial state, so it cannot faithfully import the frozen seed rows.
+A.5 therefore includes a bounded real-engine seed/import primitive that preserves and validates the
+declared instance ID and current state. This is an engine integration requirement, not a Tabletop-JSON
+or JSON-language gap; the frozen package remains unchanged.
 
 **Accept:** a test that, after installing the Tabletop Club package, calls `queryInstances` **directly on
 the engine** and gets the seeded instances back with correct `currentState` and `instanceData` —
