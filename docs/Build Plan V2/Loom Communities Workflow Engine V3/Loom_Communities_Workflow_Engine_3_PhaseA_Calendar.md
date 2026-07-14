@@ -243,7 +243,7 @@ with no post-baseline diff.
 
 ---
 
-### A.7 — `renderBindings` → tab dispatch (Calendar only)  `[ ]`
+### A.7 — `renderBindings` → tab dispatch (Calendar only)  `[x]`
 
 `resolveBindings()` (`loom_workflow_engine/lib/src/evaluator/binding_resolver.dart:10-38`) is a real,
 generic state+role tab matcher with **zero production call sites** today. Wire it up.
@@ -256,6 +256,19 @@ generic state+role tab matcher with **zero production call sites** today. Wire i
 
 **Accept:** a widget test proves an instance whose binding says `calendar` appears on Calendar, and one
 whose binding says `home` does **not** appear on Calendar.
+
+**Closed 2026-07-14.** Initial implementation commits `9cd1ebb8` and `64e2eec1`, with evidence
+`bff0ee98`, added a headless, paginated dispatcher and the first real `resolveBindings` production call.
+Independent validation rejected its two-test false pass. Acceptance remediation `6dcc6bb0`, null-cursor
+coverage `1da56b9d`, and evidence updates `ff65fae6`/`21485763` established the complete gate: real
+Calendar inclusion and Home-only exclusion across pages; state, multi-role, and dynamic-audience
+resolution; zero-query suppression for all five disabled tabs; hard definition/cursor errors; retry;
+stale persona/engine/tab suppression; and authoritative callback re-query after a real transition. The
+dispatcher returns every match in query/definition order, exposes stable binding identities, and leaves
+all Calendar product layout to A.8. Independent closeout passed the 51-file formatting check, a clean
+analyzer, all 8 focused A.7 tests, and all 60 app-shell tests. No Home or Calendar UI was changed. The
+Tabletop SHA-256 remains `822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`,
+with no post-baseline diff.
 
 ---
 
