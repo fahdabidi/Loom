@@ -113,6 +113,42 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('tapping a candidate opens and closes its detail dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host());
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('community-tab-ballot')),
+    );
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tournament-candidate-name-Catan')),
+    );
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('tournament-candidate-name-Catan')),
+    );
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tournament-candidate-detail-dialog')),
+    );
+    expect(
+      find.byKey(
+        const ValueKey('tournament-candidate-detail-description-Catan'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Trade game'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('tournament-candidate-detail-close')),
+    );
+    expect(
+      find.byKey(const ValueKey('tournament-candidate-detail-dialog')),
+      findsNothing,
+    );
+  });
   testWidgets('RSVP updates formula-backed attendance', (tester) async {
     await tester.pumpWidget(_attendanceHost());
     await _tapVisible(

@@ -3469,6 +3469,32 @@ class _TournamentBallotTabSurfaceState
     await _load();
   }
 
+  void _showCandidateDetail(LoomTournamentCandidate candidate) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        key: const ValueKey('tournament-candidate-detail-dialog'),
+        title: Text(
+          candidate.name,
+          key: ValueKey('tournament-candidate-detail-name-${candidate.id}'),
+        ),
+        content: Text(
+          candidate.description ?? 'No description available.',
+          key: ValueKey(
+            'tournament-candidate-detail-description-${candidate.id}',
+          ),
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('tournament-candidate-detail-close'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final foreground =
@@ -3519,12 +3545,18 @@ class _TournamentBallotTabSurfaceState
                 key: ValueKey('tournament-candidate-${candidate.id}'),
                 children: [
                   Expanded(
-                    child: Text(
-                      '${candidate.name}: $count votes',
+                    child: InkWell(
                       key: ValueKey(
-                        'tournament-candidate-count-${candidate.id}',
+                        'tournament-candidate-name-${candidate.id}',
                       ),
-                      style: TextStyle(color: foreground),
+                      onTap: () => _showCandidateDetail(candidate),
+                      child: Text(
+                        '${candidate.name}: $count votes',
+                        key: ValueKey(
+                          'tournament-candidate-count-${candidate.id}',
+                        ),
+                        style: TextStyle(color: foreground),
+                      ),
                     ),
                   ),
                   if (_eligibleToVote)
