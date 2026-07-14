@@ -26,6 +26,8 @@ class EngineNativeCalendarSurface extends StatefulWidget {
 class _EngineNativeCalendarSurfaceState
     extends State<EngineNativeCalendarSurface> {
   Future<WorkflowEngineApi>? _engineFuture;
+  final _CalendarPresentationController _presentation =
+      _CalendarPresentationController();
 
   @override
   void initState() {
@@ -37,8 +39,11 @@ class _EngineNativeCalendarSurfaceState
   void didUpdateWidget(covariant EngineNativeCalendarSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
-        oldWidget.engine != widget.engine)
+        oldWidget.engine != widget.engine ||
+        oldWidget.persona.personaId != widget.persona.personaId) {
+      _presentation.reset();
       _load();
+    }
   }
 
   void _load() {
@@ -85,17 +90,32 @@ class _EngineNativeCalendarSurfaceState
           personaId: widget.persona.personaId,
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
-              'engine-native-calendar-content-${widget.persona.personaId}',
+              'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.personaId}',
             ),
             bindings: bindings,
             engine: snapshot.data!,
             personaId: widget.persona.personaId,
             accent: widget.accent,
             onInstanceChanged: changed,
+            presentation: _presentation,
           ),
         );
       },
     );
+  }
+}
+
+class _CalendarPresentationController {
+  String? selectedIdentity;
+  String? selectedInstanceId;
+  String? selectedDate;
+  DateTime? month;
+
+  void reset() {
+    selectedIdentity = null;
+    selectedInstanceId = null;
+    selectedDate = null;
+    month = null;
   }
 }
 
@@ -140,6 +160,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.personaId,
     required this.accent,
     required this.onInstanceChanged,
+    required this.presentation,
   });
 
   final List<EngineNativeResolvedBinding> bindings;
@@ -147,6 +168,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final String personaId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final _CalendarPresentationController presentation;
 
   @override
   State<_EngineNativeCalendarContent> createState() =>
@@ -155,10 +177,6 @@ class _EngineNativeCalendarContent extends StatefulWidget {
 
 class _EngineNativeCalendarContentState
     extends State<_EngineNativeCalendarContent> {
-  DateTime? _month;
-  String? _selectedIdentity;
-  String? _selectedDate;
-
   @override
   void didUpdateWidget(covariant _EngineNativeCalendarContent oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -175,17 +193,27 @@ class _EngineNativeCalendarContentState
 
   void _reconcileSelection(List<_CalendarEntry>? entries) {
     if (entries == null || entries.isEmpty) {
-      _selectedIdentity = null;
-      _selectedDate = null;
+      widget.presentation.reset();
       return;
     }
-    final selected = entries.where(
-      (entry) => entry.identity == _selectedIdentity,
+    final exact = entries.where(
+      (entry) => entry.identity == widget.presentation.selectedIdentity,
     );
-    final next = selected.isNotEmpty ? selected.first : entries.first;
-    _selectedIdentity = next.identity;
-    _selectedDate ??= next.dateKey;
-    _month ??= DateTime(next.date.year, next.date.month);
+    final sameInstance = entries.where(
+      (entry) => entry.instanceId == widget.presentation.selectedInstanceId,
+    );
+    final next = exact.isNotEmpty
+        ? exact.first
+        : sameInstance.isNotEmpty
+        ? sameInstance.first
+        : entries.first;
+    final changed = widget.presentation.selectedIdentity != next.identity;
+    widget.presentation.selectedIdentity = next.identity;
+    widget.presentation.selectedInstanceId = next.instanceId;
+    if (changed || widget.presentation.selectedDate == null) {
+      widget.presentation.selectedDate = next.dateKey;
+      widget.presentation.month = DateTime(next.date.year, next.date.month);
+    }
   }
 
   List<_CalendarEntry> get _entries {
@@ -238,11 +266,19 @@ class _EngineNativeCalendarContentState
 
   bool _isCalendarDetailField(InstanceDataField field) {
     final contexts = field.displayContexts;
-    if (contexts == null || !contexts.contains('detail')) return false;
+    final explicitDetail = contexts?.contains('detail') ?? false;
+    final declarativeFact =
+        (contexts == null || contexts.isEmpty) &&
+        (field.labelTemplate != null || field.displayIcon != null);
+    if (!explicitDetail && !declarativeFact) return false;
     // Lists are persistence structures, notably actor/persona collections.
     // Formula booleans are state guards rather than facts. Both remain
     // available to the engine, but are intentionally absent from Calendar UI.
-    if (field.type.endsWith('[]') || field.type == 'list') return false;
+    if (field.type.endsWith('[]') ||
+        field.type == 'list' ||
+        field.writableBy == 'effect' ||
+        field.storage == 'reference')
+      return false;
     if (field.type == 'bool' && field.formula != null) return false;
     return true;
   }
@@ -253,112 +289,137 @@ class _EngineNativeCalendarContentState
     try {
       entries = _entries;
     } on _CalendarProjectionException catch (error) {
-      return _CalendarProjectionError(error: error);
+      return _CalendarProjectionError(
+        error: error,
+        onRetry: () => widget.onInstanceChanged(error.binding.instance),
+      );
     }
     _reconcileSelection(entries);
     if (entries.isEmpty) return const _CalendarEmptyState();
 
     final selected = entries.firstWhere(
-      (entry) => entry.identity == _selectedIdentity,
+      (entry) => entry.identity == widget.presentation.selectedIdentity,
     );
-    final month = _month ?? DateTime(selected.date.year, selected.date.month);
+    final month =
+        widget.presentation.month ??
+        DateTime(selected.date.year, selected.date.month);
     final byDay = <String, List<_CalendarEntry>>{};
     for (final entry in entries) {
       byDay.putIfAbsent(entry.dateKey, () => []).add(entry);
     }
     final dates = byDay.keys.toList()..sort();
 
-    return SingleChildScrollView(
-      child: Column(
-        key: const ValueKey('engine-native-calendar-root'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            key: const ValueKey('engine-native-calendar-month-navigation'),
+    return Column(
+      key: const ValueKey('engine-native-calendar-root'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          key: const ValueKey('engine-native-calendar-month-navigation'),
+          children: [
+            IconButton(
+              key: const ValueKey('engine-native-calendar-previous-month'),
+              onPressed: () => setState(
+                () => widget.presentation.month = DateTime(
+                  month.year,
+                  month.month - 1,
+                ),
+              ),
+              icon: const Icon(Icons.chevron_left),
+            ),
+            Expanded(
+              child: Center(
+                child: Text('${_monthLabel(month.month)} ${month.year}'),
+              ),
+            ),
+            IconButton(
+              key: const ValueKey('engine-native-calendar-next-month'),
+              onPressed: () => setState(
+                () => widget.presentation.month = DateTime(
+                  month.year,
+                  month.month + 1,
+                ),
+              ),
+              icon: const Icon(Icons.chevron_right),
+            ),
+          ],
+        ),
+        _EngineNativeMonthGrid(
+          month: month,
+          byDay: byDay,
+          onSelect: _selectEntry,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          key: const ValueKey('engine-native-calendar-date-strip'),
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
             children: [
-              IconButton(
-                key: const ValueKey('engine-native-calendar-previous-month'),
-                onPressed: () => setState(
-                  () => _month = DateTime(month.year, month.month - 1),
+              for (final day in dates)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    key: ValueKey('engine-native-calendar-date-strip-$day'),
+                    label: Text(day),
+                    selected: day == widget.presentation.selectedDate,
+                    onSelected: (_) => setState(() {
+                      final entry = byDay[day]!.first;
+                      widget.presentation.selectedDate = day;
+                      widget.presentation.selectedIdentity = entry.identity;
+                      widget.presentation.selectedInstanceId = entry.instanceId;
+                      widget.presentation.month = DateTime(
+                        entry.date.year,
+                        entry.date.month,
+                      );
+                    }),
+                  ),
                 ),
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text('${_monthLabel(month.month)} ${month.year}'),
-                ),
-              ),
-              IconButton(
-                key: const ValueKey('engine-native-calendar-next-month'),
-                onPressed: () => setState(
-                  () => _month = DateTime(month.year, month.month + 1),
-                ),
-                icon: const Icon(Icons.chevron_right),
-              ),
             ],
           ),
-          _EngineNativeMonthGrid(
-            month: month,
-            byDay: byDay,
-            onSelect: _selectEntry,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            key: const ValueKey('engine-native-calendar-date-strip'),
-            height: 44,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Agenda',
+          key: ValueKey('engine-native-calendar-grouped-agenda'),
+        ),
+        for (final day in dates)
+          Container(
+            key: ValueKey('engine-native-calendar-agenda-group-$day'),
+            child: Column(
               children: [
-                for (final day in dates)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      key: ValueKey('engine-native-calendar-date-strip-$day'),
-                      label: Text(day),
-                      selected: day == _selectedDate,
-                      onSelected: (_) => setState(() {
-                        _selectedDate = day;
-                        _selectedIdentity = byDay[day]!.first.identity;
-                      }),
+                Text(
+                  day,
+                  key: ValueKey('engine-native-calendar-agenda-date-$day'),
+                ),
+                for (final entry in byDay[day]!)
+                  ListTile(
+                    key: ValueKey(
+                      'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                     ),
+                    selected:
+                        entry.identity == widget.presentation.selectedIdentity,
+                    title: Text(entry.title),
+                    subtitle: Text(entry.time),
+                    onTap: () => _selectEntry(entry.identity),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Agenda',
-            key: ValueKey('engine-native-calendar-grouped-agenda'),
+        GenericWorkflowInstanceCard(
+          key: ValueKey(
+            'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
           ),
-          for (final day in dates) ...[
-            Text(day, key: ValueKey('engine-native-calendar-agenda-date-$day')),
-            for (final entry in byDay[day]!)
-              ListTile(
-                key: ValueKey(
-                  'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
-                ),
-                selected: entry.identity == _selectedIdentity,
-                title: Text(entry.title),
-                subtitle: Text(entry.time),
-                onTap: () => _selectEntry(entry.identity),
-              ),
-          ],
-          GenericWorkflowInstanceCard(
-            key: ValueKey(
-              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-            ),
-            instance: selected.resolved.instance,
-            machine: selected.resolved.machine,
-            engine: widget.engine,
-            personaId: widget.personaId,
-            displayContext: 'detail',
-            showEditors: false,
-            visibleFieldKeys: _detailFieldKeys(selected),
-            accent: widget.accent,
-            onInstanceChanged: widget.onInstanceChanged,
-          ),
-        ],
-      ),
+          instance: selected.resolved.instance,
+          machine: selected.resolved.machine,
+          engine: widget.engine,
+          personaId: widget.personaId,
+          displayContext: 'detail',
+          showEditors: false,
+          visibleFieldKeys: _detailFieldKeys(selected),
+          accent: widget.accent,
+          onInstanceChanged: widget.onInstanceChanged,
+        ),
+      ],
     );
   }
 
@@ -367,9 +428,10 @@ class _EngineNativeCalendarContentState
       (candidate) => candidate.identity == identity,
     );
     setState(() {
-      _selectedIdentity = identity;
-      _selectedDate = entry.dateKey;
-      _month = DateTime(entry.date.year, entry.date.month);
+      widget.presentation.selectedIdentity = identity;
+      widget.presentation.selectedInstanceId = entry.instanceId;
+      widget.presentation.selectedDate = entry.dateKey;
+      widget.presentation.month = DateTime(entry.date.year, entry.date.month);
     });
   }
 }
@@ -388,8 +450,9 @@ class _CalendarEmptyState extends StatelessWidget {
 }
 
 class _CalendarProjectionError extends StatelessWidget {
-  const _CalendarProjectionError({required this.error});
+  const _CalendarProjectionError({required this.error, required this.onRetry});
   final _CalendarProjectionException error;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -403,7 +466,7 @@ class _CalendarProjectionError extends StatelessWidget {
       ),
       TextButton(
         key: const ValueKey('engine-native-calendar-projection-retry'),
-        onPressed: () => Navigator.of(context).maybePop(),
+        onPressed: onRetry,
         child: const Text('Retry'),
       ),
     ],
