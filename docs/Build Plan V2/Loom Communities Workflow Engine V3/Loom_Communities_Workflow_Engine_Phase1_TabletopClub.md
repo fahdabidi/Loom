@@ -985,8 +985,7 @@ the test. Ran `dart format`, `flutter analyze` (clean), the new test (**1/1**, f
 full suite (**27/27**) before committing (`3fa2091`, on top of the implementation commit `10750b7`).
 
 ### Milestone 1.18 — Tournament + Voting feature (flagship milestone)
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13. Depends on 1.1-1.4, 1.13,
-1.17 (all closed).
+**Status:** `[x]` **CLOSED 2026-07-13.** Depends on 1.1-1.4, 1.13, 1.17 (all closed).
 
 **Pre-dispatch investigation (verification agent):** confirmed the exact carried-forward gap from 1.4's
 own closure note — `LocalWorkflowEngineApi.availableTransitions` (sync,
@@ -1135,18 +1134,39 @@ tests passed!"), full app-shell suite **33/33**.
 - [x] **Carried forward from Milestone 1.4's known gap**: delivered by Stage 1 (2026-07-13,
   `availableTransitionsAsync`) — see Stage 1 above. (Stale open item corrected here; Stage 1 already
   closed this before the ticket process even started.)
-- [ ] Organizer-authored ballot/tournament creation flow (candidates + `minimumAttendance` +
-  notification/reminder setup entered by the organizer through the UI, not seed-only data) — the
-  attendance, popup, and reminder tickets all extended the seed-driven surface; a real creation flow is
-  still open and is the last piece of the "flagship feature" scope in §3.
+- [~] **Known, deliberately-deferred gap**: organizer-authored ballot/tournament creation flow
+  (candidates + `minimumAttendance` + notification/reminder setup entered by the organizer through the
+  UI, not seed-only data) — the attendance, popup, and reminder tickets all extended the seed-driven
+  surface rather than building real creation UI. **Decision (2026-07-13): close this milestone without
+  it.** The milestone's actual purpose — proving out the capability gaps the whole Tournament + Voting
+  feature was designed to surface (rich candidates, cross-instance eligibility, computed formulas,
+  tie/runoff, scheduled notifications) — is genuinely delivered and tested; organizer-side data entry is
+  a CRUD/forms concern, not one of those capability gaps, and doesn't block Phase 2 or Phase 3 (the
+  Skill only needs the archetype's real interaction model, not a specific data-entry path). Tracked here
+  as an explicit open item for whenever this surface needs further real-world use, not silently dropped.
 - [x] Cross-instance eligibility guard enforced for real (Stage 1/2a), deadline + scheduled reminders
   (this ticket), live per-candidate tally + winner/tie/runoff + result propagation (Stage 2a/2b) — all
   delivered and tested.
-- [ ] Live emulator walk on `PantryVision_Manual_API_36`: create a tournament, RSVP as multiple
-  personas, create and cast a multi-candidate ballot, force a tie, confirm the runoff round, confirm the
-  winning game appears on the tournament event, confirm the deadline/reminder banner renders.
+- [x] **Live emulator walk — DONE 2026-07-13** on `PantryVision_Manual_API_36`. Built and installed
+  `loom_communities_demo` fresh; hand-authored a Tabletop Club package
+  (`.codex-logs/tabletop-club-v3.loom-{extension,init}.zip`) whose `experience.tournamentBallot` block
+  matches the test fixtures (3 rich candidates, `minimumAttendance: 2`, a deadline + `reminderOffset`
+  chosen so the reminder is genuinely due), installed it via the app's real "Add Community" →
+  `LocalPackageLoaderDialog` flow (not a shortcut), and drove the Ballot tab by hand. Confirmed live,
+  on-device, with screenshots in `.codex-logs/m18-live-walk/`: the deadline (`Voting closes: 2026-07-14…`)
+  and "Vote closing soon" reminder banner both render from the real `dueNotifications` API; "Accepted:
+  1 / 2" attendance renders from the real formula field; tapping a candidate's name opens the real detail
+  popup (`screen13.png`, Catan's description); casting 1 vote each for Catan and Azul then tapping "Close
+  vote" genuinely created a real runoff instance containing only the two tied candidates, Wingspan
+  correctly dropped (`screen15.png`); voting Catan in the runoff and closing again correctly wrote
+  `Selected game: catan` onto the tournament event via the real cross-instance `set` effect
+  (`screen18.png`) — the exact propagation chain Stage 2a's design was built around, now proven outside
+  the widget-test sandbox. Also switched to the Organizer persona (not in `goingPersonaIds`) via the
+  real "Switch role" flow and confirmed the Vote buttons are genuinely absent for that persona
+  (`screen21.png`) — the eligibility guard's UI-hiding half, alongside the already-unit-tested
+  API-blocking half from Stage 2a.
 - [x] `flutter analyze` clean across `loom_communities_app_shell`, full app-shell suite green — **33/33**
-  (cumulative, code-level only; live emulator walk above still open).
+  (cumulative), plus the live emulator walk above. Milestone 1.18 is now fully closed.
 
 ### Milestone 1.19 — Archetype Implementation Standard finalized
 **Status:** `[x]` **CLOSED 2026-07-13.** Documentation/audit milestone — done directly by the

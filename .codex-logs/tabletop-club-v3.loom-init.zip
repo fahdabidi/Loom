@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "packageId": "init_verify_tabletop_club_v3_1",
+  "communityId": "community_verify_tabletop_club_v3",
+  "communityHandle": "tabletop-club-v3",
+  "displayName": "Tabletop Club",
+  "extensionId": "ext_verify_tabletop_club_v3",
+  "branding": {
+    "accentColor": "#6A4FB6"
+  },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-verify-tabletop-club-v3",
+  "experience": {
+    "displayName": "Tabletop Club",
+    "tagline": "Board game nights, tournaments, loaner games, and dues for local tabletop fans.",
+    "accentColor": "#6A4FB6",
+    "personas": [
+      {
+        "personaId": "tabletop-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "RSVPs to game nights and tournaments, borrows games, votes on the tournament ballot, and pays dues."
+      },
+      {
+        "personaId": "tabletop-organizer",
+        "label": "Organizer",
+        "roleLabel": "Organizer",
+        "description": "Plans game nights and tournaments, manages the game library, and decides committee items."
+      }
+    ],
+    "workflows": [
+      {
+        "workflowId": "tabletop-tournament-ballot-workflow",
+        "title": "Tournament ballot",
+        "entryText": "Vote for the next tournament game.",
+        "actionText": "Cast your vote.",
+        "resultText": "Vote recorded."
+      },
+      {
+        "workflowId": "tabletop-game-night-rsvp",
+        "title": "RSVP to Friday game night",
+        "entryText": "Friday game night at the community room, 7-10pm. 12 of 20 seats filled.",
+        "actionText": "Reserve a seat at Friday's game night.",
+        "resultText": "You're on the roster for Friday's game night.",
+        "calendar": {
+          "date": "2026-07-10",
+          "time": "19:00",
+          "location": "Community room",
+          "capacityLabel": "12 of 20 seats filled"
+        },
+        "responseChoices": [
+          {"responseId": "going", "label": "Going"},
+          {"responseId": "maybe", "label": "Maybe"},
+          {"responseId": "not-going", "label": "Can't go", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-committee-decision",
+        "title": "Decide on new game purchase",
+        "entryText": "A member proposed buying a copy of Wingspan for the club library.",
+        "actionText": "Decide on the Wingspan purchase proposal.",
+        "resultText": "Decision recorded for the Wingspan proposal.",
+        "responseChoices": [
+          {"responseId": "approved", "label": "Approve"},
+          {"responseId": "changes-requested", "label": "Request changes"},
+          {"responseId": "rejected", "label": "Reject", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-game-loan",
+        "title": "Borrow a game from the club library",
+        "entryText": "Catan is available in the club game library.",
+        "actionText": "Request to borrow Catan for two weeks.",
+        "resultText": "Your loan request for Catan was sent to the organizer."
+      },
+      {
+        "workflowId": "tabletop-club-dues-payment",
+        "title": "Pay quarterly club dues",
+        "entryText": "Quarterly dues of $15 are due by the end of the month.",
+        "actionText": "Pay $15 in quarterly dues.",
+        "resultText": "Dues payment recorded and receipt saved."
+      }
+    ],
+    "personaPolicies": {
+      "tabletop-game-night-rsvp": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member RSVP'd to Friday's game night.",
+        "receiverActionText": "Acknowledge RSVP",
+        "receiverResultText": "RSVP acknowledged and added to the roster."
+      },
+      "tabletop-committee-decision": {
+        "actorPersonaIds": ["tabletop-organizer"],
+        "receiverPersonaIds": ["tabletop-member"],
+        "receiverEntryText": "The committee decided on the Wingspan purchase proposal.",
+        "receiverActionText": "View decision",
+        "receiverResultText": "Decision visible to members."
+      },
+      "tabletop-game-loan": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member requested to borrow Catan from the club library.",
+        "receiverActionText": "Approve loan",
+        "receiverResultText": "Loan approved and logged in the club library."
+      },
+      "tabletop-club-dues-payment": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member paid quarterly dues.",
+        "receiverActionText": "Confirm receipt",
+        "receiverResultText": "Dues payment confirmed and receipt issued."
+      }
+    },
+    "tournamentBallot": {
+      "eventId": "tabletop-live-walk-tournament",
+      "goingPersonaIds": ["tabletop-member"],
+      "minimumAttendance": 2,
+      "deadline": "2026-07-14T00:00:00.000Z",
+      "reminderOffset": "one-week",
+      "notificationsEnabled": true,
+      "candidates": [
+        {
+          "id": "catan",
+          "name": "Catan",
+          "description": "Classic trading and building game for 3-4 players."
+        },
+        {
+          "id": "azul",
+          "name": "Azul",
+          "description": "Tile-drafting game with beautiful Portuguese-tile aesthetics."
+        },
+        {
+          "id": "wingspan",
+          "name": "Wingspan",
+          "description": "Engine-building card game about birds, for 1-5 players."
+        }
+      ]
+    }
+  }
+}
