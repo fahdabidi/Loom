@@ -19,6 +19,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  loom_ux_judges:
+    path: ../../tooling/loom_ux_judges
 
 flutter:
   assets:
