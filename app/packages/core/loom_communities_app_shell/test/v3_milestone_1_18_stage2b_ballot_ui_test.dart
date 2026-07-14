@@ -135,6 +135,80 @@ Widget _attendanceHost() => MaterialApp(
   ),
 );
 
+LocalInstalledCommunity _reminderDueCommunity() => _reminderCommunity(
+  communityId: 'v3-tournament-reminder-due-community',
+  extensionId: 'v3-tournament-reminder-due',
+  eventId: 'reminder-due-event',
+  deadline: DateTime.now().subtract(const Duration(days: 30)),
+  reminderOffset: 'at-time',
+);
+
+LocalInstalledCommunity _reminderNotDueCommunity() => _reminderCommunity(
+  communityId: 'v3-tournament-reminder-not-due-community',
+  extensionId: 'v3-tournament-reminder-not-due',
+  eventId: 'reminder-not-due-event',
+  deadline: DateTime.now().add(const Duration(days: 30)),
+  reminderOffset: 'one-day',
+);
+
+LocalInstalledCommunity _reminderCommunity({
+  required String communityId,
+  required String extensionId,
+  required String eventId,
+  required DateTime deadline,
+  required String reminderOffset,
+}) => LocalInstalledCommunity(
+  communityId: communityId,
+  displayName: 'Tabletop Club',
+  extensionId: extensionId,
+  logoAssetId: null,
+  cardImageAssetId: null,
+  heroImageAssetId: null,
+  accentColor: '#4a3b2a',
+  experienceConfiguration: {
+    'workflows': [
+      {
+        'workflowId': 'ballot',
+        'title': 'Ballot',
+        'entryText': 'Vote',
+        'actionText': 'Vote',
+        'resultText': 'Voted',
+      },
+    ],
+    'personas': [
+      {
+        'personaId': 'alex',
+        'label': 'Alex',
+        'roleLabel': 'Member',
+        'description': 'Member',
+      },
+    ],
+    'tournamentBallot': {
+      'eventId': eventId,
+      'goingPersonaIds': _going,
+      'candidates': [
+        {'id': 'Catan', 'name': 'Catan'},
+      ],
+      'deadline': deadline.toIso8601String(),
+      'reminderOffset': reminderOffset,
+      'notificationsEnabled': true,
+    },
+  },
+);
+
+Widget _reminderDueHost() => MaterialApp(
+  home: LocalExtensionScreen(
+    community: _reminderDueCommunity(),
+    seedDataFiles: const [],
+  ),
+);
+Widget _reminderNotDueHost() => MaterialApp(
+  home: LocalExtensionScreen(
+    community: _reminderNotDueCommunity(),
+    seedDataFiles: const [],
+  ),
+);
+
 Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 30; attempt += 1) {
     if (finder.evaluate().isNotEmpty) return;
@@ -158,6 +232,44 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('reminder banner shows once the deadline reminder is due', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_reminderDueHost());
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('community-tab-ballot')),
+    );
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tournament-selected-game')),
+    );
+    expect(
+      find.byKey(const ValueKey('tournament-reminder-banner')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Voting closes:'), findsOneWidget);
+  });
+
+  testWidgets(
+    'reminder banner stays hidden before the deadline reminder is due',
+    (tester) async {
+      await tester.pumpWidget(_reminderNotDueHost());
+      await _tapVisible(
+        tester,
+        find.byKey(const ValueKey('community-tab-ballot')),
+      );
+      await _pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('tournament-selected-game')),
+      );
+      expect(
+        find.byKey(const ValueKey('tournament-reminder-banner')),
+        findsNothing,
+      );
+      expect(find.textContaining('Voting closes:'), findsOneWidget);
+    },
+  );
   testWidgets('tapping a candidate opens and closes its detail dialog', (
     tester,
   ) async {
