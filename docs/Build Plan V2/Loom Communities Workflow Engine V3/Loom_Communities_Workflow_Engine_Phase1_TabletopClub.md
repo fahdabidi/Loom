@@ -1097,6 +1097,25 @@ suite **30/30** (up from 29). Committed: `8a62c4d`. This is the first ticket dis
 process, and it succeeded on the first attempt — consistent with the diagnosis that the earlier stalls
 were budget-bound rather than a comprehension gap.
 
+**Ticket: candidate detail popup — CLOSED 2026-07-13, first attempt + one verification-caught
+regression fix.** Tapping a candidate's name/row (`InkWell` wrapping the existing count `Text`, key
+unchanged) opens an `AlertDialog` showing `name`/`description`; "Close" dismisses it. Committed:
+`98dc4e9`. Independent verification (running the full test file, not just the new test) caught two
+real bugs the dispatch's own "done" self-report missed: (1) the new test reused `_host()`/
+`_community()` — the same `extensionId` the pre-existing tie/runoff test uses — and since
+`_TournamentBallotTabSurfaceState._stores` is a `static` `putIfAbsent` map keyed by `extensionId`, the
+two tests shared one engine store instance for the life of the test process, breaking the pre-existing
+runoff test (a real regression, not a flake); (2) the dialog-dismiss assertion had no pump after tapping
+"Close," so it could never pass (`AlertDialog`'s pop is animated). Dispatched a scoped follow-up ticket
+(`data/v3_ticket_milestone_1_18_candidate_popup_fix.md`) diagnosing both bugs precisely and supplying
+the exact fix snippets (an isolated `_popupCommunity()`/`_popupHost()`, `_pumpUntilAbsent` before the
+dismiss assertion) — the dispatch applied both verbatim and committed: `a3732cb`. Independently
+re-verified: `flutter analyze` clean, `flutter test test/v3_milestone_1_18_stage2b_ballot_ui_test.dart`
+**+3 -0** ("All tests passed!"), full app-shell suite **31/31**. This is the first ticket in the new
+process where independent verification (not the dispatch's own self-report) caught a real defect —
+validates the verification discipline the ticketed process depends on, not just the ticket-authoring
+side of it.
+
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
