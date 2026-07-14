@@ -669,15 +669,75 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         if (entry.value.formula != null) entry.key: entry.value.formula,
     };
     if (formulas.isEmpty) return Map<String, dynamic>.from(data);
-    try {
-      return evaluateComputedFields(
-        instanceData: data,
-        formulas: formulas,
-        viewerId: viewerId,
-        actorId: actorId,
-      );
-    } on FormulaEvaluationException {
-      return Map<String, dynamic>.from(data);
+
+    final analyses = <String, FormulaAnalysis>{
+      for (final entry in formulas.entries) entry.key: analyzeFormula(entry.value!),
+    };
+    for (final entry in analyses.entries) {
+      for (final function in entry.value.functionNames) {
+        if (!formulaFunctionNames.contains(function)) {
+          throw FormulaEvaluationException('Unknown function "$function"');
+        }
+      }
+      for (final field in entry.value.referencedFields) {
+        if (!machine.instanceDataSchema.containsKey(field)) {
+          throw FormulaEvaluationException(
+            'Formula "${entry.key}" references undeclared field "$field"',
+          );
+        }
+      }
+    }
+    _validateFormulaCycles(analyses, formulas.keys.toSet());
+
+    final unavailable = <String>{};
+    for (final entry in machine.instanceDataSchema.entries) {
+      if (entry.value.source != null && !data.containsKey(entry.key)) {
+        unavailable.add(entry.key);
+      }
+    }
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (final entry in formulas.entries) {
+        if (unavailable.contains(entry.key)) continue;
+        if (analyses[entry.key]!.referencedFields.any(unavailable.contains)) {
+          unavailable.add(entry.key);
+          changed = true;
+        }
+      }
+    }
+    final evaluable = Map<String, String?>.fromEntries(
+      formulas.entries.where((entry) => !unavailable.contains(entry.key)),
+    );
+    if (evaluable.isEmpty) return Map<String, dynamic>.from(data);
+    return evaluateComputedFields(
+      instanceData: data,
+      formulas: evaluable,
+      viewerId: viewerId,
+      actorId: actorId,
+    );
+  }
+
+  void _validateFormulaCycles(
+    Map<String, FormulaAnalysis> analyses,
+    Set<String> computedFields,
+  ) {
+    final active = <String>{};
+    final complete = <String>{};
+    void visit(String key) {
+      if (complete.contains(key)) return;
+      if (!active.add(key)) {
+        throw FormulaEvaluationException('Circular formula dependency at "$key"');
+      }
+      for (final dependency in analyses[key]!.referencedFields) {
+        if (computedFields.contains(dependency)) visit(dependency);
+      }
+      active.remove(key);
+      complete.add(key);
+    }
+
+    for (final key in analyses.keys) {
+      visit(key);
     }
   }
 
@@ -770,6 +830,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             if (v.displayContexts != null) 'displayContexts': v.displayContexts,
             if (v.hideWhenEmpty) 'hideWhenEmpty': v.hideWhenEmpty,
             if (v.maxLength != null) 'maxLength': v.maxLength,
+            if (v.source != null) 'source': v.source,
             if (v.formula != null) 'formula': v.formula,
           }),
         ),

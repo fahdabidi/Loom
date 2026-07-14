@@ -279,6 +279,11 @@ class InstanceDataField {
   final bool hideWhenEmpty;
   final int? maxLength;
 
+  /// Optional metadata naming the external source for a field. This does not
+  /// hydrate or evaluate that source; it only lets read-time formulas defer
+  /// when the source value has not been supplied.
+  final String? source;
+
   /// A pure, read-time formula. Computed fields cannot be written by effects
   /// or form edits.
   final String? formula;
@@ -296,6 +301,7 @@ class InstanceDataField {
     this.displayContexts,
     this.hideWhenEmpty = false,
     this.maxLength,
+    this.source,
     this.formula,
   });
 
@@ -315,6 +321,7 @@ class InstanceDataField {
           .toList(),
       hideWhenEmpty: json['hideWhenEmpty'] as bool? ?? false,
       maxLength: json['maxLength'] as int?,
+      source: json['source'] as String?,
       formula: json['formula'] as String?,
     );
   }
