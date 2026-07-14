@@ -53,13 +53,16 @@ void main() {
       '1 minimal valid v2 package passes',
       () => expect(CommunityPackageValidator().validate(pkg()).passed, isTrue),
     );
-    test(
-      '2 missing root schemaVersion',
-      () => expect(
-        findings(<String, dynamic>{'experience': <String, dynamic>{}}),
-        contains('missing_schema_version'),
-      ),
-    );
+    test('2 missing root schemaVersion', () {
+      final package = pkg()..remove('schemaVersion');
+      final report = CommunityPackageValidator().validate(package);
+      final missingVersions = report.findings
+          .where((finding) => finding.type == 'missing_schema_version')
+          .toList();
+
+      expect(missingVersions, hasLength(1));
+      expect(missingVersions.single.location, 'schemaVersion');
+    });
     test(
       '3 unsupported experience schema version',
       () => expect(
