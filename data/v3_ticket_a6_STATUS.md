@@ -4,6 +4,8 @@ Original implementation commit: `9fe6d4811e73a95326bb2f2622dc2dd643ba8836`
 
 Lifecycle remediation implementation commit: `854b1ec62fe7d6c9374625aa18730884eabddbfc`
 
+Lifecycle acceptance completion commit: `5522189c4557ef393bafd50aa272b23fe762da53`
+
 Changed production and test files:
 
 - `app/packages/core/loom_communities_app_shell/lib/loom_communities_app_shell.dart`
@@ -15,15 +17,22 @@ Verification from `app/packages/core/loom_communities_app_shell`:
 - `dart format lib test` — exit 0; 49 files formatted.
 - `dart format --output=none --set-exit-if-changed lib test` — exit 0; 49 files checked, 0 changed.
 - `flutter analyze` — exit 0; `No issues found!`.
-- `flutter test test/v3_milestone_a6_generic_instance_card_test.dart` — exit 0; 4 tests passed.
-- `flutter test` — exit 0; 45 tests passed.
+- `flutter test test/v3_milestone_a6_generic_instance_card_test.dart` — exit 0; 10 tests passed.
+- `flutter test` — exit 0; 51 tests passed.
 
 Acceptance assertions:
 
 - The display test proves the declared icon, `{value}`, `{value.length}`, tile/detail filtering, absent keyed subtrees for null/blank/empty-list/empty-map `hideWhenEmpty` values, and retained `false`/zero pills.
-- The editing tests prove a text-only edit enables Save and persists through the real local engine, textarea/bool/number persistence, invalid-number rejection without an engine write, and transition-effect controller resynchronization for editable text and number fields.
+- The real typed-control test opens and confirms the Material date and time dialogs, saves their stable `yyyy-MM-dd`/24-hour `HH:mm` values with textarea, bool, and number edits, and queries `LocalWorkflowEngineApi` for the exact stored results.
+- The fresh malformed-number test changes only the number, shows the validation error, and proves the real engine retains its original value.
+- Computed and `writableBy: effect` fields accidentally listed as editable have no editor; the picker label from `Date: {value}` is exactly `Date`, while bare `{value}` still uses the generic field-key fallback.
+- The text-only Save test and transition-effect controller-resynchronization test remain permanent acceptance coverage.
 - The guarded-action test uses real JSON definitions and the local engine to prove the related-instance-list persona guard hides/shows the action and that its state/effects persist.
-- Production code now uses one input generation across action loads, mutations, and pickers; stale completions are suppressed, refresh clears old actions before loading/failure, progress/error keys are instance-qualified, and successful engine results rebuild text controllers.
+- Initial unresolved action loading shows the instance-qualified progress key. A controlled engine proves replacing A's instance/persona while its action load is pending rejects A's actions and publishes only B's actions.
+- A held A update followed by B replacement proves B is immediately released from mutation progress, can start exactly one current write despite duplicate taps, retains its card, and never receives A's callback/completion.
+- A failed post-mutation action refresh shows the instance-qualified error/retry UI with no old action button; retry publishes only the fresh action set.
+- A real date dialog opened for A and resolved after replacement cannot edit B, enable B Save, alter B's state, or cause an engine write. The card's shared generation check is used by both date and time picker paths.
+- Production code now resets mutation state for a new input generation, uses generation guards across action loads, mutations, and pickers, clears old actions before refresh/failure, keeps progress/error keys instance-qualified, and rebuilds text controllers after successful current-generation engine results.
 
 Frozen Tabletop fixture:
 
