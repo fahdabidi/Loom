@@ -62,6 +62,18 @@ class ValidationReport {
 /// action-button-row and sortable-column checks respectively.
 /// When not provided, those checks are skipped.
 class WorkflowValidator {
+  static const _knownEffectOps = <String>{
+    'set',
+    'append',
+    'appendUnique',
+    'removeValue',
+    'increment',
+    'decrement',
+    'branch',
+    'createInstance',
+    'removeFromTileGrid',
+  };
+
   /// Templates map: templateName → { "slots": ["WorkflowActionButtonRow", ...] }
   /// Used by the action-button-row check (§7d).
   final Map<String, Map<String, dynamic>>? templates;
@@ -97,6 +109,7 @@ class WorkflowValidator {
       _checkBindingCap(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
       _checkFormulas(machine, findings);
+      _checkGuardFormulas(machine, findings);
 
       if (templates != null) {
         _checkActionButtonRow(machine, findings);
@@ -131,44 +144,13 @@ class WorkflowValidator {
       if (formula == null) continue;
       final location =
           '${machine.workflowType}/instanceDataSchema/${entry.key}/formula';
-      FormulaAnalysis analysis;
-      try {
-        analysis = analyzeFormula(formula);
-      } on FormulaEvaluationException catch (error) {
-        findings.add(
-          ValidationFinding(
-            type: 'invalid_formula_syntax',
-            message: error.message,
-            location: location,
-          ),
-        );
-        continue;
-      }
-      for (final field in analysis.referencedFields) {
-        if (!machine.instanceDataSchema.containsKey(field)) {
-          findings.add(
-            ValidationFinding(
-              type: 'unknown_formula_field',
-              message:
-                  'Formula for "${entry.key}" references "$field", which is not declared in instanceDataSchema.',
-              location: location,
-            ),
-          );
-        }
-      }
-      for (final function in analysis.functionNames) {
-        if (!formulaFunctionNames.contains(function)) {
-          findings.add(
-            ValidationFinding(
-              type: 'unknown_formula_function',
-              message:
-                  'Formula for "${entry.key}" calls unknown function "$function".',
-              location: location,
-            ),
-          );
-        }
-      }
-      dependencies[entry.key] = analysis.referencedFields
+      final referencedFields = _checkFormulaString(
+        machine,
+        formula,
+        location,
+        findings,
+      );
+      dependencies[entry.key] = referencedFields
           .where((field) => machine.instanceDataSchema[field]?.formula != null)
           .toSet();
     }
@@ -199,6 +181,69 @@ class WorkflowValidator {
 
     for (final field in dependencies.keys) {
       visit(field, const []);
+    }
+  }
+
+  /// Analyzes one formula string against [machine]'s schema. Returns the set
+  /// of referenced fields (empty on syntax error).
+  Set<String> _checkFormulaString(
+    LoomWorkflowStateMachine machine,
+    String formula,
+    String location,
+    List<ValidationFinding> findings,
+  ) {
+    FormulaAnalysis analysis;
+    try {
+      analysis = analyzeFormula(formula);
+    } on FormulaEvaluationException catch (error) {
+      findings.add(
+        ValidationFinding(
+          type: 'invalid_formula_syntax',
+          message: error.message,
+          location: location,
+        ),
+      );
+      return const <String>{};
+    }
+    for (final field in analysis.referencedFields) {
+      if (!machine.instanceDataSchema.containsKey(field)) {
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_formula_field',
+            message:
+                'Formula references "$field", which is not declared in instanceDataSchema.',
+            location: location,
+          ),
+        );
+      }
+    }
+    for (final function in analysis.functionNames) {
+      if (!formulaFunctionNames.contains(function)) {
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_formula_function',
+            message: 'Formula calls unknown function "$function".',
+            location: location,
+          ),
+        );
+      }
+    }
+    return analysis.referencedFields.toSet();
+  }
+
+  void _checkGuardFormulas(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final t in machine.transitions) {
+      final formula = t.guard.formula;
+      if (formula == null) continue;
+      _checkFormulaString(
+        machine,
+        formula,
+        '${machine.workflowType}/transitions/${t.id}/guard/formula',
+        findings,
+      );
     }
   }
 
@@ -385,35 +430,156 @@ class WorkflowValidator {
         }
       }
 
-      // Check instanceDataSchema keys in effects — skip null-key effects
-      // (presentation-only ops like removeFromTileGrid don't touch
-      // instanceData at all).
-      for (var i = 0; i < t.effects.length; i++) {
-        final effect = t.effects[i];
-        if (effect.key == null) continue;
-        if (!machine.instanceDataSchema.containsKey(effect.key)) {
+      if (t.guard.relatedListMembership != null) {
+        final field = t.guard.relatedListMembership!.relatedInstanceField;
+        if (!machine.instanceDataSchema.containsKey(field)) {
           findings.add(
             ValidationFinding(
-              type: 'dangling_instance_data_key',
+              type: 'dangling_related_instance_field',
               message:
-                  'Transition "${t.id}"\'s effect[$i] references "${effect.key}", '
-                  'which is not declared in instanceDataSchema.',
+                  'guard.relatedInstanceField references "$field", which is not declared in instanceDataSchema.',
               location:
-                  '${machine.workflowType}/transitions/${t.id}/effects[$i]',
-            ),
-          );
-        } else if (machine.instanceDataSchema[effect.key]?.formula != null) {
-          findings.add(
-            ValidationFinding(
-              type: 'computed_field_written_by_effect',
-              message:
-                  'Transition "${t.id}"\'s effect[$i] attempts to write computed '
-                  'field "${effect.key}". Computed fields are read-only.',
-              location:
-                  '${machine.workflowType}/transitions/${t.id}/effects[$i]',
+                  '${machine.workflowType}/transitions/${t.id}/guard/relatedInstanceField',
             ),
           );
         }
+      }
+
+      _checkEffects(machine, allWorkflows, t, t.effects, 'effects', findings);
+    }
+  }
+
+  void _checkEffects(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
+    LoomWorkflowTransition transition,
+    List<WorkflowEffect> effects,
+    String path,
+    List<ValidationFinding> findings,
+  ) {
+    for (var i = 0; i < effects.length; i++) {
+      final effect = effects[i];
+      final location =
+          '${machine.workflowType}/transitions/${transition.id}/$path[$i]';
+
+      if (!_knownEffectOps.contains(effect.op)) {
+        final knownOps = _knownEffectOps.toList()..sort();
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_effect_op',
+            message:
+                'Effect uses unknown op "${effect.op}". Known ops: $knownOps.',
+            location: location,
+          ),
+        );
+        continue;
+      }
+
+      if (effect.op == 'branch') {
+        final condition = effect.condition;
+        if (condition == null || condition.isEmpty) {
+          findings.add(
+            ValidationFinding(
+              type: 'invalid_formula_syntax',
+              message: 'branch effect has no "if" condition.',
+              location: location,
+            ),
+          );
+        } else {
+          _checkFormulaString(machine, condition, '$location/if', findings);
+        }
+        _checkEffects(
+          machine,
+          allWorkflows,
+          transition,
+          effect.thenEffects,
+          '$path[$i]/then',
+          findings,
+        );
+        _checkEffects(
+          machine,
+          allWorkflows,
+          transition,
+          effect.elseEffects,
+          '$path[$i]/else',
+          findings,
+        );
+        continue;
+      }
+
+      if (effect.op == 'createInstance') {
+        final targetType = effect.workflowType;
+        final target = targetType == null ? null : allWorkflows[targetType];
+        if (targetType == null || target == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_create_instance_target',
+              message:
+                  'createInstance references workflowType "${targetType ?? '<missing>'}", which is not a known workflow type in the loaded definitions set.',
+              location: location,
+            ),
+          );
+          continue;
+        }
+        for (final key in (effect.fields ?? const <String, dynamic>{}).keys) {
+          final targetField = target.instanceDataSchema[key];
+          if (targetField == null) {
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_instance_data_key',
+                message:
+                    'createInstance sets "$key", which is not declared in "$targetType"\'s instanceDataSchema.',
+                location: '$location/fields/$key',
+              ),
+            );
+          } else if (targetField.formula != null) {
+            findings.add(
+              ValidationFinding(
+                type: 'computed_field_written_by_effect',
+                message:
+                    'createInstance sets computed field "$key" on "$targetType". Computed fields are read-only.',
+                location: '$location/fields/$key',
+              ),
+            );
+          }
+        }
+        continue;
+      }
+
+      if (effect.key == null) continue;
+
+      if (effect.relatedInstance != null) {
+        if (!machine.instanceDataSchema.containsKey(effect.relatedInstance)) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_related_instance_field',
+              message:
+                  'Effect\'s relatedInstance references "${effect.relatedInstance}", which is not declared in this workflow\'s instanceDataSchema. It must be a field holding the target instance\'s id.',
+              location: location,
+            ),
+          );
+        }
+        continue;
+      }
+
+      if (!machine.instanceDataSchema.containsKey(effect.key)) {
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_instance_data_key',
+            message:
+                'Effect references "${effect.key}", which is not declared in instanceDataSchema.',
+            location: location,
+          ),
+        );
+      } else if (machine.instanceDataSchema[effect.key]?.formula != null) {
+        findings.add(
+          ValidationFinding(
+            type: 'computed_field_written_by_effect',
+            message:
+                'Effect attempts to write computed field "${effect.key}". Computed fields are read-only.',
+            location: location,
+          ),
+        );
       }
     }
   }

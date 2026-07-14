@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
@@ -147,7 +148,7 @@ WorkflowDefinitionsBundle _loadDefinitions(String path) {
 }
 
 WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
-  final content = _stripComments(file.readAsStringSync());
+  final content = stripJsonComments(file.readAsStringSync());
   final json = jsonDecode(content) as Map<String, dynamic>;
 
   // Support both plain definitions map and the marketplace fixture's
@@ -164,92 +165,13 @@ WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
 
   final workflows = defs.map((k, v) {
     final definition = v as Map<String, dynamic>;
-    return MapEntry(
-      k,
-      LoomWorkflowStateMachine.fromJson(definition, k),
-    );
+    return MapEntry(k, LoomWorkflowStateMachine.fromJson(definition, k));
   });
 
   return WorkflowDefinitionsBundle(
     workflows: workflows,
     knownPersonaIds: knownPersonas,
   );
-}
-
-String _stripComments(String content) {
-  // String-aware JSONC comment stripper. The naive regex approach
-  // (RegExp(r'//.*')) corrupts gs:// URLs and other // inside string
-  // literals. This scanner tracks quote state inline (single pass)
-  // because comment text itself often contains " characters that would
-  // throw off a separate pre-scan of the unmodified content.
-  final buf = StringBuffer();
-  var i = 0;
-  var inString = false;
-  const space = ' '; // preserve line/column positions
-
-  while (i < content.length) {
-    // Escaped character inside a string — write both, don't toggle state
-    if (inString && content[i] == '\\' && i + 1 < content.length) {
-      buf.write(content[i]);
-      i++;
-      buf.write(content[i]);
-      i++;
-      continue;
-    }
-
-    // Quote — toggle string state
-    if (content[i] == '"') {
-      inString = !inString;
-      buf.write(content[i]);
-      i++;
-      continue;
-    }
-
-    // Block comments /* ... */ (only when outside a string)
-    if (!inString &&
-        i + 1 < content.length &&
-        content[i] == '/' &&
-        content[i + 1] == '*') {
-      buf.write(space); // first /
-      buf.write(space); // second *
-      i += 2;
-      while (i + 1 < content.length) {
-        if (content[i] == '*' && content[i + 1] == '/') {
-          buf.write(space); // *
-          buf.write(space); // /
-          i += 2;
-          break;
-        }
-        buf.write(content[i] == '\n' ? '\n' : space);
-        i++;
-      }
-      continue;
-    }
-
-    // Single-line comments // (only when outside a string)
-    if (!inString &&
-        i + 1 < content.length &&
-        content[i] == '/' &&
-        content[i + 1] == '/') {
-      buf.write(space); // first /
-      buf.write(space); // second /
-      i += 2;
-      while (i < content.length && content[i] != '\n') {
-        buf.write(space);
-        i++;
-      }
-      if (i < content.length && content[i] == '\n') {
-        buf.write('\n');
-        i++;
-      }
-      continue;
-    }
-
-    buf.write(content[i]);
-    i++;
-  }
-
-  return buf.toString().trim();
 }
 
 String? _argValue(List<String> args, String flag) {
