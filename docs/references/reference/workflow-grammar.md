@@ -1,0 +1,284 @@
+---
+spec: { envelope: 1, experience: 2, grammar: 1 }
+doc_version: 1.0.0
+status: current
+last_verified: 2026-07-14
+derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
+---
+
+# Workflow grammar (normative) — grammar v1
+
+**The contract.** Every key here is one the engine's parser genuinely reads
+(`LoomWorkflowStateMachine.fromJson`, `workflow_models.dart:341-371`) and the engine genuinely executes.
+Nothing is aspirational.
+
+**If this doc and the code disagree, the code wins** — and that is a bug in this doc, to be fixed via the
+[publishing flow](../_meta/publishing-flow.md).
+
+## Shape of one definition
+
+```jsonc
+"workflowDefinitions": {
+  "<workflowType>": {                  // the map key IS the workflowType; not repeated inside
+    "initialState": "<stateName>",     // REQUIRED. Must be a key of `states`.
+    "states":       { /* ... */ },     // REQUIRED. Non-empty.
+    "transitions":  [ /* ... */ ],     // REQUIRED. May be empty [] (a terminal-only type).
+    "renderBindings":     [ /* ... */ ],  // optional, defaults []
+    "instanceDataSchema": { /* ... */ }   // optional, defaults {}
+  }
+}
+```
+
+⚠️ **`workflowType` is the map key**, passed into `fromJson` separately. Do not add a `workflowType`
+field inside the object — it is ignored.
+
+---
+
+## `states`
+
+```jsonc
+"states": {
+  "open":      { "label": "Signups open", "tone": "positive",
+                 "editableFields": ["title", "capacity"] },
+  "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `label` | string | **yes** | Human-readable state name, shown in the UI |
+| `tone` | string | no | Visual tone: `positive` · `negative` · `warning` · `info` |
+| `editableFields` | string[] | no | Fields the user may edit **while in this state** |
+| `isTerminal` | bool | no (default `false`) | No transitions may leave this state |
+
+### Rules the validator enforces
+
+- **Every non-terminal state must have ≥1 outgoing transition.** Otherwise it is a **stuck state** — an
+  instance reaches it and can never leave, and the UI shows no buttons. → `stuck_state` (error)
+- **Every state must be reachable** from `initialState` via some transition path. →
+  `unreachable_state` (error)
+- **`editableFields` may only name fields whose `writableBy` is `"formEntry"`.** A field written by an
+  effect is not user-editable, and listing it is a contradiction. → `effect_field_in_editable_fields`
+  (error)
+
+> The stuck-state check exists because of a real shipped bug: a `queued` marketplace state with zero
+> declared transitions, so queued listings had **no buttons at all**. It reached a live emulator walk
+> before anyone noticed. The validator now catches it at author time.
+
+---
+
+## `transitions`
+
+```jsonc
+{
+  "id": "rsvp-going",              // REQUIRED, unique within this workflow
+  "label": "I'm going",            // REQUIRED, non-empty — this is the button text
+  "icon": "event_available",       // optional, Material icon name
+  "tone": "primary",               // optional: primary | secondary | destructive
+  "from": ["open"],                // REQUIRED, non-empty. Source states.
+  "to": null,                      // target state, or null (see below)
+  "guard": { /* ... */ },          // optional — see reference/guards.md
+  "effects": [ /* ... */ ],        // optional — see reference/effects.md
+  "linkedWorkflowId": "some-type"  // optional — fires a linked action surface
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | string | **yes** | Unique within the workflow |
+| `label` | string | **yes** | Button text. Empty → `missing_label` (error) |
+| `icon` | string | no | Material icon name |
+| `tone` | string | no | `primary` · `secondary` · `destructive` |
+| `from` | string[] | **yes** | Source states. All must exist. |
+| `to` | string\|null | no | Target state, or `null` for **orthogonal** |
+| `guard` | object | no | Who/when. [guards.md](./guards.md) |
+| `effects` | object[] | no | What changes. [effects.md](./effects.md) |
+| `linkedWorkflowId` | string | no | Opens a linked confirmation/action surface |
+
+### `to: null` — orthogonal transitions
+
+**`"to": null` means the top-level state does not change; only `instanceData` does.**
+
+This is not an edge case — it is how most real interactions work:
+
+| Interaction | State change? | `to` |
+|---|---|---|
+| RSVP going to an open event | No — still `open` | `null` |
+| Join a queue for a listing | No — still `published` | `null` |
+| Cast a vote in an open ballot | No — still `open` | `null` |
+| Post a message in a thread | No — still `open` | `null` |
+| Cancel the event | **Yes** → `cancelled` | `"cancelled"` |
+| Close the ballot | **Yes** → `closed` | `"closed"` |
+
+**The decision rule:** *can this be true at the same time as other things in the same dimension?* If yes,
+it is **data**, and the transition is orthogonal. If it genuinely replaces the previous condition, it is
+a **state**.
+
+Getting this wrong produces either a stuck state or a combinatorial state explosion. See
+[anti-patterns](../guide/04-antipatterns.md).
+
+---
+
+## `renderBindings`
+
+Where instances of this workflow appear. Full detail: [render-bindings.md](./render-bindings.md).
+
+```jsonc
+"renderBindings": [
+  { "states": ["open"], "role": "any", "tabId": "calendar",
+    "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" }
+]
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `states` | string[] | **yes** | Which states this binding applies to |
+| `role` | string | **yes** | `any` · `actor` · `receiver` |
+| `tabId` | string | **yes** | `home` · `calendar` · `marketplace` · `giving` · `admin` · `messages` |
+| `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
+| `bindingKind` | string | **yes** | `primary` (full, interactive) · `summary` (compact) |
+| `audienceMemberField` | string | no | Field holding the invited personas, for targeted visibility |
+
+A workflow with **no** bindings for a state simply doesn't render in that state — which is a legitimate
+way to hide drafts.
+
+---
+
+## `instanceDataSchema`
+
+The single source of truth for a workflow's data: validation, display, editability, and computation.
+Full detail: [field-types.md](./field-types.md).
+
+```jsonc
+"instanceDataSchema": {
+  "title":      { "type": "text", "required": true, "writableBy": "formEntry",
+                  "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+  "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
+  "goingCount": { "type": "number", "formula": "size(goingPersonaIds)" }   // computed
+}
+```
+
+Three kinds of field, and the distinction is load-bearing:
+
+| Kind | Declared by | Written by | Seeded in `instanceData`? |
+|---|---|---|---|
+| **Form-entry** | `writableBy: "formEntry"` | The user, via `editableFields` | Yes |
+| **Effect** | `writableBy: "effect"` | Transition effects | Yes |
+| **Computed** | `formula: "..."` | **Nobody** — derived on read | **No — error if you do** |
+
+**A computed field must never be seeded and never be written by an effect.** The validator rejects both
+(`computed_field_seeded`, `computed_field_written_by_effect`). Storing something you could compute is how
+you get a value that is confidently wrong.
+
+---
+
+## Complete worked example
+
+A ballot with cross-instance eligibility, a computed tally, and a real runoff on a tie — every grammar
+feature in one definition.
+
+```jsonc
+"tournament-ballot": {
+  "initialState": "open",
+
+  "states": {
+    "open":   { "label": "Voting open", "tone": "positive", "editableFields": ["pendingChoice"] },
+    "closed": { "label": "Closed", "tone": "info", "isTerminal": true }
+  },
+
+  "transitions": [
+    {
+      "id": "cast-vote",
+      "label": "Vote",
+      "from": ["open"],
+      "to": null,                                    // voting doesn't close the ballot
+      "guard": {
+        // Cross-instance: the actor must appear in `goingPersonaIds` on the instance named by
+        // THIS instance's `eventId` field. Enforced by the engine, not by hiding a button.
+        "relatedInstanceField": "eventId",
+        "relatedListField": "goingPersonaIds"
+      },
+      "effects": [
+        { "op": "append", "key": "ballots",
+          "value": { "personaId": "$actor", "choice": "{pendingChoice}" } }
+      ]
+    },
+    {
+      "id": "close-vote",
+      "label": "Close vote",
+      "from": ["open"],
+      "to": "closed",
+      "guard": { "allowedPersonaIds": ["organizer"] },
+      "effects": [
+        {
+          "op": "branch",
+          "if": "isTie",
+          "then": [
+            // A real runoff: spawn a NEW ballot with only the tied candidates.
+            { "op": "createInstance", "workflowType": "tournament-ballot",
+              "fields": { "eventId": "{eventId}", "candidates": "{tiedCandidates}",
+                          "round": "runoff", "ballots": [] } }
+          ],
+          "else": [
+            // Cross-instance write: push the winner onto the EVENT instance.
+            { "op": "set", "key": "selectedGame", "value": "{winner}", "relatedInstance": "eventId" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "renderBindings": [
+    { "states": ["open"],   "role": "any", "tabId": "home",
+      "cardSurfaceFamily": "votePoll", "bindingKind": "primary" },
+    { "states": ["closed"], "role": "any", "tabId": "home",
+      "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
+  ],
+
+  "instanceDataSchema": {
+    "eventId":      { "type": "text", "required": true },
+    "candidates":   { "type": "list", "required": true },
+    "pendingChoice":{ "type": "text", "writableBy": "formEntry" },
+    "ballots":      { "type": "list", "writableBy": "effect" },
+
+    // The entire tally/winner/tie logic — five one-line formulas, zero Dart.
+    "voteCounts":     { "type": "map",    "formula": "groupCount(ballots, choice)" },
+    "winner":         { "type": "text",   "formula": "argMaxKey(voteCounts)" },
+    "tiedCandidates": { "type": "list",   "formula": "topKeys(voteCounts)" },
+    "isTie":          { "type": "bool",   "formula": "size(tiedCandidates) > 1" }
+  }
+}
+```
+
+Note what is **not** here: no vote-counting code, no tie-detection code, no runoff-creation code. The
+`voteCounts`/`winner`/`isTie` formulas and the `branch`/`createInstance` effect *are* the logic.
+
+---
+
+## Validator rules (summary)
+
+Run [the validator](../guide/05-validation.md). It enforces:
+
+| Rule | Severity |
+|---|---|
+| Non-terminal state with no outgoing transition (`stuck_state`) | error |
+| State unreachable from `initialState` | error |
+| `from`/`to` naming an undeclared state | error |
+| Transition with an empty `label` | error |
+| Guard/effect referencing an undeclared `instanceData` key | error |
+| Effect writing a computed (`formula`) field | error |
+| Computed field seeded in `instanceData` | error |
+| `editableFields` naming a non-`formEntry` field | error |
+| Formula referencing an unknown field or function | error |
+| Circular formula dependency | error |
+| Cross-instance reference that doesn't resolve | error |
+| `createInstance` targeting an unknown `workflowType` | error |
+| `requiresWorkflowsComplete` cycle | error |
+| `linkedWorkflowId` not in the loaded set | warning (may be external) |
+| >32 `renderBindings` or >16 roles | warning (a smell — likely two workflows) |
+
+## See also
+
+- [guards.md](./guards.md) · [effects.md](./effects.md) · [formulas.md](./formulas.md)
+- [field-types.md](./field-types.md) · [render-bindings.md](./render-bindings.md)
+- [Common patterns](../guide/03-common-patterns.md) — copyable recipes

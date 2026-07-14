@@ -1,0 +1,233 @@
+{
+  "$comment": [
+    "Machine-checkable index of every document in docs/references/.",
+    "",
+    "The docs-sync checker (see docs-sync-checker.md) compares each doc's YAML frontmatter against",
+    "this manifest AND against ../spec-version.json, and fails the build on any drift. This file is",
+    "what turns 'we should keep the docs in sync' from a good intention into an enforced gate.",
+    "",
+    "syncedTo  — the spec version this doc was last verified against.",
+    "status    — current | stale | draft | planned",
+    "            planned = the doc does not exist yet; the checker must NOT fail on it, but the Skill",
+    "            must not rely on it either.",
+    "derivedFrom — the source-of-truth code file(s). If one changes, this doc is suspect."
+  ],
+
+  "manifestVersion": "1.0.0",
+  "lastReviewed": "2026-07-14",
+
+  "docs": [
+    {
+      "path": "README.md",
+      "title": "Authoring references — entrypoint",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
+      "path": "CHANGELOG.md",
+      "title": "Specification changelog",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
+      "path": "_meta/versioning-policy.md",
+      "title": "Versioning policy",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
+      "path": "_meta/publishing-flow.md",
+      "title": "Publishing flow",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
+      "path": "_meta/docs-sync-checker.md",
+      "title": "Docs-sync checker (tool spec)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+
+    {
+      "path": "guide/01-authoring-procedure.md",
+      "title": "Authoring procedure (the algorithm)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart"
+      ]
+    },
+    {
+      "path": "guide/02-package-anatomy.md",
+      "title": "Package anatomy",
+      "status": "planned",
+      "$note": "Envelope + experience keys, top to bottom. The authoring procedure's canonical package covers the essentials in the meantime."
+    },
+    {
+      "path": "guide/03-common-patterns.md",
+      "title": "Common patterns (canonical templates)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart"
+      ]
+    },
+    {
+      "path": "guide/04-antipatterns.md",
+      "title": "Anti-patterns",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Archetype_Audit.md"
+      ]
+    },
+    {
+      "path": "guide/05-validation.md",
+      "title": "Validating your JSON (mandatory gate)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart",
+        "app/packages/tooling/loom_ux_judges/bin/workflow_state_machine_validator.dart"
+      ]
+    },
+
+    {
+      "path": "reference/workflow-grammar.md",
+      "title": "Workflow definition grammar (normative)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart"
+      ]
+    },
+    {
+      "path": "reference/field-types.md",
+      "title": "instanceDataSchema field types + display metadata",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart"
+      ]
+    },
+    {
+      "path": "reference/guards.md",
+      "title": "Guards (all six kinds)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart",
+        "app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart"
+      ]
+    },
+    {
+      "path": "reference/effects.md",
+      "title": "Effect ops",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart",
+        "app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart"
+      ]
+    },
+    {
+      "path": "reference/formulas.md",
+      "title": "Computed-field formula vocabulary",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart"
+      ]
+    },
+    {
+      "path": "reference/render-bindings.md",
+      "title": "Render bindings — placing a workflow on a tab",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart",
+        "app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart"
+      ]
+    },
+    {
+      "path": "reference/theming.md",
+      "title": "Theme cascade (community -> tab -> workflow)",
+      "status": "planned",
+      "$note": "The cascade is deliberate + tested (b26_package_driven_experience_test). Authors set `accentColor` and optionally `theme.tabThemes`; everything else derives. Full doc pending."
+    },
+    {
+      "path": "reference/platform-services.md",
+      "title": "Platform services — what cannot be JSON",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_ComputationModel.md"
+      ]
+    },
+
+    {
+      "path": "archetypes/README.md",
+      "title": "Archetype index + status",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Archetype_Implementation_Standard.md"
+      ]
+    },
+    {
+      "path": "archetypes/calendar-agenda.md",
+      "title": "calendarAgenda / event-rsvp",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase A verifies it against a running app. Until then, guide/03-common-patterns.md P1 is the canonical RSVP template."
+    },
+    {
+      "path": "archetypes/vote-poll.md",
+      "title": "votePoll",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase B verifies it."
+    },
+    {
+      "path": "archetypes/equipment-loan.md",
+      "title": "equipment-loan / stateMachineGrid",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase C verifies it."
+    },
+    {
+      "path": "archetypes/payment-checkout.md",
+      "title": "paymentCheckout",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase D verifies it."
+    },
+    {
+      "path": "archetypes/approval-queue.md",
+      "title": "approvalQueue / formEntry + live query list",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase E verifies it."
+    },
+    {
+      "path": "archetypes/discussion-thread.md",
+      "title": "discussionThread",
+      "status": "planned",
+      "$note": "Written when tracker-3 Phase F verifies it."
+    },
+
+    {
+      "path": "communities/README.md",
+      "title": "Reference communities index",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
+      "path": "communities/tabletop-club.md",
+      "title": "Tabletop Club — the reference community",
+      "status": "planned",
+      "$note": "UNVETTED and mid-build (tracker 3). Until written, communities/README.md indexes the JSON directly and states what it covers."
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "$comment": [
+    "SOURCE OF TRUTH for the Loom community-JSON specification version.",
+    "Every document under docs/references/ declares, in its YAML frontmatter, the spec version it was",
+    "written against. A doc whose declared version differs from `current` below is STALE and must be",
+    "re-verified before the Skill is allowed to rely on it. See _meta/publishing-flow.md.",
+    "",
+    "Three layers are versioned independently, because they change at different rates. See",
+    "_meta/versioning-policy.md for what each governs and when to bump it."
+  ],
+
+  "current": {
+    "envelope": 1,
+    "experience": 2,
+    "grammar": 1
+  },
+
+  "status": "provisional",
+  "statusReason": [
+    "PROVISIONAL, not frozen. The engine-native experience schema (v2) has never been loaded by the",
+    "running app — the pipeline that loads it is built in Phase A of tracker 3. Phase A ends in a",
+    "deliberate human review gate whose EXPECTED outcome is that this specification changes.",
+    "",
+    "Do not treat any version number here as stable until Phase A's gate closes and this file's status",
+    "flips to `stable`. Until then, docs in this tree describe an intended contract, verified against",
+    "the engine's parser and evaluator but not yet against a running app."
+  ],
+
+  "released": "2026-07-14",
+  "lastReviewed": "2026-07-14",
+
+  "resolvedQuestions": {
+    "$comment": "Open questions settled by reading the source, recorded so they are not re-litigated.",
+    "stringLiteralsInFormulas": "RESOLVED 2026-07-14: string literals ARE supported, in both single and double quotes (formula_evaluator.dart:540). \"availabilityState == 'available'\" is valid. This was previously listed as an unknown."
+  },
+
+  "layers": {
+    "envelope": {
+      "field": "schemaVersion",
+      "location": "package root",
+      "governs": "The install wrapper: packageId, communityId, communityHandle, displayName, extensionId, branding, seedDataFiles, experience.",
+      "supported": [1],
+      "current": 1
+    },
+    "experience": {
+      "field": "experience.experienceSchemaVersion",
+      "location": "inside the experience block",
+      "governs": "How the experience block declares workflows.",
+      "supported": [1, 2],
+      "current": 2,
+      "values": {
+        "1": "LEGACY shallow form. Flat workflows[] cards (workflowId/title/entryText/actionText/resultText/calendar?/responseChoices?) plus one bespoke top-level block per special feature. Cannot express a state machine, guard, effect, or formula. This is what the app loads today; the seven non-Tabletop communities still use it. Not recommended for new communities.",
+        "2": "ENGINE-NATIVE form. workflowDefinitions (real state machines) + workflowInstances (seed data), parsed by LoomWorkflowStateMachine.fromJson and executed by LocalWorkflowEngineApi. This is the target and what all docs in this tree describe."
+      }
+    },
+    "grammar": {
+      "field": "experience.workflowGrammarVersion",
+      "location": "inside the experience block",
+      "governs": "The grammar of each workflowDefinitions entry: states, transitions, guards, effects, renderBindings, instanceDataSchema, formulas.",
+      "supported": [1],
+      "current": 1,
+      "requiredWhen": "experienceSchemaVersion == 2"
+    }
+  },
+
+  "groundedIn": {
+    "$comment": "The code this specification is derived from. If any of these change, this spec may be stale.",
+    "models": "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart",
+    "parser": "LoomWorkflowStateMachine.fromJson (same file)",
+    "engine": "app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart",
+    "formulaEvaluator": "app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart",
+    "bindingResolver": "app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart",
+    "validator": "app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart"
+  },
+
+  "knownGaps": {
+    "$comment": "Capabilities the docs describe as needed but the grammar does NOT yet support. Each must be closed or explicitly deferred before the Skill (Phase 3) can rely on this spec.",
+    "transitionInputs": "GAP-1 (BLOCKING). A transition cannot receive user input. A per-item action (a Vote button for a specific candidate) has no way to tell the transition WHICH item. The only expressible flow is to write a shared scratch field (e.g. `pendingChoice`) then fire the transition -- two calls, orchestrated outside the JSON, and racy under concurrency. Proposed: transition `inputs` + `{input.x}` interpolation + `renderBindings[].repeater.itemActions`. Additive. Blocks tracker-3 Phase B. See Loom_Communities_Workflow_Engine_3_LanguageGaps.md.",
+    "instanceCreation": "GAP-2 (BLOCKING). No declarative way to say 'this workflowType is member-creatable, show a + New affordance'. The engine can only createInstance as an EFFECT of a transition on an existing instance -- a user cannot transition into existence. Blocks member-authored proposals and starting a message thread. Proposed: `renderBindings[].creatable`. Additive. Blocks tracker-3 Phases E and F.",
+    "listMinusActor": "GAP-3 (non-blocking). 'All participants except the actor' is not expressible -- no set-difference effect op. Consequence: thread unread state is a single bool rather than per-persona. Proposed: `setFromFormula` effect op + a `removeAll(list, value)` formula function. Additive.",
+    "responseModel": "The `responseModel: { kind: simpleRsvp }` sugar in V2's Calendar_RSVP design doc is NOT parsed by the engine. RSVP must be modeled with plain transitions + effects + formulas instead.",
+    "negationOperators": "The formula grammar has NO `!` (not) and NO `!=`. Invert by restructuring: `size(x) < capacity` instead of `!isFull`; `if(a == b, false, true)` instead of `a != b`. Confirmed by reading the parser (formula_evaluator.dart:430).",
+    "rankTopN": "`rank` / `topN` named functions are proposed in ComputationModel.md but unimplemented. `sortBy` covers the same need.",
+    "powExp": "`pow` / `exp` are not implemented (would be required for a true Elo expected-score calculation).",
+    "stringConcatenation": "Formulas cannot concatenate strings. Use `labelTemplate` (e.g. \"{value} seats\") for display composition instead."
+  }
+}
