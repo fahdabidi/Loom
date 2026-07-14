@@ -50,7 +50,7 @@ verbatim and a required structured status response.
 
 ---
 
-### A.1 — Validator: close 4 `WorkflowValidator` gaps  `[ ]`
+### A.1 — Validator: close 4 `WorkflowValidator` gaps  `[x]`
 
 **Ticket already written:** `data/v3_ticket_validator_a_workflow_validator_gaps.md` (contains
 ready-to-apply snippets).
@@ -72,9 +72,12 @@ Also extracts the string-aware JSONC stripper from the existing CLI into
 **Accept:** 10 new tests (one per rule, incl. a regression guard that a valid definition still passes
 clean); the entire pre-existing `loom_ux_judges` suite passes **unmodified**.
 
+**Closed 2026-07-14.** Implementation commit `9c2d073`; status commit `938e0b6`. Independent validation
+read the implementation and reran the complete tooling suite successfully as part of the A.2/A.3 gate.
+
 ---
 
-### A.2 — Validator: `CommunityPackageValidator` + CLI  `[ ]`
+### A.2 — Validator: `CommunityPackageValidator` + CLI  `[x]`
 
 **Ticket already written:** `data/v3_ticket_validator_b_community_package_validator.md`.
 
@@ -97,9 +100,14 @@ on the existing CLI. **This becomes the Skill's hard gate in Phase 3.**
 **Accept:** 15 tests incl. the cross-instance happy path (the regression guard that stops it
 false-positiving on the real ballot); full suite green.
 
+**Closed 2026-07-14.** Production implementation commit `4c682b7`; independent-test remediation commits
+`4494df4` and `d16a0d5`; evidence commits `fab96bc` and `62477c2`. The verification agent read the
+diffs and independently reran formatting, `dart analyze` (`No issues found!`), all 64 tooling tests,
+and the real CLI hard gate. The final suite contains exactly 15 isolated Ticket B rule tests.
+
 ---
 
-### A.3 — Validate the Tabletop Club JSON; fix real findings  `[ ]`  *(JSON edits only — no code)*
+### A.3 — Validate the Tabletop Club JSON; fix real findings  `[x]`  *(JSON edits only — no code)*
 
 Run A.2's CLI against
 [Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc](./Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc)
@@ -118,6 +126,14 @@ Two specific unknowns to settle here:
 to make its input pass.
 
 **Accept:** the CLI exits clean (or with only findings explicitly triaged and recorded here).
+
+**Closed 2026-07-14.** Before the freeze baseline, four invalid `createdByPersonaId` seed values were
+corrected to the declared `tabletop-member` persona. That was a data-integrity correction, not a JSON
+language gap. Baseline commit `c5eb7aa` now freezes the canonical file at SHA-256
+`822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`; its post-baseline diff is empty.
+The verification agent ran the CLI with `--warnings-as-errors`: exit 0, 0 errors, 0 warnings. The
+single-quoted formula literal parses, and the ballot eligibility reference plus `selectedGame`
+cross-instance write resolve. **No new Tabletop-JSON or JSON-language gap was discovered in A.1–A.3.**
 
 ---
 
@@ -271,7 +287,7 @@ Phase A.** Phases B-G do not start until it closes, because their JSON depends o
 ## Phase A definition of done
 
 - [ ] A.1-A.9 all `[x]`, each independently verified (diff read + suite run by the verification agent).
-- [ ] The Tabletop Club JSON validates clean through the new CLI.
+- [x] The Tabletop Club JSON validates clean through the new CLI.
 - [ ] Calendar renders entirely from JSON-declared `workflowDefinitions` — **zero bespoke Dart for
       `event-rsvp` or `tournament-event`**.
 - [ ] Every other community, and every other tab, works exactly as before (regression proven, not

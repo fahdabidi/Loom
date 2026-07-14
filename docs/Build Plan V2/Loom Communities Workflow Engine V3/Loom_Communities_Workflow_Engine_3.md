@@ -45,7 +45,7 @@ fix here; expensive to fix after six tabs are built on a wrong assumption.
   dispatch rule (unknown version = hard error, never a silent best-effort parse), and the rule that no
   Loom JSON ships without all three stamps.
 - **[Tabletop Club Example JSON](./Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc)**
-  — the full desired experience as a stamped **v2 engine-native** package: 10 workflow types, 14
+  — the full desired experience as a stamped **v2 engine-native** package: 11 workflow types, 17
   instances, real states/transitions/guards/effects/formulas/renderBindings. **Not yet validated by a
   tool** (that's A.1-A.3) and **expected to change** at the Phase A gate.
 
@@ -76,7 +76,7 @@ Gaps may be surfaced by the **implementation agent** (while building) or the **v
 code could already do. That is how 15 of 17 archetypes became the same generic card and a vote poll came
 to hardcode its winner. Freezing the JSON removes the escape hatch on purpose.
 
-## 3b. Pre-freeze audit result — 3 language gaps found
+## 3b. Pre-freeze audit result — 4 language gaps found
 
 The JSON was audited against [`docs/references/`](../../../references/README.md) **before** freezing, so
 dispatches are not wasted rediscovering known gaps.
@@ -84,21 +84,23 @@ dispatches are not wasted rediscovering known gaps.
 | Gap | Blocks | Proposed correction | Additive? |
 |---|---|---|---|
 | **GAP-1** — a transition cannot receive user input (so a per-candidate Vote button cannot say *which* candidate; `pendingChoice` is a shared, racy scratch field) | **Phase B** | Grammar: transition `inputs` + `renderBindings[].repeater.itemActions` | Yes |
+| **GAP-4** — query-backed `source` fields are not parsed or evaluated, so a parent cannot compute over its child-row instances | **Phase B** | Grammar: `instanceDataSchema[].source` | Yes |
 | **GAP-2** — no declarative instance creation (a member cannot create a proposal or start a thread) | **Phase E, F** | Grammar: `renderBindings[].creatable` | Yes |
 | **GAP-3** — "all participants except the actor" is not expressible (thread unread is a single bool) | Phase F (degraded) | Effect op `setFromFormula` + `removeAll()` | Yes |
 
-All three are **additive** — no version bump, no existing JSON breaks. Detail:
+All four are **additive** — no version bump, no existing JSON breaks. Detail:
 [Language Gaps](./Loom_Communities_Workflow_Engine_3_LanguageGaps.md).
 
 **Phase A is blocked by none of them** — Calendar uses only constructs that already exist. It starts
-immediately. **Phase A′ (below) closes GAP-1 and GAP-2 before Phase B needs them.**
+immediately. **Phase A′ (below) closes GAP-1, GAP-4, and GAP-2 before their dependent phases; GAP-3
+remains an explicitly degraded, non-blocking Phase F capability.**
 
 ## 4. Phase index
 
 | Phase | Scope | Doc | Status |
 |---|---|---|---|
-| **A** | **Foundation + Calendar tab** (validator, JSON loading, shared engine, generic renderer, binding dispatch, Calendar end-to-end) — **ends in a human JSON-review gate** | [PhaseA_Calendar](./Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md) | `[ ]` Not started |
-| **A′** | **Grammar extensions** — close **GAP-1** (transition `inputs` + repeater `itemActions`) and **GAP-2** (`creatable` binding). Small, additive, engine+grammar only. **Required before B and E/F.** | [LanguageGaps](./Loom_Communities_Workflow_Engine_3_LanguageGaps.md) | `[ ]` Blocked on A |
+| **A** | **Foundation + Calendar tab** (validator, JSON loading, shared engine, generic renderer, binding dispatch, Calendar end-to-end) — **ends in a human JSON-review gate** | [PhaseA_Calendar](./Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md) | `[ ]` In progress — A.1–A.3 complete; A.4 in validation |
+| **A′** | **Grammar extensions** — close **GAP-1** (transition `inputs` + repeater `itemActions`), **GAP-4** (query-backed `source` fields), and **GAP-2** (`creatable` binding). Small, additive, engine+grammar only. **Required before B and E/F.** | [LanguageGaps](./Loom_Communities_Workflow_Engine_3_LanguageGaps.md) | `[ ]` Blocked on A |
 | **B** | **Home tab** — tournament ballot (cross-instance eligibility guard, tally/tie/**real runoff** via branch+createInstance, deadline/reminder), tournament attendance card, published announcements | [PhaseB_Home](./Loom_Communities_Workflow_Engine_3_PhaseB_Home.md) | `[ ]` Blocked on A′ (GAP-1) |
 | **C** | **Marketplace tab** — equipment-loan lifecycle (borrow/queue/return, cross-workflow dues guard), giveaway | [PhaseC_Marketplace](./Loom_Communities_Workflow_Engine_3_PhaseC_Marketplace.md) | `[ ]` Blocked on A |
 | **D** | **Giving tab** — quarterly dues payment (gates Marketplace's borrow) | [PhaseD_Giving](./Loom_Communities_Workflow_Engine_3_PhaseD_Giving.md) | `[ ]` Blocked on A |
@@ -114,9 +116,9 @@ because A builds the pipeline they all use — and because A's gate may change t
 
 | # | Milestone | Status |
 |---|---|---|
-| A.1 | Validator: close 4 `WorkflowValidator` gaps (nested `branch` effects, cross-instance `set` false-positive, `createInstance` targets, guard/branch formulas) | `[ ]` |
-| A.2 | Validator: `CommunityPackageValidator` + CLI (envelope, schema versions, personas, instances, cross-instance refs) | `[ ]` |
-| A.3 | Run the validator on the Tabletop Club JSON; fix real findings (**JSON edits only**) | `[ ]` |
+| A.1 | Validator: close 4 `WorkflowValidator` gaps (nested `branch` effects, cross-instance `set` false-positive, `createInstance` targets, guard/branch formulas) | `[x]` |
+| A.2 | Validator: `CommunityPackageValidator` + CLI (envelope, schema versions, personas, instances, cross-instance refs) | `[x]` |
+| A.3 | Run the validator on the Tabletop Club JSON; fix real findings (**JSON edits only**) | `[x]` |
 | A.4 | Parse `workflowDefinitions`/`workflowInstances` into `LoomExperienceDefinition` (parsing only, no UI) | `[ ]` |
 | A.5 | One shared engine per community: register definitions + seed instances at install (no UI) | `[ ]` |
 | A.6 | Generic schema-driven instance card (fields from `instanceDataSchema`, buttons from `availableTransitionsAsync`) | `[ ]` |
@@ -168,6 +170,9 @@ wrong in a way that is very hard to see.
   (me) never self-writes implementation code — only tickets, snippets, docs, and JSON. Every dispatch is
   independently re-verified (read the diff, run the suite myself) before a milestone closes; the
   agent's own "done" self-report is never sufficient. It has been wrong before.
+- **Committed handoff, every time.** The implementation agent commits all scoped code/tests before
+  handoff, reports the full immutable SHA, then commits any status/evidence artifact separately when it
+  needs to name that SHA. No milestone advances from an uncommitted or dirty implementation worktree.
 - **Code first, screenshots second, never both at once.** A screenshot proves the UI *rendered*; it
   cannot prove a guard or formula is correct.
 - **Milestones are sized for a less-powerful implementation agent**: one concern each, exact files
