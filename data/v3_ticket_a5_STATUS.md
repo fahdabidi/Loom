@@ -2,7 +2,8 @@
 
 This evidence records the initial A.5 implementation commit
 `a646f76822f6eb6f6d3d5278ca158989c5114757` and the remediation implementation
-commit `07ef1ed85b09c10af66d0347212288fd7a04d19a`.
+commit `07ef1ed85b09c10af66d0347212288fd7a04d19a`, plus the final package-install
+evidence implementation commit `d8db2b9a66984d09f54d0619fbfba035c695c65f`.
 
 ## Scope and acceptance evidence
 
@@ -43,18 +44,16 @@ proving all 11 definitions registered.
 
 ## Verification
 
-All commands below were run from the named package directory. The format
-commands return exit 1 in this Windows/OneDrive checkout because Dart reports
-line-ending normalization changes even after formatting; Git reports no
-additional tracked changes from those unrelated files. The analyzer and full
-test suites passed.
+All commands below were run from the named package directory after writing the
+formatter output over `lib test`. The scoped formatter, analyzer, and full test
+suites all passed.
 
 | Package | Command | Exit | Final output/count |
 | --- | --- | ---: | --- |
-| `loom_workflow_engine` | `dart format --output=none --set-exit-if-changed lib test` | 1 | `Formatted 20 files (9 changed) in 0.26 seconds.` |
+| `loom_workflow_engine` | `dart format --output=none --set-exit-if-changed lib test` | 0 | `Formatted 20 files (0 changed) in 0.26 seconds.` |
 | `loom_workflow_engine` | `dart analyze` | 0 | `No issues found!` |
 | `loom_workflow_engine` | `dart test` | 0 | `+120: All tests passed!` |
-| `loom_communities_app_shell` | `dart format --output=none --set-exit-if-changed lib test` | 1 | `Formatted 47 files (19 changed) in 0.66 seconds.` |
+| `loom_communities_app_shell` | `dart format --output=none --set-exit-if-changed lib test` | 0 | `Formatted 47 files (0 changed) in 0.71 seconds.` |
 | `loom_communities_app_shell` | `flutter analyze` | 0 | `No issues found! (ran in 4.4s)` |
 | `loom_communities_app_shell` | `flutter test` | 0 | `+41: All tests passed!` |
 
