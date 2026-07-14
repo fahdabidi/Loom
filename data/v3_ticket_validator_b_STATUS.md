@@ -4,27 +4,49 @@
 
 Status: done
 
-Commit hash: pending (implementation staged for commit).
+## A.2 remediation evidence
 
-loom_ux_judges test result: `00:01 +56: All tests passed!`
+Implementation/test commit: `4494df4c735c052c8b597954f654823eb4ef5416`
 
-`dart analyze` was previously clean for this package; direct compilation and the real CLI invocation succeeded.
+The validator test file now contains exactly 15 independent `test()` cases, one for every original Ticket B rule.
 
-Full verbatim CLI output for the Tabletop Club package:
+Commands and observed results:
 
-```json
+```text
+dart format --set-exit-if-changed test/community_package_validator_test.dart
+Exit code: 0
+
+dart analyze
+Analyzing loom_ux_judges...
+No issues found!
+Exit code: 0
+
+full loom_ux_judges test suite
+00:01 +64: All tests passed!
+Exit code: 0
+```
+
+Canonical Tabletop package hard-gate invocation:
+
+```text
+community_package_validator --warnings-as-errors
+Exit code: 0
+stderr: empty
+stdout:
 {
   "status": "pass",
   "errorCount": 0,
-  "warningCount": 4,
-  "findings": [
-    {"type":"unknown_instance_persona","message":"createdByPersonaId \"tabletop-member-03\" is not a known persona.","location":"experience/workflowInstances[3]/createdByPersonaId","isWarning":true},
-    {"type":"unknown_instance_persona","message":"createdByPersonaId \"tabletop-member-04\" is not a known persona.","location":"experience/workflowInstances[4]/createdByPersonaId","isWarning":true},
-    {"type":"unknown_instance_persona","message":"createdByPersonaId \"tabletop-member-05\" is not a known persona.","location":"experience/workflowInstances[5]/createdByPersonaId","isWarning":true},
-    {"type":"unknown_instance_persona","message":"createdByPersonaId \"tabletop-member-06\" is not a known persona.","location":"experience/workflowInstances[6]/createdByPersonaId","isWarning":true}
-  ]
+  "warningCount": 0,
+  "findings": []
 }
 ```
 
-(a) The single-quoted literal formula parses; no `invalid_formula_syntax` finding was emitted.
-(b) Yes. The ballot `eventId` resolved to its event and its `selectedGame` cross-instance write produced no cross-instance finding.
+The single-quoted formula literal parses successfully. The ballot eligibility reference resolves to its event, and the cross-instance `selectedGame` write resolves without dangling or computed-write findings.
+
+The Tabletop fixture was not modified. Its SHA-256 before and after verification was identical:
+
+```text
+822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813
+```
+
+`git diff c5eb7aa -- docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc` was empty.
