@@ -8,45 +8,39 @@ import 'package:loom_ux_judges/src/validator/jsonc.dart';
 const _tabletopRelativePath =
     'docs/Build Plan V2/Loom Communities Workflow Engine V3/'
     'Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
+const _legacyRelativePath =
+    'docs/Build Plan V2/Skill/examples/verify-tabletop-club/'
+    'loom.initialization.json';
 
-Map<String, Object?> _tabletopExperience() {
+File _repositoryFile(String relativePath) {
   var directory = Directory.current;
   for (var i = 0; i < 8; i++) {
-    final file = File('${directory.path}/$_tabletopRelativePath');
-    if (file.existsSync()) {
-      final package =
-          jsonDecode(stripJsonComments(file.readAsStringSync()))
-              as Map<String, dynamic>;
-      return Map<String, Object?>.from(package['experience'] as Map);
-    }
+    final file = File('${directory.path}/$relativePath');
+    if (file.existsSync()) return file;
     final parent = directory.parent;
     if (parent.path == directory.path) break;
     directory = parent;
   }
-  throw StateError('Tabletop fixture not found: $_tabletopRelativePath');
+  throw StateError('Fixture not found: $relativePath');
 }
 
-Map<String, Object?> _legacyExperience({int? version}) => <String, Object?>{
-  if (version != null) 'experienceSchemaVersion': version,
-  'displayName': 'Legacy Tabletop',
-  'workflows': <Object?>[
-    <String, Object?>{
-      'workflowId': 'legacy-roster',
-      'title': 'Volunteer roster',
-      'entryText': 'Choose a shift.',
-      'actionText': 'Sign up.',
-      'resultText': 'Reserved.',
-    },
-  ],
-  'personas': <Object?>[
-    <String, Object?>{
-      'personaId': 'legacy-member',
-      'label': 'Member',
-      'roleLabel': 'Member',
-      'description': 'Legacy member',
-    },
-  ],
-};
+Map<String, Object?> _tabletopExperience() {
+  final package =
+      jsonDecode(
+            stripJsonComments(
+              _repositoryFile(_tabletopRelativePath).readAsStringSync(),
+            ),
+          )
+          as Map<String, dynamic>;
+  return Map<String, Object?>.from(package['experience'] as Map);
+}
+
+Map<String, Object?> _legacyExperience() {
+  final package =
+      jsonDecode(_repositoryFile(_legacyRelativePath).readAsStringSync())
+          as Map<String, dynamic>;
+  return Map<String, Object?>.from(package['experience'] as Map);
+}
 
 Map<String, Object?> _v2Experience({int grammarVersion = 1}) =>
     <String, Object?>{
@@ -151,17 +145,52 @@ void main() {
       experienceConfiguration: _legacyExperience(),
     );
     expect(_legacyProjection(experience), <Object?>[
-      'Legacy Tabletop',
+      'Tabletop Club',
       <Object?>[
         <Object?>[
-          'legacy-roster',
-          'Volunteer roster',
-          'Choose a shift.',
-          'Sign up.',
-          'Reserved.',
+          'tabletop-game-night-rsvp',
+          'RSVP to Friday game night',
+          'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
+          "Reserve a seat at Friday's game night.",
+          "You're on the roster for Friday's game night.",
+        ],
+        <Object?>[
+          'tabletop-tournament-rsvp',
+          'RSVP to the afternoon tournament',
+          'Summer tournament earlier the same day, 1-5pm. 8 of 16 brackets claimed.',
+          'Claim a bracket in the summer tournament.',
+          'Your bracket is reserved for the summer tournament.',
+        ],
+        <Object?>[
+          'tabletop-committee-decision',
+          'Decide on new game purchase',
+          'A member proposed buying a copy of Wingspan for the club library.',
+          'Decide on the Wingspan purchase proposal.',
+          'Decision recorded for the Wingspan proposal.',
+        ],
+        <Object?>[
+          'tabletop-game-loan',
+          'Borrow a game from the club library',
+          'Catan is available in the club game library.',
+          'Request to borrow Catan for two weeks.',
+          'Your loan request for Catan was sent to the organizer.',
+        ],
+        <Object?>[
+          'tabletop-club-dues-payment',
+          'Pay quarterly club dues',
+          'Quarterly dues of \$15 are due by the end of the month.',
+          'Pay \$15 in quarterly dues.',
+          'Dues payment recorded and receipt saved.',
+        ],
+        <Object?>[
+          'tabletop-meetup-announcement',
+          'Publish game night announcement',
+          "Draft: 'Friday game night moves to the larger room starting next week.'",
+          'Publish the game night announcement to all members.',
+          'Announcement published to all Tabletop Club members.',
         ],
       ],
-      <String>['legacy-member'],
+      <String>['tabletop-organizer', 'tabletop-member'],
       null,
       null,
     ]);
@@ -174,13 +203,14 @@ void main() {
     );
     final explicit = experienceForExtensionId(
       'a4-legacy-explicit',
-      experienceConfiguration: _legacyExperience(version: 1),
+      experienceConfiguration: _legacyExperience()
+        ..['experienceSchemaVersion'] = 1,
     );
     expect(_legacyProjection(explicit), _legacyProjection(absent));
   });
 
   test('4 unsupported experience version throws FormatException', () {
-    final config = _legacyExperience(version: 99);
+    final config = _legacyExperience()..['experienceSchemaVersion'] = 99;
     expect(
       () => experienceForExtensionId(
         'a4-unsupported-experience',
