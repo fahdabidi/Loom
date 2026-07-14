@@ -489,11 +489,17 @@ class LoomTournamentBallotSeed {
     required this.candidates,
     required this.goingPersonaIds,
     this.minimumAttendance = 1,
+    this.deadline,
+    this.notificationsEnabled = false,
+    this.reminderOffset = 'one-day',
   });
   final String eventId;
   final List<LoomTournamentCandidate> candidates;
   final List<String> goingPersonaIds;
   final int minimumAttendance;
+  final DateTime? deadline;
+  final bool notificationsEnabled;
+  final String reminderOffset;
 }
 
 class LoomProductionWorkflowContract {

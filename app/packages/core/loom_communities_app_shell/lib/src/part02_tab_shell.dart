@@ -3408,6 +3408,7 @@ class _TournamentBallotTabSurfaceState
   WorkflowInstance? _event;
   var _loaded = false;
   var _eligibleToVote = false;
+  var _reminderDue = false;
 
   @override
   void initState() {
@@ -3427,6 +3428,7 @@ class _TournamentBallotTabSurfaceState
     final ballot = await _store.currentBallot();
     final event = await _store.event();
     var eligible = false;
+    var reminderDue = false;
     if (ballot != null) {
       final actions = await _store.engine.availableTransitionsAsync(
         workflowType: _TournamentBallotEngineStore.ballotWorkflowType,
@@ -3436,12 +3438,17 @@ class _TournamentBallotTabSurfaceState
         personaId: widget.persona.personaId,
       );
       eligible = actions.any((t) => t.id == 'cast-vote');
+      if (ballot.instanceData['notificationsEnabled'] == true) {
+        final due = await _store.engine.dueNotifications(asOf: DateTime.now());
+        reminderDue = due.any((item) => item.instanceId == ballot.instanceId);
+      }
     }
     if (!mounted) return;
     setState(() {
       _ballot = ballot;
       _event = event;
       _eligibleToVote = eligible;
+      _reminderDue = reminderDue;
       _loaded = true;
     });
   }
@@ -3521,6 +3528,16 @@ class _TournamentBallotTabSurfaceState
           key: const ValueKey('tournament-selected-game'),
           style: TextStyle(color: foreground, fontWeight: FontWeight.w800),
         ),
+        if (ballot.instanceData['deadline'] != null)
+          Text(
+            'Voting closes: ${ballot.instanceData['deadline']}',
+            key: const ValueKey('tournament-deadline'),
+          ),
+        if (_reminderDue)
+          const Text(
+            'Vote closing soon',
+            key: ValueKey('tournament-reminder-banner'),
+          ),
         Text(
           'Accepted: $accepted / $minimumAttendance',
           key: const ValueKey('tournament-attendance'),
@@ -3620,20 +3637,29 @@ class _TournamentBallotEngineStore {
     _ready = true;
   }
 
-  Future<String> _createBallot(List<LoomTournamentCandidate> candidates) =>
-      _engine.createInstance(
-        workflowType: ballotWorkflowType,
-        personaId: 'tabletop-organizer',
-        initialInstanceData: {
-          'eventId': _eventInstanceId,
-          'candidates': [
-            for (final c in candidates)
-              {'id': c.id, 'name': c.name, 'description': c.description},
-          ],
-          'pendingChoice': '',
-          'ballots': <dynamic>[],
-        },
-      );
+  Future<String> _createBallot(List<LoomTournamentCandidate> candidates) {
+    final deadline = seed.deadline;
+    final dueAt = deadline == null
+        ? null
+        : deadline.subtract(_reminderOffsets[seed.reminderOffset]!);
+    return _engine.createInstance(
+      workflowType: ballotWorkflowType,
+      personaId: 'tabletop-organizer',
+      initialInstanceData: {
+        'eventId': _eventInstanceId,
+        'candidates': [
+          for (final c in candidates)
+            {'id': c.id, 'name': c.name, 'description': c.description},
+        ],
+        'pendingChoice': '',
+        'ballots': <dynamic>[],
+        'deadline': deadline?.toIso8601String(),
+        'notificationsEnabled': seed.notificationsEnabled,
+        'reminderOffset': seed.reminderOffset,
+        if (dueAt != null) 'dueAt': dueAt.toIso8601String(),
+      },
+    );
+  }
 
   Future<List<WorkflowInstance>> _allInstances() async {
     final page = await _engine.queryInstances(
@@ -3823,6 +3849,10 @@ class _TournamentBallotEngineStore {
       'candidates': InstanceDataField(type: 'list', required: true),
       'pendingChoice': InstanceDataField(type: 'string'),
       'ballots': InstanceDataField(type: 'list', writableBy: 'formEntry'),
+      'deadline': InstanceDataField(type: 'string'),
+      'notificationsEnabled': InstanceDataField(type: 'bool'),
+      'reminderOffset': InstanceDataField(type: 'string'),
+      'dueAt': InstanceDataField(type: 'string'),
       'voteCounts': InstanceDataField(
         type: 'map',
         formula: 'groupCount(ballots, choice)',

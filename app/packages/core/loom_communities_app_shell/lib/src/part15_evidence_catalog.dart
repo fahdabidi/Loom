@@ -792,6 +792,8 @@ LoomTournamentBallotSeed? _parseTournamentBallotSeed(Object? value) {
   ];
   if (candidates.isEmpty) return null;
   final minimumAttendance = value['minimumAttendance'];
+  final deadline = DateTime.tryParse('${value['deadline']}');
+  final reminderOffset = value['reminderOffset'];
   return LoomTournamentBallotSeed(
     eventId: eventId,
     candidates: candidates,
@@ -799,6 +801,12 @@ LoomTournamentBallotSeed? _parseTournamentBallotSeed(Object? value) {
       for (final entry in goingRaw is List ? goingRaw : const []) '$entry',
     ],
     minimumAttendance: minimumAttendance is int ? minimumAttendance : 1,
+    deadline: deadline,
+    notificationsEnabled: value['notificationsEnabled'] == true,
+    reminderOffset:
+        reminderOffset is String && _reminderOffsets.containsKey(reminderOffset)
+        ? reminderOffset
+        : 'one-day',
   );
 }
 
