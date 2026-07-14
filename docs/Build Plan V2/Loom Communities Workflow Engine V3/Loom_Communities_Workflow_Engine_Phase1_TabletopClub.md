@@ -1077,6 +1077,26 @@ wrote this slice directly rather than continuing to dispatch further narrowed ro
   by their continued presence/the third's absence in the actual widget tree, not a flag.
 - [x] `flutter analyze` clean; full app-shell suite **29/29** (up from 28). Committed: `7696245`.
 
+**Process change after Stage 2b (user directive, 2026-07-13): hard gate — the verification agent no
+longer writes implementation code itself, even after repeated dispatch stalls.** Instead, each remaining
+work item is delivered as a **ticket**: a scoped kickoff that may include ready-to-apply code snippets
+(reducing the "reading/orienting" cost that appears to be the actual cause of the Stage 2 stalls — every
+stalled dispatch's own investigation was substantively correct, it simply never had enough turn budget
+left to act on a multi-file Flutter UI change), plus a required structured status response
+(`data/v3_ticket_<name>_STATUS.md`: done / blocked / not-attempted, with a specific reason) so progress
+is legible without needing to parse a full prose report each time.
+
+**Ticket: tournament attendance + RSVP — CLOSED 2026-07-13, first attempt.** Store/schema layer
+(`minimumAttendance`, formula-computed `accepted = size(goingPersonaIds)`, a real `rsvp-going` transition
+with an `appendUnique` effect) handed to the dispatch as ready-to-apply snippets; the widget display
+("Accepted: X / Y" text, an "I'm going" button) and the test were the actual delivered work. Test
+(`v3_milestone_1_18_stage2b_ballot_ui_test.dart`, now 2 tests) seeds one persona already going with
+`minimumAttendance: 3`, confirms "Accepted: 1 / 3", RSVPs as a second persona, confirms "Accepted: 2 / 3"
+— a real, live formula-field update, not a hand-counted display. `flutter analyze` clean; full app-shell
+suite **30/30** (up from 29). Committed: `8a62c4d`. This is the first ticket dispatched under the new
+process, and it succeeded on the first attempt — consistent with the diagnosis that the earlier stalls
+were budget-bound rather than a comprehension gap.
+
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
