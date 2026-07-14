@@ -12,7 +12,11 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
       'label': 'Open',
       'editableFields': ['text', 'notes', 'day', 'at', 'enabled', 'amount'],
     },
-    'done': {'label': 'Done', 'isTerminal': true},
+    'done': {
+      'label': 'Done',
+      'isTerminal': true,
+      'editableFields': ['text', 'amount'],
+    },
   },
   'transitions': [
     {
@@ -23,6 +27,8 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
       'to': 'done',
       'effects': [
         {'op': 'set', 'key': 'receipt', 'value': 'saved'},
+        {'op': 'set', 'key': 'text', 'value': 'transition text'},
+        {'op': 'set', 'key': 'amount', 'value': 9},
       ],
     },
   ],
@@ -42,6 +48,21 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
     'blank': {
       'type': 'text',
       'labelTemplate': '{value}',
+      'hideWhenEmpty': true,
+    },
+    'nothing': {
+      'type': 'text',
+      'labelTemplate': 'Nothing: {value}',
+      'hideWhenEmpty': true,
+    },
+    'noItems': {
+      'type': 'list',
+      'labelTemplate': 'Items: {value.length}',
+      'hideWhenEmpty': true,
+    },
+    'noMap': {
+      'type': 'map',
+      'labelTemplate': 'Map: {value}',
       'hideWhenEmpty': true,
     },
     'enabledDisplay': {'type': 'bool', 'labelTemplate': 'Enabled: {value}'},
@@ -69,6 +90,9 @@ Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seed() async {
       'title': 'One card',
       'members': ['a', 'b'],
       'blank': ' ',
+      'nothing': null,
+      'noItems': <String>[],
+      'noMap': <String, dynamic>{},
       'enabledDisplay': false,
       'zero': 0,
       'text': 'old',
@@ -110,17 +134,28 @@ void main() {
       expect(find.text('Enabled: false'), findsOneWidget);
       expect(find.text('Zero: 0'), findsOneWidget);
       expect(find.text('Members: 2'), findsNothing);
-      expect(
-        find.byKey(
-          ValueKey('generic-instance-field-${instance.instanceId}-blank'),
-        ),
-        findsOneWidget,
-      );
+      expect(find.byIcon(Icons.title), findsOneWidget);
+      for (final key in ['blank', 'nothing', 'noItems', 'noMap', 'members']) {
+        expect(
+          find.byKey(
+            ValueKey('generic-instance-field-${instance.instanceId}-$key'),
+          ),
+          findsNothing,
+        );
+      }
 
       await tester.pumpWidget(_host(_card(api, instance, context: 'detail')));
       await tester.pump();
       expect(find.text('Members: 2'), findsOneWidget);
       expect(find.text('One card'), findsNothing);
+      for (final key in ['blank', 'nothing', 'noItems', 'noMap', 'title']) {
+        expect(
+          find.byKey(
+            ValueKey('generic-instance-field-${instance.instanceId}-$key'),
+          ),
+          findsNothing,
+        );
+      }
     },
   );
 
@@ -196,6 +231,56 @@ void main() {
           personaId: 'person',
         )).items.single.instanceData['amount'],
         7.5,
+      );
+    },
+  );
+
+  testWidgets(
+    'text-only edits enable Save immediately and transition resyncs editors',
+    (tester) async {
+      final (api, instance) = await _seed();
+      await tester.pumpWidget(_host(_card(api, instance)));
+      await tester.pump();
+      final text = find.byKey(
+        ValueKey('generic-instance-editor-${instance.instanceId}-text'),
+      );
+      final save = find.byKey(
+        ValueKey('generic-instance-save-${instance.instanceId}'),
+      );
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+      await tester.enterText(text, 'text only');
+      await tester.pump();
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(
+        (await api.queryInstances(
+          tabId: 'any',
+          personaId: 'person',
+        )).items.single.instanceData['text'],
+        'text only',
+      );
+
+      await tester.tap(find.text('Finish'));
+      await tester.pumpAndSettle();
+      expect(find.text('transition text'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(text).controller!.text,
+        'transition text',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(
+                ValueKey(
+                  'generic-instance-editor-${instance.instanceId}-amount',
+                ),
+              ),
+            )
+            .controller!
+            .text,
+        '9',
       );
     },
   );
