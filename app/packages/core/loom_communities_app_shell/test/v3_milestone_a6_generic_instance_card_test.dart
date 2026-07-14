@@ -264,6 +264,9 @@ void main() {
       expect(find.text('Zero: 0'), findsOneWidget);
       expect(find.text('Members: 2'), findsNothing);
       expect(find.byIcon(Icons.title), findsOneWidget);
+      for (final text in ['Nothing:', 'Items: 0', 'Map:']) {
+        expect(find.text(text), findsNothing);
+      }
       for (final key in ['blank', 'nothing', 'noItems', 'noMap', 'members']) {
         expect(
           find.byKey(
@@ -285,6 +288,95 @@ void main() {
           findsNothing,
         );
       }
+    },
+  );
+
+  testWidgets(
+    'public fact and action seams preserve declared icons and generic tones',
+    (tester) async {
+      const icons = <String, IconData>{
+        'archive': Icons.archive,
+        'calendar_today': Icons.calendar_today,
+        'campaign': Icons.campaign,
+        'cancel': Icons.cancel,
+        'casino': Icons.casino,
+        'delete_outline': Icons.delete_outline,
+        'event_seat': Icons.event_seat,
+        'forum': Icons.forum,
+        'gavel': Icons.gavel,
+        'how_to_vote': Icons.how_to_vote,
+        'how_to_vote_outlined': Icons.how_to_vote_outlined,
+        'mark_email_read': Icons.mark_email_read,
+      };
+      await tester.pumpWidget(
+        _host(
+          Column(
+            children: [
+              WorkflowFactPillRow(
+                instanceData: {for (final name in icons.keys) name: name},
+                instanceDataSchema: {
+                  for (final name in icons.keys)
+                    name: WorkflowFactPillFieldSchema(
+                      displayIcon: name,
+                      labelTemplate: name,
+                    ),
+                },
+              ),
+              const WorkflowActionButtonRow(
+                surface: 'a6-actions',
+                availableTransitions: [
+                  WorkflowActionButtonTransition(
+                    id: 'primary',
+                    label: 'Primary',
+                    iconName: 'check',
+                  ),
+                  WorkflowActionButtonTransition(
+                    id: 'secondary',
+                    label: 'Secondary',
+                    iconName: 'archive',
+                    tone: WorkflowActionTone.secondary,
+                  ),
+                  WorkflowActionButtonTransition(
+                    id: 'destructive',
+                    label: 'Destructive',
+                    iconName: 'delete_outline',
+                    tone: WorkflowActionTone.destructive,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+      for (final icon in icons.values) {
+        expect(find.byIcon(icon), findsAtLeastNWidgets(1));
+      }
+      final primary = find.byKey(const ValueKey('a6-actions-action-primary'));
+      final secondary = find.byKey(
+        const ValueKey('a6-actions-action-secondary'),
+      );
+      final destructive = find.byKey(
+        const ValueKey('a6-actions-action-destructive'),
+      );
+      expect(primary, findsOneWidget);
+      expect(tester.widget(primary), isA<FilledButton>());
+      expect(tester.widget(secondary), isA<OutlinedButton>());
+      expect(tester.widget(destructive), isA<FilledButton>());
+      expect(
+        find.descendant(of: primary, matching: find.byIcon(Icons.check)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: secondary, matching: find.byIcon(Icons.archive)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: destructive,
+          matching: find.byIcon(Icons.delete_outline),
+        ),
+        findsOneWidget,
+      );
     },
   );
 
@@ -329,6 +421,10 @@ void main() {
       await tester.tap(find.text('15').last);
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: day, matching: find.text('2026-07-15')),
+        findsOneWidget,
+      );
       final at = find.byKey(
         ValueKey('generic-instance-editor-${instance.instanceId}-at'),
       );
@@ -343,6 +439,10 @@ void main() {
       await tester.tapAt(const Offset(270, 330));
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: at, matching: find.text('21:30')),
+        findsOneWidget,
+      );
       final enabled = find.byKey(
         ValueKey('generic-instance-editor-${instance.instanceId}-enabled'),
       );
@@ -533,35 +633,53 @@ void main() {
       )).items.singleWhere((row) => row.instanceId == voteId);
       expect(after.currentState, 'cast');
       expect(after.instanceData['result'], 'cast');
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(
+          ValueKey('generic-instance-progress-${instance.instanceId}'),
+        ),
+        findsNothing,
+      );
       expect(find.text('Cast vote'), findsNothing);
     },
   );
 
-  testWidgets('stable picker labels and non-writable editor filtering', (
-    tester,
-  ) async {
-    final (api, instance) = await _seed();
-    await tester.pumpWidget(_host(_card(api, instance)));
-    await tester.pump();
-    expect(
-      tester
-          .widget<OutlinedButton>(
-            find.byKey(
-              ValueKey('generic-instance-editor-${instance.instanceId}-day'),
-            ),
-          )
-          .child,
-      isA<Text>().having((text) => text.data, 'stable label', 'Date'),
-    );
-    for (final key in ['computed', 'effectOnly']) {
+  testWidgets(
+    'picker labels and values are separate and non-writable editors are filtered',
+    (tester) async {
+      final (api, instance) = await _seed();
+      await tester.pumpWidget(_host(_card(api, instance)));
+      await tester.pump();
       expect(
-        find.byKey(
-          ValueKey('generic-instance-editor-${instance.instanceId}-$key'),
+        find.descendant(
+          of: find.byKey(
+            ValueKey('generic-instance-editor-${instance.instanceId}-day'),
+          ),
+          matching: find.text('Date'),
         ),
-        findsNothing,
+        findsOneWidget,
       );
-    }
-  });
+      expect(find.text('2026-07-14'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(
+            ValueKey('generic-instance-editor-${instance.instanceId}-at'),
+          ),
+          matching: find.text('At'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('09:30'), findsOneWidget);
+      for (final key in ['computed', 'effectOnly']) {
+        expect(
+          find.byKey(
+            ValueKey('generic-instance-editor-${instance.instanceId}-$key'),
+          ),
+          findsNothing,
+        );
+      }
+    },
+  );
 
   testWidgets('fresh malformed number cannot write through the real engine', (
     tester,
@@ -606,24 +724,32 @@ void main() {
         tabId: 'any',
         personaId: 'person',
       )).items.singleWhere((row) => row.instanceId == bId);
-      final controlled = _ControlledEngine(api);
-      final machine = _machine();
-      Widget card(WorkflowInstance row, String persona) => _host(
+      final controlledA = _ControlledEngine(api);
+      final controlledB = _ControlledEngine(api);
+      final machineA = _machine();
+      final machineB = _machine();
+      Widget card(
+        WorkflowInstance row,
+        String persona,
+        LoomWorkflowStateMachine machine,
+        WorkflowEngineApi engine,
+      ) => _host(
         GenericWorkflowInstanceCard(
           instance: row,
           machine: machine,
-          engine: controlled,
+          engine: engine,
           personaId: persona,
         ),
       );
-      await tester.pumpWidget(card(a, 'person'));
+      await tester.pumpWidget(card(a, 'person', machineA, controlledA));
       expect(
         find.byKey(ValueKey('generic-instance-progress-${a.instanceId}')),
         findsOneWidget,
       );
-      await tester.pumpWidget(card(b, 'other'));
-      expect(controlled.actionCompleters, hasLength(2));
-      controlled.actionCompleters[0].complete([
+      await tester.pumpWidget(card(b, 'other', machineB, controlledB));
+      expect(controlledA.actionCompleters, hasLength(1));
+      expect(controlledB.actionCompleters, hasLength(1));
+      controlledA.actionCompleters.single.complete([
         const LoomWorkflowTransition(
           id: 'old',
           label: 'Old action',
@@ -632,7 +758,7 @@ void main() {
       ]);
       await tester.pump();
       expect(find.text('Old action'), findsNothing);
-      controlled.actionCompleters[1].complete([
+      controlledB.actionCompleters.single.complete([
         const LoomWorkflowTransition(
           id: 'new',
           label: 'New action',
@@ -645,7 +771,7 @@ void main() {
   );
 
   testWidgets(
-    'replacement releases a held mutation, rejects stale callback, and deduplicates current writes',
+    'stale and current mutations use independent engines and only current B publishes',
     (tester) async {
       final (api, a) = await _seed();
       final bId = await api.createInstance(
@@ -660,36 +786,44 @@ void main() {
         tabId: 'any',
         personaId: 'person',
       )).items.singleWhere((row) => row.instanceId == bId);
-      final controlled = _ControlledEngine(api);
-      final machine = _machine();
+      final controlledA = _ControlledEngine(api)
+        ..updateCompleter = Completer<void>();
+      final controlledB = _ControlledEngine(api)
+        ..updateCompleter = Completer<void>();
+      final machineA = _machine();
+      final machineB = _machine();
       final callbacks = <WorkflowInstance>[];
-      Widget card(WorkflowInstance row, String persona) => _host(
+      Widget card(
+        WorkflowInstance row,
+        String persona,
+        LoomWorkflowStateMachine machine,
+        WorkflowEngineApi engine,
+      ) => _host(
         GenericWorkflowInstanceCard(
           instance: row,
           machine: machine,
-          engine: controlled,
+          engine: engine,
           personaId: persona,
           onInstanceChanged: callbacks.add,
         ),
       );
-      await tester.pumpWidget(card(a, 'person'));
-      controlled.actionCompleters.single.complete(const []);
+      await tester.pumpWidget(card(a, 'person', machineA, controlledA));
+      controlledA.actionCompleters.single.complete(const []);
       await tester.pump();
       await tester.enterText(
         find.byKey(ValueKey('generic-instance-editor-${a.instanceId}-text')),
         'A edit',
       );
       await tester.pump();
-      controlled.updateCompleter = Completer<void>();
       final aSave = find.byKey(
         ValueKey('generic-instance-save-${a.instanceId}'),
       );
       await tester.ensureVisible(aSave);
       await tester.tap(aSave);
       await tester.pump();
-      expect(controlled.updateCalls, 1);
-      await tester.pumpWidget(card(b, 'other'));
-      controlled.actionCompleters.last.complete(const []);
+      expect(controlledA.updateCalls, 1);
+      await tester.pumpWidget(card(b, 'other', machineB, controlledB));
+      controlledB.actionCompleters.single.complete(const []);
       await tester.pump();
       final bSave = find.byKey(
         ValueKey('generic-instance-save-${b.instanceId}'),
@@ -703,18 +837,45 @@ void main() {
       await tester.ensureVisible(bSave);
       await tester.tap(bSave);
       await tester.tap(bSave);
-      expect(controlled.updateCalls, 2);
-      controlled.updateCompleter!.complete();
-      controlled.updateCompleter = null;
+      expect(controlledB.updateCalls, 1);
+      controlledB.updateCompleter!.complete();
+      controlledB.updateCompleter = null;
+      await tester.pump();
+      expect(controlledB.actionCompleters, hasLength(2));
+      controlledB.actionCompleters.last.complete(const []);
+      await tester.pumpAndSettle();
+      final persistedB = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'other',
+      )).items.singleWhere((row) => row.instanceId == b.instanceId);
+      expect(persistedB.instanceData['text'], 'B edit');
+      expect(callbacks.map((row) => row.instanceId), [b.instanceId]);
+      expect(
+        find.byKey(ValueKey('generic-instance-progress-${b.instanceId}')),
+        findsNothing,
+      );
+      controlledA.updateCompleter!.complete();
+      controlledA.updateCompleter = null;
       await tester.pumpAndSettle();
       expect(
-        callbacks.where((row) => row.instanceId == a.instanceId),
-        isEmpty,
-        reason: 'A completion cannot callback over B',
+        callbacks.map((row) => row.instanceId),
+        [b.instanceId],
+        reason: 'A completion cannot callback or publish over B',
       );
       expect(
         find.byKey(ValueKey('generic-instance-card-${b.instanceId}')),
         findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(
+                ValueKey('generic-instance-editor-${b.instanceId}-text'),
+              ),
+            )
+            .controller!
+            .text,
+        'B edit',
       );
     },
   );

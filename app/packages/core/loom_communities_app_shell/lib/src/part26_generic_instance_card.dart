@@ -315,10 +315,7 @@ class _GenericWorkflowInstanceCardState
         .replaceAll(RegExp(r'[:\-–—]+\s*$'), '')
         .trim();
     if (label.isNotEmpty) return label;
-    return key.replaceAllMapped(
-      RegExp(r'(?<=[a-z0-9])([A-Z])'),
-      (match) => ' ${match.group(0)}',
-    );
+    return _humanizeFieldName(key);
   }
 
   bool _isVisibleField(String key, InstanceDataField schema) {
@@ -529,12 +526,32 @@ class _GenericWorkflowInstanceCardState
     required Key editorKey,
     required bool disabled,
     required Future<void> Function() onPick,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: OutlinedButton(
-      key: editorKey,
-      onPressed: disabled ? null : onPick,
-      child: Text(label.isEmpty ? key : label),
-    ),
-  );
+  }) {
+    final fieldLabel = label.isEmpty ? _humanizeFieldName(key) : label;
+    final value = '${_valueFor(key) ?? ''}';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        key: editorKey,
+        onTap: disabled ? null : onPick,
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: fieldLabel,
+            enabled: !disabled,
+            border: const OutlineInputBorder(),
+          ),
+          child: Text(value),
+        ),
+      ),
+    );
+  }
+
+  String _humanizeFieldName(String key) {
+    final spaced = key.replaceAllMapped(
+      RegExp(r'(?<=[a-z0-9])([A-Z])'),
+      (match) => ' ${match.group(0)}',
+    );
+    if (spaced.isEmpty) return spaced;
+    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
 }

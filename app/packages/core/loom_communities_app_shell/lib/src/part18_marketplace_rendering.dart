@@ -712,6 +712,32 @@ IconData _iconForName(String? iconName) {
       return Icons.send;
     case 'check_circle_outline':
       return Icons.check_circle_outline;
+    case 'archive':
+      return Icons.archive;
+    case 'calendar_today':
+      return Icons.calendar_today;
+    case 'campaign':
+      return Icons.campaign;
+    case 'cancel':
+      return Icons.cancel;
+    case 'casino':
+      return Icons.casino;
+    case 'check':
+      return Icons.check;
+    case 'delete_outline':
+      return Icons.delete_outline;
+    case 'event_seat':
+      return Icons.event_seat;
+    case 'forum':
+      return Icons.forum;
+    case 'gavel':
+      return Icons.gavel;
+    case 'how_to_vote':
+      return Icons.how_to_vote;
+    case 'how_to_vote_outlined':
+      return Icons.how_to_vote_outlined;
+    case 'mark_email_read':
+      return Icons.mark_email_read;
     default:
       return Icons.label_outline;
   }
