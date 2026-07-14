@@ -50,3 +50,11 @@ The Tabletop fixture was not modified. Its SHA-256 before and after verification
 ```
 
 `git diff c5eb7aa -- docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc` was empty.
+
+## A.2 independent-validation isolation correction
+
+Test correction commit: `d16a0d51661f8504c1501c9b50faa1414d7a168e`.
+
+Rule 2 now begins from the otherwise-valid `pkg()` fixture, removes only the root `schemaVersion`, validates once, and asserts exactly one `missing_schema_version` finding at exactly `schemaVersion`.
+
+Rerun results: formatting clean; `dart analyze` reported `No issues found!`; the full suite reported `00:01 +64: All tests passed!`; and the canonical Tabletop CLI with `--warnings-as-errors` exited 0 with empty stderr and the same 0-error/0-warning JSON. The fixture SHA-256 remained `822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`.
