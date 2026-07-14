@@ -11,7 +11,7 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
     'open': {'label': 'Open'},
     'closed': {'label': 'Closed'},
   },
-  'transitions': [],
+  'transitions': <dynamic>[],
   'renderBindings': [
     {
       'tabId': 'calendar',
