@@ -1,6 +1,8 @@
 # A.6 generic engine-native instance card — evidence
 
-Implementation commit: `9fe6d4811e73a95326bb2f2622dc2dd643ba8836`
+Original implementation commit: `9fe6d4811e73a95326bb2f2622dc2dd643ba8836`
+
+Lifecycle remediation implementation commit: `854b1ec62fe7d6c9374625aa18730884eabddbfc`
 
 Changed production and test files:
 
@@ -13,15 +15,15 @@ Verification from `app/packages/core/loom_communities_app_shell`:
 - `dart format lib test` — exit 0; 49 files formatted.
 - `dart format --output=none --set-exit-if-changed lib test` — exit 0; 49 files checked, 0 changed.
 - `flutter analyze` — exit 0; `No issues found!`.
-- `flutter test test/v3_milestone_a6_generic_instance_card_test.dart` — exit 0; 3 tests passed.
-- `flutter test` — exit 0; 44 tests passed.
+- `flutter test test/v3_milestone_a6_generic_instance_card_test.dart` — exit 0; 4 tests passed.
+- `flutter test` — exit 0; 45 tests passed.
 
 Acceptance assertions:
 
-- The isolated card maps every display schema entry into the shared fact-pill renderer, including icon, `{value}`, `{value.length}`, empty filtering, and tile/detail contexts.
-- Editable controls are schema-dispatched for text, textarea, date, time, bool, and number; valid updates use `updateInstanceFields`, and invalid numbers do not write.
-- Actions are obtained only through `availableTransitionsAsync`; the permanent test proves a JSON related-instance list guard hides/shows a transition and that transition state/effects persist through the real local engine.
-- The widget uses mounted/request-token safety, one in-flight mutation, deterministic semantic keys, progress state, and retryable errors.
+- The display test proves the declared icon, `{value}`, `{value.length}`, tile/detail filtering, absent keyed subtrees for null/blank/empty-list/empty-map `hideWhenEmpty` values, and retained `false`/zero pills.
+- The editing tests prove a text-only edit enables Save and persists through the real local engine, textarea/bool/number persistence, invalid-number rejection without an engine write, and transition-effect controller resynchronization for editable text and number fields.
+- The guarded-action test uses real JSON definitions and the local engine to prove the related-instance-list persona guard hides/shows the action and that its state/effects persist.
+- Production code now uses one input generation across action loads, mutations, and pickers; stale completions are suppressed, refresh clears old actions before loading/failure, progress/error keys are instance-qualified, and successful engine results rebuild text controllers.
 
 Frozen Tabletop fixture:
 
