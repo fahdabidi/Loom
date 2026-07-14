@@ -197,6 +197,29 @@ Future<void> _selectCalendarTab(WidgetTester tester) async {
   await tester.pump();
 }
 
+Finder _keyPrefix(String prefix) => find.byWidgetPredicate(
+  (widget) =>
+      widget.key is ValueKey<String> &&
+      (widget.key! as ValueKey<String>).value.startsWith(prefix),
+  description: 'key beginning with $prefix',
+);
+
+Finder _calendarOrdinal(int ordinal) => find.byWidgetPredicate(
+  (widget) =>
+      widget.key is ValueKey<String> &&
+      ((widget.key! as ValueKey<String>).value.startsWith(
+            'engine-native-calendar-entry-',
+          ) ||
+          (widget.key! as ValueKey<String>).value.startsWith(
+            'engine-native-calendar-agenda-',
+          ) ||
+          (widget.key! as ValueKey<String>).value.startsWith(
+            'engine-native-calendar-selected-detail-',
+          )) &&
+      (widget.key! as ValueKey<String>).value.endsWith('-$ordinal'),
+  description: 'Calendar binding ordinal $ordinal',
+);
+
 void main() {
   testWidgets('projects the frozen Calendar into its native product structure', (
     tester,
@@ -272,7 +295,17 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+      final julyDay = find.byKey(
+        const ValueKey('engine-native-calendar-date-2026-07-10'),
+      );
+      expect(julyDay, findsOneWidget);
+      expect(
+        find.descendant(
+          of: julyDay,
+          matching: _keyPrefix('engine-native-calendar-entry-event-'),
+        ),
+        findsNWidgets(2),
+      );
       expect(find.textContaining('goingPersonaIds'), findsNothing);
       expect(find.textContaining('maybePersonaIds'), findsNothing);
       expect(find.textContaining('notGoingPersonaIds'), findsNothing);
@@ -287,16 +320,17 @@ void main() {
       expect(
         find.descendant(
           of: group,
-          matching: find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-event-summer-tournament-0',
-            ),
-          ),
+          matching: _keyPrefix('engine-native-calendar-agenda-event-'),
         ),
-        findsOneWidget,
+        findsNWidgets(2),
       );
+      expect(_calendarOrdinal(1), findsNothing);
 
-      final rows = find.byType(ListTile).evaluate().toList();
+      final rows = find
+          .descendant(of: group, matching: find.byType(ListTile))
+          .evaluate()
+          .toList();
+      expect(rows, hasLength(2));
       expect((rows[0].widget as ListTile).title, isA<Text>());
       expect(
         ((rows[0].widget as ListTile).title! as Text).data,
@@ -311,16 +345,43 @@ void main() {
         find.byKey(const ValueKey('engine-native-calendar-next-month')),
       );
       await tester.pump();
+      expect(find.text('Aug 2026'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          matching: _keyPrefix('engine-native-calendar-entry-event-'),
+        ),
+        findsNothing,
+      );
       await tester.tap(
         find.byKey(const ValueKey('engine-native-calendar-previous-month')),
       );
       await tester.pump();
+      expect(find.text('Jul 2026'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          matching: _keyPrefix('engine-native-calendar-entry-event-'),
+        ),
+        findsNWidgets(2),
+      );
       await tester.tap(
         find.byKey(
           const ValueKey('engine-native-calendar-date-strip-2026-07-10'),
         ),
       );
       await tester.pump();
+      expect(find.text('Jul 2026'), findsOneWidget);
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(
+                const ValueKey('engine-native-calendar-date-strip-2026-07-10'),
+              ),
+            )
+            .selected,
+        isTrue,
+      );
 
       await tester.tap(
         find.byKey(
@@ -339,6 +400,15 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('20 seats'), findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-selected-detail-event-summer-tournament-0',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
       await tester.tap(
         find.byKey(
           const ValueKey(
@@ -356,6 +426,33 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Selected game: TBD'), findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-selected-detail-event-friday-game-night-0',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+
+      final layers = <Finder>[
+        find.byKey(const ValueKey('engine-native-calendar-month-navigation')),
+        find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        find.byKey(const ValueKey('engine-native-calendar-date-strip')),
+        group,
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-selected-detail-event-summer-tournament-0',
+          ),
+        ),
+      ];
+      final verticalOffsets = layers
+          .map((finder) => tester.getTopLeft(finder).dy)
+          .toList();
+      for (var index = 1; index < verticalOffsets.length; index++) {
+        expect(verticalOffsets[index], greaterThan(verticalOffsets[index - 1]));
+      }
     } finally {
       await tester.runAsync(installed.dispose);
     }
@@ -545,6 +642,10 @@ void main() {
         );
         expect(going.instanceData['goingCount'], 13);
         expect(going.instanceData['seatsRemaining'], 7);
+        await _pumpUntil(tester, find.text('Going: 13'));
+        expect(find.text('Going: 13'), findsOneWidget);
+        expect(find.text('7 seats left'), findsOneWidget);
+        expect(find.text('20 seats'), findsOneWidget);
         expect(
           find.byKey(
             const ValueKey(
@@ -552,6 +653,14 @@ void main() {
             ),
           ),
           findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-event-summer-tournament-0',
+            ),
+          ),
+          findsNothing,
         );
         await _tapAction(tester, 'event-friday-game-night', 'rsvp-maybe');
         final maybe = await _instance(
@@ -569,6 +678,9 @@ void main() {
         );
         expect(maybe.instanceData['goingCount'], 12);
         expect(maybe.instanceData['seatsRemaining'], 8);
+        await _pumpUntil(tester, find.text('Going: 12'));
+        expect(find.text('Going: 12'), findsOneWidget);
+        expect(find.text('8 seats left'), findsOneWidget);
         expect(
           find.byKey(
             const ValueKey(
@@ -710,6 +822,37 @@ void main() {
       expect(open.instanceData['goingCount'], 11);
       expect(open.instanceData['seatsRemaining'], 1);
       expect(open.instanceData['isFull'], isFalse);
+      await _tapAction(tester, 'event-friday-game-night', 'rsvp-going');
+      await _pumpUntil(
+        tester,
+        find.byKey(
+          const ValueKey(
+            'generic-instance-event-friday-game-night-action-join-waitlist',
+          ),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'generic-instance-event-friday-game-night-action-rsvp-going',
+          ),
+        ),
+        findsNothing,
+      );
+      await _tapAction(tester, 'event-friday-game-night', 'join-waitlist');
+      final waitlisted = await _instance(
+        tester,
+        installed,
+        'event-friday-game-night',
+        personaId: 'tabletop-member',
+      );
+      expect(
+        waitlisted.instanceData['waitlistPersonaIds'],
+        contains('tabletop-member'),
+      );
+      expect(waitlisted.instanceData['goingCount'], 12);
+      expect(waitlisted.instanceData['seatsRemaining'], 0);
+      expect(waitlisted.instanceData['isFull'], isTrue);
     } finally {
       await tester.runAsync(installed.dispose);
     }
@@ -774,8 +917,30 @@ void main() {
           isNot(contains('tabletop-member')),
         );
         expect(withdrawn.instanceData['accepted'], 7);
-        await tester.pumpWidget(
-          _calendar(installed, 'tabletop-member', revision: 1),
+        expect(withdrawn.instanceData['quorumMet'], isFalse);
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'generic-instance-event-summer-tournament-action-rsvp-going',
+            ),
+          ),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'generic-instance-event-summer-tournament-action-rsvp-withdraw',
+            ),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-event-summer-tournament-0',
+            ),
+          ),
+          findsOneWidget,
         );
         await _tapAction(tester, 'event-summer-tournament', 'rsvp-going');
         final restored = await _instance(
@@ -789,6 +954,31 @@ void main() {
           contains('tabletop-member'),
         );
         expect(restored.instanceData['accepted'], 8);
+        expect(restored.instanceData['quorumMet'], isTrue);
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'generic-instance-event-summer-tournament-action-rsvp-withdraw',
+            ),
+          ),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'generic-instance-event-summer-tournament-action-rsvp-going',
+            ),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-event-summer-tournament-0',
+            ),
+          ),
+          findsOneWidget,
+        );
       } finally {
         await tester.runAsync(installed.dispose);
       }
@@ -810,22 +1000,26 @@ void main() {
             personaId: 'tabletop-member',
           );
         });
-        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _pumpUntil(
           tester,
           find.byKey(
             const ValueKey(
-              'engine-native-calendar-agenda-event-friday-game-night-0',
+              'generic-instance-event-friday-game-night-action-rsvp-going',
             ),
           ),
         );
-        await tester.tap(
+        expect(
           find.byKey(
             const ValueKey(
-              'engine-native-calendar-agenda-event-friday-game-night-0',
+              'generic-instance-event-friday-game-night-action-cancel-event',
             ),
           ),
+          findsNothing,
         );
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _tapAction(tester, 'event-friday-game-night', 'cancel-event');
         final cancelled = await _instance(
           tester,
@@ -841,14 +1035,6 @@ void main() {
             ),
           ),
         );
-        await tester.tap(
-          find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-event-friday-game-night-1',
-            ),
-          ),
-        );
-        await tester.pump();
         expect(
           find.byKey(
             const ValueKey(
@@ -858,18 +1044,50 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.byKey(
-            const ValueKey(
-              'generic-instance-event-friday-game-night-action-rsvp-going',
-            ),
+          _keyPrefix('engine-native-calendar-entry-event-friday-game-night-0'),
+          findsNothing,
+        );
+        expect(
+          _keyPrefix('engine-native-calendar-agenda-event-friday-game-night-0'),
+          findsNothing,
+        );
+        expect(
+          _keyPrefix(
+            'engine-native-calendar-selected-detail-event-friday-game-night-0',
           ),
           findsNothing,
         );
         expect(
-          find.byKey(
-            const ValueKey(
-              'generic-instance-event-friday-game-night-action-cancel-event',
+          _keyPrefix('engine-native-calendar-agenda-event-friday-game-night-1'),
+          findsOneWidget,
+        );
+        expect(
+          _keyPrefix('engine-native-calendar-agenda-event-friday-game-night-'),
+          findsOneWidget,
+        );
+        for (final action in const [
+          'rsvp-going',
+          'rsvp-maybe',
+          'rsvp-not-going',
+          'join-waitlist',
+          'cancel-event',
+        ]) {
+          expect(
+            find.byKey(
+              ValueKey(
+                'generic-instance-event-friday-game-night-action-$action',
+              ),
             ),
+            findsNothing,
+          );
+        }
+        expect(
+          _keyPrefix('generic-instance-editor-event-friday-game-night-'),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('generic-instance-save-event-friday-game-night'),
           ),
           findsNothing,
         );
