@@ -390,25 +390,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       throw StateError('Unknown workflow type: $workflowType');
     }
 
-    // Validate required fields against instanceDataSchema.
-    for (final entry in machine.instanceDataSchema.entries) {
-      final field = entry.value;
-      final key = entry.key;
-      if (field.required) {
-        if (!initialInstanceData.containsKey(key) ||
-            initialInstanceData[key] == null) {
-          throw WorkflowValidationError(
-            key,
-            'Required field is missing or null',
-          );
-        }
-      }
-    }
-    for (final key in initialInstanceData.keys) {
-      if (machine.instanceDataSchema[key]?.formula != null) {
-        throw WorkflowValidationError(key, 'Computed fields cannot be seeded');
-      }
-    }
+    _validateSeedData(machine, initialInstanceData);
 
     final instanceId = '${_communityId}_${workflowType}_${_generateId()}';
     await _db.insertInstance(
@@ -421,6 +403,92 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
 
     return instanceId;
+  }
+
+  /// Atomically imports installation seed rows while preserving their IDs and
+  /// declared states. Exact repeats are no-ops; conflicting existing rows fail.
+  Future<void> seedInstances(Iterable<WorkflowInstance> instances) async {
+    final batch = instances.toList(growable: false);
+    final ids = <String>{};
+    for (final instance in batch) {
+      if (instance.instanceId.isEmpty || !ids.add(instance.instanceId)) {
+        throw StateError('Seed instance IDs must be non-empty and unique');
+      }
+      final machine = await _getDefinition(instance.workflowType);
+      if (machine == null)
+        throw StateError('Unknown workflow type: ${instance.workflowType}');
+      if (!machine.states.containsKey(instance.currentState)) {
+        throw StateError(
+          'Unknown state "${instance.currentState}" for ${instance.workflowType}',
+        );
+      }
+      _validateSeedData(machine, instance.instanceData);
+    }
+    await _db.transaction(() async {
+      for (final instance in batch) {
+        final existing = await _db.readInstance(instance.instanceId);
+        if (existing == null) continue;
+        final existingData = jsonDecode(existing.instanceData);
+        if (existing.communityId != _communityId ||
+            existing.workflowType != instance.workflowType ||
+            existing.currentState != instance.currentState ||
+            existing.createdByPersonaId != instance.createdByPersonaId ||
+            !_deepEquals(existingData, instance.instanceData)) {
+          throw StateError(
+            'Seed instance ${instance.instanceId} conflicts with existing row',
+          );
+        }
+      }
+      for (final instance in batch) {
+        if (await _db.readInstance(instance.instanceId) != null) continue;
+        await _db.insertInstance(
+          instanceId: instance.instanceId,
+          communityId: _communityId,
+          workflowType: instance.workflowType,
+          currentState: instance.currentState,
+          instanceData: instance.instanceData,
+          createdByPersonaId: instance.createdByPersonaId,
+        );
+      }
+    });
+  }
+
+  void _validateSeedData(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> data,
+  ) {
+    for (final entry in machine.instanceDataSchema.entries) {
+      if (entry.value.required &&
+          (!data.containsKey(entry.key) || data[entry.key] == null)) {
+        throw WorkflowValidationError(
+          entry.key,
+          'Required field is missing or null',
+        );
+      }
+    }
+    for (final key in data.keys) {
+      if (machine.instanceDataSchema[key]?.formula != null) {
+        throw WorkflowValidationError(key, 'Computed fields cannot be seeded');
+      }
+    }
+  }
+
+  bool _deepEquals(Object? left, Object? right) {
+    if (left is Map && right is Map) {
+      if (left.length != right.length) return false;
+      return left.entries.every(
+        (entry) =>
+            right.containsKey(entry.key) &&
+            _deepEquals(entry.value, right[entry.key]),
+      );
+    }
+    if (left is List<Object?> && right is List<Object?>) {
+      return left.length == right.length &&
+          Iterable<int>.generate(
+            left.length,
+          ).every((i) => _deepEquals(left[i], right[i]));
+    }
+    return left == right;
   }
 
   @override
@@ -601,12 +669,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         if (entry.value.formula != null) entry.key: entry.value.formula,
     };
     if (formulas.isEmpty) return Map<String, dynamic>.from(data);
-    return evaluateComputedFields(
-      instanceData: data,
-      formulas: formulas,
-      viewerId: viewerId,
-      actorId: actorId,
-    );
+    try {
+      return evaluateComputedFields(
+        instanceData: data,
+        formulas: formulas,
+        viewerId: viewerId,
+        actorId: actorId,
+      );
+    } on FormulaEvaluationException {
+      return Map<String, dynamic>.from(data);
+    }
   }
 
   static final _random = Random();

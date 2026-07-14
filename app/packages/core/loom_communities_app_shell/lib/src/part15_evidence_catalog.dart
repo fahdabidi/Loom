@@ -11,6 +11,7 @@ LoomExperienceDefinition experienceForExtensionId(
     experienceConfiguration: experienceConfiguration,
   );
   if (packageExperience != null) {
+    _installEngineNativeExperience(extensionId, packageExperience);
     return packageExperience;
   }
   final known = _experienceByExtensionId[extensionId];
