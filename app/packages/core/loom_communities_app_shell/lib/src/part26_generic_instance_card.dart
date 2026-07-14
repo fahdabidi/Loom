@@ -71,6 +71,10 @@ class _GenericWorkflowInstanceCardState
       _retry = null;
       _actions = const [];
       _loadingActions = true;
+      // A mutation belonging to the invalidated inputs may still be awaiting
+      // the engine.  Its completion is generation-guarded, so release the new
+      // card immediately rather than leaving it disabled behind that call.
+      _mutating = false;
       _loadActions();
     }
   }
@@ -308,7 +312,7 @@ class _GenericWorkflowInstanceCardState
     final label = (template ?? '')
         .replaceAll('{value.length}', '')
         .replaceAll('{value}', '')
-        .replaceAll(RegExp(r'[:\\-–—]+\\s*$'), '')
+        .replaceAll(RegExp(r'[:\-–—]+\s*$'), '')
         .trim();
     if (label.isNotEmpty) return label;
     return key.replaceAllMapped(
