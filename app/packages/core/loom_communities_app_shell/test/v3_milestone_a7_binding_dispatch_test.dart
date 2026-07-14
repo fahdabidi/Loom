@@ -349,6 +349,12 @@ void main() {
       );
       await expectError(blank, 'Invalid pagination cursor');
       expect(blank.queries, 1);
+      final nullCursor = _CountingEngine(
+        ({required tabId, required personaId, required limit, cursor}) =>
+            Future.value(const InstancePage(items: [], hasMore: true)),
+      );
+      await expectError(nullCursor, 'Invalid pagination cursor');
+      expect(nullCursor.queries, 1);
       final repeated = _CountingEngine(
         ({required tabId, required personaId, required limit, cursor}) =>
             Future.value(
