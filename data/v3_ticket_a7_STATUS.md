@@ -5,6 +5,7 @@
 - Initial production/test: `9cd1ebb8830d4f1af41ec4a1f4a27bca5ab4544a`
 - Initial typing follow-up: `64e2eec1d96574728402b6d8da241bcc44fc8047`
 - A.7 acceptance remediation: `6dcc6bb0ad1866872c1b64f484969cc2889d5344`
+- Null-cursor completion: `1da56b9daaf4ed88d3a3406880503d60ee23dba4`
 - This evidence update is committed separately after the verification below.
 
 The remediation adds the permanent eight-test A.7 acceptance matrix and one
@@ -34,8 +35,8 @@ cover all A.7 requirements:
    has a keyed empty successful builder result and exactly zero engine queries.
 5. Controlled-page hard failures: a missing workflow definition gives the
    keyed error naming workflow type and instance ID without success publication;
-   blank/null-style and repeated cursors give keyed finite pagination errors
-   after one and two calls respectively.
+   null, blank, and repeated cursors give keyed finite pagination errors
+   after one, one, and two calls respectively.
 6. Retry starts from a first controlled query failure, verifies root/error/
    retry keys and zero successful builders, then retries into a real local
    engine and publishes only its fresh resolved row after exactly two queries.
