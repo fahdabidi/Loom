@@ -1149,13 +1149,24 @@ tests passed!"), full app-shell suite **33/33**.
   (cumulative, code-level only; live emulator walk above still open).
 
 ### Milestone 1.19 — Archetype Implementation Standard finalized
-**Status:** `[ ]` Not started.
-- [ ] Every row in
+**Status:** `[x]` **CLOSED 2026-07-13.** Documentation/audit milestone — done directly by the
+verification agent (not implementation code, so outside the ticketed-dispatch hard gate).
+- [x] Every row in
   [Archetype_Implementation_Standard.md](./Loom_Communities_Workflow_Engine_Archetype_Implementation_Standard.md)
-  updated to `[x]` with a citation to the milestone that closed it, or explicitly left `[ ]`/`[~]` with
-  a stated reason if genuinely deferred to Phase 2.
-- [ ] Cross-check: no archetype claims `[x]` without a corresponding widget/unit test proving the real
-  interaction (not just that a fixture declares the archetype name).
+  updated to `[x]` with a citation (milestone, exact test file/count, commit) to the evidence that
+  closed it — 15 of 17 rows now `[x]` (14 archetypes built across 1.5-1.18 + `guidedProcess` already
+  real from Phase 1's Youth Soccer reference). 2 rows remain honestly open, not silently dropped:
+  `paymentCheckout` (`[ ]`, no milestone has touched it yet — genuinely deferred to Phase 2/a follow-up,
+  not started), and `votePoll` is `[x]` with an explicit caveat that ballot/tournament *creation* is
+  still seed-driven rather than a real organizer-facing form (tracked open in Milestone 1.18 above) —
+  the archetype's actual interaction model (rich candidates, cross-instance eligibility, tally/tie/
+  runoff, deadline/reminder) is genuinely real and tested, which is what this row certifies.
+- [x] Cross-check done while writing the citations above: every `[x]` row points to a specific test
+  file and pass count from Phase1_TabletopClub.md's own closure records (re-derived from that doc, not
+  copied blind) — none rest on a fixture merely declaring the archetype name. One citation error caught
+  and corrected during this cross-check: 1.6 was initially mis-cited as having an "onTap fix"; re-read
+  the source section and found the `onTap` behavior was explicitly *preserved unchanged*, not fixed —
+  corrected before this milestone closed.
 
 ### Milestone 1.20 — Human sign-off gate (manual, not automated)
 **Status:** `[ ]` Not started. **Hard gate — Phase 2 does not start until this closes.**

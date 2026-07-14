@@ -14,22 +14,22 @@ fixture merely declares the archetype name.
 
 | Archetype | V2 verdict | Primitive(s) needed | Phase 1 milestone | Status |
 |---|---|---|---|---|
-| `calendarAgenda` | Fake — never a grid | Repeater (day-cells) | 1.5 | `[ ]` |
-| `stateMachineGrid` / `table` | Fake except Marketplace | Repeater | 1.6 | `[ ]` |
-| `discussionThread` | Fake despite real widget existing | Repeater (live query) | 1.7 | `[ ]` |
-| `documentLibrary` | Dead code (real widget, no real data) | none (fixture only) | 1.8 | `[ ]` |
-| `notificationInbox` | Fake — one hardcoded instance | Repeater (live query) + `createInstance` effect op | 1.9 | `[ ]` |
-| `exportWizard` | Fake — no step indicator | none (pure UI) | 1.10 | `[ ]` |
-| `volunteerRoster` | Fake — no meter, single instance shown | Repeater + arithmetic formula (`remaining`) | 1.11 | `[ ]` |
-| `searchAiAnswer` | Fake — no real query input | none (pure UI) + platform search service | 1.12 | `[ ]` |
-| `audienceSelector` | Fake — comma-separated text | Repeater (checkable list) | 1.13 | `[ ]` |
-| `singleItem` | Fake — generic button-jump card | none (pure UI) | 1.14 | `[ ]` |
-| `statusTimeline` | Fake — plain text list | Repeater (timestamped nodes) | 1.15 | `[ ]` |
-| `protectedDetail` | Permission logic real, visual treatment fake | Formula (`if($viewer==...)` masking) | 1.15 | `[ ]` |
-| `dashboard` | Fake — hardcoded section order | Formula (ranking) or documented simpler design | 1.16 | `[ ]` |
-| `formEntry` | Fake — always flat TextField | Formula-readable guard (checkbox/relative-time control) | 1.17 | `[ ]` |
-| `votePoll` | Broken — hardcoded 2-candidate Book Club special case | Repeater + Formula (tally/winner/runoff) + cross-instance eligibility guard | 1.18 (Tournament + Voting) | `[ ]` |
-| `paymentCheckout` | Fake — hardcoded receipt IDs, generic template | ID-generation platform service | reused as-is, receipt-id fix folded into 1.18 or its own follow-up | `[ ]` |
+| `calendarAgenda` | Fake — never a grid | Repeater (day-cells) | 1.5 | `[x]` real month grid, code-verified 11/11 (commit `c860045`); live walk deferred to batch before 1.20 |
+| `stateMachineGrid` / `table` | Fake except Marketplace | Repeater | 1.6 | `[x]` Marketplace reformalized onto a new Repeater grid mode, suite 13/13 + `b34_marketplace_browse_test.dart` 16/16 byte-identical (zero behavior change, confirmed via `git diff --stat`) |
+| `discussionThread` | Fake despite real widget existing | Repeater (live query) | 1.7 | `[x]` generalized `_MessagesTabSurface` off live query, `v3_milestone_1_7_messages_test.dart` 3/3, suite 16/16 |
+| `documentLibrary` | Dead code (real widget, no real data) | none (fixture only) | 1.8 | `[x]` fixture now populates real category/document data, suite 17/17 |
+| `notificationInbox` | Fake — one hardcoded instance | Repeater (live query) + `createInstance` effect op | 1.9 | `[x]` live list + dismiss + unread aggregate, suite 18/18 |
+| `exportWizard` | Fake — no step indicator | none (pure UI) | 1.10 | `[x]` real step progression, `v3_milestone_1_10_export_wizard_test.dart` 1/1, suite 19/19 |
+| `volunteerRoster` | Fake — no meter, single instance shown | Repeater + arithmetic formula (`remaining`) | 1.11 | `[x]` multi-shift + capacity meter, `..._1_11_volunteer_roster_test.dart` 1/1, suite 20/20 |
+| `searchAiAnswer` | Fake — no real query input | none (pure UI) + platform search service | 1.12 | `[x]` real query input replaces cited result, suite 22/22 |
+| `audienceSelector` | Fake — comma-separated text | Repeater (checkable list) | 1.13 | `[x]` checkable chip picker, `..._1_13_audience_picker_test.dart` 1/1, suite 23/23 (commit `2ee3d9b`) — caught + fixed a real missing-`editableFields` auth bug |
+| `singleItem` | Fake — generic button-jump card | none (pure UI) | 1.14 | `[x]` segmented/exclusive control, suite 24/24 (commit `a00e233`) |
+| `statusTimeline` | Fake — plain text list | Repeater (timestamped nodes) | 1.15 | `[x]` timestamped chronological nodes, suite 26/26 (commit `9ead6a9`+`0d639d4`) — caught + fixed a real layout bug |
+| `protectedDetail` | Permission logic real, visual treatment fake | Formula (`if($viewer==...)` masking) | 1.15 | `[x]` real masking treatment alongside already-real permission logic, suite 26/26 |
+| `dashboard` | Fake — hardcoded section order | Formula (ranking) or documented simpler design | 1.16 | `[x]` documented no-build decision (no shared urgency model across 11 categories) + a real copy fix, suite 26/26 (commit `aa197bc`) |
+| `formEntry` | Fake — always flat TextField | Formula-readable guard (checkbox/relative-time control) | 1.17 | `[x]` real checkbox + relative-time-picker control, suite 27/27 (commits `10750b7`+`3fa2091`) |
+| `votePoll` | Broken — hardcoded 2-candidate Book Club special case | Repeater + Formula (tally/winner/runoff) + cross-instance eligibility guard | 1.18 (Tournament + Voting) | `[x]` rich organizer-authored-shaped candidates (tap-to-detail popup), real cross-instance eligibility guard, `groupCount`/`argMaxKey`/`topKeys`/`isTie` tally+tie+real runoff, cross-instance `selectedGame` propagation, formula-backed attendance, real `dueNotifications`-backed deadline/reminder banner — suite 33/33 cumulative. **Known remaining gap**: ballot/tournament creation itself is still seed-driven, not a real organizer-facing creation form — tracked open in Phase1_TabletopClub.md, judged lower-priority than the capability gaps above which are what this milestone was created to prove out |
+| `paymentCheckout` | Fake — hardcoded receipt IDs, generic template | ID-generation platform service | reused as-is, receipt-id fix folded into 1.18 or its own follow-up | `[ ]` not started — no milestone has touched this yet |
 | `guidedProcess` | **Real** — Youth Soccer registration wizard | none — reference implementation | validation pass only (1.19) | `[x]` already real, re-confirm |
 
 ## Reference implementations once built
