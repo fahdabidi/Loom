@@ -146,6 +146,9 @@ class _EngineNativeBindingDispatcherState
           limit: pageSize,
           cursor: cursor,
         );
+        // A replaced dispatcher must not turn a completed stale page into
+        // further pagination work (or a later stale publication).
+        if (!mounted || generation != _generation) return;
         instances.addAll(page.items);
         if (!page.hasMore) break;
         final nextCursor = page.nextCursor;
