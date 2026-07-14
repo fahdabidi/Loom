@@ -208,9 +208,10 @@ class _EngineNativeCalendarContentState
         ? sameInstance.first
         : entries.first;
     final changed = widget.presentation.selectedIdentity != next.identity;
+    final dateChanged = widget.presentation.selectedDate != next.dateKey;
     widget.presentation.selectedIdentity = next.identity;
     widget.presentation.selectedInstanceId = next.instanceId;
-    if (changed || widget.presentation.selectedDate == null) {
+    if (changed || dateChanged || widget.presentation.selectedDate == null) {
       widget.presentation.selectedDate = next.dateKey;
       widget.presentation.month = DateTime(next.date.year, next.date.month);
     }
@@ -276,7 +277,9 @@ class _EngineNativeCalendarContentState
     // available to the engine, but are intentionally absent from Calendar UI.
     if (field.type.endsWith('[]') ||
         field.type == 'list' ||
-        field.writableBy == 'effect' ||
+        field.type == 'map' ||
+        field.type == 'object' ||
+        field.type == 'response-map' ||
         field.storage == 'reference')
       return false;
     if (field.type == 'bool' && field.formula != null) return false;

@@ -22,7 +22,13 @@ File _fixtureFile() {
 }
 
 class _InstalledTabletop {
-  const _InstalledTabletop(this.experience, this.engine, this.temp);
+  const _InstalledTabletop(
+    this.community,
+    this.experience,
+    this.engine,
+    this.temp,
+  );
+  final LocalInstalledCommunity community;
   final LoomExperienceDefinition experience;
   final WorkflowEngineApi engine;
   final Directory temp;
@@ -65,6 +71,7 @@ Future<_InstalledTabletop> _install(String extensionId) async {
       experienceConfiguration: community.experienceConfiguration,
     );
     return _InstalledTabletop(
+      community,
       experience,
       await workflowEngineForExtensionId(community.extensionId),
       temp,
@@ -74,6 +81,13 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     rethrow;
   }
 }
+
+Widget _appShell(_InstalledTabletop installed) => MaterialApp(
+  home: LocalExtensionScreen(
+    community: installed.community,
+    seedDataFiles: const [],
+  ),
+);
 
 LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
     installed.experience.personas!.firstWhere(
@@ -172,6 +186,14 @@ Future<void> _selectAgenda(
   await _pumpUntil(tester, row);
   await tester.ensureVisible(row);
   await tester.tap(row);
+  await tester.pump();
+}
+
+Future<void> _selectCalendarTab(WidgetTester tester) async {
+  final tab = find.byKey(const ValueKey('community-tab-calendar'));
+  await _pumpUntil(tester, tab);
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
   await tester.pump();
 }
 
@@ -316,7 +338,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('20'), findsWidgets);
+      expect(find.text('20 seats'), findsOneWidget);
       await tester.tap(
         find.byKey(
           const ValueKey(
@@ -333,7 +355,149 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(find.text('Selected game: TBD'), findsOneWidget);
     } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets(
+    'App Shell selects the frozen engine-native Calendar through its shared engine',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-app-shell'),
+      ))!;
+      try {
+        await tester.pumpWidget(_appShell(installed));
+        await _selectCalendarTab(tester);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+        );
+        expect(
+          find.byKey(const ValueKey('calendar-tab-surface')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-summer-tournament-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets('repairs a real projection error and Retry re-queries Calendar', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('a8-projection-retry'),
+    ))!;
+    try {
+      await tester.runAsync(
+        () => installed.engine.updateInstanceFields(
+          workflowType: 'event-rsvp',
+          instanceId: 'event-friday-game-night',
+          fieldUpdates: const {'eventDate': 'not-a-date'},
+          personaId: 'tabletop-organizer',
+        ),
+      );
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _pumpUntil(
+        tester,
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-projection-error-calendar::event-friday-game-night::0',
+          ),
+        ),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-projection-retry')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+        findsNothing,
+      );
+      await tester.runAsync(
+        () => installed.engine.updateInstanceFields(
+          workflowType: 'event-rsvp',
+          instanceId: 'event-friday-game-night',
+          fieldUpdates: const {'eventDate': '2026-07-10'},
+          personaId: 'tabletop-organizer',
+        ),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('engine-native-calendar-projection-retry')),
+      );
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        ),
+        findsOneWidget,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets('renders the explicit empty Calendar state with a real engine', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('a8-empty-definitions'),
+    ))!;
+    final database = WorkflowDatabase.memory();
+    final engine = LocalWorkflowEngineApi(
+      db: database,
+      communityId: 'a8-empty-calendar',
+    );
+    for (final definition in installed.experience.workflowDefinitions!.values) {
+      engine.registerDefinition(definition);
+    }
+    try {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: EngineNativeCalendarSurface(
+              experience: installed.experience,
+              persona: _persona(installed, 'tabletop-member'),
+              accent: Colors.deepPurple,
+              engine: engine,
+            ),
+          ),
+        ),
+      );
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-empty')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+        findsNothing,
+      );
+      expect(find.byType(GenericWorkflowInstanceCard), findsNothing);
+    } finally {
+      database.close();
       await tester.runAsync(installed.dispose);
     }
   });
