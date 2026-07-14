@@ -47,6 +47,51 @@ Widget _host() => MaterialApp(
   home: LocalExtensionScreen(community: _community(), seedDataFiles: const []),
 );
 
+LocalInstalledCommunity _popupCommunity() => const LocalInstalledCommunity(
+  communityId: 'v3-tournament-popup-community',
+  displayName: 'Tabletop Club',
+  extensionId: 'v3-tournament-popup',
+  logoAssetId: null,
+  cardImageAssetId: null,
+  heroImageAssetId: null,
+  accentColor: '#4a3b2a',
+  experienceConfiguration: {
+    'workflows': [
+      {
+        'workflowId': 'tabletop-tournament-ballot-workflow',
+        'title': 'Tournament ballot',
+        'entryText': 'Vote for the next tournament game.',
+        'actionText': 'Cast your vote.',
+        'resultText': 'Vote recorded.',
+      },
+    ],
+    'personas': [
+      {
+        'personaId': 'alex',
+        'label': 'Alex',
+        'roleLabel': 'Member',
+        'description': 'Member',
+      },
+    ],
+    'tournamentBallot': {
+      'eventId': 'tabletop-friday-tournament',
+      'goingPersonaIds': _going,
+      'candidates': [
+        {'id': 'Catan', 'name': 'Catan', 'description': 'Trade game'},
+        {'id': 'Azul', 'name': 'Azul', 'description': 'Tile game'},
+        {'id': 'Wingspan', 'name': 'Wingspan', 'description': 'Bird game'},
+      ],
+    },
+  },
+);
+
+Widget _popupHost() => MaterialApp(
+  home: LocalExtensionScreen(
+    community: _popupCommunity(),
+    seedDataFiles: const [],
+  ),
+);
+
 LocalInstalledCommunity _attendanceCommunity() => const LocalInstalledCommunity(
   communityId: 'v3-tournament-attendance-community',
   displayName: 'Tabletop Club',
@@ -116,7 +161,7 @@ void main() {
   testWidgets('tapping a candidate opens and closes its detail dialog', (
     tester,
   ) async {
-    await tester.pumpWidget(_host());
+    await tester.pumpWidget(_popupHost());
     await _tapVisible(
       tester,
       find.byKey(const ValueKey('community-tab-ballot')),
@@ -143,6 +188,10 @@ void main() {
     await _tapVisible(
       tester,
       find.byKey(const ValueKey('tournament-candidate-detail-close')),
+    );
+    await _pumpUntilAbsent(
+      tester,
+      find.byKey(const ValueKey('tournament-candidate-detail-dialog')),
     );
     expect(
       find.byKey(const ValueKey('tournament-candidate-detail-dialog')),
