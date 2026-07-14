@@ -488,10 +488,12 @@ class LoomTournamentBallotSeed {
     required this.eventId,
     required this.candidates,
     required this.goingPersonaIds,
+    this.minimumAttendance = 1,
   });
   final String eventId;
   final List<LoomTournamentCandidate> candidates;
   final List<String> goingPersonaIds;
+  final int minimumAttendance;
 }
 
 class LoomProductionWorkflowContract {

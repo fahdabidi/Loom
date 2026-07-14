@@ -791,12 +791,14 @@ LoomTournamentBallotSeed? _parseTournamentBallotSeed(Object? value) {
         ),
   ];
   if (candidates.isEmpty) return null;
+  final minimumAttendance = value['minimumAttendance'];
   return LoomTournamentBallotSeed(
     eventId: eventId,
     candidates: candidates,
     goingPersonaIds: [
       for (final entry in goingRaw is List ? goingRaw : const []) '$entry',
     ],
+    minimumAttendance: minimumAttendance is int ? minimumAttendance : 1,
   );
 }
 

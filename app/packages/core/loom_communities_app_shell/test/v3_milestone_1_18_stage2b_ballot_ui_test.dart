@@ -47,6 +47,49 @@ Widget _host() => MaterialApp(
   home: LocalExtensionScreen(community: _community(), seedDataFiles: const []),
 );
 
+LocalInstalledCommunity _attendanceCommunity() => const LocalInstalledCommunity(
+  communityId: 'v3-tournament-attendance-community',
+  displayName: 'Tabletop Club',
+  extensionId: 'v3-tournament-attendance',
+  logoAssetId: null,
+  cardImageAssetId: null,
+  heroImageAssetId: null,
+  accentColor: '#4a3b2a',
+  experienceConfiguration: {
+    'workflows': [
+      {
+        'workflowId': 'ballot',
+        'title': 'Ballot',
+        'entryText': 'Vote',
+        'actionText': 'Vote',
+        'resultText': 'Voted',
+      },
+    ],
+    'personas': [
+      {
+        'personaId': 'bea',
+        'label': 'Bea',
+        'roleLabel': 'Member',
+        'description': 'Member',
+      },
+    ],
+    'tournamentBallot': {
+      'eventId': 'attendance-event',
+      'minimumAttendance': 3,
+      'goingPersonaIds': ['alex'],
+      'candidates': [
+        {'id': 'Catan', 'name': 'Catan'},
+      ],
+    },
+  },
+);
+Widget _attendanceHost() => MaterialApp(
+  home: LocalExtensionScreen(
+    community: _attendanceCommunity(),
+    seedDataFiles: const [],
+  ),
+);
+
 Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 30; attempt += 1) {
     if (finder.evaluate().isNotEmpty) return;
@@ -70,6 +113,24 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('RSVP updates formula-backed attendance', (tester) async {
+    await tester.pumpWidget(_attendanceHost());
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('community-tab-ballot')),
+    );
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tournament-attendance')),
+    );
+    expect(find.text('Accepted: 1 / 3'), findsOneWidget);
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('tournament-rsvp-going')),
+    );
+    await _pumpUntilFound(tester, find.text('Accepted: 2 / 3'));
+    expect(find.text('Accepted: 2 / 3'), findsOneWidget);
+  });
   testWidgets(
     'a genuine tie creates a real runoff ballot with only tied candidates',
     (tester) async {

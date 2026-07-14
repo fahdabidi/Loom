@@ -3464,6 +3464,11 @@ class _TournamentBallotTabSurfaceState
     await _load();
   }
 
+  Future<void> _rsvpGoing() async {
+    await _store.rsvpGoing(widget.persona.personaId);
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final foreground =
@@ -3479,6 +3484,8 @@ class _TournamentBallotTabSurfaceState
     final candidates = _store.candidatesFor(ballot);
     final voteCounts = _store.voteCountsFor(ballot);
     final selectedGame = '${_event?.instanceData['selectedGame'] ?? 'TBD'}';
+    final accepted = _event?.instanceData['accepted'] ?? 0;
+    final minimumAttendance = _event?.instanceData['minimumAttendance'] ?? 0;
     return Column(
       key: const ValueKey('tournament-ballot-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -3487,6 +3494,15 @@ class _TournamentBallotTabSurfaceState
           'Selected game: $selectedGame',
           key: const ValueKey('tournament-selected-game'),
           style: TextStyle(color: foreground, fontWeight: FontWeight.w800),
+        ),
+        Text(
+          'Accepted: $accepted / $minimumAttendance',
+          key: const ValueKey('tournament-attendance'),
+        ),
+        FilledButton(
+          key: const ValueKey('tournament-rsvp-going'),
+          onPressed: () => unawaited(_rsvpGoing()),
+          child: const Text("I'm going"),
         ),
         const SizedBox(height: 12),
         RepeaterSurface.static(
@@ -3565,6 +3581,7 @@ class _TournamentBallotEngineStore {
       initialInstanceData: {
         'goingPersonaIds': seed.goingPersonaIds,
         'selectedGame': 'TBD',
+        'minimumAttendance': seed.minimumAttendance,
       },
     );
     _currentBallotId = await _createBallot(seed.candidates);
@@ -3644,6 +3661,13 @@ class _TournamentBallotEngineStore {
     );
   }
 
+  Future<void> rsvpGoing(String personaId) => _engine.applyTransition(
+    workflowType: eventWorkflowType,
+    instanceId: _eventInstanceId,
+    transitionId: 'rsvp-going',
+    personaId: personaId,
+  );
+
   Future<void> closeVote(WorkflowInstance ballot) async {
     final isTie = ballot.instanceData['isTie'] == true;
     if (isTie) {
@@ -3673,7 +3697,21 @@ class _TournamentBallotEngineStore {
         editableFields: ['goingPersonaIds', 'selectedGame'],
       ),
     },
-    transitions: [],
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'rsvp-going',
+        label: 'RSVP going',
+        from: ['open'],
+        to: 'open',
+        effects: [
+          WorkflowEffect(
+            op: 'appendUnique',
+            key: 'goingPersonaIds',
+            value: r'$actor',
+          ),
+        ],
+      ),
+    ],
     renderBindings: [
       RenderBinding(
         states: ['open'],
@@ -3686,6 +3724,11 @@ class _TournamentBallotEngineStore {
     instanceDataSchema: {
       'goingPersonaIds': InstanceDataField(type: 'list'),
       'selectedGame': InstanceDataField(type: 'string'),
+      'minimumAttendance': InstanceDataField(type: 'number'),
+      'accepted': InstanceDataField(
+        type: 'number',
+        formula: 'size(goingPersonaIds)',
+      ),
     },
   );
 
