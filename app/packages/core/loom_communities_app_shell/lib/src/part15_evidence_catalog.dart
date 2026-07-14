@@ -46,6 +46,19 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   if (experienceConfiguration.isEmpty) {
     return null;
   }
+  final experienceVersion = experienceConfiguration['experienceSchemaVersion'];
+  if (experienceVersion == 2) {
+    return _experienceFromEngineNativeConfiguration(
+      extensionId,
+      displayName: displayName,
+      experienceConfiguration: experienceConfiguration,
+    );
+  }
+  if (experienceVersion != null && experienceVersion != 1) {
+    throw FormatException(
+      'Unsupported experience.experienceSchemaVersion "$experienceVersion" for extension "$extensionId". Supported: 1 (legacy), 2 (engine-native).',
+    );
+  }
   final workflowsRaw = experienceConfiguration['workflows'];
   if (workflowsRaw is! List) {
     return null;
@@ -217,6 +230,73 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     tournamentBallot: tournamentBallot,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
+  );
+}
+
+LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
+  String extensionId, {
+  String? displayName,
+  required Map<String, Object?> experienceConfiguration,
+}) {
+  final grammarVersion = experienceConfiguration['workflowGrammarVersion'];
+  if (grammarVersion != 1)
+    throw FormatException(
+      'Unsupported experience.workflowGrammarVersion "$grammarVersion" for extension "$extensionId" (experienceSchemaVersion 2 requires grammar version 1).',
+    );
+  final rawDefinitions = experienceConfiguration['workflowDefinitions'];
+  if (rawDefinitions is! Map || rawDefinitions.isEmpty) return null;
+  final definitions = <String, LoomWorkflowStateMachine>{};
+  for (final entry in rawDefinitions.entries) {
+    if (entry.value is! Map) continue;
+    try {
+      definitions[entry.key.toString()] = LoomWorkflowStateMachine.fromJson(
+        Map<String, dynamic>.from(entry.value as Map),
+        entry.key.toString(),
+      );
+    } catch (_) {}
+  }
+  if (definitions.isEmpty) return null;
+  final rawInstances = experienceConfiguration['workflowInstances'];
+  final instances = <LoomWorkflowSeedInstance>[];
+  if (rawInstances is List)
+    for (final entry in rawInstances) {
+      if (entry is! Map) continue;
+      try {
+        instances.add(
+          LoomWorkflowSeedInstance.fromJson(Map<String, dynamic>.from(entry)),
+        );
+      } catch (_) {}
+    }
+  final personasRaw = experienceConfiguration['personas'];
+  final personas = personasRaw is List
+      ? [
+          for (final entry in personasRaw)
+            if (entry is Map<String, Object?>)
+              if (_parsePersonaDefinition(entry) case final p?) p,
+        ]
+      : <LoomPersonaDefinition>[];
+  final themeRaw = experienceConfiguration['theme'];
+  return LoomExperienceDefinition(
+    extensionId: extensionId,
+    displayName: _shellStringOr(
+      experienceConfiguration['displayName'],
+      displayName ?? 'Local Community',
+    ),
+    tagline: _shellStringOr(
+      experienceConfiguration['tagline'],
+      'Local community tools and member actions.',
+    ),
+    accentColor:
+        _parseShellHexColor(experienceConfiguration['accentColor']) ??
+        0xff246b62,
+    workflows: const [],
+    personas: personas.isEmpty ? null : personas,
+    themeOverride: _parseCardTheme(themeRaw),
+    tabThemeOverrides: _parseTabThemes(
+      themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
+    ),
+    workflowDefinitions: definitions,
+    workflowInstances: instances.isEmpty ? null : instances,
   );
 }
 

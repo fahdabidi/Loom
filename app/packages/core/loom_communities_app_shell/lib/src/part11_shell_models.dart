@@ -1408,6 +1408,8 @@ class LoomExperienceDefinition {
     this.marketplaceTemplate,
     this.themeOverride,
     this.tabThemeOverrides = const {},
+    this.workflowDefinitions,
+    this.workflowInstances,
   });
 
   final String extensionId;
@@ -1432,6 +1434,33 @@ class LoomExperienceDefinition {
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;
   final Map<String, LoomCardTheme> tabThemeOverrides;
+  final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
+  final List<LoomWorkflowSeedInstance>? workflowInstances;
+}
+
+class LoomWorkflowSeedInstance {
+  final String instanceId;
+  final String workflowType;
+  final String currentState;
+  final Map<String, dynamic> instanceData;
+  final String? createdByPersonaId;
+  const LoomWorkflowSeedInstance({
+    required this.instanceId,
+    required this.workflowType,
+    required this.currentState,
+    required this.instanceData,
+    this.createdByPersonaId,
+  });
+  factory LoomWorkflowSeedInstance.fromJson(Map<String, dynamic> json) =>
+      LoomWorkflowSeedInstance(
+        instanceId: json['instanceId'] as String,
+        workflowType: json['workflowType'] as String,
+        currentState: json['currentState'] as String,
+        instanceData: json['instanceData'] is Map
+            ? Map<String, dynamic>.from(json['instanceData'] as Map)
+            : const {},
+        createdByPersonaId: json['createdByPersonaId'] as String?,
+      );
 }
 
 class LoomEvidenceTarget {
