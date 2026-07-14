@@ -686,4 +686,3 @@ class _DefaultProductFrame extends StatelessWidget {
     );
   }
 }
-

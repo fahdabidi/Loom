@@ -10,8 +10,7 @@ import '../models/workflow_models.dart';
 List<RenderBinding> resolveBindings(
   LoomWorkflowStateMachine machine,
   String currentState,
-  Iterable<String> personaRoles,
-    {
+  Iterable<String> personaRoles, {
   Map<String, dynamic> instanceData = const {},
   String? personaId,
 }) {

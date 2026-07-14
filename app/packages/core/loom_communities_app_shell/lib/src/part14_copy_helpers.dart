@@ -978,4 +978,3 @@ IconData _iconFor(String category) {
   }
   return Icons.assignment_outlined;
 }
-

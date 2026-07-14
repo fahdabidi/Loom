@@ -420,7 +420,8 @@ class _InteractionModelSummary extends StatelessWidget {
         color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18),
+          color:
+              modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18),
         ),
       ),
       child: Padding(
@@ -873,4 +874,3 @@ String _reviewTrustFor(String category) {
   }
   return 'Private member details stay protected.';
 }
-

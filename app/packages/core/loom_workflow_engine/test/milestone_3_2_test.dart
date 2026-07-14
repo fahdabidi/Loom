@@ -30,8 +30,12 @@ void main() {
         tabId: 'marketplace',
         personaId: 'tabletop-member',
       );
-      final listing = page.items.firstWhere((item) => item.instanceId == listingId);
-      final completed = await api.completedWorkflowIdsForPersona('tabletop-member');
+      final listing = page.items.firstWhere(
+        (item) => item.instanceId == listingId,
+      );
+      final completed = await api.completedWorkflowIdsForPersona(
+        'tabletop-member',
+      );
 
       final transitions = api.availableTransitions(
         workflowType: listing.workflowType,
@@ -50,8 +54,11 @@ void main() {
         ),
         isTrue,
       );
-      expect(transitions, isEmpty,
-          reason: 'sync availableTransitions cannot query cross-workflow state');
+      expect(
+        transitions,
+        isEmpty,
+        reason: 'sync availableTransitions cannot query cross-workflow state',
+      );
 
       final result = await api.applyTransition(
         workflowType: listing.workflowType,
@@ -82,7 +89,9 @@ void main() {
         personaId: 'tabletop-member',
       );
 
-      final completed = await api.completedWorkflowIdsForPersona('tabletop-member');
+      final completed = await api.completedWorkflowIdsForPersona(
+        'tabletop-member',
+      );
       expect(completed, isNot(contains('tabletop-membership-dues-current')));
       await expectLater(
         api.applyTransition(
@@ -96,38 +105,41 @@ void main() {
       db.close();
     });
 
-    test('completed lookup is persona-specific across workflow types', () async {
-      final db = WorkflowDatabase.memory();
-      final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
-      api.registerDefinition(_duesMachine());
+    test(
+      'completed lookup is persona-specific across workflow types',
+      () async {
+        final db = WorkflowDatabase.memory();
+        final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
+        api.registerDefinition(_duesMachine());
 
-      final paidDuesId = await api.createInstance(
-        workflowType: 'tabletop-club-dues-payment',
-        initialInstanceData: _duesData(),
-        personaId: 'tabletop-member',
-      );
-      await api.createInstance(
-        workflowType: 'tabletop-club-dues-payment',
-        initialInstanceData: _duesData(),
-        personaId: 'other-member',
-      );
-      await api.applyTransition(
-        workflowType: 'tabletop-club-dues-payment',
-        instanceId: paidDuesId,
-        transitionId: 'pay',
-        personaId: 'tabletop-member',
-      );
+        final paidDuesId = await api.createInstance(
+          workflowType: 'tabletop-club-dues-payment',
+          initialInstanceData: _duesData(),
+          personaId: 'tabletop-member',
+        );
+        await api.createInstance(
+          workflowType: 'tabletop-club-dues-payment',
+          initialInstanceData: _duesData(),
+          personaId: 'other-member',
+        );
+        await api.applyTransition(
+          workflowType: 'tabletop-club-dues-payment',
+          instanceId: paidDuesId,
+          transitionId: 'pay',
+          personaId: 'tabletop-member',
+        );
 
-      expect(
-        await api.completedWorkflowIdsForPersona('tabletop-member'),
-        contains('tabletop-membership-dues-current'),
-      );
-      expect(
-        await api.completedWorkflowIdsForPersona('other-member'),
-        isNot(contains('tabletop-membership-dues-current')),
-      );
-      db.close();
-    });
+        expect(
+          await api.completedWorkflowIdsForPersona('tabletop-member'),
+          contains('tabletop-membership-dues-current'),
+        );
+        expect(
+          await api.completedWorkflowIdsForPersona('other-member'),
+          isNot(contains('tabletop-membership-dues-current')),
+        );
+        db.close();
+      },
+    );
   });
 }
 
@@ -177,11 +189,7 @@ LoomWorkflowStateMachine _loanMachine() {
           requiresWorkflowsComplete: ['tabletop-membership-dues-current'],
         ),
         effects: [
-          WorkflowEffect(
-            op: 'set',
-            key: 'holderPersonaId',
-            value: r'$actor',
-          ),
+          WorkflowEffect(op: 'set', key: 'holderPersonaId', value: r'$actor'),
         ],
       ),
     ],
@@ -201,8 +209,5 @@ Map<String, dynamic> _duesData() {
 }
 
 Map<String, dynamic> _listingData() {
-  return {
-    'title': 'Root',
-    'holderPersonaId': '',
-  };
+  return {'title': 'Root', 'holderPersonaId': ''};
 }

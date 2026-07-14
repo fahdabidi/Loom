@@ -13,8 +13,13 @@ List<LoomWorkflowTransition> availableTransitions(
 }) {
   return machine
       .transitionsFrom(currentState)
-      .where((t) =>
-          evaluateGuard(t.guard, personaId, instanceData,
-              completedWorkflowIds: completedWorkflowIds))
+      .where(
+        (t) => evaluateGuard(
+          t.guard,
+          personaId,
+          instanceData,
+          completedWorkflowIds: completedWorkflowIds,
+        ),
+      )
       .toList();
 }

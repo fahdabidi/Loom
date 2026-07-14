@@ -80,15 +80,14 @@ LoomWorkflowStateMachine _loanMachine() {
 }
 ''';
   return LoomWorkflowStateMachine.fromJson(
-      jsonDecode(json) as Map<String, dynamic>, 'equipment-loan');
+    jsonDecode(json) as Map<String, dynamic>,
+    'equipment-loan',
+  );
 }
 
 LocalWorkflowEngineApi _makeApi({String communityId = 'tabletop'}) {
   final db = WorkflowDatabase.memory();
-  final api = LocalWorkflowEngineApi(
-    db: db,
-    communityId: communityId,
-  );
+  final api = LocalWorkflowEngineApi(db: db, communityId: communityId);
   api.registerDefinition(_loanMachine());
   return api;
 }
@@ -99,20 +98,24 @@ LocalWorkflowEngineApi _makeApi({String communityId = 'tabletop'}) {
 
 void main() {
   group('Milestone 1.2 — WorkflowEngineApi + SQLite LocalWorkflowEngineApi', () {
-    test('WorkflowDatabase uses drift NativeDatabase SQLite, not a fallback store',
-        () async {
-      final db = WorkflowDatabase.memory();
+    test(
+      'WorkflowDatabase uses drift NativeDatabase SQLite, not a fallback store',
+      () async {
+        final db = WorkflowDatabase.memory();
 
-      expect(db.isSqliteBacked, isTrue);
-      expect(db.storageBackend, 'drift-native-sqlite');
-      expect(await db.sqliteVersion(), matches(RegExp(r'^\d+\.\d+\.\d+')));
+        expect(db.isSqliteBacked, isTrue);
+        expect(db.storageBackend, 'drift-native-sqlite');
+        expect(await db.sqliteVersion(), matches(RegExp(r'^\d+\.\d+\.\d+')));
 
-      await db.execute(
-        'CREATE TABLE workflow_backing_probe (id TEXT PRIMARY KEY)',
-      );
-      await db.execute("INSERT INTO workflow_backing_probe (id) VALUES ('ok')");
-      db.close();
-    });
+        await db.execute(
+          'CREATE TABLE workflow_backing_probe (id TEXT PRIMARY KEY)',
+        );
+        await db.execute(
+          "INSERT INTO workflow_backing_probe (id) VALUES ('ok')",
+        );
+        db.close();
+      },
+    );
 
     // ── 1. createInstance ────────────────────────────────────────────
     group('createInstance', () {
@@ -120,14 +123,14 @@ void main() {
         final api = _makeApi();
 
         final id = await api.createInstance(
-            workflowType: 'equipment-loan',
-            initialInstanceData: {
-              'title': 'Catan',
-              'category': 'Board Games',
-              'condition': 'Like new',
-              'description': 'A classic game.',
-              'queuedPersonaIds': <String>[],
-            },
+          workflowType: 'equipment-loan',
+          initialInstanceData: {
+            'title': 'Catan',
+            'category': 'Board Games',
+            'condition': 'Like new',
+            'description': 'A classic game.',
+            'queuedPersonaIds': <String>[],
+          },
           personaId: 'member-1',
         );
 
@@ -142,22 +145,30 @@ void main() {
         expect(page.items.any((i) => i.instanceId == id), isTrue);
       });
 
-      test('missing required field throws WorkflowValidationError naming the field', () async {
-        final api = await _makeApi();
+      test(
+        'missing required field throws WorkflowValidationError naming the field',
+        () async {
+          final api = await _makeApi();
 
-        await expectLater(
-          api.createInstance(
-            workflowType: 'equipment-loan',
-            initialInstanceData: {
-              'category': 'Board Games',
-              // title is required but missing
-            },
-            personaId: 'member-1',
-          ),
-          throwsA(isA<WorkflowValidationError>()
-              .having((e) => e.fieldName, 'fieldName', 'title')),
-        );
-      });
+          await expectLater(
+            api.createInstance(
+              workflowType: 'equipment-loan',
+              initialInstanceData: {
+                'category': 'Board Games',
+                // title is required but missing
+              },
+              personaId: 'member-1',
+            ),
+            throwsA(
+              isA<WorkflowValidationError>().having(
+                (e) => e.fieldName,
+                'fieldName',
+                'title',
+              ),
+            ),
+          );
+        },
+      );
     });
 
     // ── 2. updateInstanceFields ──────────────────────────────────────
@@ -186,121 +197,128 @@ void main() {
         expect(inst.instanceData['title'], 'Catan v2');
       });
 
-      test('editing a non-editable field (holderPersonaId) is rejected', () async {
-        final api = await _makeApi();
-        final id = await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {'title': 'Catan'},
-          personaId: 'member-1',
-        );
+      test(
+        'editing a non-editable field (holderPersonaId) is rejected',
+        () async {
+          final api = await _makeApi();
+          final id = await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {'title': 'Catan'},
+            personaId: 'member-1',
+          );
 
-        // holderPersonaId is writableBy: "effect" — not in editableFields.
-        await expectLater(
-          api.updateInstanceFields(
+          // holderPersonaId is writableBy: "effect" — not in editableFields.
+          await expectLater(
+            api.updateInstanceFields(
+              workflowType: 'equipment-loan',
+              instanceId: id,
+              fieldUpdates: {'holderPersonaId': 'alice'},
+              personaId: 'member-1',
+            ),
+            throwsA(isA<WorkflowAuthorizationError>()),
+          );
+        },
+      );
+
+      test(
+        'leaving required fields empty still succeeds (required NOT enforced here)',
+        () async {
+          final api = await _makeApi();
+          final id = await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {'title': 'Catan', 'category': 'Board Games'},
+            personaId: 'member-1',
+          );
+
+          // Update category without touching title (which is required).
+          // Per §3c, required is NOT enforced on updateInstanceFields.
+          await api.updateInstanceFields(
             workflowType: 'equipment-loan',
             instanceId: id,
-            fieldUpdates: {'holderPersonaId': 'alice'},
+            fieldUpdates: {'category': 'Strategy Games', 'title': ''},
             personaId: 'member-1',
-          ),
-          throwsA(isA<WorkflowAuthorizationError>()),
-        );
-      });
+          );
 
-      test('leaving required fields empty still succeeds (required NOT enforced here)', () async {
-        final api = await _makeApi();
-        final id = await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {
-            'title': 'Catan',
-            'category': 'Board Games',
-          },
-          personaId: 'member-1',
-        );
-
-        // Update category without touching title (which is required).
-        // Per §3c, required is NOT enforced on updateInstanceFields.
-        await api.updateInstanceFields(
-          workflowType: 'equipment-loan',
-          instanceId: id,
-          fieldUpdates: {'category': 'Strategy Games', 'title': ''},
-          personaId: 'member-1',
-        );
-
-        final page = await api.queryInstances(
-          tabId: 'marketplace',
-          personaId: 'member-1',
-        );
-        final inst = page.items.firstWhere((i) => i.instanceId == id);
-        expect(inst.instanceData['title'], '');
-        expect(inst.instanceData['category'], 'Strategy Games');
-      });
+          final page = await api.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'member-1',
+          );
+          final inst = page.items.firstWhere((i) => i.instanceId == id);
+          expect(inst.instanceData['title'], '');
+          expect(inst.instanceData['category'], 'Strategy Games');
+        },
+      );
     });
 
     // ── 3. applyTransition transactional-atomicity ────────────────────
     group('applyTransition — transactional atomicity', () {
       test(
-          'two concurrent join-queue on same instance: exactly one succeeds',
-          () async {
-        final api = await _makeApi();
+        'two concurrent join-queue on same instance: exactly one succeeds',
+        () async {
+          final api = await _makeApi();
 
-        // Create a published instance.
-        final id = await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {
-            'title': 'Catan',
-            'queuedPersonaIds': <String>[],
-          },
-          personaId: 'member',
-        );
-        // First, submit it so it's published.
-        final result = await api.applyTransition(
-          workflowType: 'equipment-loan',
-          instanceId: id,
-          transitionId: 'submit-listing',
-          personaId: 'member',
-        );
-        expect(result.newState, 'published');
+          // Create a published instance.
+          final id = await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {
+              'title': 'Catan',
+              'queuedPersonaIds': <String>[],
+            },
+            personaId: 'member',
+          );
+          // First, submit it so it's published.
+          final result = await api.applyTransition(
+            workflowType: 'equipment-loan',
+            instanceId: id,
+            transitionId: 'submit-listing',
+            personaId: 'member',
+          );
+          expect(result.newState, 'published');
 
-        // Two concurrent calls to join-queue — fire both without awaiting
-        // the first before starting the second.
-        final futures = <Future<bool>>[
-          api
-              .applyTransition(
-                workflowType: 'equipment-loan',
-                instanceId: id,
-                transitionId: 'join-queue',
-                personaId: 'member',
-              )
-              .then((_) => true)
-              .catchError((_) => false),
-          api
-              .applyTransition(
-                workflowType: 'equipment-loan',
-                instanceId: id,
-                transitionId: 'join-queue',
-                personaId: 'member',
-              )
-              .then((_) => true)
-              .catchError((_) => false),
-        ];
+          // Two concurrent calls to join-queue — fire both without awaiting
+          // the first before starting the second.
+          final futures = <Future<bool>>[
+            api
+                .applyTransition(
+                  workflowType: 'equipment-loan',
+                  instanceId: id,
+                  transitionId: 'join-queue',
+                  personaId: 'member',
+                )
+                .then((_) => true)
+                .catchError((_) => false),
+            api
+                .applyTransition(
+                  workflowType: 'equipment-loan',
+                  instanceId: id,
+                  transitionId: 'join-queue',
+                  personaId: 'member',
+                )
+                .then((_) => true)
+                .catchError((_) => false),
+          ];
 
-        final results = await Future.wait(futures);
+          final results = await Future.wait(futures);
 
-        // Exactly one succeeds — the guard sees the persona already in queue
-        // after the first caller's effects commit.
-        final successCount = results.where((r) => r == true).length;
-        expect(successCount, 1,
-            reason: 'exactly one concurrent join-queue must succeed');
+          // Exactly one succeeds — the guard sees the persona already in queue
+          // after the first caller's effects commit.
+          final successCount = results.where((r) => r == true).length;
+          expect(
+            successCount,
+            1,
+            reason: 'exactly one concurrent join-queue must succeed',
+          );
 
-        // Read back — exactly one entry (the persona once).
-        final page = await api.queryInstances(
-          tabId: 'marketplace',
-          personaId: 'member-owner',
-        );
-        final inst = page.items.firstWhere((i) => i.instanceId == id);
-        final queue = inst.instanceData['queuedPersonaIds'] as List;
-        expect(queue, ['member']);
-      });
+          // Read back — exactly one entry (the persona once).
+          final page = await api.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'member-owner',
+          );
+          final inst = page.items.firstWhere((i) => i.instanceId == id);
+          final queue = inst.instanceData['queuedPersonaIds'] as List;
+          expect(queue, ['member']);
+        },
+      );
     });
 
     // ── 4. queryInstances keyset pagination ──────────────────────────
@@ -362,107 +380,106 @@ void main() {
       });
 
       test(
-          'concatenated pages contain every seeded instance exactly once in stable order',
-          () async {
-        final api = await _makeApi();
-        const n = 30;
-        for (var i = 0; i < n; i++) {
+        'concatenated pages contain every seeded instance exactly once in stable order',
+        () async {
+          final api = await _makeApi();
+          const n = 30;
+          for (var i = 0; i < n; i++) {
+            await api.createInstance(
+              workflowType: 'equipment-loan',
+              initialInstanceData: {
+                'title': 'Item ${i.toString().padLeft(3, '0')}',
+                'queuedPersonaIds': <String>[],
+              },
+              personaId: 'member-1',
+            );
+          }
+
+          final allIds = <String>{};
+          String? cursor;
+          var totalItems = 0;
+          while (true) {
+            final page = await api.queryInstances(
+              tabId: 'marketplace',
+              personaId: 'member-1',
+              limit: 10,
+              cursor: cursor,
+            );
+            for (final item in page.items) {
+              allIds.add(item.instanceId);
+            }
+            totalItems += page.items.length;
+            if (!page.hasMore) break;
+            cursor = page.nextCursor;
+          }
+
+          expect(totalItems, n);
+          expect(allIds.length, n); // no duplicates
+        },
+      );
+
+      test(
+        'insert between pages does not skip or duplicate rows (keyset stability)',
+        () async {
+          final api = await _makeApi();
+
+          // Seed two items: "A" and "C".
+          final idA = await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {'title': 'A', 'queuedPersonaIds': <String>[]},
+            personaId: 'member-1',
+          );
+          final idC = await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {'title': 'C', 'queuedPersonaIds': <String>[]},
+            personaId: 'member-1',
+          );
+
+          // Page 1: limit=1 → gets "A".
+          var page = await api.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'member-1',
+            limit: 1,
+            query: const SurfaceQuery(sort: SortSpec(key: 'title')),
+          );
+          expect(page.items.length, 1);
+          expect(page.items.first.instanceId, idA);
+
+          // Insert "0-Aardvark" which sorts BEFORE A (the cursor position).
+          // With keyset pagination, a row inserted before the cursor should
+          // NOT appear on page 2 (it's already past) and should NOT cause any
+          // already-fetched row to be duplicated or skipped.
           await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {
-              'title': 'Item ${i.toString().padLeft(3, '0')}',
+              'title': '0-Aardvark',
               'queuedPersonaIds': <String>[],
             },
             personaId: 'member-1',
           );
-        }
 
-        final allIds = <String>{};
-        String? cursor;
-        var totalItems = 0;
-        while (true) {
-          final page = await api.queryInstances(
+          // Page 2: cursor still from after "A" → should get "C".
+          page = await api.queryInstances(
             tabId: 'marketplace',
             personaId: 'member-1',
-            limit: 10,
-            cursor: cursor,
+            limit: 1,
+            cursor: page.nextCursor,
+            query: const SurfaceQuery(sort: SortSpec(key: 'title')),
           );
-          for (final item in page.items) {
-            allIds.add(item.instanceId);
-          }
-          totalItems += page.items.length;
-          if (!page.hasMore) break;
-          cursor = page.nextCursor;
-        }
-
-        expect(totalItems, n);
-        expect(allIds.length, n); // no duplicates
-      });
-
-      test(
-          'insert between pages does not skip or duplicate rows (keyset stability)',
-          () async {
-        final api = await _makeApi();
-
-        // Seed two items: "A" and "C".
-        final idA = await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {
-            'title': 'A',
-            'queuedPersonaIds': <String>[],
-          },
-          personaId: 'member-1',
-        );
-        final idC = await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {
-            'title': 'C',
-            'queuedPersonaIds': <String>[],
-          },
-          personaId: 'member-1',
-        );
-
-        // Page 1: limit=1 → gets "A".
-        var page = await api.queryInstances(
-          tabId: 'marketplace',
-          personaId: 'member-1',
-          limit: 1,
-          query: const SurfaceQuery(sort: SortSpec(key: 'title')),
-        );
-        expect(page.items.length, 1);
-        expect(page.items.first.instanceId, idA);
-
-        // Insert "0-Aardvark" which sorts BEFORE A (the cursor position).
-        // With keyset pagination, a row inserted before the cursor should
-        // NOT appear on page 2 (it's already past) and should NOT cause any
-        // already-fetched row to be duplicated or skipped.
-        await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {
-            'title': '0-Aardvark',
-            'queuedPersonaIds': <String>[],
-          },
-          personaId: 'member-1',
-        );
-
-        // Page 2: cursor still from after "A" → should get "C".
-        page = await api.queryInstances(
-          tabId: 'marketplace',
-          personaId: 'member-1',
-          limit: 1,
-          cursor: page.nextCursor,
-          query: const SurfaceQuery(sort: SortSpec(key: 'title')),
-        );
-        expect(page.items.length, 1);
-        expect(page.items.first.instanceId, idC,
-            reason: 'page 2 should still return "C" — insert before cursor is invisible');
-      });
+          expect(page.items.length, 1);
+          expect(
+            page.items.first.instanceId,
+            idC,
+            reason:
+                'page 2 should still return "C" — insert before cursor is invisible',
+          );
+        },
+      );
     });
 
     // ── 5. queryInstances sort-change test ───────────────────────────
     group('queryInstances — sort change resets pagination', () {
-      test('stale cursor from different sort key resets to page 1',
-          () async {
+      test('stale cursor from different sort key resets to page 1', () async {
         final api = await _makeApi();
 
         // Seed 6 items with title values that sort AFTER category values,
@@ -490,10 +507,10 @@ void main() {
         );
         expect(page1.items.length, 3);
         // All items on page 1 should be sorted by title (Zeta-0, Zeta-1, Zeta-2).
-        final titles1 =
-            page1.items.map((i) => i.instanceData['title']).toList();
-        expect(titles1,
-            containsAllInOrder(['Zeta-0', 'Zeta-1', 'Zeta-2']));
+        final titles1 = page1.items
+            .map((i) => i.instanceData['title'])
+            .toList();
+        expect(titles1, containsAllInOrder(['Zeta-0', 'Zeta-1', 'Zeta-2']));
         // The cursor encodes sortKey=title.
         expect(page1.nextCursor, startsWith('title\x1f'));
 
@@ -507,12 +524,15 @@ void main() {
           query: const SurfaceQuery(sort: SortSpec(key: 'category')),
         );
         // With reset: page1 of category-sorted data = Alpha-0, Alpha-1, Alpha-2.
-        expect(page2.items.length, 3,
-            reason: 'sort change with stale cursor resets to page 1, not empty');
-        final cats2 =
-            page2.items.map((i) => i.instanceData['category']).toList();
         expect(
-            cats2, containsAllInOrder(['Alpha-0', 'Alpha-1', 'Alpha-2']));
+          page2.items.length,
+          3,
+          reason: 'sort change with stale cursor resets to page 1, not empty',
+        );
+        final cats2 = page2.items
+            .map((i) => i.instanceData['category'])
+            .toList();
+        expect(cats2, containsAllInOrder(['Alpha-0', 'Alpha-1', 'Alpha-2']));
 
         // The stale cursor is ignored, so page 2 returns the first page of
         // the new sort — which overlaps with page 1's items. The total unique
@@ -521,10 +541,16 @@ void main() {
           ...page1.items.map((i) => i.instanceId),
           ...page2.items.map((i) => i.instanceId),
         };
-        expect(allIds.length, lessThanOrEqualTo(6),
-            reason: 'no more than the 6 seeded items appear');
-        expect(page2.items, isNotEmpty,
-            reason: 'stale cursor ignored, page 2 has items (not empty)');
+        expect(
+          allIds.length,
+          lessThanOrEqualTo(6),
+          reason: 'no more than the 6 seeded items appear',
+        );
+        expect(
+          page2.items,
+          isNotEmpty,
+          reason: 'stale cursor ignored, page 2 has items (not empty)',
+        );
       });
     });
 
@@ -539,10 +565,7 @@ void main() {
         // Write.
         {
           final db = WorkflowDatabase.file(dbPath);
-          final api = LocalWorkflowEngineApi(
-            db: db,
-            communityId: 'tabletop',
-          );
+          final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
           api.registerDefinition(_loanMachine());
           await api.createInstance(
             workflowType: 'equipment-loan',
@@ -555,10 +578,7 @@ void main() {
         // Reopen.
         {
           final db = WorkflowDatabase.file(dbPath);
-          final api = LocalWorkflowEngineApi(
-            db: db,
-            communityId: 'tabletop',
-          );
+          final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
           api.registerDefinition(_loanMachine());
 
           final page = await api.queryInstances(
@@ -566,8 +586,7 @@ void main() {
             personaId: 'member-1',
           );
           expect(page.items.length, 1);
-          expect(page.items.first.instanceData['title'],
-              'Persistent Item');
+          expect(page.items.first.instanceData['title'], 'Persistent Item');
           db.close();
         }
       });
@@ -576,17 +595,14 @@ void main() {
     // ── 7. Dynamic-schema query test ─────────────────────────────────
     group('Dynamic-schema queries', () {
       test(
-          'two different workflow definitions with disjoint sortable fields both work',
-          () async {
-        final db = WorkflowDatabase.memory();
-        final api = LocalWorkflowEngineApi(
-          db: db,
-          communityId: 'tabletop',
-        );
-        api.registerDefinition(_loanMachine());
+        'two different workflow definitions with disjoint sortable fields both work',
+        () async {
+          final db = WorkflowDatabase.memory();
+          final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
+          api.registerDefinition(_loanMachine());
 
-        // Second workflow type with different fields.
-        const giveawayJson = '''
+          // Second workflow type with different fields.
+          const giveawayJson = '''
 {
   "initialState": "available",
   "states": {
@@ -609,36 +625,37 @@ void main() {
   }
 }
 ''';
-        final giveaway = LoomWorkflowStateMachine.fromJson(
+          final giveaway = LoomWorkflowStateMachine.fromJson(
             jsonDecode(giveawayJson) as Map<String, dynamic>,
-            'equipment-giveaway');
-        api.registerDefinition(giveaway);
+            'equipment-giveaway',
+          );
+          api.registerDefinition(giveaway);
 
-        // Seed one instance of each type.
-        await api.createInstance(
-          workflowType: 'equipment-loan',
-          initialInstanceData: {'title': 'Loan Alpha'},
-          personaId: 'member-1',
-        );
-        await api.createInstance(
-          workflowType: 'equipment-giveaway',
-          initialInstanceData: {'title': 'Giveaway Beta'},
-          personaId: 'member-1',
-        );
+          // Seed one instance of each type.
+          await api.createInstance(
+            workflowType: 'equipment-loan',
+            initialInstanceData: {'title': 'Loan Alpha'},
+            personaId: 'member-1',
+          );
+          await api.createInstance(
+            workflowType: 'equipment-giveaway',
+            initialInstanceData: {'title': 'Giveaway Beta'},
+            personaId: 'member-1',
+          );
 
-        // Query — both types share marketplace tab, both sorted by "title".
-        final page = await api.queryInstances(
-          tabId: 'marketplace',
-          personaId: 'member-1',
-          query: const SurfaceQuery(sort: SortSpec(key: 'title')),
-        );
-        expect(page.items.length, 2);
+          // Query — both types share marketplace tab, both sorted by "title".
+          final page = await api.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'member-1',
+            query: const SurfaceQuery(sort: SortSpec(key: 'title')),
+          );
+          expect(page.items.length, 2);
 
-        final titles =
-            page.items.map((i) => i.instanceData['title']).toSet();
-        expect(titles, contains('Loan Alpha'));
-        expect(titles, contains('Giveaway Beta'));
-      });
+          final titles = page.items.map((i) => i.instanceData['title']).toSet();
+          expect(titles, contains('Loan Alpha'));
+          expect(titles, contains('Giveaway Beta'));
+        },
+      );
     });
   });
 }

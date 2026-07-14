@@ -35,30 +35,27 @@ class LoomButtonTheme {
 
   Color get resolvedFill =>
       (fillColor ?? Colors.transparent).withValues(alpha: fillOpacity ?? 1.0);
-  Color get resolvedBorder =>
-      (borderColor ?? Colors.transparent).withValues(
-        alpha: borderOpacity ?? 1.0,
-      );
-  Color get resolvedForeground =>
-      (foregroundColor ?? Colors.white).withValues(
-        alpha: foregroundOpacity ?? 1.0,
-      );
+  Color get resolvedBorder => (borderColor ?? Colors.transparent).withValues(
+    alpha: borderOpacity ?? 1.0,
+  );
+  Color get resolvedForeground => (foregroundColor ?? Colors.white).withValues(
+    alpha: foregroundOpacity ?? 1.0,
+  );
   OutlinedBorder get resolvedShape {
     switch (shape ?? LoomButtonShape.pill) {
       case LoomButtonShape.pill:
         return const StadiumBorder();
       case LoomButtonShape.rounded:
-        return RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        );
+        return RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
       case LoomButtonShape.square:
-        return RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        );
+        return RoundedRectangleBorder(borderRadius: BorderRadius.circular(4));
     }
   }
 
-  static LoomButtonTheme? merge(LoomButtonTheme? base, LoomButtonTheme? override) {
+  static LoomButtonTheme? merge(
+    LoomButtonTheme? base,
+    LoomButtonTheme? override,
+  ) {
     if (override == null) return base;
     if (base == null) return override;
     return LoomButtonTheme(
@@ -119,7 +116,10 @@ class LoomCardTheme {
       final onAccent = _foregroundFor(accent);
       return LoomCardTheme(
         accent: accent,
-        fillColor: Color.alphaBlend(accent.withValues(alpha: 0.07), Colors.white),
+        fillColor: Color.alphaBlend(
+          accent.withValues(alpha: 0.07),
+          Colors.white,
+        ),
         fillOpacity: 1.0,
         borderColor: accent,
         borderOpacity: 0.16,
@@ -239,7 +239,8 @@ class LoomCardTheme {
     if (override == null) return base;
     final accentChanged =
         override.accent != null && override.accent != base.accent;
-    final baseIsLight = base.fillColor != null &&
+    final baseIsLight =
+        base.fillColor != null &&
         ThemeData.estimateBrightnessForColor(base.fillColor!) ==
             Brightness.light;
     final effectiveBase = accentChanged

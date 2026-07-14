@@ -484,7 +484,8 @@ class _WorkflowTile extends StatelessWidget {
     );
     final metadata = _domainMetadataFor(contract.category, workflow);
     final scheme = Theme.of(context).colorScheme;
-    final accent = modernTheme?.accent ?? _categoryAccentColor(contract.category, scheme);
+    final accent =
+        modernTheme?.accent ?? _categoryAccentColor(contract.category, scheme);
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     return DecoratedBox(
       key: ValueKey('workflow-${workflow.workflowId}'),
@@ -670,12 +671,16 @@ class _RichWorkflowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(spec.accent);
-    final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
-    final subtitleColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.94);
+    final foreground =
+        modernTheme?.resolvedHeading ?? _foregroundFor(spec.accent);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
+    final subtitleColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.94);
     final tileFill = modernTheme?.resolvedFill ?? spec.accent;
     final tileBorder = modernTheme?.resolvedBorder;
-    final tileShadow = modernTheme?.resolvedShadow ?? spec.accent.withValues(alpha: 0.22);
+    final tileShadow =
+        modernTheme?.resolvedShadow ?? spec.accent.withValues(alpha: 0.22);
     final textTheme = Theme.of(context).textTheme;
     final complete = view.completed || view.received;
     final isExpanded = state == SurfacePresentationState.expanded;
@@ -761,9 +766,7 @@ class _RichWorkflowTile extends StatelessWidget {
                       const SizedBox(height: 7),
                       Text(
                         complete ? spec.completeBody : spec.body,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: bodyColor,
-                        ),
+                        style: textTheme.bodyMedium?.copyWith(color: bodyColor),
                       ),
                     ],
                   ),
@@ -798,11 +801,13 @@ class _RichWorkflowTile extends StatelessWidget {
               const SizedBox(height: 12),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: modernTheme?.resolvedFill ??
+                  color:
+                      modernTheme?.resolvedFill ??
                       foreground.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: modernTheme?.resolvedBorder ??
+                    color:
+                        modernTheme?.resolvedBorder ??
                         foreground.withValues(alpha: 0.20),
                   ),
                 ),
@@ -821,9 +826,7 @@ class _RichWorkflowTile extends StatelessWidget {
                       const SizedBox(height: 5),
                       Text(
                         complete ? spec.completeBody : spec.actionPanelBody,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: bodyColor,
-                        ),
+                        style: textTheme.bodyMedium?.copyWith(color: bodyColor),
                       ),
                       const SizedBox(height: 10),
                       _SurfaceFactPill(
@@ -952,4 +955,3 @@ class _RichProductSurfaceTile extends StatelessWidget {
     );
   }
 }
-

@@ -1,9 +1,6 @@
 part of '../loom_communities_app_shell.dart';
 
-enum WorkflowTemplateSlotKind {
-  workflowActionButtonRow,
-  workflowFactPillRow,
-}
+enum WorkflowTemplateSlotKind { workflowActionButtonRow, workflowFactPillRow }
 
 class WorkflowAudienceSelectorField extends StatefulWidget {
   final List<String> availablePersonaIds;
@@ -30,8 +27,7 @@ class _WorkflowAudienceSelectorFieldState
   @override
   void initState() {
     super.initState();
-    _scope =
-        widget.initialInstanceData['audienceScope'] as String? ?? 'all';
+    _scope = widget.initialInstanceData['audienceScope'] as String? ?? 'all';
     final initialIds = widget.initialInstanceData['invitedPersonaIds'];
     _selectedPersonaIds = initialIds is Iterable
         ? initialIds.map((id) => '$id').toSet()
@@ -132,11 +128,7 @@ class _WorkflowAudienceSelectorFieldState
   }
 }
 
-enum WorkflowActionTone {
-  primary,
-  secondary,
-  destructive,
-}
+enum WorkflowActionTone { primary, secondary, destructive }
 
 typedef WorkflowActionPressed = void Function(String transitionId);
 
@@ -227,7 +219,8 @@ const Map<String, WorkflowCardSurfaceTemplate> workflowCardSurfaceTemplates = {
   ),
 };
 
-const Map<String, WorkflowFactPillFieldSchema> paymentCheckoutDefaultInstanceDataSchema = {
+const Map<String, WorkflowFactPillFieldSchema>
+paymentCheckoutDefaultInstanceDataSchema = {
   'amountLabel': WorkflowFactPillFieldSchema(
     displayIcon: 'payments_outlined',
     labelTemplate: '{value}',
@@ -259,7 +252,8 @@ const Map<String, WorkflowFactPillFieldSchema> paymentCheckoutDefaultInstanceDat
   ),
 };
 
-const Map<String, WorkflowFactPillFieldSchema> eventRsvpDefaultInstanceDataSchema = {
+const Map<String, WorkflowFactPillFieldSchema>
+eventRsvpDefaultInstanceDataSchema = {
   'eventDate': WorkflowFactPillFieldSchema(
     displayIcon: 'calendar_today_outlined',
     labelTemplate: '{value}',
@@ -308,7 +302,8 @@ const Map<String, WorkflowFactPillFieldSchema> eventRsvpDefaultInstanceDataSchem
   ),
 };
 
-const Map<String, WorkflowFactPillFieldSchema> equipmentLoanDefaultInstanceDataSchema = {
+const Map<String, WorkflowFactPillFieldSchema>
+equipmentLoanDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
     displayIcon: 'title',
     labelTemplate: '{value}',
@@ -343,7 +338,8 @@ const Map<String, WorkflowFactPillFieldSchema> equipmentLoanDefaultInstanceDataS
   ),
 };
 
-const Map<String, WorkflowFactPillFieldSchema> equipmentGiveawayDefaultInstanceDataSchema = {
+const Map<String, WorkflowFactPillFieldSchema>
+equipmentGiveawayDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
     displayIcon: 'title',
     labelTemplate: '{value}',
@@ -388,7 +384,8 @@ class WorkflowActionButtonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedForeground =
-        foreground ?? (Theme.of(context).brightness == Brightness.dark
+        foreground ??
+        (Theme.of(context).brightness == Brightness.dark
             ? Colors.white
             : Colors.black87);
     return Column(
@@ -431,7 +428,8 @@ class WorkflowFactPillRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedForeground =
-        foreground ?? (Theme.of(context).brightness == Brightness.dark
+        foreground ??
+        (Theme.of(context).brightness == Brightness.dark
             ? Colors.white
             : Colors.black87);
     final rows = <Widget>[];
@@ -445,19 +443,18 @@ class WorkflowFactPillRow extends StatelessWidget {
       if (schema.hideWhenEmpty && _isEmpty(value)) {
         continue;
       }
-      final label = _renderLabel(
-        schema.labelTemplate ?? field,
-        value,
-      );
+      final label = _renderLabel(schema.labelTemplate ?? field, value);
       if (label.trim().isEmpty) {
         continue;
       }
-      rows.add(_SurfaceFactPill(
-        icon: _iconForName(schema.displayIcon),
-        label: label,
-        foreground: resolvedForeground,
-        accent: accent,
-      ));
+      rows.add(
+        _SurfaceFactPill(
+          icon: _iconForName(schema.displayIcon),
+          label: label,
+          foreground: resolvedForeground,
+          accent: accent,
+        ),
+      );
     }
     if (rows.isEmpty) {
       return const SizedBox.shrink();
@@ -556,7 +553,9 @@ class _WorkflowActionRowItem extends StatelessWidget {
         child: _StateBadge(
           key: controlKey,
           icon: Icons.schedule,
-          label: transition.waitingText.trim().isEmpty ? waitingText : transition.waitingText,
+          label: transition.waitingText.trim().isEmpty
+              ? waitingText
+              : transition.waitingText,
           foreground: foreground,
           accent: accent,
         ),
@@ -581,7 +580,10 @@ class _WorkflowActionRowItem extends StatelessWidget {
           key: controlKey,
           onPressed: onPressed,
           icon: Icon(icon, color: Colors.white),
-          label: Text(transition.label, style: const TextStyle(color: Colors.white)),
+          label: Text(
+            transition.label,
+            style: const TextStyle(color: Colors.white),
+          ),
           style: FilledButton.styleFrom(
             backgroundColor: toneColor,
             foregroundColor: Colors.white,

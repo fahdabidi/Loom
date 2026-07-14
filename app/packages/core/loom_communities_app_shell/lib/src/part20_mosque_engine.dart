@@ -16,7 +16,8 @@ class _MosqueEngineTabSurface extends StatefulWidget {
   final LoomCardTheme? modernTheme;
 
   @override
-  State<_MosqueEngineTabSurface> createState() => _MosqueEngineTabSurfaceState();
+  State<_MosqueEngineTabSurface> createState() =>
+      _MosqueEngineTabSurfaceState();
 }
 
 class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
@@ -81,7 +82,10 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
     }
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -99,7 +103,10 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
       instance: instance,
       fieldUpdates: {
         for (final field in fields)
-          field: _fieldValue(field, _controller(instance.instanceId, field).text),
+          field: _fieldValue(
+            field,
+            _controller(instance.instanceId, field).text,
+          ),
       },
       personaId: widget.persona.personaId,
     );
@@ -130,24 +137,73 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (widget.tabId == 'calendar') ..._calendar(context),
-        if (widget.tabId == 'giving') ..._cards(context, [
-          ['mosque-donation-payment', 'Donation checkout', 'Amount, fund, privacy indicator, receipt, recurring controls', Icons.payments_outlined],
-          ['mosque-donor-visibility', 'Donor visibility preference', 'Public, anonymous, or restricted preference outlives a single donation', Icons.privacy_tip_outlined],
-        ]),
+        if (widget.tabId == 'giving')
+          ..._cards(context, [
+            [
+              'mosque-donation-payment',
+              'Donation checkout',
+              'Amount, fund, privacy indicator, receipt, recurring controls',
+              Icons.payments_outlined,
+            ],
+            [
+              'mosque-donor-visibility',
+              'Donor visibility preference',
+              'Public, anonymous, or restricted preference outlives a single donation',
+              Icons.privacy_tip_outlined,
+            ],
+          ]),
         if (widget.tabId == 'care') ..._care(context),
-        if (widget.tabId == 'admin') ..._cards(context, [
-          ['mosque-announcement', 'Announcement composer', 'Body, audience, schedule, sent/read tracking', Icons.campaign_outlined],
-          ['mosque-volunteer-signup', 'Volunteer roster', 'Open spots, signed-up roster, protected contact, open/close/contact actions', Icons.volunteer_activism_outlined],
-          ['mosque-care-request', 'Care review queue', 'Protected care detail, assignment, response, and close actions', Icons.health_and_safety_outlined],
-        ]),
-        if (widget.tabId == 'messages') ..._cards(context, [
-          ['mosque-discussion-thread', 'Community discussion', 'Discussion thread for logistics and member questions', Icons.forum_outlined],
-          ['mosque-neutral-notification', 'Neutral care notification', 'Privacy-safe notice that does not leak protected care details', Icons.notifications_outlined],
-          ['mosque-announcement', 'Announcement inbox', 'Member-safe announcement receive/read card', Icons.mark_email_read_outlined],
-        ]),
-        if (widget.tabId == 'search') ..._cards(context, [
-          ['mosque-search-ai-citation', 'Iftar search answer', 'Permission-guarded citations with refine, hide-source, and report stale actions', Icons.search_outlined],
-        ]),
+        if (widget.tabId == 'admin')
+          ..._cards(context, [
+            [
+              'mosque-announcement',
+              'Announcement composer',
+              'Body, audience, schedule, sent/read tracking',
+              Icons.campaign_outlined,
+            ],
+            [
+              'mosque-volunteer-signup',
+              'Volunteer roster',
+              'Open spots, signed-up roster, protected contact, open/close/contact actions',
+              Icons.volunteer_activism_outlined,
+            ],
+            [
+              'mosque-care-request',
+              'Care review queue',
+              'Protected care detail, assignment, response, and close actions',
+              Icons.health_and_safety_outlined,
+            ],
+          ]),
+        if (widget.tabId == 'messages')
+          ..._cards(context, [
+            [
+              'mosque-discussion-thread',
+              'Community discussion',
+              'Discussion thread for logistics and member questions',
+              Icons.forum_outlined,
+            ],
+            [
+              'mosque-neutral-notification',
+              'Neutral care notification',
+              'Privacy-safe notice that does not leak protected care details',
+              Icons.notifications_outlined,
+            ],
+            [
+              'mosque-announcement',
+              'Announcement inbox',
+              'Member-safe announcement receive/read card',
+              Icons.mark_email_read_outlined,
+            ],
+          ]),
+        if (widget.tabId == 'search')
+          ..._cards(context, [
+            [
+              'mosque-search-ai-citation',
+              'Iftar search answer',
+              'Permission-guarded citations with refine, hide-source, and report stale actions',
+              Icons.search_outlined,
+            ],
+          ]),
       ],
     );
   }
@@ -165,15 +221,30 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
       ];
     }
     return _cards(context, [
-      ['mosque-event-rsvp', 'Friday service and iftar', 'Member agenda/RSVP card resolved by audienceMemberField', Icons.calendar_month_outlined],
+      [
+        'mosque-event-rsvp',
+        'Friday service and iftar',
+        'Member agenda/RSVP card resolved by audienceMemberField',
+        Icons.calendar_month_outlined,
+      ],
     ]);
   }
 
   List<Widget> _care(BuildContext context) {
     return _cards(context, [
-      ['mosque-care-request', 'Care request', 'Member form and protectedDetail review with field-level private flags', Icons.health_and_safety_outlined],
+      [
+        'mosque-care-request',
+        'Care request',
+        'Member form and protectedDetail review with field-level private flags',
+        Icons.health_and_safety_outlined,
+      ],
       if (widget.persona.personaId == 'mosque-member')
-        ['mosque-volunteer-signup', 'Volunteer signup', 'Member signup, edit, and cancel surface outside Admin', Icons.volunteer_activism_outlined],
+        [
+          'mosque-volunteer-signup',
+          'Volunteer signup',
+          'Member signup, edit, and cancel surface outside Admin',
+          Icons.volunteer_activism_outlined,
+        ],
     ]);
   }
 
@@ -199,17 +270,53 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (admin) ...[
-          _pin(context, const ValueKey('mosque-home-composer'), 'Announcement composer', Icons.campaign_outlined, 'Draft Ramadan update ready for preview, schedule, or publish.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-composer'),
+            'Announcement composer',
+            Icons.campaign_outlined,
+            'Draft Ramadan update ready for preview, schedule, or publish.',
+          ),
           const SizedBox(height: 12),
-          _pin(context, const ValueKey('mosque-home-volunteers'), 'Volunteer roster', Icons.volunteer_activism_outlined, 'Iftar setup: 2 filled, 4 open spots, protected contact gated.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-volunteers'),
+            'Volunteer roster',
+            Icons.volunteer_activism_outlined,
+            'Iftar setup: 2 filled, 4 open spots, protected contact gated.',
+          ),
           const SizedBox(height: 12),
-          _pin(context, const ValueKey('mosque-home-care-review'), 'Care review', Icons.health_and_safety_outlined, 'Care requests show public summary unless assigned reviewer unlocks private fields.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-care-review'),
+            'Care review',
+            Icons.health_and_safety_outlined,
+            'Care requests show public summary unless assigned reviewer unlocks private fields.',
+          ),
         ] else ...[
-          _pin(context, const ValueKey('mosque-home-event'), 'Friday service and iftar', Icons.calendar_month_outlined, 'Friday 7:00 PM at Masjid Nur Hall. RSVP from Calendar.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-event'),
+            'Friday service and iftar',
+            Icons.calendar_month_outlined,
+            'Friday 7:00 PM at Masjid Nur Hall. RSVP from Calendar.',
+          ),
           const SizedBox(height: 12),
-          _pin(context, const ValueKey('mosque-home-donation'), 'Donation receipt', Icons.receipt_long_outlined, 'Iftar meals donation receipt respects donor visibility preference.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-donation'),
+            'Donation receipt',
+            Icons.receipt_long_outlined,
+            'Iftar meals donation receipt respects donor visibility preference.',
+          ),
           const SizedBox(height: 12),
-          _pin(context, const ValueKey('mosque-home-care-status'), 'Care request status', Icons.health_and_safety_outlined, 'Private details stay masked outside the assigned reviewer.'),
+          _pin(
+            context,
+            const ValueKey('mosque-home-care-status'),
+            'Care request status',
+            Icons.health_and_safety_outlined,
+            'Private details stay masked outside the assigned reviewer.',
+          ),
         ],
       ],
     );
@@ -233,7 +340,9 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
     }
     final machine = _store.machineFor(instance.workflowType);
     return DecoratedBox(
-      key: ValueKey('mosque-card-${instance.workflowType}-${instance.instanceId}'),
+      key: ValueKey(
+        'mosque-card-${instance.workflowType}-${instance.instanceId}',
+      ),
       decoration: _box,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -248,7 +357,12 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                       Text(subtitle),
                     ],
                   ),
@@ -260,12 +374,20 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _SurfaceFactPill(icon: Icons.flag_outlined, label: 'State: ${machine.states[instance.currentState]?.label ?? instance.currentState}', foreground: widget.accent),
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label:
+                      'State: ${machine.states[instance.currentState]?.label ?? instance.currentState}',
+                  foreground: widget.accent,
+                ),
                 for (final pill in _pills(machine, instance.instanceData)) pill,
               ],
             ),
             const SizedBox(height: 10),
-            if (instance.workflowType == 'mosque-care-request') _careDetail(instance) else _dataLines(instance),
+            if (instance.workflowType == 'mosque-care-request')
+              _careDetail(instance)
+            else
+              _dataLines(instance),
             _edit(instance),
             const SizedBox(height: 12),
             _actions(instance),
@@ -276,19 +398,30 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
   }
 
   Widget _careDetail(WorkflowInstance instance) {
-    final assigned = instance.instanceData['assignedReviewerPersonaId'] == widget.persona.personaId;
+    final assigned =
+        instance.instanceData['assignedReviewerPersonaId'] ==
+        widget.persona.personaId;
     final memberOwner = widget.persona.personaId == instance.createdByPersonaId;
     final canSeePrivate = assigned || memberOwner;
     return Column(
       key: const ValueKey('mosque-protected-care-detail'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('${instance.instanceData['publicSummary'] ?? instance.instanceData['needDescription']}'),
+        Text(
+          '${instance.instanceData['publicSummary'] ?? instance.instanceData['needDescription']}',
+        ),
         Text('Urgency: ${instance.instanceData['urgency']}'),
-        Text('Contact preference: ${canSeePrivate ? instance.instanceData['contactPreference'] : 'Private field masked'}'),
-        Text('Private details: ${canSeePrivate ? instance.instanceData['privateDetails'] : 'Masked for this viewer'}'),
-        Text('Assigned reviewer: ${instance.instanceData['assignedReviewerPersonaId'] ?? ''}'),
-        if (instance.instanceData['responseSummary'] case final value?) Text('$value'),
+        Text(
+          'Contact preference: ${canSeePrivate ? instance.instanceData['contactPreference'] : 'Private field masked'}',
+        ),
+        Text(
+          'Private details: ${canSeePrivate ? instance.instanceData['privateDetails'] : 'Masked for this viewer'}',
+        ),
+        Text(
+          'Assigned reviewer: ${instance.instanceData['assignedReviewerPersonaId'] ?? ''}',
+        ),
+        if (instance.instanceData['responseSummary'] case final value?)
+          Text('$value'),
       ],
     );
   }
@@ -305,13 +438,41 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
   }
 
   static const _displayKeys = [
-    'eventTitle', 'eventDate', 'eventTime', 'location', 'capacity', 'audienceScope',
-    'calendarSync', 'rsvpStatus', 'amount', 'fund', 'privacyIndicator', 'paymentStatus',
-    'receiptId', 'visibilityPreference', 'receiptVisibility', 'fundContext',
-    'announcementBody', 'scheduledTime', 'deliveryState', 'readState', 'shiftRole',
-    'shiftTime', 'openSpots', 'filledSpots', 'protectedContact', 'contactStatus',
-    'noticeTitle', 'safeBody', 'threadTitle', 'lastMessage', 'query', 'answer',
-    'citations', 'hiddenSources', 'citationStatus',
+    'eventTitle',
+    'eventDate',
+    'eventTime',
+    'location',
+    'capacity',
+    'audienceScope',
+    'calendarSync',
+    'rsvpStatus',
+    'amount',
+    'fund',
+    'privacyIndicator',
+    'paymentStatus',
+    'receiptId',
+    'visibilityPreference',
+    'receiptVisibility',
+    'fundContext',
+    'announcementBody',
+    'scheduledTime',
+    'deliveryState',
+    'readState',
+    'shiftRole',
+    'shiftTime',
+    'openSpots',
+    'filledSpots',
+    'protectedContact',
+    'contactStatus',
+    'noticeTitle',
+    'safeBody',
+    'threadTitle',
+    'lastMessage',
+    'query',
+    'answer',
+    'citations',
+    'hiddenSources',
+    'citationStatus',
   ];
 
   Widget _actions(WorkflowInstance instance) {
@@ -319,7 +480,10 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
       spacing: 8,
       runSpacing: 8,
       children: [
-        for (final transition in _store.availableTransitions(instance: instance, personaId: widget.persona.personaId))
+        for (final transition in _store.availableTransitions(
+          instance: instance,
+          personaId: widget.persona.personaId,
+        ))
           OutlinedButton.icon(
             key: ValueKey('mosque-action-${transition.id}'),
             style: _style(transition),
@@ -332,7 +496,10 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
   }
 
   Widget _edit(WorkflowInstance instance) {
-    final fields = _store.editableFieldsFor(workflowType: instance.workflowType, state: instance.currentState);
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
     if (fields.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -354,35 +521,59 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
     );
   }
 
-  List<Widget> _pills(LoomWorkflowStateMachine machine, Map<String, dynamic> data) {
+  List<Widget> _pills(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> data,
+  ) {
     return [
       for (final entry in machine.instanceDataSchema.entries)
-        if (entry.value.displayIcon != null && !(entry.value.hideWhenEmpty && _empty(data[entry.key])))
+        if (entry.value.displayIcon != null &&
+            !(entry.value.hideWhenEmpty && _empty(data[entry.key])))
           _SurfaceFactPill(
             icon: _fact(entry.value.displayIcon!),
             label: (entry.value.labelTemplate ?? '{value}')
-                .replaceAll('{value.length}', data[entry.key] is List ? '${(data[entry.key] as List).length}' : '0')
-                .replaceAll('{value}', data[entry.key] is List ? (data[entry.key] as List).join(', ') : '${data[entry.key] ?? ''}'),
+                .replaceAll(
+                  '{value.length}',
+                  data[entry.key] is List
+                      ? '${(data[entry.key] as List).length}'
+                      : '0',
+                )
+                .replaceAll(
+                  '{value}',
+                  data[entry.key] is List
+                      ? (data[entry.key] as List).join(', ')
+                      : '${data[entry.key] ?? ''}',
+                ),
             foreground: widget.accent,
           ),
     ];
   }
 
-  bool _empty(Object? value) => value == null || value is List && value.isEmpty || value is String && value.isEmpty;
+  bool _empty(Object? value) =>
+      value == null ||
+      value is List && value.isEmpty ||
+      value is String && value.isEmpty;
 
   void _sync(List<WorkflowInstance> rows) {
     for (final instance in rows) {
-      for (final field in _store.editableFieldsFor(workflowType: instance.workflowType, state: instance.currentState)) {
+      for (final field in _store.editableFieldsFor(
+        workflowType: instance.workflowType,
+        state: instance.currentState,
+      )) {
         final value = instance.instanceData[field];
-        _controller(instance.instanceId, field).text = value is List ? value.join(', ') : '${value ?? ''}';
+        _controller(instance.instanceId, field).text = value is List
+            ? value.join(', ')
+            : '${value ?? ''}';
       }
     }
   }
 
-  TextEditingController _controller(String id, String field) => _controllers.putIfAbsent('$id::$field', TextEditingController.new);
+  TextEditingController _controller(String id, String field) =>
+      _controllers.putIfAbsent('$id::$field', TextEditingController.new);
 
   WorkflowInstance? _first(String type) {
-    if (type == 'mosque-event-rsvp' && widget.persona.personaId == 'mosque-admin') {
+    if (type == 'mosque-event-rsvp' &&
+        widget.persona.personaId == 'mosque-admin') {
       for (final instance in _instances) {
         if (instance.workflowType == type &&
             instance.instanceData['_seedInstanceId'] == 'mosque-event-draft') {
@@ -400,7 +591,8 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
           ? 'mosque-volunteer-contact'
           : 'mosque-volunteer-iftar';
       for (final instance in _instances) {
-        if (instance.workflowType == type && instance.instanceData['_seedInstanceId'] == preferredId) {
+        if (instance.workflowType == type &&
+            instance.instanceData['_seedInstanceId'] == preferredId) {
           return instance;
         }
       }
@@ -421,7 +613,13 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
     return null;
   }
 
-  Widget _pin(BuildContext context, Key key, String title, IconData icon, String body) {
+  Widget _pin(
+    BuildContext context,
+    Key key,
+    String title,
+    IconData icon,
+    String body,
+  ) {
     return DecoratedBox(
       key: key,
       decoration: _box,
@@ -436,7 +634,12 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900)),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Text(body),
                 ],
@@ -452,36 +655,73 @@ class _MosqueEngineTabSurfaceState extends State<_MosqueEngineTabSurface> {
     final primary = transition.tone == 'primary';
     final destructive = transition.tone == 'destructive';
     return OutlinedButton.styleFrom(
-      foregroundColor: destructive ? Colors.red.shade800 : primary ? Colors.white : widget.accent,
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+          ? Colors.white
+          : widget.accent,
       backgroundColor: primary ? widget.accent : null,
-      side: BorderSide(color: destructive ? Colors.red.shade800 : widget.accent),
+      side: BorderSide(
+        color: destructive ? Colors.red.shade800 : widget.accent,
+      ),
     );
   }
 
   IconData _icon(String? icon) => switch (icon) {
-    'check' => Icons.check_circle_outline, 'close' => Icons.close_outlined, 'delete' => Icons.delete_outline,
-    'edit' => Icons.edit_outlined, 'publish' => Icons.publish_outlined, 'payments' => Icons.payments_outlined,
-    'privacy_tip' => Icons.privacy_tip_outlined, 'settings' => Icons.settings_outlined, 'open_in_new' => Icons.open_in_new_outlined,
-    'person' => Icons.person_outline, 'reply' => Icons.reply_outlined, 'send' => Icons.send_outlined,
-    'schedule' => Icons.schedule_outlined, 'search' => Icons.search_outlined, 'report' => Icons.report_problem_outlined,
-    'groups' => Icons.groups_outlined, 'save' => Icons.save_outlined, 'preview' => Icons.preview_outlined,
-    'lock' => Icons.lock_outline, _ => Icons.account_balance_outlined,
+    'check' => Icons.check_circle_outline,
+    'close' => Icons.close_outlined,
+    'delete' => Icons.delete_outline,
+    'edit' => Icons.edit_outlined,
+    'publish' => Icons.publish_outlined,
+    'payments' => Icons.payments_outlined,
+    'privacy_tip' => Icons.privacy_tip_outlined,
+    'settings' => Icons.settings_outlined,
+    'open_in_new' => Icons.open_in_new_outlined,
+    'person' => Icons.person_outline,
+    'reply' => Icons.reply_outlined,
+    'send' => Icons.send_outlined,
+    'schedule' => Icons.schedule_outlined,
+    'search' => Icons.search_outlined,
+    'report' => Icons.report_problem_outlined,
+    'groups' => Icons.groups_outlined,
+    'save' => Icons.save_outlined,
+    'preview' => Icons.preview_outlined,
+    'lock' => Icons.lock_outline,
+    _ => Icons.account_balance_outlined,
   };
 
   IconData _fact(String icon) => switch (icon) {
-    'event' => Icons.event_outlined, 'schedule' => Icons.schedule_outlined, 'location_on' => Icons.location_on_outlined,
-    'groups' => Icons.groups_outlined, 'person' => Icons.person_outline, 'check' => Icons.check_circle_outline,
-    'payments' => Icons.payments_outlined, 'flag' => Icons.flag_outlined, 'privacy_tip' => Icons.privacy_tip_outlined,
-    'description' => Icons.description_outlined, 'settings' => Icons.settings_outlined, 'report' => Icons.report_problem_outlined,
-    'reply' => Icons.reply_outlined, 'publish' => Icons.publish_outlined, 'verified' => Icons.verified_outlined,
-    'send' => Icons.send_outlined, 'notifications' => Icons.notifications_outlined, 'forum' => Icons.forum_outlined,
-    'delete' => Icons.delete_outline, 'search' => Icons.search_outlined, _ => Icons.label_outline,
+    'event' => Icons.event_outlined,
+    'schedule' => Icons.schedule_outlined,
+    'location_on' => Icons.location_on_outlined,
+    'groups' => Icons.groups_outlined,
+    'person' => Icons.person_outline,
+    'check' => Icons.check_circle_outline,
+    'payments' => Icons.payments_outlined,
+    'flag' => Icons.flag_outlined,
+    'privacy_tip' => Icons.privacy_tip_outlined,
+    'description' => Icons.description_outlined,
+    'settings' => Icons.settings_outlined,
+    'report' => Icons.report_problem_outlined,
+    'reply' => Icons.reply_outlined,
+    'publish' => Icons.publish_outlined,
+    'verified' => Icons.verified_outlined,
+    'send' => Icons.send_outlined,
+    'notifications' => Icons.notifications_outlined,
+    'forum' => Icons.forum_outlined,
+    'delete' => Icons.delete_outline,
+    'search' => Icons.search_outlined,
+    _ => Icons.label_outline,
   };
 
   BoxDecoration get _box => BoxDecoration(
     color: widget.modernTheme?.resolvedFill ?? Colors.white,
     borderRadius: BorderRadius.circular(20),
-    border: Border.all(color: widget.modernTheme?.resolvedBorder ?? widget.accent.withValues(alpha: 0.2)),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
   );
 }
 
@@ -490,7 +730,10 @@ class _MosqueEngineStore {
 
   final String communityId;
   late final WorkflowDatabase _database = WorkflowDatabase.memory();
-  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(db: _database, communityId: communityId);
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
   _MosqueFixtureBundle? _fixture;
   Future<void>? _readyFuture;
   bool _ready = false;
@@ -508,8 +751,13 @@ class _MosqueEngineStore {
     for (final instance in _fixture!.instances) {
       final seedData = Map<String, dynamic>.from(instance.instanceData)
         ..['_seedInstanceId'] = instance.instanceId;
-      final instanceId = await _engine.createInstance(workflowType: instance.workflowType, initialInstanceData: seedData, personaId: instance.createdByPersonaId);
-      final initialState = _fixture!.machines[instance.workflowType]?.initialState;
+      final instanceId = await _engine.createInstance(
+        workflowType: instance.workflowType,
+        initialInstanceData: seedData,
+        personaId: instance.createdByPersonaId,
+      );
+      final initialState =
+          _fixture!.machines[instance.workflowType]?.initialState;
       if (instance.currentState != initialState) {
         await _database.updateInstanceState(
           instanceId: instanceId,
@@ -521,43 +769,107 @@ class _MosqueEngineStore {
     _ready = true;
   }
 
-  Future<List<WorkflowInstance>> instancesFor({required String tabId, required String personaId}) async {
+  Future<List<WorkflowInstance>> instancesFor({
+    required String tabId,
+    required String personaId,
+  }) async {
     await ensureReady();
     final query = tabId == 'calendar' && personaId != 'mosque-admin'
         ? const SurfaceQuery(audienceMemberField: 'invitedPersonaIds')
         : const SurfaceQuery();
-    final page = await _engine.queryInstances(tabId: tabId, personaId: personaId, limit: 100, query: query);
+    final page = await _engine.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      limit: 100,
+      query: query,
+    );
     final allowed = switch (tabId) {
       'calendar' => const {'mosque-event-rsvp'},
       'giving' => const {'mosque-donation-payment', 'mosque-donor-visibility'},
       'care' => const {'mosque-care-request', 'mosque-volunteer-signup'},
-      'admin' => const {'mosque-announcement', 'mosque-volunteer-signup', 'mosque-care-request'},
-      'messages' => const {'mosque-discussion-thread', 'mosque-neutral-notification', 'mosque-announcement'},
+      'admin' => const {
+        'mosque-announcement',
+        'mosque-volunteer-signup',
+        'mosque-care-request',
+      },
+      'messages' => const {
+        'mosque-discussion-thread',
+        'mosque-neutral-notification',
+        'mosque-announcement',
+      },
       'search' => const {'mosque-search-ai-citation'},
-      'home' => const {'mosque-event-rsvp', 'mosque-donation-payment', 'mosque-care-request', 'mosque-announcement', 'mosque-volunteer-signup', 'mosque-neutral-notification'},
+      'home' => const {
+        'mosque-event-rsvp',
+        'mosque-donation-payment',
+        'mosque-care-request',
+        'mosque-announcement',
+        'mosque-volunteer-signup',
+        'mosque-neutral-notification',
+      },
       _ => const <String>{},
     };
-    return page.items.where((instance) => allowed.contains(instance.workflowType)).where((instance) => _visible(instance, tabId, personaId)).toList(growable: false);
+    return page.items
+        .where((instance) => allowed.contains(instance.workflowType))
+        .where((instance) => _visible(instance, tabId, personaId))
+        .toList(growable: false);
   }
 
   bool _visible(WorkflowInstance instance, String tabId, String personaId) {
     if (tabId == 'admin') return personaId == 'mosque-admin';
-    if (tabId == 'calendar' && personaId == 'mosque-admin') return instance.currentState == 'draft' || instance.createdByPersonaId == personaId;
+    if (tabId == 'calendar' && personaId == 'mosque-admin')
+      return instance.currentState == 'draft' ||
+          instance.createdByPersonaId == personaId;
     if (tabId == 'calendar') return instance.currentState != 'draft';
-    if (tabId == 'care' && personaId == 'mosque-member' && instance.workflowType == 'mosque-care-request') return instance.createdByPersonaId == personaId;
-    if (tabId == 'messages' && instance.workflowType == 'mosque-announcement') return personaId == 'mosque-member' && (instance.currentState == 'sent' || instance.currentState == 'read');
+    if (tabId == 'care' &&
+        personaId == 'mosque-member' &&
+        instance.workflowType == 'mosque-care-request')
+      return instance.createdByPersonaId == personaId;
+    if (tabId == 'messages' && instance.workflowType == 'mosque-announcement')
+      return personaId == 'mosque-member' &&
+          (instance.currentState == 'sent' || instance.currentState == 'read');
     return true;
   }
 
-  List<LoomWorkflowTransition> availableTransitions({required WorkflowInstance instance, required String personaId}) => _engine.availableTransitions(workflowType: instance.workflowType, instanceId: instance.instanceId, currentState: instance.currentState, instanceData: instance.instanceData, personaId: personaId);
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) => _engine.availableTransitions(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    currentState: instance.currentState,
+    instanceData: instance.instanceData,
+    personaId: personaId,
+  );
 
-  Future<void> apply({required WorkflowInstance instance, required String transitionId, required String personaId}) => _engine.applyTransition(workflowType: instance.workflowType, instanceId: instance.instanceId, transitionId: transitionId, personaId: personaId);
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    transitionId: transitionId,
+    personaId: personaId,
+  );
 
-  Future<void> updateFields({required WorkflowInstance instance, required Map<String, dynamic> fieldUpdates, required String personaId}) => _engine.updateInstanceFields(workflowType: instance.workflowType, instanceId: instance.instanceId, fieldUpdates: fieldUpdates, personaId: personaId);
+  Future<void> updateFields({
+    required WorkflowInstance instance,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    fieldUpdates: fieldUpdates,
+    personaId: personaId,
+  );
 
-  LoomWorkflowStateMachine machineFor(String workflowType) => _fixture!.machines[workflowType]!;
+  LoomWorkflowStateMachine machineFor(String workflowType) =>
+      _fixture!.machines[workflowType]!;
 
-  List<String> editableFieldsFor({required String workflowType, required String state}) => machineFor(workflowType).states[state]?.editableFields ?? const [];
+  List<String> editableFieldsFor({
+    required String workflowType,
+    required String state,
+  }) => machineFor(workflowType).states[state]?.editableFields ?? const [];
 }
 
 class _MosqueFixtureBundle {
@@ -566,11 +878,16 @@ class _MosqueFixtureBundle {
   final List<_GardenSeedInstance> instances;
 
   static Future<_MosqueFixtureBundle> load() async {
-    final json = jsonDecode(_stripGardenJsoncComments(_mosqueBundledFixtureJsonc)) as Map<String, dynamic>;
+    final json =
+        jsonDecode(_stripGardenJsoncComments(_mosqueBundledFixtureJsonc))
+            as Map<String, dynamic>;
     final defs = json['workflowDefinitions'] as Map<String, dynamic>;
     final machines = <String, LoomWorkflowStateMachine>{};
     for (final entry in defs.entries) {
-      machines[entry.key] = LoomWorkflowStateMachine.fromJson(_normalizeGardenMachineJson(entry.value as Map<String, dynamic>), entry.key);
+      machines[entry.key] = LoomWorkflowStateMachine.fromJson(
+        _normalizeGardenMachineJson(entry.value as Map<String, dynamic>),
+        entry.key,
+      );
     }
     final instances = [
       for (final item in json['workflowInstances'] as List<dynamic>)

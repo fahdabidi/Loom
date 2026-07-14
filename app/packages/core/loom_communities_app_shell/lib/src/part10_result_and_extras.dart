@@ -26,10 +26,12 @@ class _ActionSurfaceDetailStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final surface = modernTheme?.resolvedFill ??
+    final surface =
+        modernTheme?.resolvedFill ??
         Color.alphaBlend(accent.withValues(alpha: 0.86), Colors.black);
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(surface);
-    final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: surface,
@@ -114,10 +116,12 @@ class _WorkflowResultPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = modernTheme?.resolvedFill ??
+    final surface =
+        modernTheme?.resolvedFill ??
         Color.alphaBlend(accent.withValues(alpha: 0.86), Colors.black);
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(surface);
-    final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: surface,
@@ -147,9 +151,9 @@ class _WorkflowResultPanel extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     body,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: bodyColor,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: bodyColor),
                   ),
                   if (onChangeResponse != null && changeResponseLabel != null)
                     Align(
@@ -433,4 +437,3 @@ class EmptyCommunityState extends StatelessWidget {
     );
   }
 }
-

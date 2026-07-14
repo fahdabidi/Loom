@@ -671,7 +671,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (formulas.isEmpty) return Map<String, dynamic>.from(data);
 
     final analyses = <String, FormulaAnalysis>{
-      for (final entry in formulas.entries) entry.key: analyzeFormula(entry.value!),
+      for (final entry in formulas.entries)
+        entry.key: analyzeFormula(entry.value!),
     };
     for (final entry in analyses.entries) {
       for (final function in entry.value.functionNames) {
@@ -727,7 +728,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     void visit(String key) {
       if (complete.contains(key)) return;
       if (!active.add(key)) {
-        throw FormulaEvaluationException('Circular formula dependency at "$key"');
+        throw FormulaEvaluationException(
+          'Circular formula dependency at "$key"',
+        );
       }
       for (final dependency in analyses[key]!.referencedFields) {
         if (computedFields.contains(dependency)) visit(dependency);

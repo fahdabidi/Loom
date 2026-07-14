@@ -203,8 +203,9 @@ class WorkflowDatabase {
       [communityId, '\$.$sortKey'],
     );
 
-    final allRows =
-        allRowsResult.map((r) => WorkflowInstanceRow.fromRow(r)).toList();
+    final allRows = allRowsResult
+        .map((r) => WorkflowInstanceRow.fromRow(r))
+        .toList();
 
     // Apply keyset cursor: skip rows until we pass the cursor position.
     // Cursor format: "$sortKey\x1f$sortValue\x1f$instanceId"
@@ -305,7 +306,10 @@ class WorkflowDatabase {
 
   Future<String> sqliteVersion() async {
     await _ensureOpenAndMigrated();
-    final result = await _db.runSelect('SELECT sqlite_version() AS version', []);
+    final result = await _db.runSelect(
+      'SELECT sqlite_version() AS version',
+      [],
+    );
     return result.first['version'] as String;
   }
 
@@ -315,9 +319,11 @@ class WorkflowDatabase {
     const rtldLazy = 0x00001;
     const rtldGlobal = 0x00100;
     final dl = DynamicLibrary.open('libdl.so.2');
-    final dlopen = dl.lookupFunction<
-        Pointer<Void> Function(Pointer<Utf8>, Int32),
-        Pointer<Void> Function(Pointer<Utf8>, int)>('dlopen');
+    final dlopen = dl
+        .lookupFunction<
+          Pointer<Void> Function(Pointer<Utf8>, Int32),
+          Pointer<Void> Function(Pointer<Utf8>, int)
+        >('dlopen');
 
     final candidates = <String>[
       '/usr/lib/x86_64-linux-gnu/libsqlite3.so.0',
@@ -345,7 +351,10 @@ class _WorkflowDatabaseUser extends QueryExecutorUser {
   int get schemaVersion => 1;
 
   @override
-  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) async {}
+  Future<void> beforeOpen(
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {}
 }
 
 /// Typed row for the workflow_instances table.

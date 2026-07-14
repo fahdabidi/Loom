@@ -79,7 +79,10 @@ class _YouthSoccerEngineTabSurfaceState
     }
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -96,7 +99,8 @@ class _YouthSoccerEngineTabSurfaceState
     await _store.updateFields(
       instance: instance,
       fieldUpdates: {
-        for (final field in fields) field: _controller(instance.instanceId, field).text,
+        for (final field in fields)
+          field: _controller(instance.instanceId, field).text,
       },
       personaId: widget.persona.personaId,
     );
@@ -285,9 +289,9 @@ class _YouthSoccerEngineTabSurfaceState
           children: [
             Text(
               'Guardian registration wizard',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             Text(
@@ -333,7 +337,9 @@ class _YouthSoccerEngineTabSurfaceState
         .toList();
     final guardian = widget.persona.personaId == 'guardian';
     return DecoratedBox(
-      key: ValueKey(guardian ? 'soccer-guardian-roster-card' : 'soccer-coach-roster-table'),
+      key: ValueKey(
+        guardian ? 'soccer-guardian-roster-card' : 'soccer-coach-roster-table',
+      ),
       decoration: _box,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -342,9 +348,9 @@ class _YouthSoccerEngineTabSurfaceState
           children: [
             Text(
               guardian ? 'My player card' : 'Coach roster table',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             if (guardian)
@@ -373,17 +379,21 @@ class _YouthSoccerEngineTabSurfaceState
   Widget _rosterLine(WorkflowInstance instance, {required bool redacted}) {
     final machine = _store.machineFor(instance.workflowType);
     final redactedFields = instance.instanceData['redactedFields'] is List
-        ? (instance.instanceData['redactedFields'] as List).map((item) => '$item').toSet()
+        ? (instance.instanceData['redactedFields'] as List)
+              .map((item) => '$item')
+              .toSet()
         : const <String>{};
     final medicalNotes = redacted
         ? 'Medical notes: protected by consent scope'
         : redactedFields.contains('medicalNotes')
-            ? 'Medical notes: redacted (medicalNotes)'
-            : 'Medical notes: ${instance.instanceData['medicalNotes'] ?? 'None'}';
+        ? 'Medical notes: redacted (medicalNotes)'
+        : 'Medical notes: ${instance.instanceData['medicalNotes'] ?? 'None'}';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('State: ${machine.states[instance.currentState]?.label ?? instance.currentState}'),
+        Text(
+          'State: ${machine.states[instance.currentState]?.label ?? instance.currentState}',
+        ),
         Text(
           '${instance.instanceData['playerName']} - ${instance.instanceData['ageGroup']} - ${instance.instanceData['waiverStatus']}',
           key: ValueKey('soccer-roster-${instance.instanceData['playerName']}'),
@@ -395,7 +405,8 @@ class _YouthSoccerEngineTabSurfaceState
               : 'Birth date: ${instance.instanceData['birthDate']}',
         ),
         Text(medicalNotes),
-        if (redactedFields.isNotEmpty) Text('Redacted fields: ${redactedFields.join(', ')}'),
+        if (redactedFields.isNotEmpty)
+          Text('Redacted fields: ${redactedFields.join(', ')}'),
         Text('${instance.instanceData['redactionStatus']}'),
       ],
     );
@@ -419,7 +430,9 @@ class _YouthSoccerEngineTabSurfaceState
     }
     final machine = _store.machineFor(instance.workflowType);
     return DecoratedBox(
-      key: ValueKey('soccer-card-${instance.workflowType}-${instance.instanceId}'),
+      key: ValueKey(
+        'soccer-card-${instance.workflowType}-${instance.instanceId}',
+      ),
       decoration: _box,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -437,8 +450,8 @@ class _YouthSoccerEngineTabSurfaceState
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(subtitle),
                     ],
@@ -575,7 +588,9 @@ class _YouthSoccerEngineTabSurfaceState
             label: (entry.value.labelTemplate ?? '{value}')
                 .replaceAll(
                   '{value.length}',
-                  data[entry.key] is List ? '${(data[entry.key] as List).length}' : '0',
+                  data[entry.key] is List
+                      ? '${(data[entry.key] as List).length}'
+                      : '0',
                 )
                 .replaceAll(
                   '{value}',
@@ -605,7 +620,9 @@ class _YouthSoccerEngineTabSurfaceState
           output.add(
             Text(
               '$item',
-              key: ValueKey('soccer-history-${instance.instanceId}-${item.hashCode}'),
+              key: ValueKey(
+                'soccer-history-${instance.instanceId}-${item.hashCode}',
+              ),
             ),
           );
         }
@@ -663,8 +680,8 @@ class _YouthSoccerEngineTabSurfaceState
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(body),
@@ -681,8 +698,11 @@ class _YouthSoccerEngineTabSurfaceState
     final destructive = transition.tone == 'destructive';
     final primary = transition.tone == 'primary';
     return OutlinedButton.styleFrom(
-      foregroundColor:
-          destructive ? Colors.red.shade800 : primary ? Colors.white : widget.accent,
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+          ? Colors.white
+          : widget.accent,
       backgroundColor: primary ? widget.accent : null,
       side: BorderSide(
         color: destructive ? Colors.red.shade800 : widget.accent,
@@ -691,59 +711,60 @@ class _YouthSoccerEngineTabSurfaceState
   }
 
   IconData _icon(String? icon) => switch (icon) {
-        'send' => Icons.send_outlined,
-        'check' => Icons.check_circle_outline,
-        'close' => Icons.close_outlined,
-        'schedule' => Icons.schedule_outlined,
-        'delete' => Icons.delete_outline,
-        'edit' => Icons.edit_outlined,
-        'report' => Icons.report_problem_outlined,
-        'verified' => Icons.verified_outlined,
-        'publish' => Icons.publish_outlined,
-        'notifications' => Icons.notifications_outlined,
-        'groups' => Icons.groups_outlined,
-        'download' => Icons.download_outlined,
-        'undo' => Icons.undo_outlined,
-        'open_in_browser' => Icons.open_in_browser_outlined,
-        'open_in_new' => Icons.open_in_new_outlined,
-        'reply' => Icons.reply_outlined,
-        'payments' => Icons.payments_outlined,
-        'privacy_tip' => Icons.privacy_tip_outlined,
-        'settings' => Icons.settings_outlined,
-        _ => Icons.sports_soccer_outlined,
-      };
+    'send' => Icons.send_outlined,
+    'check' => Icons.check_circle_outline,
+    'close' => Icons.close_outlined,
+    'schedule' => Icons.schedule_outlined,
+    'delete' => Icons.delete_outline,
+    'edit' => Icons.edit_outlined,
+    'report' => Icons.report_problem_outlined,
+    'verified' => Icons.verified_outlined,
+    'publish' => Icons.publish_outlined,
+    'notifications' => Icons.notifications_outlined,
+    'groups' => Icons.groups_outlined,
+    'download' => Icons.download_outlined,
+    'undo' => Icons.undo_outlined,
+    'open_in_browser' => Icons.open_in_browser_outlined,
+    'open_in_new' => Icons.open_in_new_outlined,
+    'reply' => Icons.reply_outlined,
+    'payments' => Icons.payments_outlined,
+    'privacy_tip' => Icons.privacy_tip_outlined,
+    'settings' => Icons.settings_outlined,
+    _ => Icons.sports_soccer_outlined,
+  };
 
   IconData _fact(String icon) => switch (icon) {
-        'person' => Icons.person_outline,
-        'schedule' => Icons.schedule_outlined,
-        'location_on' => Icons.location_on_outlined,
-        'history' => Icons.history_outlined,
-        'flag' => Icons.flag_outlined,
-        'event' => Icons.event_outlined,
-        'groups' => Icons.groups_outlined,
-        'notifications' => Icons.notifications_outlined,
-        'description' => Icons.description_outlined,
-        'verified' => Icons.verified_outlined,
-        'forum' => Icons.forum_outlined,
-        'payments' => Icons.payments_outlined,
-        'privacy_tip' => Icons.privacy_tip_outlined,
-        'report' => Icons.report_problem_outlined,
-        'check' => Icons.check_circle_outline,
-        'publish' => Icons.publish_outlined,
-        'settings' => Icons.settings_outlined,
-        'send' => Icons.send_outlined,
-        'open_in_new' => Icons.open_in_new_outlined,
-        _ => Icons.label_outline,
-      };
+    'person' => Icons.person_outline,
+    'schedule' => Icons.schedule_outlined,
+    'location_on' => Icons.location_on_outlined,
+    'history' => Icons.history_outlined,
+    'flag' => Icons.flag_outlined,
+    'event' => Icons.event_outlined,
+    'groups' => Icons.groups_outlined,
+    'notifications' => Icons.notifications_outlined,
+    'description' => Icons.description_outlined,
+    'verified' => Icons.verified_outlined,
+    'forum' => Icons.forum_outlined,
+    'payments' => Icons.payments_outlined,
+    'privacy_tip' => Icons.privacy_tip_outlined,
+    'report' => Icons.report_problem_outlined,
+    'check' => Icons.check_circle_outline,
+    'publish' => Icons.publish_outlined,
+    'settings' => Icons.settings_outlined,
+    'send' => Icons.send_outlined,
+    'open_in_new' => Icons.open_in_new_outlined,
+    _ => Icons.label_outline,
+  };
 
   BoxDecoration get _box => BoxDecoration(
-        color: widget.modernTheme?.resolvedFill ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: widget.modernTheme?.resolvedBorder ??
-              widget.accent.withValues(alpha: 0.2),
-        ),
-      );
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 }
 
 class _YouthSoccerEngineStore {
@@ -794,25 +815,25 @@ class _YouthSoccerEngineStore {
       'registration' => const {'soccer-guardian-join-approval'},
       'schedule' => const {'soccer-practice-schedule'},
       'team' => const {
-          'soccer-team-roster',
-          'soccer-minor-redaction',
-          'soccer-waiver-document',
-        },
+        'soccer-team-roster',
+        'soccer-minor-redaction',
+        'soccer-waiver-document',
+      },
       'payments' => const {'soccer-registration-payment'},
       'documents' => const {'soccer-waiver-document'},
       'coach' => const {
-          'soccer-team-roster',
-          'soccer-reminder-notification',
-          'soccer-practice-schedule',
-        },
+        'soccer-team-roster',
+        'soccer-reminder-notification',
+        'soccer-practice-schedule',
+      },
       'messages' => const {'soccer-team-discussion'},
       'admin' => const {'soccer-export-metadata'},
       'home' => const {
-          'soccer-practice-schedule',
-          'soccer-registration-payment',
-          'soccer-reminder-notification',
-          'soccer-guardian-join-approval',
-        },
+        'soccer-practice-schedule',
+        'soccer-registration-payment',
+        'soccer-reminder-notification',
+        'soccer-guardian-join-approval',
+      },
       _ => const <String>{},
     };
     final rows = page.items
@@ -820,8 +841,9 @@ class _YouthSoccerEngineStore {
         .where((instance) => _visible(instance, tabId, personaId))
         .toList();
     rows.sort(
-      (a, b) => ('${a.instanceData['playerName'] ?? a.workflowType}')
-          .compareTo('${b.instanceData['playerName'] ?? b.workflowType}'),
+      (a, b) => ('${a.instanceData['playerName'] ?? a.workflowType}').compareTo(
+        '${b.instanceData['playerName'] ?? b.workflowType}',
+      ),
     );
     return rows;
   }
@@ -830,7 +852,8 @@ class _YouthSoccerEngineStore {
     if (tabId == 'payments') return personaId == 'guardian';
     if (tabId == 'coach') return personaId == 'coach';
     if (tabId == 'admin') return personaId == 'owner';
-    if (tabId == 'documents') return personaId == 'coach' || personaId == 'guardian';
+    if (tabId == 'documents')
+      return personaId == 'coach' || personaId == 'guardian';
     if (tabId == 'team' &&
         personaId == 'guardian' &&
         instance.workflowType == 'soccer-team-roster') {
@@ -896,8 +919,9 @@ class _YouthSoccerFixtureBundle {
   final List<_GardenSeedInstance> instances;
 
   static Future<_YouthSoccerFixtureBundle> load() async {
-    final json = jsonDecode(_stripGardenJsoncComments(_youthSoccerBundledFixtureJsonc))
-        as Map<String, dynamic>;
+    final json =
+        jsonDecode(_stripGardenJsoncComments(_youthSoccerBundledFixtureJsonc))
+            as Map<String, dynamic>;
     final defs = json['workflowDefinitions'] as Map<String, dynamic>;
     final machines = <String, LoomWorkflowStateMachine>{};
     for (final entry in defs.entries) {

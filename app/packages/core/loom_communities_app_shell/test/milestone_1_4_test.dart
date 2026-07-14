@@ -33,10 +33,9 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: primaryColor).copyWith(
-                primary: primaryColor,
-                secondary: secondaryColor,
-              ),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: primaryColor,
+              ).copyWith(primary: primaryColor, secondary: secondaryColor),
             ),
             home: Scaffold(
               body: WorkflowActionButtonRow(
@@ -50,9 +49,18 @@ void main() {
 
         expect(find.byType(FilledButton), findsNWidgets(2));
         expect(find.byType(OutlinedButton), findsNWidgets(1));
-        expect(find.byKey(const ValueKey('equipment-loan-action-borrow')), findsOneWidget);
-        expect(find.byKey(const ValueKey('equipment-loan-action-join')), findsOneWidget);
-        expect(find.byKey(const ValueKey('equipment-loan-action-return')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('equipment-loan-action-borrow')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('equipment-loan-action-join')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('equipment-loan-action-return')),
+          findsOneWidget,
+        );
 
         final primaryButton = tester.widget<FilledButton>(
           find.byKey(const ValueKey('equipment-loan-action-borrow')),
@@ -76,7 +84,10 @@ void main() {
           secondaryButton.style?.backgroundColor?.resolve(const {}),
           isNot(equals(Colors.red.shade700)),
         );
-        expect(primaryButton.style?.backgroundColor?.resolve(const {}), isNot(secondaryButton.style?.foregroundColor?.resolve(const {})));
+        expect(
+          primaryButton.style?.backgroundColor?.resolve(const {}),
+          isNot(secondaryButton.style?.foregroundColor?.resolve(const {})),
+        );
 
         expect(
           find.descendant(
@@ -128,7 +139,10 @@ void main() {
 
         expect(find.byType(FilledButton), findsNothing);
         expect(find.byType(OutlinedButton), findsNothing);
-        expect(find.byKey(const ValueKey('equipment-loan-action-borrow')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('equipment-loan-action-borrow')),
+          findsOneWidget,
+        );
         expect(find.text('Waiting'), findsOneWidget);
         expect(find.byIcon(Icons.schedule), findsOneWidget);
       },
@@ -162,9 +176,9 @@ void main() {
         expect(find.byIcon(Icons.groups_outlined), findsNothing);
         expect(find.byIcon(Icons.label_outline), findsNothing);
 
-          await tester.pumpWidget(
-            const MaterialApp(
-              home: WorkflowFactPillRow(
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: WorkflowFactPillRow(
               instanceData: const {
                 'title': 'Catan',
                 'category': 'Board games',
@@ -200,14 +214,16 @@ void main() {
           iconName: 'check_circle_outline',
           tone: WorkflowActionTone.primary,
         );
-        final templateSurfaceByData = <String, Map<String, WorkflowFactPillFieldSchema>>{
-          'equipment-loan': equipmentLoanDefaultInstanceDataSchema,
-          'equipment-giveaway': equipmentGiveawayDefaultInstanceDataSchema,
-        };
-        final templateTransitions = <String, List<WorkflowActionButtonTransition>>{
-          'equipment-loan': [loanTransition],
-          'equipment-giveaway': [giveawayTransition],
-        };
+        final templateSurfaceByData =
+            <String, Map<String, WorkflowFactPillFieldSchema>>{
+              'equipment-loan': equipmentLoanDefaultInstanceDataSchema,
+              'equipment-giveaway': equipmentGiveawayDefaultInstanceDataSchema,
+            };
+        final templateTransitions =
+            <String, List<WorkflowActionButtonTransition>>{
+              'equipment-loan': [loanTransition],
+              'equipment-giveaway': [giveawayTransition],
+            };
         final templateData = <String, Map<String, dynamic>>{
           'equipment-loan': const {
             'title': 'Catan',

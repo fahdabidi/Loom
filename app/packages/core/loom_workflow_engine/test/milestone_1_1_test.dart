@@ -186,7 +186,9 @@ LoomWorkflowStateMachine _parseFixture(String workflowType) {
   final root = jsonDecode(_marketplaceFixtureJson()) as Map<String, dynamic>;
   final defs = root['workflowDefinitions'] as Map<String, dynamic>;
   return LoomWorkflowStateMachine.fromJson(
-      defs[workflowType] as Map<String, dynamic>, workflowType);
+    defs[workflowType] as Map<String, dynamic>,
+    workflowType,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -218,14 +220,14 @@ void main() {
     test('actorInList: present=true and persona IS in list → passes', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(
-            key: 'queuedPersonaIds', present: true),
+          key: 'queuedPersonaIds',
+          present: true,
+        ),
       );
       expect(
-        evaluateGuard(
-          guard,
-          'bob',
-          {'queuedPersonaIds': ['alice', 'bob']},
-        ),
+        evaluateGuard(guard, 'bob', {
+          'queuedPersonaIds': ['alice', 'bob'],
+        }),
         isTrue,
       );
     });
@@ -233,14 +235,14 @@ void main() {
     test('actorInList: present=true and persona NOT in list → fails', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(
-            key: 'queuedPersonaIds', present: true),
+          key: 'queuedPersonaIds',
+          present: true,
+        ),
       );
       expect(
-        evaluateGuard(
-          guard,
-          'charlie',
-          {'queuedPersonaIds': ['alice', 'bob']},
-        ),
+        evaluateGuard(guard, 'charlie', {
+          'queuedPersonaIds': ['alice', 'bob'],
+        }),
         isFalse,
       );
     });
@@ -248,14 +250,14 @@ void main() {
     test('actorInList: present=false and persona NOT in list → passes', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(
-            key: 'queuedPersonaIds', present: false),
+          key: 'queuedPersonaIds',
+          present: false,
+        ),
       );
       expect(
-        evaluateGuard(
-          guard,
-          'charlie',
-          {'queuedPersonaIds': ['alice', 'bob']},
-        ),
+        evaluateGuard(guard, 'charlie', {
+          'queuedPersonaIds': ['alice', 'bob'],
+        }),
         isTrue,
       );
     });
@@ -263,44 +265,44 @@ void main() {
     test('actorInList: present=false and persona IS in list → fails', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(
-            key: 'queuedPersonaIds', present: false),
-      );
-      expect(
-        evaluateGuard(
-          guard,
-          'bob',
-          {'queuedPersonaIds': ['alice', 'bob']},
+          key: 'queuedPersonaIds',
+          present: false,
         ),
+      );
+      expect(
+        evaluateGuard(guard, 'bob', {
+          'queuedPersonaIds': ['alice', 'bob'],
+        }),
         isFalse,
       );
     });
 
-    test('actorInList: key absent from instanceData with present=true → fails', () {
-      final guard = const WorkflowGuard(
-        actorInList:
-            ListMembershipGuard(key: 'missing', present: true),
-      );
-      expect(
-        evaluateGuard(guard, 'bob', {'other': 'value'}),
-        isFalse,
-      );
-    });
+    test(
+      'actorInList: key absent from instanceData with present=true → fails',
+      () {
+        final guard = const WorkflowGuard(
+          actorInList: ListMembershipGuard(key: 'missing', present: true),
+        );
+        expect(evaluateGuard(guard, 'bob', {'other': 'value'}), isFalse);
+      },
+    );
 
-    test('actorInList: key absent from instanceData with present=false → passes', () {
-      final guard = const WorkflowGuard(
-        actorInList:
-            ListMembershipGuard(key: 'missing', present: false),
-      );
-      expect(
-        evaluateGuard(guard, 'bob', {'other': 'value'}),
-        isTrue,
-      );
-    });
+    test(
+      'actorInList: key absent from instanceData with present=false → passes',
+      () {
+        final guard = const WorkflowGuard(
+          actorInList: ListMembershipGuard(key: 'missing', present: false),
+        );
+        expect(evaluateGuard(guard, 'bob', {'other': 'value'}), isTrue);
+      },
+    );
 
     test('instanceDataEquals: value matches → passes', () {
       final guard = const WorkflowGuard(
-        instanceDataEquals:
-            KeyValueGuard(key: 'availabilityState', value: 'available'),
+        instanceDataEquals: KeyValueGuard(
+          key: 'availabilityState',
+          value: 'available',
+        ),
       );
       expect(
         evaluateGuard(guard, 'bob', {'availabilityState': 'available'}),
@@ -310,8 +312,10 @@ void main() {
 
     test('instanceDataEquals: value differs → fails', () {
       final guard = const WorkflowGuard(
-        instanceDataEquals:
-            KeyValueGuard(key: 'availabilityState', value: 'available'),
+        instanceDataEquals: KeyValueGuard(
+          key: 'availabilityState',
+          value: 'available',
+        ),
       );
       expect(
         evaluateGuard(guard, 'bob', {'availabilityState': 'onLoan'}),
@@ -321,59 +325,61 @@ void main() {
 
     test('instanceDataEquals: key absent → fails', () {
       final guard = const WorkflowGuard(
-        instanceDataEquals:
-            KeyValueGuard(key: 'missing', value: 'anything'),
+        instanceDataEquals: KeyValueGuard(key: 'missing', value: 'anything'),
       );
-      expect(
-        evaluateGuard(guard, 'bob', {'other': 'value'}),
-        isFalse,
-      );
+      expect(evaluateGuard(guard, 'bob', {'other': 'value'}), isFalse);
     });
 
     test(
-        'compound guard: both conditions true → passes (allowedPersonaIds AND instanceDataEquals)',
-        () {
-      final guard = const WorkflowGuard(
-        allowedPersonaIds: ['member'],
-        instanceDataEquals: KeyValueGuard(
-            key: 'availabilityState', value: 'available'),
-      );
-      expect(
-        evaluateGuard(
-            guard, 'member', {'availabilityState': 'available'}),
-        isTrue,
-      );
-    });
+      'compound guard: both conditions true → passes (allowedPersonaIds AND instanceDataEquals)',
+      () {
+        final guard = const WorkflowGuard(
+          allowedPersonaIds: ['member'],
+          instanceDataEquals: KeyValueGuard(
+            key: 'availabilityState',
+            value: 'available',
+          ),
+        );
+        expect(
+          evaluateGuard(guard, 'member', {'availabilityState': 'available'}),
+          isTrue,
+        );
+      },
+    );
 
     test(
-        'compound guard: allowedPersonaIds true, instanceDataEquals false → transition unavailable',
-        () {
-      final guard = const WorkflowGuard(
-        allowedPersonaIds: ['member'],
-        instanceDataEquals: KeyValueGuard(
-            key: 'availabilityState', value: 'available'),
-      );
-      expect(
-        evaluateGuard(
-            guard, 'member', {'availabilityState': 'onLoan'}),
-        isFalse,
-      );
-    });
+      'compound guard: allowedPersonaIds true, instanceDataEquals false → transition unavailable',
+      () {
+        final guard = const WorkflowGuard(
+          allowedPersonaIds: ['member'],
+          instanceDataEquals: KeyValueGuard(
+            key: 'availabilityState',
+            value: 'available',
+          ),
+        );
+        expect(
+          evaluateGuard(guard, 'member', {'availabilityState': 'onLoan'}),
+          isFalse,
+        );
+      },
+    );
 
     test(
-        'compound guard: allowedPersonaIds false, instanceDataEquals true → transition unavailable',
-        () {
-      final guard = const WorkflowGuard(
-        allowedPersonaIds: ['admin'],
-        instanceDataEquals: KeyValueGuard(
-            key: 'availabilityState', value: 'available'),
-      );
-      expect(
-        evaluateGuard(
-            guard, 'member', {'availabilityState': 'available'}),
-        isFalse,
-      );
-    });
+      'compound guard: allowedPersonaIds false, instanceDataEquals true → transition unavailable',
+      () {
+        final guard = const WorkflowGuard(
+          allowedPersonaIds: ['admin'],
+          instanceDataEquals: KeyValueGuard(
+            key: 'availabilityState',
+            value: 'available',
+          ),
+        );
+        expect(
+          evaluateGuard(guard, 'member', {'availabilityState': 'available'}),
+          isFalse,
+        );
+      },
+    );
 
     test('empty guard (all null) → always passes', () {
       expect(evaluateGuard(const WorkflowGuard(), 'anyone', {}), isTrue);
@@ -388,7 +394,10 @@ void main() {
     test('set: writes a string value', () {
       final effects = [
         const WorkflowEffect(
-            op: 'set', key: 'availabilityState', value: 'onLoan'),
+          op: 'set',
+          key: 'availabilityState',
+          value: 'onLoan',
+        ),
       ];
       final result = applyEffects(effects, 'bob', {});
       expect(result, {'availabilityState': 'onLoan'});
@@ -397,7 +406,10 @@ void main() {
     test('set: resolves \$actor to personaId', () {
       final effects = [
         const WorkflowEffect(
-            op: 'set', key: 'holderPersonaId', value: r'$actor'),
+          op: 'set',
+          key: 'holderPersonaId',
+          value: r'$actor',
+        ),
       ];
       final result = applyEffects(effects, 'bob-42', {});
       expect(result, {'holderPersonaId': 'bob-42'});
@@ -405,18 +417,15 @@ void main() {
 
     test('set: writes null (key set to null)', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'set', key: 'holderPersonaId', value: null),
+        const WorkflowEffect(op: 'set', key: 'holderPersonaId', value: null),
       ];
-      final result = applyEffects(
-          effects, 'bob', {'holderPersonaId': 'alice'});
+      final result = applyEffects(effects, 'bob', {'holderPersonaId': 'alice'});
       expect(result, {'holderPersonaId': null});
     });
 
     test('set: overwrites existing value', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'set', key: 'counter', value: 42),
+        const WorkflowEffect(op: 'set', key: 'counter', value: 42),
       ];
       final result = applyEffects(effects, 'bob', {'counter': 1});
       expect(result, {'counter': 42});
@@ -424,39 +433,37 @@ void main() {
 
     test('appendUnique: on an empty list → adds value', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'appendUnique', key: 'queue', value: 'alpha'),
+        const WorkflowEffect(op: 'appendUnique', key: 'queue', value: 'alpha'),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'queue': <String>[]});
+      final result = applyEffects(effects, 'bob', {'queue': <String>[]});
       expect(result['queue'], ['alpha']);
     });
 
     test('appendUnique: on a list NOT containing value → appends', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'appendUnique', key: 'queue', value: 'beta'),
+        const WorkflowEffect(op: 'appendUnique', key: 'queue', value: 'beta'),
       ];
-      final result = applyEffects(
-          effects, 'bob', {'queue': ['alpha']});
+      final result = applyEffects(effects, 'bob', {
+        'queue': ['alpha'],
+      });
       expect(result['queue'], ['alpha', 'beta']);
     });
 
     test('appendUnique: on a list ALREADY containing value → idempotent', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'appendUnique', key: 'queue', value: 'alpha'),
+        const WorkflowEffect(op: 'appendUnique', key: 'queue', value: 'alpha'),
       ];
-      final result = applyEffects(
-          effects, 'bob', {'queue': ['alpha']});
-      expect(result['queue'], ['alpha'],
-          reason: 'duplicate must not be appended');
+      final result = applyEffects(effects, 'bob', {
+        'queue': ['alpha'],
+      });
+      expect(result['queue'], [
+        'alpha',
+      ], reason: 'duplicate must not be appended');
     });
 
     test('appendUnique: key absent → creates new list', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'appendUnique', key: 'newKey', value: 'first'),
+        const WorkflowEffect(op: 'appendUnique', key: 'newKey', value: 'first'),
       ];
       final result = applyEffects(effects, 'bob', {});
       expect(result['newKey'], ['first']);
@@ -465,37 +472,38 @@ void main() {
     test('appendUnique: resolves \$actor', () {
       final effects = [
         const WorkflowEffect(
-            op: 'appendUnique', key: 'queue', value: r'$actor'),
+          op: 'appendUnique',
+          key: 'queue',
+          value: r'$actor',
+        ),
       ];
-      final result =
-          applyEffects(effects, 'charlie', {'queue': <String>[]});
+      final result = applyEffects(effects, 'charlie', {'queue': <String>[]});
       expect(result['queue'], ['charlie']);
     });
 
     test('removeValue: value present → removes it', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'removeValue', key: 'queue', value: 'alpha'),
+        const WorkflowEffect(op: 'removeValue', key: 'queue', value: 'alpha'),
       ];
-      final result = applyEffects(
-          effects, 'bob', {'queue': ['alpha', 'beta']});
+      final result = applyEffects(effects, 'bob', {
+        'queue': ['alpha', 'beta'],
+      });
       expect(result['queue'], ['beta']);
     });
 
     test('removeValue: value absent → no-op, list unchanged', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'removeValue', key: 'queue', value: 'gamma'),
+        const WorkflowEffect(op: 'removeValue', key: 'queue', value: 'gamma'),
       ];
-      final result = applyEffects(
-          effects, 'bob', {'queue': ['alpha', 'beta']});
+      final result = applyEffects(effects, 'bob', {
+        'queue': ['alpha', 'beta'],
+      });
       expect(result['queue'], ['alpha', 'beta']);
     });
 
     test('removeValue: key absent → no-op', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'removeValue', key: 'nonexistent', value: 'x'),
+        const WorkflowEffect(op: 'removeValue', key: 'nonexistent', value: 'x'),
       ];
       final result = applyEffects(effects, 'bob', {});
       expect(result, <String, dynamic>{});
@@ -513,8 +521,7 @@ void main() {
       final effects = [
         const WorkflowEffect(op: 'increment', key: 'counter', value: 1),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'counter': 5});
+      final result = applyEffects(effects, 'bob', {'counter': 5});
       expect(result['counter'], 6);
     });
 
@@ -522,8 +529,7 @@ void main() {
       final effects = [
         const WorkflowEffect(op: 'increment', key: 'counter', value: 1),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'counter': 'not-a-number'});
+      final result = applyEffects(effects, 'bob', {'counter': 'not-a-number'});
       expect(result['counter'], 1);
     });
 
@@ -531,8 +537,7 @@ void main() {
       final effects = [
         const WorkflowEffect(op: 'decrement', key: 'counter', value: 1),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'counter': 3});
+      final result = applyEffects(effects, 'bob', {'counter': 3});
       expect(result['counter'], 2);
     });
 
@@ -540,8 +545,7 @@ void main() {
       final effects = [
         const WorkflowEffect(op: 'decrement', key: 'counter', value: 1),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'counter': 0});
+      final result = applyEffects(effects, 'bob', {'counter': 0});
       expect(result['counter'], 0);
     });
 
@@ -555,15 +559,11 @@ void main() {
 
     test('multiple effects applied in order', () {
       final effects = [
-        const WorkflowEffect(
-            op: 'set', key: 'a', value: 'one'),
-        const WorkflowEffect(
-            op: 'set', key: 'b', value: 'two'),
-        const WorkflowEffect(
-            op: 'appendUnique', key: 'list', value: 'x'),
+        const WorkflowEffect(op: 'set', key: 'a', value: 'one'),
+        const WorkflowEffect(op: 'set', key: 'b', value: 'two'),
+        const WorkflowEffect(op: 'appendUnique', key: 'list', value: 'x'),
       ];
-      final result =
-          applyEffects(effects, 'bob', {'list': <String>[]});
+      final result = applyEffects(effects, 'bob', {'list': <String>[]});
       expect(result['a'], 'one');
       expect(result['b'], 'two');
       expect(result['list'], ['x']);
@@ -580,17 +580,22 @@ void main() {
       expect(identical(original, result), isFalse);
     });
 
-    test('unknown op is silently ignored (removeFromTileGrid passes through)', () {
-      final effects = [
-        const WorkflowEffect(
-            op: 'removeFromTileGrid', key: 'n/a', value: null),
-        const WorkflowEffect(
-            op: 'set', key: 'survived', value: true),
-      ];
-      final result = applyEffects(effects, 'bob', {});
-      expect(result, {'survived': true});
-      // Engine must not crash or throw on unknown ops.
-    });
+    test(
+      'unknown op is silently ignored (removeFromTileGrid passes through)',
+      () {
+        final effects = [
+          const WorkflowEffect(
+            op: 'removeFromTileGrid',
+            key: 'n/a',
+            value: null,
+          ),
+          const WorkflowEffect(op: 'set', key: 'survived', value: true),
+        ];
+        final result = applyEffects(effects, 'bob', {});
+        expect(result, {'survived': true});
+        // Engine must not crash or throw on unknown ops.
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -599,32 +604,33 @@ void main() {
 
   group('Stuck-state regression (original marketplace bug)', () {
     test(
-        'a state with zero outgoing transitions parses successfully in engine',
-        () {
-      // Build a machine where state "delisted" has no outgoing transitions.
-      // This is valid — the validator catches it later (Milestone 1.3), not
-      // the engine.
-      final machine = const LoomWorkflowStateMachine(
-        workflowType: 'test',
-        initialState: 'available',
-        states: {
-          'available': LoomWorkflowState(label: 'Available'),
-          'done': LoomWorkflowState(label: 'Done'),
-        },
-        transitions: [
-          LoomWorkflowTransition(
-            id: 'finish',
-            label: 'Finish',
-            from: ['available'],
-            to: 'done',
-          ),
-          // No transition from "done" — this is the stuck state.
-        ],
-      );
+      'a state with zero outgoing transitions parses successfully in engine',
+      () {
+        // Build a machine where state "delisted" has no outgoing transitions.
+        // This is valid — the validator catches it later (Milestone 1.3), not
+        // the engine.
+        final machine = const LoomWorkflowStateMachine(
+          workflowType: 'test',
+          initialState: 'available',
+          states: {
+            'available': LoomWorkflowState(label: 'Available'),
+            'done': LoomWorkflowState(label: 'Done'),
+          },
+          transitions: [
+            LoomWorkflowTransition(
+              id: 'finish',
+              label: 'Finish',
+              from: ['available'],
+              to: 'done',
+            ),
+            // No transition from "done" — this is the stuck state.
+          ],
+        );
 
-      // Engine must parse this without error.
-      expect(machine.transitionsFrom('done'), isEmpty);
-    });
+        // Engine must parse this without error.
+        expect(machine.transitionsFrom('done'), isEmpty);
+      },
+    );
 
     test('availableTransitions on a stuck state returns empty list', () {
       final machine = const LoomWorkflowStateMachine(
@@ -684,7 +690,11 @@ void main() {
 
       // Member submits for review.
       final actions = availableTransitions(
-          machine, state, 'tabletop-member', data);
+        machine,
+        state,
+        'tabletop-member',
+        data,
+      );
       final submit = actions.firstWhere((a) => a.id == 'submit-listing');
       expect(submit.label, 'Submit for review');
 
@@ -704,14 +714,24 @@ void main() {
 
       // Only organizer can approve.
       var actions = availableTransitions(
-          machine, state, 'tabletop-member', data);
-      expect(actions.where((a) => a.id == 'approve-listing'), isEmpty,
-          reason: 'member cannot approve');
+        machine,
+        state,
+        'tabletop-member',
+        data,
+      );
+      expect(
+        actions.where((a) => a.id == 'approve-listing'),
+        isEmpty,
+        reason: 'member cannot approve',
+      );
 
-      actions =
-          availableTransitions(machine, state, 'tabletop-organizer', data);
-      final approve =
-          actions.firstWhere((a) => a.id == 'approve-listing');
+      actions = availableTransitions(
+        machine,
+        state,
+        'tabletop-organizer',
+        data,
+      );
+      final approve = actions.firstWhere((a) => a.id == 'approve-listing');
       expect(approve.label, 'Approve');
 
       // Apply to: published, data gets availabilityState: "available".
@@ -721,58 +741,73 @@ void main() {
       expect(data['availabilityState'], 'available');
     });
 
-    test('published + available → borrow → top-level state stays published', () {
-      final state = 'published';
-      final data = <String, dynamic>{
-        'title': 'Catan',
-        'availabilityState': 'available',
-        'holderPersonaId': null,
-        'queuedPersonaIds': <String>[],
-      };
+    test(
+      'published + available → borrow → top-level state stays published',
+      () {
+        final state = 'published';
+        final data = <String, dynamic>{
+          'title': 'Catan',
+          'availabilityState': 'available',
+          'holderPersonaId': null,
+          'queuedPersonaIds': <String>[],
+        };
 
-      final actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
-      final borrow = actions.firstWhere((a) => a.id == 'borrow');
-      expect(borrow.to, isNull); // orthogonal: top-level state doesn't change
+        final actions = availableTransitions(
+          machine,
+          state,
+          'tabletop-member',
+          data,
+        );
+        final borrow = actions.firstWhere((a) => a.id == 'borrow');
+        expect(borrow.to, isNull); // orthogonal: top-level state doesn't change
 
-      // Apply effects.
-      final newState = borrow.to ?? state; // null → stays published
-      final newData =
-          applyEffects(borrow.effects, 'tabletop-member', data);
+        // Apply effects.
+        final newState = borrow.to ?? state; // null → stays published
+        final newData = applyEffects(borrow.effects, 'tabletop-member', data);
 
-      expect(newState, 'published',
-          reason: 'top-level state must remain published');
-      expect(newData['availabilityState'], 'onLoan',
-          reason:
-              'availabilityState changed independently from currentState');
-      expect(newData['holderPersonaId'], 'tabletop-member');
-    });
+        expect(
+          newState,
+          'published',
+          reason: 'top-level state must remain published',
+        );
+        expect(
+          newData['availabilityState'],
+          'onLoan',
+          reason: 'availabilityState changed independently from currentState',
+        );
+        expect(newData['holderPersonaId'], 'tabletop-member');
+      },
+    );
 
     test(
-        'published + onLoan → return → availabilityState back to available',
-        () {
-      final state = 'published';
-      final data = <String, dynamic>{
-        'availabilityState': 'onLoan',
-        'holderPersonaId': 'tabletop-member',
-        'queuedPersonaIds': <String>[],
-        'dueDate': '2026-07-17',
-      };
+      'published + onLoan → return → availabilityState back to available',
+      () {
+        final state = 'published';
+        final data = <String, dynamic>{
+          'availabilityState': 'onLoan',
+          'holderPersonaId': 'tabletop-member',
+          'queuedPersonaIds': <String>[],
+          'dueDate': '2026-07-17',
+        };
 
-      final actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
-      final returnT = actions.firstWhere((a) => a.id == 'return');
-      expect(returnT.label, 'Return');
+        final actions = availableTransitions(
+          machine,
+          state,
+          'tabletop-member',
+          data,
+        );
+        final returnT = actions.firstWhere((a) => a.id == 'return');
+        expect(returnT.label, 'Return');
 
-      final newState = returnT.to ?? state;
-      final newData =
-          applyEffects(returnT.effects, 'tabletop-member', data);
+        final newState = returnT.to ?? state;
+        final newData = applyEffects(returnT.effects, 'tabletop-member', data);
 
-      expect(newState, 'published');
-      expect(newData['availabilityState'], 'available');
-      expect(newData['holderPersonaId'], isNull);
-      expect(newData['dueDate'], isNull);
-    });
+        expect(newState, 'published');
+        expect(newData['availabilityState'], 'available');
+        expect(newData['holderPersonaId'], isNull);
+        expect(newData['dueDate'], isNull);
+      },
+    );
 
     test('published → delist → delisted', () {
       var state = 'published';
@@ -783,12 +818,20 @@ void main() {
       };
 
       // Only owners/organizers can delist.
-      var actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
+      var actions = availableTransitions(
+        machine,
+        state,
+        'tabletop-member',
+        data,
+      );
       expect(actions.where((a) => a.id == 'delist'), isEmpty);
 
-      actions =
-          availableTransitions(machine, state, 'tabletop-member-owner', data);
+      actions = availableTransitions(
+        machine,
+        state,
+        'tabletop-member-owner',
+        data,
+      );
       final delist = actions.firstWhere((a) => a.id == 'delist');
       expect(delist.label, 'Delist');
 
@@ -797,67 +840,84 @@ void main() {
     });
 
     test(
-        'full drive: draft → published → borrow → return → delist, proving axes are independent',
-        () {
-      var state = machine.initialState; // draft
-      var data = <String, dynamic>{
-        'title': 'Catan',
-        'category': 'Board Games',
-        'condition': 'Like new',
-        'holderPersonaId': null,
-        'queuedPersonaIds': <String>[],
-      };
+      'full drive: draft → published → borrow → return → delist, proving axes are independent',
+      () {
+        var state = machine.initialState; // draft
+        var data = <String, dynamic>{
+          'title': 'Catan',
+          'category': 'Board Games',
+          'condition': 'Like new',
+          'holderPersonaId': null,
+          'queuedPersonaIds': <String>[],
+        };
 
-      // Step 1: draft → pending-review (submit-listing).
-      var actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
-      var t = actions.firstWhere((a) => a.id == 'submit-listing');
-      state = t.to!;
-      data = applyEffects(t.effects, 'tabletop-member', data);
-      expect(state, 'pending-review');
+        // Step 1: draft → pending-review (submit-listing).
+        var actions = availableTransitions(
+          machine,
+          state,
+          'tabletop-member',
+          data,
+        );
+        var t = actions.firstWhere((a) => a.id == 'submit-listing');
+        state = t.to!;
+        data = applyEffects(t.effects, 'tabletop-member', data);
+        expect(state, 'pending-review');
 
-      // Step 2: pending-review → published (approve-listing).
-      actions =
-          availableTransitions(machine, state, 'tabletop-organizer', data);
-      t = actions.firstWhere((a) => a.id == 'approve-listing');
-      state = t.to!;
-      data = applyEffects(t.effects, 'tabletop-organizer', data);
-      expect(state, 'published');
-      expect(data['availabilityState'], 'available');
+        // Step 2: pending-review → published (approve-listing).
+        actions = availableTransitions(
+          machine,
+          state,
+          'tabletop-organizer',
+          data,
+        );
+        t = actions.firstWhere((a) => a.id == 'approve-listing');
+        state = t.to!;
+        data = applyEffects(t.effects, 'tabletop-organizer', data);
+        expect(state, 'published');
+        expect(data['availabilityState'], 'available');
 
-      // Step 3: published → borrow (orthogonal: state stays published).
-      actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
-      t = actions.firstWhere((a) => a.id == 'borrow');
-      state = t.to ?? state;
-      data = applyEffects(t.effects, 'tabletop-member', data);
-      expect(state, 'published',
-          reason: 'top-level state axis unchanged by borrow');
-      expect(data['availabilityState'], 'onLoan',
-          reason: 'orthogonal axis changed independently');
+        // Step 3: published → borrow (orthogonal: state stays published).
+        actions = availableTransitions(machine, state, 'tabletop-member', data);
+        t = actions.firstWhere((a) => a.id == 'borrow');
+        state = t.to ?? state;
+        data = applyEffects(t.effects, 'tabletop-member', data);
+        expect(
+          state,
+          'published',
+          reason: 'top-level state axis unchanged by borrow',
+        );
+        expect(
+          data['availabilityState'],
+          'onLoan',
+          reason: 'orthogonal axis changed independently',
+        );
 
-      // Step 4: published → return (orthogonal again).
-      actions =
-          availableTransitions(machine, state, 'tabletop-member', data);
-      t = actions.firstWhere((a) => a.id == 'return');
-      state = t.to ?? state;
-      data = applyEffects(t.effects, 'tabletop-member', data);
-      expect(state, 'published');
-      expect(data['availabilityState'], 'available');
+        // Step 4: published → return (orthogonal again).
+        actions = availableTransitions(machine, state, 'tabletop-member', data);
+        t = actions.firstWhere((a) => a.id == 'return');
+        state = t.to ?? state;
+        data = applyEffects(t.effects, 'tabletop-member', data);
+        expect(state, 'published');
+        expect(data['availabilityState'], 'available');
 
-      // Step 5: published → delist.
-      actions =
-          availableTransitions(machine, state, 'tabletop-member-owner', data);
-      t = actions.firstWhere((a) => a.id == 'delist');
-      state = t.to!;
-      data = applyEffects(t.effects, 'tabletop-member-owner', data);
-      expect(state, 'delisted');
+        // Step 5: published → delist.
+        actions = availableTransitions(
+          machine,
+          state,
+          'tabletop-member-owner',
+          data,
+        );
+        t = actions.firstWhere((a) => a.id == 'delist');
+        state = t.to!;
+        data = applyEffects(t.effects, 'tabletop-member-owner', data);
+        expect(state, 'delisted');
 
-      // Prove the two axes: at every borrow/return step, top-level state
-      // was "published" while availabilityState toggled independently.
-      // This is the proof — no test needed at the end because each step
-      // already asserts it.
-    });
+        // Prove the two axes: at every borrow/return step, top-level state
+        // was "published" while availabilityState toggled independently.
+        // This is the proof — no test needed at the end because each step
+        // already asserts it.
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -894,55 +954,50 @@ void main() {
       expect(bindings.first.cardSurfaceFamily, 'listing-editor');
     });
 
-    test('actor role does NOT match if persona only holds receiver role on draft', () {
-      final bindings = resolveBindings(
-        machine,
-        'draft',
-        {'receiver'},
-      );
-      // draft binding is role: "actor" only — receiver doesn't match.
-      expect(bindings, isEmpty);
-    });
+    test(
+      'actor role does NOT match if persona only holds receiver role on draft',
+      () {
+        final bindings = resolveBindings(machine, 'draft', {'receiver'});
+        // draft binding is role: "actor" only — receiver doesn't match.
+        expect(bindings, isEmpty);
+      },
+    );
 
     test(
-        'persona holding TWO roles on pending-review resolves BOTH matching bindings',
-        () {
-      // pending-review has two bindings:
-      //   role: "actor"   → listing-status-badge (summary)
-      //   role: "receiver" → listing-review-queue-item (primary)
-      final bindings = resolveBindings(
-        machine,
-        'pending-review',
-        {'actor', 'receiver'},
-      );
-      expect(bindings.length, 2,
-          reason: 'both actor and receiver bindings must resolve');
+      'persona holding TWO roles on pending-review resolves BOTH matching bindings',
+      () {
+        // pending-review has two bindings:
+        //   role: "actor"   → listing-status-badge (summary)
+        //   role: "receiver" → listing-review-queue-item (primary)
+        final bindings = resolveBindings(machine, 'pending-review', {
+          'actor',
+          'receiver',
+        });
+        expect(
+          bindings.length,
+          2,
+          reason: 'both actor and receiver bindings must resolve',
+        );
 
-      final families =
-          bindings.map((b) => b.cardSurfaceFamily).toSet();
-      expect(families,
-          contains('listing-status-badge'));
-      expect(families,
-          contains('listing-review-queue-item'));
-    });
+        final families = bindings.map((b) => b.cardSurfaceFamily).toSet();
+        expect(families, contains('listing-status-badge'));
+        expect(families, contains('listing-review-queue-item'));
+      },
+    );
 
-    test('persona holding only one of the two roles gets only that binding', () {
-      final bindings = resolveBindings(
-        machine,
-        'pending-review',
-        {'receiver'},
-      );
-      expect(bindings.length, 1);
-      expect(bindings.first.cardSurfaceFamily,
-          'listing-review-queue-item');
-    });
+    test(
+      'persona holding only one of the two roles gets only that binding',
+      () {
+        final bindings = resolveBindings(machine, 'pending-review', {
+          'receiver',
+        });
+        expect(bindings.length, 1);
+        expect(bindings.first.cardSurfaceFamily, 'listing-review-queue-item');
+      },
+    );
 
     test('state not listed in any binding returns empty', () {
-      final bindings = resolveBindings(
-        machine,
-        'nonexistent-state',
-        {'any'},
-      );
+      final bindings = resolveBindings(machine, 'nonexistent-state', {'any'});
       expect(bindings, isEmpty);
     });
   });

@@ -103,7 +103,8 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'book-library-item',
         title: 'Shared library item',
-        entryText: 'Members can borrow, queue for, return, and claim shared items.',
+        entryText:
+            'Members can borrow, queue for, return, and claim shared items.',
         actionText: 'Borrow and manage the club library item.',
         resultText: 'Shared library custody state updated.',
       ),
@@ -174,7 +175,8 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'soccer-waiver-document',
         title: 'Waiver document library',
-        entryText: 'The current waiver is available for embedded and external review.',
+        entryText:
+            'The current waiver is available for embedded and external review.',
         actionText: 'Open and acknowledge the current youth sports waiver.',
         resultText: 'Waiver acknowledgement is recorded with an audit trail.',
       ),
@@ -312,7 +314,8 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'mosque-discussion-thread',
         title: 'Community discussion thread',
-        entryText: 'Members can discuss iftar logistics without leaking protected care details.',
+        entryText:
+            'Members can discuss iftar logistics without leaking protected care details.',
         actionText: 'Reply to the iftar logistics thread.',
         resultText: 'Discussion thread updated.',
       ),
@@ -324,14 +327,63 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
     tagline: 'Propose matches, record results, and keep live ladder rankings.',
     accentColor: 0xff58432f,
     workflows: [
-      LoomWorkflowDefinition(workflowId: 'chess-match-meetup', title: 'Match meetup', entryText: 'Players can propose, negotiate, and confirm ladder matches.', actionText: 'Propose and confirm a Board 1 ladder match.', resultText: 'Ladder match confirmed on the club calendar.'),
-      LoomWorkflowDefinition(workflowId: 'chess-match-result', title: 'Match result record', entryText: 'Players can record a result that updates rankings.', actionText: 'Submit the Board 1 match result.', resultText: 'Match result saved and rankings updated.'),
-      LoomWorkflowDefinition(workflowId: 'chess-rankings-table', title: 'Live rankings table', entryText: 'Rankings use the table archetype with ranking emphasis.', actionText: 'Review the live ladder rankings.', resultText: 'Live rankings table displayed.'),
-      LoomWorkflowDefinition(workflowId: 'chess-club-night', title: 'Club night calendar', entryText: 'The next ladder night has confirmed pairings.', actionText: 'Open the club night calendar entry.', resultText: 'Club night calendar entry displayed.'),
-      LoomWorkflowDefinition(workflowId: 'chess-pairing-queue', title: 'Organizer pairing queue', entryText: 'Organizer can assign players waiting for ladder pairings.', actionText: 'Assign the next pairing.', resultText: 'Pairing queue updated.'),
-      LoomWorkflowDefinition(workflowId: 'chess-export-package', title: 'Chess records export', entryText: 'Organizer can export match and ranking records.', actionText: 'Generate Chess Club export evidence.', resultText: 'Chess Club export package generated.'),
-      LoomWorkflowDefinition(workflowId: 'chess-rules-documents', title: 'Rules documents', entryText: 'Organizer can open and download club rules.', actionText: 'Open the club rules document.', resultText: 'Club rules document opened.'),
-      LoomWorkflowDefinition(workflowId: 'chess-discussion-thread', title: 'Pairing discussion', entryText: 'Players can coordinate pairings in a discussion thread.', actionText: 'Reply to the pairing thread.', resultText: 'Pairing thread updated.'),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-match-meetup',
+        title: 'Match meetup',
+        entryText:
+            'Players can propose, negotiate, and confirm ladder matches.',
+        actionText: 'Propose and confirm a Board 1 ladder match.',
+        resultText: 'Ladder match confirmed on the club calendar.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-match-result',
+        title: 'Match result record',
+        entryText: 'Players can record a result that updates rankings.',
+        actionText: 'Submit the Board 1 match result.',
+        resultText: 'Match result saved and rankings updated.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-rankings-table',
+        title: 'Live rankings table',
+        entryText: 'Rankings use the table archetype with ranking emphasis.',
+        actionText: 'Review the live ladder rankings.',
+        resultText: 'Live rankings table displayed.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-club-night',
+        title: 'Club night calendar',
+        entryText: 'The next ladder night has confirmed pairings.',
+        actionText: 'Open the club night calendar entry.',
+        resultText: 'Club night calendar entry displayed.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-pairing-queue',
+        title: 'Organizer pairing queue',
+        entryText: 'Organizer can assign players waiting for ladder pairings.',
+        actionText: 'Assign the next pairing.',
+        resultText: 'Pairing queue updated.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-export-package',
+        title: 'Chess records export',
+        entryText: 'Organizer can export match and ranking records.',
+        actionText: 'Generate Chess Club export evidence.',
+        resultText: 'Chess Club export package generated.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-rules-documents',
+        title: 'Rules documents',
+        entryText: 'Organizer can open and download club rules.',
+        actionText: 'Open the club rules document.',
+        resultText: 'Club rules document opened.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-discussion-thread',
+        title: 'Pairing discussion',
+        entryText: 'Players can coordinate pairings in a discussion thread.',
+        actionText: 'Reply to the pairing thread.',
+        resultText: 'Pairing thread updated.',
+      ),
     ],
   ),
   'ext_camera_club': LoomExperienceDefinition(

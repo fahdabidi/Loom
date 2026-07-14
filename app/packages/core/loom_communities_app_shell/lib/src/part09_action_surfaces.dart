@@ -1685,7 +1685,8 @@ class _RichInlineActionPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
-    final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     final textTheme = Theme.of(context).textTheme;
     final primaryStyle = _buttonStyleFor(modernTheme?.primaryButton);
     final cancelForeground = modernTheme?.accent ?? foreground;
@@ -1694,7 +1695,8 @@ class _RichInlineActionPanel extends StatelessWidget {
         color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+          color:
+              modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
         ),
       ),
       child: Padding(
@@ -1710,12 +1712,7 @@ class _RichInlineActionPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              body,
-              style: textTheme.bodyMedium?.copyWith(
-                color: bodyColor,
-              ),
-            ),
+            Text(body, style: textTheme.bodyMedium?.copyWith(color: bodyColor)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -1828,7 +1825,8 @@ class _InlineActionBar extends StatelessWidget {
         color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+          color:
+              modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
         ),
       ),
       child: Padding(
@@ -1894,7 +1892,8 @@ class _WorkflowResponseChoiceBar extends StatelessWidget {
         color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+          color:
+              modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
         ),
       ),
       child: Padding(
@@ -1908,8 +1907,8 @@ class _WorkflowResponseChoiceBar extends StatelessWidget {
                 style: choice.isDestructive
                     ? FilledButton.styleFrom(backgroundColor: errorColor)
                     : (choice.responseId == firstNonDestructiveId
-                        ? primaryStyle
-                        : secondaryStyle),
+                          ? primaryStyle
+                          : secondaryStyle),
                 onPressed: () => onSelected(choice.responseId),
                 icon: Icon(choice.icon, size: 18),
                 label: Text(choice.label, textAlign: TextAlign.center),
@@ -1950,9 +1949,12 @@ class _GardenHeroPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final fill = modernTheme?.resolvedFill ?? accent;
-    final subtitleColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.92);
-    final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
-    final shadow = modernTheme?.resolvedShadow ?? accent.withValues(alpha: 0.22);
+    final subtitleColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.92);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
+    final shadow =
+        modernTheme?.resolvedShadow ?? accent.withValues(alpha: 0.22);
     final textTheme = Theme.of(context).textTheme;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -1962,11 +1964,7 @@ class _GardenHeroPanel extends StatelessWidget {
             ? Border.all(color: modernTheme!.resolvedBorder)
             : null,
         boxShadow: [
-          BoxShadow(
-            color: shadow,
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
+          BoxShadow(color: shadow, blurRadius: 18, offset: const Offset(0, 10)),
         ],
       ),
       child: Padding(
@@ -1996,12 +1994,7 @@ class _GardenHeroPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              body,
-              style: textTheme.bodyLarge?.copyWith(
-                color: bodyColor,
-              ),
-            ),
+            Text(body, style: textTheme.bodyLarge?.copyWith(color: bodyColor)),
           ],
         ),
       ),
@@ -2024,7 +2017,8 @@ class _GardenDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = modernTheme?.resolvedFill ??
+    final surface =
+        modernTheme?.resolvedFill ??
         Color.alphaBlend(accent.withValues(alpha: 0.84), Colors.black);
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(surface);
     final textTheme = Theme.of(context).textTheme;
@@ -2033,7 +2027,8 @@ class _GardenDetailCard extends StatelessWidget {
         color: surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18),
+          color:
+              modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18),
         ),
       ),
       child: Padding(
@@ -2060,4 +2055,3 @@ class _GardenDetailCard extends StatelessWidget {
     );
   }
 }
-

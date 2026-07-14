@@ -961,4 +961,3 @@ class _ChatBubbleLine extends StatelessWidget {
     );
   }
 }
-

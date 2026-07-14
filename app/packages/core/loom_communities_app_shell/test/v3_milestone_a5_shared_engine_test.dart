@@ -22,19 +22,24 @@ File _fixtureFile() {
 void main() {
   test('real Tabletop package install shares one seeded engine', () async {
     final fixture = _fixtureFile();
-    final initialization = jsonDecode(stripJsonComments(fixture.readAsStringSync()))
-        as Map<String, dynamic>;
+    final initialization =
+        jsonDecode(stripJsonComments(fixture.readAsStringSync()))
+            as Map<String, dynamic>;
     final temp = await Directory.systemTemp.createTemp('loom-a5-tabletop-');
     try {
       final initFile = File('${temp.path}/tabletop.loom-init.zip');
       final extensionFile = File('${temp.path}/tabletop.loom-extension.zip');
       await initFile.writeAsString(jsonEncode(initialization));
-      await extensionFile.writeAsString(jsonEncode(<String, Object?>{
-        'extensionId': initialization['extensionId'],
-        'displayName': initialization['displayName'],
-        'version': '1.0.0',
-        'permissions': <String>[],
-      }));
+      await extensionFile.writeAsString(
+        jsonEncode(<String, Object?>{
+          'schemaVersion': 1,
+          'extensionId': initialization['extensionId'],
+          'displayName': initialization['displayName'],
+          'version': '1.0.0',
+          'mode': 'local-demo',
+          'permissions': <String>[],
+        }),
+      );
 
       final backend = LocalInAppBackend();
       final firstInstall = backend.installLocalPackagePairFromFiles(
@@ -86,15 +91,23 @@ void main() {
         expect(row.currentState, seed.currentState);
         expect(row.createdByPersonaId, seed.createdByPersonaId);
         for (final entry in seed.instanceData.entries) {
-          expect(row.instanceData[entry.key], entry.value, reason: row.instanceId);
+          expect(
+            row.instanceData[entry.key],
+            entry.value,
+            reason: row.instanceId,
+          );
         }
       }
       expect(
-        rows.singleWhere((row) => row.instanceId == 'proposal-wingspan').currentState,
+        rows
+            .singleWhere((row) => row.instanceId == 'proposal-wingspan')
+            .currentState,
         'approved',
       );
       expect(
-        rows.singleWhere((row) => row.instanceId == 'proposal-brass').currentState,
+        rows
+            .singleWhere((row) => row.instanceId == 'proposal-brass')
+            .currentState,
         'pending',
       );
       final fridaySeed = expectedSeeds['event-friday-game-night']!;

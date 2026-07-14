@@ -250,7 +250,8 @@ class _CommunitySectionHeader extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final foreground = modernTheme?.resolvedHeading ?? Colors.white;
     final fill = modernTheme?.resolvedFill ?? accent;
-    final body = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.88);
+    final body =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.88);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: fill,
@@ -280,9 +281,7 @@ class _CommunitySectionHeader extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: body,
-                    ),
+                    style: textTheme.bodyMedium?.copyWith(color: body),
                   ),
                 ],
               ),
@@ -293,4 +292,3 @@ class _CommunitySectionHeader extends StatelessWidget {
     );
   }
 }
-

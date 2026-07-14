@@ -354,7 +354,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       workflow: workflow,
     );
     final resolvedTheme = _resolvedCardThemeFor(workflow);
-    final usesModernCardTheme = experienceForExtensionId(
+    final usesModernCardTheme =
+        experienceForExtensionId(
           community.extensionId,
           displayName: community.displayName,
           experienceConfiguration: community.experienceConfiguration,
@@ -407,7 +408,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       workflow: workflow,
     );
     final resolvedTheme = _resolvedCardThemeFor(workflow);
-    final usesModernCardTheme = experienceForExtensionId(
+    final usesModernCardTheme =
+        experienceForExtensionId(
           community.extensionId,
           displayName: community.displayName,
           experienceConfiguration: community.experienceConfiguration,
@@ -465,10 +467,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       appShellConfiguration: community.appShellConfiguration,
     );
     final targetTab = tabSpecs.firstWhere(
-      (tab) => tab.tabId != 'home' && tab.matchesWorkflow(
-        extensionId: experience.extensionId,
-        workflow: workflow,
-      ),
+      (tab) =>
+          tab.tabId != 'home' &&
+          tab.matchesWorkflow(
+            extensionId: experience.extensionId,
+            workflow: workflow,
+          ),
       orElse: () => tabSpecs.first,
     );
     final focusKey = '${activePersona.personaId}:${targetTab.tabId}';
@@ -520,9 +524,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           key: const ValueKey('persona-picker-dialog'),
           backgroundColor: communityCard?.resolvedFill,
           shape: communityCard != null
-              ? RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                )
+              ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
               : null,
           title: Text(
             'Account role and permissions',
@@ -615,8 +617,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience: experience,
     );
     final workflowCardTheme = shellSpec.cardThemeFor(workflow);
-    final modernTheme =
-        shellSpec.theme.usesModernCardTheme ? workflowCardTheme : null;
+    final modernTheme = shellSpec.theme.usesModernCardTheme
+        ? workflowCardTheme
+        : null;
     final workflowTile = _WorkflowTile(
       extensionId: experience.extensionId,
       workflow: workflow,
@@ -754,8 +757,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     ? shellSpec.theme.communityCard
                     : null;
                 final bannerFill =
-                    bannerTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.10);
-                final bannerBorder = bannerTheme?.resolvedBorder ??
+                    bannerTheme?.resolvedFill ??
+                    Colors.white.withValues(alpha: 0.10);
+                final bannerBorder =
+                    bannerTheme?.resolvedBorder ??
                     Colors.white.withValues(alpha: 0.22);
                 final bannerForeground =
                     bannerTheme?.resolvedBody ?? Colors.white;
@@ -796,7 +801,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 final heroShadow =
                     heroTheme?.resolvedShadow ?? accent.withValues(alpha: 0.24);
                 final heroHeading = heroTheme?.resolvedHeading ?? Colors.white;
-                final heroBody = heroTheme?.resolvedBody ??
+                final heroBody =
+                    heroTheme?.resolvedBody ??
                     Colors.white.withValues(alpha: 0.92);
                 final heroAvatarBg = heroTheme != null
                     ? heroTheme.resolvedBorder.withValues(alpha: 0.18)
@@ -1001,4 +1007,3 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     return tabs.first.tabId;
   }
 }
-
