@@ -1116,27 +1116,37 @@ process where independent verification (not the dispatch's own self-report) caug
 validates the verification discipline the ticketed process depends on, not just the ticket-authoring
 side of it.
 
-- [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
-  `availableTransitionsAsync`-style variant of the engine API, used specifically by
-  `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
-  `queryInstances` polling), so the ballot's per-candidate vote buttons correctly do NOT render for a
-  persona who fails the cross-instance eligibility guard — not just genuinely blocked on tap. Do not
-  change the existing synchronous `availableTransitions`'s contract or call sites; this is additive.
-- [ ] Full feature per §3: tournament creation with `minimumAttendance` + notification/reminder setup;
-  organizer-authored rich-candidate ballot; cross-instance eligibility guard enforced for real (both
-  hidden from ineligible personas via the async variant above, AND genuinely blocked on attempt);
-  deadline + scheduled reminders; live per-candidate tally via Repeater + `groupCount` formula;
-  winner/tie detection via `argMaxKey`/`topKeys`/`isTie` formulas; real runoff round on tie; result
-  propagated to the tournament's `selectedGame` via cross-instance `set`.
-- [ ] Widget/unit tests: a 3-candidate regression with a genuine tie triggering a real runoff round; a
-  persona who hasn't RSVP'd genuinely cannot cast a vote, proven by attempting it (not just the button
-  being hidden); result propagation confirmed by reading the tournament instance's `selectedGame` after
-  close.
+**Ticket: ballot deadline + expiry reminder notification — CLOSED 2026-07-13, two rounds (code, then
+tests).** First round (commit `24827de`) delivered the production wiring: `LoomTournamentBallotSeed`
+gained nullable `deadline`/`notificationsEnabled`/`reminderOffset`; the parser reads them the same way
+`_parseFormEntrySeed` (1.17) does; `_createBallot` computes a real `dueAt = deadline - reminderOffset`
+(reusing 1.17's shared `_reminderOffsets` constants, not a new duplicate); the ballot tab surface calls
+the real `WorkflowEngineApi.dueNotifications({required DateTime asOf})` (built in Milestone 1.4, never
+consumed by the app-shell until now) and shows a `tournament-reminder-banner` only when the ballot's own
+instance is in the due set. Ran out of turn budget before writing the required tests — self-reported
+"blocked" precisely (no code claimed as tested that wasn't), verified independently first (`flutter
+analyze` clean, existing 3 tests still green, no regression) before dispatching a small continuation
+ticket. Second round (commit `e89f206`) added the 2 required tests, each with its own `extensionId`
+(`v3-tournament-reminder-due` / `v3-tournament-reminder-not-due`) per the popup ticket's now-documented
+lesson, correctly factored into one shared `_reminderCommunity(...)` helper. Independently re-verified:
+`flutter analyze` clean, `flutter test test/v3_milestone_1_18_stage2b_ballot_ui_test.dart` **+5 -0** ("All
+tests passed!"), full app-shell suite **33/33**.
+
+- [x] **Carried forward from Milestone 1.4's known gap**: delivered by Stage 1 (2026-07-13,
+  `availableTransitionsAsync`) — see Stage 1 above. (Stale open item corrected here; Stage 1 already
+  closed this before the ticket process even started.)
+- [ ] Organizer-authored ballot/tournament creation flow (candidates + `minimumAttendance` +
+  notification/reminder setup entered by the organizer through the UI, not seed-only data) — the
+  attendance, popup, and reminder tickets all extended the seed-driven surface; a real creation flow is
+  still open and is the last piece of the "flagship feature" scope in §3.
+- [x] Cross-instance eligibility guard enforced for real (Stage 1/2a), deadline + scheduled reminders
+  (this ticket), live per-candidate tally + winner/tie/runoff + result propagation (Stage 2a/2b) — all
+  delivered and tested.
 - [ ] Live emulator walk on `PantryVision_Manual_API_36`: create a tournament, RSVP as multiple
   personas, create and cast a multi-candidate ballot, force a tie, confirm the runoff round, confirm the
-  winning game appears on the tournament event.
-- [ ] `flutter analyze` clean across both `loom_workflow_engine` and `loom_communities_app_shell`, full
-  suite green, exact counts cited.
+  winning game appears on the tournament event, confirm the deadline/reminder banner renders.
+- [x] `flutter analyze` clean across `loom_communities_app_shell`, full app-shell suite green — **33/33**
+  (cumulative, code-level only; live emulator walk above still open).
 
 ### Milestone 1.19 — Archetype Implementation Standard finalized
 **Status:** `[ ]` Not started.
