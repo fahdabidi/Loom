@@ -206,7 +206,7 @@ Phase A′. The Tabletop SHA-256 remains
 
 ---
 
-### A.6 — Generic schema-driven instance card  `[ ]`
+### A.6 — Generic schema-driven instance card  `[x]`
 
 The one widget that replaces "a hand-written card per feature." Given any `WorkflowInstance` + its
 `LoomWorkflowStateMachine`, render:
@@ -227,6 +227,19 @@ for that workflow** — fields display per schema, a guarded transition's button
 fails and present when it passes.
 
 **Do not:** wire it into any tab yet (that's A.7). Build and test it in isolation.
+
+**Closed 2026-07-14.** Initial implementation/evidence commits `9fe6d481` and `c548950f` added the
+isolated schema-driven card, real-engine field updates, guarded actions, and deterministic presentation
+states. Independent validation rejected the first handoff and drove three bounded production/test plus
+evidence pairs: `854b1ec6`/`d9cbf1fe`, `5522189c`/`4d121c76`, and
+`33ed1660`/`d62b280d`. Those remediations made action loads, mutations, and pickers generation-safe;
+cleared stale actions on refresh failure; resynchronized editors after engine results; filtered hidden
+display fields before keyed rendering; exercised real date/time/bool/number/text persistence; proved the
+real related-instance-list guard; and preserved every icon name used by the frozen Tabletop package.
+Independent closeout passed the 49-file formatting check, a clean analyzer, all 11 focused A.6 widget
+tests, and all 52 app-shell tests. The widget remains isolated with no tab/Home/Calendar wiring. The
+Tabletop SHA-256 remains `822A776F997F6C627C1BC42FB77DD227933630795E27D3D4BECCE94AD7CC1813`,
+with no post-baseline diff.
 
 ---
 
