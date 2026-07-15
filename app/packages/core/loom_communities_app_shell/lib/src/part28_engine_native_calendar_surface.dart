@@ -7,12 +7,14 @@ class EngineNativeCalendarSurface extends StatefulWidget {
     required this.experience,
     required this.persona,
     required this.accent,
+    required this.modernTheme,
     this.engine,
   });
 
   final LoomExperienceDefinition experience;
   final LoomPersonaDefinition persona;
   final Color accent;
+  final LoomCardTheme? modernTheme;
 
   /// A ready A.5 engine is useful to an embedding host. Normal tab routing
   /// leaves this null and resolves the installed shared engine itself.
@@ -96,6 +98,7 @@ class _EngineNativeCalendarSurfaceState
             engine: snapshot.data!,
             personaId: widget.persona.personaId,
             accent: widget.accent,
+            modernTheme: widget.modernTheme,
             onInstanceChanged: changed,
             presentation: _presentation,
           ),
@@ -159,6 +162,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.engine,
     required this.personaId,
     required this.accent,
+    required this.modernTheme,
     required this.onInstanceChanged,
     required this.presentation,
   });
@@ -167,6 +171,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final WorkflowEngineApi engine;
   final String personaId;
   final Color accent;
+  final LoomCardTheme? modernTheme;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final _CalendarPresentationController presentation;
 
@@ -288,6 +293,8 @@ class _EngineNativeCalendarContentState
 
   @override
   Widget build(BuildContext context) {
+    final theme =
+        widget.modernTheme ?? LoomCardTheme.deriveFromAccent(widget.accent);
     late final List<_CalendarEntry> entries;
     try {
       entries = _entries;
@@ -327,11 +334,14 @@ class _EngineNativeCalendarContentState
                   month.month - 1,
                 ),
               ),
-              icon: const Icon(Icons.chevron_left),
+              icon: Icon(Icons.chevron_left, color: theme.resolvedHeading),
             ),
             Expanded(
               child: Center(
-                child: Text('${_monthLabel(month.month)} ${month.year}'),
+                child: Text(
+                  '${_monthLabel(month.month)} ${month.year}',
+                  style: TextStyle(color: theme.resolvedHeading),
+                ),
               ),
             ),
             IconButton(
@@ -342,7 +352,7 @@ class _EngineNativeCalendarContentState
                   month.month + 1,
                 ),
               ),
-              icon: const Icon(Icons.chevron_right),
+              icon: Icon(Icons.chevron_right, color: theme.resolvedHeading),
             ),
           ],
         ),
@@ -350,6 +360,8 @@ class _EngineNativeCalendarContentState
           month: month,
           byDay: byDay,
           onSelect: _selectEntry,
+          modernTheme: theme,
+          selectedDate: widget.presentation.selectedDate,
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -363,7 +375,14 @@ class _EngineNativeCalendarContentState
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     key: ValueKey('engine-native-calendar-date-strip-$day'),
-                    label: Text(day),
+                    label: Text(
+                      day,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                    backgroundColor: theme.resolvedFill,
+                    selectedColor: (theme.accent ?? widget.accent).withValues(
+                      alpha: 0.30,
+                    ),
                     selected: day == widget.presentation.selectedDate,
                     onSelected: (_) => setState(() {
                       final entry = byDay[day]!.first;
@@ -381,18 +400,24 @@ class _EngineNativeCalendarContentState
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Agenda',
-          key: ValueKey('engine-native-calendar-grouped-agenda'),
+          key: const ValueKey('engine-native-calendar-grouped-agenda'),
+          style: TextStyle(color: theme.resolvedHeading),
         ),
         for (final day in dates)
           Container(
             key: ValueKey('engine-native-calendar-agenda-group-$day'),
+            decoration: BoxDecoration(
+              color: theme.resolvedFill,
+              border: Border.all(color: theme.resolvedBorder),
+            ),
             child: Column(
               children: [
                 Text(
                   day,
                   key: ValueKey('engine-native-calendar-agenda-date-$day'),
+                  style: TextStyle(color: theme.resolvedHeading),
                 ),
                 for (final entry in byDay[day]!)
                   ListTile(
@@ -401,8 +426,14 @@ class _EngineNativeCalendarContentState
                     ),
                     selected:
                         entry.identity == widget.presentation.selectedIdentity,
-                    title: Text(entry.title),
-                    subtitle: Text(entry.time),
+                    title: Text(
+                      entry.title,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                    subtitle: Text(
+                      entry.time,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
                     onTap: () => _selectEntry(entry.identity),
                   ),
               ],
@@ -481,11 +512,15 @@ class _EngineNativeMonthGrid extends StatelessWidget {
     required this.month,
     required this.byDay,
     required this.onSelect,
+    required this.modernTheme,
+    required this.selectedDate,
   });
 
   final DateTime month;
   final Map<String, List<_CalendarEntry>> byDay;
   final ValueChanged<String> onSelect;
+  final LoomCardTheme modernTheme;
+  final String? selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -503,16 +538,31 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                     final date = start.add(Duration(days: week * 7 + weekday));
                     final events =
                         byDay[_calendarDay(date)] ?? const <_CalendarEntry>[];
+                    final dateKey = _calendarDay(date);
+                    final selected = dateKey == selectedDate;
                     return Expanded(
                       child: Container(
-                        key: ValueKey(
-                          'engine-native-calendar-date-${_calendarDay(date)}',
-                        ),
+                        key: ValueKey('engine-native-calendar-date-$dateKey'),
                         constraints: const BoxConstraints(minHeight: 52),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? Color.alphaBlend(
+                                  (modernTheme.accent ?? Colors.transparent)
+                                      .withValues(alpha: 0.24),
+                                  modernTheme.resolvedFill,
+                                )
+                              : modernTheme.resolvedFill,
+                          border: Border.all(color: modernTheme.resolvedBorder),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${date.day}'),
+                            Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                color: modernTheme.resolvedHeading,
+                              ),
+                            ),
                             for (final entry in events)
                               InkWell(
                                 key: ValueKey(
@@ -522,6 +572,9 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                 child: Text(
                                   entry.title,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: modernTheme.resolvedBody,
+                                  ),
                                 ),
                               ),
                           ],

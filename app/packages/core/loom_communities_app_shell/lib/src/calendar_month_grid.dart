@@ -5,11 +5,16 @@ class CalendarMonthGrid extends StatelessWidget {
     super.key,
     required this.workflows,
     required this.onSelect,
+    required this.accent,
+    this.modernTheme,
   });
   final List<LoomWorkflowDefinition> workflows;
   final ValueChanged<String>? onSelect;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
   @override
   Widget build(BuildContext context) {
+    final theme = modernTheme ?? LoomCardTheme.deriveFromAccent(accent);
     final anchor = workflows
         .map((w) => w.calendarItem!.dateTime)
         .reduce((a, b) => a.isBefore(b) ? a : b);
@@ -28,7 +33,7 @@ class CalendarMonthGrid extends StatelessWidget {
         children: [
           Text(
             '${_monthLabel(first.month)} ${first.year}',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: TextStyle(color: theme.resolvedHeading),
           ),
           Row(
             children: [
@@ -41,7 +46,14 @@ class CalendarMonthGrid extends StatelessWidget {
                 'Sat',
                 'Sun',
               ])
-                Expanded(child: Center(child: Text(day))),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                  ),
+                ),
             ],
           ),
           for (var week = 0; week < 6; week++)
@@ -62,16 +74,15 @@ class CalendarMonthGrid extends StatelessWidget {
                           margin: const EdgeInsets.all(2),
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Theme.of(context).dividerColor,
-                            ),
+                            color: theme.resolvedFill,
+                            border: Border.all(color: theme.resolvedBorder),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 '${day.day}',
-                                style: Theme.of(context).textTheme.labelSmall,
+                                style: TextStyle(color: theme.resolvedHeading),
                               ),
                               if (events.isNotEmpty)
                                 SizedBox(
@@ -90,6 +101,9 @@ class CalendarMonthGrid extends StatelessWidget {
                                         child: Text(
                                           _displayTitleFor(event),
                                           overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: theme.resolvedBody,
+                                          ),
                                         ),
                                       );
                                     },

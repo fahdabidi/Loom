@@ -3980,6 +3980,7 @@ class _TabNativeRenderer extends StatelessWidget {
             experience: experience,
             persona: persona,
             accent: accent,
+            modernTheme: modernTheme,
           );
         }
         return _CalendarTabSurface(
@@ -5027,6 +5028,8 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
         CalendarMonthGrid(
           workflows: datedWorkflows,
           onSelect: widget.onSelectCalendarDate,
+          accent: widget.accent,
+          modernTheme: widget.modernTheme,
         ),
         const SizedBox(height: 12),
         for (final workflow in workflows)

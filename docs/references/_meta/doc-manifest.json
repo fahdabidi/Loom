@@ -157,8 +157,12 @@
     {
       "path": "reference/theming.md",
       "title": "Theme cascade (community -> tab -> workflow)",
-      "status": "planned",
-      "$note": "The cascade is deliberate + tested (b26_package_driven_experience_test). Authors set `accentColor` and optionally `theme.tabThemes`; everything else derives. Full doc pending."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part17_theme_tokens.dart",
+        "app/packages/core/loom_communities_app_shell/lib/src/part01_local_extension_screen.dart"
+      ]
     },
     {
       "path": "reference/platform-services.md",

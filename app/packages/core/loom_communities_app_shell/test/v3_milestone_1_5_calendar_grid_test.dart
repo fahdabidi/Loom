@@ -30,6 +30,7 @@ void main() {
             _event('b', DateTime(2026, 7, 12)),
           ],
           onSelect: (_) {},
+          accent: Colors.blue,
         ),
       ),
     );
@@ -59,6 +60,7 @@ void main() {
             _event('b', DateTime(2026, 7, 13)),
           ],
           onSelect: (_) {},
+          accent: Colors.blue,
         ),
       ),
     );
@@ -91,6 +93,7 @@ void main() {
                 child: CalendarMonthGrid(
                   workflows: [event],
                   onSelect: (id) => setState(() => selected = id),
+                  accent: Colors.blue,
                 ),
               ),
               if (selected != null)
