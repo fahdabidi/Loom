@@ -301,7 +301,7 @@ shared engine.
 
 ---
 
-### A.9 — Calendar theming fixes  `[ ]`
+### A.9 — Calendar theming fixes  `[x]`
 
 Two real, already-diagnosed bugs on this tab:
 
@@ -319,6 +319,13 @@ reason to delete it.
 
 **Accept:** a widget test asserting the date-strip text color is the theme's resolved foreground (not the
 raw accent); month grid renders with the community accent; contrast is legible in a screenshot.
+
+**Closeout:** implementation commit `37c9d18e82e65691d074892b5751793fae12d7ba` threads the resolved
+`LoomCardTheme` through the engine-native Calendar and the live legacy month grid. Independent
+verification confirmed formatting (54 files, 0 changed), clean analysis, and 73/73 app-shell tests
+(five new A.9 tests plus 68 pre-existing tests). The required live screenshot evidence was not produced
+in the implementation sandbox; A.10's human emulator walk must capture the themed engine-native grid,
+the legacy grid border, and a random A.8 interaction regression re-check before that gate closes.
 
 ---
 
@@ -342,7 +349,7 @@ Phase A.** Phases B-G do not start until it closes, because their JSON depends o
 
 ## Phase A definition of done
 
-- [ ] A.1-A.9 all `[x]`, each independently verified (diff read + suite run by the verification agent).
+- [x] A.1-A.9 all `[x]`, each independently verified (diff read + suite run by the verification agent).
 - [x] The Tabletop Club JSON validates clean through the new CLI.
 - [ ] Calendar renders entirely from JSON-declared `workflowDefinitions` — **zero bespoke Dart for
       `event-rsvp` or `tournament-event`**.
