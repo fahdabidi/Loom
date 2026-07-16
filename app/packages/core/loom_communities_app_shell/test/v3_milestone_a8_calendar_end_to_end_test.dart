@@ -400,7 +400,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('20 seats'), findsOneWidget);
+      expect(find.text('12 / 20 going'), findsOneWidget);
       expect(
         find.byKey(
           const ValueKey(
@@ -650,10 +650,9 @@ void main() {
         );
         expect(going.instanceData['goingCount'], 13);
         expect(going.instanceData['seatsRemaining'], 7);
-        await _pumpUntil(tester, find.text('Going: 13'));
-        expect(find.text('Going: 13'), findsOneWidget);
+        await _pumpUntil(tester, find.text('13 / 20 going'));
+        expect(find.text('13 / 20 going'), findsOneWidget);
         expect(find.text('7 seats left'), findsOneWidget);
-        expect(find.text('20 seats'), findsOneWidget);
         expect(
           find.byKey(
             const ValueKey(
@@ -686,8 +685,8 @@ void main() {
         );
         expect(maybe.instanceData['goingCount'], 12);
         expect(maybe.instanceData['seatsRemaining'], 8);
-        await _pumpUntil(tester, find.text('Going: 12'));
-        expect(find.text('Going: 12'), findsOneWidget);
+        await _pumpUntil(tester, find.text('12 / 20 going'));
+        expect(find.text('12 / 20 going'), findsOneWidget);
         expect(find.text('8 seats left'), findsOneWidget);
         expect(
           find.byKey(
