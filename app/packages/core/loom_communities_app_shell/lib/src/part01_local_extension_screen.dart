@@ -212,20 +212,30 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   /// Registers every seeded account's individual-id → persona-type mapping
   /// with the engine so [allowedPersonaIds] guards can check the type.
+  ///
+  /// No-op for legacy-schema communities (any community whose
+  /// [LoomExperienceDefinition.workflowDefinitions] is null or empty —
+  /// these communities never install an engine-native experience, so there
+  /// is nothing to sync and attempting the lookup would throw).
   Future<void> _syncEnginePersonaTypes() async {
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    if (experience.workflowDefinitions == null ||
+        experience.workflowDefinitions!.isEmpty) {
+      return; // legacy-schema community — nothing to sync
+    }
     final accounts = await _authApi.listAccounts(
       communityExtensionId: community.extensionId,
     );
-    final engine = await _engineForCommunity();
+    final engine = await workflowEngineForExtensionId(community.extensionId);
     if (engine is LocalWorkflowEngineApi) {
       for (final account in accounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
       }
     }
-  }
-
-  Future<WorkflowEngineApi> _engineForCommunity() async {
-    return workflowEngineForExtensionId(community.extensionId);
   }
 
   @override
