@@ -31,14 +31,25 @@ pipeline that loads engine-native JSON is under construction (tracker 3, Phase A
 
 ## The seven legacy communities
 
-Garden Club · Camera Club · Chess Club · Book Club · Youth Soccer · Mosque · HOA
+| Community | Product experience doc |
+|---|---|
+| Garden Club | [garden-club-product-experience.md](./garden-club-product-experience.md) |
+| Camera Club | [camera-club-product-experience.md](./camera-club-product-experience.md) |
+| Chess Club | [chess-club-product-experience.md](./chess-club-product-experience.md) |
+| Book Club | [neighborhood-book-club-product-experience.md](./neighborhood-book-club-product-experience.md) |
+| Youth Soccer | [riverside-youth-soccer-product-experience.md](./riverside-youth-soccer-product-experience.md) |
+| Mosque | [masjid-nur-product-experience.md](./masjid-nur-product-experience.md) |
+| HOA | [cedar-commons-hoa-product-experience.md](./cedar-commons-hoa-product-experience.md) |
 
 These run today, but on **`experienceSchemaVersion: 1`** (the legacy shallow schema) with hand-written
-Dart behind each feature.
+Dart behind each feature. Their product-experience docs (moved here from
+`docs/Product Docs V2/Community Examples/` — same content, relocated so every community's product doc
+lives in one place) predate the engine-native grammar and describe the old shallow-schema card-surface
+architecture (`CommunityEventRsvpApi`-style API contracts), not `workflowDefinitions`/`renderBindings`.
 
-**The agent MUST NOT use them as authoring references.** Their JSON cannot express a state machine, a
-guard, or a formula — copying their shape would produce a v1 community. They are scheduled for migration
-to v2 via the Skill.
+**The agent MUST NOT use them as authoring references** for the v2 grammar. Their JSON cannot express a
+state machine, a guard, or a formula — copying their shape would produce a v1 community. They are
+scheduled for migration to v2 via the Skill.
 
 ## Why Tabletop Club is the reference
 

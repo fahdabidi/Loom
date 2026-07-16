@@ -10,6 +10,12 @@ audience: llm-agent
 
 **The algorithm.** Follow these steps in order. Do not skip steps 6-8.
 
+> **Starting from a filled-in product doc?** If your input is a
+> [Community Product Experience Template](../../Build%20Plan%20V2/Skill/references/community-product-experience-template.md)
+> (identity, personas, workflow types, surfaces, seed data), read
+> [`06-product-doc-to-json.md`](./06-product-doc-to-json.md) **first** — it maps each of that template's
+> 11 sections to the JSON below, then hands you back here at Step 4 to emit and validate.
+
 ## Mental model (one paragraph)
 
 A community is a set of **state machines** declared in JSON and executed by a real engine. You declare

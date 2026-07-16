@@ -272,7 +272,7 @@ with no post-baseline diff.
 
 ---
 
-### A.8 — Calendar tab end-to-end from JSON  `[ ]`  ← **the payoff**
+### A.8 — Calendar tab end-to-end from JSON  `[x]`  ← **the payoff**
 
 Wire it together: the Calendar tab renders `event-friday-game-night` and `event-summer-tournament` from
 the JSON-declared definitions, through A.6's generic card, dispatched by A.7's bindings, backed by A.5's
@@ -298,6 +298,21 @@ shared engine.
    `tournament-event` (the `actorInList` guard genuinely blocks it).
 5. `flutter analyze` clean; full app-shell suite green; **every other community's tests pass unmodified**
    (the additive-pathway regression guard).
+
+**Closeout:** implementation landed across `d48fb18` (feat: render engine-native Calendar workflows) and
+a remediation cycle (`754f708`, `485e54e`, `7d7b22b`, `b652f1b`, `4173989`, `98c3a98`) closing with
+`afb677e` (docs: finalize A.8 Calendar interaction evidence). Independent verification (not the
+implementation agent's own self-report): read every commit's diff — confirmed additive-only, zero
+workflow/instance-specific Dart branches in the Calendar dispatch path; ran the full app-shell suite
+myself (68/68 passing prior to A.9's five additional tests); confirmed via a real, hands-on live
+emulator walk on `PantryVision_Manual_API_36` — installed Tabletop Club from the actual frozen JSON,
+opened the real Calendar tab, and tapped "Going" on `event-friday-game-night`: `Going` moved 12 → 13 and
+`seats left` moved 8 → 7 live, through the real engine (`applyTransition` + formula recompute), not a
+mock. All 5 required acceptance items confirmed. One minor, non-blocking finding from that walk (the
+`minimumAttendance` field on `tournament-event` has no `labelTemplate`, unlike its sibling fields, so it
+renders its bare key name with no value) is **not** an A.8 defect — it is ambiguous whether the fix
+belongs in the JSON or in A.6's generic-card fallback, which is exactly what A.10's human gate exists to
+triage. Deferred there, not blocking this milestone's closure.
 
 ---
 

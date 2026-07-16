@@ -37,6 +37,50 @@ tab to it, then stops at a **human gate** so the JSON, archetypes, formulas, and
 and corrected on a small surface **before** the same pipeline is scaled to every other tab. Cheap to
 fix here; expensive to fix after six tabs are built on a wrong assumption.
 
+## 1a. Archetype UI Design gate (added 2026-07-15 — blocks Phase G; retroactively found)
+
+**Finding:** re-verifying every one of Tabletop Club's 9 archetypes directly against the Dart source
+(not against this tracker's own prior `[x]` claims) found two distinct, unclosed problems — full evidence
+and file:line citations now live permanently in
+[`archetypes/README.md`](../../../references/archetypes/README.md):
+
+1. **Generic-widget problem (`event-rsvp`, `equipment-loan`, `paymentCheckout` — 🟡 PARTIAL).** Each has a
+   real, rich *browse/shell* (Calendar's month grid, Marketplace's search+grid+filter, Giving's
+   amount/history header) — but the actual per-item **interaction** (RSVP going/maybe/waitlist,
+   borrow/queue/return, the pay action) still calls the exact same shared
+   `WorkflowCardSurfaceTemplateRenderer` fact-pill-row + button-row widget every other archetype falls
+   back to. A.8/A.9 closed real, verified Calendar-chrome work — but their acceptance criteria never
+   required the RSVP interaction itself to stop being generic, and this tracker's own §5a rule ("flip
+   status to REAL") was applied to Phase A without re-checking that specific claim against source. **That
+   is exactly the failure mode §3a exists to prevent, just found in documentation instead of in the JSON.**
+2. **Unreachable-widget problem (`votePoll`, `discussionThread`, `notificationInbox`, `statusTimeline`,
+   `formEntry` — ✅ REAL widget, but only reachable through a hardcoded dispatch).** A genuinely rich,
+   bespoke widget exists for each — but every one is wired through a **hardcoded `rendererId` switch**
+   keyed to a **fixed tab** (`_TournamentBallotTabSurface` only renders because `tabId == 'ballot'` maps
+   to `rendererId: 'TournamentBallotTabSurface'` in a static contract table), reading a Tabletop-Club-only
+   special JSON block (`experience.tournamentBallot`), **not** by resolving the workflow's own
+   `renderBindings`/`cardSurfaceFamily` from `workflowDefinitions`. A brand-new community's JSON declaring
+   `cardSurfaceFamily: "votePoll"` today gets **none of this** — there is no generic path from that string
+   to this widget. A real, separate, generic path DOES exist —
+   `EngineNativeBindingDispatcher`/`resolveBindings()` — but it is enabled for exactly one tab
+   (`_enabledTabs = {'calendar'}`), and whether Tabletop Club's own running install currently exercises it
+   for Calendar (vs. still falling back to the legacy hardcoded path) was **not verified live this pass**.
+
+**Consequence — this is now a hard, explicit closing gate:** Tabletop Club is not a finished reference
+community, and Phase G (retirement/closeout) does not start, while **any of its 9 archetypes fails either
+test**: (a) does a genuinely bespoke, rich widget exist for the interaction, **and** (b) does declaring
+that `cardSurfaceFamily` in `workflowDefinitions`/`renderBindings` JSON alone — with no hardcoded
+per-community wiring — actually produce that widget. Both must hold. Folded into each phase below as an
+explicit acceptance criterion, not a separate phase (Phases C/D/E already own `equipment-loan`/
+`paymentCheckout`/`approvalQueueItem` respectively; a new milestone **A.11** is added to Phase A for
+`event-rsvp`, since A.8/A.9 already closed without it).
+
+**Standing instruction (user, 2026-07-15), binding on every future milestone in this tracker:** updating
+[`archetypes/README.md`](../../../references/archetypes/README.md)'s status table — re-verified against
+the actual Dart source, never carried forward from a prior claim — is part of that milestone's own
+definition of done, the moment it makes any archetype real (or partially real). This is not a follow-up
+task for a later session. §5a below is amended accordingly.
+
 ## 2. Precursors — DONE (docs/JSON only, no code)
 
 - **[JSON Schema Versions](./Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md)** — normative.
@@ -102,9 +146,9 @@ remains an explicitly degraded, non-blocking Phase F capability.**
 | **A** | **Foundation + Calendar tab** (validator, JSON loading, shared engine, generic renderer, binding dispatch, Calendar end-to-end) — **ends in a human JSON-review gate** | [PhaseA_Calendar](./Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md) | `[ ]` In progress — A.1–A.9 complete; A.10 human gate remains |
 | **A′** | **Grammar extensions** — close **GAP-1** (transition `inputs` + repeater `itemActions`), **GAP-4** (query-backed `source` fields), and **GAP-2** (`creatable` binding). Small, additive, engine+grammar only. **Required before B and E/F.** | [LanguageGaps](./Loom_Communities_Workflow_Engine_3_LanguageGaps.md) | `[ ]` Blocked on A |
 | **B** | **Home tab** — tournament ballot (cross-instance eligibility guard, tally/tie/**real runoff** via branch+createInstance, deadline/reminder), tournament attendance card, published announcements | [PhaseB_Home](./Loom_Communities_Workflow_Engine_3_PhaseB_Home.md) | `[ ]` Blocked on A′ (GAP-1) |
-| **C** | **Marketplace tab** — equipment-loan lifecycle (borrow/queue/return, cross-workflow dues guard), giveaway | [PhaseC_Marketplace](./Loom_Communities_Workflow_Engine_3_PhaseC_Marketplace.md) | `[ ]` Blocked on A |
-| **D** | **Giving tab** — quarterly dues payment (gates Marketplace's borrow) | [PhaseD_Giving](./Loom_Communities_Workflow_Engine_3_PhaseD_Giving.md) | `[ ]` Blocked on A |
-| **E** | **Game purchase proposals** — one feature spanning Home (member submits) + Admin (organizer's live pending queue decides). Replaces the old scripted "committee decision" card | [PhaseE_Proposals](./Loom_Communities_Workflow_Engine_3_PhaseE_Proposals.md) | `[ ]` Blocked on A′ (GAP-2) |
+| **C** | **Marketplace tab** — equipment-loan lifecycle (borrow/queue/return, cross-workflow dues guard), giveaway. **Archetype UI Design gate applies: the browse/search/grid shell is already real (pre-dates V3) — this phase's job is specifically the per-item borrow/queue/return interaction, which still falls back to the generic template (`part02_tab_shell.dart:6601,6693`). Do not consider Phase C closed on shell-only evidence.** | [PhaseC_Marketplace](./Loom_Communities_Workflow_Engine_3_PhaseC_Marketplace.md) | `[ ]` Blocked on A |
+| **D** | **Giving tab** — quarterly dues payment (gates Marketplace's borrow). **Archetype UI Design gate applies: the amount/history header is real — this phase's job is specifically the pay-action interaction, still generic (`part02_tab_shell.dart:13641-13659`).** | [PhaseD_Giving](./Loom_Communities_Workflow_Engine_3_PhaseD_Giving.md) | `[ ]` Blocked on A |
+| **E** | **Game purchase proposals** — one feature spanning Home (member submits) + Admin (organizer's live pending queue decides). Replaces the old scripted "committee decision" card. **Archetype UI Design gate applies: `approvalQueueItem` has ZERO implementation today — no binding or widget of that name exists anywhere in `lib/src`. This phase builds it from scratch, not adjusts an existing one.** | [PhaseE_Proposals](./Loom_Communities_Workflow_Engine_3_PhaseE_Proposals.md) | `[ ]` Blocked on A′ (GAP-2) |
 | **F** | **Messages tab** — threads on the engine + the missing **"start a new thread"** action | [PhaseF_Messages](./Loom_Communities_Workflow_Engine_3_PhaseF_Messages.md) | `[ ]` Blocked on A′ (GAP-2) |
 | **G** | **Retirement + close-out** — delete the bespoke stores the new pipeline replaced, global theming fixes, full regression, re-present Milestone 1.20 | [PhaseG_Closeout](./Loom_Communities_Workflow_Engine_3_PhaseG_Closeout.md) | `[ ]` Blocked on B-F |
 
@@ -123,9 +167,10 @@ because A builds the pipeline they all use — and because A's gate may change t
 | A.5 | One shared engine per community: register definitions + seed instances at install (no UI) | `[x]` |
 | A.6 | Generic schema-driven instance card (fields from `instanceDataSchema`, buttons from `availableTransitionsAsync`) | `[x]` |
 | A.7 | `renderBindings` → tab dispatch, **Calendar only** | `[x]` |
-| A.8 | Calendar tab end-to-end from JSON: both events, real RSVP + waitlist, formula-driven capacity | `[ ]` |
+| A.8 | Calendar tab end-to-end from JSON: both events, real RSVP + waitlist, formula-driven capacity | `[x]` |
 | A.9 | Calendar theming fixes (engine-native and legacy month grids consume resolved card theme) | `[x]` |
 | A.10 | Live emulator walk + evidence matrix → **HUMAN GATE: user reviews and improves the JSON** | `[ ]` |
+| A.11 | **Archetype UI Design gate for `event-rsvp` (added 2026-07-15).** Replace the generic `WorkflowCardSurfaceTemplateRenderer` call in the Calendar event-detail view (`part02_tab_shell.dart:5579-5591`) with a bespoke RSVP widget (real going/maybe/can't-go/waitlist controls, a real capacity/seats-remaining visualization, not fact-pills). Then confirm live whether Tabletop Club's install exercises `EngineNativeBindingDispatcher`/`resolveBindings()` (`part27_engine_native_binding_dispatcher.dart`) for the `calendar` tab, or still falls back to the legacy hardcoded path — if the latter, wire it. Closing evidence must re-verify `archetypes/README.md`'s `event-rsvp` row flips to ✅ REAL against source, not by assertion. | `[ ]` Blocked on A.10 |
 
 ## 5a. Documentation backfill — every phase writes the docs for what it made real
 
@@ -150,8 +195,13 @@ real.** Each is a closing deliverable of its phase, not a follow-up.
 | `communities/tabletop-club.md` | **Phase G** | The reference community, once it is finally **vetted** |
 
 Additionally, **every phase MUST**:
-- Update [`archetypes/README.md`](../../../references/archetypes/README.md) — flip its archetype's status
-  from 🔨 REBUILDING to ✅ REAL. *An honest status table is the whole value of that index.*
+- Update [`archetypes/README.md`](../../../references/archetypes/README.md) — re-verify its archetype's
+  status **directly against the Dart source** (grep the actual widget, read the actual dispatch path) and
+  record the result, which may be 🟡 PARTIAL, not necessarily ✅ REAL. **Never flip a status by assertion
+  or by carrying forward a prior phase's claim** — that is exactly how A.8/A.9 closed while `event-rsvp`'s
+  RSVP interaction was still generic (§1a). Confirm BOTH: a bespoke widget exists for the interaction, AND
+  declaring the `cardSurfaceFamily` alone (no hardcoded per-community wiring) actually reaches it. *An
+  honest status table is the whole value of that index.*
 - Update [`_meta/doc-manifest.json`](../../../references/_meta/doc-manifest.json) — `planned` → `current`,
   with `syncedTo` and `derivedFrom`.
 - If it changed the grammar (Phase A′): run the full

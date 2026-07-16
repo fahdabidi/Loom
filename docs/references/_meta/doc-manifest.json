@@ -96,6 +96,17 @@
         "app/packages/tooling/loom_ux_judges/bin/workflow_state_machine_validator.dart"
       ]
     },
+    {
+      "path": "guide/06-product-doc-to-json.md",
+      "title": "Product doc → JSON (the crosswalk)",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/Build Plan V2/Skill/references/community-product-experience-template.md",
+        "docs/references/communities/tabletop-club.md",
+        "docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc"
+      ]
+    },
 
     {
       "path": "reference/workflow-grammar.md",
@@ -230,8 +241,14 @@
     {
       "path": "communities/tabletop-club.md",
       "title": "Tabletop Club — the reference community",
-      "status": "planned",
-      "$note": "UNVETTED and mid-build (tracker 3). Until written, communities/README.md indexes the JSON directly and states what it covers."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc",
+        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_3.md",
+        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_3_PhaseA_Calendar.md"
+      ],
+      "$note": "Uses the community-product-experience-template. UNVETTED/mid-build (tracker 3) still applies to the underlying app, not to this doc's accuracy about current status. Written 2026-07-15 during the A.10 human review, which found three real gaps (navigation breadcrumb model, Calendar day-detail view, and a missing peer-to-peer game-sharing model for `tabletop-game-loan`) now recorded in this doc's own review log (§11) pending Grammar Extensions sign-off and future implementation tickets."
     }
   ]
 }

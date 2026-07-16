@@ -20,7 +20,34 @@ surface contract; they are not the product experience by themselves.
 | --- | --- | --- | --- | --- |
 | `<persona>` | `<role>` | `<jobs>` | `<privacy/payment/role constraints>` | `<what success looks like>` |
 
-## 3. Information Architecture
+## 3. Workflow Types: Lifecycle And Data
+
+List every distinct "thing" the community manages — each becomes one `workflowDefinitions` entry when
+this doc becomes JSON. For each, split its behavior into **two separate lists — do not blend them.**
+This is the single highest-risk step in turning this doc into a working community (see
+`guide/01-authoring-procedure.md` Step 3) — getting the split wrong here is the most common cause of a
+broken community.
+
+| Workflow type | Lifecycle (→ states) | Independent facts (→ data) |
+| --- | --- | --- |
+| `<type>` | `<phase> → <phase> → <phase>` (mutually exclusive — it is in exactly one at a time) | `<fact>`, `<fact>` (can be true for many actors/items at once, independent of the lifecycle) |
+
+**How to split correctly — apply both tests to every candidate condition:**
+
+- **Simultaneity test:** picture ten members interacting with this at once. Could this condition be true
+  for some of them and false for others, at the exact same moment? **Yes → it is data.**
+- **Exclusivity test:** could the thing itself be in two of these conditions at the same time (e.g. "on
+  loan" *and* "queued")? **Yes → both are data, not states.** Only put something in the Lifecycle column
+  if it never coexists with another value from that same column.
+
+**Worked example (illustrative — do not copy verbatim):**
+
+| Workflow type | Lifecycle (→ states) | Independent facts (→ data) |
+| --- | --- | --- |
+| `hike-rsvp` | `open → cancelled` | who has RSVP'd going (many members, simultaneously); capacity; computed going-count/spots-remaining |
+| `equipment-loan` | *(none — availability is not a lifecycle)* | availability (on loan / available) and the waiting queue — both can be true together |
+
+## 4. Information Architecture
 
 Define the community's real product structure, not workflow categories.
 
@@ -29,7 +56,7 @@ Define the community's real product structure, not workflow categories.
 | Home | `<what the home prioritizes>` | `<persona>` | `<current activity, alerts, sections>` | `<main next action>` |
 | `<domain surface>` | `<purpose>` | `<persona>` | `<content>` | `<action>` |
 
-## 3.1 Persona Tabs, Pins, And Customization
+## 4.1 Persona Tabs, Pins, And Customization
 
 Define the App Shell navigation model and customization knobs. Home and Messages/Communication are
 always required, but every persona can receive different tabs, pinned surfaces, labels, icons, order,
@@ -39,7 +66,7 @@ and hidden/disabled states.
 | --- | --- | --- | --- |
 | `<persona>` | `Home, <domain tab>, Messages` | `<surface or workflow>` | `<theme, typography, density, icon, color, card, tab, or surface presentation choices>` |
 
-## 4. Home Screen Requirements
+## 5. Home Screen Requirements
 
 The first screen after opening the community must show:
 
@@ -49,7 +76,7 @@ The first screen after opening the community must show:
 - required App Shell access to Messages and Connections
 - no global workflow list, test taxonomy, metadata-only screen, or implementation rationale
 
-## 5. Domain-Native Product Surfaces
+## 6. Domain-Native Product Surfaces
 
 For each product surface, define what a real user must see.
 
@@ -64,19 +91,19 @@ For each product surface, define what a real user must see.
 
 Add more rows for the community type.
 
-## 6. Workflow-To-Surface Mapping
+## 7. Workflow-To-Surface Mapping
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | `<workflow-id>` | `<persona>` | `<surface>` | `<visible proof>` | `<APIs/events/rules>` | `<tests/screenshots>` |
 
-## 7. Persona And State Matrix
+## 8. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
 | `<workflow-id>` | `<actor UI>` | `<receiver UI>` | `<read-only UI>` | `<disabled/hidden UI>` | `<denial/hide rationale>` |
 
-## 8. Content And Seed Data Requirements
+## 9. Content And Seed Data Requirements
 
 List the realistic seed data needed so screenshots can prove a production product surface.
 
@@ -84,7 +111,7 @@ List the realistic seed data needed so screenshots can prove a production produc
 - realistic empty/loading/error/success states
 - before/after records for multi-persona handoffs
 
-## 9. Visual And Interaction Standard
+## 10. Visual And Interaction Standard
 
 Define how this community should feel visually:
 
@@ -95,7 +122,7 @@ Define how this community should feel visually:
 - mobile navigation and action placement
 - accessibility and readability constraints
 
-## 10. Review And Remediation Log
+## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

@@ -40,6 +40,7 @@ invariants, decision tables, canonical templates, and an error→fix table.
 
 | Step | Load | When |
 |---|---|---|
+| 0 | `guide/06-product-doc-to-json.md` | When your input is a filled-in Community Product Experience Template — maps its 11 sections to JSON |
 | 1 | `guide/01-authoring-procedure.md` | Always — the deterministic algorithm to follow |
 | 2 | `reference/workflow-grammar.md` | Always — the contract |
 | 3 | `reference/guards.md`, `reference/effects.md`, `reference/formulas.md`, `reference/field-types.md` | Always — the four you will reach for constantly |
@@ -77,6 +78,7 @@ validator means a working app.
 | Path | Contents |
 |---|---|
 | `guide/01-authoring-procedure.md` | **The algorithm.** Step-by-step procedure from requirements → validated JSON |
+| `guide/06-product-doc-to-json.md` | **The crosswalk.** Maps a filled Community Product Experience Template (§1–§11) → the JSON each section produces |
 | `guide/02-package-anatomy.md` | Every key of the package, top to bottom |
 | `guide/03-common-patterns.md` | Canonical templates: RSVP · ballot · approval queue · loan · payment · thread |
 | `guide/04-antipatterns.md` | Detection rules + fixes for known-bad modeling |
