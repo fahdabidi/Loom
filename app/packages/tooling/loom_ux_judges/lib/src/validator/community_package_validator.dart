@@ -200,7 +200,7 @@ class CommunityPackageValidator {
               '$path/instanceData/$key',
             ),
           );
-        else if (field.formula != null)
+        else if (field.formula != null || field.source != null)
           findings.add(
             _finding(
               'computed_field_seeded',
@@ -212,6 +212,7 @@ class CommunityPackageValidator {
       for (final entry in workflow.instanceDataSchema.entries) {
         if (entry.value.required &&
             entry.value.formula == null &&
+            entry.value.source == null &&
             (!data.containsKey(entry.key) || data[entry.key] == null))
           findings.add(
             _finding(
@@ -293,7 +294,7 @@ class CommunityPackageValidator {
           location,
         ),
       );
-    else if (!list && field.formula != null)
+    else if (!list && (field.formula != null || field.source != null))
       findings.add(
         _finding(
           'computed_field_written_by_effect',

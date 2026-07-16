@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:loom_workflow_engine/src/evaluator/formula_evaluator.dart';
+import 'package:loom_workflow_engine/src/evaluator/source_query.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 /// A single validation finding — either an error (blocks pass) or a warning.
@@ -74,6 +75,31 @@ class WorkflowValidator {
     'removeFromTileGrid',
   };
 
+  static const _knownInputTypes = <String>{
+    'text',
+    'textarea',
+    'number',
+    'bool',
+    'date',
+    'time',
+    'list',
+    'map',
+    'personaId',
+    'personaId[]',
+    'image',
+    'text?',
+    'textarea?',
+    'number?',
+    'bool?',
+    'date?',
+    'time?',
+    'list?',
+    'map?',
+    'personaId?',
+    'personaId[]?',
+    'image?',
+  };
+
   /// Templates map: templateName → { "slots": ["WorkflowActionButtonRow", ...] }
   /// Used by the action-button-row check (§7d).
   final Map<String, Map<String, dynamic>>? templates;
@@ -110,6 +136,16 @@ class WorkflowValidator {
       _checkEditableFieldsReferences(machine, findings);
       _checkFormulas(machine, findings);
       _checkGuardFormulas(machine, findings);
+      _checkUnknownInputTypes(machine, findings);
+      _checkInputReferences(machine, findings);
+      _checkContextReferenceOutsideCreatable(machine, findings);
+      _checkSourceQueries(machine, workflows, findings);
+      _checkItemActionsInputs(machine, workflows, findings);
+      _checkCreatablePrefill(machine, findings);
+
+      if (knownPersonaIds != null && knownPersonaIds!.isNotEmpty) {
+        _checkCreatablePersonaIds(machine, findings);
+      }
 
       if (templates != null) {
         _checkActionButtonRow(machine, findings);
@@ -532,7 +568,7 @@ class WorkflowValidator {
                 location: '$location/fields/$key',
               ),
             );
-          } else if (targetField.formula != null) {
+          } else if (targetField.formula != null || targetField.source != null) {
             findings.add(
               ValidationFinding(
                 type: 'computed_field_written_by_effect',
@@ -571,7 +607,7 @@ class WorkflowValidator {
             location: location,
           ),
         );
-      } else if (machine.instanceDataSchema[effect.key]?.formula != null) {
+      } else if (machine.instanceDataSchema[effect.key]?.formula != null || machine.instanceDataSchema[effect.key]?.source != null) {
         findings.add(
           ValidationFinding(
             type: 'computed_field_written_by_effect',
@@ -860,4 +896,417 @@ class WorkflowValidator {
       }
     }
   }
+  // ---------------------------------------------------------------------------
+  // unknown_input_type: every transitions[].inputs[].type must be a known type
+  // ---------------------------------------------------------------------------
+  void _checkUnknownInputTypes(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final t in machine.transitions) {
+      final inputs = t.inputs;
+      if (inputs == null) continue;
+      for (final entry in inputs.entries) {
+        if (!_knownInputTypes.contains(entry.value.type)) {
+          final knownTypes = _knownInputTypes.toList()..sort();
+          findings.add(
+            ValidationFinding(
+              type: 'unknown_input_type',
+              message:
+                  'Transition "${t.id}" input "${entry.key}" has unknown type '
+                  '"${entry.value.type}". Known types: $knownTypes.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/inputs/${entry.key}',
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // unknown_input_reference: every {input.<name>} inside a transition's own
+  // effects must name a key declared in that transition's inputs map.
+  // ---------------------------------------------------------------------------
+  void _checkInputReferences(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final inputTokenPattern = RegExp(r'\{input\.(\w+)\}');
+    for (final t in machine.transitions) {
+      final declaredInputs = t.inputs?.keys.toSet() ?? const <String>{};
+      _scanInputTokens(
+        machine,
+        t,
+        t.effects,
+        'effects',
+        inputTokenPattern,
+        declaredInputs,
+        findings,
+      );
+    }
+  }
+
+  void _scanInputTokens(
+    LoomWorkflowStateMachine machine,
+    LoomWorkflowTransition transition,
+    List<WorkflowEffect> effects,
+    String path,
+    RegExp tokenPattern,
+    Set<String> declaredInputs,
+    List<ValidationFinding> findings,
+  ) {
+    for (var i = 0; i < effects.length; i++) {
+      final effect = effects[i];
+      final location =
+          '${machine.workflowType}/transitions/${transition.id}/$path[$i]';
+
+      void checkString(String? value, String subPath) {
+        if (value == null) return;
+        for (final match in tokenPattern.allMatches(value)) {
+          final name = match.group(1)!;
+          if (!declaredInputs.contains(name)) {
+            findings.add(
+              ValidationFinding(
+                type: 'unknown_input_reference',
+                message:
+                    'Effect references {input.$name}, but "$name" is not '
+                    'declared in this transition\'s inputs map.',
+                location: '$location/$subPath',
+              ),
+            );
+          }
+        }
+      }
+
+      final effectValue = effect.value;
+      if (effectValue != null) {
+        checkString(effectValue.toString(),
+            effect.key != null ? 'key=${effect.key}' : 'value');
+      }
+
+      final fields = effect.fields;
+      if (fields != null) {
+        for (final entry in fields.entries) {
+          final v = entry.value;
+          if (v != null) {
+            checkString(v.toString(), 'fields/${entry.key}');
+          }
+        }
+      }
+
+      if (effect.op == 'branch') {
+        _scanInputTokens(
+          machine,
+          transition,
+          effect.thenEffects,
+          '$path[$i]/then',
+          tokenPattern,
+          declaredInputs,
+          findings,
+        );
+        _scanInputTokens(
+          machine,
+          transition,
+          effect.elseEffects,
+          '$path[$i]/else',
+          tokenPattern,
+          declaredInputs,
+          findings,
+        );
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // itemActions[].inputs reference check
+  // ---------------------------------------------------------------------------
+  void _checkItemActionsInputs(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
+    List<ValidationFinding> findings,
+  ) {
+    final itemTokenPattern = RegExp(r'\{item\.(\w+)\}');
+    for (final binding in machine.renderBindings) {
+      final repeater = binding.repeater;
+      if (repeater == null) continue;
+      final source = repeater.source;
+
+      Map<String, InstanceDataField>? itemSchema;
+
+      final query = SourceQuery.tryParse(source);
+      if (query != null) {
+        final targetMachine = allWorkflows[query.workflowType];
+        if (targetMachine != null) {
+          itemSchema = targetMachine.instanceDataSchema;
+        }
+      } else {
+        final field = machine.instanceDataSchema[source];
+        if (field != null && (field.type == 'list' || field.type == 'list?')) {
+          continue;
+        }
+      }
+
+      if (itemSchema == null) continue;
+
+      for (final action in repeater.itemActions) {
+        final actionInputs = action.inputs;
+        if (actionInputs == null) continue;
+        final location =
+            '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
+            'repeater/itemActions/${action.transitionId}';
+        for (final entry in actionInputs.entries) {
+          final value = entry.value?.toString() ?? '';
+          for (final match in itemTokenPattern.allMatches(value)) {
+            final fieldName = match.group(1)!;
+            if (!itemSchema.containsKey(fieldName)) {
+              findings.add(
+                ValidationFinding(
+                  type: 'unknown_item_reference',
+                  message:
+                      'itemActions[].inputs references {item.$fieldName}, '
+                      'but "$fieldName" is not declared in the source type\'s '
+                      'instanceDataSchema.',
+                  location: '$location/inputs/${entry.key}',
+                ),
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // creatable.byPersonaIds dangling-persona check
+  // ---------------------------------------------------------------------------
+  void _checkCreatablePersonaIds(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    if (knownPersonaIds == null || knownPersonaIds!.isEmpty) return;
+
+    for (final binding in machine.renderBindings) {
+      final creatable = binding.creatable;
+      if (creatable == null) continue;
+      for (final personaId in creatable.byPersonaIds) {
+        if (!knownPersonaIds!.contains(personaId)) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_allowed_persona_id',
+              message:
+                  'creatable.byPersonaIds references "$personaId", which does '
+                  'not appear in the known persona registry. This may indicate '
+                  'a typo or a persona ID that was not declared anywhere.',
+              location:
+                  '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
+                  'creatable/byPersonaIds',
+              isWarning: true,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // creatable.prefill field check
+  // ---------------------------------------------------------------------------
+  void _checkCreatablePrefill(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      final creatable = binding.creatable;
+      if (creatable == null) continue;
+      final prefill = creatable.prefill;
+      if (prefill == null) continue;
+      final location =
+          '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
+          'creatable/prefill';
+      for (final key in prefill.keys) {
+        final field = machine.instanceDataSchema[key];
+        if (field == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_instance_data_key',
+              message:
+                  'creatable.prefill sets "$key", which is not declared in '
+                  'instanceDataSchema.',
+              location: '$location/$key',
+            ),
+          );
+        } else if (field.formula != null || field.source != null) {
+          findings.add(
+            ValidationFinding(
+              type: 'computed_field_written_by_effect',
+              message:
+                  'creatable.prefill writes computed field "$key". Computed '
+                  'fields are read-only.',
+              location: '$location/$key',
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // context_reference_outside_creatable
+  // ---------------------------------------------------------------------------
+  void _checkContextReferenceOutsideCreatable(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final contextTokenPattern = RegExp(r'\{context\.(\w+)\}');
+
+    for (final t in machine.transitions) {
+      _scanContextTokens(
+        machine,
+        t,
+        t.effects,
+        'effects',
+        contextTokenPattern,
+        findings,
+      );
+    }
+  }
+
+  void _scanContextTokens(
+    LoomWorkflowStateMachine machine,
+    LoomWorkflowTransition transition,
+    List<WorkflowEffect> effects,
+    String path,
+    RegExp tokenPattern,
+    List<ValidationFinding> findings,
+  ) {
+    for (var i = 0; i < effects.length; i++) {
+      final effect = effects[i];
+      final location =
+          '${machine.workflowType}/transitions/${transition.id}/$path[$i]';
+
+      void checkString(String? value, String subPath) {
+        if (value == null) return;
+        if (tokenPattern.hasMatch(value)) {
+          findings.add(
+            ValidationFinding(
+              type: 'context_reference_outside_creatable',
+              message:
+                  '{context.x} interpolation is only valid inside '
+                  'creatable.prefill values, not in transition effects.',
+              location: '$location/$subPath',
+            ),
+          );
+        }
+      }
+
+      final effectValue = effect.value;
+      if (effectValue != null) {
+        checkString(effectValue.toString(),
+            effect.key != null ? 'key=${effect.key}' : 'value');
+      }
+
+      final fields = effect.fields;
+      if (fields != null) {
+        for (final entry in fields.entries) {
+          final v = entry.value;
+          if (v != null) {
+            checkString(v.toString(), 'fields/${entry.key}');
+          }
+        }
+      }
+
+      if (effect.op == 'branch') {
+        _scanContextTokens(
+          machine,
+          transition,
+          effect.thenEffects,
+          '$path[$i]/then',
+          tokenPattern,
+          findings,
+        );
+        _scanContextTokens(
+          machine,
+          transition,
+          effect.elseEffects,
+          '$path[$i]/else',
+          tokenPattern,
+          findings,
+        );
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // GAP-4 source query syntax validation
+  // ---------------------------------------------------------------------------
+  void _checkSourceQueries(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
+    List<ValidationFinding> findings,
+  ) {
+    for (final entry in machine.instanceDataSchema.entries) {
+      final fieldName = entry.key;
+      final field = entry.value;
+      final source = field.source;
+      if (source == null) continue;
+
+      final location =
+          '${machine.workflowType}/instanceDataSchema/$fieldName/source';
+
+      final query = SourceQuery.tryParse(source);
+      if (query == null) {
+        findings.add(
+          ValidationFinding(
+            type: 'invalid_source_query_syntax',
+            message:
+                'Source query "$source" does not match the expected grammar: '
+                'query(<workflowType> where <foreignField> == <localField>).',
+            location: location,
+          ),
+        );
+        continue;
+      }
+
+      final targetMachine = allWorkflows[query.workflowType];
+      if (targetMachine == null) {
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_source_query_workflow_type',
+            message:
+                'Source query references workflowType "${query.workflowType}", '
+                'which is not a known workflow type in the loaded definitions set.',
+            location: location,
+          ),
+        );
+        continue;
+      }
+
+      if (!targetMachine.instanceDataSchema.containsKey(query.foreignField)) {
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_instance_data_key',
+            message:
+                'Source query foreignField "${query.foreignField}" is not '
+                'declared in "${query.workflowType}"\'s instanceDataSchema.',
+            location: location,
+          ),
+        );
+      }
+
+      if (query.localField != 'id' &&
+          !machine.instanceDataSchema.containsKey(query.localField)) {
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_instance_data_key',
+            message:
+                'Source query localField "${query.localField}" is not "id" and '
+                'is not declared in this workflow\'s instanceDataSchema.',
+            location: location,
+          ),
+        );
+      }
+    }
+  }
+
 }
