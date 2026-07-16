@@ -231,7 +231,7 @@ void main() {
         personaId: 'tabletop-member',
         limit: 50,
       );
-      expect(page.items, hasLength(17));
+      expect(page.items, hasLength(20));
 
       // Verify that the persona type mapping is in place
       final ownerTransitions = await engine.availableTransitionsAsync(

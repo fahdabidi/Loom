@@ -119,7 +119,7 @@ void main() {
       ]),
     );
     expect(instances, isNotNull);
-    expect(instances, hasLength(17));
+    expect(instances, hasLength(20));
     expect(
       definitions['event-rsvp']!.states.keys,
       containsAll(<String>['open', 'cancelled']),

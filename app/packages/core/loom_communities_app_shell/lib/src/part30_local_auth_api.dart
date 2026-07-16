@@ -18,7 +18,7 @@ class LocalAuthApi implements LoomAuthApi {
   // ── Seeded demo accounts ────────────────────────────────────────────
 
   void _seedTabletopAccounts() {
-    const extId = 'ext_tabletop_club';
+    const extId = 'ext_verify_tabletop_club';
     _accountsByCommunity[extId] = [
       const LoomAccount(
         accountId: 'tabletop-organizer',

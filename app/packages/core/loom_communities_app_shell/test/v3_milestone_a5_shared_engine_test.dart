@@ -71,6 +71,9 @@ void main() {
         'listing-wingspan',
         'listing-root',
         'listing-old-catan',
+        'share-ticket-to-ride',
+        'share-gloomhaven',
+        'share-azul',
         'dues-2026-q3-member',
         'proposal-wingspan',
         'proposal-brass',
@@ -78,7 +81,7 @@ void main() {
         'thread-welcome',
         'thread-game-suggestions',
       };
-      expect(rows, hasLength(17));
+      expect(rows, hasLength(20));
       expect(rows.map((row) => row.instanceId), unorderedEquals(expectedIds));
 
       final expectedSeeds = <String, LoomWorkflowSeedInstance>{
@@ -137,7 +140,7 @@ void main() {
         personaId: 'tabletop-member',
         limit: 50,
       )).items;
-      expect(repeatedRows, hasLength(17));
+      expect(repeatedRows, hasLength(20));
       expect(
         repeatedRows.map((row) => row.instanceId),
         unorderedEquals(expectedIds),
