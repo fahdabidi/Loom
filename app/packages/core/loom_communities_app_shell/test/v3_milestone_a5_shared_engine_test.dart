@@ -148,7 +148,11 @@ void main() {
 
       await reloadedEngine.createInstance(
         workflowType: 'tabletop-game-loan',
-        initialInstanceData: const <String, dynamic>{},
+        initialInstanceData: const <String, dynamic>{
+          'title': 'Smoke-test listing',
+          'category': 'Board Games',
+          'ownerPersonaId': 'tabletop-member',
+        },
         personaId: 'tabletop-member',
       );
       expect(resolved.workflowDefinitions, hasLength(11));

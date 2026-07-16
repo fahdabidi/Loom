@@ -233,15 +233,23 @@ void main() {
       );
       expect(page.items, hasLength(20));
 
-      // Verify that the persona type mapping is in place
+      // Verify that the persona type mapping is in place:
+      // query the real share-azul instance (same pattern as Test 3 above)
+      final azul = page.items.firstWhere(
+        (i) => i.instanceId == 'share-azul',
+      );
       final ownerTransitions = await engine.availableTransitionsAsync(
-        workflowType: 'tabletop-game-loan',
-        instanceId: 'share-azul',
-        currentState: 'available',
-        instanceData: const {'ownerPersonaId': 'tabletop-member-05'},
+        workflowType: azul.workflowType,
+        instanceId: azul.instanceId,
+        currentState: azul.currentState,
+        instanceData: azul.instanceData,
         personaId: 'tabletop-member-05',
       );
       expect(ownerTransitions, isNotEmpty);
+      // The owner-gated transitions must be present
+      final ids = ownerTransitions.map((t) => t.id).toSet();
+      expect(ids, contains('approve-request'));
+      expect(ids, contains('decline-request'));
     });
   });
 }
