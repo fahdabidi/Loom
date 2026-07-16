@@ -6,7 +6,7 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
 const _tabletopRelativePath =
-    'docs/Build Plan V2/Loom Communities Workflow Engine V3/'
+    'docs/references/communities/'
     'Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 const _legacyRelativePath =
     'docs/Build Plan V2/Skill/examples/verify-tabletop-club/'

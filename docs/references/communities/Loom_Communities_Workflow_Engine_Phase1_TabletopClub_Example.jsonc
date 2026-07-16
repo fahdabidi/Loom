@@ -299,7 +299,8 @@
           "host": { "type": "text", "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "person_outline", "labelTemplate": "Host: {value}", "displayContexts": ["detail"] },
           "minimumAttendance": { "type": "number", "required": true, "writableBy": "formEntry",
-            "storage": "inline", "displayIcon": "groups_outlined" },
+            "storage": "inline", "displayIcon": "groups_outlined",
+            "labelTemplate": "Min. attendance: {value}", "displayContexts": ["detail"] },
           "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
           "selectedGame": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayIcon": "casino", "labelTemplate": "Selected game: {value}",
@@ -516,8 +517,10 @@
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "onLoan" },
               { "op": "set", "key": "holderPersonaId", "value": "$actor" }
-            ],
-            "linkedWorkflowId": "tabletop-game-loan"
+            ]
+            // (was linkedWorkflowId: "tabletop-game-loan" — removed 2026-07-15: that type is no longer a
+            // throwaway confirmation stub, it is now the real peer game-sharing type. The borrow effects
+            // above ARE the action; the linked confirmation surface added nothing.)
           },
           {
             // Allowed whether or not the item is currently out: queue-behind-a-loan (common) and
@@ -629,8 +632,8 @@
             "effects": [
               { "op": "set", "key": "claimedByPersonaId", "value": "$actor" },
               { "op": "removeFromTileGrid" }
-            ],
-            "linkedWorkflowId": "tabletop-game-loan"
+            ]
+            // (was linkedWorkflowId: "tabletop-game-loan" — removed 2026-07-15, see the borrow note above.)
           }
         ],
         "renderBindings": [
@@ -653,14 +656,233 @@
         }
       },
 
-      // The linked action surface fired by `borrow`/`claim` — a confirmation step, no lifecycle of its
-      // own. Kept as its own type so `linkedWorkflowId` resolves (same shape as V2's Marketplace doc).
+      // -------------------------------------------------------------------------------------------
+      // PEER GAME SHARING — a member shares a game they PERSONALLY own with the whole community.
+      // Distinct from equipment-loan/equipment-giveaway (the club's OWN collectively-owned library,
+      // organizer-managed). Modeled on Book Club's book-shared-library: list/edit/delist your own item,
+      // request -> owner approves -> hold + due date, queue behind an active loan, return, renew, report
+      // an issue. Product spec: communities/tabletop-club.md §3 ("peer-to-peer game sharing").
+      //
+      // MODELING (per guide/06-product-doc-to-json.md §3): the lifecycle is ONLY `published -> delisted`
+      // (listing visibility). Everything else — availability, current holder, the pending request
+      // awaiting the owner, the queue, the due date — is orthogonal DATA on the same `published`
+      // instance (`to: null` transitions), because those coexist: a game can be on loan AND have a queue
+      // AND have a next-borrower awaiting approval all at once.
+      //
+      // OWNER-ONLY actions (approve/decline/delist) use a `formula` guard `ownerPersonaId == $actor` — a
+      // real engine guard; formula guards bind $actor (guard_evaluator.dart:39-46). No new grammar.
+      //
+      // NEEDS IMPLEMENTATION (honest gaps — flagged, never faked):
+      //  * `creatable` (GAP-2) below lets any member list their own game, but auto-setting the new
+      //    listing's ownerPersonaId to the CREATOR needs the GAP-2 creator binding
+      //    (Loom_Communities_Workflow_Engine_3_GrammarExtensions.md). Until then owner is seeded/effect-set.
+      //  * PER-INDIVIDUAL identity: this demo authenticates as one of TWO roles (tabletop-member /
+      //    tabletop-organizer), so `ownerPersonaId == $actor` distinguishes ROLE, not individual member.
+      //    True "only THIS owner" needs per-user identity (a platform service) — the same limitation the
+      //    tournament-vote rows note. A real backend with per-user ids runs this guard correctly as-is.
+      //  * AUTO-PROMOTE the head of the queue to pendingRequest on return, and COMPUTE a due date
+      //    (now + loan period) on approve/renew: neither a list-head function nor date arithmetic that
+      //    RETURNS a date exists in the 20-function formula vocabulary (reference/formulas.md). Left
+      //    explicit, not approximated.
+      // -------------------------------------------------------------------------------------------
       "tabletop-game-loan": {
-        "initialState": "open",
-        "states": { "open": { "label": "Loan request", "isTerminal": true } },
-        "transitions": [],
-        "renderBindings": [],
-        "instanceDataSchema": {}
+        "initialState": "published",
+        "states": {
+          "published": { "label": "Shared with the club", "tone": "positive",
+                         "editableFields": ["title", "category", "condition", "description"] },
+          "delisted": { "label": "Delisted", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "request-borrow",
+            "label": "Request to borrow",
+            "icon": "pan_tool_alt",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "instanceDataEquals": { "key": "availabilityState", "value": "available" },
+              "requiresWorkflowsComplete": ["tabletop-club-dues-payment"],
+              // Any member EXCEPT the owner, and only when no one is already awaiting approval. No `!=`
+              // or `!` operator exists, so both conditions are restructured with if().
+              "formula": "if(ownerPersonaId == $actor, false, if(pendingRequestPersonaId == null, true, false))"
+            },
+            "effects": [
+              { "op": "set", "key": "pendingRequestPersonaId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "approve-request",
+            "label": "Approve request",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            // Owner-only: it is THEIR game, so THEY decide who borrows it next — the key difference from
+            // the club library's open-access borrow rule.
+            "guard": { "formula": "ownerPersonaId == $actor" },
+            "effects": [
+              { "op": "set", "key": "holderPersonaId", "value": "{pendingRequestPersonaId}" },
+              { "op": "set", "key": "availabilityState", "value": "loaned" },
+              { "op": "set", "key": "pendingRequestPersonaId", "value": null }
+              // NEEDS IMPLEMENTATION: set dueDate = now + loan period. No formula function RETURNS a
+              // computed date, so a real due date cannot be derived here — deliberately not faked.
+            ]
+          },
+          {
+            "id": "decline-request",
+            "label": "Decline request",
+            "icon": "cancel",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": { "formula": "ownerPersonaId == $actor" },
+            "effects": [
+              { "op": "set", "key": "pendingRequestPersonaId", "value": null }
+            ]
+          },
+          {
+            "id": "join-queue",
+            "label": "Join queue",
+            "icon": "add_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            // Allowed whether or not it is currently out (reserve-ahead), like the club library's queue —
+            // but never for the owner's own game.
+            "guard": {
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "queuedPersonaIds", "present": false },
+              "formula": "if(ownerPersonaId == $actor, false, true)"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "leave-queue",
+            "label": "Leave queue",
+            "icon": "remove_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "queuedPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "return-game",
+            "label": "Return",
+            "icon": "keyboard_return",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            // Only the current holder returns it.
+            "guard": {
+              "instanceDataEquals": { "key": "availabilityState", "value": "loaned" },
+              "formula": "holderPersonaId == $actor"
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "holderPersonaId", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+              // NEEDS IMPLEMENTATION: if the queue is non-empty, promote its head to
+              // pendingRequestPersonaId (every hand-off still goes through the owner). No list-head
+              // function exists in the formula vocabulary, so the next borrower re-requests for now.
+            ]
+          },
+          {
+            "id": "renew",
+            "label": "Renew loan",
+            "icon": "update",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            // Holder may renew ONLY when nobody is waiting (product spec §3). A guard allows one `formula`
+            // key, so both conditions (holder AND empty queue) are folded into one expression.
+            "guard": { "formula": "if(holderPersonaId == $actor, size(queuedPersonaIds) == 0, false)" },
+            "effects": [
+              // NEEDS IMPLEMENTATION: extend dueDate by the loan period (date arithmetic returning a date
+              // is not in the formula vocabulary). The empty-queue GUARD is fully real; the date bump is
+              // the gap.
+              { "op": "set", "key": "renewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "report-issue",
+            "label": "Report an issue",
+            "icon": "report_problem",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": null,
+            // Holder or owner may flag a lost/damaged game; it goes unavailable and is flagged for the
+            // owner's attention.
+            "guard": { "formula": "if(holderPersonaId == $actor, true, ownerPersonaId == $actor)" },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "reported" },
+              { "op": "set", "key": "issueReported", "value": true }
+            ]
+          },
+          {
+            "id": "delist",
+            "label": "Delist my game",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": { "formula": "ownerPersonaId == $actor" }
+          }
+        ],
+        "renderBindings": [
+          { "states": ["published"], "role": "any", "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
+            // GAP-2: any member can share a game they own. NEEDS IMPLEMENTATION: auto-set ownerPersonaId
+            // to the creator (see header). Consistent with game-purchase-proposal / discussion-thread,
+            // which already declare `creatable` forward-looking in this same file.
+            "creatable": { "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
+                           "label": "Share a game" } }
+        ],
+        "instanceDataSchema": {
+          "title": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
+            "storage": "inline", "searchable": true, "sortable": true, "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"] },
+          "category": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayContexts": ["tile", "detail"] },
+          "condition": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "verified_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
+          "description": { "type": "textarea", "maxLength": 500, "writableBy": "formEntry",
+            "storage": "inline", "searchable": true, "displayContexts": ["detail"] },
+          // The distinguishing field vs. the club library: WHICH member personally owns this listing.
+          "ownerPersonaId": { "type": "personaId", "required": true, "writableBy": "effect",
+            "storage": "inline", "displayIcon": "person", "labelTemplate": "Shared by {value}",
+            "displayContexts": ["tile", "detail"] },
+          "availabilityState": { "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayContexts": ["tile", "detail"] },
+          "holderPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "With {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "pendingRequestPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "pan_tool_alt", "labelTemplate": "Awaiting approval: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "queuedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "dueDate": { "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "displayIcon": "schedule", "labelTemplate": "Due back {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "renewedAt": { "type": "date?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true },
+          "issueReported": { "type": "bool", "writableBy": "effect", "storage": "inline" },
+
+          // Computed — derived on read, never stored, never seeded.
+          "queueLength": { "type": "number", "formula": "size(queuedPersonaIds)" },
+          "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
+        }
       },
 
       // -------------------------------------------------------------------------------------------
@@ -1150,6 +1372,73 @@
           "condition": "Fair",
           "description": "Free to a member — retired club copy, replaced by the newer set above.",
           "claimedByPersonaId": null
+        }
+      },
+
+      // ---- Marketplace: PEER game sharing (member-owned, not the club's library) -----------------
+      // Three states seeded so every part of the peer flow has something real to show: one the demo
+      // member OWNS and can manage, one on loan with a queue, one with a request awaiting the owner.
+      {
+        // Owner is the bare `tabletop-member` role, so THIS demo session (acting as the member) is the
+        // owner and can actually approve/decline/delist it — the one fully demo-actionable owner flow.
+        // (Per-individual identity is the noted platform gap; see the type header.)
+        "instanceId": "share-ticket-to-ride",
+        "workflowType": "tabletop-game-loan",
+        "currentState": "published",
+        "createdByPersonaId": "tabletop-member",
+        "instanceData": {
+          "title": "Ticket to Ride",
+          "category": "Family Games",
+          "condition": "Excellent",
+          "description": "My personal copy — cross-country train routes, plays great at 2-5.",
+          "ownerPersonaId": "tabletop-member",
+          "availabilityState": "available",
+          "holderPersonaId": null,
+          "pendingRequestPersonaId": null,
+          "queuedPersonaIds": [],
+          "dueDate": null,
+          "issueReported": false
+        }
+      },
+      {
+        // On loan, with two members queued behind it. Owner/holder/queue use specific member display
+        // ids (like the goingPersonaIds / voterId seeds) for realism.
+        "instanceId": "share-gloomhaven",
+        "workflowType": "tabletop-game-loan",
+        "currentState": "published",
+        "createdByPersonaId": "tabletop-member",
+        "instanceData": {
+          "title": "Gloomhaven",
+          "category": "Campaign Games",
+          "condition": "Good",
+          "description": "Big legacy dungeon-crawler. Heavy box — local pickup only, please.",
+          "ownerPersonaId": "tabletop-member-14",
+          "availabilityState": "loaned",
+          "holderPersonaId": "tabletop-member-03",
+          "pendingRequestPersonaId": null,
+          "queuedPersonaIds": ["tabletop-member-07", "tabletop-member-09"],
+          "dueDate": "2026-07-24",
+          "issueReported": false
+        }
+      },
+      {
+        // Available, with a request the owner has not yet approved — the pending-approval state.
+        "instanceId": "share-azul",
+        "workflowType": "tabletop-game-loan",
+        "currentState": "published",
+        "createdByPersonaId": "tabletop-member",
+        "instanceData": {
+          "title": "Azul",
+          "category": "Abstract Games",
+          "condition": "Like new",
+          "description": "Tile-drafting, quick to teach. Happy to lend it around the club.",
+          "ownerPersonaId": "tabletop-member-05",
+          "availabilityState": "available",
+          "holderPersonaId": null,
+          "pendingRequestPersonaId": "tabletop-member-11",
+          "queuedPersonaIds": [],
+          "dueDate": null,
+          "issueReported": false
         }
       },
 

@@ -8,7 +8,7 @@ import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const _fixtureRelative =
-    'docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
+    'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
 File _fixtureFile() {
   var directory = Directory.current;
