@@ -48,7 +48,7 @@ Archetype UI Design gate for what closes each remaining PARTIAL/❌ before Table
 
 | `cardSurfaceFamily` | Purpose | Status | Evidence |
 |---|---|---|---|
-| `event-rsvp` | Event with RSVP + capacity + waitlist | 🟡 PARTIAL | Real month grid/date-strip/agenda shell (`calendar_month_grid.dart:1-125`, `part02_tab_shell.dart:5028,5404-5606`) — but the RSVP going/maybe/can't-go/waitlist buttons still render via the generic template (`part02_tab_shell.dart:5579-5591` → `part18_marketplace_rendering.dart:466-528`) |
+| `event-rsvp` | Event with RSVP + capacity + waitlist | ✅ REAL | Bespoke `_EventRsvpDetailCard` with real capacity bar, distinct tone-styled RSVP chips (Going/Maybe/Can't go/Join waitlist) with selected-state highlighting, and a distinct waitlist indicator — dispatched via `cardSurfaceFamily` check at `part28_engine_native_calendar_surface.dart:442` (covers both `event-rsvp` and `tournament-event`). Verified by `v3_milestone_a11_event_rsvp_archetype_test.dart`. |
 | `equipment-loan` | Browse/borrow/queue/return items | 🟡 PARTIAL | Real search/filter/grid/pagination (`part02_tab_shell.dart:5814-6263`) — but per-item borrow/queue/return actions still render via the generic template (`part02_tab_shell.dart:6601,6693`) |
 | `votePoll` | Ballot: candidates, tally, tie/runoff | ✅ REAL | Per-candidate vote buttons + live tally, candidate detail dialog, deadline/reminder banner (`part02_tab_shell.dart:3387-3600+`, specifically `:3474-3585`) |
 | `paymentCheckout` | Dues/donations + receipt | 🟡 PARTIAL | Real amount/purpose header + payment history (`part02_tab_shell.dart:13316+`) — but the pay action itself is the generic template (`:13641-13659`) |

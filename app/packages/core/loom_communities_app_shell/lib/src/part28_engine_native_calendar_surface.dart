@@ -439,10 +439,23 @@ class _EngineNativeCalendarContentState
               ],
             ),
           ),
-        GenericWorkflowInstanceCard(
-          key: ValueKey(
-            'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-          ),
+        if (selected.resolved.binding.cardSurfaceFamily == 'event-rsvp')
+          _EventRsvpDetailCard(
+            key: ValueKey(
+              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
+            ),
+            instance: selected.resolved.instance,
+            machine: selected.resolved.machine,
+            engine: widget.engine,
+            personaId: widget.personaId,
+            accent: widget.accent,
+            onInstanceChanged: widget.onInstanceChanged,
+          )
+        else
+          GenericWorkflowInstanceCard(
+            key: ValueKey(
+              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
+            ),
           instance: selected.resolved.instance,
           machine: selected.resolved.machine,
           engine: widget.engine,
@@ -467,6 +480,435 @@ class _EngineNativeCalendarContentState
       widget.presentation.selectedDate = entry.dateKey;
       widget.presentation.month = DateTime(entry.date.year, entry.date.month);
     });
+  }
+}
+
+
+class _EventRsvpDetailCard extends StatefulWidget {
+  const _EventRsvpDetailCard({
+    super.key,
+    required this.instance,
+    required this.machine,
+    required this.engine,
+    required this.personaId,
+    required this.accent,
+    required this.onInstanceChanged,
+  });
+
+  final WorkflowInstance instance;
+  final LoomWorkflowStateMachine machine;
+  final WorkflowEngineApi engine;
+  final String personaId;
+  final Color accent;
+  final ValueChanged<WorkflowInstance>? onInstanceChanged;
+
+  @override
+  State<_EventRsvpDetailCard> createState() => _EventRsvpDetailCardState();
+}
+
+class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
+  late WorkflowInstance _instance;
+  List<LoomWorkflowTransition> _actions = const [];
+  bool _loadingActions = true;
+  bool _mutating = false;
+  String? _error;
+  Future<void> Function()? _retry;
+  int _actionRequest = 0;
+  int _generation = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = widget.instance;
+    _loadActions();
+  }
+
+  @override
+  void didUpdateWidget(covariant _EventRsvpDetailCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.instance != widget.instance ||
+        oldWidget.personaId != widget.personaId ||
+        oldWidget.machine != widget.machine ||
+        oldWidget.engine != widget.engine) {
+      _actionRequest++;
+      _generation++;
+      _instance = widget.instance;
+      _error = null;
+      _retry = null;
+      _actions = const [];
+      _loadingActions = true;
+      _mutating = false;
+      _loadActions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _generation++;
+    super.dispose();
+  }
+
+  bool _isCurrent(
+    int generation,
+    WorkflowInstance instance,
+    LoomWorkflowStateMachine machine,
+    WorkflowEngineApi engine,
+    String personaId,
+  ) =>
+      mounted &&
+      generation == _generation &&
+      identical(_instance, instance) &&
+      identical(widget.machine, machine) &&
+      identical(widget.engine, engine) &&
+      widget.personaId == personaId;
+
+  Future<void> _loadActions() async {
+    final generation = _generation;
+    final instance = _instance;
+    final machine = widget.machine;
+    final engine = widget.engine;
+    final personaId = widget.personaId;
+    final request = ++_actionRequest;
+    if (_isCurrent(generation, instance, machine, engine, personaId)) {
+      setState(() {
+        _loadingActions = true;
+        _actions = const [];
+        _error = null;
+        _retry = null;
+      });
+    }
+    try {
+      final result = await engine.availableTransitionsAsync(
+        workflowType: instance.workflowType,
+        instanceId: instance.instanceId,
+        currentState: instance.currentState,
+        instanceData: instance.instanceData,
+        personaId: personaId,
+      );
+      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+          request != _actionRequest) {
+        return;
+      }
+      setState(() {
+        _actions = result;
+        _loadingActions = false;
+      });
+    } catch (_) {
+      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+          request != _actionRequest) {
+        return;
+      }
+      setState(() {
+        _loadingActions = false;
+        _error = 'Could not load available actions.';
+        _retry = () => _loadActions();
+      });
+    }
+  }
+
+  Future<void> _applyTransition(String transitionId) {
+    final generation = _generation;
+    final instance = _instance;
+    final machine = widget.machine;
+    final engine = widget.engine;
+    final personaId = widget.personaId;
+    return _runMutation(
+      generation: generation,
+      instance: instance,
+      machine: machine,
+      engine: engine,
+      personaId: personaId,
+      operation: () async {
+        final result = await engine.applyTransition(
+          workflowType: instance.workflowType,
+          instanceId: instance.instanceId,
+          transitionId: transitionId,
+          personaId: personaId,
+        );
+        return WorkflowInstance(
+          instanceId: instance.instanceId,
+          workflowType: instance.workflowType,
+          currentState: result.newState,
+          instanceData: result.newInstanceData,
+          createdByPersonaId: instance.createdByPersonaId,
+        );
+      },
+      retry: () => _applyTransition(transitionId),
+    );
+  }
+
+  Future<void> _runMutation({
+    required int generation,
+    required WorkflowInstance instance,
+    required LoomWorkflowStateMachine machine,
+    required WorkflowEngineApi engine,
+    required String personaId,
+    required Future<WorkflowInstance> Function() operation,
+    required Future<void> Function() retry,
+  }) async {
+    if (_mutating) return;
+    setState(() {
+      _mutating = true;
+      _error = null;
+      _retry = null;
+    });
+    try {
+      final next = await operation();
+      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      _instance = next;
+      widget.onInstanceChanged?.call(next);
+      if (!_isCurrent(generation, next, machine, engine, personaId)) return;
+      setState(() => _mutating = false);
+      await _loadActions();
+    } catch (_) {
+      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Could not save this change. Please try again.';
+        _retry = retry;
+      });
+    }
+  }
+
+  WorkflowActionTone _toneFor(String? tone) => switch (tone) {
+    'secondary' => WorkflowActionTone.secondary,
+    'destructive' => WorkflowActionTone.destructive,
+    _ => WorkflowActionTone.primary,
+  };
+
+  bool _isSelected(LoomWorkflowTransition action) {
+    final data = _instance.instanceData;
+    final pid = widget.personaId;
+    switch (action.id) {
+      case 'rsvp-going':
+        return (data['goingPersonaIds'] as List?)?.contains(pid) ?? false;
+      case 'rsvp-maybe':
+        return (data['maybePersonaIds'] as List?)?.contains(pid) ?? false;
+      case 'rsvp-not-going':
+        return (data['notGoingPersonaIds'] as List?)?.contains(pid) ?? false;
+      case 'join-waitlist':
+        return (data['waitlistPersonaIds'] as List?)?.contains(pid) ?? false;
+      default:
+        return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _instance.instanceData;
+    final goingCount = (data['goingCount'] ?? data['accepted'] ?? 0) as num;
+    final capacity =
+        (data['capacity'] ?? data['minimumAttendance'] ?? 1) as num;
+    final seatsRemaining = data['seatsRemaining'];
+    final isFull = data['isFull'] as bool? ?? false;
+    final quorumMet = data['quorumMet'];
+    final waitlistIds =
+        (data['waitlistPersonaIds'] as List?)?.cast<String>() ??
+            const <String>[];
+    final onWaitlist = waitlistIds.contains(widget.personaId);
+
+    final hasCapacityInfo =
+        data.containsKey('capacity') || data.containsKey('minimumAttendance');
+    final ratio = capacity == 0
+        ? 0.0
+        : (goingCount.toDouble() / capacity.toDouble()).clamp(0.0, 1.0);
+
+    return Card(
+      key: ValueKey('event-rsvp-card-${_instance.instanceId}'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (hasCapacityInfo) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${goingCount.toInt()} / ${capacity.toInt()} going',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        if (seatsRemaining != null)
+                          Text(
+                            '${(seatsRemaining as num).toInt()} seats left',
+                            style: TextStyle(
+                              color: isFull
+                                  ? Theme.of(context).colorScheme.error
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.6),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (quorumMet != null)
+                    Icon(
+                      quorumMet == true
+                          ? Icons.check_circle
+                          : Icons.warning_amber,
+                      color: quorumMet == true
+                          ? Colors.green
+                          : Theme.of(context).colorScheme.error,
+                    ),
+                  if (isFull && quorumMet == null)
+                    const Icon(Icons.event_busy, color: Colors.red),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  key: ValueKey(
+                    'event-rsvp-capacity-bar-${_instance.instanceId}',
+                  ),
+                  value: ratio,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
+                  color: isFull
+                      ? Theme.of(context).colorScheme.error
+                      : widget.accent,
+                  minHeight: 8,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (onWaitlist)
+              Container(
+                key: ValueKey('event-rsvp-waitlist-${_instance.instanceId}'),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border:
+                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.hourglass_empty,
+                        color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'You are on the waitlist',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (onWaitlist) const SizedBox(height: 12),
+            if (_loadingActions || _mutating)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: LinearProgressIndicator(
+                  key: ValueKey(
+                    'event-rsvp-progress-${_instance.instanceId}',
+                  ),
+                ),
+              ),
+            if (_error != null)
+              Padding(
+                key: ValueKey('event-rsvp-error-${_instance.instanceId}'),
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(_error!)),
+                    TextButton(
+                      key: ValueKey(
+                        'event-rsvp-retry-${_instance.instanceId}',
+                      ),
+                      onPressed: _mutating ? null : () => _retry?.call(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            if (!_loadingActions) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final action in _actions)
+                    _RsvpActionChip(
+                      key: ValueKey(
+                        'event-rsvp-${_instance.instanceId}-action-${action.id}',
+                      ),
+                      label: action.label,
+                      iconName: action.icon,
+                      tone: _toneFor(action.tone),
+                      selected: _isSelected(action),
+                      onPressed: _mutating
+                          ? null
+                          : () => _applyTransition(action.id),
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RsvpActionChip extends StatelessWidget {
+  const _RsvpActionChip({
+    super.key,
+    required this.label,
+    required this.iconName,
+    required this.tone,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String? iconName;
+  final WorkflowActionTone tone;
+  final bool selected;
+  final VoidCallback? onPressed;
+
+  static IconData _iconFor(String name) => switch (name) {
+    'event_available' => Icons.event_available,
+    'event_busy' => Icons.event_busy,
+    'help_outline' => Icons.help_outline,
+    'groups' => Icons.groups,
+    'cancel' => Icons.cancel,
+    _ => Icons.touch_app,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final Color toneColor = switch (tone) {
+      WorkflowActionTone.primary => Theme.of(context).colorScheme.primary,
+      WorkflowActionTone.secondary => Theme.of(context).colorScheme.outline,
+      WorkflowActionTone.destructive => Theme.of(context).colorScheme.error,
+    };
+    return InputChip(
+      avatar: iconName != null
+          ? Icon(_iconFor(iconName!), size: 18, color: toneColor)
+          : null,
+      label: Text(label),
+      selected: selected,
+      onPressed: onPressed,
+      selectedColor: toneColor.withValues(alpha: 0.2),
+      backgroundColor: toneColor.withValues(alpha: 0.08),
+      side: BorderSide(
+        color: selected ? toneColor : toneColor.withValues(alpha: 0.4),
+      ),
+      checkmarkColor: toneColor,
+      visualDensity: VisualDensity.compact,
+    );
   }
 }
 

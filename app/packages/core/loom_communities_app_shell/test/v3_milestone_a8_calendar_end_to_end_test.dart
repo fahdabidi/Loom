@@ -159,7 +159,7 @@ Future<void> _tapAction(
   String transitionId,
 ) async {
   final action = find.byKey(
-    ValueKey('generic-instance-$instanceId-action-$transitionId'),
+    ValueKey('event-rsvp-$instanceId-action-$transitionId'),
   );
   await _pumpUntil(tester, action);
   await tester.ensureVisible(action);
@@ -409,7 +409,10 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
+        findsOneWidget,
+      );
       await tester.tap(
         find.byKey(
           const ValueKey(
@@ -435,7 +438,10 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('event-rsvp-card-event-summer-tournament')),
+        findsOneWidget,
+      );
 
       final layers = <Finder>[
         find.byKey(const ValueKey('engine-native-calendar-month-navigation')),
@@ -761,14 +767,14 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-join-waitlist',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-rsvp-going',
           ),
         ),
         findsNothing,
@@ -790,7 +796,7 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-rsvp-maybe',
+            'event-rsvp-event-friday-game-night-action-rsvp-maybe',
           ),
         ),
       );
@@ -803,14 +809,14 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-rsvp-going',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-join-waitlist',
           ),
         ),
         findsNothing,
@@ -829,14 +835,14 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-join-waitlist',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'generic-instance-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-rsvp-going',
           ),
         ),
         findsNothing,
@@ -887,14 +893,14 @@ void main() {
           tester,
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-withdraw',
+              'event-rsvp-event-summer-tournament-action-rsvp-withdraw',
             ),
           ),
         );
         expect(
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-going',
+              'event-rsvp-event-summer-tournament-action-rsvp-going',
             ),
           ),
           findsNothing,
@@ -924,14 +930,14 @@ void main() {
           tester,
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-going',
+              'event-rsvp-event-summer-tournament-action-rsvp-going',
             ),
           ),
         );
         expect(
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-withdraw',
+              'event-rsvp-event-summer-tournament-action-rsvp-withdraw',
             ),
           ),
           findsNothing,
@@ -961,14 +967,14 @@ void main() {
           tester,
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-withdraw',
+              'event-rsvp-event-summer-tournament-action-rsvp-withdraw',
             ),
           ),
         );
         expect(
           find.byKey(
             const ValueKey(
-              'generic-instance-event-summer-tournament-action-rsvp-going',
+              'event-rsvp-event-summer-tournament-action-rsvp-going',
             ),
           ),
           findsNothing,
@@ -1008,14 +1014,14 @@ void main() {
           tester,
           find.byKey(
             const ValueKey(
-              'generic-instance-event-friday-game-night-action-rsvp-going',
+              'event-rsvp-event-friday-game-night-action-rsvp-going',
             ),
           ),
         );
         expect(
           find.byKey(
             const ValueKey(
-              'generic-instance-event-friday-game-night-action-cancel-event',
+              'event-rsvp-event-friday-game-night-action-cancel-event',
             ),
           ),
           findsNothing,
@@ -1077,7 +1083,7 @@ void main() {
           expect(
             find.byKey(
               ValueKey(
-                'generic-instance-event-friday-game-night-action-$action',
+                'event-rsvp-event-friday-game-night-action-$action',
               ),
             ),
             findsNothing,
