@@ -4,6 +4,7 @@ import 'dart:math';
 
 import '../evaluator/effect_evaluator.dart';
 import '../evaluator/formula_evaluator.dart';
+import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
 import '../store/database.dart';
@@ -125,12 +126,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final items = await Future.wait(
       rawItems.map((instance) async {
         final machine = await _getDefinition(instance.workflowType);
+        final hydrated = machine != null
+            ? await _hydrateSourceFields(
+                instance.instanceData, machine, instance.instanceId)
+            : instance.instanceData;
         return WorkflowInstance(
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
           currentState: instance.currentState,
           instanceData: _withComputedFields(
-            instance.instanceData,
+            hydrated,
             machine,
             viewerId: personaId,
           ),
@@ -168,6 +173,22 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return false;
   }
 
+  /// Reads every persisted row for [workflowType] in this community.
+  /// Used by both [aggregate] and GAP-4 source-query execution.
+  Future<List<Map<String, dynamic>>> _readAllInstancesOfType(
+    String workflowType,
+  ) async {
+    final rows = await _db.queryInstancesKeyset(
+      communityId: _communityId,
+      limit: 1 << 30,
+      sortKey: 'instanceId',
+    );
+    return rows
+        .where((row) => row.workflowType == workflowType)
+        .map((row) => jsonDecode(row.instanceData) as Map<String, dynamic>)
+        .toList();
+  }
+
   @override
   Future<dynamic> aggregate({
     required String workflowType,
@@ -180,14 +201,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (!supported.contains(op)) {
       throw ArgumentError.value(op, 'op', 'Unsupported aggregate operation');
     }
-    final rows = await _db.queryInstancesKeyset(
-      communityId: _communityId,
-      limit: 1 << 30,
-      sortKey: 'instanceId',
-    );
-    final data = rows
-        .where((row) => row.workflowType == workflowType)
-        .map((row) => jsonDecode(row.instanceData) as Map<String, dynamic>)
+    final allRows = await _readAllInstancesOfType(workflowType);
+    final data = allRows
         .where(
           (row) =>
               filter == null ||
@@ -228,12 +243,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       final dueAt = DateTime.tryParse(rawDueAt);
       if (dueAt == null || dueAt.isAfter(asOf)) continue;
       final machine = await _getDefinition(row.workflowType);
+      final hydrated = machine != null
+          ? await _hydrateSourceFields(data, machine, row.instanceId)
+          : data;
       due.add(
         WorkflowInstance(
           instanceId: row.instanceId,
           workflowType: row.workflowType,
           currentState: row.currentState,
-          instanceData: _withComputedFields(data, machine),
+          instanceData: _withComputedFields(hydrated, machine),
           createdByPersonaId: row.createdByPersonaId,
         ),
       );
@@ -319,6 +337,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String instanceId,
     required String transitionId,
     required String personaId,
+    Map<String, dynamic>? inputs,
   }) async {
     final machine = await _getDefinition(workflowType);
     if (machine == null) {
@@ -361,11 +380,24 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         );
       }
 
+      // GAP-1: validate required transition inputs
+      if (transition.inputs != null) {
+        for (final entry in transition.inputs!.entries) {
+          if (entry.value.required &&
+              (inputs == null || !inputs.containsKey(entry.key))) {
+            throw StateError(
+              'Transition $transitionId requires input "${entry.key}"',
+            );
+          }
+        }
+      }
+
       final newData = await _applyExtendedEffects(
         transition.effects,
         machine: machine,
         sourceData: data,
         personaId: personaId,
+        inputValues: inputs,
       );
       final newState = transition.to ?? row.currentState;
 
@@ -575,6 +607,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required LoomWorkflowStateMachine machine,
     required Map<String, dynamic> sourceData,
     required String personaId,
+    Map<String, dynamic>? inputValues,
   }) async {
     var data = Map<String, dynamic>.from(sourceData);
     Future<void> applyList(List<WorkflowEffect> list) async {
@@ -605,7 +638,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           if (effect.workflowType == null || effect.fields == null) {
             throw StateError('createInstance requires workflowType and fields');
           }
-          final fields = resolveEffectValue(effect.fields, personaId, computed);
+          final fields = resolveEffectValue(effect.fields, personaId, computed,
+              inputValues: inputValues);
           await createInstance(
             workflowType: effect.workflowType!,
             initialInstanceData: Map<String, dynamic>.from(fields as Map),
@@ -659,12 +693,46 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           personaId,
           data,
           interpolationData: computed,
+          inputValues: inputValues,
         );
       }
     }
 
     await applyList(effects);
     return data;
+  }
+
+  /// Executes GAP-4 source queries for every field with a `source`
+  /// on the given machine and populates them into [data].
+  Future<Map<String, dynamic>> _hydrateSourceFields(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine machine,
+    String instanceId,
+  ) async {
+    final result = Map<String, dynamic>.from(data);
+    for (final entry in machine.instanceDataSchema.entries) {
+      if (entry.value.source == null || result.containsKey(entry.key)) {
+        continue;
+      }
+      final query = SourceQuery.tryParse(entry.value.source);
+      if (query == null) continue;
+      try {
+        final localValue = query.localField == 'id'
+            ? instanceId
+            : result[query.localField];
+        if (localValue == null) continue;
+        final allRows = await _readAllInstancesOfType(query.workflowType);
+        final matches = allRows
+            .where((row) => row[query.foreignField] == localValue)
+            .toList();
+        if (matches.isNotEmpty) {
+          result[entry.key] = matches;
+        }
+      } catch (_) {
+        // Source resolution failed — leave field unpopulated.
+      }
+    }
+    return result;
   }
 
   Map<String, dynamic> _withComputedFields(

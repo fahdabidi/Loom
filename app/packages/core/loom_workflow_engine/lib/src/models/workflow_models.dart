@@ -1,3 +1,19 @@
+/// Specification for a single input parameter on a transition.
+/// Each input is resolved from the caller-supplied values map
+/// and interpolated as {input.<name>} inside effect values.
+class TransitionInputSpec {
+  final String type;
+  final bool required;
+
+  const TransitionInputSpec({required this.type, this.required = false});
+
+  factory TransitionInputSpec.fromJson(Map<String, dynamic> json) =>
+      TransitionInputSpec(
+        type: json['type'] as String,
+        required: json['required'] as bool? ?? false,
+      );
+}
+
 /// A guard condition on a transition. All non-null fields must pass (AND semantics).
 class WorkflowGuard {
   final List<String>? allowedPersonaIds;
@@ -174,6 +190,9 @@ class LoomWorkflowTransition {
   final List<WorkflowEffect> effects;
   final String? linkedWorkflowId;
 
+  /// Input parameters declared by this transition (GAP-1).
+  final Map<String, TransitionInputSpec>? inputs;
+
   const LoomWorkflowTransition({
     required this.id,
     required this.label,
@@ -184,6 +203,7 @@ class LoomWorkflowTransition {
     this.guard = const WorkflowGuard(),
     this.effects = const [],
     this.linkedWorkflowId,
+    this.inputs,
   });
 
   factory LoomWorkflowTransition.fromJson(Map<String, dynamic> json) {
@@ -194,6 +214,12 @@ class LoomWorkflowTransition {
       tone: json['tone'] as String?,
       from: (json['from'] as List<dynamic>).map((e) => e as String).toList(),
       to: json['to'] as String?,
+      inputs: (json['inputs'] as Map<String, dynamic>?)?.map(
+        (k, v) => MapEntry(
+          k,
+          TransitionInputSpec.fromJson(v as Map<String, dynamic>),
+        ),
+      ),
       guard: WorkflowGuard.fromJson(json['guard'] as Map<String, dynamic>?),
       effects:
           (json['effects'] as List<dynamic>?)
@@ -231,6 +257,59 @@ class LoomWorkflowState {
   }
 }
 
+/// A single action button on a repeated item in a repeater (GAP-1).
+class RepeaterItemAction {
+  final String transitionId;
+  final Map<String, dynamic>? inputs;
+
+  const RepeaterItemAction({required this.transitionId, this.inputs});
+
+  factory RepeaterItemAction.fromJson(Map<String, dynamic> json) =>
+      RepeaterItemAction(
+        transitionId: json['transitionId'] as String,
+        inputs: (json['inputs'] as Map<String, dynamic>?),
+      );
+}
+
+/// Specification for a repeater widget that renders per-item action buttons (GAP-1).
+class RepeaterSpec {
+  final String source;
+  final List<RepeaterItemAction> itemActions;
+
+  const RepeaterSpec({required this.source, this.itemActions = const []});
+
+  factory RepeaterSpec.fromJson(Map<String, dynamic> json) => RepeaterSpec(
+    source: json['source'] as String,
+    itemActions: (json['itemActions'] as List<dynamic>?)
+        ?.map((e) => RepeaterItemAction.fromJson(e as Map<String, dynamic>))
+        .toList() ?? const [],
+  );
+}
+
+/// Declares that a workflow type can be created directly by a member (GAP-2).
+class CreatableSpec {
+  final List<String> byPersonaIds;
+  final String label;
+
+  /// Values may contain {context.x} tokens resolved by the App Shell caller,
+  /// never by the engine itself.
+  final Map<String, dynamic>? prefill;
+
+  const CreatableSpec({
+    required this.byPersonaIds,
+    required this.label,
+    this.prefill,
+  });
+
+  factory CreatableSpec.fromJson(Map<String, dynamic> json) => CreatableSpec(
+    byPersonaIds: (json['byPersonaIds'] as List<dynamic>)
+        .map((e) => e as String)
+        .toList(),
+    label: json['label'] as String,
+    prefill: (json['prefill'] as Map<String, dynamic>?),
+  );
+}
+
 /// A render binding: where a workflow instance of a given state and role
 /// should be rendered (tab + card surface family).
 class RenderBinding {
@@ -241,6 +320,12 @@ class RenderBinding {
   final String bindingKind; // "primary" or "summary"
   final String? audienceMemberField;
 
+  /// Repeater configuration (GAP-1) — renders per-item action buttons.
+  final RepeaterSpec? repeater;
+
+  /// Declares this type can be created directly (GAP-2).
+  final CreatableSpec? creatable;
+
   const RenderBinding({
     required this.states,
     required this.role,
@@ -248,6 +333,8 @@ class RenderBinding {
     required this.cardSurfaceFamily,
     required this.bindingKind,
     this.audienceMemberField,
+    this.repeater,
+    this.creatable,
   });
 
   factory RenderBinding.fromJson(Map<String, dynamic> json) {
@@ -260,6 +347,12 @@ class RenderBinding {
       cardSurfaceFamily: json['cardSurfaceFamily'] as String,
       bindingKind: json['bindingKind'] as String,
       audienceMemberField: json['audienceMemberField'] as String?,
+      repeater: json['repeater'] != null
+          ? RepeaterSpec.fromJson(json['repeater'] as Map<String, dynamic>)
+          : null,
+      creatable: json['creatable'] != null
+          ? CreatableSpec.fromJson(json['creatable'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

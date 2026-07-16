@@ -8,6 +8,7 @@ Map<String, dynamic> applyEffects(
   String personaId,
   Map<String, dynamic> instanceData, {
   Map<String, dynamic>? interpolationData,
+  Map<String, dynamic>? inputValues,
 }) {
   final result = Map<String, dynamic>.from(instanceData);
 
@@ -18,6 +19,7 @@ Map<String, dynamic> applyEffects(
       effect.value,
       personaId,
       interpolationData ?? result,
+      inputValues: inputValues,
     );
     final resolvedKey = effect.key!.replaceAll('\$actor', personaId);
     _applyOne(result, effect.op, resolvedKey, resolvedValue);
@@ -30,8 +32,9 @@ Map<String, dynamic> applyEffects(
 dynamic resolveEffectValue(
   dynamic value,
   String personaId,
-  Map<String, dynamic> instanceData,
-) {
+  Map<String, dynamic> instanceData, {
+  Map<String, dynamic>? inputValues,
+}) {
   if (value == '\$actor') return personaId;
   if (value is String) {
     var resolved = value
@@ -40,17 +43,24 @@ dynamic resolveEffectValue(
     for (final entry in instanceData.entries) {
       resolved = resolved.replaceAll('{${entry.key}}', '${entry.value}');
     }
+    if (inputValues != null) {
+      for (final entry in inputValues.entries) {
+        resolved = resolved.replaceAll('{input.${entry.key}}', '${entry.value}');
+      }
+    }
     return resolved;
   }
   if (value is List) {
     return value
-        .map((item) => resolveEffectValue(item, personaId, instanceData))
+        .map((item) => resolveEffectValue(item, personaId, instanceData,
+            inputValues: inputValues))
         .toList();
   }
   if (value is Map) {
     return value.map(
       (key, item) =>
-          MapEntry(key, resolveEffectValue(item, personaId, instanceData)),
+          MapEntry(key, resolveEffectValue(item, personaId, instanceData,
+              inputValues: inputValues)),
     );
   }
   return value;

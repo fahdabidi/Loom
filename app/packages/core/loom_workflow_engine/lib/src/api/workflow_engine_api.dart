@@ -107,11 +107,16 @@ abstract class WorkflowEngineApi {
   });
 
   /// MUTATE one instance via a state-changing transition.
+  ///
+  /// [inputs] carries caller-supplied values for transition inputs declared
+  /// in the transition's `inputs` schema (GAP-1).  Missing required inputs
+  /// are refused with a [StateError].
   Future<WorkflowTransitionResult> applyTransition({
     required String workflowType,
     required String instanceId,
     required String transitionId,
     required String personaId,
+    Map<String, dynamic>? inputs,
   });
 
   /// CREATE a new workflow instance.

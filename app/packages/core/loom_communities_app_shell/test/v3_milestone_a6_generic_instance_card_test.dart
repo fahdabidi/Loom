@@ -204,11 +204,13 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String instanceId,
     required String transitionId,
     required String personaId,
+    Map<String, dynamic>? inputs,
   }) => delegate.applyTransition(
     workflowType: workflowType,
     instanceId: instanceId,
     transitionId: transitionId,
     personaId: personaId,
+    inputs: inputs,
   );
   @override
   Future<String> createInstance({
