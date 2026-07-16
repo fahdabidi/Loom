@@ -58,6 +58,13 @@ void main() {
       );
       final community = result.community;
 
+      // Register the engine-native experience first (same pattern as a5).
+      experienceForExtensionId(
+        community.extensionId,
+        displayName: community.displayName,
+        experienceConfiguration: community.experienceConfiguration,
+      );
+
       engine = (await workflowEngineForExtensionId(community.extensionId))
           as LocalWorkflowEngineApi;
 
