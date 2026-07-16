@@ -322,7 +322,7 @@ void main() {
     ))!;
     try {
       // Set up: make tabletop-member withdraw (freeing a seat), then reduce
-      // capacity to 12 so the 12 going personas fill it.
+      // capacity to 11 so the 11 going personas fill it.
       await tester.runAsync(() async {
         await installed.engine.applyTransition(
           workflowType: 'event-rsvp',
@@ -333,12 +333,12 @@ void main() {
         await installed.engine.updateInstanceFields(
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
-          fieldUpdates: const {'capacity': 12},
+          fieldUpdates: const {'capacity': 11},
           personaId: 'tabletop-organizer',
         );
       });
 
-      // Now 12 going, capacity 12 → full. tabletop-member is not going.
+      // Now 11 going, capacity 11 → full. tabletop-member is not going.
       await tester.pumpWidget(
         _calendar(installed, 'tabletop-member', revision: 2),
       );
@@ -352,8 +352,8 @@ void main() {
       );
 
       // Full capacity bar
-      expect(find.text('11 / 12 going'), findsOneWidget);
-      expect(find.text('1 seats left'), findsOneWidget);
+      expect(find.text('11 / 11 going'), findsOneWidget);
+      expect(find.text('0 seats left'), findsOneWidget);
 
       // Join waitlist action should be available (not Going)
       await _pumpUntil(
@@ -394,7 +394,7 @@ void main() {
         waitlisted.instanceData['waitlistPersonaIds'],
         contains('tabletop-member'),
       );
-      expect(waitlisted.instanceData['goingCount'], 12);
+      expect(waitlisted.instanceData['goingCount'], 11);
 
       // Waitlist indicator appears
       await _pumpUntil(

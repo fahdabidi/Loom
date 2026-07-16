@@ -122,6 +122,31 @@ class _CalendarPresentationController {
   }
 }
 
+/// Calendar facts are opt-in through the detail context, or declaratively
+/// configured with a label/icon when no contexts were specified. Shared by
+/// generic Calendar details and the RSVP-specific detail surface.
+bool _isCalendarDetailField(InstanceDataField field) {
+  final contexts = field.displayContexts;
+  final explicitDetail = contexts?.contains('detail') ?? false;
+  final declarativeFact =
+      (contexts == null || contexts.isEmpty) &&
+      (field.labelTemplate != null || field.displayIcon != null);
+  if (!explicitDetail && !declarativeFact) return false;
+  // Lists are persistence structures, notably actor/persona collections.
+  // Formula booleans are state guards rather than facts. Both remain
+  // available to the engine, but are intentionally absent from Calendar UI.
+  if (field.type.endsWith('[]') ||
+      field.type == 'list' ||
+      field.type == 'map' ||
+      field.type == 'object' ||
+      field.type == 'response-map' ||
+      field.storage == 'reference') {
+    return false;
+  }
+  if (field.type == 'bool' && field.formula != null) return false;
+  return true;
+}
+
 class _CalendarEntry {
   const _CalendarEntry({
     required this.resolved,
@@ -269,27 +294,6 @@ class _EngineNativeCalendarContentState
     for (final schema in entry.resolved.machine.instanceDataSchema.entries)
       if (_isCalendarDetailField(schema.value)) schema.key,
   };
-
-  bool _isCalendarDetailField(InstanceDataField field) {
-    final contexts = field.displayContexts;
-    final explicitDetail = contexts?.contains('detail') ?? false;
-    final declarativeFact =
-        (contexts == null || contexts.isEmpty) &&
-        (field.labelTemplate != null || field.displayIcon != null);
-    if (!explicitDetail && !declarativeFact) return false;
-    // Lists are persistence structures, notably actor/persona collections.
-    // Formula booleans are state guards rather than facts. Both remain
-    // available to the engine, but are intentionally absent from Calendar UI.
-    if (field.type.endsWith('[]') ||
-        field.type == 'list' ||
-        field.type == 'map' ||
-        field.type == 'object' ||
-        field.type == 'response-map' ||
-        field.storage == 'reference')
-      return false;
-    if (field.type == 'bool' && field.formula != null) return false;
-    return true;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -507,6 +511,22 @@ class _EventRsvpDetailCard extends StatefulWidget {
 }
 
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
+  static const _bespokeFieldKeys = <String>{
+    'goingCount',
+    'accepted',
+    'capacity',
+    'minimumAttendance',
+    'seatsRemaining',
+    'quorumMet',
+    'isFull',
+    'goingPersonaIds',
+    'maybePersonaIds',
+    'notGoingPersonaIds',
+    'waitlistPersonaIds',
+    'waitlistedPersonaIds',
+    'rsvpByPersona',
+  };
+
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
   bool _loadingActions = true;
@@ -693,6 +713,18 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     }
   }
 
+  Map<String, WorkflowFactPillFieldSchema> get _fallbackFactSchema => {
+    for (final entry in widget.machine.instanceDataSchema.entries)
+      if (!_bespokeFieldKeys.contains(entry.key) &&
+          _isCalendarDetailField(entry.value))
+        entry.key: WorkflowFactPillFieldSchema(
+          displayIcon: entry.value.displayIcon,
+          labelTemplate: entry.value.labelTemplate,
+          hideWhenEmpty: entry.value.hideWhenEmpty,
+          displayContexts: entry.value.displayContexts,
+        ),
+  };
+
   @override
   Widget build(BuildContext context) {
     final data = _instance.instanceData;
@@ -709,6 +741,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
 
     final hasCapacityInfo =
         data.containsKey('capacity') || data.containsKey('minimumAttendance');
+    final fallbackFactSchema = _fallbackFactSchema;
     final ratio = capacity == 0
         ? 0.0
         : (goingCount.toDouble() / capacity.toDouble()).clamp(0.0, 1.0);
@@ -807,6 +840,20 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 ),
               ),
             if (onWaitlist) const SizedBox(height: 12),
+            if (fallbackFactSchema.isNotEmpty) ...[
+              KeyedSubtree(
+                key: ValueKey(
+                  'event-rsvp-fallback-facts-${_instance.instanceId}',
+                ),
+                child: WorkflowFactPillRow(
+                  instanceData: data,
+                  instanceDataSchema: fallbackFactSchema,
+                  displayContext: 'detail',
+                  accent: widget.accent,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_loadingActions || _mutating)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
