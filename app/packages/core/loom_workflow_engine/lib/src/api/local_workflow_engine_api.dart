@@ -344,62 +344,63 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       throw StateError('Unknown workflow type: $workflowType');
     }
 
-    late final WorkflowTransitionResult result;
-    await _db.transaction(() async {
-      final row = await _db.readInstance(instanceId);
-      if (row == null) throw StateError('Instance $instanceId not found');
+    final row = await _db.readInstance(instanceId);
+    if (row == null) throw StateError('Instance $instanceId not found');
 
-      final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
-      final completedWorkflowIds = await completedWorkflowIdsForPersona(
-        personaId,
-      );
-      final computedData = _withComputedFields(
-        data,
-        machine,
-        viewerId: personaId,
-        actorId: personaId,
-      );
-      final transitions = trans_eval.availableTransitions(
-        machine,
-        row.currentState,
-        personaId,
-        computedData,
-        personaTypeId: _personaTypeById[personaId],
-        completedWorkflowIds: completedWorkflowIds,
-      );
+    final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+    final completedWorkflowIds = await completedWorkflowIdsForPersona(
+      personaId,
+    );
+    final computedData = _withComputedFields(
+      data,
+      machine,
+      viewerId: personaId,
+      actorId: personaId,
+    );
+    final transitions = trans_eval.availableTransitions(
+      machine,
+      row.currentState,
+      personaId,
+      computedData,
+      personaTypeId: _personaTypeById[personaId],
+      completedWorkflowIds: completedWorkflowIds,
+    );
 
-      final transition = transitions.firstWhere(
-        (t) => t.id == transitionId,
-        orElse: () => throw StateError(
-          'Transition $transitionId not available from state ${row.currentState}',
-        ),
+    final transition = transitions.firstWhere(
+      (t) => t.id == transitionId,
+      orElse: () => throw StateError(
+        'Transition $transitionId not available from state ${row.currentState}',
+      ),
+    );
+    if (!await _passesRelatedListGuard(transition.guard, data, personaId)) {
+      throw StateError(
+        'Transition $transitionId is not available for $personaId',
       );
-      if (!await _passesRelatedListGuard(transition.guard, data, personaId)) {
-        throw StateError(
-          'Transition $transitionId is not available for $personaId',
-        );
-      }
+    }
 
-      // GAP-1: validate required transition inputs
-      if (transition.inputs != null) {
-        for (final entry in transition.inputs!.entries) {
-          if (entry.value.required &&
-              (inputs == null || !inputs.containsKey(entry.key))) {
-            throw StateError(
-              'Transition $transitionId requires input "${entry.key}"',
-            );
-          }
+    // GAP-1: validate required transition inputs (outside transaction)
+    if (transition.inputs != null) {
+      for (final entry in transition.inputs!.entries) {
+        if (entry.value.required &&
+            (inputs == null || !inputs.containsKey(entry.key))) {
+          throw StateError(
+            'Transition $transitionId requires input "${entry.key}"',
+          );
         }
       }
+    }
 
-      final newData = await _applyExtendedEffects(
+    late final Map<String, dynamic> newData;
+    late final String newState;
+    await _db.transaction(() async {
+      newData = await _applyExtendedEffects(
         transition.effects,
         machine: machine,
         sourceData: data,
         personaId: personaId,
         inputValues: inputs,
       );
-      final newState = transition.to ?? row.currentState;
+      newState = transition.to ?? row.currentState;
 
       await _db.updateInstanceState(
         instanceId: instanceId,
@@ -411,14 +412,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           actorId: personaId,
         ),
       );
-
-      result = WorkflowTransitionResult(
-        newState: newState,
-        newInstanceData: newData,
-      );
     });
 
-    return result;
+    // GAP-4: hydrate source-backed fields after the transaction commits
+    final hydrated = await _hydrateSourceFields(newData, machine, instanceId);
+
+    return WorkflowTransitionResult(
+      newState: newState,
+      newInstanceData: hydrated,
+    );
   }
 
   @override
