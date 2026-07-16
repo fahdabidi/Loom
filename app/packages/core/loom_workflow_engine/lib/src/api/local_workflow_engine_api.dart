@@ -399,6 +399,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         sourceData: data,
         personaId: personaId,
         inputValues: inputs,
+        instanceId: instanceId,
       );
       newState = transition.to ?? row.currentState;
 
@@ -610,6 +611,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required Map<String, dynamic> sourceData,
     required String personaId,
     Map<String, dynamic>? inputValues,
+    required String instanceId,
   }) async {
     var data = Map<String, dynamic>.from(sourceData);
     Future<void> applyList(List<WorkflowEffect> list) async {
@@ -641,7 +643,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             throw StateError('createInstance requires workflowType and fields');
           }
           final fields = resolveEffectValue(effect.fields, personaId, computed,
-              inputValues: inputValues);
+              inputValues: inputValues, instanceId: instanceId);
           await createInstance(
             workflowType: effect.workflowType!,
             initialInstanceData: Map<String, dynamic>.from(fields as Map),
@@ -671,11 +673,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           }
           final targetData =
               jsonDecode(target.instanceData) as Map<String, dynamic>;
-          final value = resolveEffectValue(effect.value, personaId, computed);
+          final value = resolveEffectValue(effect.value, personaId, computed, instanceId: instanceId);
           final updated = applyEffects(
             [WorkflowEffect(op: 'set', key: effect.key, value: value)],
             personaId,
             targetData,
+            instanceId: instanceId,
           );
           await _db.updateInstanceState(
             instanceId: targetId,
@@ -696,6 +699,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           data,
           interpolationData: computed,
           inputValues: inputValues,
+          instanceId: instanceId,
         );
       }
     }

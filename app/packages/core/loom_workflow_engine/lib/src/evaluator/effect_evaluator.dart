@@ -1,14 +1,15 @@
 import '../models/workflow_models.dart';
 
 /// Applies a list of [WorkflowEffect]s to a copy of [instanceData] and returns
-/// the new map. `$actor` in effect values is resolved to [personaId]. Does not
-/// mutate the original map.
+/// the new map. `$actor` in effect values is resolved to [personaId].
+/// `{id}` resolves to [instanceId]. Does not mutate the original map.
 Map<String, dynamic> applyEffects(
   List<WorkflowEffect> effects,
   String personaId,
   Map<String, dynamic> instanceData, {
   Map<String, dynamic>? interpolationData,
   Map<String, dynamic>? inputValues,
+  String? instanceId,
 }) {
   final result = Map<String, dynamic>.from(instanceData);
 
@@ -20,6 +21,7 @@ Map<String, dynamic> applyEffects(
       personaId,
       interpolationData ?? result,
       inputValues: inputValues,
+      instanceId: instanceId,
     );
     final resolvedKey = effect.key!.replaceAll('\$actor', personaId);
     _applyOne(result, effect.op, resolvedKey, resolvedValue);
@@ -28,12 +30,14 @@ Map<String, dynamic> applyEffects(
   return result;
 }
 
-/// Resolves `$actor` to the acting persona ID, passes other values through.
+/// Resolves `$actor` to the acting persona ID, `{id}` to the instance ID,
+/// passes other values through.
 dynamic resolveEffectValue(
   dynamic value,
   String personaId,
   Map<String, dynamic> instanceData, {
   Map<String, dynamic>? inputValues,
+  String? instanceId,
 }) {
   if (value == '\$actor') return personaId;
   if (value is String) {
@@ -42,6 +46,9 @@ dynamic resolveEffectValue(
         .replaceAll('\$timestamp', DateTime.now().toUtc().toIso8601String());
     for (final entry in instanceData.entries) {
       resolved = resolved.replaceAll('{${entry.key}}', '${entry.value}');
+    }
+    if (instanceId != null) {
+      resolved = resolved.replaceAll('{id}', instanceId);
     }
     if (inputValues != null) {
       for (final entry in inputValues.entries) {
@@ -53,14 +60,14 @@ dynamic resolveEffectValue(
   if (value is List) {
     return value
         .map((item) => resolveEffectValue(item, personaId, instanceData,
-            inputValues: inputValues))
+            inputValues: inputValues, instanceId: instanceId))
         .toList();
   }
   if (value is Map) {
     return value.map(
       (key, item) =>
           MapEntry(key, resolveEffectValue(item, personaId, instanceData,
-              inputValues: inputValues)),
+              inputValues: inputValues, instanceId: instanceId)),
     );
   }
   return value;
