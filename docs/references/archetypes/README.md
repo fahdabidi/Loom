@@ -80,14 +80,15 @@ icon, a title, a subtitle, a row of fact pills, and a row of buttons. The names 
 interaction models; the code delivered one. Tracker 3 has since made real progress: as of 2026-07-15,
 re-verification against the actual Dart source (not against prior doc claims) found `votePoll`,
 `discussionThread`, `notificationInbox`, `statusTimeline`, and `formEntry` genuinely real for Tabletop
-Club. But **`event-rsvp` and `equipment-loan` are only PARTIAL** — their browse/list shell is real, but
-the actual per-item interaction (RSVP buttons, borrow/queue/return) still silently falls back to the
-generic template — and **`approvalQueueItem` has zero implementation at all.**
+Club. **`event-rsvp` closed 2026-07-16** (A.11 — a bespoke `_EventRsvpDetailCard`, verified by 300/300
+tests across all three packages, real CLI validator 0/0). **`equipment-loan` is still only PARTIAL** — its
+browse/list shell is real, but the actual per-item interaction (borrow/queue/return) still silently falls
+back to the generic template — and **`approvalQueueItem` has zero implementation at all.**
 
-**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL) or even
-`cardSurfaceFamily: "event-rsvp"` (🟡 PARTIAL) does **not** get you the full interaction its name implies.
-The JSON you write is correct and forward-looking — but do not tell the user an interaction works when
-it does not, and do not treat 🟡 PARTIAL as ✅ REAL just because *something* real renders.
+**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL) or
+`cardSurfaceFamily: "equipment-loan"` (🟡 PARTIAL) does **not** get you the full interaction its name
+implies. The JSON you write is correct and forward-looking — but do not tell the user an interaction works
+when it does not, and do not treat 🟡 PARTIAL as ✅ REAL just because *something* real renders.
 
 **Tabletop Club specifically cannot be considered a finished reference community while any of its 9
 archetypes are 🟡 PARTIAL or ❌ NOT REAL** — see the Archetype UI Design gate in
