@@ -1,12 +1,13 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-16
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
   - app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart
+  - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
 # Render bindings (normative) — grammar v1
@@ -18,7 +19,7 @@ role?**
 rule. A workflow with **no** binding for a state does not render in that state (the correct way to hide
 drafts).
 
-## Binding object — all 6 keys
+## Binding object — 8 keys (2 added in Phase A′, 2026-07-16)
 
 ```jsonc
 {
@@ -27,7 +28,9 @@ drafts).
   "tabId": "calendar",                 // REQUIRED
   "cardSurfaceFamily": "event-rsvp",   // REQUIRED
   "bindingKind": "primary",            // REQUIRED
-  "audienceMemberField": "invitedPersonaIds"  // optional
+  "audienceMemberField": "invitedPersonaIds",  // optional
+  "repeater": { /* see below */ },              // optional, GAP-1
+  "creatable": { /* see below */ }              // optional, GAP-2
 }
 ```
 
@@ -39,6 +42,80 @@ drafts).
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` · `summary` |
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
+| `repeater` | object | no | Renders a per-item action row over a list (GAP-1) |
+| `creatable` | object | no | Declares this type member-creatable (GAP-2) |
+
+⚠️ **Grammar/engine status differs between these two additions — read before using either.** `repeater`
+is fully implemented and engine-executed (parsing + `{item.x}`/`{input.x}` resolution + validator
+checks) — confirmed working end-to-end on `tournament-ballot`. `creatable` **parses and validates
+correctly, but nothing in the running app consumes it yet** — no "+ New" affordance renders, no form
+collects `editableFields`, no `{context.x}` resolves. Declaring `creatable` today is forward-looking JSON,
+not a working feature — see [`spec-version.json`](../spec-version.json) `knownGaps.instanceCreation`.
+
+## `repeater` — per-item action buttons over a list (GAP-1)
+
+Renders one row per item in a list, each with its own transition button whose inputs are drawn from that
+item's own fields — this is what makes "Vote for THIS candidate" declarative instead of one bespoke
+button per candidate.
+
+```jsonc
+"repeater": {
+  "source": "candidates",              // a list field on this instance, OR a query(...) expression (GAP-4)
+  "itemActions": [
+    { "transitionId": "cast-vote", "inputs": { "choice": "{item.id}" } }
+  ]
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `source` | string | **yes** | A `list`-typed field declared in this workflow's `instanceDataSchema`, **or** a bounded `query(type where foreignField == localField)` expression (see [`field-types.md`](./field-types.md)) |
+| `itemActions` | object[] | no | Each names a `transitionId` and an `inputs` map whose values may reference `{item.<field>}` — that repeated item's own field |
+
+`{item.<field>}` is resolved by the caller when it renders each row (it names a field on the repeated
+item, not on the instance itself) and passed through as the transition's `inputs` when that row's button
+fires — see [`effects.md`](./effects.md) for how `{input.x}` then resolves inside the transition's own
+effects.
+
+**Validator checks:** every `{item.x}` reference must correspond to a real field on whatever `source`
+names — a declared list field's own item shape, or (if `source` is a `query(...)`) the queried type's
+`instanceDataSchema` → `unknown_item_reference`.
+
+## `creatable` — declaring a type member-creatable (GAP-2)
+
+```jsonc
+"creatable": {
+  "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
+  "label": "Add event",
+  "prefill": { "eventDate": "{context.date}" }   // optional
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `byPersonaIds` | string[] | **yes** | Personas allowed to create a new instance of this type here |
+| `label` | string | **yes** | The affordance's button text (e.g. "Propose a game") |
+| `prefill` | object | no | Field → value map, pre-filling the creation form |
+
+**Creation semantics (load-bearing):** the affordance is meant to render a form for the target state's
+`editableFields`, collect values, **then** call `createInstance` — never create a blank instance first.
+Every `required`, non-computed field of the type must appear in that state's `editableFields`, or a
+created instance would be invalid on arrival (`creatable_missing_required_field`, not yet implemented as
+a distinct validator check — currently caught only as `missing_required_field` at seed-time, not at
+creation-time, since nothing creates instances via this path yet).
+
+`prefill`'s values use the same interpolation grammar as effects (`$actor`, literals, `{fieldName}`) plus
+one new source specific to `creatable`: **`{context.<key>}`** — supplied by whatever UI invokes the
+creation flow, not read from any instance. A Calendar day-detail view rendering "Add event" for July 20th
+would invoke creation with `context: { "date": "2026-07-20" }`; `{context.date}` resolves against that.
+`context` exists only to answer "where in the app did the member tap 'create'?" — it is never persisted,
+never an instance field, and never readable anywhere else.
+
+**Validator checks:** `byPersonaIds` against the known persona registry (`dangling_allowed_persona_id`,
+warning); `prefill` keys must be declared in this workflow's own `instanceDataSchema`
+(`dangling_instance_data_key`) and must not target a computed field (`computed_field_written_by_effect`);
+`{context.x}` appearing anywhere OTHER than inside a `creatable.prefill` value is an error
+(`context_reference_outside_creatable`).
 
 ## `tabId` — complete list
 
@@ -134,6 +211,11 @@ is expressed by *omission*, not by a permission flag.
 | A `primary` binding's surface must include an action-button row | error (`missing_action_button_row`) |
 | >32 bindings on one workflow | warning — a smell; likely two workflows |
 | >16 distinct roles | warning — same |
+| `repeater.itemActions[].inputs`' `{item.x}` must match the source's item shape | error (`unknown_item_reference`) |
+| `creatable.byPersonaIds` must be a known persona | warning (`dangling_allowed_persona_id`) |
+| `creatable.prefill` keys must be declared in this workflow's `instanceDataSchema` | error (`dangling_instance_data_key`) |
+| `creatable.prefill` must not target a computed field | error (`computed_field_written_by_effect`) |
+| `{context.x}` outside a `creatable.prefill` value | error (`context_reference_outside_creatable`) |
 
 ## Anti-patterns
 

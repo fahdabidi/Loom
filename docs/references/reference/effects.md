@@ -1,12 +1,13 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-16
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
+  - app/packages/core/loom_workflow_engine/lib/src/evaluator/effect_evaluator.dart
 ---
 
 # Effects (normative) — grammar v1
@@ -40,9 +41,39 @@ transaction as the state change.
 | `$actor` | The acting persona's id |
 | `$timestamp` | Now (ISO-8601) |
 | `{fieldName}` | That field's current value on this instance (incl. **computed** fields) |
+| `{id}` | **This instance's own `instanceId`** — added in Phase A′, 2026-07-16 |
+| `{input.<name>}` | The value supplied for transition input `<name>` on this call — added in Phase A′ (GAP-1) |
 
 `{fieldName}` reads computed fields too — this is how `close-vote` writes `{winner}` without anyone ever
 storing a winner.
+
+`{id}` is how an effect refers to the instance firing the transition — most commonly inside a
+`createInstance` effect's `fields`, to stamp a foreign-key-style back-reference on the new row (see the
+worked example below). It is **not** a key in `instanceDataSchema` — the instance's own id is never a
+declared field — so it needed its own interpolation source; `{fieldName}` alone cannot express it.
+
+`{input.<name>}` resolves a value supplied when the transition was fired (see
+[`workflow-grammar.md`](./workflow-grammar.md)'s `transitions[].inputs`). This is what lets a single
+"Vote" transition know *which* candidate a specific tap voted for, without a shared, racy scratch field:
+
+```jsonc
+// tournament-ballot's cast-vote transition
+"inputs": { "choice": { "type": "text", "required": true } },
+"effects": [
+  { "op": "createInstance",
+    "workflowType": "tournament-vote",
+    "fields": {
+      "ballotId": "{id}",              // this ballot's own instance id
+      "voterId": "$actor",
+      "choice": "{input.choice}"       // whatever choice THIS call supplied
+    } }
+]
+```
+
+Two members voting at the same moment each get their own `applyTransition` call with their own `inputs`
+map — `{input.choice}` resolves per-call, so there is no shared field for a race to corrupt. This is the
+grammar-native replacement for the old workaround (write a shared `pendingChoice` field, then fire a
+parameterless transition second) — see [`guide/04-antipatterns.md`](../guide/04-antipatterns.md).
 
 ---
 

@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-16
 audience: llm-agent
 ---
 
@@ -232,6 +232,56 @@ with no indication of which 80%, is worse than one that clearly states its limit
 
 ---
 
+## AP-12 — A shared scratch field for a per-item action (superseded 2026-07-16 — GAP-1 closed)
+
+**This used to be the only way to express "which item did the user act on."** It no longer is — do not
+write it, even though it will still validate.
+
+**Detection:** a field like `pendingChoice` written by one transition, then read by a second,
+parameterless transition fired immediately after.
+
+**Symptom:** a real race. Two members firing the two-call sequence at the same moment can interleave: A
+writes `pendingChoice = 'catan'`, B writes `pendingChoice = 'azul'`, A's second call fires and reads B's
+value. A's vote silently becomes Azul.
+
+```jsonc
+// ❌ WRONG — shared scratch field, two calls, racy
+{ "id": "set-choice",  "effects": [ { "op": "set", "key": "pendingChoice", "value": "$actor-supplied" } ] },
+{ "id": "cast-vote",   "effects": [ { "op": "createInstance", "fields": { "choice": "{pendingChoice}" } } ] }
+
+// ✅ RIGHT — the choice travels WITH the transition (GAP-1)
+{ "id": "cast-vote",
+  "inputs": { "choice": { "type": "text", "required": true } },
+  "effects": [ { "op": "createInstance", "fields": {
+    "ballotId": "{id}", "voterId": "$actor", "choice": "{input.choice}" } } ] }
+```
+
+**Fix:** declare `inputs` on the transition and reference `{input.x}` in its effects — see
+[`effects.md`](../reference/effects.md) and [`render-bindings.md`](../reference/render-bindings.md)'s
+`repeater.itemActions` (for a per-item button that supplies a different input per row).
+
+---
+
+## AP-13 — A seeded blank draft, standing in for a real create affordance
+
+**Detection:** a pre-seeded `workflowInstances` row in a `draft`-like state with mostly-empty fields,
+existing only so the member has *something* to edit — rather than a real "+ New" action.
+
+**Real failure:** `game-purchase-proposal` used to ship with one seeded blank draft per community, so a
+member could edit *that one row* to "submit a proposal." A member could never actually propose a
+*second* game — the JSON had no way to say "let a member create a new instance of this type."
+
+**Fix:** declare `renderBindings[].creatable` on the type instead of seeding a placeholder row (GAP-2 —
+see [`render-bindings.md`](../reference/render-bindings.md)). **Caveat, honestly stated:** as of
+2026-07-16, `creatable` is real grammar that parses and validates, but no running UI consumes it yet — no
+"+ New" affordance actually renders from it. Declaring it is still correct (it's what the Skill should
+emit; the App Shell will catch up to it), but do not claim the *interaction* works until a later phase's
+own doc/review confirms it does. What's already wrong regardless is the OLD workaround: never seed a
+blank placeholder instance to fake creatability — that teaches the wrong shape even where nothing yet
+renders the right one.
+
+---
+
 ## Final self-check
 
 - [ ] No state can coexist with another state (AP-1)
@@ -244,3 +294,5 @@ with no indication of which 80%, is worse than one that clearly states its limit
 - [ ] No stuck states (AP-9)
 - [ ] `home` is curated, not a dumping ground (AP-10)
 - [ ] Every unmet requirement is explicitly marked and reported (AP-11)
+- [ ] No shared scratch field for a per-item action — use transition `inputs` (AP-12)
+- [ ] No seeded blank draft standing in for `creatable` (AP-13)
