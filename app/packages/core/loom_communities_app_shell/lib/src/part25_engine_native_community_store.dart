@@ -1,5 +1,26 @@
 part of '../loom_communities_app_shell.dart';
 
+/// Mutable reference to the auth API — set by the app shell so engine
+/// callers can translate persona types to individual account IDs.
+LoomAuthApi? _globalAuthApi;
+
+/// The currently signed-in individual account id for engine calls.
+String? _currentActiveAccountId;
+
+void setCurrentActiveAccountId(String? accountId) {
+  _currentActiveAccountId = accountId;
+}
+
+/// Resolves the effective persona id for engine calls, preferring the
+/// individual account id when a user is signed in.
+String resolveEnginePersonaId(String personaTypeId) {
+  return _currentActiveAccountId ?? personaTypeId;
+}
+
+void setGlobalAuthApi(LoomAuthApi authApi) {
+  _globalAuthApi = authApi;
+}
+
 class _EngineNativeCommunityStore {
   static final _stores = <String, _EngineNativeCommunityStore>{};
 
@@ -35,6 +56,16 @@ class _EngineNativeCommunityStore {
 
   Future<void> _initialize() async {
     final definitions = experience.workflowDefinitions!;
+    // Register persona-type mappings from seeded accounts
+    final auth = _globalAuthApi;
+    if (auth != null) {
+      final accounts = await auth.listAccounts(
+        communityExtensionId: extensionId,
+      );
+      for (final account in accounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
     for (final definition in definitions.values) {
       engine.registerDefinition(definition);
     }

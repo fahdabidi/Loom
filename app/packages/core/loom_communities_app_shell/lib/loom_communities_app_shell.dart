@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
+part 'src/part31_auth_screens.dart';
+part 'src/part29_auth_api.dart';
+part 'src/part30_local_auth_api.dart';
 part 'src/part01_local_extension_screen.dart';
 part 'src/part02_tab_shell.dart';
 part 'src/part03_workflow_sections.dart';

@@ -41,6 +41,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
   final Map<String, LoomWorkflowStateMachine> _definitions = {};
+  /// Maps individual persona ids to their declared persona type (role).
+  /// Set before any guard-evaluating calls so
+  /// [allowedPersonaIds]-style checks compare the type, not the individual id.
+  final Map<String, String> _personaTypeById = {};
+  /// Registers the persona type for an individual account id.
+  void setPersonaType(String personaId, String personaTypeId) {
+    _personaTypeById[personaId] = personaTypeId;
+  }
 
   LocalWorkflowEngineApi({
     required WorkflowDatabase db,
@@ -250,6 +258,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       currentState,
       personaId,
       _withComputedFields(instanceData, machine, viewerId: personaId),
+      personaTypeId: _personaTypeById[personaId],
     );
   }
 
@@ -336,6 +345,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         row.currentState,
         personaId,
         computedData,
+        personaTypeId: _personaTypeById[personaId],
         completedWorkflowIds: completedWorkflowIds,
       );
 

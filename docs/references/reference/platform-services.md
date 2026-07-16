@@ -85,3 +85,41 @@ These *look* like they might need code but are plain JSON. Do not reach for a se
 If a future community genuinely needs an aggregate the vocabulary lacks, that is a **one-time engine
 addition** of a new named function (with its own test) — still never per-community code. The "JSON only,
 no code" promise holds.
+
+---
+
+## Identity (LoomAuthApi / LocalAuthApi) — established 2026-07-15
+
+**Rationale.** Every guard/effect that references a `personaId` (e.g. `ownerPersonaId == $actor`,
+`allowedPersonaIds`, `actorInList`, `voterId`) needs to resolve against a *concrete individual*, not
+merely a *role*. The engine's formula evaluator (`$actor`) echoes whatever `personaId` string the
+app passes to `applyTransition` / `availableTransitionsAsync`. Until 2026-07-15, the app only ever
+passed persona **types** (e.g. `"tabletop-member"`), so `ownerPersonaId == $actor` could distinguish
+an organizer from a member, but never tell `tabletop-member-03` from `tabletop-member-05` apart.
+
+**The contract.** `LoomAuthApi` (`app/packages/core/loom_communities_app_shell/lib/src/part29_auth_api.dart`)
+is an abstract identity-provider contract modelled on `WorkflowEngineApi`'s own pattern:
+
+- `listAccounts({communityExtensionId})` → `List<LoomAccount>`
+- `signIn({accountId})` → `LoomSession`
+- `signUp({communityExtensionId, displayName, personaTypeId})` → `LoomSession`
+- `signOut()` → void
+- `currentSession` → `LoomSession?`
+
+`LoomAccount` carries **two** identity values:
+- `accountId` — the stable per-individual id (e.g. `"tabletop-member-05"`) used for `$actor`/`ownerPersonaId`/`voterId` resolution
+- `personaTypeId` — the declared persona type (e.g. `"tabletop-member"`) used for `allowedPersonaIds` guard checks
+
+**Demo backend.** `LocalAuthApi` (`part30_local_auth_api.dart`) seeds accounts from each
+community's own frozen JSON individual ids — a genuine interface a real backend could implement
+later, not a UI-only illusion.
+
+**Engine integration.** `LocalWorkflowEngineApi` accepts `setPersonaType(individualId, typeId)`
+mappings. The guard evaluator's `personaTypeId` parameter enables `allowedPersonaIds` checks to
+compare against the **type** while all other guard/effect/formula evaluation uses the **individual
+id**. This is the load-bearing distinction — see the multi-user login ticket
+(`data/v3_ticket_login_multiuser_STATUS.md`) for the full threading audit.
+
+| Service | Why it cannot be a formula | Used by | Status |
+|---|---|---|---|
+| **Identity / multi-user login** — `LoomAuthApi` | A sign-in session, individual-vs-type distinction, and account management are not data-math | Every guard that distinguishes individuals | ✅ **REAL** — `LoomAuthApi`/`LocalAuthApi` with demo-stubbed backend, seeded from frozen JSON individual ids |

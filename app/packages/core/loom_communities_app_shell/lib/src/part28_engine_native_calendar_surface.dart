@@ -89,14 +89,14 @@ class _EngineNativeCalendarSurfaceState
           engine: snapshot.data!,
           definitions: definitions,
           tabId: 'calendar',
-          personaId: widget.persona.personaId,
+          personaId: resolveEnginePersonaId(widget.persona.personaId),
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
               'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.personaId}',
             ),
             bindings: bindings,
             engine: snapshot.data!,
-            personaId: widget.persona.personaId,
+            personaId: resolveEnginePersonaId(widget.persona.personaId),
             accent: widget.accent,
             modernTheme: widget.modernTheme,
             onInstanceChanged: changed,

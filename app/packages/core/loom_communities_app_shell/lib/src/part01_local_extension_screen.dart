@@ -157,6 +157,22 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   String? _expandedWorkflowId;
   String? _selectedPersonaId;
 
+  /// Auth API — seeded with demo accounts by default.
+  late final LoomAuthApi _authApi = LocalAuthApi();
+
+  /// The individual account id when signed in, otherwise falls back to
+  /// [_selectedPersonaId] (the persona type) for backward compatibility.
+  String? get _activeAccountId {
+    final session = _authApi.currentSession;
+    return session?.account.accountId ?? _selectedPersonaId;
+  }
+
+  /// The persona type of the signed-in account, or [_selectedPersonaId].
+  String? get _activePersonaTypeId {
+    final session = _authApi.currentSession;
+    return session?.account.personaTypeId ?? _selectedPersonaId;
+  }
+
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
@@ -191,6 +207,25 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     super.initState();
     _surfaceScrollController = ScrollController()
       ..addListener(_updateFocusedSurfaceFromScroll);
+    _syncEnginePersonaTypes();
+  }
+
+  /// Registers every seeded account's individual-id → persona-type mapping
+  /// with the engine so [allowedPersonaIds] guards can check the type.
+  Future<void> _syncEnginePersonaTypes() async {
+    final accounts = await _authApi.listAccounts(
+      communityExtensionId: community.extensionId,
+    );
+    final engine = await _engineForCommunity();
+    if (engine is LocalWorkflowEngineApi) {
+      for (final account in accounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
+  }
+
+  Future<WorkflowEngineApi> _engineForCommunity() async {
+    return workflowEngineForExtensionId(community.extensionId);
   }
 
   @override
@@ -294,10 +329,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.extensionId,
       experience: experience,
     );
-    final selectedPersonaId = _selectedPersonaId;
-    if (selectedPersonaId != null) {
+    final typeId = _activePersonaTypeId;
+    if (typeId != null) {
       for (final persona in personas) {
-        if (persona.personaId == selectedPersonaId) {
+        if (persona.personaId == typeId) {
           return persona;
         }
       }
@@ -327,6 +362,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.themeOverride,
     );
     final activePersona = _activePersona(experience);
+    setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
@@ -461,6 +497,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
+    setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
@@ -668,6 +705,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
+    setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
