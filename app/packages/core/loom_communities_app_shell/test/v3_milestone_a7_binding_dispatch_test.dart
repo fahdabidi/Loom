@@ -270,7 +270,6 @@ void main() {
       for (final tab in [
         'home',
         'marketplace',
-        'giving',
         'admin',
         'messages',
       ]) {

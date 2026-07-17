@@ -4214,6 +4214,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_hasEngineNativeBinding(experience, 'giving')) {
+          return EngineNativeListSurface(
+            experience: experience,
+            persona: persona,
+            tabId: 'giving',
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         // Find the first workflow in the Giving tab's sections whose
         // givingPayment is declared, to gate between real UI and placeholder.
         LoomWorkflowDefinition? givingWorkflow;

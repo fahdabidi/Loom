@@ -67,7 +67,7 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
 
 class _EngineNativeBindingDispatcherState
     extends State<EngineNativeBindingDispatcher> {
-  static const _enabledTabs = <String>{'calendar'};
+  static const _enabledTabs = <String>{'calendar', 'giving'};
   int _generation = 0;
   List<EngineNativeResolvedBinding>? _bindings;
   Object? _error;

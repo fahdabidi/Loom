@@ -269,7 +269,8 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         ),
         requiredPermission: 'community.surface.marketplace.read',
       ),
-    if (_hasAnySection(experience, const ['Giving']))
+    if (_hasAnySection(experience, const ['Giving']) ||
+        _hasEngineNativeBinding(experience, 'giving'))
       LoomAppShellTabSpec(
         tabId: 'giving',
         label: _paymentTabLabelFor(experience),
@@ -501,6 +502,17 @@ bool _hasEngineNativeCalendarBinding(LoomExperienceDefinition experience) =>
     experience.workflowDefinitions?.values.any(
       (definition) => definition.renderBindings.any(
         (binding) => binding.tabId == 'calendar',
+      ),
+    ) ??
+    false;
+
+bool _hasEngineNativeBinding(
+  LoomExperienceDefinition experience,
+  String tabId,
+) =>
+    experience.workflowDefinitions?.values.any(
+      (definition) => definition.renderBindings.any(
+        (binding) => binding.tabId == tabId,
       ),
     ) ??
     false;
