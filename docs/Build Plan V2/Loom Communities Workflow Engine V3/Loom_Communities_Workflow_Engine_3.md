@@ -105,6 +105,55 @@ structure. This is not yet done for any of them (see the corrected Phase index b
 piece of design work, not implementation, and is exactly the kind of scope decision that should go back to
 the user rather than being sized unilaterally.
 
+## 1c. Generic pipeline extraction (GP), 2026-07-17 — the concrete mechanism closing §1b's gap
+
+§1b found that `_enabledTabs = {'calendar'}` (`part27_engine_native_binding_dispatcher.dart:70`) blocks
+every tab but Calendar from the generic engine-native pipeline, and that opening a tab needs its own
+Calendar-style milestone sequence (parse → shared engine → binding dispatch → end-to-end proof) before a
+bespoke archetype widget in that tab means anything. Investigating what Calendar's proven pipeline
+actually consists of found `EngineNativeBindingDispatcher` itself (querying instances, resolving
+`renderBindings`) was **already fully tab-agnostic** — `_enabledTabs` is its only tab-specific gate. What
+was NOT generic was the per-instance archetype-rendering decision (`cardSurfaceFamily == 'event-rsvp' →
+bespoke widget, else → generic card`), which lived inlined, once, only inside Calendar's own detail-panel
+code (`part28_engine_native_calendar_surface.dart:446-472`, added by A.11).
+
+**GP.1 (2026-07-17, complete):** extracted that inline dispatch into a new shared, tab-agnostic
+`EngineNativeArchetypeCard` widget (`part27_engine_native_binding_dispatcher.dart`), and migrated
+Calendar's detail panel to call it — a pure, behavior-preserving extraction proving the shared piece
+works before any other tab depends on it. `_enabledTabs` intentionally untouched (still `{'calendar'}`
+only). Implementation deviated from the ticket sketch in one deliberate, correctly-reasoned way: the
+widget takes a `contentKey` parameter applied directly to the inner archetype widget, rather than the
+ticket's `key: key` forwarding, to avoid inserting an extra keyed element into the tree. Verified
+independently: `dart analyze` clean, full `loom_communities_app_shell` suite 83/83 (including
+`v3_milestone_a8_calendar_end_to_end_test.dart` and `v3_milestone_a11_event_rsvp_archetype_test.dart`
+unmodified), plus a live emulator re-check confirming the RSVP detail card still renders identically
+post-extraction. Commit `fb78805`.
+
+**Correction to §1b's cost estimate (2026-07-17):** checked directly against source rather than assumed.
+A.4 (`part15_evidence_catalog.dart:240-302`, `_experienceFromEngineNativeConfiguration` or equivalent)
+parses **every** entry in `experience.workflowDefinitions` with no tab filtering — all 11 workflow types,
+not just Calendar's. A.5 (`_EngineNativeCommunityStore._initialize`,
+`part25_engine_native_community_store.dart:57-92`) registers **every** parsed definition and seeds
+**every** `workflowInstances` entry onto the one shared engine at install time — also with no tab
+filtering. **Both were already fully generic before A.11/GP.1** — they were never Calendar-specific, only
+exercised by Calendar so far because nothing else queried the results. §1b's framing ("every other tab
+needs Calendar's whole A.4/A.5/A.7/A.8 sequence repeated") overstated the remaining cost: A.4 and A.5 are
+**done, for every tab, today** — no new ticket touches them. What actually remains, per tab, is only:
+
+1. A generic **list/feed surface** (GP.2, not yet built) — analogous to Calendar's month-grid content
+   widget, but for tabs without calendar semantics: wraps `EngineNativeBindingDispatcher` +
+   `EngineNativeArchetypeCard` for a `displayContext: 'tile'` list. Built once, reused by every remaining
+   tab (this is the actual generic-pipeline payoff — one surface widget, not five).
+2. Widen `_enabledTabs` (`part27_engine_native_binding_dispatcher.dart:70`) to include that tab.
+3. Wire that tab's real entry point in the tab shell to the new surface, in place of (or alongside,
+   during transition) whatever legacy/hardcoded mechanism currently renders there (Shape-B special field
+   for Marketplace, hardcoded `rendererId` switch for Home's ballot, etc. — per §1b's citations, still
+   accurate for what each tab's *current* content is fed by).
+4. An end-to-end proof test for that tab, analogous to A.8.
+
+Prove this smaller shape on one tab (next candidate: Home, since Phase B is first in the index and the
+ordering note already says B-F can be reordered/parallelized) before touching the rest.
+
 ## 2. Precursors — DONE (docs/JSON only, no code)
 
 - **[JSON Schema Versions](./Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md)** — normative.
