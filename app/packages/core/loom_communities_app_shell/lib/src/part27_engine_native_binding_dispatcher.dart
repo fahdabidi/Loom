@@ -256,3 +256,69 @@ class _EngineNativeBindingDispatcherState
     );
   }
 }
+
+/// Renders one resolved binding as its declared archetype, or the generic
+/// schema-driven fallback if no bespoke archetype exists for its
+/// `cardSurfaceFamily`. This is the tab-agnostic half of the generic
+/// pipeline: [EngineNativeBindingDispatcher] decides *which* bindings apply
+/// to a tab; this widget decides *how one binding renders*, regardless of
+/// which tab it is rendering in.
+///
+/// To add a new bespoke archetype, add a case here — this is the single
+/// place `cardSurfaceFamily` is ever switched on for rendering purposes.
+class EngineNativeArchetypeCard extends StatelessWidget {
+  const EngineNativeArchetypeCard({
+    required this.contentKey,
+    required this.resolved,
+    required this.engine,
+    required this.personaId,
+    required this.accent,
+    required this.onInstanceChanged,
+    this.modernTheme,
+    this.displayContext = 'tile',
+    this.showEditors = true,
+    this.visibleFieldKeys,
+  }) : assert(displayContext == 'tile' || displayContext == 'detail');
+
+  /// Applied to the rendered card rather than this dispatcher widget so a
+  /// caller's keyed identity remains the same as before this extraction.
+  final Key contentKey;
+  final EngineNativeResolvedBinding resolved;
+  final WorkflowEngineApi engine;
+  final String personaId;
+  final Color accent;
+  final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final LoomCardTheme? modernTheme;
+  final String displayContext;
+  final bool showEditors;
+  final Set<String>? visibleFieldKeys;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (resolved.binding.cardSurfaceFamily) {
+      case 'event-rsvp':
+        return _EventRsvpDetailCard(
+          key: contentKey,
+          instance: resolved.instance,
+          machine: resolved.machine,
+          engine: engine,
+          personaId: personaId,
+          accent: accent,
+          onInstanceChanged: onInstanceChanged,
+        );
+      default:
+        return GenericWorkflowInstanceCard(
+          key: contentKey,
+          instance: resolved.instance,
+          machine: resolved.machine,
+          engine: engine,
+          personaId: personaId,
+          displayContext: displayContext,
+          showEditors: showEditors,
+          visibleFieldKeys: visibleFieldKeys,
+          accent: accent,
+          onInstanceChanged: onInstanceChanged,
+        );
+    }
+  }
+}

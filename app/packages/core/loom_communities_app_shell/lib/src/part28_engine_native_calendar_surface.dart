@@ -443,32 +443,19 @@ class _EngineNativeCalendarContentState
               ],
             ),
           ),
-        if (selected.resolved.binding.cardSurfaceFamily == 'event-rsvp')
-          _EventRsvpDetailCard(
-            key: ValueKey(
-              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-            ),
-            instance: selected.resolved.instance,
-            machine: selected.resolved.machine,
-            engine: widget.engine,
-            personaId: widget.personaId,
-            accent: widget.accent,
-            onInstanceChanged: widget.onInstanceChanged,
-          )
-        else
-          GenericWorkflowInstanceCard(
-            key: ValueKey(
-              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-            ),
-          instance: selected.resolved.instance,
-          machine: selected.resolved.machine,
+        EngineNativeArchetypeCard(
+          contentKey: ValueKey(
+            'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
+          ),
+          resolved: selected.resolved,
           engine: widget.engine,
           personaId: widget.personaId,
+          accent: widget.accent,
+          onInstanceChanged: widget.onInstanceChanged,
+          modernTheme: widget.modernTheme,
           displayContext: 'detail',
           showEditors: false,
           visibleFieldKeys: _detailFieldKeys(selected),
-          accent: widget.accent,
-          onInstanceChanged: widget.onInstanceChanged,
         ),
       ],
     );
