@@ -154,6 +154,27 @@ needs Calendar's whole A.4/A.5/A.7/A.8 sequence repeated") overstated the remain
 Prove this smaller shape on one tab (next candidate: Home, since Phase B is first in the index and the
 ordering note already says B-F can be reordered/parallelized) before touching the rest.
 
+**GP.2 (2026-07-17, complete):** proved the smaller shape above on the Giving tab (one workflow type,
+no bespoke archetype — proves the *generic fallback* path specifically, not just the bespoke-archetype
+path GP.1 proved on Calendar). Built `EngineNativeListSurface` (`part32_engine_native_list_surface.dart`)
+— the non-calendar analog of `EngineNativeCalendarSurface`: wraps `EngineNativeBindingDispatcher` +
+GP.1's `EngineNativeArchetypeCard` in a plain `Column` (a nested `ListView` threw "unbounded height" once
+embedded in the tab shell's own scrollable content — fixed to match Calendar's own established `Column`
+pattern, not a new one). Widened `_enabledTabs` to `{'calendar', 'giving'}` and added a new
+`_hasEngineNativeBinding(experience, tabId)` helper — Giving's own tab-visibility gate in
+`appShellTabsFor` (`part12_persona_and_tabs.dart`) was missing the engine-native OR-condition Calendar's
+gate already had, so the Giving tab never appeared in the bottom bar at all for engine-native communities,
+independent of anything else GP.2 changed — found only by independently re-running the real test suite,
+not by trusting the implementation agent's (sandbox-blocked, honestly-reported-as-such) self-report. Four
+rounds total (GP.2/2b/2c/2d): a stale A.7 "disabled tabs" test-list assertion, the missing tab-visibility
+gate, the layout crash, and a test not waiting for `GenericWorkflowInstanceCard`'s own second async load.
+Independently verified: `dart analyze` clean, 84/84 `loom_communities_app_shell` tests. Commit `bad6f1b`.
+
+**Next candidates, not yet started:** Home (bigger — spans 4 workflow types across several
+`cardSurfaceFamily` values, no bespoke widget for most of them yet) or Marketplace/Admin/Messages, each
+needing its own tab-shell wiring investigated on its own (Home in particular does not go through the same
+`rendererId` switch Giving/Calendar do — confirmed by grep, not yet designed).
+
 ## 2. Precursors — DONE (docs/JSON only, no code)
 
 - **[JSON Schema Versions](./Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md)** — normative.
