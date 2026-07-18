@@ -106,72 +106,6 @@
         },
         "transitions": [
           {
-            "id": "rsvp-going",
-            "label": "Going",
-            "icon": "event_available",
-            "tone": "primary",
-            "from": ["open"],
-            "to": null,
-            "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "formula": "size(goingPersonaIds) < capacity"
-            },
-            "effects": [
-              { "op": "appendUnique", "key": "goingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
-            ]
-          },
-          {
-            "id": "rsvp-maybe",
-            "label": "Maybe",
-            "icon": "help_outline",
-            "tone": "secondary",
-            "from": ["open"],
-            "to": null,
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
-            "effects": [
-              { "op": "appendUnique", "key": "maybePersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
-            ]
-          },
-          {
-            "id": "rsvp-not-going",
-            "label": "Can't go",
-            "icon": "event_busy",
-            "tone": "destructive",
-            "from": ["open"],
-            "to": null,
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
-            "effects": [
-              { "op": "appendUnique", "key": "notGoingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
-              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
-            ]
-          },
-          {
-            // Only offered once the event is genuinely full — a real formula guard, so the button
-            // cannot appear (or fire) while seats remain.
-            "id": "join-waitlist",
-            "label": "Join waitlist",
-            "icon": "groups",
-            "tone": "secondary",
-            "from": ["open"],
-            "to": null,
-            "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "formula": "size(goingPersonaIds) >= capacity",
-              "actorInList": { "key": "waitlistPersonaIds", "present": false }
-            },
-            "effects": [
-              { "op": "appendUnique", "key": "waitlistPersonaIds", "value": "$actor" }
-            ]
-          },
-          {
             "id": "cancel-event",
             "label": "Cancel event",
             "icon": "cancel",
@@ -183,7 +117,22 @@
         ],
         "renderBindings": [
           { "states": ["open"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" },
+            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+            "creatable": { "byPersonaIds": ["tabletop-organizer"], "label": "New event" },
+            // Points the generic archetype at the per-member response table instead of a hardcoded
+            // field-name assumption — a second calendar-bound archetype with a different response
+            // shape would declare its own responseTable, no App Shell code change needed.
+            "responseTable": {
+              "workflowType": "event-rsvp-response",
+              "eventField": "eventId",
+              "pendingStates": ["pending"]
+            },
+            "filterableFacets": [
+              { "field": "isFull", "label": "Full events" },
+              { "field": "hasWaitlist", "label": "Has waitlist" },
+              { "field": "goingCount", "label": "Number accepted" }
+            ]
+          },
           { "states": ["cancelled"], "role": "any", "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
         ],
@@ -201,22 +150,120 @@
             "displayIcon": "person_outline", "labelTemplate": "Host: {value}", "displayContexts": ["detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
-          "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
-          "maybePersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
-          "notGoingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
-          "waitlistPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline",
-            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value.length}",
-            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
 
-          // Computed — real formulas, re-evaluated on read. Replaces the audit's `_goingCountFromLabel`
-          // /`_isCapacityFull` string-regex anti-pattern.
-          "goingCount": { "type": "number", "formula": "size(goingPersonaIds)",
+          // QUERY-BACKED: every response row for this event (GAP-4 pattern) — one row per community
+          // member, bulk-created via createInstances the moment this event is created. Not stored
+          // here; read from the event-rsvp-response table on demand, same pattern as
+          // tournament-ballot's `ballots`.
+          "responses": { "type": "list",
+            "source": "query(event-rsvp-response where eventId == id)" },
+
+          // Computed — real formulas over the response rows, re-evaluated on every read. Architecturally
+          // the same pattern as tournament-ballot's voteCounts/winner/isTie: the engine implements the
+          // interpreter once (groupCount, mapGet); this JSON only ever composes it.
+          "responseCounts": { "type": "map", "formula": "groupCount(responses, '$state')",
+            "displayContexts": [] },
+          "goingCount": { "type": "number", "formula": "mapGet(responseCounts, 'going')",
             "displayIcon": "groups_outlined", "labelTemplate": "Going: {value}",
             "displayContexts": ["tile", "detail"] },
-          "seatsRemaining": { "type": "number", "formula": "capacity - size(goingPersonaIds)",
+          "maybeCount": { "type": "number", "formula": "mapGet(responseCounts, 'maybe')" },
+          "declinedCount": { "type": "number", "formula": "mapGet(responseCounts, 'declined')" },
+          "waitlistedCount": { "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')",
+            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
             "displayIcon": "event_seat", "labelTemplate": "{value} seats left",
             "displayContexts": ["detail"] },
-          "isFull": { "type": "bool", "formula": "size(goingPersonaIds) >= capacity" }
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+        }
+      },
+
+      // -------------------------------------------------------------------------------------------
+      // EVENT RSVP RESPONSE — one ROW per (event, persona). Same rationale as tournament-vote
+      // (atomic, auditable, no shared list to read-modify-write) with one real difference: a vote is
+      // insert-only and immutable, but an RSVP response is MUTABLE — a member can change their mind,
+      // so this type has real transitions between real states, not a single terminal one.
+      //
+      // Every current community member gets a row the moment an event is created (bulk-created via
+      // the real, abstract WorkflowEngineApi.createInstances — see CAL.1/CAL.3 gaps), all starting in
+      // "pending". This is what makes every RSVP action a plain, race-free applyTransition on an
+      // already-existing row — never a racy "does a row exist yet" check.
+      // -------------------------------------------------------------------------------------------
+      "event-rsvp-response": {
+        "initialState": "pending",
+        "states": {
+          "pending":    { "label": "No response yet", "tone": "info" },
+          "going":      { "label": "Going",      "tone": "positive" },
+          "maybe":      { "label": "Maybe",      "tone": "info" },
+          "declined":   { "label": "Can't go",   "tone": "negative" },
+          "waitlisted": { "label": "Waitlisted", "tone": "secondary" }
+        },
+        "transitions": [
+          {
+            "id": "respond-going",
+            "label": "Going",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["pending", "maybe", "declined", "waitlisted"],
+            "to": "going",
+            "guard": {
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              // Cross-instance aggregate: count this event's OWN going-rows live and compare against
+              // capacity read off the related event-rsvp instance named by this row's own eventId.
+              "relatedAggregate": {
+                "workflowType": "event-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": "<",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            "id": "respond-maybe",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["pending", "going", "declined", "waitlisted"],
+            "to": "maybe",
+            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
+          },
+          {
+            "id": "respond-declined",
+            "label": "Can't go",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "waitlisted"],
+            "to": "declined",
+            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
+          },
+          {
+            // Only offered once the event is genuinely full — a real relatedAggregate guard, so the
+            // button cannot appear (or fire) while seats remain. Same intent as the old formula guard,
+            // now evaluated against the live row count instead of a stored list's size.
+            "id": "respond-waitlist",
+            "label": "Join waitlist",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "declined"],
+            "to": "waitlisted",
+            "guard": {
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "relatedAggregate": {
+                "workflowType": "event-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": ">=",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "eventId":   { "type": "text", "required": true, "storage": "inline" },
+          "personaId": { "type": "text", "required": true, "storage": "inline" }
         }
       },
 
@@ -280,7 +327,13 @@
         "renderBindings": [
           // Shows on Calendar as a real event...
           { "states": ["open"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" },
+            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+            // Event CREATION only — RSVP tracking (goingPersonaIds) deliberately NOT converted to the
+            // event-rsvp-response table pattern in this pass: tournament-event has no capacity ceiling
+            // (only a minimumAttendance quorum, inverted semantics from event-rsvp's guard), so reusing
+            // that type verbatim would be wrong. Tracked as an explicit, named gap — see the gap list —
+            // not silently extended here.
+            "creatable": { "byPersonaIds": ["tabletop-organizer"], "label": "New tournament" } },
           // ...and on Home as the attendance/context card sitting alongside the ballot card.
           // (Ballot is a Home card, NOT its own tab — the dedicated 'ballot' tab is removed at 1.30.)
           { "states": ["open"], "role": "any", "tabId": "home",
@@ -325,9 +378,11 @@
       "tournament-ballot": {
         "initialState": "open",
         "states": {
-          // Nothing is user-editable on the ballot itself any more. A vote is not a field on the
-          // ballot — it is a ROW in the `tournament-vote` table (see below).
-          "open":   { "label": "Voting open", "tone": "positive" },
+          // Nothing is user-editable on an EXISTING ballot — a vote is not a field on the ballot, it
+          // is a ROW in the `tournament-vote` table (see below). `editableFields` here is consumed only
+          // once, at creation time, by this binding's own `creatable` form — not a later edit surface.
+          "open":   { "label": "Voting open", "tone": "positive",
+            "editableFields": ["candidates", "deadline", "reminderOffset", "notificationsEnabled"] },
           "closed": { "label": "Closed", "tone": "info", "isTerminal": true }
         },
         "transitions": [
@@ -380,6 +435,9 @@
                   // Real runoff: spawn a NEW ballot carrying only the tied candidates. Its votes are
                   // separate rows (they carry the new ballotId), so the tally starts clean with no
                   // field to reset.
+                  // dueAt is deliberately NOT copied — it is now a computed field (see
+                  // instanceDataSchema below); the runoff ballot derives its own dueAt fresh from the
+                  // deadline/reminderOffset copied here, exactly like every other computed field.
                   { "op": "createInstance",
                     "workflowType": "tournament-ballot",
                     "fields": {
@@ -388,8 +446,7 @@
                       "round": "runoff",
                       "deadline": "{deadline}",
                       "reminderOffset": "{reminderOffset}",
-                      "notificationsEnabled": "{notificationsEnabled}",
-                      "dueAt": "{dueAt}"
+                      "notificationsEnabled": "{notificationsEnabled}"
                     } },
                   { "op": "set", "key": "outcome", "value": "runoff" }
                 ],
@@ -415,6 +472,14 @@
               "itemActions": [
                 { "transitionId": "cast-vote", "inputs": { "choice": "{item.id}" } }
               ]
+            },
+            // Invoked FROM the tournament-event's own detail card ("Create ballot for this
+            // tournament"), not from a bare "+ New" button on the Home tab — {context.eventId} is
+            // supplied by whatever UI invokes creation, per the creatable grammar's own contract.
+            "creatable": {
+              "byPersonaIds": ["tabletop-organizer"],
+              "label": "Create ballot for this tournament",
+              "prefill": { "eventId": "{context.eventId}" }
             }
           },
           { "states": ["closed"], "role": "any", "tabId": "home",
@@ -436,7 +501,13 @@
             "displayContexts": ["tile", "detail"], "hideWhenEmpty": true },
           "reminderOffset": { "type": "text", "storage": "inline" },
           "notificationsEnabled": { "type": "bool", "storage": "inline" },
-          "dueAt": { "type": "date", "storage": "inline" },
+          // Computed, not stored — dueAt = deadline minus reminderOffset's real duration. Vocabulary:
+          // 'at-time'=0h, 'one-hour'=1h, 'one-day'=24h, 'one-week'=168h (matches the existing seeded
+          // vocabulary in part24_form_entry_controls.dart's _reminderOffsets and
+          // part15_evidence_catalog.dart's validated set). Replaces a hand-seeded, driftable value with
+          // a real formula, same rationale as every other computed field in this file.
+          "dueAt": { "type": "date",
+            "formula": "subtractHours(deadline, if(reminderOffset == 'one-week', 168, if(reminderOffset == 'one-day', 24, if(reminderOffset == 'one-hour', 1, 0))))" },
           "isExpiringSoon": { "type": "bool", "formula": "isPast(dueAt)" },
 
           "outcome": { "type": "text", "writableBy": "effect", "storage": "inline" },
@@ -1210,17 +1281,57 @@
           "eventTime": "19:00",
           "location": "Community room",
           "host": "Alex Chen (Organizer)",
-          "capacity": 20,
-          "goingPersonaIds": [
-            "tabletop-member", "tabletop-member-03", "tabletop-member-04", "tabletop-member-05",
-            "tabletop-member-06", "tabletop-member-07", "tabletop-member-08", "tabletop-member-09",
-            "tabletop-member-10", "tabletop-member-11", "tabletop-member-12", "tabletop-member-13"
-          ],
-          "maybePersonaIds": ["tabletop-organizer"],
-          "notGoingPersonaIds": [],
-          "waitlistPersonaIds": []
+          "capacity": 20
+          // Response state (going/maybe/declined/waitlisted/pending) lives entirely in the
+          // event-rsvp-response rows below, one per real seeded account — not on this instance.
         }
       },
+
+      // ---- event-rsvp-response rows for Friday game night ------------------------------------
+      // One row per real seeded account (tabletop-organizer + tabletop-member-03..14, per
+      // part30_local_auth_api.dart's _seedTabletopAccounts) — bulk-created the moment the event
+      // above was created, mirroring what CAL.1/CAL.3's real createInstances flow will do going
+      // forward. States preserve the exact same scenario the old goingPersonaIds/maybePersonaIds
+      // lists encoded: 11 members going, the organizer maybe, member-14 never having responded.
+      { "instanceId": "resp-friday-organizer", "workflowType": "event-rsvp-response",
+        "currentState": "maybe", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-organizer" } },
+      { "instanceId": "resp-friday-member-03", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-03" } },
+      { "instanceId": "resp-friday-member-04", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-04" } },
+      { "instanceId": "resp-friday-member-05", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-05" } },
+      { "instanceId": "resp-friday-member-06", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-06" } },
+      { "instanceId": "resp-friday-member-07", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-07" } },
+      { "instanceId": "resp-friday-member-08", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-08" } },
+      { "instanceId": "resp-friday-member-09", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-09" } },
+      { "instanceId": "resp-friday-member-10", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-10" } },
+      { "instanceId": "resp-friday-member-11", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-11" } },
+      { "instanceId": "resp-friday-member-12", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-12" } },
+      { "instanceId": "resp-friday-member-13", "workflowType": "event-rsvp-response",
+        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-13" } },
+      { "instanceId": "resp-friday-member-14", "workflowType": "event-rsvp-response",
+        "currentState": "pending", "createdByPersonaId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-14" } },
 
       // ---- Calendar + Home: the summer tournament (drives ballot eligibility) --------------------
       {
@@ -1266,11 +1377,11 @@
           // Deliberately chosen so BOTH conditions hold on a 2026-07-14 walkthrough:
           //   deadline is still in the FUTURE  -> the ballot is legitimately open
           //   dueAt has already PASSED         -> the "closing soon" reminder is genuinely due
-          // (dueAt = deadline minus reminderOffset. It is what dueNotifications({asOf}) compares.)
+          // dueAt is now COMPUTED (deadline minus reminderOffset's real duration) -- not seeded here.
+          // one-week = 168h, so dueAt evaluates to 2026-07-13T18:00:00.000Z, unchanged from before.
           "deadline": "2026-07-20T18:00:00.000Z",
           "reminderOffset": "one-week",
           "notificationsEnabled": true,
-          "dueAt": "2026-07-13T18:00:00.000Z",
           "outcome": ""
           // NOTE: no `ballots` here. It is a QUERY-BACKED field (source: query(tournament-vote ...)),
           // so it is derived, never stored — and seeding it would be an error. The votes live as rows

@@ -175,6 +175,100 @@ Independently verified: `dart analyze` clean, 84/84 `loom_communities_app_shell`
 needing its own tab-shell wiring investigated on its own (Home in particular does not go through the same
 `rendererId` switch Giving/Calendar do — confirmed by grep, not yet designed).
 
+## 1d. Calendar archetype redesign (CALR), 2026-07-17 — architecturally-pure RSVP tracking + real event creation + multi-view container
+
+Live review of the running app (user driving the emulator directly) surfaced three product gaps in the
+`event-rsvp` archetype, on top of GP's generic-pipeline work: (1) Calendar only ever showed a 7×6 month
+grid — no day view, no week view, no way to see events scoped to a smaller window; (2) the event/RSVP
+"archetype" was a single always-expanded detail card, not a scoped list of cards; (3) there was no way
+for the organizer to create a new Calendar event at all — `creatable` (GAP-2, closed at the grammar layer
+2026-07-16) had zero real consumers anywhere in the app. Working through the fix with the user surfaced a
+deeper, explicitly-requested architectural change: **`event-rsvp`'s RSVP tracking moves from four
+`personaId[]` list fields to a real per-row table** (`event-rsvp-response`, one row per community member
+per event — the same `tournament-vote`/GAP-4 pattern already proven by `tournament-ballot`), because a
+list-field capacity guard cannot be evaluated live against per-row data without a guard capability that
+did not exist. **User's explicit instruction: "we are building for production... do not descope,"
+architecturally pure over expedient — Option B (the per-row conversion) chosen deliberately over the
+cheaper Option A (keep the list, expose `goingCount` as a facet).**
+
+**Spec-design phase closed 2026-07-17** (JSON + reference docs only, no code, no tracker — per explicit
+user instruction to review the spec before any implementation starts). Full design conversation and
+grounding is preserved in the session transcript; the artifacts are:
+
+- **Frozen JSON**: new `event-rsvp-response` workflow type (states pending/going/maybe/declined/
+  waitlisted, real mutable transitions — unlike `tournament-vote`'s insert-only rows, a response can
+  change); `event-rsvp` rewritten onto query-backed aggregates (`responses`, `responseCounts` via
+  `groupCount(responses, '$state')`, `goingCount`/`maybeCount`/`declinedCount`/`waitlistedCount` via
+  `mapGet`, `isFull`/`hasWaitlist`/`seatsRemaining` derived from those) and gains `creatable`/
+  `responseTable`/`filterableFacets`; `tournament-event` gains `creatable` only (its RSVP tracking
+  deliberately NOT converted — see the explicit gap below); `tournament-ballot` gains `creatable` (invoked
+  from the tournament-event's own card via `{context.eventId}` prefill) + `editableFields` on its `open`
+  state + a computed `dueAt` (was hand-seeded, now `subtractHours(deadline, ...)` — a real formula,
+  removing a driftable stored value); seed data converted to 13 real per-account `event-rsvp-response`
+  rows for Friday game night, preserving the exact prior going/maybe/pending scenario (validated
+  structurally — no orphaned references).
+- **New engine/validator grammar, PROPOSED (not yet implemented — see `spec-version.json` →
+  `proposedNotImplemented`)**: `guards.md` kind 7 `relatedAggregate` (a live count/sum over a related
+  table vs. a threshold, evaluated by the caller pre-computing the aggregate via the existing real
+  `aggregate()` method before the still-synchronous `evaluateGuard` runs — same pattern already used for
+  `completedWorkflowIds`); `formulas.md`'s `subtractHours`/`mapGet` functions and `$state` reserved column
+  (exposes a query-backed row's own FSM state to `groupCount`, which today only sees raw `instanceData`);
+  `render-bindings.md`'s `responseTable`/`filterableFacets` keys (point a calendar-family archetype at its
+  response table and named facets generically, not via hardcoded field-name assumptions).
+- **A real doc-accuracy correction found while grounding this**: `formulas.md`/`spec-version.json`
+  previously claimed unary `!` was unsupported alongside `!=`. Verified directly against the parser
+  (`formula_evaluator.dart:458-462`/`:236`) — only `!=` is actually absent; `!` genuinely works. Corrected
+  in both docs, recorded in `spec-version.json` → `resolvedQuestions.unaryNotOperator`.
+- **`archetypes/README.md`**: `event-rsvp` reopened from ✅ REAL to 🔨 REBUILDING with full context —
+  the A.11 closure evidence describes the pre-redesign shape, now superseded.
+- **`tabletop-club.md`**: new user stories (Day/Week/Month/Pending views; organizer creates a Calendar
+  event; organizer creates a tournament ballot), §11 review-log entry recording the full rationale.
+
+**Explicit, deliberately deferred gap — not silently done, needs its own decision later:**
+`tournament-event`'s own RSVP tracking (`goingPersonaIds`) was NOT converted to the per-row pattern in
+this pass — it has no capacity ceiling (only an unenforced `minimumAttendance` quorum), so reusing
+`event-rsvp-response` verbatim would apply the wrong guard semantics. Converting it for full consistency
+would need a second, simpler response type and rewriting `tournament-ballot`'s eligibility guard from
+`relatedListMembership` to a `relatedAggregate` existence check. Tracked, not scheduled.
+
+**Implementation milestones (this section), engine-native, `event-rsvp` archetype only — Calendar tab
+only, Tabletop Club only. Do not touch Home/Marketplace/Giving/Admin/Messages or any other community in
+this phase. Once CALR closes and is human-reviewed, the same pattern extends to other tabs, then other
+communities — not before.**
+
+| # | Milestone | Depends on | Status |
+|---|---|---|---|
+| CALR.1 | Engine + validator: `createInstances` (new abstract `WorkflowEngineApi` method, atomic bulk-create), `relatedAggregate` guard (model + evaluator + caller-side pre-computation in `applyTransition`/`availableTransitionsAsync`), `$state` reserved column in `_readAllInstancesOfType`/`aggregate()`, `subtractHours`/`mapGet` formula functions, and the matching validator rules (`loom_ux_judges`) for `relatedAggregate`/`responseTable`/`filterableFacets`. No UI. | none | `[ ]` Not started |
+| CALR.2 | RSVP archetype rewire: the RSVP detail card's action buttons call `applyTransition` on the viewer's own `event-rsvp-response` row (found via query), not the event instance. Proves the new per-row model end-to-end against the ALREADY-seeded Friday game night data — no event creation needed to test this milestone. | CALR.1 | `[ ]` Not started |
+| CALR.3 | Real event creation: "+ New event" (event-rsvp) / "New tournament" (tournament-event) forms consuming `creatable` + `editableFields`, reusing `GenericWorkflowInstanceCard`'s existing per-type editor dispatch. Calls `createInstance` for the event and `createInstances` for its bulk per-member response rows. | CALR.1, CALR.2 | `[ ]` Not started |
+| CALR.4 | Ballot creation: a second `creatable` affordance on the tournament-event's own card ("Create ballot for this tournament"), invoking creation with `context: {eventId}`, resolving `{context.eventId}` for real. | CALR.1, CALR.3 | `[ ]` Not started |
+| CALR.5 | Day/Week/Month/Pending views: the generalized holding-container widget, parametrized by `responseTable`/`filterableFacets` (timeframe scope + response-status filter), minimized cards expanding via `EngineNativeArchetypeCard` (reuse GP.1, accordion-style), month-grid date-cell tap → Day view, filterable-facets UI (boolean chips + numeric stat display). Acceptance test follows the user's own methodology exactly: create randomized events as organizer (CALR.3) → switch to member → RSVP (CALR.2) → verify correct Day/Week/Month/Pending scoping. | CALR.1-CALR.4 | `[ ]` Not started |
+
+**Verification gate for every CALR milestone (binding, per explicit user instruction 2026-07-17):**
+beyond the usual `dart analyze`/test-suite/real-validator checks, **every milestone's closing evidence
+must include a live Android emulator walkthrough I (the verification agent) drive myself**, confirming
+the implemented behavior against `tabletop-club.md`'s own user-story/interaction rows — not just that
+tests pass. A milestone whose live behavior does not match what `tabletop-club.md` describes is **not
+closed** — a follow-up fix ticket goes back to the implementation agent, exactly as GP.2's four
+remediation rounds this session already demonstrated the value of independent re-verification over
+trusting a sandbox-blocked self-report.
+
+**THE FROZEN SPEC RULE, extended for this phase (binding on every CALR dispatch):** in addition to the
+frozen JSON (§3a, unchanged), the following reference docs are ALSO frozen for the duration of CALR —
+written and reviewed 2026-07-17, describing the target contract implementation must match, not a draft
+implementation may "fix" by editing:
+[`guards.md`](../../../references/reference/guards.md),
+[`formulas.md`](../../../references/reference/formulas.md),
+[`render-bindings.md`](../../../references/reference/render-bindings.md),
+[`archetypes/README.md`](../../../references/archetypes/README.md),
+[`communities/tabletop-club.md`](../../../references/communities/tabletop-club.md),
+[`spec-version.json`](../../../references/spec-version.json). **Only the validator's own Dart
+implementation** (`loom_ux_judges/lib/src/validator/*.dart`) may be edited to add the new rules these
+docs already describe — that is code, not spec. If an implementation agent hits a genuine gap between
+what these docs say and what's actually buildable, the protocol is identical to §3a: **STOP, do not edit
+the doc/JSON, file a gap report, halt the milestone** — the verification agent (me) owns any spec
+correction, same as the frozen JSON always has.
+
 ## 2. Precursors — DONE (docs/JSON only, no code)
 
 - **[JSON Schema Versions](./Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md)** — normative.

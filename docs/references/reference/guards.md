@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-17
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -19,7 +19,11 @@ transition **genuinely refuse** (throw). It is not a UI hint. The UI additionall
 
 **Semantics:** all present guard keys are **AND**-ed. An absent/empty guard means "anyone, always".
 
-**Complete list: six kinds. No others exist.**
+**Complete list: seven kinds. No others exist.**
+
+⚠️ **`relatedAggregate` (kind 6) is PROPOSED grammar, not yet engine-implemented** — written and
+validator-speced ahead of the code that executes it, same convention the frozen Tabletop Club JSON
+itself uses elsewhere ("written before the code that loads it"). The other six kinds are real today.
 
 ---
 
@@ -145,7 +149,67 @@ only knowable from instance data).
 
 ---
 
-## 6. `requiresWorkflowsComplete` — cross-workflow prerequisite
+## 6. `relatedAggregate` — a live count/sum/etc. over a related table, compared to a threshold
+
+**"Count (or sum) the rows of another workflow type matching a filter, and compare the result."**
+This is the row-per-user-table analog of `formula`'s capacity check — for data that lives in a
+separate, per-row table (GAP-4 pattern: `tournament-vote`, `event-rsvp-response`) rather than a list
+field on this instance.
+
+```jsonc
+"guard": {
+  "relatedAggregate": {
+    "workflowType": "event-rsvp-response",
+    "filter": { "eventId": "{eventId}", "$state": "going" },
+    "op": "count",
+    "comparator": "<",
+    "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+  }
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `workflowType` | string | The related table's workflow type. MUST be declared. |
+| `filter` | object | Field → value map, matched against each candidate row. Values may be `{fieldName}` (interpolated against **this** instance), a literal, or the reserved key `$state` naming the row's own current FSM state (not an `instanceData` field — see [`formulas.md`](./formulas.md)'s `$state` note). |
+| `op` | string | `count` \| `sum` \| `avg` \| `min` \| `max` \| `countDistinct` — same vocabulary as `aggregate()`. |
+| `comparator` | string | `<` `<=` `>` `>=` `==` `!=` |
+| `compareTo` | number \| object | Either a literal threshold, or `{ "relatedInstanceField": "<field on this instance>", "field": "<field on that related instance>" }` — read a threshold off a *different* related instance, same cross-instance-lookup shape as `relatedListMembership` below. |
+
+**Evaluation:** the engine computes this aggregate **fresh**, via the same real `aggregate()` method a
+direct API caller would use — not a cached or stale value. Because `evaluateGuard` itself stays
+synchronous (by design — see [`formulas.md`](./formulas.md) on why formulas never touch the database),
+the caller (`applyTransition`/`availableTransitionsAsync`, both already `async`) computes this value
+**before** the synchronous guard check runs, the same pattern already used for
+`requiresWorkflowsComplete`'s `completedWorkflowIds`.
+
+**Use for:** a capacity/quorum/threshold check where the thing being counted lives in a separate
+per-row table, not a list field on this instance — e.g. "no more than `capacity` rows may reach
+`going`" when going/maybe/declined/waitlisted are real per-member rows, not a `personaId[]` list.
+
+```jsonc
+// On event-rsvp-response's respond-going transition:
+"guard": {
+  "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+  "relatedAggregate": {
+    "workflowType": "event-rsvp-response",
+    "filter": { "eventId": "{eventId}", "$state": "going" },
+    "op": "count", "comparator": "<",
+    "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+  }
+}
+// Reads: count event-rsvp-response rows sharing my own eventId with $state=='going'; that count must
+// be less than the `capacity` field on the event-rsvp instance named by my own eventId.
+```
+
+**Validation:** `workflowType` must be declared; every `filter` key (other than the reserved `$state`)
+must be declared on that target type; `compareTo.relatedInstanceField` must be declared **here**;
+`compareTo.field` must be declared on the type named by `compareTo.relatedInstanceField`'s value
+(checked at instance level, like `relatedListMembership`).
+
+---
+
+## 7. `requiresWorkflowsComplete` — cross-workflow prerequisite
 
 **"The actor must have completed a different workflow."**
 
@@ -189,6 +253,7 @@ usually clearer anyway — they typically want different labels ("Borrow" vs "Jo
 | Only if a data field equals a value | `instanceDataEquals` |
 | Only if a computed/arithmetic condition holds | `formula` |
 | Only if actor is on a list belonging to **another** instance | `relatedListMembership` |
+| Only if a live count/sum over a **related table** clears a threshold | `relatedAggregate` |
 | Only if actor finished **another workflow** | `requiresWorkflowsComplete` |
 
 ## Anti-patterns

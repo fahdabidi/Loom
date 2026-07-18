@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-15
+last_verified: 2026-07-17
 audience: llm-agent
 ---
 
@@ -48,7 +48,7 @@ Archetype UI Design gate for what closes each remaining PARTIAL/❌ before Table
 
 | `cardSurfaceFamily` | Purpose | Status | Evidence |
 |---|---|---|---|
-| `event-rsvp` | Event with RSVP + capacity + waitlist | ✅ REAL | Bespoke `_EventRsvpDetailCard` with real capacity bar, distinct tone-styled RSVP chips (Going/Maybe/Can't go/Join waitlist) with selected-state highlighting, and a distinct waitlist indicator — dispatched via `cardSurfaceFamily` check at `part28_engine_native_calendar_surface.dart:442` (covers both `event-rsvp` and `tournament-event`). Verified by `v3_milestone_a11_event_rsvp_archetype_test.dart`. |
+| `event-rsvp` | Event with RSVP + capacity + waitlist, now a **container of cards scoped to a view** (Day/Week/Month/Pending), member-creatable by the organizer | 🔨 REBUILDING (spec written 2026-07-17, CAL.1-CAL.4 implementation not yet dispatched) | Was a single always-shown detail card (`_EventRsvpDetailCard`, `part28_engine_native_calendar_surface.dart:442`, verified by `v3_milestone_a11_event_rsvp_archetype_test.dart`) driven by four `personaId[]` list fields. **Redesigned 2026-07-17**: RSVP tracking moves to a per-row `event-rsvp-response` table (one row per community member per event, bulk-created via a proposed `createInstances` primitive), the archetype becomes a scoped list of minimized cards that expand on tap (reusing `EngineNativeArchetypeCard` from the generic pipeline, GP.1), and the organizer gains a real "+ New event" creation form (`creatable`, GAP-2's first real consumer). See `render-bindings.md`'s `responseTable`/`filterableFacets` and `guards.md`'s `relatedAggregate` for the new grammar this depends on — all PROPOSED, not yet engine-implemented. The old single-card widget/tests still describe the CURRENT running app until CAL.1-CAL.4 land. |
 | `equipment-loan` | Browse/borrow/queue/return items | 🟡 PARTIAL | Real search/filter/grid/pagination (`part02_tab_shell.dart:5814-6263`) — but per-item borrow/queue/return actions still render via the generic template (`part02_tab_shell.dart:6601,6693`) |
 | `votePoll` | Ballot: candidates, tally, tie/runoff | ✅ REAL | Per-candidate vote buttons + live tally, candidate detail dialog, deadline/reminder banner (`part02_tab_shell.dart:3387-3600+`, specifically `:3474-3585`) |
 | `paymentCheckout` | Dues/donations + receipt | 🟡 PARTIAL | Real amount/purpose header + payment history (`part02_tab_shell.dart:13316+`) — but the pay action itself is the generic template (`:13641-13659`) |
@@ -81,7 +81,9 @@ interaction models; the code delivered one. Tracker 3 has since made real progre
 re-verification against the actual Dart source (not against prior doc claims) found `votePoll`,
 `discussionThread`, `notificationInbox`, `statusTimeline`, and `formEntry` genuinely real for Tabletop
 Club. **`event-rsvp` closed 2026-07-16** (A.11 — a bespoke `_EventRsvpDetailCard`, verified by 300/300
-tests across all three packages, real CLI validator 0/0). **`equipment-loan` is still only PARTIAL** — its
+tests across all three packages, real CLI validator 0/0) **then reopened 2026-07-17** for a deliberate
+architectural redesign (per-row response table, scoped multi-card container, real event creation) — spec
+written, implementation not yet dispatched; see the status table above. **`equipment-loan` is still only PARTIAL** — its
 browse/list shell is real, but the actual per-item interaction (borrow/queue/return) still silently falls
 back to the generic template — and **`approvalQueueItem` has zero implementation at all.**
 

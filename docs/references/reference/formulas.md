@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-17
 audience: llm-agent
 derived_from: app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart
 ---
@@ -31,12 +31,17 @@ you could compute. A stored count and its underlying list *will* drift apart.
 |---|---|
 | Arithmetic | `+` `-` `*` `/` (also `×` `÷`) |
 | Comparison | `==` `>` `>=` `<` `<=` |
-| Boolean | `&&` `\|\|` |
+| Boolean | `&&` `\|\|` `!` (unary not) |
 | Grouping | `( )` |
 
-⚠️ **There is no `!=` and no `!` (not).** Invert by restructuring:
-- instead of `a != b` → `if(a == b, false, true)`
-- instead of `!isFull` → `size(goingPersonaIds) < capacity`
+⚠️ **There is no `!=`.** Invert by restructuring: `a != b` → `if(a == b, false, true)`.
+
+**Correction, 2026-07-17:** unary `!` (not) was previously (incorrectly) documented as absent alongside
+`!=`. Verified directly against the parser (`formula_evaluator.dart:458-462`, `_unary()`) and evaluator
+(`:236`, `!_bool(v)`): **`!` genuinely works** — only the two-character `!=` comparison operator is
+actually absent (confirmed: `_comparison()`, `:428-436`, never checks for it). `!isFull` is valid; prefer
+`size(goingPersonaIds) < capacity` anyway where a positive formulation reads more clearly, but do not
+treat `!` as unsupported — it is.
 
 ## Literals
 
@@ -58,7 +63,11 @@ Dotted paths (`item.choice`) are used inside collection functions to select a co
 
 ---
 
-## Functions — complete list (20). No others exist.
+## Functions — complete list (22). No others exist.
+
+⚠️ **`subtractHours` and `mapGet` are PROPOSED, not yet engine-implemented** — written ahead of the
+code that executes them, same convention the frozen Tabletop Club JSON itself uses. The other 20 are
+real today.
 
 ### Aggregates over a list
 
@@ -80,6 +89,7 @@ Dotted paths (`item.choice`) are used inside collection functions to select a co
 | `argMaxKey` | `argMaxKey(map)` | The key with the highest value. *The winner.* |
 | `topKeys` | `topKeys(map)` | **List** of all keys tied for the highest value. *The tie set.* |
 | `sortBy` | `sortBy(list, column, 'asc'\|'desc')` | Sorted list |
+| `mapGet` | `mapGet(map, key)` | The value at `key`, or `0` if absent. *Pulls one count out of a `groupCount` tally without a `null`-arithmetic trap.* |
 
 ### Membership and position
 
@@ -104,6 +114,26 @@ Dotted paths (`item.choice`) are used inside collection functions to select a co
 | `isBefore` | `isBefore(a, b)` | bool |
 | `isAfter` | `isAfter(a, b)` | bool |
 | `isPast` | `isPast(date)` | bool — *deadline passed* |
+| `subtractHours` | `subtractHours(date, hours)` | `date` minus `hours` — a real new `DateTime`. *Deriving a reminder's `dueAt` from a `deadline`.* |
+
+Deliberately hour-granularity, not day-granularity — some reminder offsets are sub-day (e.g. "one hour
+before"). Deliberately generic (a raw duration subtraction), not a labeled-offset-aware function — the
+label-to-hours mapping (`'one-week'` → 168, etc.) is composed in the JSON via `if`, keeping business
+vocabulary out of the interpreter, the same principle every other formula in this file already follows.
+
+## Reserved row references — not `instanceDataSchema` fields
+
+| Reference | Resolves to |
+|---|---|
+| `$actor` | The persona who performed the current transition (or `null` outside a transition) |
+| `$viewer` | The persona currently reading/querying (set on every `queryInstances`/`availableTransitionsAsync` call) |
+| `$state` | **(PROPOSED)** A row's own current FSM state, usable as the `column` argument to `groupCount`/`sum`/etc. — e.g. `groupCount(responses, '$state')` tallies rows by their real workflow state, not a duplicated status field. Only meaningful inside a `source: query(...)`-backed list's aggregate functions; not a bare field reference. |
+
+**Why `$state` matters:** without it, counting "how many rows are in the `going` state" would force
+authoring a redundant `instanceData` field manually kept in sync with the state machine on every
+transition — exactly the kind of duplicated-source-of-truth pattern `goingCount`'s own history in this
+file already warns against (a stored count *will* drift from what it claims to summarize; the same is
+true of a stored status code drifting from the real state).
 
 ---
 
@@ -156,6 +186,23 @@ must be **acyclic**. → else `circular_formula_dependency` (error)
 "rankings": { "type": "list", "formula": "sortBy(players, score, 'desc')" }
 ```
 
+### Row-per-user response tally (event-rsvp-response pattern)
+```jsonc
+"responses":       { "type": "list", "source": "query(event-rsvp-response where eventId == id)" },
+"responseCounts":  { "type": "map",    "formula": "groupCount(responses, '$state')" },
+"goingCount":      { "type": "number", "formula": "mapGet(responseCounts, 'going')" },
+"waitlistedCount": { "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')" },
+"isFull":          { "type": "bool",   "formula": "goingCount >= capacity" }
+```
+The row's own FSM state (`$state`), not a duplicated status field, is what gets tallied — see the
+Reserved row references section above.
+
+### Deriving a reminder time from a deadline
+```jsonc
+"dueAt": { "type": "date",
+  "formula": "subtractHours(deadline, if(reminderOffset == 'one-week', 168, if(reminderOffset == 'one-day', 24, if(reminderOffset == 'one-hour', 1, 0))))" }
+```
+
 ---
 
 ## Rules (validator-enforced)
@@ -164,7 +211,7 @@ must be **acyclic**. → else `circular_formula_dependency` (error)
 |---|---|
 | Must parse | `invalid_formula_syntax` |
 | Every referenced field must be declared in **this** schema | `unknown_formula_field` |
-| Every function must be one of the 20 | `unknown_formula_function` |
+| Every function must be one of the 22 | `unknown_formula_function` |
 | Computed-field dependencies must be acyclic | `circular_formula_dependency` |
 | A computed field MUST NOT be written by an effect | `computed_field_written_by_effect` |
 | A computed field MUST NOT be seeded in `instanceData` | `computed_field_seeded` |
@@ -176,8 +223,7 @@ must be **acyclic**. → else `circular_formula_dependency` (error)
 | `{"op":"increment","key":"goingCount"}` alongside a `goingPersonaIds` list | `"goingCount": {"formula": "size(goingPersonaIds)"}` |
 | Seeding `"isFull": false` in `instanceData` | Declare it as a `formula`; never seed |
 | Parsing a display string (`"12 of 20 seats"`) to get a number | Store `capacity`; compute the rest |
-| `!isFull` | `size(goingPersonaIds) < capacity` (no `!` operator) |
-| `status != 'closed'` | `if(status == 'closed', false, true)` (no `!=` operator) |
+| `status != 'closed'` | `if(status == 'closed', false, true)` (no `!=` operator — `!` itself is fine) |
 
 ## Not in the vocabulary
 
@@ -185,7 +231,7 @@ If you need one of these, **stop and report the gap** — do not approximate:
 
 | Missing | Note |
 |---|---|
-| `!` (not), `!=` | Restructure as shown above |
+| `!=` | Restructure: `if(a == b, false, true)`. (Unary `!` is NOT missing — see the Operators section above.) |
 | `rank`, `topN` | Proposed but unimplemented. `sortBy` covers most cases. |
 | `pow`, `exp` | Not implemented (would be needed for true Elo). |
 | String concatenation | Use `labelTemplate` (`"{value} seats"`) for display instead. |

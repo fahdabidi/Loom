@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-16
+last_verified: 2026-07-17
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -19,7 +19,7 @@ role?**
 rule. A workflow with **no** binding for a state does not render in that state (the correct way to hide
 drafts).
 
-## Binding object — 8 keys (2 added in Phase A′, 2026-07-16)
+## Binding object — 10 keys (2 added in Phase A′ 2026-07-16, 2 added 2026-07-17)
 
 ```jsonc
 {
@@ -30,7 +30,9 @@ drafts).
   "bindingKind": "primary",            // REQUIRED
   "audienceMemberField": "invitedPersonaIds",  // optional
   "repeater": { /* see below */ },              // optional, GAP-1
-  "creatable": { /* see below */ }              // optional, GAP-2
+  "creatable": { /* see below */ },             // optional, GAP-2
+  "responseTable": { /* see below */ },         // optional, PROPOSED 2026-07-17
+  "filterableFacets": [ /* see below */ ]       // optional, PROPOSED 2026-07-17
 }
 ```
 
@@ -44,13 +46,67 @@ drafts).
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
 | `repeater` | object | no | Renders a per-item action row over a list (GAP-1) |
 | `creatable` | object | no | Declares this type member-creatable (GAP-2) |
+| `responseTable` | object | no | Points a calendar-family archetype at a per-member response table, instead of assuming field names (PROPOSED) |
+| `filterableFacets` | object[] | no | Named, labeled, computed-field-backed filters/stats a generic list surface may offer (PROPOSED) |
 
-⚠️ **Grammar/engine status differs between these two additions — read before using either.** `repeater`
+⚠️ **Grammar/engine status differs across these additions — read before using any of them.** `repeater`
 is fully implemented and engine-executed (parsing + `{item.x}`/`{input.x}` resolution + validator
 checks) — confirmed working end-to-end on `tournament-ballot`. `creatable` **parses and validates
-correctly, but nothing in the running app consumes it yet** — no "+ New" affordance renders, no form
-collects `editableFields`, no `{context.x}` resolves. Declaring `creatable` today is forward-looking JSON,
-not a working feature — see [`spec-version.json`](../spec-version.json) `knownGaps.instanceCreation`.
+correctly, and now has one real consumer**: `event-rsvp`'s "+ New event" affordance (see
+`spec-version.json` → `knownGaps.instanceCreation`) — other types declaring `creatable` still render no
+UI for it yet. `responseTable` and `filterableFacets` are **PROPOSED — grammar/validator only, written
+ahead of the App Shell code that will consume them**, same convention this file's earlier additions
+used before their own consumers existed.
+
+## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
+
+```jsonc
+"responseTable": {
+  "workflowType": "event-rsvp-response",
+  "eventField": "eventId",
+  "pendingStates": ["pending"]
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `workflowType` | string | **yes** | The row-per-member response type (a GAP-4-style table, one row per persona per event). |
+| `eventField` | string | **yes** | The field, on rows of `workflowType`, holding the parent event's `instanceId`. |
+| `pendingStates` | string[] | **yes** | Which of `workflowType`'s own states count as "not yet responded" — drives the Pending view. |
+
+**Why this exists instead of a hardcoded field-name assumption:** without it, "does the viewer still
+need to respond to this event?" would require the App Shell to know `event-rsvp-response`'s specific
+shape by name. A second calendar-bound archetype with a differently-named response table declares its
+own `responseTable` and the same generic Pending-view logic works unmodified.
+
+**Evaluation:** for the current viewer, find the row of `workflowType` where `eventField` equals this
+event's `instanceId` and `personaId` equals the viewer — read its current state; if that state is in
+`pendingStates`, this event belongs in the viewer's Pending view.
+
+**Validation:** `workflowType` must be declared; `eventField` must be a declared field on that type;
+every `pendingStates` entry must be a declared state of that type.
+
+## `filterableFacets` — named, computed-field-backed filters for a generic list surface (PROPOSED)
+
+```jsonc
+"filterableFacets": [
+  { "field": "isFull", "label": "Full events" },
+  { "field": "hasWaitlist", "label": "Has waitlist" },
+  { "field": "goingCount", "label": "Number accepted" }
+]
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `field` | string | **yes** | A `formula`-typed field declared in this workflow's own `instanceDataSchema`. |
+| `label` | string | **yes** | Display label for the facet. |
+
+A boolean-typed `field` renders as a togglable filter chip; a `number`-typed `field` renders as a
+displayed/sortable stat, not a threshold-input filter (no "at least N" UI in this pass — see
+`spec-version.json` for why that was deliberately deferred).
+
+**Validation:** each `field` must be declared, `formula`-typed, in this workflow's own
+`instanceDataSchema`. → `dangling_filterable_facet_field` (error)
 
 ## `repeater` — per-item action buttons over a list (GAP-1)
 
@@ -216,6 +272,10 @@ is expressed by *omission*, not by a permission flag.
 | `creatable.prefill` keys must be declared in this workflow's `instanceDataSchema` | error (`dangling_instance_data_key`) |
 | `creatable.prefill` must not target a computed field | error (`computed_field_written_by_effect`) |
 | `{context.x}` outside a `creatable.prefill` value | error (`context_reference_outside_creatable`) |
+| `responseTable.workflowType` must be declared | error (`dangling_response_table_workflow_type`) |
+| `responseTable.eventField` must be declared on that type | error (`unknown_response_table_field`) |
+| `responseTable.pendingStates` entries must be declared states of that type | error (`unknown_response_table_state`) |
+| `filterableFacets[].field` must be a declared, `formula`-typed field in this schema | error (`dangling_filterable_facet_field`) |
 
 ## Anti-patterns
 

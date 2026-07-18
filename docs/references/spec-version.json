@@ -28,11 +28,12 @@
   ],
 
   "released": "2026-07-14",
-  "lastReviewed": "2026-07-16",
+  "lastReviewed": "2026-07-17",
 
   "resolvedQuestions": {
     "$comment": "Open questions settled by reading the source, recorded so they are not re-litigated.",
-    "stringLiteralsInFormulas": "RESOLVED 2026-07-14: string literals ARE supported, in both single and double quotes (formula_evaluator.dart:540). \"availabilityState == 'available'\" is valid. This was previously listed as an unknown."
+    "stringLiteralsInFormulas": "RESOLVED 2026-07-14: string literals ARE supported, in both single and double quotes (formula_evaluator.dart:540). \"availabilityState == 'available'\" is valid. This was previously listed as an unknown.",
+    "unaryNotOperator": "CORRECTED 2026-07-17: `negationOperators` below previously claimed BOTH `!` and `!=` are absent. Verified directly against the parser: only `!=` is actually absent (`_comparison()`, formula_evaluator.dart:428-436, never checks for it). Unary `!` genuinely works -- parsed by `_unary()` (:458-462) and evaluated (`!_bool(v)`, :236). `formulas.md` corrected to match."
   },
 
   "resolvedInGrammar": {
@@ -82,12 +83,23 @@
 
   "knownGaps": {
     "$comment": "Capabilities the docs describe as needed but the grammar does NOT yet support. Each must be closed or explicitly deferred before the Skill (Phase 3) can rely on this spec. GAP-1 and GAP-4 moved to `resolvedInGrammar` above, 2026-07-16.",
-    "instanceCreation": "GAP-2 (PARTIALLY RESOLVED 2026-07-16). Grammar/model layer is done: `renderBindings[].creatable` (+ `byPersonaIds`, `label`, `prefill` with `{context.x}` interpolation) parses and validates correctly (`dangling_allowed_persona_id`, `dangling_instance_data_key`/`computed_field_written_by_effect` for `prefill` keys, `context_reference_outside_creatable`) -- confirmed against the frozen JSON's `tabletop-game-loan`/`game-purchase-proposal`/`discussion-thread` usages. **Still open:** nothing in the running app actually consumes `creatable` yet -- no '+ New' affordance renders, no form collects `editableFields`, no `{context.x}` gets resolved by a real caller. The engine has no new execution method for this (by design -- `creatable`'s intended consumer calls the existing `createInstance`), so this remainder is purely App Shell UI work, not a grammar gap. Blocks tracker-3 Phases E and F until that UI exists.",
+    "instanceCreation": "GAP-2 (PARTIALLY RESOLVED 2026-07-16, first real consumer designed 2026-07-17). Grammar/model layer is done: `renderBindings[].creatable` (+ `byPersonaIds`, `label`, `prefill` with `{context.x}` interpolation) parses and validates correctly. **2026-07-17: `event-rsvp`, `tournament-event`, and `tournament-ballot` all now declare `creatable` in the frozen JSON** -- the first real, concrete consumers, with a fully-specified App Shell design (CAL.1/CAL.3 gaps) -- but the UI itself (the '+ New' affordance, the creation form, `{context.x}` resolution) is NOT YET BUILT. Still purely spec at this point, not a working feature. Blocks tracker-3 Phases E and F until that UI exists.",
     "listMinusActor": "GAP-3 (non-blocking). 'All participants except the actor' is not expressible -- no set-difference effect op. Consequence: thread unread state is a single bool rather than per-persona. Proposed: `setFromFormula` effect op + a `removeAll(list, value)` formula function. Additive. Deferred, non-blocking Phase F capability -- not attempted in Phase A'.",
     "responseModel": "The `responseModel: { kind: simpleRsvp }` sugar in V2's Calendar_RSVP design doc is NOT parsed by the engine. RSVP must be modeled with plain transitions + effects + formulas instead.",
-    "negationOperators": "The formula grammar has NO `!` (not) and NO `!=`. Invert by restructuring: `size(x) < capacity` instead of `!isFull`; `if(a == b, false, true)` instead of `a != b`. Confirmed by reading the parser (formula_evaluator.dart:430).",
+    "negationOperators": "CORRECTED 2026-07-17 (see resolvedQuestions.unaryNotOperator) -- only `!=` is actually absent from the formula grammar; unary `!` genuinely works. Invert `!=` by restructuring: `if(a == b, false, true)` instead of `a != b`. Confirmed by reading the parser (formula_evaluator.dart:428-436).",
     "rankTopN": "`rank` / `topN` named functions are proposed in ComputationModel.md but unimplemented. `sortBy` covers the same need.",
     "powExp": "`pow` / `exp` are not implemented (would be required for a true Elo expected-score calculation).",
     "stringConcatenation": "Formulas cannot concatenate strings. Use `labelTemplate` (e.g. \"{value} seats\") for display composition instead."
+  },
+
+  "proposedNotImplemented": {
+    "$comment": "NEW grammar/engine surface designed 2026-07-17 for the Calendar redesign (event-rsvp per-row response table, Day/Week/Month/Pending views, real event creation). Fully specified and written into the frozen JSON + reference docs, but NONE of it is engine- or App-Shell-implemented yet -- tracked separately from knownGaps because these are net-new proposals, not gaps in an existing contract. See docs/references/communities/tabletop-club.md section 11's 2026-07-17 review-log row for the full context and the CAL/AS ticket gap list for implementation scope.",
+    "createInstances": "New method on the ABSTRACT WorkflowEngineApi (not Local-only, unlike the existing install-time-only seedInstances) -- atomic bulk-create, needed so an event's per-member event-rsvp-response rows can be created as one real API operation, not N racy individual createInstance calls.",
+    "relatedAggregateGuard": "New guard kind 7 (guards.md) -- a live count/sum/etc. over a related table compared to a threshold, evaluated by the caller pre-computing the aggregate via the existing real aggregate() method before the still-synchronous evaluateGuard runs.",
+    "stateReservedColumn": "`$state` (formulas.md) -- exposes a query-backed row's own current FSM state to `groupCount`/aggregate functions. Requires `_readAllInstancesOfType` (and therefore `aggregate()` and GAP-4 hydration) to merge in the row's `currentState`, which today only exposes raw `instanceData`.",
+    "subtractHoursFunction": "New formula function (formulas.md) -- date arithmetic (subtract an hour count from a date), needed to compute tournament-ballot.dueAt as a real computed field instead of a hand-seeded, driftable value.",
+    "mapGetFunction": "New formula function (formulas.md) -- pull one value out of a map (e.g. a groupCount tally) by key, defaulting to 0 if absent.",
+    "responseTableBinding": "New render-binding key (render-bindings.md) -- points a calendar-family archetype at its per-member response table generically, instead of the App Shell hardcoding field names.",
+    "filterableFacetsBinding": "New render-binding key (render-bindings.md) -- named, labeled, computed-field-backed filters/stats a generic list surface may offer."
   }
 }
