@@ -243,6 +243,21 @@ class CommunityPackageValidator {
             findings,
             list: true,
           );
+        final aggregate = transition.guard.relatedAggregate;
+        final compareTo = aggregate?.compareTo;
+        if (compareTo is Map) {
+          final relatedInstanceField = compareTo['relatedInstanceField'];
+          final field = compareTo['field'];
+          if (relatedInstanceField is String && field is String) {
+            _checkReference(
+              data[relatedInstanceField],
+              instances,
+              field,
+              '$path/instanceData/$relatedInstanceField',
+              findings,
+            );
+          }
+        }
         _walkEffects(transition.effects, (effect) {
           if (effect.relatedInstance != null && effect.key != null)
             _checkReference(

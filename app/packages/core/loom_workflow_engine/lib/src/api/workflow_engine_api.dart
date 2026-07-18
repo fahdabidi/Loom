@@ -126,6 +126,13 @@ abstract class WorkflowEngineApi {
     required String personaId,
   });
 
+  /// Atomically CREATE many new workflow instances in one operation.
+  Future<List<String>> createInstances({
+    required String workflowType,
+    required List<Map<String, dynamic>> initialInstanceDataList,
+    required String personaId,
+  });
+
   /// EDIT fields on an existing instance without transitioning state.
   Future<void> updateInstanceFields({
     required String workflowType,

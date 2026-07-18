@@ -37,6 +37,8 @@ const Set<String> formulaFunctionNames = {
   'isBefore',
   'isAfter',
   'isPast',
+  'subtractHours',
+  'mapGet',
 };
 
 /// Reduces [values] with the aggregate vocabulary shared by formula fields and
@@ -372,6 +374,11 @@ dynamic _call(String name, List<_Expr> args, _Context context) {
       return _date(arg(0)).isAfter(_date(arg(1)));
     case 'isPast':
       return _date(arg(0)).isBefore(context.now());
+    case 'subtractHours':
+      return _date(arg(0)).subtract(Duration(hours: _number(arg(1)).toInt()));
+    case 'mapGet':
+      final map = arg(0);
+      return map is Map ? (map[arg(1)] ?? 0) : 0;
   }
   throw FormulaEvaluationException('Unsupported function "$name"');
 }

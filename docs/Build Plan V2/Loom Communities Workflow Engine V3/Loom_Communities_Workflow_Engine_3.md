@@ -266,8 +266,17 @@ implementation may "fix" by editing:
 implementation** (`loom_ux_judges/lib/src/validator/*.dart`) may be edited to add the new rules these
 docs already describe — that is code, not spec. If an implementation agent hits a genuine gap between
 what these docs say and what's actually buildable, the protocol is identical to §3a: **STOP, do not edit
-the doc/JSON, file a gap report, halt the milestone** — the verification agent (me) owns any spec
-correction, same as the frozen JSON always has.
+the doc/JSON, file a gap report, halt the milestone.**
+
+**Corrected 2026-07-18 (user direction, overriding this section's earlier text):** the verification agent
+does **not** unilaterally own spec corrections. **No changes to the frozen JSON specification or to
+`tabletop-club.md` are allowed without the user's explicit approval** — a gap report from an
+implementation agent gets surfaced to the user first, with the exact proposed fix shown for review, and
+only applied after explicit sign-off. This applies to every file in this rule, not just those two named —
+treat the whole frozen-spec list above the same way. (One correction was made 2026-07-18 to
+`tournament-ballot`'s `instanceDataSchema` — missing `writableBy: "formEntry"` on four fields already
+named in `editableFields`, found by the CALR.1 implementation agent — shown to the user and explicitly
+confirmed before being committed; that is the pattern to repeat, not a standing delegation.)
 
 ## 2. Precursors — DONE (docs/JSON only, no code)
 

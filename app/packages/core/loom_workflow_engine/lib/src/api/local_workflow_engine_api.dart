@@ -4,6 +4,7 @@ import 'dart:math';
 
 import '../evaluator/effect_evaluator.dart';
 import '../evaluator/formula_evaluator.dart';
+import '../evaluator/guard_evaluator.dart';
 import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
@@ -42,10 +43,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
   final Map<String, LoomWorkflowStateMachine> _definitions = {};
+
   /// Maps individual persona ids to their declared persona type (role).
   /// Set before any guard-evaluating calls so
   /// [allowedPersonaIds]-style checks compare the type, not the individual id.
   final Map<String, String> _personaTypeById = {};
+
   /// Registers the persona type for an individual account id.
   void setPersonaType(String personaId, String personaTypeId) {
     _personaTypeById[personaId] = personaTypeId;
@@ -128,7 +131,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         final machine = await _getDefinition(instance.workflowType);
         final hydrated = machine != null
             ? await _hydrateSourceFields(
-                instance.instanceData, machine, instance.instanceId)
+                instance.instanceData,
+                machine,
+                instance.instanceId,
+              )
             : instance.instanceData;
         return WorkflowInstance(
           instanceId: instance.instanceId,
@@ -183,10 +189,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       limit: 1 << 30,
       sortKey: 'instanceId',
     );
-    return rows
-        .where((row) => row.workflowType == workflowType)
-        .map((row) => jsonDecode(row.instanceData) as Map<String, dynamic>)
-        .toList();
+    return rows.where((row) => row.workflowType == workflowType).map((row) {
+      final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+      if (data.containsKey(r'$state')) {
+        throw StateError(r'instanceData must not define reserved key "$state"');
+      }
+      return {...data, r'$state': row.currentState};
+    }).toList();
   }
 
   @override
@@ -295,15 +304,25 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       instanceData: instanceData,
       personaId: personaId,
     );
-    return [
-      for (final transition in candidates)
-        if (await _passesRelatedListGuard(
-          transition.guard,
-          instanceData,
-          personaId,
-        ))
-          transition,
-    ];
+    final result = <LoomWorkflowTransition>[];
+    for (final transition in candidates) {
+      if (!await _passesRelatedListGuard(
+        transition.guard,
+        instanceData,
+        personaId,
+      )) {
+        continue;
+      }
+      if (!await _passesRelatedAggregateGuard(
+        transition.guard,
+        instanceData,
+        personaId,
+      )) {
+        continue;
+      }
+      result.add(transition);
+    }
+    return result;
   }
 
   Future<Set<String>> completedWorkflowIdsForPersona(String personaId) async {
@@ -377,6 +396,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         'Transition $transitionId is not available for $personaId',
       );
     }
+    if (!await _passesRelatedAggregateGuard(
+      transition.guard,
+      data,
+      personaId,
+    )) {
+      throw StateError(
+        'Transition $transitionId is not available for $personaId',
+      );
+    }
 
     // GAP-1: validate required transition inputs (outside transaction)
     if (transition.inputs != null) {
@@ -426,6 +454,39 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   @override
   Future<String> createInstance({
+    required String workflowType,
+    required Map<String, dynamic> initialInstanceData,
+    required String personaId,
+  }) async {
+    return _createInstanceValidated(
+      workflowType: workflowType,
+      initialInstanceData: initialInstanceData,
+      personaId: personaId,
+    );
+  }
+
+  @override
+  Future<List<String>> createInstances({
+    required String workflowType,
+    required List<Map<String, dynamic>> initialInstanceDataList,
+    required String personaId,
+  }) async {
+    final ids = <String>[];
+    await _db.transaction(() async {
+      for (final initialInstanceData in initialInstanceDataList) {
+        ids.add(
+          await _createInstanceValidated(
+            workflowType: workflowType,
+            initialInstanceData: initialInstanceData,
+            personaId: personaId,
+          ),
+        );
+      }
+    });
+    return ids;
+  }
+
+  Future<String> _createInstanceValidated({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
     required String personaId,
@@ -605,6 +666,65 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return members is Iterable && members.contains(personaId);
   }
 
+  Future<bool> _passesRelatedAggregateGuard(
+    WorkflowGuard guard,
+    Map<String, dynamic> sourceData,
+    String personaId,
+  ) async {
+    final related = guard.relatedAggregate;
+    if (related == null) return true;
+    final filter = <String, dynamic>{
+      for (final entry in related.filter.entries)
+        entry.key: _resolveRelatedAggregateValue(entry.value, sourceData),
+    };
+    final aggregate = await this.aggregate(
+      workflowType: related.workflowType,
+      column: '',
+      op: related.op,
+      filter: filter,
+    );
+    final compareTo = await _resolveRelatedAggregateCompareTo(
+      related.compareTo,
+      sourceData,
+    );
+    return evaluateGuard(
+      WorkflowGuard(relatedAggregate: related),
+      personaId,
+      sourceData,
+      personaTypeId: _personaTypeById[personaId],
+      precomputedRelatedAggregate: aggregate is num ? aggregate : null,
+      resolvedRelatedAggregateCompareTo: compareTo,
+    );
+  }
+
+  dynamic _resolveRelatedAggregateValue(
+    dynamic value,
+    Map<String, dynamic> sourceData,
+  ) {
+    if (value is String && value.startsWith('{') && value.endsWith('}')) {
+      return sourceData[value.substring(1, value.length - 1)];
+    }
+    return value;
+  }
+
+  Future<num?> _resolveRelatedAggregateCompareTo(
+    dynamic compareTo,
+    Map<String, dynamic> sourceData,
+  ) async {
+    if (compareTo is num) return compareTo;
+    if (compareTo is! Map) return null;
+    final relatedInstanceField = compareTo['relatedInstanceField'];
+    final field = compareTo['field'];
+    if (relatedInstanceField is! String || field is! String) return null;
+    final id = sourceData[relatedInstanceField];
+    if (id is! String || id.isEmpty) return null;
+    final row = await _db.readInstance(id);
+    if (row == null) return null;
+    final target = jsonDecode(row.instanceData) as Map<String, dynamic>;
+    final value = target[field];
+    return value is num ? value : null;
+  }
+
   Future<Map<String, dynamic>> _applyExtendedEffects(
     List<WorkflowEffect> effects, {
     required LoomWorkflowStateMachine machine,
@@ -642,8 +762,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           if (effect.workflowType == null || effect.fields == null) {
             throw StateError('createInstance requires workflowType and fields');
           }
-          final fields = resolveEffectValue(effect.fields, personaId, computed,
-              inputValues: inputValues, instanceId: instanceId);
+          final fields = resolveEffectValue(
+            effect.fields,
+            personaId,
+            computed,
+            inputValues: inputValues,
+            instanceId: instanceId,
+          );
           await createInstance(
             workflowType: effect.workflowType!,
             initialInstanceData: Map<String, dynamic>.from(fields as Map),
@@ -673,7 +798,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           }
           final targetData =
               jsonDecode(target.instanceData) as Map<String, dynamic>;
-          final value = resolveEffectValue(effect.value, personaId, computed, instanceId: instanceId);
+          final value = resolveEffectValue(
+            effect.value,
+            personaId,
+            computed,
+            instanceId: instanceId,
+          );
           final updated = applyEffects(
             [WorkflowEffect(op: 'set', key: effect.key, value: value)],
             personaId,

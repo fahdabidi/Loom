@@ -489,18 +489,24 @@
           "eventId": { "type": "text", "required": true, "storage": "inline" },
 
           // Rich candidate objects — tapping one opens its detail popup (name + description).
-          "candidates": { "type": "list", "required": true, "storage": "inline",
+          // writableBy: "formEntry" added 2026-07-18 -- these four are named in the "open" state's
+          // editableFields (this ticket's own creatable-form addition) and the validator's
+          // effect_field_in_editable_fields rule correctly requires that pairing. Found and reported,
+          // not silently patched, by the CALR.1 implementation agent -- a genuine spec gap in the
+          // 2026-07-17 creatable addition, fixed here by the verification agent per the frozen-spec
+          // rule ("the verification agent owns any spec correction").
+          "candidates": { "type": "list", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayContexts": ["detail"] },
           "round": { "type": "text", "storage": "inline", "labelTemplate": "Round: {value}",
             "hideWhenEmpty": true },
 
           // Deadline + scheduled reminder. `dueAt` is what the engine's real
           // dueNotifications({asOf}) API reads to decide the reminder is due.
-          "deadline": { "type": "date", "storage": "inline", "sortable": true,
+          "deadline": { "type": "date", "writableBy": "formEntry", "storage": "inline", "sortable": true,
             "displayIcon": "schedule", "labelTemplate": "Voting closes: {value}",
             "displayContexts": ["tile", "detail"], "hideWhenEmpty": true },
-          "reminderOffset": { "type": "text", "storage": "inline" },
-          "notificationsEnabled": { "type": "bool", "storage": "inline" },
+          "reminderOffset": { "type": "text", "writableBy": "formEntry", "storage": "inline" },
+          "notificationsEnabled": { "type": "bool", "writableBy": "formEntry", "storage": "inline" },
           // Computed, not stored — dueAt = deadline minus reminderOffset's real duration. Vocabulary:
           // 'at-time'=0h, 'one-hour'=1h, 'one-day'=24h, 'one-week'=168h (matches the existing seeded
           // vocabulary in part24_form_entry_controls.dart's _reminderOffsets and

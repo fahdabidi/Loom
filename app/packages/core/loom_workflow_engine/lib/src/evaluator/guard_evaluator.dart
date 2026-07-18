@@ -17,6 +17,8 @@ bool evaluateGuard(
   // completedWorkflowIds is reserved for Phase 3 (cross-workflow deps).
   // Accepted but not yet enforced in Phase 1.
   Set<String>? completedWorkflowIds,
+  num? precomputedRelatedAggregate,
+  num? resolvedRelatedAggregateCompareTo,
 }) {
   // allowedPersonaIds — if non-null and non-empty, the persona's *type*
   // (when available) or individual id must be in the list.
@@ -55,6 +57,19 @@ bool evaluateGuard(
     if (value is! bool || !value) return false;
   }
 
+  if (guard.relatedAggregate != null && precomputedRelatedAggregate != null) {
+    final compareTo =
+        resolvedRelatedAggregateCompareTo ?? guard.relatedAggregate!.compareTo;
+    if (compareTo is! num ||
+        !_compare(
+          precomputedRelatedAggregate,
+          compareTo,
+          guard.relatedAggregate!.comparator,
+        )) {
+      return false;
+    }
+  }
+
   // requiresWorkflowsComplete — cross-workflow dependency (Phase 3).
   // For now, guard passes if null/empty; once real data flows in, check
   // that completedWorkflowIds contains every required workflow.
@@ -67,4 +82,22 @@ bool evaluateGuard(
   }
 
   return true;
+}
+
+bool _compare(num actual, num expected, String comparator) {
+  switch (comparator) {
+    case '<':
+      return actual < expected;
+    case '<=':
+      return actual <= expected;
+    case '>':
+      return actual > expected;
+    case '>=':
+      return actual >= expected;
+    case '==':
+      return actual == expected;
+    case '!=':
+      return actual != expected;
+  }
+  return false;
 }

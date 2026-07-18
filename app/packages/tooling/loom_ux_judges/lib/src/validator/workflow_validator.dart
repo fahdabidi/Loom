@@ -131,6 +131,7 @@ class WorkflowValidator {
       _checkStuckStates(machine, findings);
       _checkUnreachableStates(machine, findings);
       _checkDanglingReferences(machine, workflows, findings);
+      _checkRelatedAggregateGuards(machine, workflows, findings);
       _checkMissingLabels(machine, findings);
       _checkBindingCap(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
@@ -142,6 +143,7 @@ class WorkflowValidator {
       _checkSourceQueries(machine, workflows, findings);
       _checkItemActionsInputs(machine, workflows, findings);
       _checkCreatablePrefill(machine, findings);
+      _checkResponseTableAndFacets(machine, workflows, findings);
 
       if (knownPersonaIds != null && knownPersonaIds!.isNotEmpty) {
         _checkCreatablePersonaIds(machine, findings);
@@ -163,6 +165,122 @@ class WorkflowValidator {
     _checkDependencyCycles(workflows, findings);
 
     return ValidationReport(findings);
+  }
+
+  void _checkRelatedAggregateGuards(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    for (final transition in machine.transitions) {
+      final related = transition.guard.relatedAggregate;
+      if (related == null) continue;
+      final location =
+          '${machine.workflowType}/transitions/${transition.id}/guard/relatedAggregate';
+      final target = workflows[related.workflowType];
+      if (target == null) {
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_related_aggregate_workflow_type',
+            message:
+                'relatedAggregate.workflowType "${related.workflowType}" is not declared.',
+            location: '$location/workflowType',
+          ),
+        );
+      } else {
+        for (final key in related.filter.keys) {
+          if (key != r'$state' && !target.instanceDataSchema.containsKey(key)) {
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_related_aggregate_filter_field',
+                message:
+                    'relatedAggregate.filter references "$key", which is not declared on "${related.workflowType}".',
+                location: '$location/filter/$key',
+              ),
+            );
+          }
+        }
+      }
+      final compareTo = related.compareTo;
+      if (compareTo is Map) {
+        final field = compareTo['relatedInstanceField'];
+        if (field is! String ||
+            !machine.instanceDataSchema.containsKey(field)) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_related_instance_field',
+              message:
+                  'relatedAggregate.compareTo.relatedInstanceField "${field ?? '<missing>'}" is not declared in instanceDataSchema.',
+              location: '$location/compareTo/relatedInstanceField',
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _checkResponseTableAndFacets(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      final base =
+          '${machine.workflowType}/renderBindings/${binding.states.join(",")}';
+      final responseTable = binding.responseTable;
+      if (responseTable != null) {
+        final target = workflows[responseTable.workflowType];
+        if (target == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_response_table_workflow_type',
+              message:
+                  'responseTable.workflowType "${responseTable.workflowType}" is not declared.',
+              location: '$base/responseTable/workflowType',
+            ),
+          );
+        } else {
+          if (!target.instanceDataSchema.containsKey(
+            responseTable.eventField,
+          )) {
+            findings.add(
+              ValidationFinding(
+                type: 'unknown_response_table_field',
+                message:
+                    'responseTable.eventField "${responseTable.eventField}" is not declared on "${responseTable.workflowType}".',
+                location: '$base/responseTable/eventField',
+              ),
+            );
+          }
+          for (final state in responseTable.pendingStates) {
+            if (!target.states.containsKey(state)) {
+              findings.add(
+                ValidationFinding(
+                  type: 'unknown_response_table_state',
+                  message:
+                      'responseTable.pendingStates contains undeclared state "$state".',
+                  location: '$base/responseTable/pendingStates',
+                ),
+              );
+            }
+          }
+        }
+      }
+      for (final facet
+          in binding.filterableFacets ?? const <FilterableFacetSpec>[]) {
+        final field = machine.instanceDataSchema[facet.field];
+        if (field == null || field.formula == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_filterable_facet_field',
+              message:
+                  'filterableFacets field "${facet.field}" must be a declared formula field.',
+              location: '$base/filterableFacets/${facet.field}',
+            ),
+          );
+        }
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -568,7 +686,8 @@ class WorkflowValidator {
                 location: '$location/fields/$key',
               ),
             );
-          } else if (targetField.formula != null || targetField.source != null) {
+          } else if (targetField.formula != null ||
+              targetField.source != null) {
             findings.add(
               ValidationFinding(
                 type: 'computed_field_written_by_effect',
@@ -607,7 +726,8 @@ class WorkflowValidator {
             location: location,
           ),
         );
-      } else if (machine.instanceDataSchema[effect.key]?.formula != null || machine.instanceDataSchema[effect.key]?.source != null) {
+      } else if (machine.instanceDataSchema[effect.key]?.formula != null ||
+          machine.instanceDataSchema[effect.key]?.source != null) {
         findings.add(
           ValidationFinding(
             type: 'computed_field_written_by_effect',
@@ -896,6 +1016,7 @@ class WorkflowValidator {
       }
     }
   }
+
   // ---------------------------------------------------------------------------
   // unknown_input_type: every transitions[].inputs[].type must be a known type
   // ---------------------------------------------------------------------------
@@ -981,8 +1102,10 @@ class WorkflowValidator {
 
       final effectValue = effect.value;
       if (effectValue != null) {
-        checkString(effectValue.toString(),
-            effect.key != null ? 'key=${effect.key}' : 'value');
+        checkString(
+          effectValue.toString(),
+          effect.key != null ? 'key=${effect.key}' : 'value',
+        );
       }
 
       final fields = effect.fields;
@@ -1202,8 +1325,10 @@ class WorkflowValidator {
 
       final effectValue = effect.value;
       if (effectValue != null) {
-        checkString(effectValue.toString(),
-            effect.key != null ? 'key=${effect.key}' : 'value');
+        checkString(
+          effectValue.toString(),
+          effect.key != null ? 'key=${effect.key}' : 'value',
+        );
       }
 
       final fields = effect.fields;
@@ -1308,5 +1433,4 @@ class WorkflowValidator {
       }
     }
   }
-
 }

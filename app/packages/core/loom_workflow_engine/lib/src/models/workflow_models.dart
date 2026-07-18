@@ -23,6 +23,7 @@ class WorkflowGuard {
   /// A computed-field formula which must evaluate to true.
   final String? formula;
   final RelatedListGuard? relatedListMembership;
+  final RelatedAggregateGuard? relatedAggregate;
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
@@ -31,6 +32,7 @@ class WorkflowGuard {
     this.instanceDataEquals,
     this.formula,
     this.relatedListMembership,
+    this.relatedAggregate,
     this.requiresWorkflowsComplete,
   });
 
@@ -54,6 +56,11 @@ class WorkflowGuard {
       relatedListMembership: json['relatedInstanceField'] != null
           ? RelatedListGuard.fromJson(json)
           : null,
+      relatedAggregate: json['relatedAggregate'] != null
+          ? RelatedAggregateGuard.fromJson(
+              json['relatedAggregate'] as Map<String, dynamic>,
+            )
+          : null,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -67,7 +74,34 @@ class WorkflowGuard {
       instanceDataEquals == null &&
       formula == null &&
       relatedListMembership == null &&
+      relatedAggregate == null &&
       (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
+}
+
+/// A live aggregate over instances in a related workflow type.
+class RelatedAggregateGuard {
+  final String workflowType;
+  final Map<String, dynamic> filter;
+  final String op;
+  final String comparator;
+  final dynamic compareTo;
+
+  const RelatedAggregateGuard({
+    required this.workflowType,
+    required this.filter,
+    required this.op,
+    required this.comparator,
+    required this.compareTo,
+  });
+
+  factory RelatedAggregateGuard.fromJson(Map<String, dynamic> json) =>
+      RelatedAggregateGuard(
+        workflowType: json['workflowType'] as String,
+        filter: Map<String, dynamic>.from(json['filter'] as Map),
+        op: json['op'] as String,
+        comparator: json['comparator'] as String,
+        compareTo: json['compareTo'],
+      );
 }
 
 class RelatedListGuard {
@@ -280,9 +314,11 @@ class RepeaterSpec {
 
   factory RepeaterSpec.fromJson(Map<String, dynamic> json) => RepeaterSpec(
     source: json['source'] as String,
-    itemActions: (json['itemActions'] as List<dynamic>?)
-        ?.map((e) => RepeaterItemAction.fromJson(e as Map<String, dynamic>))
-        .toList() ?? const [],
+    itemActions:
+        (json['itemActions'] as List<dynamic>?)
+            ?.map((e) => RepeaterItemAction.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
   );
 }
 
@@ -325,6 +361,8 @@ class RenderBinding {
 
   /// Declares this type can be created directly (GAP-2).
   final CreatableSpec? creatable;
+  final ResponseTableSpec? responseTable;
+  final List<FilterableFacetSpec>? filterableFacets;
 
   const RenderBinding({
     required this.states,
@@ -335,6 +373,8 @@ class RenderBinding {
     this.audienceMemberField,
     this.repeater,
     this.creatable,
+    this.responseTable,
+    this.filterableFacets,
   });
 
   factory RenderBinding.fromJson(Map<String, dynamic> json) {
@@ -353,8 +393,46 @@ class RenderBinding {
       creatable: json['creatable'] != null
           ? CreatableSpec.fromJson(json['creatable'] as Map<String, dynamic>)
           : null,
+      responseTable: json['responseTable'] != null
+          ? ResponseTableSpec.fromJson(
+              json['responseTable'] as Map<String, dynamic>,
+            )
+          : null,
+      filterableFacets: (json['filterableFacets'] as List<dynamic>?)
+          ?.map((e) => FilterableFacetSpec.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
+}
+
+class ResponseTableSpec {
+  final String workflowType;
+  final String eventField;
+  final List<String> pendingStates;
+  const ResponseTableSpec({
+    required this.workflowType,
+    required this.eventField,
+    required this.pendingStates,
+  });
+  factory ResponseTableSpec.fromJson(Map<String, dynamic> json) =>
+      ResponseTableSpec(
+        workflowType: json['workflowType'] as String,
+        eventField: json['eventField'] as String,
+        pendingStates: (json['pendingStates'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+      );
+}
+
+class FilterableFacetSpec {
+  final String field;
+  final String label;
+  const FilterableFacetSpec({required this.field, required this.label});
+  factory FilterableFacetSpec.fromJson(Map<String, dynamic> json) =>
+      FilterableFacetSpec(
+        field: json['field'] as String,
+        label: json['label'] as String,
+      );
 }
 
 /// Schema metadata for a single field in `instanceData`.
