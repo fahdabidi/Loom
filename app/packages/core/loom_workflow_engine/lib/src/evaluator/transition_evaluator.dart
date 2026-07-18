@@ -15,6 +15,7 @@ List<LoomWorkflowTransition> availableTransitions(
   Map<String, dynamic> instanceData, {
   String? personaTypeId,
   Set<String>? completedWorkflowIds,
+  bool skipRelatedAggregate = false,
 }) {
   return machine
       .transitionsFrom(currentState)
@@ -25,6 +26,7 @@ List<LoomWorkflowTransition> availableTransitions(
           instanceData,
           personaTypeId: personaTypeId,
           completedWorkflowIds: completedWorkflowIds,
+          skipRelatedAggregate: skipRelatedAggregate,
         ),
       )
       .toList();

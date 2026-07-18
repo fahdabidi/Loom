@@ -191,10 +191,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
     return rows.where((row) => row.workflowType == workflowType).map((row) {
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
-      if (data.containsKey(r'$state')) {
-        throw StateError(r'instanceData must not define reserved key "$state"');
+      if (data.containsKey(r'$state') || data.containsKey(r'$id')) {
+        throw StateError(
+          r'instanceData must not define reserved keys "$state" or "$id"',
+        );
       }
-      return {...data, r'$state': row.currentState};
+      return {...data, r'$state': row.currentState, r'$id': row.instanceId};
     }).toList();
   }
 
@@ -297,12 +299,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required Map<String, dynamic> instanceData,
     required String personaId,
   }) async {
-    final candidates = availableTransitions(
-      workflowType: workflowType,
-      instanceId: instanceId,
-      currentState: currentState,
-      instanceData: instanceData,
-      personaId: personaId,
+    final defId = '${_communityId}_$workflowType';
+    final machine = _definitions[defId];
+    if (machine == null) return const [];
+    final candidates = trans_eval.availableTransitions(
+      machine,
+      currentState,
+      personaId,
+      _withComputedFields(instanceData, machine, viewerId: personaId),
+      personaTypeId: _personaTypeById[personaId],
+      skipRelatedAggregate: true,
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
@@ -383,6 +389,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       computedData,
       personaTypeId: _personaTypeById[personaId],
       completedWorkflowIds: completedWorkflowIds,
+      skipRelatedAggregate: true,
     );
 
     final transition = transitions.firstWhere(

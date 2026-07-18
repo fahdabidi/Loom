@@ -19,6 +19,7 @@ bool evaluateGuard(
   Set<String>? completedWorkflowIds,
   num? precomputedRelatedAggregate,
   num? resolvedRelatedAggregateCompareTo,
+  bool skipRelatedAggregate = false,
 }) {
   // allowedPersonaIds — if non-null and non-empty, the persona's *type*
   // (when available) or individual id must be in the list.
@@ -57,10 +58,11 @@ bool evaluateGuard(
     if (value is! bool || !value) return false;
   }
 
-  if (guard.relatedAggregate != null && precomputedRelatedAggregate != null) {
+  if (guard.relatedAggregate != null && !skipRelatedAggregate) {
     final compareTo =
         resolvedRelatedAggregateCompareTo ?? guard.relatedAggregate!.compareTo;
-    if (compareTo is! num ||
+    if (precomputedRelatedAggregate == null ||
+        compareTo is! num ||
         !_compare(
           precomputedRelatedAggregate,
           compareTo,

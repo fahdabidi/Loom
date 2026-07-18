@@ -145,7 +145,7 @@ void main() {
     },
   );
 
-  test(r'$state is available to query-backed groupCount formulas', () async {
+  test(r'$state and $id are available to query-backed source fields', () async {
     final api = LocalWorkflowEngineApi(
       db: WorkflowDatabase.memory(),
       communityId: 'state',
@@ -187,17 +187,72 @@ void main() {
       personaId: 'host',
       initialInstanceData: {},
     );
-    await api.createInstance(
+    final response = await api.createInstance(
       workflowType: 'response',
       personaId: 'member',
       initialInstanceData: {'eventId': event},
     );
     final page = await api.queryInstances(tabId: 'x', personaId: 'host');
+    final eventData = page.items
+        .singleWhere((row) => row.instanceId == event)
+        .instanceData;
+    expect(eventData['counts'], {'going': 1});
+    expect(eventData['responses'], [
+      {'eventId': event, r'$state': 'going', r'$id': response},
+    ]);
+  });
+
+  test('relatedAggregate guard fails closed for an empty avg', () async {
+    final api = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'empty-average-guard',
+    );
+    api.registerDefinition(
+      _machine('response', {
+        'initialState': 'pending',
+        'states': {
+          'pending': {'label': 'Pending'},
+          'going': {'label': 'Going'},
+        },
+        'transitions': [
+          {
+            'id': 'going',
+            'label': 'Going',
+            'from': ['pending'],
+            'to': 'going',
+            'guard': {
+              'relatedAggregate': {
+                'workflowType': 'response',
+                'filter': {'eventId': '{eventId}', r'$state': 'going'},
+                'op': 'avg',
+                'comparator': '<',
+                'compareTo': 2,
+              },
+            },
+          },
+        ],
+        'instanceDataSchema': {
+          'eventId': {'type': 'text'},
+        },
+      }),
+    );
+    final response = await api.createInstance(
+      workflowType: 'response',
+      personaId: 'member',
+      initialInstanceData: {'eventId': 'event-1'},
+    );
+
+    final transitions = await api.availableTransitionsAsync(
+      workflowType: 'response',
+      instanceId: response,
+      currentState: 'pending',
+      instanceData: {'eventId': 'event-1'},
+      personaId: 'member',
+    );
+
     expect(
-      page.items
-          .singleWhere((row) => row.instanceId == event)
-          .instanceData['counts'],
-      {'going': 1},
+      transitions.map((transition) => transition.id),
+      isNot(contains('going')),
     );
   });
 
