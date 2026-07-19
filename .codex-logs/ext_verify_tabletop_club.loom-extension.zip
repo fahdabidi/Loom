@@ -1,13 +1,1 @@
-{
-  "schemaVersion": 1,
-  "extensionId": "ext_verify_tabletop_club",
-  "displayName": "Tabletop Club",
-  "version": "1.0.0",
-  "mode": "local-demo",
-  "permissions": ["content.publish", "events.write", "forms.write"],
-  "assets": {
-    "logo": "assets/brand/tabletop-logo.png",
-    "cardImage": "assets/brand/tabletop-card.png",
-    "heroImage": "assets/brand/tabletop-hero.png"
-  }
-}
+{"schemaVersion":1,"extensionId":"ext_verify_tabletop_club","displayName":"Tabletop Club","version":"1.0.0","mode":"local-demo","permissions":[]}
