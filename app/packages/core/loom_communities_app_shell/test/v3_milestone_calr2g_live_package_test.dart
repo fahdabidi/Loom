@@ -38,6 +38,12 @@ void main() {
 
       expect(community.extensionId, _extensionId);
 
+      experienceForExtensionId(
+        community.extensionId,
+        displayName: community.displayName,
+        experienceConfiguration: community.experienceConfiguration,
+      );
+
       final engine =
           (await workflowEngineForExtensionId(community.extensionId))
               as LocalWorkflowEngineApi;
