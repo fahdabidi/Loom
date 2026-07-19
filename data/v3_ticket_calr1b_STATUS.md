@@ -15,4 +15,4 @@ Test suite: pass count (138/138). New coverage: hydrated query-backed rows inclu
 
 ## Commit
 
-staged, not committed — final commit follows the required verification and git file-count sanity check.
+staged, not committed — `fatal: Unable to create '/mnt/c/Users/fahd_/OneDrive/Documents/Loom/.git/index.lock': File exists.` The prescribed single retry did not produce a commit; no further git recovery was attempted.

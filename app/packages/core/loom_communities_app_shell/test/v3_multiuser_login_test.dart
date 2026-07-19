@@ -69,9 +69,8 @@ void main() {
           as LocalWorkflowEngineApi;
 
       // Register all seeded account persona types with the engine
-      final accounts = await authApi.listAccounts(
-        communityExtensionId: communityExtensionId,
-      );
+      final accounts =
+          await authApi.listAccounts(communityExtensionId: communityExtensionId);
       for (final account in accounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
       }
@@ -133,8 +132,9 @@ void main() {
       expect(newSession.account.accountId, isNot('tabletop-member-05'));
 
       // The new account should now appear in listAccounts
-      final accounts =
-          await authApi.listAccounts(communityExtensionId: communityExtensionId);
+      final accounts = await authApi.listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
       expect(
         accounts.any((a) => a.accountId == newSession.account.accountId),
         isTrue,
@@ -231,7 +231,7 @@ void main() {
         personaId: 'tabletop-member',
         limit: 50,
       );
-      expect(page.items, hasLength(20));
+      expect(page.items, hasLength(33));
 
       // Verify that the persona type mapping is in place:
       // query the real share-azul instance (same pattern as Test 3 above)

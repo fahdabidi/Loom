@@ -223,6 +223,16 @@ class _ControlledEngine implements WorkflowEngineApi {
     personaId: personaId,
   );
   @override
+  Future<List<String>> createInstances({
+    required String workflowType,
+    required List<Map<String, dynamic>> initialInstanceDataList,
+    required String personaId,
+  }) => delegate.createInstances(
+    workflowType: workflowType,
+    initialInstanceDataList: initialInstanceDataList,
+    personaId: personaId,
+  );
+  @override
   Future<dynamic> aggregate({
     required String workflowType,
     required String column,

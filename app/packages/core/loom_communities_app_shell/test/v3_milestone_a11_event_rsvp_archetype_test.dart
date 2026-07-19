@@ -70,12 +70,16 @@ Future<_InstalledTabletop> _install(String extensionId) async {
       displayName: community.displayName,
       experienceConfiguration: community.experienceConfiguration,
     );
-    return _InstalledTabletop(
-      community,
-      experience,
-      await workflowEngineForExtensionId(community.extensionId),
-      temp,
-    );
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    if (engine is LocalWorkflowEngineApi) {
+      final accounts = await LocalAuthApi().listAccounts(
+        communityExtensionId: 'ext_verify_tabletop_club',
+      );
+      for (final account in accounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
+    return _InstalledTabletop(community, experience, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -130,6 +134,12 @@ Future<WorkflowInstance> _instance(
   );
   return page.items.singleWhere((row) => row.instanceId == id);
 }))!;
+
+Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
+    (event.instanceData['responses'] as List)
+        .whereType<Map<String, dynamic>>()
+        .map((response) => Map<String, dynamic>.from(response))
+        .singleWhere((response) => response['personaId'] == personaId);
 
 /// Taps an action chip keyed to the bespoke event-rsvp widget.
 Future<void> _tapRsvpAction(
@@ -205,9 +215,7 @@ void main() {
         ),
       );
       expect(
-        find.byKey(
-          const ValueKey('event-rsvp-card-event-friday-game-night'),
-        ),
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
         findsOneWidget,
       );
       expect(find.byType(GenericWorkflowInstanceCard), findsNothing);
@@ -218,7 +226,7 @@ void main() {
 
   // ---------------------------------------------------------------------------
   // Test 2: The capacity visualization reflects the real going-count/capacity
-  //         (Friday seed: goingPersonaIds length 12, capacity 20).
+  //         (Friday seed: 11 response rows going, capacity 20).
   // ---------------------------------------------------------------------------
   testWidgets('capacity bar reflects real going count and capacity', (
     tester,
@@ -230,14 +238,12 @@ void main() {
 
       await _pumpUntil(
         tester,
-        find.byKey(
-          const ValueKey('event-rsvp-card-event-friday-game-night'),
-        ),
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
       );
 
-      // Going: 12 / 20
-      expect(find.text('12 / 20 going'), findsOneWidget);
-      expect(find.text('8 seats left'), findsOneWidget);
+      // Going: 11 / 20
+      expect(find.text('11 / 20 going'), findsOneWidget);
+      expect(find.text('9 seats left'), findsOneWidget);
 
       // Progress bar present
       final bar = find.byKey(
@@ -245,91 +251,155 @@ void main() {
       );
       expect(bar, findsOneWidget);
       final indicator = tester.widget<LinearProgressIndicator>(bar);
-      expect(indicator.value, 12 / 20);
+      expect(indicator.value, 11 / 20);
     } finally {
       await tester.runAsync(installed.dispose);
     }
   });
 
   // ---------------------------------------------------------------------------
-  // Test 3: Tapping "Going" for a persona not yet in goingPersonaIds calls the
-  //         real engine, and the resulting instance reflects the new state.
+  // Test 3: Tapping "Going" updates the viewer's response row through the
+  //         real engine, then rehydrates the event detail.
   // ---------------------------------------------------------------------------
   testWidgets('Going action persists through real engine and updates the card', (
     tester,
   ) async {
     final installed = (await tester.runAsync(() => _install('a11-going')))!;
+    setCurrentActiveAccountId('tabletop-member-14');
+    addTearDown(() => setCurrentActiveAccountId(null));
     try {
-      // The organizer is in maybePersonaIds, not goingPersonaIds.
-      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
       await _selectAgenda(tester, 'event-friday-game-night', 0);
 
       await _pumpUntil(
         tester,
-        find.byKey(
-          const ValueKey('event-rsvp-card-event-friday-game-night'),
-        ),
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
       );
 
-      // Before: organizer is not in goingPersonaIds
+      // Before: this seeded row is pending.
       final before = await _instance(
         tester,
         installed,
         'event-friday-game-night',
       );
       expect(
-        before.instanceData['goingPersonaIds'],
-        isNot(contains('tabletop-organizer')),
+        _responseFor(before, 'tabletop-member-14')['\$id'],
+        'resp-friday-member-14',
       );
+      expect(_responseFor(before, 'tabletop-member-14')['\$state'], 'pending');
+      expect(before.instanceData['goingCount'], 11);
 
-      await _tapRsvpAction(tester, 'event-friday-game-night', 'rsvp-going');
+      await _tapRsvpAction(tester, 'event-friday-game-night', 'respond-going');
 
-      // After: organizer IS in goingPersonaIds, not in maybe
+      // After: the same real response row is going and the event formula updates.
       final after = await _instance(
         tester,
         installed,
         'event-friday-game-night',
       );
       expect(
-        after.instanceData['goingPersonaIds'],
-        contains('tabletop-organizer'),
+        _responseFor(after, 'tabletop-member-14')['\$id'],
+        'resp-friday-member-14',
       );
-      expect(
-        after.instanceData['maybePersonaIds'],
-        isNot(contains('tabletop-organizer')),
-      );
-      expect(after.instanceData['goingCount'], 13);
-      expect(after.instanceData['seatsRemaining'], 7);
+      expect(_responseFor(after, 'tabletop-member-14')['\$state'], 'going');
+      expect(after.instanceData['goingCount'], 12);
+      expect(after.instanceData['seatsRemaining'], 8);
 
       // UI reflects new state
-      await _pumpUntil(tester, find.text('13 / 20 going'));
-      expect(find.text('13 / 20 going'), findsOneWidget);
-      expect(find.text('7 seats left'), findsOneWidget);
+      await _pumpUntil(tester, find.text('12 / 20 going'));
+      expect(find.text('12 / 20 going'), findsOneWidget);
+      expect(find.text('8 seats left'), findsOneWidget);
+      final goingChipFinder = find.descendant(
+        of: find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-respond-going',
+          ),
+        ),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is InputChip && widget.selected,
+        ),
+      );
+      await _pumpUntil(tester, goingChipFinder);
+      final goingChip = tester.widget<InputChip>(goingChipFinder);
+      expect(goingChip.selected, isTrue);
     } finally {
       await tester.runAsync(installed.dispose);
     }
   });
 
+  testWidgets(
+    'seeded pending member-14 goes through its own response row and selected UI state',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a11-member-14'),
+      ))!;
+      setCurrentActiveAccountId('tabletop-member-14');
+      addTearDown(() => setCurrentActiveAccountId(null));
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final before = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+          personaId: 'tabletop-member-14',
+        );
+        expect(
+          _responseFor(before, 'tabletop-member-14')['\$id'],
+          'resp-friday-member-14',
+        );
+        expect(
+          _responseFor(before, 'tabletop-member-14')['\$state'],
+          'pending',
+        );
+        final goingBefore = before.instanceData['goingCount'] as num;
+
+        await _tapRsvpAction(
+          tester,
+          'event-friday-game-night',
+          'respond-going',
+        );
+
+        final after = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+          personaId: 'tabletop-member-14',
+        );
+        expect(_responseFor(after, 'tabletop-member-14')['\$state'], 'going');
+        expect(after.instanceData['goingCount'], goingBefore + 1);
+        final goingChipFinder = find.descendant(
+          of: find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-going',
+            ),
+          ),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is InputChip && widget.selected,
+          ),
+        );
+        await _pumpUntil(tester, goingChipFinder);
+        final goingChip = tester.widget<InputChip>(goingChipFinder);
+        expect(goingChip.selected, isTrue);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   // ---------------------------------------------------------------------------
-  // Test 4: The waitlist state renders distinctly once goingPersonaIds fills
+  // Test 4: The waitlist state renders distinctly once response rows fill
   //         capacity.
   // ---------------------------------------------------------------------------
   testWidgets('waitlist indicator renders when capacity is reached', (
     tester,
   ) async {
-    final installed = (await tester.runAsync(
-      () => _install('a11-waitlist'),
-    ))!;
+    final installed = (await tester.runAsync(() => _install('a11-waitlist')))!;
+    setCurrentActiveAccountId('tabletop-member-14');
+    addTearDown(() => setCurrentActiveAccountId(null));
     try {
-      // Set up: make tabletop-member withdraw (freeing a seat), then reduce
-      // capacity to 11 so the 11 going personas fill it.
+      // Set up: the seed has 11 going rows; reduce capacity to 11.
       await tester.runAsync(() async {
-        await installed.engine.applyTransition(
-          workflowType: 'event-rsvp',
-          instanceId: 'event-friday-game-night',
-          transitionId: 'rsvp-maybe',
-          personaId: 'tabletop-member',
-        );
         await installed.engine.updateInstanceFields(
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
@@ -338,7 +408,7 @@ void main() {
         );
       });
 
-      // Now 11 going, capacity 11 → full. tabletop-member is not going.
+      // Now 11 going, capacity 11 → full. tabletop-member-14 is pending.
       await tester.pumpWidget(
         _calendar(installed, 'tabletop-member', revision: 2),
       );
@@ -346,9 +416,7 @@ void main() {
 
       await _pumpUntil(
         tester,
-        find.byKey(
-          const ValueKey('event-rsvp-card-event-friday-game-night'),
-        ),
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
       );
 
       // Full capacity bar
@@ -360,14 +428,14 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-respond-waitlist',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-respond-going',
           ),
         ),
         findsNothing,
@@ -382,17 +450,21 @@ void main() {
       );
 
       // Join waitlist
-      await _tapRsvpAction(tester, 'event-friday-game-night', 'join-waitlist');
+      await _tapRsvpAction(
+        tester,
+        'event-friday-game-night',
+        'respond-waitlist',
+      );
 
       final waitlisted = await _instance(
         tester,
         installed,
         'event-friday-game-night',
-        personaId: 'tabletop-member',
+        personaId: 'tabletop-member-14',
       );
       expect(
-        waitlisted.instanceData['waitlistPersonaIds'],
-        contains('tabletop-member'),
+        _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
+        'waitlisted',
       );
       expect(waitlisted.instanceData['goingCount'], 11);
 
@@ -440,15 +512,16 @@ void main() {
 
       // Bespoke card, not generic
       expect(
-        find.byKey(
-          const ValueKey('event-rsvp-card-event-summer-tournament'),
-        ),
+        find.byKey(const ValueKey('event-rsvp-card-event-summer-tournament')),
         findsOneWidget,
       );
       expect(find.byType(GenericWorkflowInstanceCard), findsNothing);
 
       // Tournament-specific: Accepted count, quorum met indicator
-      expect(find.text('8 / 8 going'), findsOneWidget); // accepted=8, minimumAttendance=8
+      expect(
+        find.text('8 / 8 going'),
+        findsOneWidget,
+      ); // accepted=8, minimumAttendance=8
       expect(
         find.byKey(
           const ValueKey('event-rsvp-capacity-bar-event-summer-tournament'),

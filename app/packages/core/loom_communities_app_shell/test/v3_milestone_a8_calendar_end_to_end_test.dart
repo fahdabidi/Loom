@@ -70,12 +70,16 @@ Future<_InstalledTabletop> _install(String extensionId) async {
       displayName: community.displayName,
       experienceConfiguration: community.experienceConfiguration,
     );
-    return _InstalledTabletop(
-      community,
-      experience,
-      await workflowEngineForExtensionId(community.extensionId),
-      temp,
-    );
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    if (engine is LocalWorkflowEngineApi) {
+      final accounts = await LocalAuthApi().listAccounts(
+        communityExtensionId: 'ext_verify_tabletop_club',
+      );
+      for (final account in accounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
+    return _InstalledTabletop(community, experience, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -152,6 +156,12 @@ Future<WorkflowInstance> _instance(
   );
   return page.items.singleWhere((row) => row.instanceId == id);
 }))!;
+
+Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
+    (event.instanceData['responses'] as List)
+        .whereType<Map<String, dynamic>>()
+        .map((response) => Map<String, dynamic>.from(response))
+        .singleWhere((response) => response['personaId'] == personaId);
 
 Future<void> _tapAction(
   WidgetTester tester,
@@ -307,10 +317,11 @@ void main() {
         ),
         findsNWidgets(2),
       );
-      expect(find.textContaining('goingPersonaIds'), findsNothing);
-      expect(find.textContaining('maybePersonaIds'), findsNothing);
-      expect(find.textContaining('notGoingPersonaIds'), findsNothing);
-      expect(find.textContaining('waitlistPersonaIds'), findsNothing);
+      expect(find.textContaining('responses'), findsNothing);
+      expect(find.textContaining('responseCounts'), findsNothing);
+      expect(find.textContaining('maybeCount'), findsNothing);
+      expect(find.textContaining('declinedCount'), findsNothing);
+      expect(find.textContaining('waitlistedCount'), findsNothing);
       expect(find.textContaining('isFull'), findsNothing);
       expect(find.textContaining('quorumMet'), findsNothing);
 
@@ -400,7 +411,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('12 / 20 going'), findsOneWidget);
+      expect(find.text('11 / 20 going'), findsOneWidget);
       expect(
         find.byKey(
           const ValueKey(
@@ -630,29 +641,18 @@ void main() {
             ),
           ),
         );
-        await _tapAction(tester, 'event-friday-game-night', 'rsvp-going');
+        await _tapAction(tester, 'event-friday-game-night', 'respond-going');
         final going = await _instance(
           tester,
           installed,
           'event-friday-game-night',
         );
-        expect(
-          going.instanceData['goingPersonaIds'],
-          contains('tabletop-organizer'),
-        );
-        expect(
-          going.instanceData['maybePersonaIds'],
-          isNot(contains('tabletop-organizer')),
-        );
-        expect(
-          going.instanceData['notGoingPersonaIds'],
-          isNot(contains('tabletop-organizer')),
-        );
-        expect(going.instanceData['goingCount'], 13);
-        expect(going.instanceData['seatsRemaining'], 7);
-        await _pumpUntil(tester, find.text('13 / 20 going'));
-        expect(find.text('13 / 20 going'), findsOneWidget);
-        expect(find.text('7 seats left'), findsOneWidget);
+        expect(_responseFor(going, 'tabletop-organizer')['\$state'], 'going');
+        expect(going.instanceData['goingCount'], 12);
+        expect(going.instanceData['seatsRemaining'], 8);
+        await _pumpUntil(tester, find.text('12 / 20 going'));
+        expect(find.text('12 / 20 going'), findsOneWidget);
+        expect(find.text('8 seats left'), findsOneWidget);
         expect(
           find.byKey(
             const ValueKey(
@@ -669,25 +669,18 @@ void main() {
           ),
           findsNothing,
         );
-        await _tapAction(tester, 'event-friday-game-night', 'rsvp-maybe');
+        await _tapAction(tester, 'event-friday-game-night', 'respond-maybe');
         final maybe = await _instance(
           tester,
           installed,
           'event-friday-game-night',
         );
-        expect(
-          maybe.instanceData['goingPersonaIds'],
-          isNot(contains('tabletop-organizer')),
-        );
-        expect(
-          maybe.instanceData['maybePersonaIds'],
-          contains('tabletop-organizer'),
-        );
-        expect(maybe.instanceData['goingCount'], 12);
-        expect(maybe.instanceData['seatsRemaining'], 8);
-        await _pumpUntil(tester, find.text('12 / 20 going'));
-        expect(find.text('12 / 20 going'), findsOneWidget);
-        expect(find.text('8 seats left'), findsOneWidget);
+        expect(_responseFor(maybe, 'tabletop-organizer')['\$state'], 'maybe');
+        expect(maybe.instanceData['goingCount'], 11);
+        expect(maybe.instanceData['seatsRemaining'], 9);
+        await _pumpUntil(tester, find.text('11 / 20 going'));
+        expect(find.text('11 / 20 going'), findsOneWidget);
+        expect(find.text('9 seats left'), findsOneWidget);
         expect(
           find.byKey(
             const ValueKey(
@@ -696,24 +689,13 @@ void main() {
           ),
           findsOneWidget,
         );
-        await _tapAction(tester, 'event-friday-game-night', 'rsvp-not-going');
+        await _tapAction(tester, 'event-friday-game-night', 'respond-declined');
         final no = await _instance(
           tester,
           installed,
           'event-friday-game-night',
         );
-        expect(
-          no.instanceData['goingPersonaIds'],
-          isNot(contains('tabletop-organizer')),
-        );
-        expect(
-          no.instanceData['maybePersonaIds'],
-          isNot(contains('tabletop-organizer')),
-        );
-        expect(
-          no.instanceData['notGoingPersonaIds'],
-          contains('tabletop-organizer'),
-        );
+        expect(_responseFor(no, 'tabletop-organizer')['\$state'], 'declined');
       } finally {
         await tester.runAsync(installed.dispose);
       }
@@ -724,56 +706,33 @@ void main() {
     tester,
   ) async {
     final installed = (await tester.runAsync(() => _install('a8-fullness')))!;
+    setCurrentActiveAccountId('tabletop-member-14');
+    addTearDown(() => setCurrentActiveAccountId(null));
     try {
       await tester.runAsync(() async {
-        await installed.engine.applyTransition(
-          workflowType: 'event-rsvp',
-          instanceId: 'event-friday-game-night',
-          transitionId: 'rsvp-maybe',
-          personaId: 'tabletop-member',
-        );
         await installed.engine.updateInstanceFields(
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
-          fieldUpdates: const {'capacity': 12},
+          fieldUpdates: const {'capacity': 11},
           personaId: 'tabletop-organizer',
         );
       });
       await tester.pumpWidget(
-        _calendar(installed, 'tabletop-organizer', revision: 2),
-      );
-      await _pumpUntil(
-        tester,
-        find.byKey(
-          const ValueKey(
-            'engine-native-calendar-agenda-event-friday-game-night-0',
-          ),
-        ),
-      );
-      await tester.tap(
-        find.byKey(
-          const ValueKey(
-            'engine-native-calendar-agenda-event-friday-game-night-0',
-          ),
-        ),
-      );
-      await _tapAction(tester, 'event-friday-game-night', 'rsvp-going');
-      await tester.pumpWidget(
-        _calendar(installed, 'tabletop-member', revision: 3),
+        _calendar(installed, 'tabletop-member', revision: 2),
       );
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _pumpUntil(
         tester,
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-respond-waitlist',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-respond-going',
           ),
         ),
         findsNothing,
@@ -782,40 +741,46 @@ void main() {
         tester,
         installed,
         'event-friday-game-night',
-        personaId: 'tabletop-member',
+        personaId: 'tabletop-member-14',
       );
-      expect(full.instanceData['goingCount'], 12);
+      expect(full.instanceData['goingCount'], 11);
       expect(full.instanceData['seatsRemaining'], 0);
       expect(full.instanceData['isFull'], isTrue);
-      await tester.pumpWidget(
-        _calendar(installed, 'tabletop-organizer', revision: 4),
-      );
-      await _selectAgenda(tester, 'event-friday-game-night', 0);
-      await _pumpUntil(
+      await _tapAction(tester, 'event-friday-game-night', 'respond-waitlist');
+      final waitlisted = await _instance(
         tester,
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-rsvp-maybe',
-          ),
+        installed,
+        'event-friday-game-night',
+        personaId: 'tabletop-member-14',
+      );
+      expect(
+        _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
+        'waitlisted',
+      );
+      await tester.runAsync(
+        () => installed.engine.applyTransition(
+          workflowType: 'event-rsvp-response',
+          instanceId: 'resp-friday-member-03',
+          transitionId: 'respond-declined',
+          personaId: 'tabletop-member-03',
         ),
       );
-      await _tapAction(tester, 'event-friday-game-night', 'rsvp-maybe');
       await tester.pumpWidget(
-        _calendar(installed, 'tabletop-member', revision: 5),
+        _calendar(installed, 'tabletop-member', revision: 3),
       );
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _pumpUntil(
         tester,
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-rsvp-going',
+            'event-rsvp-event-friday-game-night-action-respond-going',
           ),
         ),
       );
       expect(
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-join-waitlist',
+            'event-rsvp-event-friday-game-night-action-respond-waitlist',
           ),
         ),
         findsNothing,
@@ -824,42 +789,22 @@ void main() {
         tester,
         installed,
         'event-friday-game-night',
-        personaId: 'tabletop-member',
+        personaId: 'tabletop-member-14',
       );
-      expect(open.instanceData['goingCount'], 11);
+      expect(open.instanceData['goingCount'], 10);
       expect(open.instanceData['seatsRemaining'], 1);
       expect(open.instanceData['isFull'], isFalse);
-      await _tapAction(tester, 'event-friday-game-night', 'rsvp-going');
-      await _pumpUntil(
-        tester,
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-join-waitlist',
-          ),
-        ),
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-rsvp-going',
-          ),
-        ),
-        findsNothing,
-      );
-      await _tapAction(tester, 'event-friday-game-night', 'join-waitlist');
-      final waitlisted = await _instance(
+      await _tapAction(tester, 'event-friday-game-night', 'respond-going');
+      final going = await _instance(
         tester,
         installed,
         'event-friday-game-night',
-        personaId: 'tabletop-member',
+        personaId: 'tabletop-member-14',
       );
-      expect(
-        waitlisted.instanceData['waitlistPersonaIds'],
-        contains('tabletop-member'),
-      );
-      expect(waitlisted.instanceData['goingCount'], 12);
-      expect(waitlisted.instanceData['seatsRemaining'], 0);
-      expect(waitlisted.instanceData['isFull'], isTrue);
+      expect(_responseFor(going, 'tabletop-member-14')['\$state'], 'going');
+      expect(going.instanceData['goingCount'], 11);
+      expect(going.instanceData['seatsRemaining'], 0);
+      expect(going.instanceData['isFull'], isTrue);
     } finally {
       await tester.runAsync(installed.dispose);
     }
@@ -998,6 +943,8 @@ void main() {
       final installed = (await tester.runAsync(
         () => _install('a8-cancellation'),
       ))!;
+      setCurrentActiveAccountId('tabletop-member-14');
+      addTearDown(() => setCurrentActiveAccountId(null));
       try {
         await _expectRefused(tester, () async {
           await installed.engine.applyTransition(
@@ -1013,7 +960,7 @@ void main() {
           tester,
           find.byKey(
             const ValueKey(
-              'event-rsvp-event-friday-game-night-action-rsvp-going',
+              'event-rsvp-event-friday-game-night-action-respond-going',
             ),
           ),
         );
@@ -1025,6 +972,7 @@ void main() {
           ),
           findsNothing,
         );
+        setCurrentActiveAccountId('tabletop-organizer');
         await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _tapAction(tester, 'event-friday-game-night', 'cancel-event');
@@ -1073,17 +1021,15 @@ void main() {
           findsOneWidget,
         );
         for (final action in const [
-          'rsvp-going',
-          'rsvp-maybe',
-          'rsvp-not-going',
-          'join-waitlist',
+          'respond-going',
+          'respond-maybe',
+          'respond-declined',
+          'respond-waitlist',
           'cancel-event',
         ]) {
           expect(
             find.byKey(
-              ValueKey(
-                'event-rsvp-event-friday-game-night-action-$action',
-              ),
+              ValueKey('event-rsvp-event-friday-game-night-action-$action'),
             ),
             findsNothing,
           );

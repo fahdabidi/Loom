@@ -106,6 +106,7 @@ void main() {
       definitions!.keys,
       unorderedEquals(<String>[
         'event-rsvp',
+        'event-rsvp-response',
         'tournament-event',
         'tournament-ballot',
         'tournament-vote',
@@ -119,24 +120,18 @@ void main() {
       ]),
     );
     expect(instances, isNotNull);
-    expect(instances, hasLength(20));
+    expect(instances, hasLength(33));
     expect(
       definitions['event-rsvp']!.states.keys,
       containsAll(<String>['open', 'cancelled']),
     );
-    expect(
-      definitions['event-rsvp']!.transitions.map((t) => t.id),
-      contains('rsvp-going'),
-    );
+    expect(definitions['event-rsvp']!.transitions.map((t) => t.id), <String>[
+      'cancel-event',
+    ]);
     final friday = instances!.singleWhere(
       (instance) => instance.instanceId == 'event-friday-game-night',
     );
     expect(friday.currentState, 'open');
-    expect(friday.instanceData['goingPersonaIds'], isA<List<Object?>>());
-    expect(
-      (friday.instanceData['goingPersonaIds'] as List<Object?>).length,
-      12,
-    );
   });
 
   test('2 absent stamp preserves the legacy shallow projection', () {

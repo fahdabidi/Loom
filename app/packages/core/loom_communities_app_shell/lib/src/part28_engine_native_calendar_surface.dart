@@ -474,7 +474,6 @@ class _EngineNativeCalendarContentState
   }
 }
 
-
 class _EventRsvpDetailCard extends StatefulWidget {
   const _EventRsvpDetailCard({
     super.key,
@@ -506,16 +505,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     'seatsRemaining',
     'quorumMet',
     'isFull',
-    'goingPersonaIds',
-    'maybePersonaIds',
-    'notGoingPersonaIds',
-    'waitlistPersonaIds',
-    'waitlistedPersonaIds',
-    'rsvpByPersona',
+    'responses',
+    'responseCounts',
+    'maybeCount',
+    'declinedCount',
+    'waitlistedCount',
   };
 
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
+  Set<String> _eventActionIds = const {};
   bool _loadingActions = true;
   bool _mutating = false;
   String? _error;
@@ -543,6 +542,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       _error = null;
       _retry = null;
       _actions = const [];
+      _eventActionIds = const {};
       _loadingActions = true;
       _mutating = false;
       _loadActions();
@@ -569,35 +569,74 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       identical(widget.engine, engine) &&
       widget.personaId == personaId;
 
+  /// `event-rsvp` stores a member's selection on that member's response row.
+  /// Other workflow types can share this detail-card surface while retaining
+  /// their own event-level action model.
+  bool get _usesResponseRows => _instance.workflowType == 'event-rsvp';
+
+  Map<String, dynamic>? get _viewerResponse {
+    if (!_usesResponseRows) return null;
+    final responses = _instance.instanceData['responses'];
+    if (responses is! List) return null;
+    for (final response in responses) {
+      if (response is Map && response['personaId'] == widget.personaId) {
+        return Map<String, dynamic>.from(response);
+      }
+    }
+    return null;
+  }
+
   Future<void> _loadActions() async {
     final generation = _generation;
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
+    final response = _viewerResponse;
     final request = ++_actionRequest;
     if (_isCurrent(generation, instance, machine, engine, personaId)) {
       setState(() {
         _loadingActions = true;
         _actions = const [];
+        _eventActionIds = const {};
         _error = null;
         _retry = null;
       });
     }
+    if (_usesResponseRows && response == null) {
+      if (_isCurrent(generation, instance, machine, engine, personaId) &&
+          request == _actionRequest) {
+        setState(() => _loadingActions = false);
+      }
+      return;
+    }
     try {
-      final result = await engine.availableTransitionsAsync(
+      final eventActions = await engine.availableTransitionsAsync(
         workflowType: instance.workflowType,
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
         personaId: personaId,
       );
+      final responseActions = response == null
+          ? const <LoomWorkflowTransition>[]
+          : await engine.availableTransitionsAsync(
+              workflowType: 'event-rsvp-response',
+              instanceId: response['\$id'] as String,
+              currentState: response['\$state'] as String,
+              instanceData: response,
+              personaId: personaId,
+            );
+      final result = response == null
+          ? eventActions
+          : <LoomWorkflowTransition>[...eventActions, ...responseActions];
       if (!_isCurrent(generation, instance, machine, engine, personaId) ||
           request != _actionRequest) {
         return;
       }
       setState(() {
         _actions = result;
+        _eventActionIds = eventActions.map((action) => action.id).toSet();
         _loadingActions = false;
       });
     } catch (_) {
@@ -619,6 +658,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
+    final response = _viewerResponse;
+    final appliesToEvent = _eventActionIds.contains(transitionId);
+    if (_usesResponseRows && response == null && !appliesToEvent) {
+      return Future.value();
+    }
     return _runMutation(
       generation: generation,
       instance: instance,
@@ -627,11 +671,25 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       personaId: personaId,
       operation: () async {
         final result = await engine.applyTransition(
-          workflowType: instance.workflowType,
-          instanceId: instance.instanceId,
+          workflowType: response == null || appliesToEvent
+              ? instance.workflowType
+              : 'event-rsvp-response',
+          instanceId: response == null || appliesToEvent
+              ? instance.instanceId
+              : response['\$id'] as String,
           transitionId: transitionId,
           personaId: personaId,
         );
+        if (response != null && !appliesToEvent) {
+          final page = await engine.queryInstances(
+            tabId: 'calendar',
+            personaId: personaId,
+            limit: 100,
+          );
+          return page.items.singleWhere(
+            (candidate) => candidate.instanceId == instance.instanceId,
+          );
+        }
         return WorkflowInstance(
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
@@ -684,6 +742,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   };
 
   bool _isSelected(LoomWorkflowTransition action) {
+    final response = _viewerResponse;
+    if (response != null) {
+      return switch (action.id) {
+        'respond-going' => response['\$state'] == 'going',
+        'respond-maybe' => response['\$state'] == 'maybe',
+        'respond-declined' => response['\$state'] == 'declined',
+        'respond-waitlist' => response['\$state'] == 'waitlisted',
+        _ => false,
+      };
+    }
     final data = _instance.instanceData;
     final pid = widget.personaId;
     switch (action.id) {
@@ -698,6 +766,49 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       default:
         return false;
     }
+  }
+
+  List<LoomWorkflowTransition> get _displayActions {
+    final response = _viewerResponse;
+    if (response == null) return _actions;
+    final selected = switch (response['\$state']) {
+      'going' => const LoomWorkflowTransition(
+        id: 'respond-going',
+        label: 'Going',
+        icon: 'event_available',
+        tone: 'primary',
+        from: <String>[],
+      ),
+      'maybe' => const LoomWorkflowTransition(
+        id: 'respond-maybe',
+        label: 'Maybe',
+        icon: 'help_outline',
+        tone: 'secondary',
+        from: <String>[],
+      ),
+      'declined' => const LoomWorkflowTransition(
+        id: 'respond-declined',
+        label: "Can't go",
+        icon: 'event_busy',
+        tone: 'destructive',
+        from: <String>[],
+      ),
+      'waitlisted' => const LoomWorkflowTransition(
+        id: 'respond-waitlist',
+        label: 'Join waitlist',
+        icon: 'groups',
+        tone: 'secondary',
+        from: <String>[],
+      ),
+      _ => null,
+    };
+    if (selected == null ||
+        (selected.id == 'respond-waitlist' &&
+            _actions.any((action) => action.id == 'respond-going')) ||
+        _actions.any((action) => action.id == selected.id)) {
+      return _actions;
+    }
+    return <LoomWorkflowTransition>[selected, ..._actions];
   }
 
   Map<String, WorkflowFactPillFieldSchema> get _fallbackFactSchema => {
@@ -721,10 +832,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final seatsRemaining = data['seatsRemaining'];
     final isFull = data['isFull'] as bool? ?? false;
     final quorumMet = data['quorumMet'];
+    final response = _viewerResponse;
     final waitlistIds =
         (data['waitlistPersonaIds'] as List?)?.cast<String>() ??
-            const <String>[];
-    final onWaitlist = waitlistIds.contains(widget.personaId);
+        const <String>[];
+    final onWaitlist = response == null
+        ? waitlistIds.contains(widget.personaId)
+        : response['\$state'] == 'waitlisted';
 
     final hasCapacityInfo =
         data.containsKey('capacity') || data.containsKey('minimumAttendance');
@@ -760,10 +874,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                             style: TextStyle(
                               color: isFull
                                   ? Theme.of(context).colorScheme.error
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.6),
+                                  : Theme.of(context).colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
                             ),
                           ),
                       ],
@@ -790,9 +902,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                     'event-rsvp-capacity-bar-${_instance.instanceId}',
                   ),
                   value: ratio,
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
                   color: isFull
                       ? Theme.of(context).colorScheme.error
                       : widget.accent,
@@ -804,18 +916,24 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             if (onWaitlist)
               Container(
                 key: ValueKey('event-rsvp-waitlist-${_instance.instanceId}'),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.hourglass_empty,
-                        color: Colors.orange, size: 20),
+                    const Icon(
+                      Icons.hourglass_empty,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'You are on the waitlist',
@@ -845,9 +963,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: LinearProgressIndicator(
-                  key: ValueKey(
-                    'event-rsvp-progress-${_instance.instanceId}',
-                  ),
+                  key: ValueKey('event-rsvp-progress-${_instance.instanceId}'),
                 ),
               ),
             if (_error != null)
@@ -858,13 +974,18 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                   children: [
                     Expanded(child: Text(_error!)),
                     TextButton(
-                      key: ValueKey(
-                        'event-rsvp-retry-${_instance.instanceId}',
-                      ),
+                      key: ValueKey('event-rsvp-retry-${_instance.instanceId}'),
                       onPressed: _mutating ? null : () => _retry?.call(),
                       child: const Text('Retry'),
                     ),
                   ],
+                ),
+              ),
+            if (_usesResponseRows && response == null)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'No response record is available for you for this event.',
                 ),
               ),
             if (!_loadingActions) ...[
@@ -873,7 +994,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final action in _actions)
+                  for (final action in _displayActions)
                     _RsvpActionChip(
                       key: ValueKey(
                         'event-rsvp-${_instance.instanceId}-action-${action.id}',
@@ -882,7 +1003,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                       iconName: action.icon,
                       tone: _toneFor(action.tone),
                       selected: _isSelected(action),
-                      onPressed: _mutating
+                      onPressed:
+                          _mutating ||
+                              (_usesResponseRows && _isSelected(action))
                           ? null
                           : () => _applyTransition(action.id),
                     ),

@@ -80,8 +80,21 @@ void main() {
         'announcement-room-change',
         'thread-welcome',
         'thread-game-suggestions',
+        'resp-friday-organizer',
+        'resp-friday-member-03',
+        'resp-friday-member-04',
+        'resp-friday-member-05',
+        'resp-friday-member-06',
+        'resp-friday-member-07',
+        'resp-friday-member-08',
+        'resp-friday-member-09',
+        'resp-friday-member-10',
+        'resp-friday-member-11',
+        'resp-friday-member-12',
+        'resp-friday-member-13',
+        'resp-friday-member-14',
       };
-      expect(rows, hasLength(20));
+      expect(rows, hasLength(33));
       expect(rows.map((row) => row.instanceId), unorderedEquals(expectedIds));
 
       final expectedSeeds = <String, LoomWorkflowSeedInstance>{
@@ -118,8 +131,7 @@ void main() {
       final friday = rows.singleWhere(
         (row) => row.instanceId == 'event-friday-game-night',
       );
-      expect(friday.instanceData['goingPersonaIds'], hasLength(12));
-      expect(friday.instanceData['goingCount'], 12);
+      expect(friday.instanceData['goingCount'], 11);
 
       final secondInstall = backend.installLocalPackagePairFromFiles(
         extensionPackagePath: extensionFile.path,
@@ -140,7 +152,7 @@ void main() {
         personaId: 'tabletop-member',
         limit: 50,
       )).items;
-      expect(repeatedRows, hasLength(20));
+      expect(repeatedRows, hasLength(33));
       expect(
         repeatedRows.map((row) => row.instanceId),
         unorderedEquals(expectedIds),
@@ -155,7 +167,7 @@ void main() {
         },
         personaId: 'tabletop-member',
       );
-      expect(resolved.workflowDefinitions, hasLength(11));
+      expect(resolved.workflowDefinitions, hasLength(12));
     } finally {
       await temp.delete(recursive: true);
     }
