@@ -252,6 +252,23 @@ communities — not before.**
 | CALR.4b | Real member login/identity flow. Found during CALR.2's live walkthrough (2026-07-19): the only reachable persona control ("Switch role": Organizer/Member) maps "Member" to a generic placeholder id that matches none of the 13 individually-seeded accounts (`tabletop-member-03`..`14`) the CALR.1/2 redesign requires — a live "member" sees "No response record is available for you for this event." on every event. `LoomAuthScreen` (real individual-account sign-in) exists in code (`part31_auth_screens.dart`) but is never instantiated anywhere in the app — dead code; `v3_multiuser_login_test.dart` only exercises identity switching via the private `setCurrentActiveAccountId()` test hook, never through real UI. Wire a real account-selection/sign-in flow into actual navigation (reusing `LoomAuthScreen` if it's fit for purpose, or replacing it if not) so a live viewer can pick one of the individually-seeded accounts, not just the generic type. Pre-existing app-shell identity gap, not a CALR.2 regression — CALR.2's redesign just exposed it (the old list-based RSVP tolerated the generic type id fine). | none (app-shell, not Calendar-specific) | `[ ]` Not started |
 | CALR.5 | Day/Week/Month/Pending views: the generalized holding-container widget, parametrized by `responseTable`/`filterableFacets` (timeframe scope + response-status filter), minimized cards expanding via `EngineNativeArchetypeCard` (reuse GP.1, accordion-style), month-grid date-cell tap → Day view, filterable-facets UI (boolean chips + numeric stat display). Acceptance test follows the user's own methodology exactly: create randomized events as organizer (CALR.3) → switch to member → RSVP (CALR.2) → verify correct Day/Week/Month/Pending scoping — **the "switch to member" step needs CALR.4b's real login flow to be genuinely live-verifiable, not just unit-tested via the `setCurrentActiveAccountId()` hook.** | CALR.1-CALR.4, CALR.4b | `[ ]` Not started |
 
+**Layout reference for CALR.5 (user direction, 2026-07-20, three screenshots reviewed — Google Calendar's
+schedule/agenda view):**
+- **Single screen, not separate tabs/routes**: the month grid stays visible at the top of the Calendar
+  tab; the RSVP agenda list renders directly underneath it, scoped to whatever timeframe is currently
+  selected (unbounded / month / week / day) — not a full-screen navigation away from the grid.
+- **Agenda list layout**: chronological, grouped by date — the date rendered once on the left, with one or
+  more "slim" RSVP cards stacked to its right for that date (title + time, compact — not the full detail
+  card). Matches Google Calendar's schedule view exactly (date rail on the left, event chips on the right,
+  one row per day that has events, empty days skipped).
+- **Slim card → full card is the same accordion-expand behavior CALR.5 already planned** (`EngineNativeArchetypeCard`,
+  GP.1 pattern) — this direction confirms/sharpens that plan with a concrete reference rather than changing
+  it: tapping a slim card in the agenda list expands it in place to the same full `_EventRsvpDetailCard`
+  (going/maybe/waitlist actions, capacity bar, etc.) already built in CALR.2, not a new detail widget.
+- **Month-grid date-cell tap** still scopes the agenda list to that one day (Day view) — matches the
+  milestone's existing "month-grid date-cell tap → Day view" line; the screenshots just clarify this means
+  re-scoping the SAME on-screen agenda list, not navigating to a separate Day screen.
+
 ## 1e. App Shell milestones (outside the Calendar-only CALR scope)
 
 | # | Milestone | Depends on | Status |
