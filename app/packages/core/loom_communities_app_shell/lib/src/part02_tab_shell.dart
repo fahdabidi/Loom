@@ -575,8 +575,8 @@ class _ThreadDetailView extends StatelessWidget {
             ),
           ),
         ),
-        // Unrolled message list; the active tab is scrollable in the bounded
-        // region provided by LocalExtensionScreen.
+        // Unrolled message list (no Expanded/ListView — parent is
+        // SingleChildScrollView via _TabNativeRenderer)
         for (final message in thread.messages) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),

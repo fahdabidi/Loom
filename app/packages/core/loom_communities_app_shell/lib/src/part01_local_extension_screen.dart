@@ -787,8 +787,15 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      body: SingleChildScrollView(
+        key: ValueKey('local-extension-${community.extensionId}'),
+        controller: _surfaceScrollController,
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          shellSpec.theme.tabHeight + 48,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -955,87 +962,73 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   : null,
             ),
             const SizedBox(height: 10),
-            Expanded(
-              child: SingleChildScrollView(
-                key: ValueKey('local-extension-${community.extensionId}'),
-                controller: _surfaceScrollController,
-                padding: EdgeInsets.only(
-                  bottom: shellSpec.theme.tabHeight + 48,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _TabNativeRenderer(
-                      experience: experience,
-                      persona: activePersona,
-                      selectedTab: selectedTab,
-                      sections: selectedSections,
-                      focusedWorkflowId: focusedWorkflowId,
-                      expandedWorkflowId: _expandedWorkflowId,
-                      accent: accent,
-                      theme: shellSpec.theme,
-                      workflowBuilder: (workflow, state) => _workflowPresenterFor(
-                        experience: experience,
-                        activePersona: activePersona,
-                        workflow: workflow,
-                        state: state,
-                        shellSpec: shellSpec,
-                        focusKey: focusKey,
-                      ),
-                      reminderEnabledWorkflowIds: _reminderEnabledWorkflowIds,
-                      onToggleReminder: (workflowId) => setState(() {
-                        if (!_reminderEnabledWorkflowIds.remove(workflowId)) {
-                          _reminderEnabledWorkflowIds.add(workflowId);
-                        }
-                      }),
-                      onSelectCalendarDate: (workflowId) => setState(() {
-                        _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
-                      }),
-                      onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
-                      completedWorkflowIds: _completedWorkflowIds,
-                    ),
-                    const SizedBox(height: 24),
-                    ExpansionTile(
-                      title: const Text('Local package details'),
-                      leading: const Icon(Icons.inventory_2_outlined),
-                      collapsedTextColor: Colors.white,
-                      collapsedIconColor: Colors.white,
-                      textColor: Colors.white,
-                      iconColor: Colors.white,
-                      children: [
-                        _ExtensionInfoTile(
-                          icon: Icons.extension_outlined,
-                          title: 'Package',
-                          value: community.extensionId,
-                        ),
-                        _ExtensionInfoTile(
-                          icon: Icons.palette_outlined,
-                          title: 'Accent',
-                          value: community.accentColor,
-                        ),
-                        _ExtensionInfoTile(
-                          icon: Icons.image_outlined,
-                          title: 'Card image',
-                          value: community.cardImageAssetId ?? 'generated fallback',
-                        ),
-                        if (seedDataFiles.isEmpty)
-                          const ListTile(
-                            dense: true,
-                            leading: Icon(Icons.description_outlined),
-                            title: Text('No seed files recorded.'),
-                          )
-                        else
-                          for (final seedDataFile in seedDataFiles)
-                            ListTile(
-                              dense: true,
-                              leading: const Icon(Icons.description_outlined),
-                              title: Text(seedDataFile),
-                            ),
-                      ],
-                    ),
-                  ],
-                ),
+            _TabNativeRenderer(
+              experience: experience,
+              persona: activePersona,
+              selectedTab: selectedTab,
+              sections: selectedSections,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: _expandedWorkflowId,
+              accent: accent,
+              theme: shellSpec.theme,
+              workflowBuilder: (workflow, state) => _workflowPresenterFor(
+                experience: experience,
+                activePersona: activePersona,
+                workflow: workflow,
+                state: state,
+                shellSpec: shellSpec,
+                focusKey: focusKey,
               ),
+              reminderEnabledWorkflowIds: _reminderEnabledWorkflowIds,
+              onToggleReminder: (workflowId) => setState(() {
+                if (!_reminderEnabledWorkflowIds.remove(workflowId)) {
+                  _reminderEnabledWorkflowIds.add(workflowId);
+                }
+              }),
+              onSelectCalendarDate: (workflowId) => setState(() {
+                _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
+              }),
+              onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
+              completedWorkflowIds: _completedWorkflowIds,
+            ),
+            const SizedBox(height: 24),
+            ExpansionTile(
+              title: const Text('Local package details'),
+              leading: const Icon(Icons.inventory_2_outlined),
+              collapsedTextColor: Colors.white,
+              collapsedIconColor: Colors.white,
+              textColor: Colors.white,
+              iconColor: Colors.white,
+              children: [
+                _ExtensionInfoTile(
+                  icon: Icons.extension_outlined,
+                  title: 'Package',
+                  value: community.extensionId,
+                ),
+                _ExtensionInfoTile(
+                  icon: Icons.palette_outlined,
+                  title: 'Accent',
+                  value: community.accentColor,
+                ),
+                _ExtensionInfoTile(
+                  icon: Icons.image_outlined,
+                  title: 'Card image',
+                  value: community.cardImageAssetId ?? 'generated fallback',
+                ),
+                if (seedDataFiles.isEmpty)
+                  const ListTile(
+                    dense: true,
+                    leading: Icon(Icons.description_outlined),
+                    title: Text('No seed files recorded.'),
+                  )
+                else
+                  for (final seedDataFile in seedDataFiles)
+                    ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.description_outlined),
+                      title: Text(seedDataFile),
+                    ),
+              ],
             ),
           ],
         ),
