@@ -102,10 +102,13 @@ void main() {
     try {
       await tester.pumpWidget(_app(installed));
       await _selectCalendar(tester);
+      // The single-action branch supplies an extended FAB directly to the
+      // Scaffold.  Let the Scaffold's FAB entrance transition paint before
+      // deriving the tap coordinate.  `ensureVisible` cannot help here: this
+      // widget is in Scaffold.floatingActionButton, not the scrollable body.
+      await tester.pump(const Duration(milliseconds: 50));
       final fab = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
       expect(fab, findsOneWidget);
-      await tester.ensureVisible(fab);
-      await tester.pump();
       await tester.tap(fab);
       await tester.pumpAndSettle();
       expect(
