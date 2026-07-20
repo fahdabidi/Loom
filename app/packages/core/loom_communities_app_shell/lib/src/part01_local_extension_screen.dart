@@ -2,6 +2,18 @@ part of '../loom_communities_app_shell.dart';
 
 enum SurfacePresentationState { minimized, medium, expanded }
 
+class _CreatableWorkflowAction {
+  const _CreatableWorkflowAction({
+    required this.workflowType,
+    required this.machine,
+    required this.label,
+  });
+
+  final String workflowType;
+  final LoomWorkflowStateMachine machine;
+  final String label;
+}
+
 class CommunityLaunchCard extends StatelessWidget {
   const CommunityLaunchCard({
     super.key,
@@ -176,6 +188,35 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
+
+  Future<void> _openCreatableAction({
+    required _CreatableWorkflowAction action,
+    required LoomPersonaDefinition activePersona,
+  }) async {
+    if (action.workflowType == 'event-rsvp') {
+      final engine = await workflowEngineForExtensionId(community.extensionId);
+      final created = await showDialog<bool>(
+        context: context,
+        builder: (context) => _EventRsvpCreationDialog(
+          machine: action.machine,
+          engine: engine,
+          organizerPersonaId: activePersona.personaId,
+          communityExtensionId: community.extensionId,
+        ),
+      );
+      if (created == true && mounted) setState(() {});
+      return;
+    }
+    // Temporary CALR.3g limitation: CALR.3h will dispatch every workflow
+    // type to its archetype-specific creation surface.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Creation for ${action.workflowType} is not wired up yet.',
+        ),
+      ),
+    );
+  }
 
   String _routeForSelectedSurface({
     required LoomExperienceDefinition experience,
@@ -759,6 +800,28 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final textTheme = Theme.of(context).textTheme;
     final accent = shellSpec.theme.accent;
     final background = shellSpec.theme.background;
+    final creatableActions = <_CreatableWorkflowAction>[
+      if (experience.workflowDefinitions != null &&
+          experience.workflowDefinitions!.isNotEmpty)
+        for (final definition in experience.workflowDefinitions!.entries)
+          for (final binding in definition.value.renderBindings)
+            if (binding.tabId == selectedTab.tabId &&
+                binding.creatable?.byPersonaIds.contains(
+                      activePersona.personaId,
+                    ) ==
+                    true)
+              _CreatableWorkflowAction(
+                workflowType: definition.key,
+                machine: definition.value,
+                label: binding.creatable!.label,
+              ),
+    ];
+    final multiActionStyle =
+        experience
+            .tabCreatableActionStyles[selectedTab.tabId]
+            ?.multiActionStyle ??
+        experience.creatableAction?.multiActionStyle ??
+        'speedDial';
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
@@ -1041,6 +1104,16 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           _selectedTabIdByPersonaId[activePersona.personaId] = tabId;
         }),
       ),
+      floatingActionButton: creatableActions.isEmpty
+          ? null
+          : _CreatableActionFab(
+              actions: creatableActions,
+              multiActionStyle: multiActionStyle,
+              onSelected: (action) => _openCreatableAction(
+                action: action,
+                activePersona: activePersona,
+              ),
+            ),
     );
   }
 
@@ -1053,5 +1126,91 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       return selected;
     }
     return tabs.first.tabId;
+  }
+}
+
+class _CreatableActionFab extends StatefulWidget {
+  const _CreatableActionFab({
+    required this.actions,
+    required this.multiActionStyle,
+    required this.onSelected,
+  });
+
+  final List<_CreatableWorkflowAction> actions;
+  final String multiActionStyle;
+  final ValueChanged<_CreatableWorkflowAction> onSelected;
+
+  @override
+  State<_CreatableActionFab> createState() => _CreatableActionFabState();
+}
+
+class _CreatableActionFabState extends State<_CreatableActionFab> {
+  bool _speedDialOpen = false;
+
+  Widget _actionFab(_CreatableWorkflowAction action) {
+    return FloatingActionButton.extended(
+      key: ValueKey('creatable-fab-${action.workflowType}'),
+      heroTag: 'creatable-fab-${action.workflowType}',
+      onPressed: () {
+        if (_speedDialOpen) setState(() => _speedDialOpen = false);
+        widget.onSelected(action);
+      },
+      icon: const Icon(Icons.add),
+      label: Text(action.label),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.actions.length == 1 ||
+        widget.multiActionStyle == 'singleFirst') {
+      return _actionFab(widget.actions.first);
+    }
+    if (widget.multiActionStyle == 'stacked') {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (final action in widget.actions) ...[
+            _actionFab(action),
+            if (action != widget.actions.last) const SizedBox(height: 12),
+          ],
+        ],
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final action in widget.actions.reversed) ...[
+          IgnorePointer(
+            ignoring: !_speedDialOpen,
+            child: AnimatedOpacity(
+              opacity: _speedDialOpen ? 1 : 0,
+              duration: const Duration(milliseconds: 180),
+              child: AnimatedScale(
+                scale: _speedDialOpen ? 1 : 0.7,
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _actionFab(action),
+                ),
+              ),
+            ),
+          ),
+        ],
+        FloatingActionButton(
+          key: const ValueKey('creatable-fab-speed-dial'),
+          heroTag: 'creatable-fab-speed-dial',
+          onPressed: () => setState(() => _speedDialOpen = !_speedDialOpen),
+          child: AnimatedRotation(
+            turns: _speedDialOpen ? .125 : 0,
+            duration: const Duration(milliseconds: 180),
+            child: const Icon(Icons.add),
+          ),
+        ),
+      ],
+    );
   }
 }

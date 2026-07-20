@@ -1408,6 +1408,8 @@ class LoomExperienceDefinition {
     this.marketplaceTemplate,
     this.themeOverride,
     this.tabThemeOverrides = const {},
+    this.creatableAction,
+    this.tabCreatableActionStyles = const {},
     this.workflowDefinitions,
     this.workflowInstances,
   });
@@ -1434,8 +1436,30 @@ class LoomExperienceDefinition {
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;
   final Map<String, LoomCardTheme> tabThemeOverrides;
+  final LoomCreatableActionStyle? creatableAction;
+  final Map<String, LoomCreatableActionStyle> tabCreatableActionStyles;
   final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
   final List<LoomWorkflowSeedInstance>? workflowInstances;
+}
+
+/// Community-wide or per-tab presentation defaults for `creatable` bindings.
+/// The individual fields deliberately remain nullable: tab values cascade over
+/// the corresponding community-wide field independently.
+class LoomCreatableActionStyle {
+  const LoomCreatableActionStyle({
+    this.multiActionStyle,
+    this.presentationStyle,
+  });
+
+  final String? multiActionStyle;
+  final String? presentationStyle;
+
+  factory LoomCreatableActionStyle.fromJson(Map<String, Object?> json) {
+    return LoomCreatableActionStyle(
+      multiActionStyle: json['multiActionStyle'] as String?,
+      presentationStyle: json['presentationStyle'] as String?,
+    );
+  }
 }
 
 class LoomWorkflowSeedInstance {

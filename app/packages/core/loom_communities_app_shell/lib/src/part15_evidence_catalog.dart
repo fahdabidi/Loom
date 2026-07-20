@@ -102,6 +102,12 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   }
 
   final themeRaw = experienceConfiguration['theme'];
+  final creatableAction = _parseCreatableActionStyle(
+    experienceConfiguration['creatableAction'],
+  );
+  final tabCreatableActionStyles = _parseTabCreatableActionStyles(
+    experienceConfiguration['tabCreatableActionStyles'],
+  );
 
   List<LoomMessageThread>? threads;
   final threadsRaw = experienceConfiguration['threads'];
@@ -218,6 +224,8 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     tabThemeOverrides: _parseTabThemes(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
+    creatableAction: creatableAction,
+    tabCreatableActionStyles: tabCreatableActionStyles,
     threads: threads,
     notifications: notifications,
     exportWizard: exportWizard,
@@ -277,6 +285,12 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
         ]
       : <LoomPersonaDefinition>[];
   final themeRaw = experienceConfiguration['theme'];
+  final creatableAction = _parseCreatableActionStyle(
+    experienceConfiguration['creatableAction'],
+  );
+  final tabCreatableActionStyles = _parseTabCreatableActionStyles(
+    experienceConfiguration['tabCreatableActionStyles'],
+  );
   return LoomExperienceDefinition(
     extensionId: extensionId,
     displayName: _shellStringOr(
@@ -296,9 +310,32 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
     tabThemeOverrides: _parseTabThemes(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
+    creatableAction: creatableAction,
+    tabCreatableActionStyles: tabCreatableActionStyles,
     workflowDefinitions: definitions,
     workflowInstances: instances.isEmpty ? null : instances,
   );
+}
+
+LoomCreatableActionStyle? _parseCreatableActionStyle(Object? raw) {
+  if (raw is! Map) return null;
+  return LoomCreatableActionStyle.fromJson(Map<String, Object?>.from(raw));
+}
+
+Map<String, LoomCreatableActionStyle> _parseTabCreatableActionStyles(
+  Object? raw,
+) {
+  if (raw is! Map) return const {};
+  final styles = <String, LoomCreatableActionStyle>{};
+  for (final entry in raw.entries) {
+    final value = entry.value;
+    if (value is Map) {
+      styles[entry.key.toString()] = LoomCreatableActionStyle.fromJson(
+        Map<String, Object?>.from(value),
+      );
+    }
+  }
+  return styles;
 }
 
 LoomWorkflowDefinition? _parseWorkflowDefinition(Map<String, Object?> map) {
