@@ -102,25 +102,12 @@ void main() {
     try {
       await tester.pumpWidget(_app(installed));
       await _selectCalendar(tester);
-      // The single-action branch supplies an extended FAB directly to the
-      // Scaffold.  Let the Scaffold's FAB entrance transition paint before
-      // deriving the tap coordinate.  `ensureVisible` cannot help here: this
-      // widget is in Scaffold.floatingActionButton, not the scrollable body.
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(
+        find.byKey(const ValueKey('creatable-fab-speed-dial')),
+      );
+      await tester.pumpAndSettle();
       final fab = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
       expect(fab, findsOneWidget);
-      final fabElement = fab.evaluate().single;
-      final fabRenderBox = fabElement.renderObject! as RenderBox;
-      debugPrint(
-        'CALR3G5_DIAG: attached=${fabRenderBox.attached} '
-        'hasSize=${fabRenderBox.hasSize} '
-        'size=${fabRenderBox.hasSize ? fabRenderBox.size : null} '
-        'globalTopLeft=${fabRenderBox.attached ? fabRenderBox.localToGlobal(Offset.zero) : null} '
-        'globalCenter=${fabRenderBox.attached && fabRenderBox.hasSize ? fabRenderBox.localToGlobal(fabRenderBox.size.center(Offset.zero)) : null} '
-        'paintBounds=${fabRenderBox.paintBounds}',
-      );
-      debugPrint('CALR3G5_DIAG: computed tap center = ${tester.getCenter(fab)}');
-      debugDumpRenderTree();
       await tester.tap(fab);
       await tester.pumpAndSettle();
       expect(
