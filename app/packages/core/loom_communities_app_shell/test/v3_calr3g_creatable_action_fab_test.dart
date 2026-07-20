@@ -104,6 +104,8 @@ void main() {
       await _selectCalendar(tester);
       final fab = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
       expect(fab, findsOneWidget);
+      await tester.ensureVisible(fab);
+      await tester.pump();
       await tester.tap(fab);
       await tester.pumpAndSettle();
       expect(
