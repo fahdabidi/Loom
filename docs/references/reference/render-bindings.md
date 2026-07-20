@@ -173,21 +173,31 @@ warning); `prefill` keys must be declared in this workflow's own `instanceDataSc
 `{context.x}` appearing anywhere OTHER than inside a `creatable.prefill` value is an error
 (`context_reference_outside_creatable`).
 
-## `multiActionStyle` / `tabActionStyles` — resolving multiple `creatable` bindings on one tab (PROPOSED, 2026-07-20)
+## `creatableAction` / `tabCreatableActionStyles` — resolving multiple `creatable` bindings on one tab, and how the launched form presents (PROPOSED, 2026-07-20)
 
 **Not a binding-object key** — these live on the top-level `experience` object, one level up, following the
-same community → tab cascade already used by `theme`/`tabThemes`. They exist because `creatable` is a
-per-binding, per-workflow-type declaration: nothing in the grammar previously said what happens when
-**two or more** workflow types declare a `creatable` binding for the **same** `tabId` (e.g. Calendar
-gaining both `event-rsvp`'s "New event" and `tournament-event`'s "New tournament" once both are wired in)
-— the App Shell would otherwise have to invent an arbitrary rule.
+same community → tab cascade already used by `theme`/`tabThemes` (one community-level object, one
+per-tab override map of the same shape, each of the object's fields resolving independently). They exist
+because `creatable` is a per-binding, per-workflow-type declaration: nothing in the grammar previously said
+what happens when **two or more** workflow types declare a `creatable` binding for the **same** `tabId`
+(e.g. Calendar gaining both `event-rsvp`'s "New event" and `tournament-event`'s "New tournament" once both
+are wired in), nor how the tapped action's own form should be presented — the App Shell would otherwise
+have to invent both rules arbitrarily.
 
 ```jsonc
 "experience": {
   ...
-  "multiActionStyle": "speedDial",       // optional, community-wide default. One of: "speedDial" | "stacked" | "singleFirst". Defaults to "speedDial" if omitted entirely.
-  "tabActionStyles": {                    // optional, per-tab override, same cascade pattern as tabThemes
-    "calendar": "speedDial"
+  "creatableAction": {
+    "multiActionStyle": "speedDial",     // optional, default "speedDial". One of: "speedDial" | "stacked" | "singleFirst"
+    "presentationStyle": "popup",         // optional, default "popup". One of: "popup" | "slideOutPanel"
+    "slideOutEdge": "bottom"              // optional, default "bottom". One of: "bottom" | "left" | "right" — only meaningful when presentationStyle resolves to "slideOutPanel"
+  },
+  "tabCreatableActionStyles": {           // optional, per-tab override — same three fields, each independently optional
+    "calendar": {
+      "presentationStyle": "slideOutPanel",
+      "slideOutEdge": "bottom"
+      // multiActionStyle omitted -> falls back to creatableAction.multiActionStyle above
+    }
   },
   ...
 }
@@ -195,27 +205,46 @@ gaining both `event-rsvp`'s "New event" and `tournament-event`'s "New tournament
 
 | Key | Type | Required | Meaning |
 |---|---|---|---|
-| `multiActionStyle` | string | no | Community-wide default style for resolving multiple `creatable` bindings that target the same tab. One of `speedDial` \| `stacked` \| `singleFirst`. |
-| `tabActionStyles` | object | no | `{ "<tabId>": "<style>" }` — overrides `multiActionStyle` for one specific tab. |
+| `creatableAction` | object | no | Community-wide defaults for all three fields below. |
+| `creatableAction.multiActionStyle` | string | no | How multiple `creatable` bindings on one tab lay out relative to each other. One of `speedDial` \| `stacked` \| `singleFirst`. |
+| `creatableAction.presentationStyle` | string | no | How the tapped action's own archetype card surface (in creation mode) is presented. One of `popup` \| `slideOutPanel`. |
+| `creatableAction.slideOutEdge` | string | no | Which edge a `slideOutPanel` presentation slides in from. One of `bottom` \| `left` \| `right`. Ignored when `presentationStyle` resolves to `popup`. |
+| `tabCreatableActionStyles` | object | no | `{ "<tabId>": { ...same three fields, each optional... } }` — overrides one or more of `creatableAction`'s fields for one specific tab. |
 
-**Resolution rule:** for a given `tabId`, the effective style is `tabActionStyles[tabId] ??
-multiActionStyle ?? "speedDial"` — identical cascade shape to how `theme`/`tabThemes` resolve a card's
-visual theme.
+**Resolution rule — each field resolves independently**, identical cascade shape to how `theme`/`tabThemes`
+resolve a card's visual theme:
+```
+tabCreatableActionStyles[tabId]?.multiActionStyle  ?? creatableAction.multiActionStyle  ?? "speedDial"
+tabCreatableActionStyles[tabId]?.presentationStyle ?? creatableAction.presentationStyle ?? "popup"
+tabCreatableActionStyles[tabId]?.slideOutEdge      ?? creatableAction.slideOutEdge      ?? "bottom"
+```
+A tab overriding only `presentationStyle` still inherits `multiActionStyle` from the community default —
+the three fields are independent, not an all-or-nothing override.
 
-**The three styles:**
-- `speedDial` — the FAB, when tapped, expands into a small stack of labeled mini-actions, one per matching
-  `creatable` binding. The standard Material pattern for "one primary action, several related
-  sub-actions"; scales cleanly past two.
-- `stacked` — every matching `creatable` binding gets its own always-visible FAB, stacked vertically. Only
-  reasonable for exactly two; gets cluttered beyond that — not a substitute for `speedDial` at scale, a
-  deliberately simpler option for the two-action case.
+**The three `multiActionStyle` values:**
+- `speedDial` — the FAB, when tapped, expands into a small radial/stacked burst of labeled mini-actions,
+  one per matching `creatable` binding (reference: Twitter's compose-FAB burst). The standard pattern for
+  "one primary action, several related sub-actions"; scales cleanly past two.
+- `stacked` — every matching `creatable` binding gets its own always-visible FAB, stacked vertically
+  (reference: Google Photos' share-sheet FAB column). Only reasonable for exactly two; gets cluttered
+  beyond that — not a substitute for `speedDial` at scale, a deliberately simpler option for the
+  two-action case.
 - `singleFirst` — only the first matching `creatable` binding (definition order) gets a FAB; the rest are
   not reachable via the FAB at all. A real tradeoff (it hides actions), not merely a simpler visual — use
   deliberately, not as a default.
 
+**The two `presentationStyle` values** — this governs how the archetype card surface for the *tapped*
+action's workflow type renders once launched, in creation mode (no backing instance yet — see
+`archetypes/README.md` for how an archetype's own `cardSurfaceFamily` dispatch extends to a creation
+variant):
+- `popup` — a modal dialog hovering over the current screen (Flutter's `showDialog`).
+- `slideOutPanel` — a sheet sliding in from `slideOutEdge` (`bottom` → `showModalBottomSheet`; `left`/
+  `right` → a side panel sliding in from that edge).
+
 **This resolves independently of how many `creatable` bindings exist** — with exactly one match on a tab,
-all three styles render identically (a single FAB); the distinction only matters once a second `creatable`
-binding lands on the same tab.
+all three `multiActionStyle` values render identically (a single FAB); the distinction only matters once a
+second `creatable` binding lands on the same tab. `presentationStyle`/`slideOutEdge` apply regardless of
+how many actions there are — they govern the launched form, not the FAB itself.
 
 **Not yet implemented** — grammar only, written ahead of the App Shell code that will consume it, same
 convention `responseTable`/`filterableFacets` used before their own consumers existed. See

@@ -65,15 +65,25 @@
       }
     },
 
-    // PROPOSED 2026-07-20 (render-bindings.md) -- resolves which FAB style renders when two or more
-    // `creatable` bindings target the same tab. Calendar is the first tab to need this: event-rsvp's
+    // PROPOSED 2026-07-20 (render-bindings.md) -- resolves (1) which FAB layout renders when two or
+    // more `creatable` bindings target the same tab, and (2) how the tapped action's own archetype
+    // card surface is presented. Calendar is the first tab to need the multi-action case: event-rsvp's
     // "New event" today, and tournament-event's "New tournament" once CALR.3b lands -- both creatable,
-    // both on tabId "calendar". speedDial is the community default; the calendar override is set
-    // explicitly (not left to fall through the default) since this is the one tab that actually needs
-    // it, not a hypothetical.
-    "multiActionStyle": "speedDial",
-    "tabActionStyles": {
-      "calendar": "speedDial"
+    // both on tabId "calendar". The community default keeps creation forms as a popup everywhere;
+    // Calendar overrides to a bottom slide-out panel specifically, since a full event/tournament form
+    // (title/date/time/location/capacity) reads more comfortably in a larger sheet than a small dialog
+    // -- multiActionStyle is left unset in the override, so Calendar still inherits speedDial from the
+    // community default (proving the three fields resolve independently, not all-or-nothing).
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "popup",
+      "slideOutEdge": "bottom"
+    },
+    "tabCreatableActionStyles": {
+      "calendar": {
+        "presentationStyle": "slideOutPanel",
+        "slideOutEdge": "bottom"
+      }
     },
 
     "personas": [
