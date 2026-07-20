@@ -189,13 +189,11 @@ have to invent both rules arbitrarily.
   ...
   "creatableAction": {
     "multiActionStyle": "speedDial",     // optional, default "speedDial". One of: "speedDial" | "stacked" | "singleFirst"
-    "presentationStyle": "popup",         // optional, default "popup". One of: "popup" | "slideOutPanel"
-    "slideOutEdge": "bottom"              // optional, default "bottom". One of: "bottom" | "left" | "right" — only meaningful when presentationStyle resolves to "slideOutPanel"
+    "presentationStyle": "popup"          // optional, default "popup". One of: "popup" | "slideOutBottom" | "slideOutLeft" | "slideOutRight"
   },
-  "tabCreatableActionStyles": {           // optional, per-tab override — same three fields, each independently optional
+  "tabCreatableActionStyles": {           // optional, per-tab override — same two fields, each independently optional
     "calendar": {
-      "presentationStyle": "slideOutPanel",
-      "slideOutEdge": "bottom"
+      "presentationStyle": "slideOutBottom"
       // multiActionStyle omitted -> falls back to creatableAction.multiActionStyle above
     }
   },
@@ -205,21 +203,19 @@ have to invent both rules arbitrarily.
 
 | Key | Type | Required | Meaning |
 |---|---|---|---|
-| `creatableAction` | object | no | Community-wide defaults for all three fields below. |
+| `creatableAction` | object | no | Community-wide defaults for both fields below. |
 | `creatableAction.multiActionStyle` | string | no | How multiple `creatable` bindings on one tab lay out relative to each other. One of `speedDial` \| `stacked` \| `singleFirst`. |
-| `creatableAction.presentationStyle` | string | no | How the tapped action's own archetype card surface (in creation mode) is presented. One of `popup` \| `slideOutPanel`. |
-| `creatableAction.slideOutEdge` | string | no | Which edge a `slideOutPanel` presentation slides in from. One of `bottom` \| `left` \| `right`. Ignored when `presentationStyle` resolves to `popup`. |
-| `tabCreatableActionStyles` | object | no | `{ "<tabId>": { ...same three fields, each optional... } }` — overrides one or more of `creatableAction`'s fields for one specific tab. |
+| `creatableAction.presentationStyle` | string | no | How the tapped action's own archetype card surface (in creation mode) is presented. One of `popup` \| `slideOutBottom` \| `slideOutLeft` \| `slideOutRight`. |
+| `tabCreatableActionStyles` | object | no | `{ "<tabId>": { ...same two fields, each optional... } }` — overrides one or both of `creatableAction`'s fields for one specific tab. |
 
 **Resolution rule — each field resolves independently**, identical cascade shape to how `theme`/`tabThemes`
 resolve a card's visual theme:
 ```
 tabCreatableActionStyles[tabId]?.multiActionStyle  ?? creatableAction.multiActionStyle  ?? "speedDial"
 tabCreatableActionStyles[tabId]?.presentationStyle ?? creatableAction.presentationStyle ?? "popup"
-tabCreatableActionStyles[tabId]?.slideOutEdge      ?? creatableAction.slideOutEdge      ?? "bottom"
 ```
 A tab overriding only `presentationStyle` still inherits `multiActionStyle` from the community default —
-the three fields are independent, not an all-or-nothing override.
+the two fields are independent, not an all-or-nothing override.
 
 **The three `multiActionStyle` values:**
 - `speedDial` — the FAB, when tapped, expands into a small radial/stacked burst of labeled mini-actions,
@@ -233,18 +229,27 @@ the three fields are independent, not an all-or-nothing override.
   not reachable via the FAB at all. A real tradeoff (it hides actions), not merely a simpler visual — use
   deliberately, not as a default.
 
-**The two `presentationStyle` values** — this governs how the archetype card surface for the *tapped*
+**The four `presentationStyle` values** — this governs how the archetype card surface for the *tapped*
 action's workflow type renders once launched, in creation mode (no backing instance yet — see
 `archetypes/README.md` for how an archetype's own `cardSurfaceFamily` dispatch extends to a creation
 variant):
-- `popup` — a modal dialog hovering over the current screen (Flutter's `showDialog`).
-- `slideOutPanel` — a sheet sliding in from `slideOutEdge` (`bottom` → `showModalBottomSheet`; `left`/
-  `right` → a side panel sliding in from that edge).
+- `popup` — a distinct "expand and hover" motion: the form grows outward from the FAB's own screen
+  position, hovers over the current screen, then shrinks back down to the FAB on close. This is **not**
+  a plain `showDialog` (whose default transition fades/scales from screen-center, not anchored to the
+  FAB) — it is Material Design's own named "container transform" pattern. Build it with the official
+  Flutter-team `animations` pub package's `OpenContainer` widget (purpose-built for exactly this motion),
+  not a hand-rolled `Hero` transition — `OpenContainer` is the correct, low-risk tool for this specific
+  effect.
+- `slideOutBottom` — a sheet sliding up from the bottom edge (Flutter's `showModalBottomSheet`, fully
+  native, no extra dependency).
+- `slideOutLeft` / `slideOutRight` — a side panel sliding in from that edge. No single named Flutter
+  widget; build with `showGeneralDialog` + a `SlideTransition` from `Offset(-1, 0)`/`Offset(1, 0)` to
+  `Offset.zero` — a standard, well-understood pattern using only stock Flutter animation primitives.
 
 **This resolves independently of how many `creatable` bindings exist** — with exactly one match on a tab,
 all three `multiActionStyle` values render identically (a single FAB); the distinction only matters once a
-second `creatable` binding lands on the same tab. `presentationStyle`/`slideOutEdge` apply regardless of
-how many actions there are — they govern the launched form, not the FAB itself.
+second `creatable` binding lands on the same tab. `presentationStyle` applies regardless of how many
+actions there are — it governs the launched form, not the FAB itself.
 
 **Not yet implemented** — grammar only, written ahead of the App Shell code that will consume it, same
 convention `responseTable`/`filterableFacets` used before their own consumers existed. See

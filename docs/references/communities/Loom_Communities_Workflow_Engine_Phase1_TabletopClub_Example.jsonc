@@ -69,20 +69,19 @@
     // more `creatable` bindings target the same tab, and (2) how the tapped action's own archetype
     // card surface is presented. Calendar is the first tab to need the multi-action case: event-rsvp's
     // "New event" today, and tournament-event's "New tournament" once CALR.3b lands -- both creatable,
-    // both on tabId "calendar". The community default keeps creation forms as a popup everywhere;
-    // Calendar overrides to a bottom slide-out panel specifically, since a full event/tournament form
-    // (title/date/time/location/capacity) reads more comfortably in a larger sheet than a small dialog
-    // -- multiActionStyle is left unset in the override, so Calendar still inherits speedDial from the
-    // community default (proving the three fields resolve independently, not all-or-nothing).
+    // both on tabId "calendar". The community default keeps creation forms as the "expand and hover"
+    // popup everywhere; Calendar overrides to a bottom slide-out sheet specifically, since a full
+    // event/tournament form (title/date/time/location/capacity) reads more comfortably in a larger
+    // sheet than a small hovering popup -- multiActionStyle is left unset in the override, so Calendar
+    // still inherits speedDial from the community default (proving the two fields resolve
+    // independently, not all-or-nothing).
     "creatableAction": {
       "multiActionStyle": "speedDial",
-      "presentationStyle": "popup",
-      "slideOutEdge": "bottom"
+      "presentationStyle": "popup"
     },
     "tabCreatableActionStyles": {
       "calendar": {
-        "presentationStyle": "slideOutPanel",
-        "slideOutEdge": "bottom"
+        "presentationStyle": "slideOutBottom"
       }
     },
 

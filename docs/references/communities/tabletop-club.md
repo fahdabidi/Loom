@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.4.0
+doc_version: 1.5.0
 status: current
-last_verified: 2026-07-17
+last_verified: 2026-07-20
 audience: llm-agent
 derived_from:
   - docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc
@@ -228,15 +228,21 @@ and approve loans of their own games.
   shows its scoped events as minimized cards by default — no card auto-expands. Tapping a card expands it
   into the full RSVP card (reusing `EngineNativeArchetypeCard` from the generic pipeline); tapping a
   second card collapses the first (accordion — one expanded at a time).
-- **Organizer creates a new Calendar event (PROPOSED, 2026-07-17):** a real "+ New event"/"New
-  tournament" affordance, consuming `creatable` (GAP-2) — its first real UI consumer in this codebase.
-  Not bundled with tournament-ballot creation, which is a separate, second `creatable` affordance invoked
-  from the tournament-event's own card via `{context.eventId}` prefill.
+- **Organizer creates a new Calendar event (PROPOSED, 2026-07-17; FAB infrastructure redesigned
+  2026-07-20):** a generic, tab-wide floating-action-button mechanism (not Calendar-specific) surfaces any
+  `creatable` binding (GAP-2) matching the current tab and viewer persona. Calendar is the first tab with
+  two: `event-rsvp`'s "New event" today, `tournament-event`'s "New tournament" once wired in — resolved via
+  `creatableAction`/`tabCreatableActionStyles` (`render-bindings.md`): `multiActionStyle` (speedDial/
+  stacked/singleFirst) for how multiple actions lay out, `presentationStyle` (popup/slideOutBottom/
+  slideOutLeft/slideOutRight) for how the tapped action's own archetype card surface presents, in creation
+  mode. Not bundled with tournament-ballot creation, which is a separate, third `creatable` affordance
+  invoked from the tournament-event's own card via `{context.eventId}` prefill.
 
 ## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
+| CALR.3 FAB redesign, 2026-07-20 | **yes** — CALR.3's own "+ New event" button was hardcoded to Calendar/`event-rsvp` specifically, with no way for a second tab or a second creatable workflow on the same tab to get one without duplicating bespoke code | yes — three implementation attempts (CALR.3e nested-Scaffold FAB, CALR.3f/3f2 bounded-layout restructuring) were all reverted after real regressions (up to 18 test failures), because `SingleChildScrollView` always gives unbounded height to its child regardless of what bounds the scrollview itself — a nested `Scaffold` inside a tab's own scrollable content can never receive bounded layout constraints, no matter how the outer layers are restructured. Corrected design: attach the FAB to `LocalExtensionScreen`'s own existing top-level Scaffold (already bounded, already computes `selectedTab`/`activePersona`/`experience`) — no nested Scaffold needed at all | `render-bindings.md` `creatableAction`/`tabCreatableActionStyles` (two design iterations same day: flat fields → three-field nested object → final two-field shape after clarifying `presentationStyle` folds in the slide edge); this doc's Calendar-creation user story updated to describe the generic mechanism instead of a Calendar-specific button | App Shell: generic FAB detection + `multiActionStyle` rendering on the real top-level Scaffold (CALR.3g), then `presentationStyle` (popup via the official `animations` package's `OpenContainer`, slide-out via `showModalBottomSheet`/`SlideTransition`) + generalizing the creation form into the archetype's own `cardSurfaceFamily` dispatch in creation mode (CALR.3h) — split into two stages given how expensive the reverted single-shot attempts were | open — spec updated and approved this revision; CALR.3g/3h tickets being scoped |
 | A.10 live emulator walk, 2026-07-14/15 | no | minor — `tournament-event.minimumAttendance` has no `labelTemplate`, renders its raw field name with no value | none (JSON-authoring gap, not a product-spec gap) | fix in either the JSON (add `labelTemplate`) or A.6's generic-card fallback; deferred to A.10's own triage | open |
 | Product request, 2026-07-17 — Calendar Day/Week/Pending views + real event creation | **yes** — no day/week/pending view existed (only the 7×6 month grid), no member-facing minimized-card list, and no way for the organizer to create a new event at all (`creatable` had zero real consumers anywhere in the app) | yes — `event-rsvp`'s RSVP tracking was list-based (`goingPersonaIds` etc.), not row-per-member, so its capacity guard couldn't be evaluated against a live per-row count; the engine had no bulk-create primitive, no way for a guard to reference a live cross-instance aggregate, and no way to expose a row's own FSM state to aggregation | §6/§7/§8/§10/§11 updated (this revision); `render-bindings.md` (`responseTable`, `filterableFacets`), `guards.md` (`relatedAggregate`, kind 7), `formulas.md` (`subtractHours`, `mapGet`, `$state`), `archetypes/README.md` (`event-rsvp` reopened to 🔨 REBUILDING) all updated; frozen JSON redesigned (new `event-rsvp-response` type, `event-rsvp`/`tournament-event`/`tournament-ballot` `creatable` additions, `tournament-ballot.dueAt` converted to computed, seed data converted to per-row) | JSON/docs done this revision (spec only, per explicit instruction — no code yet); engine: `createInstances` (abstract API), `relatedAggregate` guard evaluation, `$state` exposed to aggregation, `subtractHours`/`mapGet` formula functions; App Shell: creation forms (event-rsvp + tournament-event + tournament-ballot), Day/Week/Month/Pending view surface, minimized/expand card list — none dispatched yet, tracked in the CAL/AS ticket gap list pending user review | open — spec complete, implementation tickets not yet written |
 | Product request, 2026-07-15 — peer-to-peer game sharing | **yes** — no member-to-member game-sharing model existed; `tabletop-game-loan` was a one-state, zero-data stub with no owner concept, no queue, no approval flow | partly closed — `tabletop-game-loan` is now authored in the frozen JSON as a real `published→delisted` type with owner-gated approve/decline/delist, request/queue/return/renew/report-issue, and three seeded peer listings (validator-invariant clean); remaining gaps are app-shell runtime loading (milestones 1.27–1.31) plus four inline `NEEDS IMPLEMENTATION` items | §2/§3/§4/§6/§7/§8/§9 updated; JSON `tabletop-game-loan` redesigned (owner-gated via `formula: "ownerPersonaId == $actor"`, no new grammar beyond forward-looking GAP-2 `creatable`); the two `equipment-loan`/`equipment-giveaway` `linkedWorkflowId` refs to the old stub removed | inline `NEEDS IMPLEMENTATION` in the JSON: auto-set owner on create (GAP-2 creator binding), auto-promote queue head on return (no list-head fn), compute/extend due date (no date-returning fn). No app-shell ticket written | open |
