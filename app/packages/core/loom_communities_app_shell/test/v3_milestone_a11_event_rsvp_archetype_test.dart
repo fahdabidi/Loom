@@ -550,4 +550,109 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'organizer creates an event and one pending response per member',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr3-create'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-new-event')),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('engine-native-calendar-new-event')),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const ValueKey('new-event-editor-title')),
+          'CALR.3 test event',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('new-event-editor-location')),
+          'Community room',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('new-event-editor-capacity')),
+          '24',
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('new-event-editor-eventDate')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('15').last);
+        await tester.tap(find.text('OK').last);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('new-event-editor-eventTime')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('OK').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('new-event-submit')));
+        await tester.pump();
+        for (var i = 0; i < 8; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final result = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          final event = page.items.singleWhere(
+            (item) =>
+                item.workflowType == 'event-rsvp' &&
+                item.instanceData['title'] == 'CALR.3 test event',
+          );
+          final accounts = await LocalAuthApi().listAccounts(
+            communityExtensionId: installed.community.extensionId,
+          );
+          final responses = page.items.where(
+            (item) =>
+                item.workflowType == 'event-rsvp-response' &&
+                item.instanceData['eventId'] == event.instanceId,
+          );
+          return (accounts: accounts, responses: responses.toList());
+        }))!;
+        expect(result.responses, hasLength(result.accounts.length));
+        for (final response in result.responses) {
+          expect(response.currentState, 'pending');
+          expect(
+            result.accounts.map((account) => account.accountId),
+            contains(response.instanceData['personaId']),
+          );
+        }
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets('new event control is hidden from a non-creatable persona', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(() => _install('calr3-hidden')))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-new-event')),
+        findsNothing,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 }

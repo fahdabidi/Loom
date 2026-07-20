@@ -96,6 +96,8 @@ class _EngineNativeCalendarSurfaceState
             ),
             bindings: bindings,
             engine: snapshot.data!,
+            communityExtensionId: widget.experience.extensionId,
+            viewerPersonaId: widget.persona.personaId,
             personaId: resolveEnginePersonaId(widget.persona.personaId),
             accent: widget.accent,
             modernTheme: widget.modernTheme,
@@ -185,6 +187,8 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     super.key,
     required this.bindings,
     required this.engine,
+    required this.communityExtensionId,
+    required this.viewerPersonaId,
     required this.personaId,
     required this.accent,
     required this.modernTheme,
@@ -194,6 +198,8 @@ class _EngineNativeCalendarContent extends StatefulWidget {
 
   final List<EngineNativeResolvedBinding> bindings;
   final WorkflowEngineApi engine;
+  final String communityExtensionId;
+  final String viewerPersonaId;
   final String personaId;
   final Color accent;
   final LoomCardTheme? modernTheme;
@@ -309,6 +315,15 @@ class _EngineNativeCalendarContentState
       );
     }
     _reconcileSelection(entries);
+    final creatable = widget.bindings.where(
+      (resolved) =>
+          resolved.machine.workflowType == 'event-rsvp' &&
+          resolved.binding.creatable?.byPersonaIds.contains(
+                widget.viewerPersonaId,
+              ) ==
+              true,
+    );
+    final creationBinding = creatable.isEmpty ? null : creatable.first;
     if (entries.isEmpty) return const _CalendarEmptyState();
 
     final selected = entries.firstWhere(
@@ -327,6 +342,17 @@ class _EngineNativeCalendarContentState
       key: const ValueKey('engine-native-calendar-root'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (creationBinding != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              key: const ValueKey('engine-native-calendar-new-event'),
+              onPressed: () => _showNewEventDialog(creationBinding),
+              icon: const Icon(Icons.add),
+              label: Text(creationBinding.binding.creatable!.label),
+            ),
+          ),
+        if (creationBinding != null) const SizedBox(height: 8),
         Row(
           key: const ValueKey('engine-native-calendar-month-navigation'),
           children: [
@@ -472,6 +498,261 @@ class _EngineNativeCalendarContentState
       widget.presentation.month = DateTime(entry.date.year, entry.date.month);
     });
   }
+
+  Future<void> _showNewEventDialog(EngineNativeResolvedBinding binding) async {
+    final created = await showDialog<bool>(
+      context: context,
+      builder: (context) => _EventRsvpCreationDialog(
+        machine: binding.machine,
+        engine: widget.engine,
+        organizerPersonaId: widget.personaId,
+        communityExtensionId: widget.communityExtensionId,
+      ),
+    );
+    if (created == true && mounted) {
+      // The dispatcher owns the authoritative instance reload mechanism.
+      widget.onInstanceChanged(binding.instance);
+    }
+  }
+}
+
+/// A blank, schema-driven editor for organizer-created event RSVP instances.
+/// It intentionally does not share GenericWorkflowInstanceCard's existing
+/// instance editing state: creation has no persisted instance until submit.
+class _EventRsvpCreationDialog extends StatefulWidget {
+  const _EventRsvpCreationDialog({
+    required this.machine,
+    required this.engine,
+    required this.organizerPersonaId,
+    required this.communityExtensionId,
+  });
+
+  final LoomWorkflowStateMachine machine;
+  final WorkflowEngineApi engine;
+  final String organizerPersonaId;
+  final String communityExtensionId;
+
+  @override
+  State<_EventRsvpCreationDialog> createState() =>
+      _EventRsvpCreationDialogState();
+}
+
+class _EventRsvpCreationDialogState extends State<_EventRsvpCreationDialog> {
+  final Map<String, dynamic> _values = <String, dynamic>{};
+  final Map<String, TextEditingController> _controllers =
+      <String, TextEditingController>{};
+  String? _error;
+  bool _saving = false;
+
+  List<MapEntry<String, InstanceDataField>> get _fields {
+    final editable =
+        widget.machine.states[widget.machine.initialState]?.editableFields ??
+        const <String>[];
+    return [
+      for (final key in editable)
+        if (widget.machine.instanceDataSchema[key] case final schema?)
+          MapEntry(key, schema),
+    ];
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _controller(String key) => _controllers.putIfAbsent(
+    key,
+    () => TextEditingController(text: '${_values[key] ?? ''}'),
+  );
+
+  String _label(String key, InstanceDataField schema) {
+    final template = (schema.labelTemplate ?? '')
+        .replaceAll('{value.length}', '')
+        .replaceAll('{value}', '')
+        .replaceAll(RegExp(r'[:\\-–—]+\\s*$'), '')
+        .trim();
+    if (template.isNotEmpty) return template;
+    return key
+        .replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'),
+          (match) => '${match.group(1)} ${match.group(2)}',
+        )
+        .replaceFirstMapped(
+          RegExp(r'^.'),
+          (match) => match.group(0)!.toUpperCase(),
+        );
+  }
+
+  Future<void> _submit() async {
+    if (_saving) return;
+    for (final field in _fields) {
+      if (field.value.required &&
+          '${_values[field.key] ?? ''}'.trim().isEmpty) {
+        setState(
+          () => _error = '${_label(field.key, field.value)} is required.',
+        );
+        return;
+      }
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    String? eventId;
+    try {
+      final values = <String, dynamic>{
+        for (final field in _fields) field.key: _values[field.key] ?? '',
+      };
+      eventId = await widget.engine.createInstance(
+        workflowType: 'event-rsvp',
+        initialInstanceData: values,
+        personaId: widget.organizerPersonaId,
+      );
+      final accounts = await LocalAuthApi().listAccounts(
+        communityExtensionId: widget.communityExtensionId,
+      );
+      await widget.engine.createInstances(
+        workflowType: 'event-rsvp-response',
+        initialInstanceDataList: [
+          for (final account in accounts)
+            {'eventId': eventId, 'personaId': account.accountId},
+        ],
+        personaId: widget.organizerPersonaId,
+      );
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = eventId == null
+            ? 'Could not create the event. Please try again.'
+            : 'The event was created, but member RSVP rows could not be created. Please retry.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('New event'),
+    content: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final field in _fields) _editor(field.key, field.value),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_error!, key: const ValueKey('new-event-error')),
+            ),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: _saving ? null : () => Navigator.of(context).pop(),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(
+        key: const ValueKey('new-event-submit'),
+        onPressed: _saving ? null : _submit,
+        child: Text(_saving ? 'Creating…' : 'Create event'),
+      ),
+    ],
+  );
+
+  Widget _editor(String key, InstanceDataField schema) {
+    final label = _label(key, schema);
+    final editorKey = ValueKey('new-event-editor-$key');
+    switch (schema.type) {
+      case 'bool':
+        return SwitchListTile(
+          key: editorKey,
+          title: Text(label),
+          value: _values[key] == true,
+          onChanged: _saving
+              ? null
+              : (value) => setState(() => _values[key] = value),
+        );
+      case 'date':
+        return _picker(
+          key: key,
+          label: label,
+          editorKey: editorKey,
+          onPick: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate:
+                  DateTime.tryParse('${_values[key] ?? ''}') ?? DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null && mounted)
+              setState(
+                () => _values[key] =
+                    '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}',
+              );
+          },
+        );
+      case 'time':
+        return _picker(
+          key: key,
+          label: label,
+          editorKey: editorKey,
+          onPick: () async {
+            final parts = '${_values[key] ?? ''}'.split(':');
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay(
+                hour: int.tryParse(parts.first) ?? TimeOfDay.now().hour,
+                minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
+              ),
+            );
+            if (picked != null && mounted)
+              setState(
+                () => _values[key] =
+                    '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}',
+              );
+          },
+        );
+      default:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TextField(
+            key: editorKey,
+            controller: _controller(key),
+            enabled: !_saving,
+            keyboardType: schema.type == 'number'
+                ? const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  )
+                : TextInputType.text,
+            decoration: InputDecoration(labelText: label),
+            onChanged: (value) => _values[key] = value,
+          ),
+        );
+    }
+  }
+
+  Widget _picker({
+    required String key,
+    required String label,
+    required Key editorKey,
+    required Future<void> Function() onPick,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: InkWell(
+      key: editorKey,
+      onTap: _saving ? null : onPick,
+      child: InputDecorator(
+        decoration: InputDecoration(labelText: label, enabled: !_saving),
+        child: Text('${_values[key] ?? ''}'),
+      ),
+    ),
+  );
 }
 
 class _EventRsvpDetailCard extends StatefulWidget {
