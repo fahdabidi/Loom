@@ -634,13 +634,14 @@ void main() {
             ),
           ),
         );
-        await tester.tap(
-          find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-event-friday-game-night-0',
-            ),
+        final fridayAgendaEntry = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
           ),
         );
+        await tester.ensureVisible(fridayAgendaEntry);
+        await tester.pump();
+        await tester.tap(fridayAgendaEntry);
         await _tapAction(tester, 'event-friday-game-night', 'respond-going');
         final going = await _instance(
           tester,
