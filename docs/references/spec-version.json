@@ -100,6 +100,7 @@
     "subtractHoursFunction": "New formula function (formulas.md) -- date arithmetic (subtract an hour count from a date), needed to compute tournament-ballot.dueAt as a real computed field instead of a hand-seeded, driftable value.",
     "mapGetFunction": "New formula function (formulas.md) -- pull one value out of a map (e.g. a groupCount tally) by key, defaulting to 0 if absent.",
     "responseTableBinding": "New render-binding key (render-bindings.md) -- points a calendar-family archetype at its per-member response table generically, instead of the App Shell hardcoding field names.",
-    "filterableFacetsBinding": "New render-binding key (render-bindings.md) -- named, labeled, computed-field-backed filters/stats a generic list surface may offer."
+    "filterableFacetsBinding": "New render-binding key (render-bindings.md) -- named, labeled, computed-field-backed filters/stats a generic list surface may offer.",
+    "multiActionStyleExperienceField": "NEW 2026-07-20, designed for the generic creatable-action FAB (CALR.3f/3g). `experience.multiActionStyle` (community-wide default) and `experience.tabActionStyles` (per-tab override, same cascade shape as tabThemes) -- resolves which of speedDial/stacked/singleFirst renders when two or more creatable bindings target the same tabId. See render-bindings.md for the full grammar. Not yet implemented in the model layer (LoomExperienceDefinition) or the App Shell."
   }
 }

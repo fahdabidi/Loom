@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
-last_verified: 2026-07-17
+last_verified: 2026-07-20
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -172,6 +172,54 @@ warning); `prefill` keys must be declared in this workflow's own `instanceDataSc
 (`dangling_instance_data_key`) and must not target a computed field (`computed_field_written_by_effect`);
 `{context.x}` appearing anywhere OTHER than inside a `creatable.prefill` value is an error
 (`context_reference_outside_creatable`).
+
+## `multiActionStyle` / `tabActionStyles` — resolving multiple `creatable` bindings on one tab (PROPOSED, 2026-07-20)
+
+**Not a binding-object key** — these live on the top-level `experience` object, one level up, following the
+same community → tab cascade already used by `theme`/`tabThemes`. They exist because `creatable` is a
+per-binding, per-workflow-type declaration: nothing in the grammar previously said what happens when
+**two or more** workflow types declare a `creatable` binding for the **same** `tabId` (e.g. Calendar
+gaining both `event-rsvp`'s "New event" and `tournament-event`'s "New tournament" once both are wired in)
+— the App Shell would otherwise have to invent an arbitrary rule.
+
+```jsonc
+"experience": {
+  ...
+  "multiActionStyle": "speedDial",       // optional, community-wide default. One of: "speedDial" | "stacked" | "singleFirst". Defaults to "speedDial" if omitted entirely.
+  "tabActionStyles": {                    // optional, per-tab override, same cascade pattern as tabThemes
+    "calendar": "speedDial"
+  },
+  ...
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `multiActionStyle` | string | no | Community-wide default style for resolving multiple `creatable` bindings that target the same tab. One of `speedDial` \| `stacked` \| `singleFirst`. |
+| `tabActionStyles` | object | no | `{ "<tabId>": "<style>" }` — overrides `multiActionStyle` for one specific tab. |
+
+**Resolution rule:** for a given `tabId`, the effective style is `tabActionStyles[tabId] ??
+multiActionStyle ?? "speedDial"` — identical cascade shape to how `theme`/`tabThemes` resolve a card's
+visual theme.
+
+**The three styles:**
+- `speedDial` — the FAB, when tapped, expands into a small stack of labeled mini-actions, one per matching
+  `creatable` binding. The standard Material pattern for "one primary action, several related
+  sub-actions"; scales cleanly past two.
+- `stacked` — every matching `creatable` binding gets its own always-visible FAB, stacked vertically. Only
+  reasonable for exactly two; gets cluttered beyond that — not a substitute for `speedDial` at scale, a
+  deliberately simpler option for the two-action case.
+- `singleFirst` — only the first matching `creatable` binding (definition order) gets a FAB; the rest are
+  not reachable via the FAB at all. A real tradeoff (it hides actions), not merely a simpler visual — use
+  deliberately, not as a default.
+
+**This resolves independently of how many `creatable` bindings exist** — with exactly one match on a tab,
+all three styles render identically (a single FAB); the distinction only matters once a second `creatable`
+binding lands on the same tab.
+
+**Not yet implemented** — grammar only, written ahead of the App Shell code that will consume it, same
+convention `responseTable`/`filterableFacets` used before their own consumers existed. See
+`spec-version.json` → `proposedNotImplemented`.
 
 ## `tabId` — complete list
 

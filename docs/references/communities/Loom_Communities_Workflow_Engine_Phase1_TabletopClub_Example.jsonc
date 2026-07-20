@@ -65,6 +65,17 @@
       }
     },
 
+    // PROPOSED 2026-07-20 (render-bindings.md) -- resolves which FAB style renders when two or more
+    // `creatable` bindings target the same tab. Calendar is the first tab to need this: event-rsvp's
+    // "New event" today, and tournament-event's "New tournament" once CALR.3b lands -- both creatable,
+    // both on tabId "calendar". speedDial is the community default; the calendar override is set
+    // explicitly (not left to fall through the default) since this is the one tab that actually needs
+    // it, not a hypothetical.
+    "multiActionStyle": "speedDial",
+    "tabActionStyles": {
+      "calendar": "speedDial"
+    },
+
     "personas": [
       {
         "personaId": "tabletop-organizer",
