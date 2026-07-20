@@ -268,6 +268,11 @@ schedule/agenda view):**
 - **Month-grid date-cell tap** still scopes the agenda list to that one day (Day view) — matches the
   milestone's existing "month-grid date-cell tap → Day view" line; the screenshots just clarify this means
   re-scoping the SAME on-screen agenda list, not navigating to a separate Day screen.
+- **CALR.5's live walkthrough must visually compare against these reference screenshots**, not just
+  functionally exercise the interactions — the point of citing Google Calendar's schedule view is to hit a
+  modern layout pattern, which only a side-by-side screenshot comparison (date rail placement, slim-card
+  density, grid-then-list vertical composition) can actually confirm. A walkthrough that only proves the
+  RSVP actions still work would miss the actual point of this direction.
 
 ## 1e. App Shell milestones (outside the Calendar-only CALR scope)
 
