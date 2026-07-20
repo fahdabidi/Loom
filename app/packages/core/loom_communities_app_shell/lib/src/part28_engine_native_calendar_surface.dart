@@ -338,156 +338,152 @@ class _EngineNativeCalendarContentState
     }
     final dates = byDay.keys.toList()..sort();
 
-    return Scaffold(
+    return Column(
       key: const ValueKey('engine-native-calendar-root'),
-      backgroundColor: Colors.transparent,
-      extendBody: true,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            key: const ValueKey('engine-native-calendar-month-navigation'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (creationBinding != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              key: const ValueKey('engine-native-calendar-new-event'),
+              onPressed: () => _showNewEventDialog(creationBinding),
+              icon: const Icon(Icons.add),
+              label: Text(creationBinding.binding.creatable!.label),
+            ),
+          ),
+        if (creationBinding != null) const SizedBox(height: 8),
+        Row(
+          key: const ValueKey('engine-native-calendar-month-navigation'),
+          children: [
+            IconButton(
+              key: const ValueKey('engine-native-calendar-previous-month'),
+              onPressed: () => setState(
+                () => widget.presentation.month = DateTime(
+                  month.year,
+                  month.month - 1,
+                ),
+              ),
+              icon: Icon(Icons.chevron_left, color: theme.resolvedHeading),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  '${_monthLabel(month.month)} ${month.year}',
+                  style: TextStyle(color: theme.resolvedHeading),
+                ),
+              ),
+            ),
+            IconButton(
+              key: const ValueKey('engine-native-calendar-next-month'),
+              onPressed: () => setState(
+                () => widget.presentation.month = DateTime(
+                  month.year,
+                  month.month + 1,
+                ),
+              ),
+              icon: Icon(Icons.chevron_right, color: theme.resolvedHeading),
+            ),
+          ],
+        ),
+        _EngineNativeMonthGrid(
+          month: month,
+          byDay: byDay,
+          onSelect: _selectEntry,
+          modernTheme: theme,
+          selectedDate: widget.presentation.selectedDate,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          key: const ValueKey('engine-native-calendar-date-strip'),
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
             children: [
-              IconButton(
-                key: const ValueKey('engine-native-calendar-previous-month'),
-                onPressed: () => setState(
-                  () => widget.presentation.month = DateTime(
-                    month.year,
-                    month.month - 1,
+              for (final day in dates)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    key: ValueKey('engine-native-calendar-date-strip-$day'),
+                    label: Text(
+                      day,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                    backgroundColor: theme.resolvedFill,
+                    selectedColor: (theme.accent ?? widget.accent).withValues(
+                      alpha: 0.30,
+                    ),
+                    selected: day == widget.presentation.selectedDate,
+                    onSelected: (_) => setState(() {
+                      final entry = byDay[day]!.first;
+                      widget.presentation.selectedDate = day;
+                      widget.presentation.selectedIdentity = entry.identity;
+                      widget.presentation.selectedInstanceId = entry.instanceId;
+                      widget.presentation.month = DateTime(
+                        entry.date.year,
+                        entry.date.month,
+                      );
+                    }),
                   ),
                 ),
-                icon: Icon(Icons.chevron_left, color: theme.resolvedHeading),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    '${_monthLabel(month.month)} ${month.year}',
-                    style: TextStyle(color: theme.resolvedHeading),
-                  ),
-                ),
-              ),
-              IconButton(
-                key: const ValueKey('engine-native-calendar-next-month'),
-                onPressed: () => setState(
-                  () => widget.presentation.month = DateTime(
-                    month.year,
-                    month.month + 1,
-                  ),
-                ),
-                icon: Icon(Icons.chevron_right, color: theme.resolvedHeading),
-              ),
             ],
           ),
-          _EngineNativeMonthGrid(
-            month: month,
-            byDay: byDay,
-            onSelect: _selectEntry,
-            modernTheme: theme,
-            selectedDate: widget.presentation.selectedDate,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            key: const ValueKey('engine-native-calendar-date-strip'),
-            height: 44,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Agenda',
+          key: const ValueKey('engine-native-calendar-grouped-agenda'),
+          style: TextStyle(color: theme.resolvedHeading),
+        ),
+        for (final day in dates)
+          Container(
+            key: ValueKey('engine-native-calendar-agenda-group-$day'),
+            decoration: BoxDecoration(
+              color: theme.resolvedFill,
+              border: Border.all(color: theme.resolvedBorder),
+            ),
+            child: Column(
               children: [
-                for (final day in dates)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      key: ValueKey('engine-native-calendar-date-strip-$day'),
-                      label: Text(
-                        day,
-                        style: TextStyle(color: theme.resolvedBody),
-                      ),
-                      backgroundColor: theme.resolvedFill,
-                      selectedColor: (theme.accent ?? widget.accent).withValues(
-                        alpha: 0.30,
-                      ),
-                      selected: day == widget.presentation.selectedDate,
-                      onSelected: (_) => setState(() {
-                        final entry = byDay[day]!.first;
-                        widget.presentation.selectedDate = day;
-                        widget.presentation.selectedIdentity = entry.identity;
-                        widget.presentation.selectedInstanceId =
-                            entry.instanceId;
-                        widget.presentation.month = DateTime(
-                          entry.date.year,
-                          entry.date.month,
-                        );
-                      }),
+                Text(
+                  day,
+                  key: ValueKey('engine-native-calendar-agenda-date-$day'),
+                  style: TextStyle(color: theme.resolvedHeading),
+                ),
+                for (final entry in byDay[day]!)
+                  ListTile(
+                    key: ValueKey(
+                      'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                     ),
+                    selected:
+                        entry.identity == widget.presentation.selectedIdentity,
+                    title: Text(
+                      entry.title,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                    subtitle: Text(
+                      entry.time,
+                      style: TextStyle(color: theme.resolvedBody),
+                    ),
+                    onTap: () => _selectEntry(entry.identity),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Agenda',
-            key: const ValueKey('engine-native-calendar-grouped-agenda'),
-            style: TextStyle(color: theme.resolvedHeading),
+        EngineNativeArchetypeCard(
+          contentKey: ValueKey(
+            'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
           ),
-          for (final day in dates)
-            Container(
-              key: ValueKey('engine-native-calendar-agenda-group-$day'),
-              decoration: BoxDecoration(
-                color: theme.resolvedFill,
-                border: Border.all(color: theme.resolvedBorder),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    day,
-                    key: ValueKey('engine-native-calendar-agenda-date-$day'),
-                    style: TextStyle(color: theme.resolvedHeading),
-                  ),
-                  for (final entry in byDay[day]!)
-                    ListTile(
-                      key: ValueKey(
-                        'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
-                      ),
-                      selected:
-                          entry.identity ==
-                          widget.presentation.selectedIdentity,
-                      title: Text(
-                        entry.title,
-                        style: TextStyle(color: theme.resolvedBody),
-                      ),
-                      subtitle: Text(
-                        entry.time,
-                        style: TextStyle(color: theme.resolvedBody),
-                      ),
-                      onTap: () => _selectEntry(entry.identity),
-                    ),
-                ],
-              ),
-            ),
-          EngineNativeArchetypeCard(
-            contentKey: ValueKey(
-              'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-            ),
-            resolved: selected.resolved,
-            engine: widget.engine,
-            personaId: widget.personaId,
-            accent: widget.accent,
-            onInstanceChanged: widget.onInstanceChanged,
-            modernTheme: widget.modernTheme,
-            displayContext: 'detail',
-            showEditors: false,
-            visibleFieldKeys: _detailFieldKeys(selected),
-          ),
-        ],
-      ),
-      floatingActionButton: creationBinding == null
-          ? null
-          : FloatingActionButton.extended(
-              key: const ValueKey('engine-native-calendar-new-event'),
-              onPressed: () => _showNewEventDialog(creationBinding),
-              tooltip: creationBinding.binding.creatable!.label,
-              icon: const Icon(Icons.add),
-              label: Text(creationBinding.binding.creatable!.label),
-            ),
+          resolved: selected.resolved,
+          engine: widget.engine,
+          personaId: widget.personaId,
+          accent: widget.accent,
+          onInstanceChanged: widget.onInstanceChanged,
+          modernTheme: widget.modernTheme,
+          displayContext: 'detail',
+          showEditors: false,
+          visibleFieldKeys: _detailFieldKeys(selected),
+        ),
+      ],
     );
   }
 
