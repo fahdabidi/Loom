@@ -787,14 +787,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Builder(
               builder: (context) {
                 final bannerTheme = shellSpec.theme.usesModernCardTheme
@@ -958,22 +955,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   : null,
             ),
             const SizedBox(height: 10),
-                ],
-              ),
-            ),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                0,
-                16,
-                shellSpec.theme.tabHeight + 48,
-              ),
+            Expanded(
               child: SingleChildScrollView(
                 key: ValueKey('local-extension-${community.extensionId}'),
                 controller: _surfaceScrollController,
+                padding: EdgeInsets.only(
+                  bottom: shellSpec.theme.tabHeight + 48,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -1049,8 +1037,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: _CommunityBottomTabBar(
         tabs: tabSpecs,
