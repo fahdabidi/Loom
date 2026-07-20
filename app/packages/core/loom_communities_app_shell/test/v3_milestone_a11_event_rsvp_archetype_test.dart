@@ -558,6 +558,23 @@ void main() {
         () => _install('calr3-create'),
       ))!;
       try {
+        LocalAuthApi().seedAccounts(installed.community.extensionId, const [
+          LoomAccount(
+            accountId: 'calr3-organizer',
+            displayName: 'Test Organizer',
+            personaTypeId: 'tabletop-organizer',
+          ),
+          LoomAccount(
+            accountId: 'calr3-member-a',
+            displayName: 'Test Member A',
+            personaTypeId: 'tabletop-member',
+          ),
+          LoomAccount(
+            accountId: 'calr3-member-b',
+            displayName: 'Test Member B',
+            personaTypeId: 'tabletop-member',
+          ),
+        ]);
         await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
         await _pumpUntil(
           tester,
