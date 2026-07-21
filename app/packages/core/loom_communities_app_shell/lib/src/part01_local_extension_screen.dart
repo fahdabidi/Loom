@@ -237,11 +237,37 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required LoomPersonaDefinition activePersona,
   }) async {
     final engine = await workflowEngineForExtensionId(community.extensionId);
-    return _EventRsvpCreationDialog(
+    return EngineNativeArchetypeCreationCard(
+      cardSurfaceFamily: action.cardSurfaceFamily,
+      workflowType: action.workflowType,
       machine: action.machine,
       engine: engine,
-      organizerPersonaId: activePersona.personaId,
+      personaId: activePersona.personaId,
+      keyPrefix: 'new-event',
+      title: 'New event',
+      onCreated: (instanceId) => _seedEventRsvpResponses(
+        eventId: instanceId,
+        engine: engine,
+        organizerPersonaId: activePersona.personaId,
+      ),
+    );
+  }
+
+  Future<void> _seedEventRsvpResponses({
+    required String eventId,
+    required WorkflowEngineApi engine,
+    required String organizerPersonaId,
+  }) async {
+    final accounts = await LocalAuthApi().listAccounts(
       communityExtensionId: community.extensionId,
+    );
+    await engine.createInstances(
+      workflowType: 'event-rsvp-response',
+      initialInstanceDataList: [
+        for (final account in accounts)
+          {'eventId': eventId, 'personaId': account.accountId},
+      ],
+      personaId: organizerPersonaId,
     );
   }
 
