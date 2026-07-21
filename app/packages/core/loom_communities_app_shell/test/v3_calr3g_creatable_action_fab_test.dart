@@ -203,7 +203,11 @@ void main() {
         await _openEventCreation(tester);
         expect(find.byType(AlertDialog), findsOneWidget);
         if (style == 'popup') {
-          // Plain-dialog and side-panel tests prove submission; OpenContainer's close transition has a framework-test interaction.
+          // Close it via Cancel so OpenContainer's animation controller gets a
+          // clean teardown instead of leaking into the next test.
+          await tester.tap(find.text('Cancel'));
+          await _settleBounded(tester);
+          expect(find.byType(AlertDialog), findsNothing);
         } else {
           expect(
             find.ancestor(
