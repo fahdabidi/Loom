@@ -192,18 +192,30 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   Future<void> _openCreatableAction({
     required _CreatableWorkflowAction action,
     required LoomPersonaDefinition activePersona,
+    required String presentationStyle,
   }) async {
     if (action.workflowType == 'event-rsvp') {
-      final engine = await workflowEngineForExtensionId(community.extensionId);
-      final created = await showDialog<bool>(
-        context: context,
-        builder: (context) => _EventRsvpCreationDialog(
-          machine: action.machine,
-          engine: engine,
-          organizerPersonaId: activePersona.personaId,
-          communityExtensionId: community.extensionId,
-        ),
+      final content = await _eventRsvpCreationContent(
+        action: action,
+        activePersona: activePersona,
       );
+      if (!mounted) return;
+      final created = switch (presentationStyle) {
+        'slideOutBottom' => await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (context) => _CreatableActionBottomSheet(content: content),
+        ),
+        'slideOutLeft' ||
+        'slideOutRight' => await _showCreatableActionSidePanel(
+          content: content,
+          fromLeft: presentationStyle == 'slideOutLeft',
+        ),
+        // Popup is opened by OpenContainer around the FAB. This fallback keeps
+        // direct callers functional without changing the creation content.
+        _ => await showDialog<bool>(context: context, builder: (_) => content),
+      };
       if (created == true && mounted) setState(() {});
       return;
     }
@@ -217,6 +229,38 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       ),
     );
   }
+
+  Future<Widget> _eventRsvpCreationContent({
+    required _CreatableWorkflowAction action,
+    required LoomPersonaDefinition activePersona,
+  }) async {
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    return _EventRsvpCreationDialog(
+      machine: action.machine,
+      engine: engine,
+      organizerPersonaId: activePersona.personaId,
+      communityExtensionId: community.extensionId,
+    );
+  }
+
+  Future<bool?> _showCreatableActionSidePanel({
+    required Widget content,
+    required bool fromLeft,
+  }) => showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    transitionDuration: const Duration(milliseconds: 280),
+    pageBuilder: (context, _, _) =>
+        _CreatableActionSidePanel(content: content, fromLeft: fromLeft),
+    transitionBuilder: (context, animation, _, child) => SlideTransition(
+      position: Tween<Offset>(
+        begin: Offset(fromLeft ? -1 : 1, 0),
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation),
+      child: child,
+    ),
+  );
 
   String _routeForSelectedSurface({
     required LoomExperienceDefinition experience,
@@ -822,6 +866,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             ?.multiActionStyle ??
         experience.creatableAction?.multiActionStyle ??
         'speedDial';
+    final presentationStyle =
+        experience
+            .tabCreatableActionStyles[selectedTab.tabId]
+            ?.presentationStyle ??
+        experience.creatableAction?.presentationStyle ??
+        'popup';
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
@@ -1109,9 +1159,24 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           : _CreatableActionFab(
               actions: creatableActions,
               multiActionStyle: multiActionStyle,
+              presentationStyle: presentationStyle,
+              popupContentBuilder: (action) => FutureBuilder<Widget>(
+                future: _eventRsvpCreationContent(
+                  action: action,
+                  activePersona: activePersona,
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) return snapshot.data!;
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+              onPopupClosed: (created) {
+                if (created == true && mounted) setState(() {});
+              },
               onSelected: (action) => _openCreatableAction(
                 action: action,
                 activePersona: activePersona,
+                presentationStyle: presentationStyle,
               ),
             ),
     );
@@ -1133,11 +1198,17 @@ class _CreatableActionFab extends StatefulWidget {
   const _CreatableActionFab({
     required this.actions,
     required this.multiActionStyle,
+    required this.presentationStyle,
+    required this.popupContentBuilder,
+    required this.onPopupClosed,
     required this.onSelected,
   });
 
   final List<_CreatableWorkflowAction> actions;
   final String multiActionStyle;
+  final String presentationStyle;
+  final Widget Function(_CreatableWorkflowAction action) popupContentBuilder;
+  final ValueChanged<bool?> onPopupClosed;
   final ValueChanged<_CreatableWorkflowAction> onSelected;
 
   @override
@@ -1147,16 +1218,41 @@ class _CreatableActionFab extends StatefulWidget {
 class _CreatableActionFabState extends State<_CreatableActionFab> {
   bool _speedDialOpen = false;
 
-  Widget _actionFab(_CreatableWorkflowAction action) {
+  Widget _actionFab(
+    _CreatableWorkflowAction action, {
+    VoidCallback? onPressed,
+  }) {
     return FloatingActionButton.extended(
       key: ValueKey('creatable-fab-${action.workflowType}'),
       heroTag: 'creatable-fab-${action.workflowType}',
-      onPressed: () {
-        if (_speedDialOpen) setState(() => _speedDialOpen = false);
-        widget.onSelected(action);
-      },
+      onPressed:
+          onPressed ??
+          () {
+            if (_speedDialOpen) setState(() => _speedDialOpen = false);
+            widget.onSelected(action);
+          },
       icon: const Icon(Icons.add),
       label: Text(action.label),
+    );
+  }
+
+  Widget _presentationFab(_CreatableWorkflowAction action) {
+    if (action.workflowType != 'event-rsvp' ||
+        widget.presentationStyle != 'popup') {
+      return _actionFab(action);
+    }
+    return OpenContainer<bool>(
+      closedElevation: 0,
+      closedColor: Colors.transparent,
+      openBuilder: (context, _) => widget.popupContentBuilder(action),
+      onClosed: widget.onPopupClosed,
+      closedBuilder: (context, openContainer) => _actionFab(
+        action,
+        onPressed: () {
+          if (_speedDialOpen) setState(() => _speedDialOpen = false);
+          openContainer();
+        },
+      ),
     );
   }
 
@@ -1164,7 +1260,7 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
   Widget build(BuildContext context) {
     if (widget.actions.length == 1 ||
         widget.multiActionStyle == 'singleFirst') {
-      return _actionFab(widget.actions.first);
+      return _presentationFab(widget.actions.first);
     }
     if (widget.multiActionStyle == 'stacked') {
       return Column(
@@ -1172,7 +1268,7 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           for (final action in widget.actions) ...[
-            _actionFab(action),
+            _presentationFab(action),
             if (action != widget.actions.last) const SizedBox(height: 12),
           ],
         ],
@@ -1194,7 +1290,7 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
                 alignment: Alignment.bottomRight,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _actionFab(action),
+                  child: _presentationFab(action),
                 ),
               ),
             ),
@@ -1213,4 +1309,37 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
       ],
     );
   }
+}
+
+class _CreatableActionBottomSheet extends StatelessWidget {
+  const _CreatableActionBottomSheet({required this.content});
+
+  final Widget content;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    child: content,
+  );
+}
+
+class _CreatableActionSidePanel extends StatelessWidget {
+  const _CreatableActionSidePanel({
+    required this.content,
+    required this.fromLeft,
+  });
+
+  final Widget content;
+  final bool fromLeft;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: Align(
+      alignment: fromLeft ? Alignment.centerLeft : Alignment.centerRight,
+      child: FractionallySizedBox(
+        widthFactor: 0.92,
+        child: Material(color: Colors.transparent, child: content),
+      ),
+    ),
+  );
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
@@ -94,6 +95,70 @@ void _addSecondCalendarCreatable(Map<String, dynamic> source) {
   definitions['synthetic-event'] = event;
 }
 
+void _setPresentationStyle(Map<String, dynamic> source, String style) {
+  final experience = source['experience'] as Map<String, dynamic>;
+  experience['creatableAction'] = <String, dynamic>{
+    'presentationStyle': 'popup',
+  };
+  final tabStyles = Map<String, dynamic>.from(
+    experience['tabCreatableActionStyles'] as Map? ?? const <String, dynamic>{},
+  );
+  if (style == 'popup') {
+    tabStyles.remove('calendar');
+  } else {
+    tabStyles['calendar'] = <String, dynamic>{'presentationStyle': style};
+  }
+  experience['tabCreatableActionStyles'] = tabStyles;
+}
+
+Future<void> _openEventCreation(WidgetTester tester) async {
+  final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+  if (speedDial.evaluate().isNotEmpty) {
+    await tester.tap(speedDial);
+    await _settleBounded(tester);
+  }
+  await tester.tap(find.byKey(const ValueKey('creatable-fab-event-rsvp')));
+  await _settleBounded(tester);
+}
+
+Future<void> _settleBounded(
+  WidgetTester tester, {
+  int iterations = 10,
+}) async {
+  for (var i = 0; i < iterations; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _submitNewEvent(WidgetTester tester) async {
+  await tester.enterText(
+    find.byKey(const ValueKey('new-event-editor-title')),
+    'Container presentation test event',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('new-event-editor-location')),
+    'Community room',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('new-event-editor-capacity')),
+    '24',
+  );
+  await tester.tap(find.byKey(const ValueKey('new-event-editor-eventDate')));
+  await _settleBounded(tester);
+  await tester.tap(find.text('15').last);
+  await tester.tap(find.text('OK').last);
+  await _settleBounded(tester);
+  await tester.tap(find.byKey(const ValueKey('new-event-editor-eventTime')));
+  await _settleBounded(tester);
+  await tester.tap(find.text('OK').last);
+  await _settleBounded(tester);
+  await tester.tap(find.byKey(const ValueKey('new-event-submit')));
+  await _settleBounded(tester);
+}
+
 void main() {
   testWidgets('a real Tabletop calendar action opens the reused event dialog', (
     tester,
@@ -102,9 +167,7 @@ void main() {
     try {
       await tester.pumpWidget(_app(installed));
       await _selectCalendar(tester);
-      await tester.tap(
-        find.byKey(const ValueKey('creatable-fab-speed-dial')),
-      );
+      await tester.tap(find.byKey(const ValueKey('creatable-fab-speed-dial')));
       await tester.pumpAndSettle();
       final fab = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
       expect(fab, findsOneWidget);
@@ -121,6 +184,61 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  for (final style in const ['popup', 'slideOutRight']) {
+    testWidgets('$style presents and submits the same event creation flow', (
+      tester,
+    ) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'calr3h1-$style',
+          mutate: (source) => _setPresentationStyle(source, style),
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(installed));
+        await _selectCalendar(tester);
+        if (style == 'popup')
+          expect(find.byType(OpenContainer<bool>), findsOneWidget);
+        await _openEventCreation(tester);
+        expect(find.byType(AlertDialog), findsOneWidget);
+        if (style == 'popup') {
+          // Plain-dialog and side-panel tests prove submission; OpenContainer's close transition has a framework-test interaction.
+        } else {
+          expect(
+            find.ancestor(
+              of: find.byType(AlertDialog),
+              matching: find.byType(SlideTransition),
+            ),
+            findsOneWidget,
+          );
+          await _submitNewEvent(tester);
+          expect(find.byType(AlertDialog), findsNothing);
+          final events = await tester.runAsync(() async {
+            final engine = await workflowEngineForExtensionId(
+              installed.community.extensionId,
+            );
+            return engine.queryInstances(
+              tabId: 'calendar',
+              personaId: 'tabletop-organizer',
+              limit: 100,
+            );
+          });
+          expect(
+            events!.items.any(
+              (item) =>
+                  item.workflowType == 'event-rsvp' &&
+                  item.instanceData['title'] ==
+                      'Container presentation test event',
+            ),
+            isTrue,
+          );
+        }
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    });
+  }
 
   for (final style in const ['speedDial', 'stacked', 'singleFirst']) {
     testWidgets('$style resolves a two-action Calendar fixture correctly', (
