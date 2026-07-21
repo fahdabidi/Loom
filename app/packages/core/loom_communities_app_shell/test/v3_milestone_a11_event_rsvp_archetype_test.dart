@@ -110,6 +110,43 @@ Widget _calendar(
   ),
 );
 
+Widget _app(_InstalledTabletop installed) => MaterialApp(
+  home: LocalExtensionScreen(
+    community: installed.community,
+    seedDataFiles: const [],
+  ),
+);
+
+Future<void> _selectCalendar(WidgetTester tester) async {
+  final tab = find.byKey(const ValueKey('community-tab-calendar'));
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _settleBounded(
+  WidgetTester tester, {
+  int iterations = 10,
+}) async {
+  for (var i = 0; i < iterations; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _openEventCreation(WidgetTester tester) async {
+  final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+  if (speedDial.evaluate().isNotEmpty) {
+    await tester.tap(speedDial);
+    await _settleBounded(tester);
+  }
+  await tester.tap(find.byKey(const ValueKey('creatable-fab-event-rsvp')));
+  await _settleBounded(tester);
+}
+
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 40; attempt++) {
     await tester.runAsync(
@@ -575,15 +612,9 @@ void main() {
             personaTypeId: 'tabletop-member',
           ),
         ]);
-        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
-        await _pumpUntil(
-          tester,
-          find.byKey(const ValueKey('engine-native-calendar-new-event')),
-        );
-        await tester.tap(
-          find.byKey(const ValueKey('engine-native-calendar-new-event')),
-        );
-        await tester.pumpAndSettle();
+        await tester.pumpWidget(_app(installed));
+        await _selectCalendar(tester);
+        await _openEventCreation(tester);
 
         await tester.enterText(
           find.byKey(const ValueKey('new-event-editor-title')),
@@ -612,12 +643,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('new-event-submit')));
         await tester.pump();
-        for (var i = 0; i < 8; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _settleBounded(tester);
 
         final result = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -659,13 +685,23 @@ void main() {
   ) async {
     final installed = (await tester.runAsync(() => _install('calr3-hidden')))!;
     try {
-      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
-      await _pumpUntil(
-        tester,
-        find.byKey(const ValueKey('engine-native-calendar-root')),
+      await tester.pumpWidget(_app(installed));
+      await _selectCalendar(tester);
+      // Switch to the tabletop-member persona so the creatable-action
+      // FAB is hidden (the fixture only lists tabletop-organizer
+      // in creatable.byPersonaIds).
+      await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('persona-option-tabletop-member')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('creatable-fab-event-rsvp')),
+        findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('engine-native-calendar-new-event')),
+        find.byKey(const ValueKey('creatable-fab-speed-dial')),
         findsNothing,
       );
     } finally {
