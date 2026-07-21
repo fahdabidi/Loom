@@ -1,0 +1,194 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_ux_judges/src/validator/jsonc.dart';
+
+const _fixtureRelative =
+    'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
+
+File _fixtureFile() {
+  var directory = Directory.current;
+  for (var i = 0; i < 8; i++) {
+    final candidate = File('${directory.path}/$_fixtureRelative');
+    if (candidate.existsSync()) return candidate;
+    directory = directory.parent;
+  }
+  throw StateError('Could not find frozen Tabletop fixture');
+}
+
+class _InstalledFixture {
+  const _InstalledFixture(this.community, this.temp);
+
+  final LocalInstalledCommunity community;
+  final Directory temp;
+
+  Future<void> dispose() => temp.delete(recursive: true);
+}
+
+Future<_InstalledFixture> _install(String extensionId) async {
+  final source =
+      jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
+          as Map<String, dynamic>;
+  source['extensionId'] = extensionId;
+  final temp = await Directory.systemTemp.createTemp(
+    'loom-calr3b-$extensionId-',
+  );
+  final init = File('${temp.path}/tabletop.loom-init.zip');
+  final extension = File('${temp.path}/tabletop.loom-extension.zip');
+  await init.writeAsString(jsonEncode(source));
+  await extension.writeAsString(
+    jsonEncode(<String, Object?>{
+      'schemaVersion': 1,
+      'extensionId': extensionId,
+      'displayName': source['displayName'],
+      'version': '1.0.0',
+      'mode': 'local-demo',
+      'permissions': <String>[],
+    }),
+  );
+  final community = LocalInAppBackend().installLocalPackagePairFromFiles(
+    extensionPackagePath: extension.path,
+    initializationPackagePath: init.path,
+  ).community;
+  // Pre-warm the engine in the real-async installation zone, so its database
+  // connection is not first created by a pumped widget and later used from
+  // tester.runAsync. This matches the proven calendar end-to-end test pattern.
+  experienceForExtensionId(
+    extensionId,
+    displayName: community.displayName,
+    experienceConfiguration: community.experienceConfiguration,
+  );
+  await workflowEngineForExtensionId(extensionId);
+  return _InstalledFixture(community, temp);
+}
+
+Widget _app(_InstalledFixture installed) => MaterialApp(
+  home: LocalExtensionScreen(
+    community: installed.community,
+    seedDataFiles: const [],
+  ),
+);
+
+Future<void> _selectCalendar(WidgetTester tester) async {
+  final tab = find.byKey(const ValueKey('community-tab-calendar'));
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openTournamentCreation(WidgetTester tester) async {
+  final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+  if (speedDial.evaluate().isNotEmpty) {
+    await tester.tap(speedDial);
+    await _settleBounded(tester);
+  }
+  await tester.tap(
+    find.byKey(const ValueKey('creatable-fab-tournament-event')),
+  );
+  await _settleBounded(tester);
+}
+
+Future<void> _settleBounded(
+  WidgetTester tester, {
+  int iterations = 10,
+}) async {
+  for (var i = 0; i < iterations; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _submitNewTournament(WidgetTester tester) async {
+  await tester.enterText(
+    find.byKey(const ValueKey('new-tournament-event-editor-title')),
+    'Friday Night Magic Draft',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('new-tournament-event-editor-location')),
+    'Community room A',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('new-tournament-event-editor-minimumAttendance')),
+    '8',
+  );
+  await tester.tap(
+    find.byKey(const ValueKey('new-tournament-event-editor-eventDate')),
+  );
+  await _settleBounded(tester);
+  await tester.tap(find.text('15').last);
+  await tester.tap(find.text('OK').last);
+  await _settleBounded(tester);
+  await tester.tap(
+    find.byKey(const ValueKey('new-tournament-event-editor-eventTime')),
+  );
+  await _settleBounded(tester);
+  await tester.tap(find.text('OK').last);
+  await _settleBounded(tester);
+  await tester.tap(
+    find.byKey(const ValueKey('new-tournament-event-submit')),
+  );
+  await _settleBounded(tester);
+}
+
+void main() {
+  testWidgets('Creates a tournament-event via FAB and confirms no event-rsvp-response side effect', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('calr3b-tournament'),
+    ))!;
+    try {
+      await tester.pumpWidget(_app(installed));
+      await _selectCalendar(tester);
+      await _openTournamentCreation(tester);
+
+      // The tournament creation dialog should be visible.
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await _submitNewTournament(tester);
+
+      // Dialog should be dismissed after successful creation.
+      expect(find.byType(AlertDialog), findsNothing);
+
+      final result = await tester.runAsync(() async {
+        final engine = await workflowEngineForExtensionId(
+          installed.community.extensionId,
+        );
+        final instances = await engine.queryInstances(
+          tabId: 'calendar',
+          personaId: 'tabletop-organizer',
+          limit: 100,
+        );
+        return instances;
+      });
+
+      // Confirm the tournament-event instance exists.
+      expect(
+        result!.items.any(
+          (item) =>
+              item.workflowType == 'tournament-event' &&
+              item.instanceData['title'] == 'Friday Night Magic Draft',
+        ),
+        isTrue,
+      );
+
+      // Confirm no event-rsvp-response rows were created (the event-rsvp
+      // side effect should NOT fire for a tournament).
+      expect(
+        result.items
+            .where((i) => i.workflowType == 'event-rsvp-response')
+            .isEmpty,
+        isTrue,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+}

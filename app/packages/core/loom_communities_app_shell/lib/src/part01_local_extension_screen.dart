@@ -196,60 +196,55 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required LoomPersonaDefinition activePersona,
     required String presentationStyle,
   }) async {
-    if (action.workflowType == 'event-rsvp') {
-      final content = await _eventRsvpCreationContent(
-        action: action,
-        activePersona: activePersona,
-      );
-      if (!mounted) return;
-      final created = switch (presentationStyle) {
-        'slideOutBottom' => await showModalBottomSheet<bool>(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          builder: (context) => _CreatableActionBottomSheet(content: content),
-        ),
-        'slideOutLeft' ||
-        'slideOutRight' => await _showCreatableActionSidePanel(
-          content: content,
-          fromLeft: presentationStyle == 'slideOutLeft',
-        ),
-        // Popup is opened by OpenContainer around the FAB. This fallback keeps
-        // direct callers functional without changing the creation content.
-        _ => await showDialog<bool>(context: context, builder: (_) => content),
-      };
-      if (created == true && mounted) setState(() {});
-      return;
-    }
-    // Temporary CALR.3g limitation: CALR.3h will dispatch every workflow
-    // type to its archetype-specific creation surface.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Creation for ${action.workflowType} is not wired up yet.',
-        ),
-      ),
+    final content = await _creationContentFor(
+      action: action,
+      activePersona: activePersona,
     );
+    if (!mounted) return;
+    final created = switch (presentationStyle) {
+      'slideOutBottom' => await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => _CreatableActionBottomSheet(content: content),
+      ),
+      'slideOutLeft' ||
+      'slideOutRight' => await _showCreatableActionSidePanel(
+        content: content,
+        fromLeft: presentationStyle == 'slideOutLeft',
+      ),
+      // Popup is opened by OpenContainer around the FAB. This fallback keeps
+      // direct callers functional without changing the creation content.
+      _ => await showDialog<bool>(context: context, builder: (_) => content),
+    };
+    if (created == true && mounted) setState(() {});
   }
 
-  Future<Widget> _eventRsvpCreationContent({
+  Future<Widget> _creationContentFor({
     required _CreatableWorkflowAction action,
     required LoomPersonaDefinition activePersona,
   }) async {
     final engine = await workflowEngineForExtensionId(community.extensionId);
+    final (keyPrefix, onCreated) = switch (action.workflowType) {
+      'event-rsvp' => (
+        'new-event',
+        (String instanceId) => _seedEventRsvpResponses(
+          eventId: instanceId,
+          engine: engine,
+          organizerPersonaId: activePersona.personaId,
+        ),
+      ),
+      _ => ('new-${action.workflowType}', null),
+    };
     return EngineNativeArchetypeCreationCard(
       cardSurfaceFamily: action.cardSurfaceFamily,
       workflowType: action.workflowType,
       machine: action.machine,
       engine: engine,
       personaId: activePersona.personaId,
-      keyPrefix: 'new-event',
-      title: 'New event',
-      onCreated: (instanceId) => _seedEventRsvpResponses(
-        eventId: instanceId,
-        engine: engine,
-        organizerPersonaId: activePersona.personaId,
-      ),
+      keyPrefix: keyPrefix,
+      title: action.label,
+      onCreated: onCreated,
     );
   }
 
@@ -1190,7 +1185,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               multiActionStyle: multiActionStyle,
               presentationStyle: presentationStyle,
               popupContentBuilder: (action) => FutureBuilder<Widget>(
-                future: _eventRsvpCreationContent(
+                future: _creationContentFor(
                   action: action,
                   activePersona: activePersona,
                 ),
