@@ -54,15 +54,15 @@ Future<_InstalledFixture> _install(
       'permissions': <String>[],
     }),
   );
-  return _InstalledFixture(
-    LocalInAppBackend()
-        .installLocalPackagePairFromFiles(
-          extensionPackagePath: extension.path,
-          initializationPackagePath: init.path,
-        )
-        .community,
-    temp,
-  );
+  final community = LocalInAppBackend().installLocalPackagePairFromFiles(
+    extensionPackagePath: extension.path,
+    initializationPackagePath: init.path,
+  ).community;
+  // Pre-warm the engine in the real-async installation zone, so its database
+  // connection is not first created by a pumped widget and later used from
+  // tester.runAsync. This matches the proven calendar end-to-end test pattern.
+  await workflowEngineForExtensionId(extensionId);
+  return _InstalledFixture(community, temp);
 }
 
 Widget _app(_InstalledFixture installed) => MaterialApp(
