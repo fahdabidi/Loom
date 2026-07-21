@@ -7,11 +7,13 @@ class _CreatableWorkflowAction {
     required this.workflowType,
     required this.machine,
     required this.label,
+    required this.cardSurfaceFamily,
   });
 
   final String workflowType;
   final LoomWorkflowStateMachine machine;
   final String label;
+  final String cardSurfaceFamily;
 }
 
 class CommunityLaunchCard extends StatelessWidget {
@@ -858,6 +860,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 workflowType: definition.key,
                 machine: definition.value,
                 label: binding.creatable!.label,
+                cardSurfaceFamily: binding.cardSurfaceFamily,
               ),
     ];
     final multiActionStyle =
