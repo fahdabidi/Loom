@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-16
+last_verified: 2026-07-21
 audience: llm-agent
 ---
 
@@ -271,14 +271,16 @@ existing only so the member has *something* to edit — rather than a real "+ Ne
 member could edit *that one row* to "submit a proposal." A member could never actually propose a
 *second* game — the JSON had no way to say "let a member create a new instance of this type."
 
-**Fix:** declare `renderBindings[].creatable` on the type instead of seeding a placeholder row (GAP-2 —
-see [`render-bindings.md`](../reference/render-bindings.md)). **Caveat, honestly stated:** as of
-2026-07-16, `creatable` is real grammar that parses and validates, but no running UI consumes it yet — no
-"+ New" affordance actually renders from it. Declaring it is still correct (it's what the Skill should
-emit; the App Shell will catch up to it), but do not claim the *interaction* works until a later phase's
-own doc/review confirms it does. What's already wrong regardless is the OLD workaround: never seed a
-blank placeholder instance to fake creatability — that teaches the wrong shape even where nothing yet
-renders the right one.
+**Fix:** declare a `renderBindings[].actions[]` entry (`kind: "create"`) on the type instead of seeding a
+placeholder row (GAP-2 — see [`render-bindings.md`](../reference/render-bindings.md) and
+[`07-actions-and-fabs.md`](./07-actions-and-fabs.md)). **Caveat, honestly stated:** as of 2026-07-21,
+`scope: "tab"` creates are real grammar, parse, validate, **and render end-to-end** (the tab
+creatable-action FAB, CALR.3g/3h/3b). `scope: "instance"` creates and `kind: "transition"` actions are
+real grammar and validate, but no running UI consumes them yet. Declaring the right shape now is still
+correct even for the not-yet-rendered cases (it's what the Skill should emit; the App Shell will catch up
+to it) — but do not claim an *interaction* works until a later phase's own doc/review confirms it does.
+What's already wrong regardless is the OLD workaround: never seed a blank placeholder instance to fake
+creatability — that teaches the wrong shape even where nothing yet renders the right one.
 
 ---
 

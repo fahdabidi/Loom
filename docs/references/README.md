@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 2.0.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 2.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-21
 audience: llm-agent
 ---
 
@@ -46,6 +46,7 @@ invariants, decision tables, canonical templates, and an error→fix table.
 | 3 | `reference/guards.md`, `reference/effects.md`, `reference/formulas.md`, `reference/field-types.md` | Always — the four you will reach for constantly |
 | 4 | `guide/03-common-patterns.md` | When the requirement matches a known pattern (usually) |
 | 5 | `reference/render-bindings.md` | When deciding where a workflow appears |
+| 5.5 | `guide/07-actions-and-fabs.md` | When deciding whether a member-facing affordance is a create or a transition, and how it should present (FAB vs. button, tab vs. instance scope) |
 | 6 | `archetypes/README.md` | When choosing a `cardSurfaceFamily` |
 | 7 | `guide/04-antipatterns.md` | Before emitting — self-check |
 | 8 | `guide/05-validation.md` | Before emitting — mandatory gate |
@@ -55,7 +56,7 @@ invariants, decision tables, canonical templates, and an error→fix table.
 ### Current specification
 
 ```json
-{ "envelope": 1, "experience": 2, "grammar": 1 }
+{ "envelope": 1, "experience": 2, "grammar": 2 }
 ```
 
 Machine-readable source of truth: [`spec-version.json`](./spec-version.json).
@@ -81,6 +82,7 @@ validator means a working app.
 | `guide/06-product-doc-to-json.md` | **The crosswalk.** Maps a filled Community Product Experience Template (§1–§11) → the JSON each section produces |
 | `guide/02-package-anatomy.md` | Every key of the package, top to bottom |
 | `guide/03-common-patterns.md` | Canonical templates: RSVP · ballot · approval queue · loan · payment · thread |
+| `guide/07-actions-and-fabs.md` | Create vs. transition, `actions[]` scope/presentation, cross-archetype creates, the nested-tables case |
 | `guide/04-antipatterns.md` | Detection rules + fixes for known-bad modeling |
 | `guide/05-validation.md` | The mandatory gate; full error→fix table |
 | `reference/workflow-grammar.md` | Normative: the complete grammar of a workflow definition |

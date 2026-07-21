@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-16
+last_verified: 2026-07-21
 ---
 
 # Specification changelog
@@ -11,6 +11,89 @@ Every change to the Loom community-JSON specification. Newest first.
 
 Format per entry: **what changed · breaking or additive · what an author must do about it.**
 See [_meta/versioning-policy.md](./_meta/versioning-policy.md) for what "breaking" means.
+
+---
+
+## grammar 2 (breaking) — 2026-07-21 — `actions[]` replaces `creatable`; adds a `transition` kind
+
+**Breaking.** `renderBindings[].creatable` (a single flat create-affordance object) no longer exists.
+Replaced by `renderBindings[].actions[]` — an array of archetype-owned actions, each with a `kind`. Any
+existing `creatable` object must be rewritten as one `{ "kind": "create", ... }` array entry (see
+Migration below) — this is why the bump is breaking, not additive: a file with the old key would now
+fail to parse as intended.
+
+### Established
+
+- **`kind: "create"` (replaces `creatable` 1:1, plus new capability):** `label`, `byPersonaIds`, optional
+  `workflowType` (defaults to the binding's own type — set only for the cross-archetype case),
+  new `scope` (`tab` default | `instance`) and `presentation` (`fab` default | `button`), `prefill`.
+  **New beyond what `creatable` could express:** `scope: "instance"` — an action related to one specific
+  existing instance, rendering as a card `button` or a contextual FAB bound to the in-focus instance,
+  with `{context.id}` / `{context.<field>}` resolving from that host instance. `scope: "tab"` behaves
+  exactly as `creatable` always did (a tab-wide FAB, always reachable, no context). A cross-archetype
+  instance-scoped action is declared on the **host's** binding, never the created type's own binding (the
+  ballot-creation action moved from `tournament-ballot`'s binding onto `tournament-event`'s).
+- **`kind: "transition"` (additive, same date — a second action kind, not a second version bump):** names
+  an already-declared `transitions[].id` on the binding's own workflow type and gives it a distinguished
+  `fab`/`button` presentation instead of the automatic per-instance button row generated from
+  `availableTransitions` — removing only that one transition from the row, leaving every other transition
+  on the type rendering automatically as before. `scope` is fixed to `instance` (a transition always acts
+  on an existing instance); `byPersonaIds`/`workflowType`/`prefill` do not apply (the transition's own
+  `guard`/`inputs` remain the sole source of truth for eligibility and shape). Per the additive rule
+  above, this did not require its own version bump — recorded here under the version it landed in.
+- **`{context.*}` interpolation**, valid inside an instance-scoped action's `prefill` (create) or `inputs`
+  (transition) only: `{context.id}` (the host instance's own id) and `{context.<fieldName>}` (that
+  instance's own data). A `{context.*}` reference anywhere else, or on a `scope: "tab"` action, is a
+  validator error.
+- **New validator checks:** `unknown_action_kind`, `unknown_action_scope`/`unknown_action_presentation`,
+  `tab_action_cannot_be_button`, `dangling_action_workflow_type`,
+  `context_reference_outside_instance_action`, `dangling_action_transition_id`,
+  `transition_action_cannot_be_tab_scoped`,
+  `transition_action_cannot_set_workflow_type`/`_prefill`/`_by_persona_ids`,
+  `unknown_action_input_reference`, `duplicate_action_transition_id`, `create_action_cannot_set_inputs`
+  (`dangling_allowed_persona_id`, `dangling_instance_data_key`, `computed_field_written_by_effect` are
+  reused from the prior `creatable` grammar, now checked against `actions[]` instead).
+
+### Migration
+
+Rewrite every `renderBindings[].creatable` object as one `renderBindings[].actions[]` entry:
+
+```jsonc
+// Before (grammar 1)
+"creatable": { "label": "New event", "byPersonaIds": ["organizer"] }
+
+// After (grammar 2) — identical behavior; scope/presentation now explicit
+"actions": [
+  { "kind": "create", "label": "New event", "byPersonaIds": ["organizer"],
+    "scope": "tab", "presentation": "fab" }
+]
+```
+
+No community shipped on grammar 1's `creatable` outside this release's own frozen Tabletop Club JSON,
+which was migrated in the same pass (all 6 prior `creatable` bindings → `actions[]`, plus the new
+cross-archetype instance-scoped ballot-create action and one `kind: "transition"` action on
+`equipment-loan`). The seven legacy communities remain on `experienceSchemaVersion: 1` and are
+unaffected — grammar only applies under `experienceSchemaVersion: 2`.
+
+### Docs touched
+
+`reference/render-bindings.md` (`actions` section fully rewritten for two kinds), new
+[`guide/07-actions-and-fabs.md`](./guide/07-actions-and-fabs.md) (decision procedure + worked examples —
+create vs. transition, scope/presentation, cross-archetype rule, the nested-tables case),
+`guide/03-common-patterns.md` (P3/P6 known-gap notes updated to point at the real mechanism),
+`guide/04-antipatterns.md` (AP-13 updated: `scope: "tab"` creates now render end-to-end, not just
+parse), `communities/tabletop-club.md` (§3/§7/§10/§11), `spec-version.json`
+(`layers.grammar` bumped to 2, `knownGaps.instanceCreation` and `proposedNotImplemented.actionsGrammar`
+updated), `_meta/doc-manifest.json` (`syncedTo` bumped for every doc above).
+
+### Verification
+
+Real CLI validator (`community_package_validator.dart`) against the updated frozen JSON: 0 errors/0
+warnings. Node.js JSONC-parse check: valid JSON, 5 tab-scoped creates + 1 instance-scoped create + 1
+transition action counted, matching the design. **App Shell implementation status, honestly stated:**
+`scope: "tab"` creates render end-to-end (CALR.3g/3h/3b, unaffected by this rename beyond the JSON key
+migration). `scope: "instance"` creates and the entire `kind: "transition"` surface are grammar/validator
+only as of this entry — no running UI consumes them yet. Tracked in the tracker's CALR.4a-f rows.
 
 ---
 

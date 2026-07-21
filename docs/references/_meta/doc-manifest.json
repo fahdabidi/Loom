@@ -14,20 +14,20 @@
   ],
 
   "manifestVersion": "1.0.0",
-  "lastReviewed": "2026-07-16",
+  "lastReviewed": "2026-07-21",
 
   "docs": [
     {
       "path": "README.md",
       "title": "Authoring references — entrypoint",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": []
     },
     {
       "path": "CHANGELOG.md",
       "title": "Specification changelog",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": []
     },
@@ -71,7 +71,7 @@
     {
       "path": "guide/03-common-patterns.md",
       "title": "Common patterns (canonical templates)",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": [
         "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart"
@@ -80,7 +80,7 @@
     {
       "path": "guide/04-antipatterns.md",
       "title": "Anti-patterns",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": [
         "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Archetype_Audit.md"
@@ -104,6 +104,16 @@
       "derivedFrom": [
         "docs/Build Plan V2/Skill/references/community-product-experience-template.md",
         "docs/references/communities/tabletop-club.md",
+        "docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc"
+      ]
+    },
+    {
+      "path": "guide/07-actions-and-fabs.md",
+      "title": "Actions & FABs — create vs. transition, scope/presentation",
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/reference/render-bindings.md",
         "docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc"
       ]
     },
@@ -158,7 +168,7 @@
     {
       "path": "reference/render-bindings.md",
       "title": "Render bindings — placing a workflow on a tab",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": [
         "app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart",
@@ -241,7 +251,7 @@
     {
       "path": "communities/tabletop-club.md",
       "title": "Tabletop Club — the reference community",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": [
         "docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc",

@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-21
 audience: llm-agent
 ---
 
@@ -218,9 +218,9 @@ guard**. A tie spawns a **real runoff** via `branch` + `createInstance`.
 }
 ```
 
-> ⚠️ **Known gap:** creating a *brand-new* draft from blank needs an affordance the grammar does not yet
-> have (see [`spec-version.json`](../spec-version.json) → `knownGaps.instanceCreation`). Seed a draft
-> instance, and mark the gap.
+> ⚠️ **Creating a *brand-new* draft from blank** is a `renderBindings[].actions[]` entry
+> (`kind: "create"`, `scope: "tab"`) — see [`07-actions-and-fabs.md`](./07-actions-and-fabs.md) and
+> [`render-bindings.md`](../reference/render-bindings.md). Do not seed a placeholder draft instead (AP-13).
 
 ---
 
@@ -374,7 +374,8 @@ guard**. A tie spawns a **real runoff** via `branch` + `createInstance`.
 }
 ```
 
-> ⚠️ **Known gap:** starting a *new* thread needs the same instance-creation affordance as P3.
+> ⚠️ **Starting a *new* thread** is the same tab-scoped `actions[]` create affordance as P3 — see
+> [`07-actions-and-fabs.md`](./07-actions-and-fabs.md).
 
 ---
 

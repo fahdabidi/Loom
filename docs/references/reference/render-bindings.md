@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.5.0
 status: current
-last_verified: 2026-07-20
+last_verified: 2026-07-21
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -30,7 +30,7 @@ drafts).
   "bindingKind": "primary",            // REQUIRED
   "audienceMemberField": "invitedPersonaIds",  // optional
   "repeater": { /* see below */ },              // optional, GAP-1
-  "creatable": { /* see below */ },             // optional, GAP-2
+  "actions": [ /* see below */ ],               // optional, GAP-2 (replaced `creatable`, grammar v2)
   "responseTable": { /* see below */ },         // optional, PROPOSED 2026-07-17
   "filterableFacets": [ /* see below */ ]       // optional, PROPOSED 2026-07-17
 }
@@ -45,18 +45,24 @@ drafts).
 | `bindingKind` | string | **yes** | `primary` · `summary` |
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
 | `repeater` | object | no | Renders a per-item action row over a list (GAP-1) |
-| `creatable` | object | no | Declares this type member-creatable (GAP-2) |
+| `actions` | object[] | no | Archetype-owned actions (create, transition) rendered as buttons on the card or as tab/contextual FABs (GAP-2; replaced the flat `creatable` object in grammar v2) |
 | `responseTable` | object | no | Points a calendar-family archetype at a per-member response table, instead of assuming field names (PROPOSED) |
 | `filterableFacets` | object[] | no | Named, labeled, computed-field-backed filters/stats a generic list surface may offer (PROPOSED) |
 
 ⚠️ **Grammar/engine status differs across these additions — read before using any of them.** `repeater`
 is fully implemented and engine-executed (parsing + `{item.x}`/`{input.x}` resolution + validator
-checks) — confirmed working end-to-end on `tournament-ballot`. `creatable` **parses and validates
-correctly, and now has one real consumer**: `event-rsvp`'s "+ New event" affordance (see
-`spec-version.json` → `knownGaps.instanceCreation`) — other types declaring `creatable` still render no
-UI for it yet. `responseTable` and `filterableFacets` are **PROPOSED — grammar/validator only, written
-ahead of the App Shell code that will consume them**, same convention this file's earlier additions
-used before their own consumers existed.
+checks) — confirmed working end-to-end on `tournament-ballot`. `actions` (grammar v2, replacing the flat
+`creatable` object) is **the model this file now normatively describes**, and covers two action kinds.
+`kind: "create"`: `scope: "tab"` create-actions are fully built and shipping (the tab creatable-action
+FAB — CALR.3g/3h/3b — every `event-rsvp`, `tournament-event`, and every other tab-level creation runs
+through it end-to-end); `scope: "instance"` creates (`button` on a card, or a contextual FAB driven by
+the in-focus instance — e.g. "Create ballot for this tournament") are **the newly-designed surface not
+yet App-Shell-implemented** (see `spec-version.json` → `proposedNotImplemented.actionsGrammar`). `kind:
+"transition"` (pulling one already-declared transition out of the automatic button row into its own FAB
+or distinguished button) is **new grammar, also not yet App-Shell-implemented** — written ahead of the
+code that will consume it, same convention. `responseTable` and `filterableFacets` are **PROPOSED —
+grammar/validator only, written ahead of the App Shell code that will consume them**, same convention
+this file's earlier additions used before their own consumers existed.
 
 ## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
 
@@ -137,52 +143,121 @@ effects.
 names — a declared list field's own item shape, or (if `source` is a `query(...)`) the queried type's
 `instanceDataSchema` → `unknown_item_reference`.
 
-## `creatable` — declaring a type member-creatable (GAP-2)
+## `actions` — archetype-owned actions (GAP-2, grammar v2)
+
+An `actions` array declares the actions an archetype card offers. It **replaces the flat `creatable`
+object** from grammar v1: a single member-create affordance is now one entry (`kind: "create"`) in this
+array. The array shape exists so an archetype can own more than one action, and so each action can choose
+independently whether it renders as a button on the card or as a FAB, and whether it operates on a
+brand-new instance (tab scope) or one related to a specific existing instance (instance scope).
+
+**Two action kinds, one shape.** `kind: "create"` makes a brand-new instance of some workflow type.
+`kind: "transition"` names an **already-declared** `transitions[]` entry on this binding's own workflow
+type and gives it a distinguished presentation (a FAB, or a visually separated button) instead of leaving
+it in the archetype's automatic button row. Every other transition on the type keeps rendering
+automatically via `availableTransitions` exactly as it always has — declaring one transition as an action
+does not require declaring the rest, and **removes only that one** from the automatic row (never both,
+to avoid two affordances for the same action).
 
 ```jsonc
-"creatable": {
-  "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
-  "label": "Add event",
-  "prefill": { "eventDate": "{context.date}" }   // optional
-}
+"actions": [
+  // Tab-scoped create: a brand-new instance from nothing. Renders as a tab FAB.
+  { "kind": "create", "label": "New event",
+    "byPersonaIds": ["tabletop-organizer"],
+    "scope": "tab", "presentation": "fab" },
+
+  // Instance-scoped create of a DIFFERENT workflow type, owned by THIS archetype's card.
+  // Renders as a button on each card; {context.id} is that card's own instance id.
+  { "kind": "create", "workflowType": "tournament-ballot",
+    "label": "Create ballot for this tournament",
+    "byPersonaIds": ["tabletop-organizer"],
+    "scope": "instance", "presentation": "button",
+    "prefill": { "eventId": "{context.id}" } },
+
+  // Transition, pulled out of the automatic row into its own contextual FAB.
+  // "borrow" stays a normal declared transition with its own guard/effects; this entry
+  // only changes how it presents. No byPersonaIds/workflowType/prefill — the transition's
+  // own guard is still the sole eligibility check, same as when it rendered in the row.
+  { "kind": "transition", "transitionId": "borrow", "label": "Request loan",
+    "presentation": "fab" }
+]
 ```
 
 | Key | Type | Required | Meaning |
 |---|---|---|---|
-| `byPersonaIds` | string[] | **yes** | Personas allowed to create a new instance of this type here |
-| `label` | string | **yes** | The affordance's button text (e.g. "Propose a game") |
-| `prefill` | object | no | Field → value map, pre-filling the creation form |
+| `kind` | string | **yes** | `create` or `transition`; the enum is the extension point for future action kinds. |
+| `label` | string | `create`: **yes** · `transition`: no | The affordance's button/FAB text. For `transition`, defaults to that transition's own declared `label` if omitted. |
+| `byPersonaIds` | string[] | `create`: **yes** · `transition`: n/a | Personas allowed to invoke a `create` action. **Not applicable to `transition`** — a transition's own `guard.allowedPersonaIds` is already the single source of truth for who may invoke it; setting `byPersonaIds` here would be a second, driftable copy of that same fact. |
+| `workflowType` | string | no; n/a for `transition` | For `kind: "create"`, the type to create. **Defaults to the binding's own workflow type.** Set it only for the cross-archetype case — an action on the tournament-event card that creates a `tournament-ballot`. **Not applicable to `transition`** — a transition always acts on its own binding's workflow type. |
+| `transitionId` | string | `transition`: **yes** · n/a for `create` | Names a `transitions[].id` already declared on this binding's own workflow type. |
+| `scope` | string | no | `create` defaults to `tab` (`tab` or `instance`). `transition` **must** be `instance` (the default; a transition always acts on an existing instance — there is nothing to transition before one exists). |
+| `presentation` | string | no | `fab` (default) or `button`. How the action's affordance renders. |
+| `prefill` | object | no; n/a for `transition` | `create` only. Field → value map, pre-filling the creation form. Values use the effect interpolation grammar plus `{context.*}` (instance scope only). Use `inputs` (below) for a `transition` action instead. |
+| `inputs` | object | no; n/a for `create` | `transition` only. Field → value map passed to `applyTransition` as that transition's own `inputs` (see [`effects.md`](./effects.md) `{input.x}`). Keys must match names the named transition itself declares under its own `inputs`. Values may use `{context.<field>}` — the host/in-focus instance's own current field, self-referenced as an input (e.g. carrying one of its own fields into the transition's effects). Use `prefill` (above) for a `create` action instead. |
 
-**Creation semantics (load-bearing):** the affordance is meant to render a form for the target state's
-`editableFields`, collect values, **then** call `createInstance` — never create a blank instance first.
-Every `required`, non-computed field of the type must appear in that state's `editableFields`, or a
-created instance would be invalid on arrival (`creatable_missing_required_field`, not yet implemented as
-a distinct validator check — currently caught only as `missing_required_field` at seed-time, not at
-creation-time, since nothing creates instances via this path yet).
+**Scope is the whole model for `create`; fixed for `transition`.** Every other field's behaviour
+follows from it:
 
-`prefill`'s values use the same interpolation grammar as effects (`$actor`, literals, `{fieldName}`) plus
-one new source specific to `creatable`: **`{context.<key>}`** — supplied by whatever UI invokes the
-creation flow, not read from any instance. A Calendar day-detail view rendering "Add event" for July 20th
-would invoke creation with `context: { "date": "2026-07-20" }`; `{context.date}` resolves against that.
-`context` exists only to answer "where in the app did the member tap 'create'?" — it is never persisted,
-never an instance field, and never readable anywhere else.
+| | `scope: "tab"` (create only) | `scope: "instance"` |
+|---|---|---|
+| Applies to | a brand-new top-level instance, unrelated to anything on screen | `create`: an instance **related to** one specific existing instance. `transition`: the existing instance being transitioned. |
+| Renders as | always a tab-level FAB (a `presentation: "button"` on a tab-scoped action is a validator error — there is no card to put it on) | `button` → an affordance on each host card; `fab` → a contextual FAB whose context is the **in-focus** host card |
+| Context (`{context.*}`) | none — any `{context.*}` in `prefill` is a validator error | resolved from the host instance: `button` uses that card's own instance; `fab` uses the in-focus instance (the App Shell's existing focus tracker) |
+| Visible when zero instances of the host type exist? | yes — creation-from-nothing must always be reachable | no — there is no instance to own or contextualise the action |
+
+**`{context.*}` resolution (instance scope only, both kinds):**
+- `{context.id}` — the host instance's own id. (A `tournament-ballot`'s `eventId` = the tournament
+  instance's id, so `"eventId": "{context.id}"` on a tournament-event-owned action is exactly right.)
+- `{context.<fieldName>}` — the host instance's `instanceData[<fieldName>]` value.
+
+For `create`, `context` refers to the *host* instance the action was invoked from — never the created
+type, and never readable outside `prefill`. For `transition`, `context` **is** the instance being
+transitioned (there is only one instance in play), so `{context.<fieldName>}` inside `inputs` is a
+self-reference to that same instance's own current data.
+
+**Creation semantics (load-bearing, unchanged from v1):** a `create` action renders a form for the target
+state's `editableFields`, collects values, merges in the resolved `prefill`, **then** calls
+`createInstance` — never a blank instance first. Every `required`, non-computed field of the created type
+must appear in that state's `editableFields` **or** be supplied by `prefill`, or the created instance
+would be invalid on arrival. A `prefill`-supplied field need not be in `editableFields` (that is exactly
+how a hidden, context-derived field like `eventId` is populated without showing the user an editor).
+
+**Transition-presentation semantics:** a `transition` action does not create a second way to invoke the
+transition — it **replaces** the transition's row-button presentation with the declared one. The named
+transition's own `guard`/`effects`/`inputs` declaration is completely unchanged; only *where and how* it
+renders differs. This is why `byPersonaIds`, `workflowType`, and `prefill` are inapplicable here: nothing
+about eligibility or target type changes, only presentation.
 
 **Validator checks:** `byPersonaIds` against the known persona registry (`dangling_allowed_persona_id`,
-warning); `prefill` keys must be declared in this workflow's own `instanceDataSchema`
-(`dangling_instance_data_key`) and must not target a computed field (`computed_field_written_by_effect`);
-`{context.x}` appearing anywhere OTHER than inside a `creatable.prefill` value is an error
-(`context_reference_outside_creatable`).
+warning); `workflowType` (when present) must name a declared workflow (`dangling_action_workflow_type`);
+`kind` must be a known action kind (`unknown_action_kind`); `scope`/`presentation` must be known enum
+values (`unknown_action_scope`/`unknown_action_presentation`); `presentation: "button"` with `scope:
+"tab"` is an error (`tab_action_cannot_be_button`); `prefill` keys must be declared in the *created*
+type's `instanceDataSchema` (`dangling_instance_data_key`) and must not target a computed field
+(`computed_field_written_by_effect`); a `{context.*}` value on a `scope: "tab"` action, or anywhere other
+than inside an instance-scoped action's `prefill`/`inputs`, is an error
+(`context_reference_outside_instance_action`). For `kind: "transition"`: `transitionId` must name a
+transition declared on this binding's own workflow type (`dangling_action_transition_id`); `scope:
+"tab"` is an error (`transition_action_cannot_be_tab_scoped`); a present `workflowType`, `prefill`, or
+`byPersonaIds` is an error (`transition_action_cannot_set_workflow_type` /
+`transition_action_cannot_set_prefill` / `transition_action_cannot_set_by_persona_ids`); an `inputs` key
+not declared under the named transition's own `inputs` is an error (`unknown_action_input_reference`);
+two `transition` actions on the same binding naming the same `transitionId` is an error
+(`duplicate_action_transition_id`). Symmetrically, `inputs` on a `kind: "create"` action is an error
+(`create_action_cannot_set_inputs` — use `prefill`).
 
-## `creatableAction` / `tabCreatableActionStyles` — resolving multiple `creatable` bindings on one tab, and how the launched form presents (PROPOSED, 2026-07-20)
+## `creatableAction` / `tabCreatableActionStyles` — resolving multiple tab-scoped `create` actions on one tab, and how the launched form presents (IMPLEMENTED, CALR.3g/3h/3b)
 
 **Not a binding-object key** — these live on the top-level `experience` object, one level up, following the
 same community → tab cascade already used by `theme`/`tabThemes` (one community-level object, one
-per-tab override map of the same shape, each of the object's fields resolving independently). They exist
-because `creatable` is a per-binding, per-workflow-type declaration: nothing in the grammar previously said
-what happens when **two or more** workflow types declare a `creatable` binding for the **same** `tabId`
-(e.g. Calendar gaining both `event-rsvp`'s "New event" and `tournament-event`'s "New tournament" once both
-are wired in), nor how the tapped action's own form should be presented — the App Shell would otherwise
-have to invent both rules arbitrarily.
+per-tab override map of the same shape, each of the object's fields resolving independently). They govern
+only **tab-scoped** actions (`actions[]` entries with `scope: "tab"`, which render as the tab FAB):
+nothing else in the grammar says what happens when **two or more** workflow types contribute a
+`scope: "tab"` create-action to the **same** `tabId` (e.g. Calendar carrying both `event-rsvp`'s "New
+event" and `tournament-event`'s "New tournament"), nor how the tapped action's own form should be
+presented. Instance-scoped actions (`scope: "instance"`) are unaffected by these fields — a `button`
+renders inline on its card and a contextual `fab` presents its form the same `presentationStyle` way, but
+their button-vs-FAB layout is decided per-action by `presentation`, not by `multiActionStyle`.
 
 ```jsonc
 "experience": {
@@ -204,7 +279,7 @@ have to invent both rules arbitrarily.
 | Key | Type | Required | Meaning |
 |---|---|---|---|
 | `creatableAction` | object | no | Community-wide defaults for both fields below. |
-| `creatableAction.multiActionStyle` | string | no | How multiple `creatable` bindings on one tab lay out relative to each other. One of `speedDial` \| `stacked` \| `singleFirst`. |
+| `creatableAction.multiActionStyle` | string | no | How multiple tab-scoped `create` actions on one tab lay out relative to each other. One of `speedDial` \| `stacked` \| `singleFirst`. |
 | `creatableAction.presentationStyle` | string | no | How the tapped action's own archetype card surface (in creation mode) is presented. One of `popup` \| `slideOutBottom` \| `slideOutLeft` \| `slideOutRight`. |
 | `tabCreatableActionStyles` | object | no | `{ "<tabId>": { ...same two fields, each optional... } }` — overrides one or both of `creatableAction`'s fields for one specific tab. |
 
@@ -219,15 +294,15 @@ the two fields are independent, not an all-or-nothing override.
 
 **The three `multiActionStyle` values:**
 - `speedDial` — the FAB, when tapped, expands into a small radial/stacked burst of labeled mini-actions,
-  one per matching `creatable` binding (reference: Twitter's compose-FAB burst). The standard pattern for
-  "one primary action, several related sub-actions"; scales cleanly past two.
-- `stacked` — every matching `creatable` binding gets its own always-visible FAB, stacked vertically
-  (reference: Google Photos' share-sheet FAB column). Only reasonable for exactly two; gets cluttered
-  beyond that — not a substitute for `speedDial` at scale, a deliberately simpler option for the
+  one per matching tab-scoped `create` action (reference: Twitter's compose-FAB burst). The standard
+  pattern for "one primary action, several related sub-actions"; scales cleanly past two.
+- `stacked` — every matching tab-scoped `create` action gets its own always-visible FAB, stacked
+  vertically (reference: Google Photos' share-sheet FAB column). Only reasonable for exactly two; gets
+  cluttered beyond that — not a substitute for `speedDial` at scale, a deliberately simpler option for the
   two-action case.
-- `singleFirst` — only the first matching `creatable` binding (definition order) gets a FAB; the rest are
-  not reachable via the FAB at all. A real tradeoff (it hides actions), not merely a simpler visual — use
-  deliberately, not as a default.
+- `singleFirst` — only the first matching tab-scoped `create` action (definition order) gets a FAB; the
+  rest are not reachable via the FAB at all. A real tradeoff (it hides actions), not merely a simpler
+  visual — use deliberately, not as a default.
 
 **The four `presentationStyle` values** — this governs how the archetype card surface for the *tapped*
 action's workflow type renders once launched, in creation mode (no backing instance yet — see
@@ -246,14 +321,14 @@ variant):
   widget; build with `showGeneralDialog` + a `SlideTransition` from `Offset(-1, 0)`/`Offset(1, 0)` to
   `Offset.zero` — a standard, well-understood pattern using only stock Flutter animation primitives.
 
-**This resolves independently of how many `creatable` bindings exist** — with exactly one match on a tab,
-all three `multiActionStyle` values render identically (a single FAB); the distinction only matters once a
-second `creatable` binding lands on the same tab. `presentationStyle` applies regardless of how many
-actions there are — it governs the launched form, not the FAB itself.
+**This resolves independently of how many tab-scoped `create` actions exist** — with exactly one match on
+a tab, all three `multiActionStyle` values render identically (a single FAB); the distinction only matters
+once a second tab-scoped `create` action lands on the same tab. `presentationStyle` applies regardless of
+how many actions there are — it governs the launched form, not the FAB itself.
 
-**Not yet implemented** — grammar only, written ahead of the App Shell code that will consume it, same
-convention `responseTable`/`filterableFacets` used before their own consumers existed. See
-`spec-version.json` → `proposedNotImplemented`.
+**Implemented** — the tab creatable-action FAB (this whole community→tab cascade, plus all four
+`presentationStyle` values and all three `multiActionStyle` values) ships end-to-end as of CALR.3g/3h/3b.
+`presentationStyle` also governs instance-scoped contextual FABs' launched forms.
 
 ## `tabId` — complete list
 
@@ -350,10 +425,20 @@ is expressed by *omission*, not by a permission flag.
 | >32 bindings on one workflow | warning — a smell; likely two workflows |
 | >16 distinct roles | warning — same |
 | `repeater.itemActions[].inputs`' `{item.x}` must match the source's item shape | error (`unknown_item_reference`) |
-| `creatable.byPersonaIds` must be a known persona | warning (`dangling_allowed_persona_id`) |
-| `creatable.prefill` keys must be declared in this workflow's `instanceDataSchema` | error (`dangling_instance_data_key`) |
-| `creatable.prefill` must not target a computed field | error (`computed_field_written_by_effect`) |
-| `{context.x}` outside a `creatable.prefill` value | error (`context_reference_outside_creatable`) |
+| `actions[].byPersonaIds` must be a known persona | warning (`dangling_allowed_persona_id`) |
+| `actions[].kind` must be a known action kind | error (`unknown_action_kind`) |
+| `actions[].scope`/`presentation` must be known enum values | error (`unknown_action_scope` / `unknown_action_presentation`) |
+| `actions[].presentation: "button"` with `scope: "tab"` | error (`tab_action_cannot_be_button`) |
+| `actions[].workflowType` (when present) must name a declared workflow | error (`dangling_action_workflow_type`) |
+| `actions[].prefill` keys must be declared in the created type's `instanceDataSchema` | error (`dangling_instance_data_key`) |
+| `actions[].prefill` must not target a computed field | error (`computed_field_written_by_effect`) |
+| `{context.x}` on a `scope: "tab"` action, or outside any instance-scoped action's `prefill`/`inputs` | error (`context_reference_outside_instance_action`) |
+| `actions[].transitionId` (kind: transition) must name a transition declared on this binding's own workflow type | error (`dangling_action_transition_id`) |
+| `actions[]` with `kind: "transition"` and `scope: "tab"` | error (`transition_action_cannot_be_tab_scoped`) |
+| `actions[]` with `kind: "transition"` and a present `workflowType` / `prefill` / `byPersonaIds` | error (`transition_action_cannot_set_workflow_type` / `transition_action_cannot_set_prefill` / `transition_action_cannot_set_by_persona_ids`) |
+| `actions[].inputs` key (kind: transition) not declared under the named transition's own `inputs` | error (`unknown_action_input_reference`) |
+| Two `kind: "transition"` actions on one binding naming the same `transitionId` | error (`duplicate_action_transition_id`) |
+| `actions[]` with `kind: "create"` and a present `inputs` | error (`create_action_cannot_set_inputs`) |
 | `responseTable.workflowType` must be declared | error (`dangling_response_table_workflow_type`) |
 | `responseTable.eventField` must be declared on that type | error (`unknown_response_table_field`) |
 | `responseTable.pendingStates` entries must be declared states of that type | error (`unknown_response_table_state`) |

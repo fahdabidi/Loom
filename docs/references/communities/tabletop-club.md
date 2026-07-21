@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.5.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.6.0
 status: current
-last_verified: 2026-07-20
+last_verified: 2026-07-21
 audience: llm-agent
 derived_from:
   - docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc
@@ -72,8 +72,9 @@ sharing a game they personally own with the whole community** — modeled on the
 issue), adapted for one item type instead of books/DVDs/games generically.
 
 **Interactions:**
-1. **List a game** — any member (`creatable`), pre-filled with `ownerPersonaId = $actor`. Not
-   organizer-only — this is the entire point of "peer-to-peer."
+1. **List a game** — any member (`renderBindings[].actions[]`, `kind: "create"`, `scope: "tab"`),
+   pre-filled with `ownerPersonaId = $actor`. Not organizer-only — this is the entire point of
+   "peer-to-peer."
 2. **Edit / delist** — owner only.
 3. **Request to borrow** — any *other* member. If available, becomes `pendingRequestPersonaId` (awaiting
    the owner's approval); if unavailable, joins `queuedPersonaIds`.
@@ -160,16 +161,16 @@ The first screen after opening Tabletop Club must show:
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| `event-rsvp` (REDESIGNED, PROPOSED) | member | Calendar, scoped multi-card container | capacity, live going count, seats remaining, Going/Maybe/Can't-go, waitlist gated by a live per-row count, organizer event creation | `applyTransition` on the member's own `event-rsvp-response` row; `relatedAggregate` guard (PROPOSED, `guards.md` kind 7); `groupCount`/`mapGet` formulas over query-backed `responses`; `creatable` (real consumer) | none yet — CAL.1-CAL.4 tickets not dispatched; supersedes A.8/A.10's evidence, which describes the pre-redesign list-based shape |
+| `event-rsvp` (REDESIGNED, PROPOSED) | member | Calendar, scoped multi-card container | capacity, live going count, seats remaining, Going/Maybe/Can't-go, waitlist gated by a live per-row count, organizer event creation | `applyTransition` on the member's own `event-rsvp-response` row; `relatedAggregate` guard (PROPOSED, `guards.md` kind 7); `groupCount`/`mapGet` formulas over query-backed `responses`; `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"` — real consumer, CALR.3g/3h/3b) | none yet — CAL.1-CAL.4 tickets not dispatched; supersedes A.8/A.10's evidence, which describes the pre-redesign list-based shape |
 | `event-rsvp-response` (NEW TYPE, PROPOSED) | member | not directly rendered — aggregated by `event-rsvp` | one row per (event, member), states pending/going/maybe/declined/waitlisted | bulk-created via a proposed `createInstances` primitive at event-creation time | none yet |
-| `tournament-event` | member | Calendar event detail | accepted count, actor-in-list-guarded "I'm going"/"Can't make it", **organizer: create a new tournament** | `actorInList` guard, `accepted` formula, `creatable` (real consumer). RSVP tracking deliberately NOT converted to the response-table pattern — no capacity ceiling exists to guard, only an unenforced quorum; converting it is an explicit open gap, not silently done. | A.8 widget tests for RSVP; creation not yet tested — CAL.1/CAL.3 not dispatched |
+| `tournament-event` | member | Calendar event detail | accepted count, actor-in-list-guarded "I'm going"/"Can't make it", **organizer: create a new tournament**, **organizer: create a ballot for this tournament** | `actorInList` guard, `accepted` formula, `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"` — real consumer, for the tournament itself; `kind: "create"`, `scope: "instance"`, cross-archetype, `{context.id}` → `tournament-ballot.eventId` — designed, not yet App-Shell-implemented, for the ballot). RSVP tracking deliberately NOT converted to the response-table pattern — no capacity ceiling exists to guard, only an unenforced quorum; converting it is an explicit open gap, not silently done. | A.8 widget tests for RSVP; creation not yet tested — CAL.1/CAL.3 not dispatched |
 | **Calendar Day/Week/Month/Pending views (PROPOSED)** | member | four view modes on the same Calendar surface, reached by a toggle or by tapping a date cell (→ Day) | each view's own scoped, minimized-card list; Pending is unbounded by date | new App Shell view-mode state (no grammar needed) + `render-bindings.md`'s `responseTable`/`filterableFacets` (PROPOSED) to keep the view generic across archetypes, not hardcoded to `event-rsvp`'s own field names | none yet — CAL.2 ticket not dispatched; blocked on CAL.1 (event creation) per the acceptance-test methodology agreed 2026-07-17 |
 | `tournament-ballot` / `tournament-vote` | member | Home ballot card | per-candidate vote button, live `groupCount` tally, deadline | cross-instance eligibility guard, `createInstance` (vote-as-row), `branch`+`createInstance` (runoff) | Blocked on Phase A′ (GAP-1 transition inputs, GAP-4 query-backed `source`) then Phase B |
-| `equipment-loan` / `equipment-giveaway` | member | Marketplace listing (club library) | availability, current holder, queue, dues-paid gate | cross-workflow guard (`requiresWorkflowsComplete: ["tabletop-club-dues-payment"]`) | Phase C |
-| `tabletop-game-loan` (PROPOSED redesign) | member (owner + borrower) | Marketplace listing (peer-shared) | owner identity, availability, pending-approval, current holder, queue, due date, renew/report-issue | `renderBindings[].creatable` (GAP-2) for listing your own game; owner-approval is plain guarded transitions — no new grammar beyond GAP-2 | Blocked on Phase A′ (GAP-2), then Phase C; no ticket written yet |
+| `equipment-loan` / `equipment-giveaway` | member | Marketplace listing (club library) | availability, current holder, queue, dues-paid gate, **member: request a loan (contextual FAB)** | cross-workflow guard (`requiresWorkflowsComplete: ["tabletop-club-dues-payment"]`); `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"` — listing itself, real consumer); `kind: "transition"`, `transitionId: "borrow"` — the `borrow` transition pulled out of the automatic button row into its own contextual FAB, its own `guard` unchanged (designed, not yet App-Shell-implemented — see §10 and [`07-actions-and-fabs.md`](../guide/07-actions-and-fabs.md)) | Phase C |
+| `tabletop-game-loan` (PROPOSED redesign) | member (owner + borrower) | Marketplace listing (peer-shared) | owner identity, availability, pending-approval, current holder, queue, due date, renew/report-issue | `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"`, GAP-2) for listing your own game; owner-approval is plain guarded transitions — no new grammar beyond GAP-2 | Blocked on Phase A′ (GAP-2), then Phase C; no ticket written yet |
 | `tabletop-club-dues-payment` | member | Giving | amount, receipt | `paymentCheckout` archetype | Phase D |
-| `game-purchase-proposal` | member (author) / organizer (decision) | Home (submit) / Admin (queue) | proposal state, live pending queue | `renderBindings[].creatable` (GAP-2) | Blocked on Phase A′, then Phase E |
-| `discussion-thread` | member | Messages | thread list, unread, post/reply, **start new thread** | `renderBindings[].creatable` (GAP-2) for thread creation | Blocked on Phase A′, then Phase F |
+| `game-purchase-proposal` | member (author) / organizer (decision) | Home (submit) / Admin (queue) | proposal state, live pending queue | `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"`, GAP-2) | Blocked on Phase A′, then Phase E |
+| `discussion-thread` | member | Messages | thread list, unread, post/reply, **start new thread** | `renderBindings[].actions[]` (`kind: "create"`, `scope: "tab"`, GAP-2) for thread creation | Blocked on Phase A′, then Phase F |
 
 ## 8. Persona And State Matrix
 
@@ -229,19 +230,34 @@ and approve loans of their own games.
   into the full RSVP card (reusing `EngineNativeArchetypeCard` from the generic pipeline); tapping a
   second card collapses the first (accordion — one expanded at a time).
 - **Organizer creates a new Calendar event (PROPOSED, 2026-07-17; FAB infrastructure redesigned
-  2026-07-20):** a generic, tab-wide floating-action-button mechanism (not Calendar-specific) surfaces any
-  `creatable` binding (GAP-2) matching the current tab and viewer persona. Calendar is the first tab with
-  two: `event-rsvp`'s "New event" today, `tournament-event`'s "New tournament" once wired in — resolved via
+  2026-07-20; `actions[]` grammar v2, 2026-07-21):** a generic, tab-wide floating-action-button mechanism
+  (not Calendar-specific) surfaces any `renderBindings[].actions[]` entry with `kind: "create"`, `scope:
+  "tab"` matching the current tab and viewer persona (GAP-2). Calendar has two: `event-rsvp`'s "New
+  event" (real, CALR.3g/3h/3b) and `tournament-event`'s "New tournament" (real, CALR.3b) — resolved via
   `creatableAction`/`tabCreatableActionStyles` (`render-bindings.md`): `multiActionStyle` (speedDial/
   stacked/singleFirst) for how multiple actions lay out, `presentationStyle` (popup/slideOutBottom/
   slideOutLeft/slideOutRight) for how the tapped action's own archetype card surface presents, in creation
-  mode. Not bundled with tournament-ballot creation, which is a separate, third `creatable` affordance
-  invoked from the tournament-event's own card via `{context.eventId}` prefill.
+  mode. Not bundled with tournament-ballot creation, which is a separate, **instance-scoped**
+  (`scope: "instance"`, `presentation: "button"`) action declared on `tournament-event`'s own binding —
+  not `tournament-ballot`'s — and invoked from a specific tournament's own card via `{context.id}` prefill
+  (`{context.id}` is the tournament instance's own id, which is exactly `tournament-ballot.eventId`).
+  Designed, not yet App-Shell-implemented — see [`07-actions-and-fabs.md`](../guide/07-actions-and-fabs.md).
+- **Member requests a game loan via a contextual FAB, not a row button (PROPOSED — `actions[]` grammar
+  v2, 2026-07-21):** the second, complementary `actions[]` pattern — a **transition** (not a create) pulled
+  out of its archetype's automatic button row. `equipment-loan`'s `borrow` transition already exists as a
+  plain guarded transition (dues-paid gate, availability check — see §3/§7); a `kind: "transition"` action
+  (`transitionId: "borrow"`) gives it its own contextual FAB, bound to the in-focus marketplace listing,
+  since "request a loan" is that card's single primary action — while `join-queue`/`leave-queue`/`return`/
+  `delist` stay as ordinary row buttons, unchanged. This is the model to reach for whenever one existing
+  transition (not a new instance) deserves a distinguished, floating affordance instead of one button among
+  several. Designed, not yet App-Shell-implemented — see
+  [`07-actions-and-fabs.md`](../guide/07-actions-and-fabs.md).
 
 ## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
+| `actions[]` grammar v2 — create vs. transition FABs, 2026-07-21 | **yes** — the flat `creatable` object could only express one shape ("brand-new instance, tab FAB"); it had no way to express an action related to a specific existing instance (a button/contextual FAB on one card, e.g. "Create ballot for this tournament"), and no way to give one specific *transition* (as opposed to a create) a distinguished FAB/button presentation instead of leaving it in the automatic row (e.g. `equipment-loan`'s "Request loan") | no new engine gap — both patterns compose entirely from grammar the engine already executes (`createInstance`/`applyTransition`, existing guards/effects/inputs); this is a rendering/presentation-layer grammar addition, not a new engine capability | `render-bindings.md` `actions` section rewritten for two kinds (`kind: "create"` / `kind: "transition"`), new [`guide/07-actions-and-fabs.md`](../guide/07-actions-and-fabs.md) authored (decision procedure + worked examples for the Skill), `spec-version.json` `actionsGrammar` extended, this doc's §3/§7/§10 updated to describe both patterns and reference the new guide, frozen JSON: `tournament-event` gained the cross-archetype ballot-create action (moved off `tournament-ballot`'s own binding per the locked design rule — a host-owned action, never owned by the created type), `equipment-loan` gained a `kind: "transition"` action pulling `borrow` into its own contextual FAB | App Shell: `scope: "instance"` creates and the entire `kind: "transition"` surface are designed and validated but **not yet implemented** — tracked in the tracker's CALR.4a-f rows, same status as the rest of grammar v2's instance-scoped surface | open — spec updated and approved this revision; implementation tickets not yet dispatched |
 | CALR.3 FAB redesign, 2026-07-20 | **yes** — CALR.3's own "+ New event" button was hardcoded to Calendar/`event-rsvp` specifically, with no way for a second tab or a second creatable workflow on the same tab to get one without duplicating bespoke code | yes — three implementation attempts (CALR.3e nested-Scaffold FAB, CALR.3f/3f2 bounded-layout restructuring) were all reverted after real regressions (up to 18 test failures), because `SingleChildScrollView` always gives unbounded height to its child regardless of what bounds the scrollview itself — a nested `Scaffold` inside a tab's own scrollable content can never receive bounded layout constraints, no matter how the outer layers are restructured. Corrected design: attach the FAB to `LocalExtensionScreen`'s own existing top-level Scaffold (already bounded, already computes `selectedTab`/`activePersona`/`experience`) — no nested Scaffold needed at all | `render-bindings.md` `creatableAction`/`tabCreatableActionStyles` (two design iterations same day: flat fields → three-field nested object → final two-field shape after clarifying `presentationStyle` folds in the slide edge); this doc's Calendar-creation user story updated to describe the generic mechanism instead of a Calendar-specific button | App Shell: generic FAB detection + `multiActionStyle` rendering on the real top-level Scaffold (CALR.3g), then `presentationStyle` (popup via the official `animations` package's `OpenContainer`, slide-out via `showModalBottomSheet`/`SlideTransition`) + generalizing the creation form into the archetype's own `cardSurfaceFamily` dispatch in creation mode (CALR.3h) — split into two stages given how expensive the reverted single-shot attempts were | open — spec updated and approved this revision; CALR.3g/3h tickets being scoped |
 | A.10 live emulator walk, 2026-07-14/15 | no | minor — `tournament-event.minimumAttendance` has no `labelTemplate`, renders its raw field name with no value | none (JSON-authoring gap, not a product-spec gap) | fix in either the JSON (add `labelTemplate`) or A.6's generic-card fallback; deferred to A.10's own triage | open |
 | Product request, 2026-07-17 — Calendar Day/Week/Pending views + real event creation | **yes** — no day/week/pending view existed (only the 7×6 month grid), no member-facing minimized-card list, and no way for the organizer to create a new event at all (`creatable` had zero real consumers anywhere in the app) | yes — `event-rsvp`'s RSVP tracking was list-based (`goingPersonaIds` etc.), not row-per-member, so its capacity guard couldn't be evaluated against a live per-row count; the engine had no bulk-create primitive, no way for a guard to reference a live cross-instance aggregate, and no way to expose a row's own FSM state to aggregation | §6/§7/§8/§10/§11 updated (this revision); `render-bindings.md` (`responseTable`, `filterableFacets`), `guards.md` (`relatedAggregate`, kind 7), `formulas.md` (`subtractHours`, `mapGet`, `$state`), `archetypes/README.md` (`event-rsvp` reopened to 🔨 REBUILDING) all updated; frozen JSON redesigned (new `event-rsvp-response` type, `event-rsvp`/`tournament-event`/`tournament-ballot` `creatable` additions, `tournament-ballot.dueAt` converted to computed, seed data converted to per-row) | JSON/docs done this revision (spec only, per explicit instruction — no code yet); engine: `createInstances` (abstract API), `relatedAggregate` guard evaluation, `$state` exposed to aggregation, `subtractHours`/`mapGet` formula functions; App Shell: creation forms (event-rsvp + tournament-event + tournament-ballot), Day/Week/Month/Pending view surface, minimized/expand card list — none dispatched yet, tracked in the CAL/AS ticket gap list pending user review | open — spec complete, implementation tickets not yet written |
