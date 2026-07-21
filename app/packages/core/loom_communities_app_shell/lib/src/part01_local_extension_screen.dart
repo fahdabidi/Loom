@@ -872,15 +872,15 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           experience.workflowDefinitions!.isNotEmpty)
         for (final definition in experience.workflowDefinitions!.entries)
           for (final binding in definition.value.renderBindings)
-            if (binding.tabId == selectedTab.tabId &&
-                binding.creatable?.byPersonaIds.contains(
-                      activePersona.personaId,
-                    ) ==
-                    true)
+            for (final action in binding.actions)
+              if (binding.tabId == selectedTab.tabId &&
+                  action.kind == 'create' &&
+                  (action.scope == null || action.scope == 'tab') &&
+                  action.byPersonaIds?.contains(activePersona.personaId) == true)
               _CreatableWorkflowAction(
                 workflowType: definition.key,
                 machine: definition.value,
-                label: binding.creatable!.label,
+                label: action.label!,
                 cardSurfaceFamily: binding.cardSurfaceFamily,
               ),
     ];

@@ -138,7 +138,10 @@
         "renderBindings": [
           { "states": ["open"], "role": "any", "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
-            "creatable": { "byPersonaIds": ["tabletop-organizer"], "label": "New event" },
+            "actions": [
+              { "kind": "create", "label": "New event", "byPersonaIds": ["tabletop-organizer"],
+                "scope": "tab", "presentation": "fab" }
+            ],
             // Points the generic archetype at the per-member response table instead of a hardcoded
             // field-name assumption — a second calendar-bound archetype with a different response
             // shape would declare its own responseTable, no App Shell code change needed.
@@ -353,7 +356,18 @@
             // (only a minimumAttendance quorum, inverted semantics from event-rsvp's guard), so reusing
             // that type verbatim would be wrong. Tracked as an explicit, named gap — see the gap list —
             // not silently extended here.
-            "creatable": { "byPersonaIds": ["tabletop-organizer"], "label": "New tournament" } },
+            "actions": [
+              { "kind": "create", "label": "New tournament", "byPersonaIds": ["tabletop-organizer"],
+                "scope": "tab", "presentation": "fab" },
+              // Instance-scoped: a button ON this tournament's own card that creates a ballot for it.
+              // {context.id} = this tournament instance's id, which is exactly the ballot's eventId.
+              // Grammar v2 owns an action on the archetype whose card hosts it (the tournament), not on
+              // the type it creates (the ballot) — so this moved here off tournament-ballot's binding.
+              { "kind": "create", "workflowType": "tournament-ballot",
+                "label": "Create ballot for this tournament", "byPersonaIds": ["tabletop-organizer"],
+                "scope": "instance", "presentation": "button",
+                "prefill": { "eventId": "{context.id}" } }
+            ] },
           // ...and on Home as the attendance/context card sitting alongside the ballot card.
           // (Ballot is a Home card, NOT its own tab — the dedicated 'ballot' tab is removed at 1.30.)
           { "states": ["open"], "role": "any", "tabId": "home",
@@ -487,19 +501,16 @@
             // Per-candidate Vote buttons. The repeater walks `candidates` and, for each one, offers
             // `cast-vote` with that candidate's id supplied as the transition's `choice` input.
             // THIS is what makes "vote for THIS candidate" declarative instead of a Dart convention.
+            // Ballot CREATION is not declared here. Grammar v2 owns an action on the archetype whose
+            // card hosts it, so "Create ballot for this tournament" is an instance-scoped action on
+            // tournament-event's own binding (it renders as a button on the tournament card, supplying
+            // {context.id} as this ballot's eventId). This binding only renders and votes on an
+            // already-created ballot.
             "repeater": {
               "source": "candidates",
               "itemActions": [
                 { "transitionId": "cast-vote", "inputs": { "choice": "{item.id}" } }
               ]
-            },
-            // Invoked FROM the tournament-event's own detail card ("Create ballot for this
-            // tournament"), not from a bare "+ New" button on the Home tab — {context.eventId} is
-            // supplied by whatever UI invokes creation, per the creatable grammar's own contract.
-            "creatable": {
-              "byPersonaIds": ["tabletop-organizer"],
-              "label": "Create ballot for this tournament",
-              "prefill": { "eventId": "{context.eventId}" }
             }
           },
           { "states": ["closed"], "role": "any", "tabId": "home",
@@ -680,7 +691,19 @@
         ],
         "renderBindings": [
           { "states": ["published"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
+            // Transition-FAB pattern (grammar v2, NOT YET APP-SHELL-IMPLEMENTED — see
+            // spec-version.json -> proposedNotImplemented.actionsGrammar): "borrow" is already a
+            // fully-declared transition with its own guard/effects a few lines up. This entry only
+            // changes how it PRESENTS -- pulled out of the automatic button row into its own
+            // contextual FAB, since "request a loan" is this card's single primary action, while
+            // join-queue/leave-queue/return/delist stay in the row exactly as before. No
+            // byPersonaIds/workflowType/prefill here: "borrow"'s own guard above remains the sole
+            // eligibility check.
+            "actions": [
+              { "kind": "transition", "transitionId": "borrow", "label": "Request loan",
+                "presentation": "fab" }
+            ] }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
@@ -940,9 +963,12 @@
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
             // GAP-2: any member can share a game they own. NEEDS IMPLEMENTATION: auto-set ownerPersonaId
             // to the creator (see header). Consistent with game-purchase-proposal / discussion-thread,
-            // which already declare `creatable` forward-looking in this same file.
-            "creatable": { "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
-                           "label": "Share a game" } }
+            // which also declare a tab-scoped create action forward-looking in this same file.
+            "actions": [
+              { "kind": "create", "label": "Share a game",
+                "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
+                "scope": "tab", "presentation": "fab" }
+            ] }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
@@ -1126,12 +1152,15 @@
           }
         ],
         "renderBindings": [
-          // Member composes / revises on Home. `creatable` gives a real "+ Propose a game"
-          // affordance — a member may author as many proposals as they like, not just edit one
+          // Member composes / revises on Home. A tab-scoped create action gives a real "+ Propose a
+          // game" affordance — a member may author as many proposals as they like, not just edit one
           // pre-seeded draft.
           { "states": ["draft", "changes-requested"], "role": "actor", "tabId": "home",
             "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
-            "creatable": { "byPersonaIds": ["tabletop-member"], "label": "Propose a game" } },
+            "actions": [
+              { "kind": "create", "label": "Propose a game", "byPersonaIds": ["tabletop-member"],
+                "scope": "tab", "presentation": "fab" }
+            ] },
           // Member watches their own submitted proposal's real status.
           { "states": ["pending", "approved", "rejected"], "role": "actor", "tabId": "home",
             "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
@@ -1263,11 +1292,14 @@
           }
         ],
         "renderBindings": [
-          // `creatable` is the reported-missing "start a new thread" action.
+          // A tab-scoped create action is the reported-missing "start a new thread" affordance.
           { "states": ["open"], "role": "any", "tabId": "messages",
             "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
-            "creatable": { "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
-                           "label": "New thread" } }
+            "actions": [
+              { "kind": "create", "label": "New thread",
+                "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
+                "scope": "tab", "presentation": "fab" }
+            ] }
         ],
         "instanceDataSchema": {
           "subject": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",

@@ -80,16 +80,19 @@ Future<void> _selectCalendar(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-void _addSecondCalendarCreatable(Map<String, dynamic> source) {
+void _addSecondCalendarCreateAction(Map<String, dynamic> source) {
   final experience = source['experience'] as Map<String, dynamic>;
   final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
   final event = Map<String, dynamic>.from(definitions['event-rsvp'] as Map);
   final bindings = List<dynamic>.from(event['renderBindings'] as List);
   final first = Map<String, dynamic>.from(bindings.first as Map);
-  first['creatable'] = <String, dynamic>{
-    'byPersonaIds': <String>['tabletop-organizer'],
-    'label': 'New synthetic event',
-  };
+  first['actions'] = <dynamic>[
+    <String, dynamic>{
+      'kind': 'create',
+      'byPersonaIds': <String>['tabletop-organizer'],
+      'label': 'New synthetic event',
+    },
+  ];
   event['renderBindings'] = <dynamic>[first];
   definitions['synthetic-event'] = event;
 }
@@ -128,7 +131,7 @@ void main() {
         () => _install(
           'calr3g-$style',
           mutate: (source) {
-            _addSecondCalendarCreatable(source);
+            _addSecondCalendarCreateAction(source);
             final experience = source['experience'] as Map<String, dynamic>;
             experience['creatableAction'] = <String, dynamic>{
               'multiActionStyle': style,

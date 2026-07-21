@@ -139,10 +139,10 @@ class WorkflowValidator {
       _checkGuardFormulas(machine, findings);
       _checkUnknownInputTypes(machine, findings);
       _checkInputReferences(machine, findings);
-      _checkContextReferenceOutsideCreatable(machine, findings);
+      _checkContextReferenceOutsideInstanceAction(machine, findings);
       _checkSourceQueries(machine, workflows, findings);
       _checkItemActionsInputs(machine, workflows, findings);
-      _checkCreatablePrefill(machine, findings);
+      _checkCreatablePrefill(machine, workflows, findings);
       _checkResponseTableAndFacets(machine, workflows, findings);
 
       if (knownPersonaIds != null && knownPersonaIds!.isNotEmpty) {
@@ -1201,7 +1201,7 @@ class WorkflowValidator {
   }
 
   // ---------------------------------------------------------------------------
-  // creatable.byPersonaIds dangling-persona check
+  // create-action byPersonaIds dangling-persona check
   // ---------------------------------------------------------------------------
   void _checkCreatablePersonaIds(
     LoomWorkflowStateMachine machine,
@@ -1210,74 +1210,78 @@ class WorkflowValidator {
     if (knownPersonaIds == null || knownPersonaIds!.isEmpty) return;
 
     for (final binding in machine.renderBindings) {
-      final creatable = binding.creatable;
-      if (creatable == null) continue;
-      for (final personaId in creatable.byPersonaIds) {
-        if (!knownPersonaIds!.contains(personaId)) {
-          findings.add(
-            ValidationFinding(
-              type: 'dangling_allowed_persona_id',
-              message:
-                  'creatable.byPersonaIds references "$personaId", which does '
-                  'not appear in the known persona registry. This may indicate '
-                  'a typo or a persona ID that was not declared anywhere.',
-              location:
-                  '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
-                  'creatable/byPersonaIds',
-              isWarning: true,
-            ),
-          );
+      for (final action in binding.actions.where((a) => a.kind == 'create')) {
+        for (final personaId in action.byPersonaIds ?? const <String>[]) {
+          if (!knownPersonaIds!.contains(personaId)) {
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_allowed_persona_id',
+                message:
+                    'creatable.byPersonaIds references "$personaId", which does '
+                    'not appear in the known persona registry. This may indicate '
+                    'a typo or a persona ID that was not declared anywhere.',
+                location:
+                    '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
+                    'actions/byPersonaIds',
+                isWarning: true,
+              ),
+            );
+          }
         }
       }
     }
   }
 
   // ---------------------------------------------------------------------------
-  // creatable.prefill field check
+  // create-action prefill field check
   // ---------------------------------------------------------------------------
   void _checkCreatablePrefill(
     LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      final creatable = binding.creatable;
-      if (creatable == null) continue;
-      final prefill = creatable.prefill;
-      if (prefill == null) continue;
-      final location =
-          '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
-          'creatable/prefill';
-      for (final key in prefill.keys) {
-        final field = machine.instanceDataSchema[key];
-        if (field == null) {
-          findings.add(
-            ValidationFinding(
-              type: 'dangling_instance_data_key',
-              message:
-                  'creatable.prefill sets "$key", which is not declared in '
-                  'instanceDataSchema.',
-              location: '$location/$key',
-            ),
-          );
-        } else if (field.formula != null || field.source != null) {
-          findings.add(
-            ValidationFinding(
-              type: 'computed_field_written_by_effect',
-              message:
-                  'creatable.prefill writes computed field "$key". Computed '
-                  'fields are read-only.',
-              location: '$location/$key',
-            ),
-          );
+      for (final action in binding.actions.where((a) => a.kind == 'create')) {
+        final prefill = action.prefill;
+        if (prefill == null) continue;
+        final targetMachine =
+            allWorkflows[action.workflowType ?? machine.workflowType];
+        if (targetMachine == null) continue;
+        final location =
+            '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
+            'actions/prefill';
+        for (final key in prefill.keys) {
+          final field = targetMachine.instanceDataSchema[key];
+          if (field == null) {
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_instance_data_key',
+                message:
+                    'creatable.prefill sets "$key", which is not declared in '
+                    'instanceDataSchema.',
+                location: '$location/$key',
+              ),
+            );
+          } else if (field.formula != null || field.source != null) {
+            findings.add(
+              ValidationFinding(
+                type: 'computed_field_written_by_effect',
+                message:
+                    'creatable.prefill writes computed field "$key". Computed '
+                    'fields are read-only.',
+                location: '$location/$key',
+              ),
+            );
+          }
         }
       }
     }
   }
 
   // ---------------------------------------------------------------------------
-  // context_reference_outside_creatable
+  // context_reference_outside_instance_action
   // ---------------------------------------------------------------------------
-  void _checkContextReferenceOutsideCreatable(
+  void _checkContextReferenceOutsideInstanceAction(
     LoomWorkflowStateMachine machine,
     List<ValidationFinding> findings,
   ) {
@@ -1313,10 +1317,11 @@ class WorkflowValidator {
         if (tokenPattern.hasMatch(value)) {
           findings.add(
             ValidationFinding(
-              type: 'context_reference_outside_creatable',
+              type: 'context_reference_outside_instance_action',
               message:
                   '{context.x} interpolation is only valid inside '
-                  'creatable.prefill values, not in transition effects.',
+                  'instance-scoped action prefill or inputs values, not in '
+                  'transition effects.',
               location: '$location/$subPath',
             ),
           );

@@ -78,39 +78,84 @@ void main() {
       );
     });
 
-    test('render binding fromJson parses creatable with prefill', () {
+    test('render binding fromJson parses create action with prefill', () {
       final b = RenderBinding.fromJson(<String, dynamic>{
         'states': ['draft'],
         'role': 'actor',
         'tabId': 'home',
         'cardSurfaceFamily': 'form-entry',
         'bindingKind': 'primary',
-        'creatable': <String, dynamic>{
-          'byPersonaIds': ['tabletop-member'],
-          'label': 'Propose a game',
-          'prefill': <String, dynamic>{'title': '{context.gameName}'},
-        },
+        'actions': [
+          <String, dynamic>{
+            'kind': 'create',
+            'byPersonaIds': ['tabletop-member'],
+            'label': 'Propose a game',
+            'workflowType': 'game-purchase-proposal',
+            'scope': 'instance',
+            'presentation': 'button',
+            'prefill': <String, dynamic>{'title': '{context.gameName}'},
+          },
+        ],
       });
-      expect(b.creatable, isNotNull);
-      expect(b.creatable!.byPersonaIds, ['tabletop-member']);
-      expect(b.creatable!.label, 'Propose a game');
-      expect(b.creatable!.prefill, {'title': '{context.gameName}'});
+      expect(b.actions, hasLength(1));
+      expect(b.actions.single.byPersonaIds, ['tabletop-member']);
+      expect(b.actions.single.label, 'Propose a game');
+      expect(b.actions.single.workflowType, 'game-purchase-proposal');
+      expect(b.actions.single.scope, 'instance');
+      expect(b.actions.single.presentation, 'button');
+      expect(b.actions.single.prefill, {'title': '{context.gameName}'});
     });
 
-    test('creatable parses without optional prefill', () {
+    test('create action parses without optional prefill', () {
       final b = RenderBinding.fromJson(<String, dynamic>{
         'states': ['draft'],
         'role': 'any',
         'tabId': 'home',
         'cardSurfaceFamily': 'form-entry',
         'bindingKind': 'primary',
-        'creatable': <String, dynamic>{
-          'byPersonaIds': ['tabletop-member', 'tabletop-organizer'],
-          'label': 'Start a new thread',
-        },
+        'actions': [
+          <String, dynamic>{
+            'kind': 'create',
+            'byPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+            'label': 'Start a new thread',
+          },
+        ],
       });
-      expect(b.creatable, isNotNull);
-      expect(b.creatable!.prefill, isNull);
+      expect(b.actions, hasLength(1));
+      expect(b.actions.single.prefill, isNull);
+    });
+
+    test('transition action parses all fields without kind-specific validation', () {
+      final b = RenderBinding.fromJson(<String, dynamic>{
+        'states': ['open'],
+        'role': 'any',
+        'tabId': 'marketplace',
+        'cardSurfaceFamily': 'equipment-loan',
+        'bindingKind': 'primary',
+        'actions': [
+          <String, dynamic>{
+            'kind': 'transition',
+            'transitionId': 'borrow',
+            'label': 'Request loan',
+            'byPersonaIds': ['tabletop-member'],
+            'workflowType': 'equipment-loan',
+            'scope': 'instance',
+            'presentation': 'fab',
+            'prefill': <String, dynamic>{'equipmentId': '{context.id}'},
+            'inputs': <String, dynamic>{'equipmentId': '{context.id}'},
+          },
+        ],
+      });
+      final action = b.actions.single;
+      expect(action.kind, 'transition');
+      expect(action.label, 'Request loan');
+      expect(action.transitionId, 'borrow');
+      expect(action.byPersonaIds, ['tabletop-member']);
+      expect(action.workflowType, 'equipment-loan');
+      expect(action.scope, 'instance');
+      expect(action.presentation, 'fab');
+      expect(action.prefill, {'equipmentId': '{context.id}'});
+      expect(action.inputs, {'equipmentId': '{context.id}'});
     });
   });
 

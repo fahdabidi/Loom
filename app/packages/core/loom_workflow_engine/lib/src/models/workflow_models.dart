@@ -322,27 +322,48 @@ class RepeaterSpec {
   );
 }
 
-/// Declares that a workflow type can be created directly by a member (GAP-2).
-class CreatableSpec {
-  final List<String> byPersonaIds;
-  final String label;
+/// An archetype-owned action (GAP-2, grammar v2).
+///
+/// This deliberately parses all fields for both action kinds. Conditional
+/// validation belongs in the validator rather than the JSON model.
+class WorkflowAction {
+  final String kind;
+  final String? label;
+  final List<String>? byPersonaIds;
+  final String? workflowType;
+  final String? transitionId;
+  final String? scope;
+  final String? presentation;
 
   /// Values may contain {context.x} tokens resolved by the App Shell caller,
   /// never by the engine itself.
   final Map<String, dynamic>? prefill;
+  final Map<String, dynamic>? inputs;
 
-  const CreatableSpec({
-    required this.byPersonaIds,
-    required this.label,
+  const WorkflowAction({
+    required this.kind,
+    this.label,
+    this.byPersonaIds,
+    this.workflowType,
+    this.transitionId,
+    this.scope,
+    this.presentation,
     this.prefill,
+    this.inputs,
   });
 
-  factory CreatableSpec.fromJson(Map<String, dynamic> json) => CreatableSpec(
-    byPersonaIds: (json['byPersonaIds'] as List<dynamic>)
-        .map((e) => e as String)
+  factory WorkflowAction.fromJson(Map<String, dynamic> json) => WorkflowAction(
+    kind: json['kind'] as String,
+    label: json['label'] as String?,
+    byPersonaIds: (json['byPersonaIds'] as List<dynamic>?)
+        ?.map((e) => e as String)
         .toList(),
-    label: json['label'] as String,
-    prefill: (json['prefill'] as Map<String, dynamic>?),
+    workflowType: json['workflowType'] as String?,
+    transitionId: json['transitionId'] as String?,
+    scope: json['scope'] as String?,
+    presentation: json['presentation'] as String?,
+    prefill: json['prefill'] as Map<String, dynamic>?,
+    inputs: json['inputs'] as Map<String, dynamic>?,
   );
 }
 
@@ -359,8 +380,8 @@ class RenderBinding {
   /// Repeater configuration (GAP-1) — renders per-item action buttons.
   final RepeaterSpec? repeater;
 
-  /// Declares this type can be created directly (GAP-2).
-  final CreatableSpec? creatable;
+  /// Archetype-owned create and transition actions (GAP-2, grammar v2).
+  final List<WorkflowAction> actions;
   final ResponseTableSpec? responseTable;
   final List<FilterableFacetSpec>? filterableFacets;
 
@@ -372,7 +393,7 @@ class RenderBinding {
     required this.bindingKind,
     this.audienceMemberField,
     this.repeater,
-    this.creatable,
+    this.actions = const [],
     this.responseTable,
     this.filterableFacets,
   });
@@ -390,9 +411,10 @@ class RenderBinding {
       repeater: json['repeater'] != null
           ? RepeaterSpec.fromJson(json['repeater'] as Map<String, dynamic>)
           : null,
-      creatable: json['creatable'] != null
-          ? CreatableSpec.fromJson(json['creatable'] as Map<String, dynamic>)
-          : null,
+      actions: (json['actions'] as List<dynamic>?)
+              ?.map((e) => WorkflowAction.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
       responseTable: json['responseTable'] != null
           ? ResponseTableSpec.fromJson(
               json['responseTable'] as Map<String, dynamic>,

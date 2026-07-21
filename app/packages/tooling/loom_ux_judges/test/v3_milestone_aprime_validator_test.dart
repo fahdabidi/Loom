@@ -282,10 +282,10 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 4. creatable.byPersonaIds dangling persona (uses
+    // 4. create-action byPersonaIds dangling persona (uses
     //    dangling_allowed_persona_id)
     // ---------------------------------------------------------------
-    test('dangling_allowed_persona_id: flags unknown persona in creatable', () {
+    test('dangling_allowed_persona_id: flags unknown persona in create action', () {
       final machine = _machine(
         'test',
         transitions: [
@@ -303,10 +303,13 @@ void main() {
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
-            'creatable': {
-              'byPersonaIds': ['ghost-persona'],
-              'label': 'Create',
-            },
+            'actions': [
+              {
+                'kind': 'create',
+                'byPersonaIds': ['ghost-persona'],
+                'label': 'Create',
+              },
+            ],
           },
         ],
       );
@@ -339,10 +342,13 @@ void main() {
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
-            'creatable': {
-              'byPersonaIds': ['real-persona'],
-              'label': 'Create',
-            },
+            'actions': [
+              {
+                'kind': 'create',
+                'byPersonaIds': ['real-persona'],
+                'label': 'Create',
+              },
+            ],
           },
         ],
       );
@@ -359,7 +365,7 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 5. creatable.prefill field checks
+    // 5. create-action prefill field checks
     // ---------------------------------------------------------------
     test('dangling_instance_data_key: prefill key not in schema', () {
       final machine = _machine(
@@ -379,11 +385,14 @@ void main() {
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
-            'creatable': {
-              'byPersonaIds': ['real-persona'],
-              'label': 'Create',
-              'prefill': {'notInSchema': 'value'},
-            },
+            'actions': [
+              {
+                'kind': 'create',
+                'byPersonaIds': ['real-persona'],
+                'label': 'Create',
+                'prefill': {'notInSchema': 'value'},
+              },
+            ],
           },
         ],
         schema: {
@@ -393,6 +402,66 @@ void main() {
 
       final report = _validateWorkflows({'test': machine});
       expect(_hasError(report, 'dangling_instance_data_key'), isTrue);
+    });
+
+    test('create prefill uses the workflowType override schema', () {
+      final source = _machine(
+        'tournament-event',
+        transitions: [
+          {
+            'id': 'go',
+            'label': 'Go',
+            'from': ['start'],
+            'to': 'done',
+          },
+        ],
+        renderBindings: [
+          {
+            'states': ['start'],
+            'role': 'any',
+            'tabId': 'home',
+            'cardSurfaceFamily': 'default',
+            'bindingKind': 'primary',
+            'actions': [
+              {
+                'kind': 'create',
+                'workflowType': 'tournament-ballot',
+                'label': 'Create ballot for this tournament',
+                'prefill': {'eventId': '{context.id}'},
+              },
+            ],
+          },
+        ],
+        schema: {
+          'title': {'type': 'text', 'writableBy': 'formEntry'},
+        },
+      );
+      final target = _machine(
+        'tournament-ballot',
+        transitions: [
+          {
+            'id': 'go',
+            'label': 'Go',
+            'from': ['start'],
+            'to': 'done',
+          },
+        ],
+        schema: {
+          'eventId': {'type': 'text', 'writableBy': 'formEntry'},
+        },
+      );
+
+      final report = _validateWorkflows({
+        'tournament-event': source,
+        'tournament-ballot': target,
+      });
+
+      expect(
+        report.errors.where((f) =>
+            f.type == 'dangling_instance_data_key' &&
+            f.location.endsWith('actions/prefill/eventId')),
+        isEmpty,
+      );
     });
 
     test('computed_field_written_by_effect: prefill writes computed field', () {
@@ -413,11 +482,14 @@ void main() {
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
-            'creatable': {
-              'byPersonaIds': ['real-persona'],
-              'label': 'Create',
-              'prefill': {'total': '42'},
-            },
+            'actions': [
+              {
+                'kind': 'create',
+                'byPersonaIds': ['real-persona'],
+                'label': 'Create',
+                'prefill': {'total': '42'},
+              },
+            ],
           },
         ],
         schema: {
@@ -447,11 +519,14 @@ void main() {
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
-            'creatable': {
-              'byPersonaIds': ['real-persona'],
-              'label': 'Create',
-              'prefill': {'ballots': '[]'},
-            },
+            'actions': [
+              {
+                'kind': 'create',
+                'byPersonaIds': ['real-persona'],
+                'label': 'Create',
+                'prefill': {'ballots': '[]'},
+              },
+            ],
           },
         ],
         schema: {
@@ -467,9 +542,9 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 6. context_reference_outside_creatable
+    // 6. context_reference_outside_instance_action
     // ---------------------------------------------------------------
-    test('context_reference_outside_creatable: flags {context.x} in effect', () {
+    test('context_reference_outside_instance_action: flags {context.x} in effect', () {
       final machine = _machine(
         'test',
         transitions: [
@@ -489,7 +564,7 @@ void main() {
       );
       final report = _validateWorkflows({'test': machine});
       expect(
-        _hasError(report, 'context_reference_outside_creatable'),
+        _hasError(report, 'context_reference_outside_instance_action'),
         isTrue,
       );
     });
@@ -794,7 +869,7 @@ void main() {
         'unknown_input_type',
         'unknown_input_reference',
         'unknown_item_reference',
-        'context_reference_outside_creatable',
+        'context_reference_outside_instance_action',
         'invalid_source_query_syntax',
         'dangling_source_query_workflow_type',
       };
