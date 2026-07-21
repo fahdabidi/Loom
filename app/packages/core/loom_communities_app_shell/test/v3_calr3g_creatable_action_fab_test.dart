@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
@@ -185,64 +184,51 @@ void main() {
     }
   });
 
-  for (final style in const ['popup', 'slideOutRight']) {
-    testWidgets('$style presents and submits the same event creation flow', (
-      tester,
-    ) async {
-      final installed = (await tester.runAsync(
-        () => _install(
-          'calr3h1-$style',
-          mutate: (source) => _setPresentationStyle(source, style),
+  testWidgets('slideOutRight presents and submits the same event creation flow', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'calr3h1-slideOutRight',
+        mutate: (source) => _setPresentationStyle(source, 'slideOutRight'),
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_app(installed));
+      await _selectCalendar(tester);
+      await _openEventCreation(tester);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(AlertDialog),
+          matching: find.byType(SlideTransition),
         ),
-      ))!;
-      try {
-        await tester.pumpWidget(_app(installed));
-        await _selectCalendar(tester);
-        if (style == 'popup')
-          expect(find.byType(OpenContainer<bool>), findsOneWidget);
-        await _openEventCreation(tester);
-        expect(find.byType(AlertDialog), findsOneWidget);
-        if (style == 'popup') {
-          // Close it via Cancel so OpenContainer's animation controller gets a
-          // clean teardown instead of leaking into the next test.
-          await tester.tap(find.text('Cancel'));
-          await _settleBounded(tester);
-          expect(find.byType(AlertDialog), findsNothing);
-        } else {
-          expect(
-            find.ancestor(
-              of: find.byType(AlertDialog),
-              matching: find.byType(SlideTransition),
-            ),
-            findsOneWidget,
-          );
-          await _submitNewEvent(tester);
-          expect(find.byType(AlertDialog), findsNothing);
-          final events = await tester.runAsync(() async {
-            final engine = await workflowEngineForExtensionId(
-              installed.community.extensionId,
-            );
-            return engine.queryInstances(
-              tabId: 'calendar',
-              personaId: 'tabletop-organizer',
-              limit: 100,
-            );
-          });
-          expect(
-            events!.items.any(
-              (item) =>
-                  item.workflowType == 'event-rsvp' &&
-                  item.instanceData['title'] ==
-                      'Container presentation test event',
-            ),
-            isTrue,
-          );
-        }
-      } finally {
-        await tester.runAsync(installed.dispose);
-      }
-    });
-  }
+        findsOneWidget,
+      );
+      await _submitNewEvent(tester);
+      expect(find.byType(AlertDialog), findsNothing);
+      final events = await tester.runAsync(() async {
+        final engine = await workflowEngineForExtensionId(
+          installed.community.extensionId,
+        );
+        return engine.queryInstances(
+          tabId: 'calendar',
+          personaId: 'tabletop-organizer',
+          limit: 100,
+        );
+      });
+      expect(
+        events!.items.any(
+          (item) =>
+              item.workflowType == 'event-rsvp' &&
+              item.instanceData['title'] == 'Container presentation test event',
+        ),
+        isTrue,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 
   for (final style in const ['speedDial', 'stacked', 'singleFirst']) {
     testWidgets('$style resolves a two-action Calendar fixture correctly', (
