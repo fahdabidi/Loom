@@ -145,6 +145,20 @@ void main() {
       () => _install('calr3b-tournament'),
     ))!;
     try {
+      final beforeCount = (await tester.runAsync(() async {
+        final engine = await workflowEngineForExtensionId(
+          installed.community.extensionId,
+        );
+        final page = await engine.queryInstances(
+          tabId: 'calendar',
+          personaId: 'tabletop-organizer',
+          limit: 100,
+        );
+        return page.items
+            .where((item) => item.workflowType == 'event-rsvp-response')
+            .length;
+      }))!;
+
       await tester.pumpWidget(_app(installed));
       await _selectCalendar(tester);
       await _openTournamentCreation(tester);
@@ -179,13 +193,16 @@ void main() {
         isTrue,
       );
 
-      // Confirm no event-rsvp-response rows were created (the event-rsvp
-      // side effect should NOT fire for a tournament).
+      // Confirm tournament creation does not add event-rsvp-response rows.
+      final afterCount = result.items
+          .where((item) => item.workflowType == 'event-rsvp-response')
+          .length;
       expect(
-        result.items
-            .where((i) => i.workflowType == 'event-rsvp-response')
-            .isEmpty,
-        isTrue,
+        afterCount,
+        beforeCount,
+        reason:
+            'tournament creation must not trigger the event-rsvp-specific '
+            'response-row seeding side effect',
       );
     } finally {
       await tester.runAsync(installed.dispose);

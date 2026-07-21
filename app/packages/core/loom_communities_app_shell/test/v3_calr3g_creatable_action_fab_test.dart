@@ -152,8 +152,14 @@ void main() {
           expect(second, findsOneWidget);
           await tester.tap(second);
           await tester.pumpAndSettle();
+          // Tapping the synthetic action opens its real generic creation
+          // dialog, titled with the creatable label above.
+          expect(find.byType(AlertDialog), findsOneWidget);
           expect(
-            find.text('Creation for synthetic-event is not wired up yet.'),
+            find.descendant(
+              of: find.byType(AlertDialog),
+              matching: find.text('New synthetic event'),
+            ),
             findsOneWidget,
           );
         } else if (style == 'stacked') {
