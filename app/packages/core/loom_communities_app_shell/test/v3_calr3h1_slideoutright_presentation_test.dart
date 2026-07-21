@@ -61,6 +61,11 @@ Future<_InstalledFixture> _install(
   // Pre-warm the engine in the real-async installation zone, so its database
   // connection is not first created by a pumped widget and later used from
   // tester.runAsync. This matches the proven calendar end-to-end test pattern.
+  experienceForExtensionId(
+    extensionId,
+    displayName: community.displayName,
+    experienceConfiguration: community.experienceConfiguration,
+  );
   await workflowEngineForExtensionId(extensionId);
   return _InstalledFixture(community, temp);
 }

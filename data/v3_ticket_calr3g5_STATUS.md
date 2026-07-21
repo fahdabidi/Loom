@@ -10,4 +10,4 @@ no, sandbox blocked: `/home/fahd_/flutter/bin/internal/update_engine_version.sh:
 The test did not start, so no `CALR3G5_DIAG:` or render-tree output was produced.
 
 ## Commit
-staged, not committed — `git commit -m "test: add temporary diagnostic instrumentation to CALR.3g FAB tap test (CALR.3g5, not a fix)"` exited without stdout or stderr, left `HEAD` unchanged at `2f7d3554cac6b05ac09055a86bb35b125c5660d7`, and left both requested files staged. There was no `.git/index.lock`, no live Git process, no configured hook path, and no commit-signing configuration; no recovery or retry was attempted.
+not committed — staging the instrumented test failed with `fatal: Unable to create '/mnt/c/Users/fahd_/OneDrive/Documents/Loom/.git/index.lock': File exists.` A zero-byte `.git/index.lock` existed and `ps` showed no live Git process. The prescribed `rm -f .git/index.lock`, two-second wait, and one retry could not be performed because the sandbox rejected that command: `CreateProcess { message: "Rejected(\"... blocked by policy\")" }`. No other Git recovery was attempted.
