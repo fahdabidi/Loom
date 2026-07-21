@@ -52,6 +52,179 @@ bool _hasWarning(ValidationReport report, String type) =>
 
 void main() {
   group('Phase A-prime validator checks', () {
+    ValidationReport actionReport(
+      List<Map<String, dynamic>> actions, {
+      List<Map<String, dynamic>> transitions = const [
+        {
+          'id': 'approve',
+          'label': 'Approve',
+          'from': ['start'],
+          'to': 'done',
+          'inputs': {
+            'note': {'type': 'text'},
+          },
+        },
+      ],
+      Map<String, LoomWorkflowStateMachine>? additionalWorkflows,
+    }) {
+      final machine = _machine(
+        'test',
+        transitions: transitions,
+        renderBindings: [
+          {
+            'states': ['start'],
+            'role': 'any',
+            'tabId': 'home',
+            'cardSurfaceFamily': 'default',
+            'bindingKind': 'primary',
+            'actions': actions,
+          },
+        ],
+      );
+      return _validateWorkflows({'test': machine, ...?additionalWorkflows});
+    }
+
+    void actionRule(
+      String type,
+      Map<String, dynamic> invalid,
+      Map<String, dynamic> valid, {
+      List<Map<String, dynamic>> transitions = const [
+        {
+          'id': 'approve',
+          'label': 'Approve',
+          'from': ['start'],
+          'to': 'done',
+          'inputs': {
+            'note': {'type': 'text'},
+          },
+        },
+      ],
+      Map<String, LoomWorkflowStateMachine>? additionalWorkflows,
+    }) {
+      test('$type: flags invalid action', () {
+        expect(
+          _hasError(actionReport([invalid], transitions: transitions, additionalWorkflows: additionalWorkflows), type),
+          isTrue,
+        );
+      });
+      test('$type: valid action passes', () {
+        expect(
+          actionReport([valid], transitions: transitions, additionalWorkflows: additionalWorkflows)
+              .errors
+              .where((finding) => finding.type == type),
+          isEmpty,
+        );
+      });
+    }
+
+    // CALR.4c: complete grammar-v2 actions[] validation rules.
+    actionRule('unknown_action_kind', {'kind': 'archive'}, {'kind': 'create'});
+    actionRule(
+      'unknown_action_scope',
+      {'kind': 'create', 'scope': 'card'},
+      {'kind': 'create', 'scope': 'instance'},
+    );
+    actionRule(
+      'unknown_action_presentation',
+      {'kind': 'create', 'presentation': 'menu'},
+      {'kind': 'create', 'presentation': 'fab'},
+    );
+    actionRule(
+      'tab_action_cannot_be_button',
+      {'kind': 'create', 'scope': 'tab', 'presentation': 'button'},
+      {'kind': 'create', 'scope': 'instance', 'presentation': 'button'},
+    );
+
+    final targetWorkflow = _machine(
+      'target',
+      transitions: const [
+        {'id': 'go', 'label': 'Go', 'from': ['start'], 'to': 'done'},
+      ],
+    );
+    actionRule(
+      'dangling_action_workflow_type',
+      {'kind': 'create', 'workflowType': 'missing'},
+      {'kind': 'create', 'workflowType': 'target'},
+      additionalWorkflows: {'target': targetWorkflow},
+    );
+    actionRule(
+      'create_action_cannot_set_inputs',
+      {
+        'kind': 'create',
+        'inputs': {'note': 'not allowed'},
+      },
+      {'kind': 'create', 'prefill': const <String, dynamic>{}},
+    );
+    actionRule(
+      'dangling_action_transition_id',
+      {'kind': 'transition', 'transitionId': 'missing'},
+      {'kind': 'transition', 'transitionId': 'approve'},
+    );
+    actionRule(
+      'transition_action_cannot_be_tab_scoped',
+      {'kind': 'transition', 'transitionId': 'approve', 'scope': 'tab'},
+      {'kind': 'transition', 'transitionId': 'approve', 'scope': 'instance'},
+    );
+    actionRule(
+      'transition_action_cannot_set_workflow_type',
+      {'kind': 'transition', 'transitionId': 'approve', 'workflowType': 'test'},
+      {'kind': 'transition', 'transitionId': 'approve'},
+    );
+    actionRule(
+      'transition_action_cannot_set_prefill',
+      {'kind': 'transition', 'transitionId': 'approve', 'prefill': const <String, dynamic>{}},
+      {'kind': 'transition', 'transitionId': 'approve', 'inputs': const <String, dynamic>{}},
+    );
+    actionRule(
+      'transition_action_cannot_set_by_persona_ids',
+      {
+        'kind': 'transition',
+        'transitionId': 'approve',
+        'byPersonaIds': ['member'],
+      },
+      {'kind': 'transition', 'transitionId': 'approve'},
+    );
+    actionRule(
+      'unknown_action_input_reference',
+      {
+        'kind': 'transition',
+        'transitionId': 'approve',
+        'inputs': {'missing': 'value'},
+      },
+      {
+        'kind': 'transition',
+        'transitionId': 'approve',
+        'inputs': {'note': 'value'},
+      },
+    );
+    test('duplicate_action_transition_id: flags duplicate transition actions', () {
+      expect(
+        _hasError(
+          actionReport([
+            {'kind': 'transition', 'transitionId': 'approve'},
+            {'kind': 'transition', 'transitionId': 'approve'},
+          ]),
+          'duplicate_action_transition_id',
+        ),
+        isTrue,
+      );
+    });
+    test('duplicate_action_transition_id: distinct transition actions pass', () {
+      expect(
+        actionReport(
+          [
+            {'kind': 'transition', 'transitionId': 'approve'},
+            {'kind': 'transition', 'transitionId': 'reject'},
+          ],
+          transitions: const [
+            {'id': 'approve', 'label': 'Approve', 'from': ['start'], 'to': 'done'},
+            {'id': 'reject', 'label': 'Reject', 'from': ['start'], 'to': 'done'},
+          ],
+        ).errors.where((finding) => finding.type == 'duplicate_action_transition_id'),
+        isEmpty,
+      );
+    });
+
     // ---------------------------------------------------------------
     // 1. unknown_input_type
     // ---------------------------------------------------------------
@@ -872,6 +1045,19 @@ void main() {
         'context_reference_outside_instance_action',
         'invalid_source_query_syntax',
         'dangling_source_query_workflow_type',
+        'unknown_action_kind',
+        'unknown_action_scope',
+        'unknown_action_presentation',
+        'tab_action_cannot_be_button',
+        'dangling_action_workflow_type',
+        'create_action_cannot_set_inputs',
+        'dangling_action_transition_id',
+        'transition_action_cannot_be_tab_scoped',
+        'transition_action_cannot_set_workflow_type',
+        'transition_action_cannot_set_prefill',
+        'transition_action_cannot_set_by_persona_ids',
+        'unknown_action_input_reference',
+        'duplicate_action_transition_id',
       };
 
       final newFindings = report.findings

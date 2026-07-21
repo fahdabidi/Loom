@@ -142,6 +142,19 @@ class WorkflowValidator {
       _checkContextReferenceOutsideInstanceAction(machine, findings);
       _checkSourceQueries(machine, workflows, findings);
       _checkItemActionsInputs(machine, workflows, findings);
+      _checkUnknownActionKinds(machine, findings);
+      _checkUnknownActionScopes(machine, findings);
+      _checkUnknownActionPresentations(machine, findings);
+      _checkTabActionsCannotBeButtons(machine, findings);
+      _checkDanglingActionWorkflowTypes(machine, workflows, findings);
+      _checkCreateActionsCannotSetInputs(machine, findings);
+      _checkDanglingActionTransitionIds(machine, findings);
+      _checkTransitionActionsCannotBeTabScoped(machine, findings);
+      _checkTransitionActionsCannotSetWorkflowType(machine, findings);
+      _checkTransitionActionsCannotSetPrefill(machine, findings);
+      _checkTransitionActionsCannotSetByPersonaIds(machine, findings);
+      _checkUnknownActionInputReferences(machine, findings);
+      _checkDuplicateActionTransitionIds(machine, findings);
       _checkCreatablePrefill(machine, workflows, findings);
       _checkResponseTableAndFacets(machine, workflows, findings);
 
@@ -1196,6 +1209,225 @@ class WorkflowValidator {
             }
           }
         }
+      }
+    }
+  }
+
+  String _actionLocation(
+    LoomWorkflowStateMachine machine,
+    RenderBinding binding,
+    String field,
+  ) =>
+      '${machine.workflowType}/renderBindings/${binding.states.join(",")}/actions/$field';
+
+  // ---------------------------------------------------------------------------
+  // actions[] grammar-v2 checks
+  // ---------------------------------------------------------------------------
+  void _checkUnknownActionKinds(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions) {
+        if (action.kind == 'create' || action.kind == 'transition') continue;
+        findings.add(ValidationFinding(
+          type: 'unknown_action_kind',
+          message: 'actions[].kind "${action.kind}" is not "create" or "transition".',
+          location: _actionLocation(machine, binding, 'kind'),
+        ));
+      }
+    }
+  }
+
+  void _checkUnknownActionScopes(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions) {
+        if (action.scope == null || action.scope == 'tab' || action.scope == 'instance') continue;
+        findings.add(ValidationFinding(
+          type: 'unknown_action_scope',
+          message: 'actions[].scope "${action.scope}" is not "tab" or "instance".',
+          location: _actionLocation(machine, binding, 'scope'),
+        ));
+      }
+    }
+  }
+
+  void _checkUnknownActionPresentations(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions) {
+        if (action.presentation == null || action.presentation == 'fab' || action.presentation == 'button') continue;
+        findings.add(ValidationFinding(
+          type: 'unknown_action_presentation',
+          message: 'actions[].presentation "${action.presentation}" is not "fab" or "button".',
+          location: _actionLocation(machine, binding, 'presentation'),
+        ));
+      }
+    }
+  }
+
+  void _checkTabActionsCannotBeButtons(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions) {
+        final scope = action.scope ?? (action.kind == 'transition' ? 'instance' : 'tab');
+        if (scope != 'tab' || action.presentation != 'button') continue;
+        findings.add(ValidationFinding(
+          type: 'tab_action_cannot_be_button',
+          message: 'A tab-scoped action cannot use presentation "button".',
+          location: _actionLocation(machine, binding, 'presentation'),
+        ));
+      }
+    }
+  }
+
+  void _checkDanglingActionWorkflowTypes(
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'create')) {
+        final workflowType = action.workflowType;
+        if (workflowType == null || allWorkflows.containsKey(workflowType)) continue;
+        findings.add(ValidationFinding(
+          type: 'dangling_action_workflow_type',
+          message: 'Create action workflowType "$workflowType" is not declared.',
+          location: _actionLocation(machine, binding, 'workflowType'),
+        ));
+      }
+    }
+  }
+
+  void _checkCreateActionsCannotSetInputs(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'create')) {
+        if (action.inputs == null) continue;
+        findings.add(ValidationFinding(
+          type: 'create_action_cannot_set_inputs',
+          message: 'Create actions cannot set inputs; use prefill instead.',
+          location: _actionLocation(machine, binding, 'inputs'),
+        ));
+      }
+    }
+  }
+
+  void _checkDanglingActionTransitionIds(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final transitionIds = machine.transitions.map((transition) => transition.id).toSet();
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        if (action.transitionId != null && transitionIds.contains(action.transitionId)) continue;
+        findings.add(ValidationFinding(
+          type: 'dangling_action_transition_id',
+          message: 'Transition action transitionId "${action.transitionId}" is not declared on "${machine.workflowType}".',
+          location: _actionLocation(machine, binding, 'transitionId'),
+        ));
+      }
+    }
+  }
+
+  void _checkTransitionActionsCannotBeTabScoped(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        if (action.scope != 'tab') continue;
+        findings.add(ValidationFinding(
+          type: 'transition_action_cannot_be_tab_scoped',
+          message: 'Transition actions must be instance-scoped.',
+          location: _actionLocation(machine, binding, 'scope'),
+        ));
+      }
+    }
+  }
+
+  void _checkTransitionActionsCannotSetWorkflowType(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        if (action.workflowType == null) continue;
+        findings.add(ValidationFinding(type: 'transition_action_cannot_set_workflow_type', message: 'Transition actions cannot set workflowType.', location: _actionLocation(machine, binding, 'workflowType')));
+      }
+    }
+  }
+
+  void _checkTransitionActionsCannotSetPrefill(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        if (action.prefill == null) continue;
+        findings.add(ValidationFinding(type: 'transition_action_cannot_set_prefill', message: 'Transition actions cannot set prefill; use inputs instead.', location: _actionLocation(machine, binding, 'prefill')));
+      }
+    }
+  }
+
+  void _checkTransitionActionsCannotSetByPersonaIds(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        if (action.byPersonaIds == null) continue;
+        findings.add(ValidationFinding(type: 'transition_action_cannot_set_by_persona_ids', message: 'Transition actions cannot set byPersonaIds; use the transition guard.', location: _actionLocation(machine, binding, 'byPersonaIds')));
+      }
+    }
+  }
+
+  void _checkUnknownActionInputReferences(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final transitions = {for (final transition in machine.transitions) transition.id: transition};
+    for (final binding in machine.renderBindings) {
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        final inputs = action.inputs;
+        final transition = transitions[action.transitionId];
+        if (inputs == null || transition == null) continue;
+        final declaredInputs = transition.inputs?.keys.toSet() ?? const <String>{};
+        for (final key in inputs.keys) {
+          if (declaredInputs.contains(key)) continue;
+          findings.add(ValidationFinding(
+            type: 'unknown_action_input_reference',
+            message: 'Transition action input "$key" is not declared by transition "${transition.id}".',
+            location: _actionLocation(machine, binding, 'inputs/$key'),
+          ));
+        }
+      }
+    }
+  }
+
+  void _checkDuplicateActionTransitionIds(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      final seen = <String>{};
+      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+        final transitionId = action.transitionId;
+        if (transitionId == null || seen.add(transitionId)) continue;
+        findings.add(ValidationFinding(
+          type: 'duplicate_action_transition_id',
+          message: 'More than one transition action names "$transitionId" on this binding.',
+          location: _actionLocation(machine, binding, 'transitionId'),
+        ));
       }
     }
   }
