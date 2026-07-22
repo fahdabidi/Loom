@@ -11,6 +11,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
     required this.keyPrefix,
     this.onCreated,
     this.title,
+    this.resolvedInitialValues = const {},
   });
 
   final String workflowType;
@@ -20,6 +21,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
   final String keyPrefix;
   final Future<void> Function(String instanceId)? onCreated;
   final String? title;
+  final Map<String, dynamic> resolvedInitialValues;
 
   @override
   State<GenericWorkflowCreationCard> createState() =>
@@ -33,6 +35,12 @@ class _GenericWorkflowCreationCardState
       <String, TextEditingController>{};
   String? _error;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _values.addAll(widget.resolvedInitialValues);
+  }
 
   List<MapEntry<String, InstanceDataField>> get _fields {
     final editable =
@@ -96,7 +104,9 @@ class _GenericWorkflowCreationCardState
     String? instanceId;
     try {
       final values = <String, dynamic>{
-        for (final field in _fields) field.key: _values[field.key] ?? '',
+        ..._values,
+        for (final field in _fields)
+          if (_values.containsKey(field.key)) field.key: _values[field.key],
       };
       instanceId = await widget.engine.createInstance(
         workflowType: widget.workflowType,

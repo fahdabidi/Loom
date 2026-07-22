@@ -18,6 +18,8 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     this.foreground,
     this.visibleFieldKeys,
     this.showEditors = true,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final WorkflowInstance instance;
@@ -33,6 +35,8 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   /// presentation used by existing callers.
   final Set<String>? visibleFieldKeys;
   final bool showEditors;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<GenericWorkflowInstanceCard> createState() =>
@@ -428,6 +432,23 @@ class _GenericWorkflowInstanceCardState
                   foreground: widget.foreground,
                   accent: widget.accent,
                 ),
+              if (widget.instanceScopedCreateActions.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                for (final action in widget.instanceScopedCreateActions)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: OutlinedButton(
+                      key: ValueKey(
+                        'instance-create-action-${_instance.instanceId}-${action.workflowType}',
+                      ),
+                      onPressed: _mutating ||
+                              widget.onInstanceScopedCreate == null
+                          ? null
+                          : () => widget.onInstanceScopedCreate!(action),
+                      child: Text(action.label ?? 'Create ${action.workflowType}'),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),

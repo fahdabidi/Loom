@@ -12,6 +12,7 @@ class EngineNativeListSurface extends StatefulWidget {
     required this.accent,
     required this.modernTheme,
     this.engine,
+    this.onInstanceScopedCreate,
   });
 
   final LoomExperienceDefinition experience;
@@ -20,6 +21,7 @@ class EngineNativeListSurface extends StatefulWidget {
   final Color accent;
   final LoomCardTheme? modernTheme;
   final WorkflowEngineApi? engine;
+  final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
 
   @override
   State<EngineNativeListSurface> createState() =>
@@ -114,6 +116,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                       personaId: personaId,
                       accent: widget.accent,
                       onInstanceChanged: changed,
+                      onInstanceScopedCreate: widget.onInstanceScopedCreate,
                       modernTheme: widget.modernTheme,
                     ),
                   ),

@@ -12,6 +12,13 @@ typedef EngineNativeBindingsBuilder =
       ValueChanged<WorkflowInstance> onInstanceChanged,
     );
 
+/// Opens a create action that is owned by a specific rendered instance.
+typedef EngineNativeInstanceScopedCreate = Future<void> Function({
+  required WorkflowAction action,
+  required WorkflowInstance instance,
+  required RenderBinding binding,
+});
+
 @immutable
 class EngineNativeResolvedBinding {
   const EngineNativeResolvedBinding({
@@ -278,6 +285,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
     this.displayContext = 'tile',
     this.showEditors = true,
     this.visibleFieldKeys,
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   /// Applied to the rendered card rather than this dispatcher widget so a
@@ -292,6 +300,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
   final String displayContext;
   final bool showEditors;
   final Set<String>? visibleFieldKeys;
+  final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -305,6 +314,21 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           personaId: personaId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
+          instanceScopedCreateActions: [
+            for (final action in resolved.binding.actions)
+              if (action.kind == 'create' &&
+                  action.scope == 'instance' &&
+                  action.presentation == 'button' &&
+                  action.byPersonaIds?.contains(personaId) == true)
+                action,
+          ],
+          onInstanceScopedCreate: onInstanceScopedCreate == null
+              ? null
+              : (action) => onInstanceScopedCreate!(
+                  action: action,
+                  instance: resolved.instance,
+                  binding: resolved.binding,
+                ),
         );
       default:
         return GenericWorkflowInstanceCard(
@@ -318,6 +342,21 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           visibleFieldKeys: visibleFieldKeys,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
+          instanceScopedCreateActions: [
+            for (final action in resolved.binding.actions)
+              if (action.kind == 'create' &&
+                  action.scope == 'instance' &&
+                  action.presentation == 'button' &&
+                  action.byPersonaIds?.contains(personaId) == true)
+                action,
+          ],
+          onInstanceScopedCreate: onInstanceScopedCreate == null
+              ? null
+              : (action) => onInstanceScopedCreate!(
+                  action: action,
+                  instance: resolved.instance,
+                  binding: resolved.binding,
+                ),
         );
     }
   }

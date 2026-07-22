@@ -17,6 +17,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
     required this.keyPrefix,
     this.onCreated,
     this.title,
+    this.resolvedInitialValues = const {},
   });
 
   final String? cardSurfaceFamily;
@@ -27,6 +28,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
   final String keyPrefix;
   final Future<void> Function(String instanceId)? onCreated;
   final String? title;
+  final Map<String, dynamic> resolvedInitialValues;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +46,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           keyPrefix: keyPrefix,
           onCreated: onCreated,
           title: title,
+          resolvedInitialValues: resolvedInitialValues,
         );
       default:
         return GenericWorkflowCreationCard(
@@ -54,6 +57,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           keyPrefix: keyPrefix,
           onCreated: onCreated,
           title: title,
+          resolvedInitialValues: resolvedInitialValues,
         );
     }
   }

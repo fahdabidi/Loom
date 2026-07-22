@@ -373,9 +373,13 @@ dynamic _call(String name, List<_Expr> args, _Context context) {
     case 'isAfter':
       return _date(arg(0)).isAfter(_date(arg(1)));
     case 'isPast':
-      return _date(arg(0)).isBefore(context.now());
+      final date = arg(0);
+      return date == null ? null : _date(date).isBefore(context.now());
     case 'subtractHours':
-      return _date(arg(0)).subtract(Duration(hours: _number(arg(1)).toInt()));
+      final date = arg(0);
+      return date == null
+          ? null
+          : _date(date).subtract(Duration(hours: _number(arg(1)).toInt()));
     case 'mapGet':
       final map = arg(0);
       return map is Map ? (map[arg(1)] ?? 0) : 0;

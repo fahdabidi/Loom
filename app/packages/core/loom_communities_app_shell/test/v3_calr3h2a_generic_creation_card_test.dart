@@ -64,6 +64,9 @@ void main() {
     );
     expect(instances.items, hasLength(1));
     expect(instances.items.single.instanceData['title'], 'Board meeting');
+    expect(instances.items.single.instanceData, isNot(contains('published')));
+    expect(instances.items.single.instanceData, isNot(contains('eventDate')));
+    expect(instances.items.single.instanceData, isNot(contains('capacity')));
     expect(createdId, instances.items.single.instanceId);
   });
 

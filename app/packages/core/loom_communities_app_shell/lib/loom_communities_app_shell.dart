@@ -42,5 +42,6 @@ part 'src/part28_engine_native_calendar_surface.dart';
 part 'src/part32_engine_native_list_surface.dart';
 part 'src/part33_generic_creation_card.dart';
 part 'src/part34_engine_native_creation_dispatcher.dart';
+part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';
 part 'src/calendar_month_grid.dart';

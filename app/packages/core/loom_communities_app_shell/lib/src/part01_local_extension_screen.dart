@@ -8,12 +8,14 @@ class _CreatableWorkflowAction {
     required this.machine,
     required this.label,
     required this.cardSurfaceFamily,
+    this.resolvedInitialValues = const {},
   });
 
   final String workflowType;
   final LoomWorkflowStateMachine machine;
   final String label;
   final String cardSurfaceFamily;
+  final Map<String, dynamic> resolvedInitialValues;
 }
 
 class CommunityLaunchCard extends StatelessWidget {
@@ -245,6 +247,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       keyPrefix: keyPrefix,
       title: action.label,
       onCreated: onCreated,
+      resolvedInitialValues: action.resolvedInitialValues,
     );
   }
 
@@ -1127,6 +1130,32 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               }),
               onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
               completedWorkflowIds: _completedWorkflowIds,
+              onInstanceScopedCreate: ({
+                required action,
+                required instance,
+                required binding,
+              }) async {
+                final workflowType = action.workflowType;
+                if (workflowType == null) return;
+                final machine = experience.workflowDefinitions?[workflowType];
+                if (machine == null) return;
+                await _openCreatableAction(
+                  action: _CreatableWorkflowAction(
+                    workflowType: workflowType,
+                    machine: machine,
+                    label: action.label ?? 'New $workflowType',
+                    cardSurfaceFamily: machine.renderBindings.isEmpty
+                        ? binding.cardSurfaceFamily
+                        : machine.renderBindings.first.cardSurfaceFamily,
+                    resolvedInitialValues: resolveInstanceScopedPrefill(
+                      action.prefill,
+                      instance,
+                    ),
+                  ),
+                  activePersona: activePersona,
+                  presentationStyle: presentationStyle,
+                );
+              },
             ),
             const SizedBox(height: 24),
             ExpansionTile(

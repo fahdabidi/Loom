@@ -3894,6 +3894,7 @@ class _TabNativeRenderer extends StatelessWidget {
     this.onToggleReminder,
     this.onSelectCalendarDate,
     this.onConfirmWorkflow,
+    this.onInstanceScopedCreate,
     this.completedWorkflowIds = const {},
   });
 
@@ -3910,6 +3911,7 @@ class _TabNativeRenderer extends StatelessWidget {
   final ValueChanged<String>? onToggleReminder;
   final ValueChanged<String>? onSelectCalendarDate;
   final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
+  final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
   final Set<String> completedWorkflowIds;
 
   @override
@@ -3981,6 +3983,7 @@ class _TabNativeRenderer extends StatelessWidget {
             persona: persona,
             accent: accent,
             modernTheme: modernTheme,
+            onInstanceScopedCreate: onInstanceScopedCreate,
           );
         }
         return _CalendarTabSurface(
@@ -4221,6 +4224,7 @@ class _TabNativeRenderer extends StatelessWidget {
             tabId: 'giving',
             accent: accent,
             modernTheme: modernTheme,
+            onInstanceScopedCreate: onInstanceScopedCreate,
           );
         }
         // Find the first workflow in the Giving tab's sections whose

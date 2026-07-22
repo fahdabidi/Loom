@@ -139,6 +139,32 @@ void main() {
     },
   );
 
+  test('date-dependent computed fields preserve an absent optional date', () {
+    final computed = evaluateComputedFields(
+      instanceData: <String, dynamic>{'reminderOffset': 'one-week'},
+      formulas: const <String, String?>{
+        'dueAt':
+            "subtractHours(deadline, if(reminderOffset == 'one-week', 168, 0))",
+        'isExpiringSoon': 'isPast(dueAt)',
+      },
+      clock: () => DateTime.utc(2026, 7, 12),
+    );
+
+    expect(computed, containsPair('dueAt', isNull));
+    expect(computed, containsPair('isExpiringSoon', isNull));
+  });
+
+  test('date functions remain strict for non-null invalid values', () {
+    expect(
+      () => _eval('subtractHours(42, 1)', const <String, dynamic>{}),
+      throwsA(isA<FormulaEvaluationException>()),
+    );
+    expect(
+      () => _eval('isPast(42)', const <String, dynamic>{}),
+      throwsA(isA<FormulaEvaluationException>()),
+    );
+  });
+
   test(
     'LocalWorkflowEngineApi exposes computed values on reads and blocks writes',
     () async {

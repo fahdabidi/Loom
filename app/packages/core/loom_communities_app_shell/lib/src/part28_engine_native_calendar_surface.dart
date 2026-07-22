@@ -9,6 +9,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
     required this.accent,
     required this.modernTheme,
     this.engine,
+    this.onInstanceScopedCreate,
   });
 
   final LoomExperienceDefinition experience;
@@ -19,6 +20,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
   /// A ready A.5 engine is useful to an embedding host. Normal tab routing
   /// leaves this null and resolves the installed shared engine itself.
   final WorkflowEngineApi? engine;
+  final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
 
   @override
   State<EngineNativeCalendarSurface> createState() =>
@@ -102,6 +104,7 @@ class _EngineNativeCalendarSurfaceState
             accent: widget.accent,
             modernTheme: widget.modernTheme,
             onInstanceChanged: changed,
+            onInstanceScopedCreate: widget.onInstanceScopedCreate,
             presentation: _presentation,
           ),
         );
@@ -193,6 +196,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.accent,
     required this.modernTheme,
     required this.onInstanceChanged,
+    this.onInstanceScopedCreate,
     required this.presentation,
   });
 
@@ -204,6 +208,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final Color accent;
   final LoomCardTheme? modernTheme;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
   final _CalendarPresentationController presentation;
 
   @override
@@ -458,6 +463,7 @@ class _EngineNativeCalendarContentState
           personaId: widget.personaId,
           accent: widget.accent,
           onInstanceChanged: widget.onInstanceChanged,
+          onInstanceScopedCreate: widget.onInstanceScopedCreate,
           modernTheme: widget.modernTheme,
           displayContext: 'detail',
           showEditors: false,
@@ -490,6 +496,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
     required this.personaId,
     required this.accent,
     required this.onInstanceChanged,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   });
 
   final WorkflowInstance instance;
@@ -498,6 +506,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
   final String personaId;
   final Color accent;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<_EventRsvpDetailCard> createState() => _EventRsvpDetailCardState();
@@ -1018,6 +1028,23 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                     ),
                 ],
               ),
+              if (widget.instanceScopedCreateActions.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                for (final action in widget.instanceScopedCreateActions)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: OutlinedButton(
+                      key: ValueKey(
+                        'instance-create-action-${_instance.instanceId}-${action.workflowType}',
+                      ),
+                      onPressed: _mutating ||
+                              widget.onInstanceScopedCreate == null
+                          ? null
+                          : () => widget.onInstanceScopedCreate!(action),
+                      child: Text(action.label ?? 'Create ${action.workflowType}'),
+                    ),
+                  ),
+              ],
             ],
           ],
         ),
