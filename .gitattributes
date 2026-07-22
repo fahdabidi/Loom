@@ -1,0 +1,27 @@
+# Force LF line endings for all text files, regardless of which git
+# installation (WSL git or native Windows git.exe) checks them out or
+# commits them. This repo is written to and committed from both --
+# added 2026-07-20 after switching the implementation agent's git calls to
+# native git.exe (see call_implementation_agent.sh) to close the v9fs half
+# of a git-index-corruption root cause, without reopening a line-ending
+# mismatch between the two installs as a new failure mode.
+* text=auto eol=lf
+
+# Known binary types: never run line-ending or diff conversion on these,
+# regardless of the `text=auto` default above.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.icns binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.p12 binary

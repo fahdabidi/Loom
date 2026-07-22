@@ -1,6 +1,8 @@
 /data/
+/.codex-logs/
 .flutter-plugins
 .flutter-plugins-dependencies
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
 *.png
+**.log
