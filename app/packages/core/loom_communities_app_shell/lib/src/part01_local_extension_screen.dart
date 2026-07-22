@@ -888,6 +888,38 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 cardSurfaceFamily: binding.cardSurfaceFamily,
               ),
     ];
+    final instanceScopedFabActions = <_CreatableWorkflowAction>[
+      if (_focusedInstanceForActiveTab case final focusedInstance?)
+        if (experience.workflowDefinitions != null)
+          for (final definition in experience.workflowDefinitions!.entries)
+            if (definition.key == focusedInstance.workflowType)
+              for (final binding in definition.value.renderBindings)
+                if (binding.tabId == selectedTab.tabId &&
+                    binding.states.contains(focusedInstance.currentState))
+                  for (final action in binding.actions)
+                    if (action.kind == 'create' &&
+                        action.scope == 'instance' &&
+                        action.presentation == 'fab' &&
+                        action.byPersonaIds?.contains(activePersona.personaId) ==
+                            true)
+                      if (experience.workflowDefinitions![
+                            action.workflowType ?? definition.key
+                          ]
+                          case final machine?)
+                        _CreatableWorkflowAction(
+                          workflowType: action.workflowType ?? definition.key,
+                          machine: machine,
+                          label: action.label ??
+                              'New ${action.workflowType ?? definition.key}',
+                          cardSurfaceFamily: machine.renderBindings.isEmpty
+                              ? binding.cardSurfaceFamily
+                              : machine.renderBindings.first.cardSurfaceFamily,
+                          resolvedInitialValues: resolveInstanceScopedPrefill(
+                            action.prefill,
+                            focusedInstance,
+                          ),
+                        ),
+    ];
     final multiActionStyle =
         experience
             .tabCreatableActionStyles[selectedTab.tabId]
@@ -1211,30 +1243,55 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           _selectedTabIdByPersonaId[activePersona.personaId] = tabId;
         }),
       ),
-      floatingActionButton: creatableActions.isEmpty
+      floatingActionButton:
+          creatableActions.isEmpty && instanceScopedFabActions.isEmpty
           ? null
-          : _CreatableActionFab(
-              actions: creatableActions,
-              multiActionStyle: multiActionStyle,
-              presentationStyle: presentationStyle,
-              popupContentBuilder: (action) => FutureBuilder<Widget>(
-                future: _creationContentFor(
-                  action: action,
-                  activePersona: activePersona,
-                ),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) return snapshot.data!;
-                  return const Center(child: CircularProgressIndicator());
-                },
-              ),
-              onPopupClosed: (created) {
-                if (created == true && mounted) setState(() {});
-              },
-              onSelected: (action) => _openCreatableAction(
-                action: action,
-                activePersona: activePersona,
-                presentationStyle: presentationStyle,
-              ),
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (final action in instanceScopedFabActions) ...[
+                  FloatingActionButton.extended(
+                    key: ValueKey(
+                      'instance-creatable-fab-${action.workflowType}',
+                    ),
+                    heroTag: 'instance-creatable-fab-${action.workflowType}',
+                    tooltip: action.label,
+                    onPressed: () => _openCreatableAction(
+                      action: action,
+                      activePersona: activePersona,
+                      presentationStyle: presentationStyle,
+                    ),
+                    icon: const Icon(Icons.add),
+                    label: Text(action.label),
+                  ),
+                  if (creatableActions.isNotEmpty) const SizedBox(height: 12),
+                ],
+                if (creatableActions.isNotEmpty)
+                  _CreatableActionFab(
+                    actions: creatableActions,
+                    multiActionStyle: multiActionStyle,
+                    presentationStyle: presentationStyle,
+                    popupContentBuilder: (action) => FutureBuilder<Widget>(
+                      future: _creationContentFor(
+                        action: action,
+                        activePersona: activePersona,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) return snapshot.data!;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                    ),
+                    onPopupClosed: (created) {
+                      if (created == true && mounted) setState(() {});
+                    },
+                    onSelected: (action) => _openCreatableAction(
+                      action: action,
+                      activePersona: activePersona,
+                      presentationStyle: presentationStyle,
+                    ),
+                  ),
+              ],
             ),
     );
   }
