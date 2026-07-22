@@ -167,6 +167,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   final Map<String, String> _selectedTabIdByPersonaId = {};
   final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
   final Map<String, GlobalKey> _workflowSurfaceKeysById = {};
+  WorkflowInstance? _focusedInstanceForActiveTab;
   late final ScrollController _surfaceScrollController;
   List<String> _visibleWorkflowIds = const [];
   String? _activeSurfaceFocusKey;
@@ -1156,6 +1157,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   presentationStyle: presentationStyle,
                 );
               },
+              onFocusedInstanceChanged: (instance) => setState(() {
+                _focusedInstanceForActiveTab = instance;
+              }),
             ),
             const SizedBox(height: 24),
             ExpansionTile(

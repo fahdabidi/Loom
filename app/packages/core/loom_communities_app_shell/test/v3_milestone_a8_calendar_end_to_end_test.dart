@@ -102,6 +102,7 @@ Widget _calendar(
   _InstalledTabletop installed,
   String personaId, {
   int revision = 0,
+  ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
 }) => MaterialApp(
   home: Scaffold(
     body: SingleChildScrollView(
@@ -112,6 +113,7 @@ Widget _calendar(
         accent: Colors.deepPurple,
         modernTheme: null,
         engine: installed.engine,
+        onFocusedInstanceChanged: onFocusedInstanceChanged,
       ),
     ),
   ),
@@ -617,6 +619,51 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'Calendar reports its default and explicitly selected focused instances',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-focused-instance-callback'),
+      ))!;
+      final focusedInstances = <WorkflowInstance?>[];
+      try {
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-member',
+            onFocusedInstanceChanged: focusedInstances.add,
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(focusedInstances, hasLength(1));
+        expect(focusedInstances.single?.instanceId, 'event-summer-tournament');
+
+        final fridayEntry = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        );
+        await tester.ensureVisible(fridayEntry);
+        await tester.tap(fridayEntry);
+        await tester.pump();
+
+        expect(focusedInstances, hasLength(2));
+        expect(focusedInstances.last?.instanceId, 'event-friday-game-night');
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets(
     'Friday Calendar actions persist exclusive RSVP formulas and refresh detail',

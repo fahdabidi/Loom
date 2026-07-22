@@ -10,6 +10,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
     required this.modernTheme,
     this.engine,
     this.onInstanceScopedCreate,
+    this.onFocusedInstanceChanged,
   });
 
   final LoomExperienceDefinition experience;
@@ -21,6 +22,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
   /// leaves this null and resolves the installed shared engine itself.
   final WorkflowEngineApi? engine;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
+  final ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged;
 
   @override
   State<EngineNativeCalendarSurface> createState() =>
@@ -45,7 +47,9 @@ class _EngineNativeCalendarSurfaceState
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
         oldWidget.persona.personaId != widget.persona.personaId) {
+      final hadSelection = _presentation.selectedInstance != null;
       _presentation.reset();
+      if (hadSelection) _notifyFocusedInstanceChanged(null);
       _load();
     }
   }
@@ -59,6 +63,12 @@ class _EngineNativeCalendarSurfaceState
           ? workflowEngineForExtensionId(extensionId)
           : Future<WorkflowEngineApi>.value(widget.engine);
     });
+  }
+
+  void _notifyFocusedInstanceChanged(WorkflowInstance? instance) {
+    final callback = widget.onFocusedInstanceChanged;
+    if (callback == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => callback(instance));
   }
 
   @override
@@ -105,6 +115,7 @@ class _EngineNativeCalendarSurfaceState
             modernTheme: widget.modernTheme,
             onInstanceChanged: changed,
             onInstanceScopedCreate: widget.onInstanceScopedCreate,
+            onFocusedInstanceChanged: widget.onFocusedInstanceChanged,
             presentation: _presentation,
           ),
         );
@@ -116,12 +127,14 @@ class _EngineNativeCalendarSurfaceState
 class _CalendarPresentationController {
   String? selectedIdentity;
   String? selectedInstanceId;
+  WorkflowInstance? selectedInstance;
   String? selectedDate;
   DateTime? month;
 
   void reset() {
     selectedIdentity = null;
     selectedInstanceId = null;
+    selectedInstance = null;
     selectedDate = null;
     month = null;
   }
@@ -197,6 +210,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.modernTheme,
     required this.onInstanceChanged,
     this.onInstanceScopedCreate,
+    this.onFocusedInstanceChanged,
     required this.presentation,
   });
 
@@ -209,6 +223,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
+  final ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged;
   final _CalendarPresentationController presentation;
 
   @override
@@ -234,7 +249,9 @@ class _EngineNativeCalendarContentState
 
   void _reconcileSelection(List<_CalendarEntry>? entries) {
     if (entries == null || entries.isEmpty) {
+      final hadSelection = widget.presentation.selectedInstance != null;
       widget.presentation.reset();
+      if (hadSelection) _notifyFocusedInstanceChanged(null);
       return;
     }
     final exact = entries.where(
@@ -250,12 +267,28 @@ class _EngineNativeCalendarContentState
         : entries.first;
     final changed = widget.presentation.selectedIdentity != next.identity;
     final dateChanged = widget.presentation.selectedDate != next.dateKey;
-    widget.presentation.selectedIdentity = next.identity;
-    widget.presentation.selectedInstanceId = next.instanceId;
+    _setSelectedEntry(next);
     if (changed || dateChanged || widget.presentation.selectedDate == null) {
       widget.presentation.selectedDate = next.dateKey;
       widget.presentation.month = DateTime(next.date.year, next.date.month);
     }
+  }
+
+  void _setSelectedEntry(_CalendarEntry entry) {
+    final selectionChanged =
+        widget.presentation.selectedIdentity != entry.identity;
+    widget.presentation.selectedIdentity = entry.identity;
+    widget.presentation.selectedInstanceId = entry.instanceId;
+    widget.presentation.selectedInstance = entry.resolved.instance;
+    if (selectionChanged) {
+      _notifyFocusedInstanceChanged(entry.resolved.instance);
+    }
+  }
+
+  void _notifyFocusedInstanceChanged(WorkflowInstance? instance) {
+    final callback = widget.onFocusedInstanceChanged;
+    if (callback == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => callback(instance));
   }
 
   List<_CalendarEntry> get _entries {
@@ -402,8 +435,7 @@ class _EngineNativeCalendarContentState
                     onSelected: (_) => setState(() {
                       final entry = byDay[day]!.first;
                       widget.presentation.selectedDate = day;
-                      widget.presentation.selectedIdentity = entry.identity;
-                      widget.presentation.selectedInstanceId = entry.instanceId;
+                      _setSelectedEntry(entry);
                       widget.presentation.month = DateTime(
                         entry.date.year,
                         entry.date.month,
@@ -478,8 +510,7 @@ class _EngineNativeCalendarContentState
       (candidate) => candidate.identity == identity,
     );
     setState(() {
-      widget.presentation.selectedIdentity = identity;
-      widget.presentation.selectedInstanceId = entry.instanceId;
+      _setSelectedEntry(entry);
       widget.presentation.selectedDate = entry.dateKey;
       widget.presentation.month = DateTime(entry.date.year, entry.date.month);
     });

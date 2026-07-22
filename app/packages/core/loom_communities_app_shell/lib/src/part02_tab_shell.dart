@@ -3895,6 +3895,7 @@ class _TabNativeRenderer extends StatelessWidget {
     this.onSelectCalendarDate,
     this.onConfirmWorkflow,
     this.onInstanceScopedCreate,
+    this.onFocusedInstanceChanged,
     this.completedWorkflowIds = const {},
   });
 
@@ -3912,6 +3913,7 @@ class _TabNativeRenderer extends StatelessWidget {
   final ValueChanged<String>? onSelectCalendarDate;
   final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
+  final ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged;
   final Set<String> completedWorkflowIds;
 
   @override
@@ -3984,6 +3986,7 @@ class _TabNativeRenderer extends StatelessWidget {
             accent: accent,
             modernTheme: modernTheme,
             onInstanceScopedCreate: onInstanceScopedCreate,
+            onFocusedInstanceChanged: onFocusedInstanceChanged,
           );
         }
         return _CalendarTabSurface(
