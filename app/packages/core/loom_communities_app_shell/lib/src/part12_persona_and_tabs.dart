@@ -1264,13 +1264,21 @@ bool _hasAnySurfaceFamily(
   LoomExperienceDefinition experience,
   List<String> surfaceFamilies,
 ) {
-  return experience.workflows.any((workflow) {
+  final hasLegacySurfaceFamily = experience.workflows.any((workflow) {
     final entry = cardSurfaceRegistryEntryFor(
       extensionId: experience.extensionId,
       workflow: workflow,
     );
     return surfaceFamilies.contains(entry.cardSurfaceFamily);
   });
+  final hasEngineNativeSurfaceFamily =
+      experience.workflowDefinitions?.values.any(
+        (definition) => definition.renderBindings.any(
+          (binding) => surfaceFamilies.contains(binding.cardSurfaceFamily),
+        ),
+      ) ??
+      false;
+  return hasLegacySurfaceFamily || hasEngineNativeSurfaceFamily;
 }
 
 bool _personaCanAdministerAnyWorkflow(

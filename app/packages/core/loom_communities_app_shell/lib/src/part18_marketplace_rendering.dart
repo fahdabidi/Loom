@@ -319,6 +319,11 @@ equipmentLoanDefaultInstanceDataSchema = {
     labelTemplate: '{value}',
     displayContexts: ['detail'],
   ),
+  'availabilityState': WorkflowFactPillFieldSchema(
+    displayIcon: 'inventory_2_outlined',
+    labelTemplate: '{value}',
+    displayContexts: ['tile', 'detail'],
+  ),
   'holderPersonaId': WorkflowFactPillFieldSchema(
     displayIcon: 'person_outline',
     labelTemplate: 'Holder: {value}',

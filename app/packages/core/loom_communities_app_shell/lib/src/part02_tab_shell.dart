@@ -4186,6 +4186,7 @@ class _TabNativeRenderer extends StatelessWidget {
             listings: listings,
             communityId: experience.extensionId,
             marketplaceTemplate: experience.marketplaceTemplate,
+            workflowDefinitions: experience.workflowDefinitions,
             workflows: experience.workflows,
             persona: persona,
             completedWorkflowIds: completedWorkflowIds,
@@ -5835,6 +5836,7 @@ class _MarketplaceBrowseSurface extends StatefulWidget {
     this.modernTheme,
     this.onConfirmWorkflow,
     this.marketplaceTemplate,
+    this.workflowDefinitions,
     this.workflows = const [],
     required this.persona,
     this.completedWorkflowIds = const {},
@@ -5847,6 +5849,7 @@ class _MarketplaceBrowseSurface extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
   final LoomListingStateMachine? marketplaceTemplate;
+  final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
   final List<LoomWorkflowDefinition> workflows;
   final LoomPersonaDefinition persona;
   final Set<String> completedWorkflowIds;
@@ -5981,9 +5984,14 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     if (!mounted) return;
     setState(() {
       _visibleInstances.addAll(
-        page.items.where(
-          (instance) => instance.workflowType.startsWith('marketplace_'),
-        ),
+        page.items.where((instance) {
+          if (instance.workflowType.startsWith('marketplace_')) return true;
+          final machine = _machinesByType[instance.workflowType];
+          return machine != null &&
+              machine.renderBindings.any(
+                (binding) => binding.tabId == 'marketplace',
+              );
+        }),
       );
       _nextCursor = page.nextCursor;
       _hasMore = page.hasMore;
@@ -6028,30 +6036,64 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     }
   }
 
-  List<WorkflowActionButtonTransition> _actionsFor(WorkflowInstance listing) {
+  List<_MarketplaceTransitionAvailability> _transitionAvailabilityFor(
+    WorkflowInstance listing,
+  ) {
     final machine = _machinesByType[listing.workflowType];
     if (machine == null) return const [];
-    final actions = <WorkflowActionButtonTransition>[];
-    for (final transition in machine.transitionsFrom(listing.currentState)) {
-      final allowed = evaluateGuard(
-        transition.guard,
-        widget.persona.personaId,
-        listing.instanceData,
-        completedWorkflowIds: _completedWorkflowIds,
-      );
-      final guardWithoutPrerequisites = WorkflowGuard(
-        allowedPersonaIds: transition.guard.allowedPersonaIds,
-        actorInList: transition.guard.actorInList,
-        instanceDataEquals: transition.guard.instanceDataEquals,
-      );
-      final waiting =
-          !allowed &&
-          (transition.guard.requiresWorkflowsComplete?.isNotEmpty ?? false) &&
-          evaluateGuard(
-            guardWithoutPrerequisites,
+    return [
+      for (final transition in machine.transitionsFrom(listing.currentState))
+        () {
+          final allowed = evaluateGuard(
+            transition.guard,
             widget.persona.personaId,
             listing.instanceData,
+            completedWorkflowIds: _completedWorkflowIds,
           );
+          final guardWithoutPrerequisites = WorkflowGuard(
+            allowedPersonaIds: transition.guard.allowedPersonaIds,
+            actorInList: transition.guard.actorInList,
+            instanceDataEquals: transition.guard.instanceDataEquals,
+          );
+          final waiting =
+              !allowed &&
+              (transition.guard.requiresWorkflowsComplete?.isNotEmpty ?? false) &&
+              evaluateGuard(
+                guardWithoutPrerequisites,
+                widget.persona.personaId,
+                listing.instanceData,
+              );
+          return _MarketplaceTransitionAvailability(
+            transition: transition,
+            allowed: allowed,
+            waitingForPrerequisite: waiting,
+          );
+        }(),
+    ];
+  }
+
+  List<WorkflowAction> _transitionActionsFor(WorkflowInstance listing) {
+    final machine = _machinesByType[listing.workflowType];
+    if (machine == null) return const [];
+    return [
+      for (final binding in machine.renderBindings)
+        if (binding.tabId == 'marketplace')
+          for (final action in binding.actions)
+            if (action.kind == 'transition' && action.transitionId != null)
+              action,
+    ];
+  }
+
+  List<WorkflowActionButtonTransition> _actionsFor(WorkflowInstance listing) {
+    final presentedSeparately = _transitionActionsFor(listing)
+        .map((action) => action.transitionId!)
+        .toSet();
+    final actions = <WorkflowActionButtonTransition>[];
+    for (final availability in _transitionAvailabilityFor(listing)) {
+      final transition = availability.transition;
+      if (presentedSeparately.contains(transition.id)) continue;
+      final allowed = availability.allowed;
+      final waiting = availability.waitingForPrerequisite;
       if (!allowed && !waiting) continue;
       actions.add(
         WorkflowActionButtonTransition(
@@ -6065,6 +6107,27 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
       );
     }
     return actions;
+  }
+
+  List<_MarketplacePresentedTransition> _presentedTransitionsFor(
+    WorkflowInstance listing,
+  ) {
+    final availableById = {
+      for (final availability in _transitionAvailabilityFor(listing))
+        availability.transition.id: availability,
+    };
+    return [
+      for (final action in _transitionActionsFor(listing))
+        if (availableById[action.transitionId] case final availability?)
+          // Unlike the automatic row's prerequisite waiting state, a
+          // contextual action is only actionable when its guard permits it.
+          if (availability.allowed)
+            _MarketplacePresentedTransition(
+              id: availability.transition.id,
+              label: action.label ?? availability.transition.label,
+              presentation: action.presentation ?? 'fab',
+            ),
+    ];
   }
 
   Future<void> _applyTransition(
@@ -6127,6 +6190,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     final listing = _selectedListing;
     if (listing != null) {
       final actions = _actionsFor(listing);
+      final presentedTransitions = _presentedTransitionsFor(listing);
       final machine = _machinesByType[listing.workflowType]!;
       final surfaceFamily = _surfaceFamilyFor(machine);
       return _WorkflowMarketplaceListingDetailView(
@@ -6139,6 +6203,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         instanceDataSchema: _factPillSchemaFor(surfaceFamily),
         onBack: () => setState(() => _selectedInstanceId = null),
         engineActions: actions,
+        presentedTransitions: presentedTransitions,
         onTransitionApplied: (transitionId) =>
             unawaited(_applyTransition(listing, transitionId)),
       );
@@ -6279,6 +6344,10 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
   }
 
   LoomWorkflowStateMachine _machineForListing(LoomMarketplaceListing listing) {
+    final declared = listing.template == null
+        ? null
+        : widget.workflowDefinitions?[listing.template];
+    if (declared != null) return declared;
     final legacy =
         listing.stateMachine ??
         widget.marketplaceTemplate ??
@@ -6369,6 +6438,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         'holderPersonaId': listing.currentHolderLabel,
       if (listing.description != null) 'description': listing.description,
       if (listing.dueLabel != null) 'dueDate': listing.dueLabel,
+      'availabilityState': listing.availability,
       if (listing.linkedWorkflowId != null)
         'linkedWorkflowId': listing.linkedWorkflowId,
       'queuedPersonaIds': listing.queuedPersonaIds.isNotEmpty
@@ -6631,6 +6701,30 @@ class _WorkflowMarketplaceListingCard extends StatelessWidget {
   }
 }
 
+class _MarketplaceTransitionAvailability {
+  const _MarketplaceTransitionAvailability({
+    required this.transition,
+    required this.allowed,
+    required this.waitingForPrerequisite,
+  });
+
+  final LoomWorkflowTransition transition;
+  final bool allowed;
+  final bool waitingForPrerequisite;
+}
+
+class _MarketplacePresentedTransition {
+  const _MarketplacePresentedTransition({
+    required this.id,
+    required this.label,
+    required this.presentation,
+  });
+
+  final String id;
+  final String label;
+  final String presentation;
+}
+
 class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
   const _WorkflowMarketplaceListingDetailView({
     required this.listing,
@@ -6641,6 +6735,7 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
     required this.instanceDataSchema,
     required this.onBack,
     required this.engineActions,
+    required this.presentedTransitions,
     required this.onTransitionApplied,
     this.modernTheme,
   });
@@ -6653,6 +6748,7 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
   final Map<String, WorkflowFactPillFieldSchema> instanceDataSchema;
   final VoidCallback onBack;
   final List<WorkflowActionButtonTransition> engineActions;
+  final List<_MarketplacePresentedTransition> presentedTransitions;
   final ValueChanged<String> onTransitionApplied;
   final LoomCardTheme? modernTheme;
 
@@ -6717,6 +6813,17 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
           actionSurfaceKey: 'marketplace',
           onTransitionPressed: onTransitionApplied,
         ),
+        for (final action in presentedTransitions)
+          if (action.presentation == 'button')
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: FilledButton.tonalIcon(
+                key: ValueKey('marketplace-transition-button-${action.id}'),
+                onPressed: () => onTransitionApplied(action.id),
+                icon: const Icon(Icons.bolt_outlined),
+                label: Text(action.label),
+              ),
+            ),
         if (listing.instanceData['description'] case final String description)
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -6728,6 +6835,24 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 24),
+        if (presentedTransitions.any((action) => action.presentation == 'fab'))
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              spacing: 12,
+              children: [
+                for (final action in presentedTransitions)
+                  if (action.presentation == 'fab')
+                    FloatingActionButton.extended(
+                      key: ValueKey('marketplace-transition-fab-${action.id}'),
+                      heroTag: 'marketplace-transition-fab-${listingId}-${action.id}',
+                      onPressed: () => onTransitionApplied(action.id),
+                      icon: const Icon(Icons.bolt_outlined),
+                      label: Text(action.label),
+                    ),
+              ],
+            ),
+          ),
       ],
     );
   }
