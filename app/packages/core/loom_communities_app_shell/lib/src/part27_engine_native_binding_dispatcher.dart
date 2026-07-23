@@ -94,7 +94,10 @@ class _EngineNativeBindingDispatcherState
         widget.personaId != oldWidget.personaId ||
         !identical(widget.rolesForInstance, oldWidget.rolesForInstance) ||
         widget.pageSize != oldWidget.pageSize) {
-      _startLoad();
+      // A widget reconfiguration can make the displayed bindings belong to a
+      // different query context. Do not retain those while its replacement
+      // loads.
+      _startLoad(clearBindings: true);
     }
   }
 
@@ -104,7 +107,7 @@ class _EngineNativeBindingDispatcherState
     super.dispose();
   }
 
-  void _startLoad() {
+  void _startLoad({bool clearBindings = false}) {
     final generation = ++_generation;
     final engine = widget.engine;
     final definitions = Map<String, LoomWorkflowStateMachine>.unmodifiable(
@@ -115,7 +118,10 @@ class _EngineNativeBindingDispatcherState
     final rolesForInstance = widget.rolesForInstance;
     final pageSize = widget.pageSize;
     setState(() {
-      _bindings = null;
+      // Mutation callbacks re-query the same context. Retaining the last
+      // successful result keeps the enclosing scrollable's extent stable
+      // until the refreshed bindings are ready to replace it.
+      if (clearBindings) _bindings = null;
       _error = null;
     });
     if (!_enabledTabs.contains(tabId)) {

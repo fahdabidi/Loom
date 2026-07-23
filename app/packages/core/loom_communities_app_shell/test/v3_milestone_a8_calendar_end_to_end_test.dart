@@ -106,10 +106,12 @@ Widget _calendar(
   _InstalledTabletop installed,
   String personaId, {
   int revision = 0,
+  ScrollController? scrollController,
   ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
 }) => MaterialApp(
   home: Scaffold(
     body: SingleChildScrollView(
+      controller: scrollController,
       child: EngineNativeCalendarSurface(
         key: ValueKey('a8-calendar-$personaId-$revision'),
         experience: installed.experience,
@@ -1374,6 +1376,62 @@ void main() {
           'event-friday-game-night',
         );
         expect(_responseFor(no, 'tabletop-organizer')['\$state'], 'declined');
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Calendar RSVP refresh keeps the outer scroll position for a lower event',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('as2-calendar-scroll'),
+      ))!;
+      final scrollController = ScrollController();
+      addTearDown(scrollController.dispose);
+      try {
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-organizer',
+            scrollController: scrollController,
+          ),
+        );
+        final fridayAgendaEntry = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        );
+        await _pumpUntil(tester, fridayAgendaEntry);
+        await tester.ensureVisible(fridayAgendaEntry);
+        await tester.tap(fridayAgendaEntry);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-respond-going',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.pump();
+        expect(scrollController.offset, greaterThan(0));
+
+        await tester.tap(action);
+        await tester.pump();
+        for (var i = 0; i < 5; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        expect(scrollController.offset, greaterThan(0));
+        final going = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        );
+        expect(_responseFor(going, 'tabletop-organizer')['\$state'], 'going');
       } finally {
         await tester.runAsync(installed.dispose);
       }
