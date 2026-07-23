@@ -371,6 +371,37 @@ established for CALR.6a/6b.
 | CALR.7b | **Move the Day/Week/Month/Pending scope-selector row above the grid/week/day container**, not below it. Purely a reordering of existing widgets in `_EngineNativeCalendarContentState.build()` — the scope `ChoiceChip` row (currently at `:602-621`) moves to render first, immediately followed by whichever container (`month`/`week`/`day`/pending-no-container) is active per the existing `if (scope == ...)` branching (currently at `:506-601`). No new widgets, no behavior change — purely visual ordering, so the scope control is always the first thing visible regardless of which timeframe is selected. | CALR.6a | `[ ]` Not started — planned, awaiting user approval to dispatch |
 | CALR.7c | **Live walkthrough + regression**, same lightweight recipe as CALR.6c: confirm Week view now has its own prev/next arrows and they correctly move the visible week; confirm the scope-selector row renders above the grid/week/day container in all four scopes; one random regression re-check of an unrelated tab. | CALR.7a, CALR.7b | `[ ]` Not started — planned, awaiting user approval to dispatch |
 
+**CALR.8 milestone breakdown (added 2026-07-23, from a live design review against the real Google
+Calendar Schedule view reference).** Found: the agenda row's current styling (CALR.5c round 4 — 12%-
+alpha tinted fill, 40%-alpha border, 8px corners) is a light outline card, not the solid/saturated,
+minimal-chrome slim bar the Google Calendar reference actually uses; the expanded detail card's fields
+all render through `WorkflowFactPillRow` (`part18_marketplace_rendering.dart:434-468`) as one uniform
+pill per field — no title treatment, no primary/secondary hierarchy, and no handling for a future field
+that isn't a short scalar (e.g. a long-text description). **The key unlock: `InstanceDataField`
+(`workflow_models.dart:461-473`) already declares `type` and `maxLength` per field in the frozen JSON
+today** — the app-shell's own `WorkflowFactPillFieldSchema` projection just drops both when it's built
+(`_fallbackFactSchema`, `part28...:1132-1142`), so a type-aware renderer needs **zero new JSON** to
+know a field is a date vs. a person-reference vs. free text. **No JSON/`tabletop-club.md` changes for
+any milestone below** — everything here is either data already declared in the frozen schema (unused
+by the app today) or a pure app-shell layout/rendering decision, same "intrinsic to the archetype"
+reasoning as CALR.6/CALR.7. A genuine "primary vs. secondary" field ranking *beyond* what `type` can
+infer automatically would need a real JSON change — that stays folded into MKT.1's already-pinned
+"tile/card style" design conversation, not opened as a second parallel JSON ask here.
+
+**Process gap this milestone closes, not just the visual one**: neither the deterministic pixel auditor
+(`b25_visual_inspection_auditor.dart` — a coarse pixel-statistics tool with no concept of field
+hierarchy or layout redundancy) nor the full B25 LLM Vision judge (never run for CALR, judged too heavy
+for a single sub-milestone) ever had the actual Google Calendar reference screenshot to compare against
+— it only ever existed as prose in `tabletop-club.md`. CALR.8c's own verification step must hold the
+real reference screenshot up against the rebuilt agenda row directly, not just confirm "some styling
+exists."
+
+| # | Milestone | Depends on | Status |
+|---|---|---|---|
+| CALR.8a | **Agenda-row restyle to match the Google Calendar Schedule view's slim bezel.** Replace the current 12%-alpha tinted/bordered `Container` (`part28_engine_native_calendar_surface.dart:681-711`) with a solid, saturated fill (derived from the community/workflow accent, not a faint tint), minimal-to-no border, and tighter vertical padding than today's `ListTile`. Reformat the date rail (`SizedBox(width: 96)` plain `Text(day)` at `:666-676`, currently showing the raw `"2026-07-10"` string) into a compact two-line treatment — small day-of-week abbreviation over a large day number — with a circle highlight when that day is "today." Purely visual restyle of existing widgets; no new keys needed beyond what already exists, no behavior change. | CALR.6a, CALR.6b | `[ ]` Not started — planned, awaiting user approval to dispatch |
+| CALR.8b | **Expanded detail-card content hierarchy and type-aware field rendering.** (1) Pull the title out of `WorkflowFactPillRow`'s generic loop and render it as a real heading (larger/bolder, its own row) — same pattern already used to special-case capacity/going-count via `_bespokeFieldKeys`. (2) Extend `WorkflowFactPillFieldSchema` to carry `type`/`maxLength`, copied straight from the `InstanceDataField` that already has them (`_fallbackFactSchema`), and dispatch rendering by type: short scalars stay pills; `text` fields with no/large `maxLength` render as a wrapped paragraph block under a small label instead of a pill; date/time fields get one consistent compact treatment; person-reference fields get a distinct (e.g. avatar-style) treatment instead of a plain icon+text pill. This is what makes a future free-text/description field (or any field type not seen today) render sanely without a JSON change. (3) Fix the duplicated date: add the date field key to the same `_bespokeFieldKeys` exclusion set already used for capacity fields — the date is always shown by an ancestor (the agenda row's date rail, or the Day header) whenever this card is visible, so the card itself shouldn't repeat it. | CALR.6a, CALR.6b | `[ ]` Not started — planned, awaiting user approval to dispatch |
+| CALR.8c | **Live walkthrough + regression, with an explicit reference-image comparison as a first-class acceptance check** (closing the process gap described above, not an afterthought): hold the real Google Calendar Schedule-view screenshot directly against the rebuilt agenda row (bezel, date-rail format, color treatment) and the expanded detail card (title prominence, field hierarchy, no duplicated date) — pass/fail is a genuine side-by-side comparison, not just "some styling changed." One random regression re-check of an unrelated tab. | CALR.8a, CALR.8b | `[ ]` Not started — planned, awaiting user approval to dispatch |
+
 ## 1e. App Shell milestones (outside the Calendar-only CALR scope)
 
 **Grounded 2026-07-23** (both rows below): confirmed via direct code tracing, no code changes made. Both
