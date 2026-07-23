@@ -268,6 +268,13 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
           'eventField': 'gatheringKey',
           'pendingStates': <dynamic>['awaiting'],
         },
+        'filterableFacets': <dynamic>[
+          <String, dynamic>{'field': 'featured', 'label': 'Featured'},
+          <String, dynamic>{
+            'field': 'attendeeTotal',
+            'label': 'Gathering attendees',
+          },
+        ],
       },
     ],
     'instanceDataSchema': <String, dynamic>{
@@ -277,6 +284,11 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'attendanceRows': <String, dynamic>{
         'type': 'list',
         'source': 'query(attendance-record where gatheringKey == id)',
+      },
+      'featured': <String, dynamic>{'type': 'bool', 'storage': 'inline'},
+      'attendeeTotal': <String, dynamic>{
+        'type': 'number',
+        'storage': 'inline',
       },
     },
   };
@@ -304,6 +316,8 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'title': 'Sunday gathering',
         'eventDate': '2026-07-12',
         'eventTime': '09:00',
+        'featured': true,
+        'attendeeTotal': 2,
       },
     },
     <String, dynamic>{
@@ -315,6 +329,8 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'title': 'Tuesday gathering',
         'eventDate': '2026-07-14',
         'eventTime': '10:00',
+        'featured': false,
+        'attendeeTotal': 3,
       },
     },
     <String, dynamic>{
@@ -326,6 +342,8 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'title': 'Saturday gathering',
         'eventDate': '2026-07-18',
         'eventTime': '11:00',
+        'featured': true,
+        'attendeeTotal': 5,
       },
     },
     <String, dynamic>{
@@ -753,6 +771,69 @@ void main() {
           ),
           findsNothing,
         );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'filters declared boolean facets without affecting other bindings and aggregates scoped stats',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr5b-facets', configure: _addScopedCalendarFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+        );
+
+        final featured = find.byKey(const ValueKey('calendar-facet-featured'));
+        await tester.ensureVisible(featured);
+        expect(featured, findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('calendar-facet-stat-attendeeTotal')),
+          findsOneWidget,
+        );
+        expect(find.text('Gathering attendees: 10'), findsOneWidget);
+
+        await tester.tap(featured);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+
+        await tester.tap(featured);
+        await tester.pump();
+        final date = find.byKey(
+          const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
+        );
+        await tester.ensureVisible(date);
+        await tester.tap(date);
+        final day = find.byKey(const ValueKey('calendar-scope-day'));
+        await tester.ensureVisible(day);
+        await tester.tap(day);
+        await tester.pump();
+        expect(find.text('Gathering attendees: 3'), findsOneWidget);
       } finally {
         await tester.runAsync(installed.dispose);
       }

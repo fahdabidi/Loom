@@ -131,6 +131,7 @@ class _CalendarPresentationController {
   String? selectedDate;
   DateTime? month;
   String scope = 'month';
+  final Set<String> activeFacets = <String>{};
 
   void reset() {
     selectedIdentity = null;
@@ -139,7 +140,20 @@ class _CalendarPresentationController {
     selectedDate = null;
     month = null;
     scope = 'month';
+    activeFacets.clear();
   }
+}
+
+class _CalendarFacet {
+  const _CalendarFacet({
+    required this.field,
+    required this.label,
+    required this.isBoolean,
+  });
+
+  final String field;
+  final String label;
+  final bool isBoolean;
 }
 
 /// Calendar facts are opt-in through the detail context, or declaratively
@@ -370,6 +384,59 @@ class _EngineNativeCalendarContentState
     }
   }
 
+  List<_CalendarFacet> _facetsForEntries(List<_CalendarEntry> entries) {
+    final facets = <String, _CalendarFacet>{};
+    for (final entry in entries) {
+      for (final facet in entry.resolved.binding.filterableFacets ??
+          const <FilterableFacetSpec>[]) {
+        facets.putIfAbsent(
+          facet.field,
+          () => _CalendarFacet(
+            field: facet.field,
+            label: facet.label,
+            isBoolean:
+                entry
+                    .resolved
+                    .machine
+                    .instanceDataSchema[facet.field]
+                    ?.type ==
+                'bool',
+          ),
+        );
+      }
+    }
+    return facets.values.toList();
+  }
+
+  bool _bindingDeclaresFacet(_CalendarEntry entry, String field) => entry
+      .resolved
+      .binding
+      .filterableFacets
+      ?.any((facet) => facet.field == field) ??
+      false;
+
+  List<_CalendarEntry> _entriesForActiveFacets(
+    List<_CalendarEntry> entries,
+  ) => entries.where((entry) {
+    for (final field in widget.presentation.activeFacets) {
+      if (_bindingDeclaresFacet(entry, field) &&
+          entry.resolved.instance.instanceData[field] != true) {
+        return false;
+      }
+    }
+    return true;
+  }).toList();
+
+  num _facetTotal(List<_CalendarEntry> entries, String field) => entries
+      .where((entry) => _bindingDeclaresFacet(entry, field))
+      .fold<num>(
+        0,
+        (total, entry) =>
+            total +
+            (num.tryParse('${entry.resolved.instance.instanceData[field]}') ??
+                0),
+      );
+
   bool _isPendingForViewer(_CalendarEntry entry) {
     final responseTable = entry.resolved.binding.responseTable;
     if (responseTable == null) return false;
@@ -422,8 +489,10 @@ class _EngineNativeCalendarContentState
         widget.presentation.month ??
         DateTime(selected.date.year, selected.date.month);
     final scopedEntries = _entriesForScope(entries);
+    final facets = _facetsForEntries(scopedEntries);
+    final agendaEntries = _entriesForActiveFacets(scopedEntries);
     final byDay = <String, List<_CalendarEntry>>{};
-    for (final entry in scopedEntries) {
+    for (final entry in agendaEntries) {
       byDay.putIfAbsent(entry.dateKey, () => []).add(entry);
     }
     final dates = byDay.keys.toList()..sort();
@@ -528,6 +597,34 @@ class _EngineNativeCalendarContentState
               ),
           ],
         ),
+        if (facets.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final facet in facets)
+                if (facet.isBoolean)
+                  FilterChip(
+                    key: ValueKey('calendar-facet-${facet.field}'),
+                    label: Text(facet.label),
+                    selected: widget.presentation.activeFacets.contains(
+                      facet.field,
+                    ),
+                    onSelected: (selected) => setState(() {
+                      if (selected) {
+                        widget.presentation.activeFacets.add(facet.field);
+                      } else {
+                        widget.presentation.activeFacets.remove(facet.field);
+                      }
+                    }),
+                  )
+                else
+                  Text(
+                    '${facet.label}: ${_facetTotal(scopedEntries, facet.field)}',
+                    key: ValueKey('calendar-facet-stat-${facet.field}'),
+                  ),
+            ],
+          ),
         const SizedBox(height: 8),
         Text(
           'Agenda',
