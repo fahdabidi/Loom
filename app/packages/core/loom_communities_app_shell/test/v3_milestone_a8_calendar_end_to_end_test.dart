@@ -948,6 +948,66 @@ void main() {
     },
   );
 
+  testWidgets(
+    'places Calendar scope selector before the active scope container',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr7b-scope-selector', configure: _addContainerFixture),
+      ))!;
+      final selectorRow = find.ancestor(
+        of: find.byKey(const ValueKey('calendar-scope-day')),
+        matching: find.byType(Row),
+      ).first;
+
+      void expectSelectorBefore(Finder container) {
+        expect(
+          tester.getTopLeft(selectorRow).dy,
+          lessThan(tester.getTopLeft(container).dy),
+        );
+      }
+
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+        expectSelectorBefore(
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
+        expectSelectorBefore(
+          find.byKey(const ValueKey('engine-native-calendar-week-header')),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-day')));
+        await tester.pump();
+        expectSelectorBefore(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-pending')));
+        await tester.pump();
+        expect(
+          tester.getTopLeft(selectorRow).dy,
+          lessThan(
+            tester
+                .getTopLeft(
+                  find.byKey(
+                    const ValueKey('engine-native-calendar-grouped-agenda'),
+                  ),
+                )
+                .dy,
+          ),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets('navigates Week by full weeks with native previous and next buttons', (
     tester,
   ) async {
