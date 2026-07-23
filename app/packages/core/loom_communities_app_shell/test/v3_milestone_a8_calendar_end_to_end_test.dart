@@ -979,7 +979,7 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
         await tester.pump();
         expectSelectorBefore(
-          find.byKey(const ValueKey('engine-native-calendar-week-header')),
+          find.byKey(const ValueKey('engine-native-calendar-week-navigation')),
         );
 
         await tester.tap(find.byKey(const ValueKey('calendar-scope-day')));
