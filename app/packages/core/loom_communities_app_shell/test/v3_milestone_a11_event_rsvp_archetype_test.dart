@@ -280,6 +280,38 @@ void main() {
         find.descendant(of: facts, matching: find.text('2026-07-10')),
         findsNothing,
       );
+      // The frozen fixture does not declare maxLength for these fallback
+      // fields. They must remain compact pills because their runtime values
+      // are short, rather than being promoted to paragraph blocks.
+      expect(
+        find.descendant(of: facts, matching: find.text('Community room')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: facts,
+          matching: find.byIcon(Icons.location_on_outlined),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: facts,
+          matching: find.byKey(
+            const ValueKey('workflow-fact-paragraph-location'),
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: facts,
+          matching: find.byKey(
+            const ValueKey('workflow-fact-paragraph-host'),
+          ),
+        ),
+        findsNothing,
+      );
     } finally {
       await tester.runAsync(installed.dispose);
     }

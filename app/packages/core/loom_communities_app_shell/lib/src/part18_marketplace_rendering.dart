@@ -498,7 +498,7 @@ class WorkflowFactPillRow extends StatelessWidget {
       if (label.trim().isEmpty) {
         continue;
       }
-      hasParagraph = hasParagraph || _rendersAsParagraph(schema);
+      hasParagraph = hasParagraph || _rendersAsParagraph(schema, value);
       rows.add(
         _factWidget(
           field: field,
@@ -523,12 +523,15 @@ class WorkflowFactPillRow extends StatelessWidget {
     );
   }
 
-  static const _paragraphMaxLengthThreshold = 80;
+  static const _paragraphValueLengthThreshold = 80;
 
-  static bool _rendersAsParagraph(WorkflowFactPillFieldSchema schema) =>
+  static bool _rendersAsParagraph(
+    WorkflowFactPillFieldSchema schema,
+    dynamic value,
+  ) =>
       schema.type.toLowerCase() == 'text' &&
-      (schema.maxLength == null ||
-          schema.maxLength! > _paragraphMaxLengthThreshold);
+      '$value'.length >
+          (schema.maxLength ?? _paragraphValueLengthThreshold);
 
   Widget _factWidget({
     required String field,
@@ -538,7 +541,7 @@ class WorkflowFactPillRow extends StatelessWidget {
     required Color foreground,
   }) {
     final type = schema.type.toLowerCase();
-    if (_rendersAsParagraph(schema)) {
+    if (_rendersAsParagraph(schema, value)) {
       return _WorkflowFactParagraph(
         key: ValueKey('workflow-fact-paragraph-$field'),
         field: field,
