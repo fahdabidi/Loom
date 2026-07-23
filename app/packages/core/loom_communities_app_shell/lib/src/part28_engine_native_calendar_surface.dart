@@ -888,6 +888,10 @@ class _EventRsvpDetailCard extends StatefulWidget {
 
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   static const _bespokeFieldKeys = <String>{
+    // The agenda/date header already owns the primary event date, while the
+    // title gets the detail card's heading treatment below.
+    'title',
+    'eventDate',
     'goingCount',
     'accepted',
     'capacity',
@@ -1214,6 +1218,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (!_bespokeFieldKeys.contains(entry.key) &&
           _isCalendarDetailField(entry.value))
         entry.key: WorkflowFactPillFieldSchema(
+          type: entry.value.type,
+          maxLength: entry.value.maxLength,
           displayIcon: entry.value.displayIcon,
           labelTemplate: entry.value.labelTemplate,
           hideWhenEmpty: entry.value.hideWhenEmpty,
@@ -1224,6 +1230,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   @override
   Widget build(BuildContext context) {
     final data = _instance.instanceData;
+    final title = data['title']?.toString().trim();
     final goingCount = (data['goingCount'] ?? data['accepted'] ?? 0) as num;
     final capacity =
         (data['capacity'] ?? data['minimumAttendance'] ?? 1) as num;
@@ -1252,6 +1259,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (title != null && title.isNotEmpty) ...[
+              Text(
+                title,
+                key: ValueKey('event-rsvp-title-${_instance.instanceId}'),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (hasCapacityInfo) ...[
               Row(
                 children: [

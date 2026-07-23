@@ -263,6 +263,23 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(GenericWorkflowInstanceCard), findsNothing);
+
+      final title = find.byKey(
+        const ValueKey('event-rsvp-title-event-friday-game-night'),
+      );
+      expect(title, findsOneWidget);
+      expect(tester.widget<Text>(title).style?.fontWeight, FontWeight.w700);
+      final facts = find.byKey(
+        const ValueKey('event-rsvp-fallback-facts-event-friday-game-night'),
+      );
+      expect(
+        find.descendant(of: facts, matching: find.text('Friday game night')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(of: facts, matching: find.text('2026-07-10')),
+        findsNothing,
+      );
     } finally {
       await tester.runAsync(installed.dispose);
     }

@@ -173,6 +173,10 @@ void main() {
         expect(find.text('Board games'), findsOneWidget);
         expect(find.text('Mint condition'), findsOneWidget);
         expect(find.text('Holder: Alice'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('workflow-fact-persona-holderPersonaId')),
+          findsOneWidget,
+        );
         expect(find.byIcon(Icons.groups_outlined), findsNothing);
         expect(find.byIcon(Icons.label_outline), findsNothing);
 
@@ -196,6 +200,49 @@ void main() {
         await tester.pump();
         expect(find.text('Queue: 3'), findsOneWidget);
         expect(find.byIcon(Icons.groups_outlined), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'WorkflowFactPillRow keeps short scalars as pills and wraps long text',
+      (WidgetTester tester) async {
+        const description =
+            'A detailed description that is intentionally allowed to wrap across lines rather than being clipped into a fact pill.';
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: WorkflowFactPillRow(
+                instanceData: {
+                  'shortLabel': 'Available now',
+                  'description': description,
+                },
+                instanceDataSchema: {
+                  'shortLabel': WorkflowFactPillFieldSchema(
+                    type: 'text',
+                    maxLength: 40,
+                    displayIcon: 'inventory_2_outlined',
+                    labelTemplate: '{value}',
+                  ),
+                  'description': WorkflowFactPillFieldSchema(
+                    type: 'text',
+                    maxLength: null,
+                  ),
+                },
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(Icons.inventory_2_outlined), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('workflow-fact-paragraph-shortLabel')),
+          findsNothing,
+        );
+        final paragraph = find.byKey(
+          const ValueKey('workflow-fact-paragraph-description'),
+        );
+        expect(paragraph, findsOneWidget);
+        expect(find.descendant(of: paragraph, matching: find.text(description)), findsOneWidget);
       },
     );
 

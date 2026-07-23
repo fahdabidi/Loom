@@ -152,12 +152,16 @@ class WorkflowActionButtonTransition {
 
 class WorkflowFactPillFieldSchema {
   const WorkflowFactPillFieldSchema({
+    this.type = 'text',
+    this.maxLength = 80,
     this.displayIcon,
     this.labelTemplate,
     this.hideWhenEmpty = false,
     this.displayContexts,
   });
 
+  final String type;
+  final int? maxLength;
   final String? displayIcon;
   final String? labelTemplate;
   final bool hideWhenEmpty;
@@ -222,29 +226,39 @@ const Map<String, WorkflowCardSurfaceTemplate> workflowCardSurfaceTemplates = {
 const Map<String, WorkflowFactPillFieldSchema>
 paymentCheckoutDefaultInstanceDataSchema = {
   'amountLabel': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'payments_outlined',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'purpose': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'receipt_long',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
     displayContexts: ['tile', 'detail'],
   ),
   'recipient': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'account_balance_outlined',
     labelTemplate: 'Recipient: {value}',
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
   'cadence': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'repeat',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
   'entitlement': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'verified_outlined',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
@@ -255,46 +269,59 @@ paymentCheckoutDefaultInstanceDataSchema = {
 const Map<String, WorkflowFactPillFieldSchema>
 eventRsvpDefaultInstanceDataSchema = {
   'eventDate': WorkflowFactPillFieldSchema(
+    type: 'date',
     displayIcon: 'calendar_today_outlined',
     labelTemplate: '{value}',
     displayContexts: ['detail'],
   ),
   'eventDateTime': WorkflowFactPillFieldSchema(
+    type: 'date',
     displayIcon: 'schedule',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'host': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'person_outline',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
   'location': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'location_on_outlined',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
     displayContexts: ['tile', 'detail'],
   ),
   'capacityLabel': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'groups_outlined',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
     displayContexts: ['tile', 'detail'],
   ),
   'rsvpStatus': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'event_available',
     labelTemplate: 'Your RSVP: {value}',
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
   'waitlistedPersonaIds': WorkflowFactPillFieldSchema(
+    type: 'personaId[]',
     displayIcon: 'hourglass_empty',
     labelTemplate: 'Waitlist: {value.length}',
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
   'reminderState': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'notifications_active',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
@@ -305,37 +332,48 @@ eventRsvpDefaultInstanceDataSchema = {
 const Map<String, WorkflowFactPillFieldSchema>
 equipmentLoanDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'title',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'category': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'category_outlined',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'condition': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'verified_outlined',
     labelTemplate: '{value}',
     displayContexts: ['detail'],
   ),
   'availabilityState': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'inventory_2_outlined',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'holderPersonaId': WorkflowFactPillFieldSchema(
+    type: 'personaId',
     displayIcon: 'person_outline',
     labelTemplate: 'Holder: {value}',
     displayContexts: ['tile', 'detail'],
   ),
   'queuedPersonaIds': WorkflowFactPillFieldSchema(
+    type: 'personaId[]',
     displayIcon: 'groups_outlined',
     labelTemplate: 'Queue: {value.length}',
     hideWhenEmpty: true,
     displayContexts: ['tile', 'detail'],
   ),
   'dueDate': WorkflowFactPillFieldSchema(
+    type: 'date',
     displayIcon: 'schedule',
     labelTemplate: '{value}',
     hideWhenEmpty: true,
@@ -346,21 +384,28 @@ equipmentLoanDefaultInstanceDataSchema = {
 const Map<String, WorkflowFactPillFieldSchema>
 equipmentGiveawayDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'title',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'category': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 40,
     displayIcon: 'category_outlined',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
   'condition': WorkflowFactPillFieldSchema(
+    type: 'text',
+    maxLength: 80,
     displayIcon: 'verified_outlined',
     labelTemplate: '{value}',
     displayContexts: ['detail'],
   ),
   'claimedByPersonaId': WorkflowFactPillFieldSchema(
+    type: 'personaId',
     displayIcon: 'person_outline',
     labelTemplate: 'Claimed by: {value}',
     hideWhenEmpty: true,
@@ -438,6 +483,7 @@ class WorkflowFactPillRow extends StatelessWidget {
             ? Colors.white
             : Colors.black87);
     final rows = <Widget>[];
+    var hasParagraph = false;
     for (final entry in instanceDataSchema.entries) {
       final field = entry.key;
       final schema = entry.value;
@@ -452,21 +498,181 @@ class WorkflowFactPillRow extends StatelessWidget {
       if (label.trim().isEmpty) {
         continue;
       }
+      hasParagraph = hasParagraph || _rendersAsParagraph(schema);
       rows.add(
-        _SurfaceFactPill(
-          icon: _iconForName(schema.displayIcon),
+        _factWidget(
+          field: field,
+          schema: schema,
+          value: value,
           label: label,
           foreground: resolvedForeground,
-          accent: accent,
         ),
       );
     }
     if (rows.isEmpty) {
       return const SizedBox.shrink();
     }
-    return Wrap(spacing: 8, runSpacing: 8, children: rows);
+    if (!hasParagraph) {
+      return Wrap(spacing: 8, runSpacing: 8, children: rows);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final row in rows) ...[row, const SizedBox(height: 8)],
+      ],
+    );
+  }
+
+  static const _paragraphMaxLengthThreshold = 80;
+
+  static bool _rendersAsParagraph(WorkflowFactPillFieldSchema schema) =>
+      schema.type.toLowerCase() == 'text' &&
+      (schema.maxLength == null ||
+          schema.maxLength! > _paragraphMaxLengthThreshold);
+
+  Widget _factWidget({
+    required String field,
+    required WorkflowFactPillFieldSchema schema,
+    required dynamic value,
+    required String label,
+    required Color foreground,
+  }) {
+    final type = schema.type.toLowerCase();
+    if (_rendersAsParagraph(schema)) {
+      return _WorkflowFactParagraph(
+        key: ValueKey('workflow-fact-paragraph-$field'),
+        field: field,
+        value: value,
+        foreground: foreground,
+        accent: accent,
+      );
+    }
+    if (type == 'personaid' || type == 'personaid[]') {
+      return _WorkflowPersonaFact(
+        key: ValueKey('workflow-fact-persona-$field'),
+        label: label,
+        isCollection: type == 'personaid[]',
+        foreground: foreground,
+        accent: accent,
+      );
+    }
+    return _SurfaceFactPill(
+      icon: _iconForName(schema.displayIcon),
+      label: label,
+      foreground: foreground,
+      accent: accent,
+    );
   }
 }
+
+class _WorkflowFactParagraph extends StatelessWidget {
+  const _WorkflowFactParagraph({
+    super.key,
+    required this.field,
+    required this.value,
+    required this.foreground,
+    this.accent,
+  });
+
+  final String field;
+  final dynamic value;
+  final Color foreground;
+  final Color? accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = accent ?? foreground;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: accent == null ? 0.06 : 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _humanizeFactField(field),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: foreground.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value?.toString() ?? '',
+              softWrap: true,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: foreground,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkflowPersonaFact extends StatelessWidget {
+  const _WorkflowPersonaFact({
+    super.key,
+    required this.label,
+    required this.isCollection,
+    required this.foreground,
+    this.accent,
+  });
+
+  final String label;
+  final bool isCollection;
+  final Color foreground;
+  final Color? accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = accent ?? foreground;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: accent == null ? 0.08 : 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tint.withValues(alpha: 0.24)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: tint.withValues(alpha: 0.18),
+              child: Icon(
+                isCollection ? Icons.groups_outlined : Icons.person_outline,
+                size: 15,
+                color: tint,
+              ),
+            ),
+            const SizedBox(width: 7),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: tint,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _humanizeFactField(String field) => field
+    .replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (match) => '${match[1]} ${match[2]}')
+    .replaceAll('_', ' ')
+    .replaceFirstMapped(RegExp(r'^.'), (match) => match[0]!.toUpperCase());
 
 class WorkflowCardSurfaceTemplateRenderer extends StatelessWidget {
   const WorkflowCardSurfaceTemplateRenderer({
