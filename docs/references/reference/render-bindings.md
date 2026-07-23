@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.5.0
+doc_version: 1.6.0
 status: current
-last_verified: 2026-07-21
+last_verified: 2026-07-23
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -19,7 +19,7 @@ role?**
 rule. A workflow with **no** binding for a state does not render in that state (the correct way to hide
 drafts).
 
-## Binding object — 10 keys (2 added in Phase A′ 2026-07-16, 2 added 2026-07-17)
+## Binding object — 11 keys (2 added in Phase A′ 2026-07-16, 2 added 2026-07-17, 1 added 2026-07-23)
 
 ```jsonc
 {
@@ -32,7 +32,8 @@ drafts).
   "repeater": { /* see below */ },              // optional, GAP-1
   "actions": [ /* see below */ ],               // optional, GAP-2 (replaced `creatable`, grammar v2)
   "responseTable": { /* see below */ },         // optional, PROPOSED 2026-07-17
-  "filterableFacets": [ /* see below */ ]       // optional, PROPOSED 2026-07-17
+  "filterableFacets": [ /* see below */ ],      // optional, PROPOSED 2026-07-17
+  "styleField": "cardStyleId"                   // optional, PROPOSED 2026-07-23
 }
 ```
 
@@ -48,6 +49,7 @@ drafts).
 | `actions` | object[] | no | Archetype-owned actions (create, transition) rendered as buttons on the card or as tab/contextual FABs (GAP-2; replaced the flat `creatable` object in grammar v2) |
 | `responseTable` | object | no | Points a calendar-family archetype at a per-member response table, instead of assuming field names (PROPOSED) |
 | `filterableFacets` | object[] | no | Named, labeled, computed-field-backed filters/stats a generic list surface may offer (PROPOSED) |
+| `styleField` | string | no | Names a `number`-typed field in this workflow's own `instanceDataSchema` whose per-instance computed value selects this card's visual style/color slot, instead of the archetype always using one flat community/tab accent (PROPOSED) |
 
 ⚠️ **Grammar/engine status differs across these additions — read before using any of them.** `repeater`
 is fully implemented and engine-executed (parsing + `{item.x}`/`{input.x}` resolution + validator
@@ -60,9 +62,9 @@ the in-focus instance — e.g. "Create ballot for this tournament") are **the ne
 yet App-Shell-implemented** (see `spec-version.json` → `proposedNotImplemented.actionsGrammar`). `kind:
 "transition"` (pulling one already-declared transition out of the automatic button row into its own FAB
 or distinguished button) is **new grammar, also not yet App-Shell-implemented** — written ahead of the
-code that will consume it, same convention. `responseTable` and `filterableFacets` are **PROPOSED —
-grammar/validator only, written ahead of the App Shell code that will consume them**, same convention
-this file's earlier additions used before their own consumers existed.
+code that will consume it, same convention. `responseTable`, `filterableFacets`, and `styleField` are
+**PROPOSED — grammar/validator only, written ahead of the App Shell code that will consume them**, same
+convention this file's earlier additions used before their own consumers existed.
 
 ## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
 
@@ -113,6 +115,47 @@ displayed/sortable stat, not a threshold-input filter (no "at least N" UI in thi
 
 **Validation:** each `field` must be declared, `formula`-typed, in this workflow's own
 `instanceDataSchema`. → `dangling_filterable_facet_field` (error)
+
+## `styleField` — data-driven card style/color selection (PROPOSED, 2026-07-23)
+
+```jsonc
+"styleField": "cardStyleId"
+```
+
+`styleField` names a `number`-typed field in this workflow's own `instanceDataSchema` whose per-instance
+value selects which of a small, fixed set of App Shell-owned visual style slots this card renders with —
+instead of every instance on a tab rendering in the same single, flat community/tab accent. The field is
+ordinarily a computed (`formula`-typed) field, not a stored one, so the mapping logic lives entirely in
+the workflow's own JSON and re-evaluates on every read, e.g.:
+
+```jsonc
+"category": { "type": "text", "writableBy": "formEntry", "storage": "inline", "displayContexts": [] },
+"cardStyleId": {
+  "type": "number",
+  "formula": "if(category == 'tournament', 1, if(category == 'social', 2, 0))",
+  "displayContexts": []
+}
+```
+
+**No new formula function is required for this.** Nested `if()` already maps a label value to a number
+— the identical pattern already proven elsewhere in this spec (see `tournament-ballot.dueAt`'s
+`reminderOffset`-to-hours mapping in the frozen fixture). `styleField` only needs the workflow author to
+compose already-implemented vocabulary; the engine change is zero.
+
+**Why a field name, not an inline value:** the mapping formula is entirely the workflow author's own
+business logic (which categories exist, which slot each maps to) — `styleField` only tells the App Shell
+*where to look*, mirroring how `responseTable.eventField` and `filterableFacets[].field` are pointers to
+workflow-owned fields rather than inline copies of workflow-owned logic.
+
+**Resolution (not yet App-Shell-implemented — see `spec-version.json` →
+`proposedNotImplemented.styleFieldBinding`):** the archetype reads
+`instanceData[binding.styleField] ?? 0` and looks up that integer (mod the palette size) in a small,
+fixed palette of `LoomCardTheme` variations *derived from the same community/tab accent already resolved
+for this binding* (e.g. via systematic hue/lightness variation) — never a new, unrelated, hardcoded
+color. When `styleField` is absent, behavior is unchanged: today's single flat accent.
+
+**Validation:** `styleField` must name a declared, `number`-typed field in this workflow's own
+`instanceDataSchema`. → `dangling_style_field` (error)
 
 ## `repeater` — per-item action buttons over a list (GAP-1)
 
@@ -443,6 +486,7 @@ is expressed by *omission*, not by a permission flag.
 | `responseTable.eventField` must be declared on that type | error (`unknown_response_table_field`) |
 | `responseTable.pendingStates` entries must be declared states of that type | error (`unknown_response_table_state`) |
 | `filterableFacets[].field` must be a declared, `formula`-typed field in this schema | error (`dangling_filterable_facet_field`) |
+| `styleField` must be a declared, `number`-typed field in this schema | error (`dangling_style_field`) |
 
 ## Anti-patterns
 

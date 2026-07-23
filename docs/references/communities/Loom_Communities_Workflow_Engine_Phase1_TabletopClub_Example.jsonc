@@ -154,7 +154,11 @@
               { "field": "isFull", "label": "Full events" },
               { "field": "hasWaitlist", "label": "Has waitlist" },
               { "field": "goingCount", "label": "Number accepted" }
-            ]
+            ],
+            // Data-driven card color: cardStyleId is computed from this instance's own `category`
+            // value (see instanceDataSchema below) — no App Shell code change needed for a community
+            // to add its own categories, same rationale as responseTable/filterableFacets above.
+            "styleField": "cardStyleId"
           },
           { "states": ["cancelled"], "role": "any", "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
@@ -198,7 +202,17 @@
             "displayIcon": "event_seat", "labelTemplate": "{value} seats left",
             "displayContexts": ["detail"] },
           "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" },
+
+          // Community-authored category, used only to select this card's visual style below — not
+          // rendered as a fact pill itself (displayContexts: []).
+          "category": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
+          // Nested if() maps the category value to a small integer — the same pattern already proven
+          // by tournament-ballot.dueAt's reminderOffset mapping. No new formula function needed.
+          "cardStyleId": { "type": "number",
+            "formula": "if(category == 'tournament', 1, if(category == 'social', 2, 0))",
+            "displayContexts": [] }
         }
       },
 
@@ -367,7 +381,8 @@
                 "label": "Create ballot for this tournament", "byPersonaIds": ["tabletop-organizer"],
                 "scope": "instance", "presentation": "button",
                 "prefill": { "eventId": "{context.id}" } }
-            ] },
+            ],
+            "styleField": "cardStyleId" },
           // ...and on Home as the attendance/context card sitting alongside the ballot card.
           // (Ballot is a Home card, NOT its own tab — the dedicated 'ballot' tab is removed at 1.30.)
           { "states": ["open"], "role": "any", "tabId": "home",
@@ -397,7 +412,13 @@
           "accepted": { "type": "number", "formula": "size(goingPersonaIds)",
             "displayIcon": "groups_outlined", "labelTemplate": "Accepted: {value}",
             "displayContexts": ["tile", "detail"] },
-          "quorumMet": { "type": "bool", "formula": "size(goingPersonaIds) >= minimumAttendance" }
+          "quorumMet": { "type": "bool", "formula": "size(goingPersonaIds) >= minimumAttendance" },
+
+          // Constant style slot — every tournament-event instance is conceptually one category
+          // ("tournament"), unlike event-rsvp which varies per instance's own `category` field. Still a
+          // real formula (not a stored value), same styleField mechanism, distinguishing tournaments
+          // from event-rsvp's own calendar cards regardless of event-rsvp's own category variation.
+          "cardStyleId": { "type": "number", "formula": "1", "displayContexts": [] }
         }
       },
 
@@ -1339,7 +1360,8 @@
           "eventTime": "19:00",
           "location": "Community room",
           "host": "Alex Chen (Organizer)",
-          "capacity": 20
+          "capacity": 20,
+          "category": "social"
           // Response state (going/maybe/declined/waitlisted/pending) lives entirely in the
           // event-rsvp-response rows below, one per real seeded account — not on this instance.
         }
