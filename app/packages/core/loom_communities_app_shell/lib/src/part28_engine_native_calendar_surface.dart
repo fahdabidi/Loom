@@ -390,8 +390,8 @@ class _EngineNativeCalendarContentState
     final responses = entry.resolved.instance.instanceData[
       responseField.first.key
     ];
-    if (responses is! List) return false;
-    for (final response in responses) {
+    if (responses != null && responses is! List) return false;
+    for (final response in (responses as List<dynamic>? ?? const <dynamic>[])) {
       if (response is Map && response['personaId'] == widget.personaId) {
         return responseTable.pendingStates.contains(response['\$state']);
       }
