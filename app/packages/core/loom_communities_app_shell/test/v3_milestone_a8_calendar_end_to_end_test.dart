@@ -1116,7 +1116,7 @@ void main() {
           ),
         );
         await tester.ensureVisible(fridayAgendaEntry);
-        await tester.pump();
+        await tester.pumpAndSettle();
         await tester.tap(fridayAgendaEntry);
         await _tapAction(tester, 'event-friday-game-night', 'respond-going');
         final going = await _instance(
