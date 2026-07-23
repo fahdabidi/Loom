@@ -842,13 +842,20 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   @override
   void didUpdateWidget(covariant _EventRsvpDetailCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.instance != widget.instance ||
-        oldWidget.personaId != widget.personaId ||
+    // AS.2 deliberately retains this State while its dispatcher refreshes the
+    // bindings.  Do not make the rendered event data depend on
+    // WorkflowInstance identity: an engine implementation may reuse an
+    // instance object while replacing its data.  The parent is the source of
+    // truth after every refresh, so always adopt its current instance.
+    _instance = widget.instance;
+
+    // Reload available actions only when their evaluation context changes.
+    // Refreshing event data alone must not reset an in-flight action request.
+    if (oldWidget.personaId != widget.personaId ||
         oldWidget.machine != widget.machine ||
         oldWidget.engine != widget.engine) {
       _actionRequest++;
       _generation++;
-      _instance = widget.instance;
       _error = null;
       _retry = null;
       _actions = const [];
