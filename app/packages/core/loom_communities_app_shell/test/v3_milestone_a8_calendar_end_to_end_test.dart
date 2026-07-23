@@ -1115,6 +1115,14 @@ void main() {
             'engine-native-calendar-agenda-event-friday-game-night-0',
           ),
         );
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-summer-tournament-action-rsvp-going',
+            ),
+          ),
+        );
         await tester.ensureVisible(fridayAgendaEntry);
         await tester.pumpAndSettle();
         await tester.tap(fridayAgendaEntry);
