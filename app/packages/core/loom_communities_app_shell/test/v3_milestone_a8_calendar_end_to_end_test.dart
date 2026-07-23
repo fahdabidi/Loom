@@ -39,11 +39,15 @@ class _InstalledTabletop {
 /// Real package installation deliberately happens in [tester.runAsync], not in
 /// the widget test's fake-async zone. Every scenario owns its extension ID so
 /// A.5's memoized shared engine cannot leak persisted state between tests.
-Future<_InstalledTabletop> _install(String extensionId) async {
+Future<_InstalledTabletop> _install(
+  String extensionId, {
+  void Function(Map<String, dynamic> source)? configure,
+}) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
+  configure?.call(source);
   final temp = await Directory.systemTemp.createTemp('loom-a8-$extensionId-');
   try {
     final init = File('${temp.path}/tabletop.loom-init.zip');
@@ -217,6 +221,16 @@ Finder _keyPrefix(String prefix) => find.byWidgetPredicate(
   description: 'key beginning with $prefix',
 );
 
+Finder _agendaEntries() => find.byWidgetPredicate(
+  (widget) =>
+      widget is ListTile &&
+      widget.key is ValueKey<String> &&
+      (widget.key! as ValueKey<String>).value.startsWith(
+        'engine-native-calendar-agenda-',
+      ),
+  description: 'Calendar agenda entry',
+);
+
 Finder _calendarOrdinal(int ordinal) => find.byWidgetPredicate(
   (widget) =>
       widget.key is ValueKey<String> &&
@@ -232,6 +246,109 @@ Finder _calendarOrdinal(int ordinal) => find.byWidgetPredicate(
       (widget.key! as ValueKey<String>).value.endsWith('-$ordinal'),
   description: 'Calendar binding ordinal $ordinal',
 );
+
+void _addScopedCalendarFixture(Map<String, dynamic> source) {
+  final definitions = source['workflowDefinitions'] as Map<String, dynamic>;
+  definitions['neighborhood-gathering'] = <String, dynamic>{
+    'initialState': 'scheduled',
+    'states': <String, dynamic>{
+      'scheduled': <String, dynamic>{'label': 'Scheduled'},
+    },
+    'transitions': <dynamic>[],
+    'renderBindings': <dynamic>[
+      <String, dynamic>{
+        'states': <dynamic>['scheduled'],
+        'role': 'any',
+        'tabId': 'calendar',
+        'cardSurfaceFamily': 'event-rsvp',
+        'bindingKind': 'primary',
+        'responseTable': <String, dynamic>{
+          'workflowType': 'attendance-record',
+          'eventField': 'gatheringKey',
+          'pendingStates': <dynamic>['awaiting'],
+        },
+      },
+    ],
+    'instanceDataSchema': <String, dynamic>{
+      'title': <String, dynamic>{'type': 'text', 'storage': 'inline'},
+      'eventDate': <String, dynamic>{'type': 'date', 'storage': 'inline'},
+      'eventTime': <String, dynamic>{'type': 'time', 'storage': 'inline'},
+      'attendanceRows': <String, dynamic>{
+        'type': 'list',
+        'source': 'query(attendance-record where gatheringKey == id)',
+      },
+    },
+  };
+  definitions['attendance-record'] = <String, dynamic>{
+    'initialState': 'awaiting',
+    'states': <String, dynamic>{
+      'awaiting': <String, dynamic>{'label': 'Awaiting'},
+      'addressed': <String, dynamic>{'label': 'Addressed'},
+    },
+    'transitions': <dynamic>[],
+    'renderBindings': <dynamic>[],
+    'instanceDataSchema': <String, dynamic>{
+      'gatheringKey': <String, dynamic>{'type': 'text', 'storage': 'inline'},
+      'personaId': <String, dynamic>{'type': 'text', 'storage': 'inline'},
+    },
+  };
+  final instances = source['workflowInstances'] as List<dynamic>;
+  instances.addAll(<dynamic>[
+    <String, dynamic>{
+      'instanceId': 'gathering-sunday',
+      'workflowType': 'neighborhood-gathering',
+      'currentState': 'scheduled',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'title': 'Sunday gathering',
+        'eventDate': '2026-07-12',
+        'eventTime': '09:00',
+      },
+    },
+    <String, dynamic>{
+      'instanceId': 'gathering-tuesday',
+      'workflowType': 'neighborhood-gathering',
+      'currentState': 'scheduled',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'title': 'Tuesday gathering',
+        'eventDate': '2026-07-14',
+        'eventTime': '10:00',
+      },
+    },
+    <String, dynamic>{
+      'instanceId': 'gathering-saturday',
+      'workflowType': 'neighborhood-gathering',
+      'currentState': 'scheduled',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'title': 'Saturday gathering',
+        'eventDate': '2026-07-18',
+        'eventTime': '11:00',
+      },
+    },
+    <String, dynamic>{
+      'instanceId': 'attendance-sunday-member',
+      'workflowType': 'attendance-record',
+      'currentState': 'addressed',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'gatheringKey': 'gathering-sunday',
+        'personaId': 'tabletop-member',
+      },
+    },
+    <String, dynamic>{
+      'instanceId': 'attendance-saturday-member',
+      'workflowType': 'attendance-record',
+      'currentState': 'awaiting',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'gatheringKey': 'gathering-saturday',
+        'personaId': 'tabletop-member',
+      },
+    },
+  ]);
+}
 
 void main() {
   testWidgets('projects the frozen Calendar into its native product structure', (
@@ -477,6 +594,155 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'scopes Calendar entries by date range and generic response tables',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr5a-scopes', configure: _addScopedCalendarFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+        );
+
+        expect(
+          tester
+              .widget<ChoiceChip>(
+                find.byKey(const ValueKey('calendar-scope-month')),
+              )
+              .selected,
+          isTrue,
+        );
+        expect(_agendaEntries().evaluate(), hasLength(5));
+
+        await tester.tap(
+          find.byKey(
+            const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
+          ),
+        );
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-day')));
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-tuesday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsNothing,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+          findsNothing,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-month')));
+        await tester.pump();
+        expect(_agendaEntries().evaluate(), hasLength(5));
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-pending')));
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-tuesday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-saturday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-summer-tournament-0',
+            ),
+          ),
+          findsNothing,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-month')));
+        await tester.pump();
+        final tuesdayCellEntry = find.byKey(
+          const ValueKey('engine-native-calendar-entry-gathering-tuesday-0'),
+        );
+        await tester.ensureVisible(tuesdayCellEntry);
+        await tester.tap(tuesdayCellEntry);
+        await tester.pump();
+        expect(
+          tester
+              .widget<ChoiceChip>(
+                find.byKey(const ValueKey('calendar-scope-day')),
+              )
+              .selected,
+          isTrue,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-tuesday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets(
     'App Shell selects the frozen engine-native Calendar through its shared engine',

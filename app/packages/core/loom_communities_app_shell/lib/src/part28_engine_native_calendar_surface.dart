@@ -130,6 +130,7 @@ class _CalendarPresentationController {
   WorkflowInstance? selectedInstance;
   String? selectedDate;
   DateTime? month;
+  String scope = 'month';
 
   void reset() {
     selectedIdentity = null;
@@ -137,6 +138,7 @@ class _CalendarPresentationController {
     selectedInstance = null;
     selectedDate = null;
     month = null;
+    scope = 'month';
   }
 }
 
@@ -339,6 +341,64 @@ class _EngineNativeCalendarContentState
       if (_isCalendarDetailField(schema.value)) schema.key,
   };
 
+  List<_CalendarEntry> _entriesForScope(List<_CalendarEntry> entries) {
+    switch (widget.presentation.scope) {
+      case 'day':
+        return entries
+            .where((entry) => entry.dateKey == widget.presentation.selectedDate)
+            .toList();
+      case 'week':
+        final selectedDate = DateTime.tryParse(
+          widget.presentation.selectedDate ?? '',
+        );
+        if (selectedDate == null) return const [];
+        final start = selectedDate.subtract(
+          Duration(days: selectedDate.weekday % DateTime.daysPerWeek),
+        );
+        final end = start.add(const Duration(days: 6));
+        return entries
+            .where(
+              (entry) =>
+                  !entry.date.isBefore(start) && !entry.date.isAfter(end),
+            )
+            .toList();
+      case 'pending':
+        return entries.where(_isPendingForViewer).toList();
+      case 'month':
+      default:
+        return entries;
+    }
+  }
+
+  bool _isPendingForViewer(_CalendarEntry entry) {
+    final responseTable = entry.resolved.binding.responseTable;
+    if (responseTable == null) return false;
+    final expectedSource =
+        'query(${responseTable.workflowType} where ${responseTable.eventField} == id)';
+    final responseField = entry.resolved.machine.instanceDataSchema.entries
+        .where((field) => field.value.source == expectedSource);
+    if (responseField.isEmpty) {
+      assert(() {
+        debugPrint(
+          'Calendar responseTable for ${entry.identity} has no schema field '
+          'with source $expectedSource.',
+        );
+        return true;
+      }());
+      return false;
+    }
+    final responses = entry.resolved.instance.instanceData[
+      responseField.first.key
+    ];
+    if (responses is! List) return false;
+    for (final response in responses) {
+      if (response is Map && response['personaId'] == widget.personaId) {
+        return responseTable.pendingStates.contains(response['\$state']);
+      }
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme =
@@ -361,8 +421,9 @@ class _EngineNativeCalendarContentState
     final month =
         widget.presentation.month ??
         DateTime(selected.date.year, selected.date.month);
+    final scopedEntries = _entriesForScope(entries);
     final byDay = <String, List<_CalendarEntry>>{};
-    for (final entry in entries) {
+    for (final entry in scopedEntries) {
       byDay.putIfAbsent(entry.dateKey, () => []).add(entry);
     }
     final dates = byDay.keys.toList()..sort();
@@ -407,7 +468,7 @@ class _EngineNativeCalendarContentState
         _EngineNativeMonthGrid(
           month: month,
           byDay: byDay,
-          onSelect: _selectEntry,
+          onSelect: _selectMonthGridEntry,
           modernTheme: theme,
           selectedDate: widget.presentation.selectedDate,
         ),
@@ -445,6 +506,27 @@ class _EngineNativeCalendarContentState
                 ),
             ],
           ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (final scope in const <(String, String)>[
+              ('day', 'Day'),
+              ('week', 'Week'),
+              ('month', 'Month'),
+              ('pending', 'Pending'),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  key: ValueKey('calendar-scope-${scope.$1}'),
+                  label: Text(scope.$2),
+                  selected: widget.presentation.scope == scope.$1,
+                  onSelected: (_) =>
+                      setState(() => widget.presentation.scope = scope.$1),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
@@ -516,6 +598,17 @@ class _EngineNativeCalendarContentState
     });
   }
 
+  void _selectMonthGridEntry(String identity) {
+    final entry = _entries.firstWhere(
+      (candidate) => candidate.identity == identity,
+    );
+    setState(() {
+      _setSelectedEntry(entry);
+      widget.presentation.selectedDate = entry.dateKey;
+      widget.presentation.month = DateTime(entry.date.year, entry.date.month);
+      widget.presentation.scope = 'day';
+    });
+  }
 }
 
 class _EventRsvpDetailCard extends StatefulWidget {
