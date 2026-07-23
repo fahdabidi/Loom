@@ -347,6 +347,15 @@ must include a live Android emulator walkthrough I (the verification agent) driv
 the implemented behavior against `tabletop-club.md`'s own user-story/interaction rows — not just that
 tests pass. A milestone whose live behavior does not match what `tabletop-club.md` describes is **not
 closed** — a follow-up fix ticket goes back to the implementation agent, exactly as GP.2's four
+
+**Read [`Loom_Communities_Workflow_Engine_3_VerificationTooling.md`](./Loom_Communities_Workflow_Engine_3_VerificationTooling.md)
+before closing any milestone whose ticket cites a visual/UX reference** (added 2026-07-23 after CALR.5d's
+own screenshot self-review missed a real, obvious styling defect that an already-built independent pixel
+auditor — `b25_visual_inspection_auditor.dart` — would have caught, and was never run). That doc has the
+exact lightweight recipe: fixture-data-variance check before testing a filter, the pixel-auditor's exact
+minimal input schema, and an explicit "does this look like the reference" step separate from both. Do
+not substitute an automated test's synthetic-fixture proof for this live check, even when its logic is
+correct — the milestone's own acceptance bar is what's live, on screen, in front of you.
 remediation rounds this session already demonstrated the value of independent re-verification over
 trusting a sandbox-blocked self-report.
 
