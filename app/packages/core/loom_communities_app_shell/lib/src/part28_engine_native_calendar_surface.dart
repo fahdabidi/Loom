@@ -11,6 +11,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
     this.engine,
     this.onInstanceScopedCreate,
     this.onFocusedInstanceChanged,
+    this.currentDate = DateTime.now,
   });
 
   final LoomExperienceDefinition experience;
@@ -23,6 +24,10 @@ class EngineNativeCalendarSurface extends StatefulWidget {
   final WorkflowEngineApi? engine;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
   final ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged;
+
+  /// Kept injectable so the agenda's today bezel can be exercised without
+  /// coupling widget tests to the host clock.
+  final DateTime Function() currentDate;
 
   @override
   State<EngineNativeCalendarSurface> createState() =>
@@ -660,7 +665,16 @@ class _EngineNativeCalendarContentState
           style: TextStyle(color: theme.resolvedHeading),
         ),
         for (final day in dates)
-          Container(
+          Builder(
+            builder: (context) {
+              final agendaDate = DateTime.parse(day);
+              final now = widget.currentDate();
+              final isToday =
+                  agendaDate.year == now.year &&
+                  agendaDate.month == now.month &&
+                  agendaDate.day == now.day;
+              final accent = theme.accent ?? widget.accent;
+              return Container(
             key: ValueKey('engine-native-calendar-agenda-group-$day'),
             decoration: BoxDecoration(
               color: theme.resolvedFill,
@@ -672,11 +686,54 @@ class _EngineNativeCalendarContentState
                 SizedBox(
                   width: 96,
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      day,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
+                    child: Column(
                       key: ValueKey('engine-native-calendar-agenda-date-$day'),
-                      style: TextStyle(color: theme.resolvedHeading),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          const <String>[
+                            'MON',
+                            'TUE',
+                            'WED',
+                            'THU',
+                            'FRI',
+                            'SAT',
+                            'SUN',
+                          ][agendaDate.weekday - 1],
+                          style: TextStyle(
+                            color: theme.resolvedBody,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          key: ValueKey(
+                            'engine-native-calendar-agenda-today-$day',
+                          ),
+                          width: 36,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: isToday
+                              ? BoxDecoration(
+                                  color: accent,
+                                  shape: BoxShape.circle,
+                                )
+                              : null,
+                          child: Text(
+                            '${agendaDate.day}',
+                            style: TextStyle(
+                              color: theme.resolvedHeading,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -685,17 +742,11 @@ class _EngineNativeCalendarContentState
                     children: [
                       for (final entry in byDay[day]!) ...[
                         Container(
-                          margin: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                          margin: const EdgeInsets.fromLTRB(0, 2, 8, 2),
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: (theme.accent ?? widget.accent).withValues(
-                              alpha: 0.12,
-                            ),
-                            border: Border.all(
-                              color: (theme.accent ?? widget.accent)
-                                  .withValues(alpha: 0.4),
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                            color: accent.withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: ListTile(
                             key: ValueKey(
@@ -706,11 +757,18 @@ class _EngineNativeCalendarContentState
                                 widget.presentation.selectedIdentity,
                             title: Text(
                               entry.title,
-                              style: TextStyle(color: theme.resolvedBody),
+                              style: TextStyle(color: theme.resolvedHeading),
                             ),
                             subtitle: Text(
                               entry.time,
                               style: TextStyle(color: theme.resolvedBody),
+                            ),
+                            dense: true,
+                            visualDensity: const VisualDensity(vertical: -3),
+                            minVerticalPadding: 2,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 2,
                             ),
                             onTap: () => _selectEntry(entry.identity),
                           ),
@@ -739,6 +797,8 @@ class _EngineNativeCalendarContentState
                 ),
               ],
             ),
+          );
+            },
           ),
       ],
     );

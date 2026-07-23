@@ -37,11 +37,15 @@ class _InstalledTabletop {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
-Future<_InstalledTabletop> _install(String extensionId) async {
+Future<_InstalledTabletop> _install(
+  String extensionId, {
+  void Function(Map<String, dynamic> source)? configure,
+}) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
+  configure?.call(source);
   final temp = await Directory.systemTemp.createTemp('loom-a9-$extensionId-');
   try {
     final init = File('${temp.path}/tabletop.loom-init.zip');
@@ -85,7 +89,11 @@ LoomPersonaDefinition _member(_InstalledTabletop installed) => installed
     .personas!
     .firstWhere((persona) => persona.personaId == 'tabletop-member');
 
-Widget _engineCalendar(_InstalledTabletop installed, LoomCardTheme? theme) =>
+Widget _engineCalendar(
+  _InstalledTabletop installed,
+  LoomCardTheme? theme, {
+  DateTime Function()? currentDate,
+}) =>
     MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
@@ -95,6 +103,7 @@ Widget _engineCalendar(_InstalledTabletop installed, LoomCardTheme? theme) =>
             accent: Colors.deepPurple,
             modernTheme: theme,
             engine: installed.engine,
+            currentDate: currentDate ?? DateTime.now,
           ),
         ),
       ),
@@ -114,6 +123,31 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
 BoxDecoration _decoration(WidgetTester tester, String key) =>
     tester.widget<Container>(find.byKey(ValueKey(key))).decoration!
         as BoxDecoration;
+
+void _replaceEventDates(Map<String, dynamic> source, List<String> dates) {
+  var index = 0;
+  void visit(Object? value) {
+    if (value is Map) {
+      for (final key in value.keys.toList()) {
+        final child = value[key];
+        if (key == 'eventDate' && child is String) {
+          value[key] = dates[index++];
+        } else {
+          visit(child);
+        }
+      }
+    } else if (value is List) {
+      for (final item in value) {
+        visit(item);
+      }
+    }
+  }
+
+  visit(source);
+  if (index != dates.length) {
+    throw StateError('Expected ${dates.length} fixture event dates, found $index');
+  }
+}
 
 LoomWorkflowDefinition _legacyEvent(String id, DateTime date) =>
     LoomWorkflowDefinition(
@@ -228,6 +262,101 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'engine-native agenda uses its accent bezel and compact today date rail',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a9-agenda-bezel',
+          configure: (source) => _replaceEventDates(source, const [
+            '2026-07-10',
+            '2026-07-11',
+          ]),
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          _engineCalendar(
+            installed,
+            theme,
+            currentDate: () => DateTime(2026, 7, 10),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-group-2026-07-11'),
+          ),
+        );
+
+        final todayRail = find.byKey(
+          const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
+        );
+        expect(todayRail, findsOneWidget);
+        expect(
+          find.descendant(of: todayRail, matching: find.text('FRI')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: todayRail, matching: find.text('10')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: todayRail, matching: find.text('2026-07-10')),
+          findsNothing,
+        );
+
+        final row = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-summer-tournament-0',
+          ),
+        );
+        final bezel = tester.widget<Container>(
+          find
+              .ancestor(of: row, matching: find.byType(Container))
+              .first,
+        );
+        final bezelDecoration = bezel.decoration! as BoxDecoration;
+        expect(
+          bezelDecoration.color,
+          theme.accent!.withValues(alpha: 0.92),
+        );
+        expect(bezelDecoration.border, isNull);
+        final tile = tester.widget<ListTile>(row);
+        expect((tile.title! as Text).style!.color, theme.resolvedHeading);
+        expect((tile.subtitle! as Text).style!.color, theme.resolvedBody);
+
+        final todayHighlight = tester.widget<Container>(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-today-2026-07-10'),
+          ),
+        );
+        expect(
+          (todayHighlight.decoration! as BoxDecoration).color,
+          theme.accent,
+        );
+        expect(
+          (todayHighlight.decoration! as BoxDecoration).shape,
+          BoxShape.circle,
+        );
+        expect(
+          tester
+              .widget<Container>(
+                find.byKey(
+                  const ValueKey(
+                    'engine-native-calendar-agenda-today-2026-07-11',
+                  ),
+                ),
+              )
+              .decoration,
+          isNull,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets('legacy CalendarMonthGrid border ignores ambient divider color', (
     tester,
