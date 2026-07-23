@@ -729,6 +729,26 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       ),
                       onTap: () => Navigator.of(context).pop(persona.personaId),
                     ),
+                  const Divider(),
+                  ListTile(
+                    key: const ValueKey('persona-sign-in-specific-person'),
+                    leading: Icon(Icons.login, color: dialogAccent),
+                    title: Text(
+                      'Sign in as a specific person…',
+                      style: communityCard != null
+                          ? TextStyle(color: communityCard.resolvedHeading)
+                          : null,
+                    ),
+                    subtitle: Text(
+                      'Use one of this community’s individual accounts.',
+                      style: communityCard != null
+                          ? TextStyle(color: communityCard.resolvedBody)
+                          : null,
+                    ),
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pop('_sign-in-specific-person'),
+                  ),
                 ],
               ),
             ),
@@ -746,6 +766,21 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       },
     );
     if (selected == null) {
+      return;
+    }
+    if (selected == '_sign-in-specific-person') {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LoomAuthScreen(
+            authApi: _authApi,
+            communityExtensionId: community.extensionId,
+            onSignIn: () {
+              Navigator.of(context).pop();
+              if (mounted) setState(() {});
+            },
+          ),
+        ),
+      );
       return;
     }
     setState(() {
