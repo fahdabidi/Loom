@@ -152,6 +152,13 @@ void main() {
         );
         expect(_responseChip(tester, 'respond-going').selected, isTrue);
 
+        await tester.ensureVisible(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-$_fridayInstanceId-action-respond-maybe',
+            ),
+          ),
+        );
         await tester.tap(
           find.byKey(
             const ValueKey(
