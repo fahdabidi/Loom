@@ -117,6 +117,7 @@ class _EngineNativeCalendarSurfaceState
             viewerPersonaId: widget.persona.personaId,
             personaId: resolveEnginePersonaId(widget.persona.personaId),
             accent: widget.accent,
+            currentDate: widget.currentDate,
             modernTheme: widget.modernTheme,
             onInstanceChanged: changed,
             onInstanceScopedCreate: widget.onInstanceScopedCreate,
@@ -228,6 +229,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.viewerPersonaId,
     required this.personaId,
     required this.accent,
+    required this.currentDate,
     required this.modernTheme,
     required this.onInstanceChanged,
     this.onInstanceScopedCreate,
@@ -241,6 +243,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final String viewerPersonaId;
   final String personaId;
   final Color accent;
+  final DateTime Function() currentDate;
   final LoomCardTheme? modernTheme;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
