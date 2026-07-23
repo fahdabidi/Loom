@@ -540,7 +540,8 @@ class _EngineNativeCalendarContentState
           _EngineNativeMonthGrid(
             month: month,
             byDay: byDay,
-            onSelect: _selectMonthGridEntry,
+            onSelectDate: _selectDate,
+            onSelectEntry: _selectMonthGridEntry,
             modernTheme: theme,
             selectedDate: widget.presentation.selectedDate,
           ),
@@ -584,7 +585,8 @@ class _EngineNativeCalendarContentState
           _EngineNativeWeekStrip(
             selectedDate: selectedDate,
             byDay: byDay,
-            onSelect: _selectMonthGridEntry,
+            onSelectDate: _selectDate,
+            onSelectEntry: _selectMonthGridEntry,
             modernTheme: theme,
           ),
           const SizedBox(height: 8),
@@ -755,6 +757,13 @@ class _EngineNativeCalendarContentState
       _setSelectedEntry(entry);
       widget.presentation.selectedDate = entry.dateKey;
       widget.presentation.month = DateTime(entry.date.year, entry.date.month);
+      widget.presentation.scope = 'day';
+    });
+  }
+
+  void _selectDate(String dateKey) {
+    setState(() {
+      widget.presentation.selectedDate = dateKey;
       widget.presentation.scope = 'day';
     });
   }
@@ -1428,14 +1437,16 @@ class _EngineNativeMonthGrid extends StatelessWidget {
   const _EngineNativeMonthGrid({
     required this.month,
     required this.byDay,
-    required this.onSelect,
+    required this.onSelectDate,
+    required this.onSelectEntry,
     required this.modernTheme,
     required this.selectedDate,
   });
 
   final DateTime month;
   final Map<String, List<_CalendarEntry>> byDay;
-  final ValueChanged<String> onSelect;
+  final ValueChanged<String> onSelectDate;
+  final ValueChanged<String> onSelectEntry;
   final LoomCardTheme modernTheme;
   final String? selectedDate;
 
@@ -1458,43 +1469,48 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                     final dateKey = _calendarDay(date);
                     final selected = dateKey == selectedDate;
                     return Expanded(
-                      child: Container(
-                        key: ValueKey('engine-native-calendar-date-$dateKey'),
-                        constraints: const BoxConstraints(minHeight: 52),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? Color.alphaBlend(
-                                  (modernTheme.accent ?? Colors.transparent)
-                                      .withValues(alpha: 0.24),
-                                  modernTheme.resolvedFill,
-                                )
-                              : modernTheme.resolvedFill,
-                          border: Border.all(color: modernTheme.resolvedBorder),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${date.day}',
-                              style: TextStyle(
-                                color: modernTheme.resolvedHeading,
-                              ),
+                      child: InkWell(
+                        onTap: () => onSelectDate(dateKey),
+                        child: Container(
+                          key: ValueKey('engine-native-calendar-date-$dateKey'),
+                          constraints: const BoxConstraints(minHeight: 52),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? Color.alphaBlend(
+                                    (modernTheme.accent ?? Colors.transparent)
+                                        .withValues(alpha: 0.24),
+                                    modernTheme.resolvedFill,
+                                  )
+                                : modernTheme.resolvedFill,
+                            border: Border.all(
+                              color: modernTheme.resolvedBorder,
                             ),
-                            for (final entry in events)
-                              InkWell(
-                                key: ValueKey(
-                                  'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${date.day}',
+                                style: TextStyle(
+                                  color: modernTheme.resolvedHeading,
                                 ),
-                                onTap: () => onSelect(entry.identity),
-                                child: Text(
-                                  entry.title,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: modernTheme.resolvedBody,
+                              ),
+                              for (final entry in events)
+                                InkWell(
+                                  key: ValueKey(
+                                    'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                                  ),
+                                  onTap: () => onSelectEntry(entry.identity),
+                                  child: Text(
+                                    entry.title,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: modernTheme.resolvedBody,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -1511,13 +1527,15 @@ class _EngineNativeWeekStrip extends StatelessWidget {
   const _EngineNativeWeekStrip({
     required this.selectedDate,
     required this.byDay,
-    required this.onSelect,
+    required this.onSelectDate,
+    required this.onSelectEntry,
     required this.modernTheme,
   });
 
   final DateTime selectedDate;
   final Map<String, List<_CalendarEntry>> byDay;
-  final ValueChanged<String> onSelect;
+  final ValueChanged<String> onSelectDate;
+  final ValueChanged<String> onSelectEntry;
   final LoomCardTheme modernTheme;
 
   @override
@@ -1537,35 +1555,38 @@ class _EngineNativeWeekStrip extends StatelessWidget {
               final events =
                   byDay[dateKey] ?? const <_CalendarEntry>[];
               return Expanded(
-                child: Container(
-                  key: ValueKey('engine-native-calendar-week-cell-$dateKey'),
-                  constraints: const BoxConstraints(minHeight: 52),
-                  decoration: BoxDecoration(
-                    color: modernTheme.resolvedFill,
-                    border: Border.all(color: modernTheme.resolvedBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${date.day}',
-                        style: TextStyle(color: modernTheme.resolvedHeading),
-                      ),
-                      for (final entry in events)
-                        InkWell(
-                          key: ValueKey(
-                            'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
-                          ),
-                          onTap: () => onSelect(entry.identity),
-                          child: Text(
-                            entry.title,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: modernTheme.resolvedBody,
+                child: InkWell(
+                  onTap: () => onSelectDate(dateKey),
+                  child: Container(
+                    key: ValueKey('engine-native-calendar-week-cell-$dateKey'),
+                    constraints: const BoxConstraints(minHeight: 52),
+                    decoration: BoxDecoration(
+                      color: modernTheme.resolvedFill,
+                      border: Border.all(color: modernTheme.resolvedBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${date.day}',
+                          style: TextStyle(color: modernTheme.resolvedHeading),
+                        ),
+                        for (final entry in events)
+                          InkWell(
+                            key: ValueKey(
+                              'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                            ),
+                            onTap: () => onSelectEntry(entry.identity),
+                            child: Text(
+                              entry.title,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: modernTheme.resolvedBody,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

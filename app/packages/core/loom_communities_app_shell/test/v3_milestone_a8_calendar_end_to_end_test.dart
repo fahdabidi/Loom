@@ -947,6 +947,74 @@ void main() {
   );
 
   testWidgets(
+    'opens Day for empty month and week cells while entry titles select details',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr6b-day-cells', configure: _addContainerFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+
+        final emptyMonthCell = find.byKey(
+          const ValueKey('engine-native-calendar-date-2026-07-15'),
+        );
+        await tester.ensureVisible(emptyMonthCell);
+        await tester.tap(emptyMonthCell);
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+          findsOneWidget,
+        );
+        expect(find.text('Jul 15, 2026'), findsOneWidget);
+        expect(_agendaEntries(), findsNothing);
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
+        final emptyWeekCell = find.byKey(
+          const ValueKey('engine-native-calendar-week-cell-2026-07-16'),
+        );
+        await tester.ensureVisible(emptyWeekCell);
+        await tester.tap(emptyWeekCell);
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+          findsOneWidget,
+        );
+        expect(find.text('Jul 16, 2026'), findsOneWidget);
+        expect(_agendaEntries(), findsNothing);
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
+        final tuesdayEntry = find.byKey(
+          const ValueKey('engine-native-calendar-entry-event-container-tuesday-0'),
+        );
+        await tester.ensureVisible(tuesdayEntry);
+        await tester.tap(tuesdayEntry);
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+          findsOneWidget,
+        );
+        expect(find.text('Jul 14, 2026'), findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-event-container-tuesday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
     'filters declared boolean facets without affecting other bindings and aggregates scoped stats',
     (tester) async {
       final installed = (await tester.runAsync(
