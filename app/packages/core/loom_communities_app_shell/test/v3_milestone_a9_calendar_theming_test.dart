@@ -309,7 +309,7 @@ void main() {
 
         final row = find.byKey(
           const ValueKey(
-            'engine-native-calendar-agenda-summer-tournament-0',
+            'engine-native-calendar-agenda-event-summer-tournament-0',
           ),
         );
         final bezel = tester.widget<Container>(
