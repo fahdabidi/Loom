@@ -369,6 +369,33 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
   ]);
 }
 
+void _addContainerFixture(Map<String, dynamic> source) {
+  final instances =
+      (source['experience'] as Map<String, dynamic>)['workflowInstances']
+          as List<dynamic>;
+  for (final event in const <(String, String, String)>[
+    ('event-container-monday', '2026-07-13', 'Monday meetup'),
+    ('event-container-tuesday', '2026-07-14', 'Tuesday meetup'),
+    ('event-container-saturday', '2026-07-18', 'Saturday meetup'),
+    ('event-container-outside-week', '2026-07-21', 'Outside-week meetup'),
+  ]) {
+    instances.add(<String, dynamic>{
+      'instanceId': event.$1,
+      'workflowType': 'event-rsvp',
+      'currentState': 'open',
+      'createdByPersonaId': 'tabletop-organizer',
+      'instanceData': <String, dynamic>{
+        'title': event.$3,
+        'eventDate': event.$2,
+        'eventTime': '18:00',
+        'location': 'Community room',
+        'host': 'Alex Chen (Organizer)',
+        'capacity': 20,
+      },
+    });
+  }
+}
+
 void main() {
   testWidgets('projects the frozen Calendar into its native product structure', (
     tester,
@@ -813,6 +840,104 @@ void main() {
           find.byKey(
             const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
           ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'reshapes Calendar containers for Week, Day, Month, and Pending scopes',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr6a-containers', configure: _addContainerFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+
+        await tester.tap(
+          find.byKey(
+            const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
+          ),
+        );
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-week-strip')),
+          findsOneWidget,
+        );
+        final weekCells = <String>[
+          '2026-07-13',
+          '2026-07-14',
+          '2026-07-15',
+          '2026-07-16',
+          '2026-07-17',
+          '2026-07-18',
+          '2026-07-19',
+        ];
+        for (final date in weekCells) {
+          expect(
+            find.byKey(ValueKey('engine-native-calendar-week-cell-$date')),
+            findsOneWidget,
+          );
+        }
+        expect(
+          _keyPrefix('engine-native-calendar-week-cell-').evaluate(),
+          hasLength(7),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-day')));
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-week-strip')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-month')));
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-week-strip')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
+          findsNothing,
+        );
+
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-pending')));
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-week-strip')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-day-header')),
           findsNothing,
         );
       } finally {

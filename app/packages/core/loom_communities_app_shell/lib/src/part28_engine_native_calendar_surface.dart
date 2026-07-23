@@ -282,9 +282,8 @@ class _EngineNativeCalendarContentState
         ? sameInstance.first
         : entries.first;
     final changed = widget.presentation.selectedIdentity != next.identity;
-    final dateChanged = widget.presentation.selectedDate != next.dateKey;
     _setSelectedEntry(next);
-    if (changed || dateChanged || widget.presentation.selectedDate == null) {
+    if (changed || widget.presentation.selectedDate == null) {
       widget.presentation.selectedDate = next.dateKey;
       widget.presentation.month = DateTime(next.date.year, next.date.month);
     }
@@ -488,6 +487,9 @@ class _EngineNativeCalendarContentState
     final month =
         widget.presentation.month ??
         DateTime(selected.date.year, selected.date.month);
+    final selectedDate =
+        DateTime.tryParse(widget.presentation.selectedDate ?? '') ??
+        DateTime.now();
     final scopedEntries = _entriesForScope(entries);
     final facets = _facetsForEntries(scopedEntries);
     final agendaEntries = _entriesForActiveFacets(scopedEntries);
@@ -501,82 +503,100 @@ class _EngineNativeCalendarContentState
       key: const ValueKey('engine-native-calendar-root'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          key: const ValueKey('engine-native-calendar-month-navigation'),
-          children: [
-            IconButton(
-              key: const ValueKey('engine-native-calendar-previous-month'),
-              onPressed: () => setState(
-                () => widget.presentation.month = DateTime(
-                  month.year,
-                  month.month - 1,
-                ),
-              ),
-              icon: Icon(Icons.chevron_left, color: theme.resolvedHeading),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  '${_monthLabel(month.month)} ${month.year}',
-                  style: TextStyle(color: theme.resolvedHeading),
-                ),
-              ),
-            ),
-            IconButton(
-              key: const ValueKey('engine-native-calendar-next-month'),
-              onPressed: () => setState(
-                () => widget.presentation.month = DateTime(
-                  month.year,
-                  month.month + 1,
-                ),
-              ),
-              icon: Icon(Icons.chevron_right, color: theme.resolvedHeading),
-            ),
-          ],
-        ),
-        _EngineNativeMonthGrid(
-          month: month,
-          byDay: byDay,
-          onSelect: _selectMonthGridEntry,
-          modernTheme: theme,
-          selectedDate: widget.presentation.selectedDate,
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          key: const ValueKey('engine-native-calendar-date-strip'),
-          height: 44,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
+        if (widget.presentation.scope == 'month') ...[
+          Row(
+            key: const ValueKey('engine-native-calendar-month-navigation'),
             children: [
-              for (final day in dates)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    key: ValueKey('engine-native-calendar-date-strip-$day'),
-                    label: Text(
-                      day,
-                      style: TextStyle(color: theme.resolvedBody),
-                    ),
-                    backgroundColor: theme.resolvedFill,
-                    selectedColor: (theme.accent ?? widget.accent).withValues(
-                      alpha: 0.30,
-                    ),
-                    selected: day == widget.presentation.selectedDate,
-                    onSelected: (_) => setState(() {
-                      final entry = byDay[day]!.first;
-                      widget.presentation.selectedDate = day;
-                      _setSelectedEntry(entry);
-                      widget.presentation.month = DateTime(
-                        entry.date.year,
-                        entry.date.month,
-                      );
-                    }),
+              IconButton(
+                key: const ValueKey('engine-native-calendar-previous-month'),
+                onPressed: () => setState(
+                  () => widget.presentation.month = DateTime(
+                    month.year,
+                    month.month - 1,
                   ),
                 ),
+                icon: Icon(Icons.chevron_left, color: theme.resolvedHeading),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    '${_monthLabel(month.month)} ${month.year}',
+                    style: TextStyle(color: theme.resolvedHeading),
+                  ),
+                ),
+              ),
+              IconButton(
+                key: const ValueKey('engine-native-calendar-next-month'),
+                onPressed: () => setState(
+                  () => widget.presentation.month = DateTime(
+                    month.year,
+                    month.month + 1,
+                  ),
+                ),
+                icon: Icon(Icons.chevron_right, color: theme.resolvedHeading),
+              ),
             ],
           ),
-        ),
-        const SizedBox(height: 8),
+          _EngineNativeMonthGrid(
+            month: month,
+            byDay: byDay,
+            onSelect: _selectMonthGridEntry,
+            modernTheme: theme,
+            selectedDate: widget.presentation.selectedDate,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            key: const ValueKey('engine-native-calendar-date-strip'),
+            height: 44,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (final day in dates)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      key: ValueKey('engine-native-calendar-date-strip-$day'),
+                      label: Text(
+                        day,
+                        style: TextStyle(color: theme.resolvedBody),
+                      ),
+                      backgroundColor: theme.resolvedFill,
+                      selectedColor: (theme.accent ?? widget.accent).withValues(
+                        alpha: 0.30,
+                      ),
+                      selected: day == widget.presentation.selectedDate,
+                      onSelected: (_) => setState(() {
+                        final entry = byDay[day]!.first;
+                        widget.presentation.selectedDate = day;
+                        _setSelectedEntry(entry);
+                        widget.presentation.month = DateTime(
+                          entry.date.year,
+                          entry.date.month,
+                        );
+                      }),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ] else if (widget.presentation.scope == 'week') ...[
+          _EngineNativeWeekStrip(
+            selectedDate: selectedDate,
+            byDay: byDay,
+            onSelect: _selectMonthGridEntry,
+            modernTheme: theme,
+          ),
+          const SizedBox(height: 8),
+        ] else if (widget.presentation.scope == 'day') ...[
+          _EngineNativeDayHeader(
+            date: selectedDate,
+            modernTheme: theme,
+            onPrevious: () => _moveSelectedDay(-1),
+            onNext: () => _moveSelectedDay(1),
+          ),
+          const SizedBox(height: 8),
+        ],
         Row(
           children: [
             for (final scope in const <(String, String)>[
@@ -736,6 +756,17 @@ class _EngineNativeCalendarContentState
       widget.presentation.selectedDate = entry.dateKey;
       widget.presentation.month = DateTime(entry.date.year, entry.date.month);
       widget.presentation.scope = 'day';
+    });
+  }
+
+  void _moveSelectedDay(int offset) {
+    final selectedDate =
+        DateTime.tryParse(widget.presentation.selectedDate ?? '') ??
+        DateTime.now();
+    final nextDate = selectedDate.add(Duration(days: offset));
+    setState(() {
+      widget.presentation.selectedDate = _calendarDay(nextDate);
+      widget.presentation.month = DateTime(nextDate.year, nextDate.month);
     });
   }
 }
@@ -1474,6 +1505,114 @@ class _EngineNativeMonthGrid extends StatelessWidget {
       ],
     );
   }
+}
+
+class _EngineNativeWeekStrip extends StatelessWidget {
+  const _EngineNativeWeekStrip({
+    required this.selectedDate,
+    required this.byDay,
+    required this.onSelect,
+    required this.modernTheme,
+  });
+
+  final DateTime selectedDate;
+  final Map<String, List<_CalendarEntry>> byDay;
+  final ValueChanged<String> onSelect;
+  final LoomCardTheme modernTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    // Keep the month grid's Monday-first column convention.
+    final start = selectedDate.subtract(
+      Duration(days: selectedDate.weekday - 1),
+    );
+    return Row(
+      key: const ValueKey('engine-native-calendar-week-strip'),
+      children: [
+        for (var weekday = 0; weekday < DateTime.daysPerWeek; weekday++)
+          Builder(
+            builder: (context) {
+              final date = start.add(Duration(days: weekday));
+              final dateKey = _calendarDay(date);
+              final events =
+                  byDay[dateKey] ?? const <_CalendarEntry>[];
+              return Expanded(
+                child: Container(
+                  key: ValueKey('engine-native-calendar-week-cell-$dateKey'),
+                  constraints: const BoxConstraints(minHeight: 52),
+                  decoration: BoxDecoration(
+                    color: modernTheme.resolvedFill,
+                    border: Border.all(color: modernTheme.resolvedBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${date.day}',
+                        style: TextStyle(color: modernTheme.resolvedHeading),
+                      ),
+                      for (final entry in events)
+                        InkWell(
+                          key: ValueKey(
+                            'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                          ),
+                          onTap: () => onSelect(entry.identity),
+                          child: Text(
+                            entry.title,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: modernTheme.resolvedBody,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _EngineNativeDayHeader extends StatelessWidget {
+  const _EngineNativeDayHeader({
+    required this.date,
+    required this.modernTheme,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final DateTime date;
+  final LoomCardTheme modernTheme;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    key: const ValueKey('engine-native-calendar-day-header'),
+    children: [
+      IconButton(
+        key: const ValueKey('engine-native-calendar-previous-day'),
+        onPressed: onPrevious,
+        icon: Icon(Icons.chevron_left, color: modernTheme.resolvedHeading),
+      ),
+      Expanded(
+        child: Center(
+          child: Text(
+            '${_monthLabel(date.month)} ${date.day}, ${date.year}',
+            style: TextStyle(color: modernTheme.resolvedHeading),
+          ),
+        ),
+      ),
+      IconButton(
+        key: const ValueKey('engine-native-calendar-next-day'),
+        onPressed: onNext,
+        icon: Icon(Icons.chevron_right, color: modernTheme.resolvedHeading),
+      ),
+    ],
+  );
 }
 
 String _calendarDay(DateTime date) =>
