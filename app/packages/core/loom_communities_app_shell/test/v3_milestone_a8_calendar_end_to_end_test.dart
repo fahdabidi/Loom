@@ -467,6 +467,13 @@ void main() {
         const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
       );
       expect(group, findsOneWidget);
+      final agendaDate = find.descendant(
+        of: group,
+        matching: find.byKey(
+          const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
+        ),
+      );
+      expect(agendaDate, findsOneWidget);
       expect(
         find.descendant(
           of: group,
@@ -489,6 +496,20 @@ void main() {
       expect(
         ((rows[1].widget as ListTile).title! as Text).data,
         'Friday game night',
+      );
+      expect(
+        tester.getTopLeft(agendaDate).dx,
+        lessThan(
+          tester
+              .getTopLeft(
+                find.byKey(
+                  const ValueKey(
+                    'engine-native-calendar-agenda-event-summer-tournament-0',
+                  ),
+                ),
+              )
+              .dx,
+        ),
       );
 
       await tester.tap(
@@ -555,6 +576,29 @@ void main() {
           ),
         ),
         findsOneWidget,
+      );
+      final fridayDetail = find.byKey(
+        const ValueKey(
+          'engine-native-calendar-selected-detail-event-friday-game-night-0',
+        ),
+      );
+      expect(
+        find.descendant(of: group, matching: fridayDetail),
+        findsOneWidget,
+      );
+      expect(
+        tester.getTopLeft(fridayDetail).dy,
+        greaterThan(
+          tester
+              .getTopLeft(
+                find.byKey(
+                  const ValueKey(
+                    'engine-native-calendar-agenda-event-friday-game-night-0',
+                  ),
+                ),
+              )
+              .dy,
+        ),
       );
       expect(find.text('11 / 20 going'), findsOneWidget);
       expect(
@@ -799,11 +843,34 @@ void main() {
         );
         expect(find.text('Gathering attendees: 10'), findsOneWidget);
 
+        final tuesday = find.byKey(
+          const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+        );
+        await tester.ensureVisible(tuesday);
+        await tester.tap(tuesday);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-gathering-tuesday-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+
         await tester.tap(featured);
         await tester.pump();
         expect(
           find.byKey(
             const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-gathering-tuesday-0',
+            ),
           ),
           findsNothing,
         );

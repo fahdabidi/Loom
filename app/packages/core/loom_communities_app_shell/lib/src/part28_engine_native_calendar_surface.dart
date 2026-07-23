@@ -638,48 +638,66 @@ class _EngineNativeCalendarContentState
               color: theme.resolvedFill,
               border: Border.all(color: theme.resolvedBorder),
             ),
-            child: Column(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  day,
-                  key: ValueKey('engine-native-calendar-agenda-date-$day'),
-                  style: TextStyle(color: theme.resolvedHeading),
-                ),
-                for (final entry in byDay[day]!)
-                  ListTile(
-                    key: ValueKey(
-                      'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                SizedBox(
+                  width: 96,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      day,
+                      key: ValueKey('engine-native-calendar-agenda-date-$day'),
+                      style: TextStyle(color: theme.resolvedHeading),
                     ),
-                    selected:
-                        entry.identity == widget.presentation.selectedIdentity,
-                    title: Text(
-                      entry.title,
-                      style: TextStyle(color: theme.resolvedBody),
-                    ),
-                    subtitle: Text(
-                      entry.time,
-                      style: TextStyle(color: theme.resolvedBody),
-                    ),
-                    onTap: () => _selectEntry(entry.identity),
                   ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      for (final entry in byDay[day]!) ...[
+                        ListTile(
+                          key: ValueKey(
+                            'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                          ),
+                          selected:
+                              entry.identity ==
+                              widget.presentation.selectedIdentity,
+                          title: Text(
+                            entry.title,
+                            style: TextStyle(color: theme.resolvedBody),
+                          ),
+                          subtitle: Text(
+                            entry.time,
+                            style: TextStyle(color: theme.resolvedBody),
+                          ),
+                          onTap: () => _selectEntry(entry.identity),
+                        ),
+                        if (entry.identity ==
+                            widget.presentation.selectedIdentity)
+                          EngineNativeArchetypeCard(
+                            contentKey: ValueKey(
+                              'engine-native-calendar-selected-detail-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                            ),
+                            resolved: entry.resolved,
+                            engine: widget.engine,
+                            personaId: widget.personaId,
+                            accent: widget.accent,
+                            onInstanceChanged: widget.onInstanceChanged,
+                            onInstanceScopedCreate:
+                                widget.onInstanceScopedCreate,
+                            modernTheme: widget.modernTheme,
+                            displayContext: 'detail',
+                            showEditors: false,
+                            visibleFieldKeys: _detailFieldKeys(entry),
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        EngineNativeArchetypeCard(
-          contentKey: ValueKey(
-            'engine-native-calendar-selected-detail-${selected.instanceId}-${selected.resolved.definitionBindingIndex}',
-          ),
-          resolved: selected.resolved,
-          engine: widget.engine,
-          personaId: widget.personaId,
-          accent: widget.accent,
-          onInstanceChanged: widget.onInstanceChanged,
-          onInstanceScopedCreate: widget.onInstanceScopedCreate,
-          modernTheme: widget.modernTheme,
-          displayContext: 'detail',
-          showEditors: false,
-          visibleFieldKeys: _detailFieldKeys(selected),
-        ),
       ],
     );
   }
