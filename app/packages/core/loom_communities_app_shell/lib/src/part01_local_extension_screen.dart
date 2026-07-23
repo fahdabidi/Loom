@@ -165,6 +165,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   final Map<String, String> _selectedResponseByWorkflowId = {};
   final Set<String> _reminderEnabledWorkflowIds = {};
   final Map<String, String> _selectedTabIdByPersonaId = {};
+  final Set<String> _heroDismissedForCommunity = {};
   final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
   final Map<String, GlobalKey> _workflowSurfaceKeysById = {};
   WorkflowInstance? _focusedInstanceForActiveTab;
@@ -1007,63 +1008,69 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Builder(
-              builder: (context) {
-                final bannerTheme = shellSpec.theme.usesModernCardTheme
-                    ? shellSpec.theme.communityCard
-                    : null;
-                final bannerFill =
-                    bannerTheme?.resolvedFill ??
-                    Colors.white.withValues(alpha: 0.10);
-                final bannerBorder =
-                    bannerTheme?.resolvedBorder ??
-                    Colors.white.withValues(alpha: 0.22);
-                final bannerForeground =
-                    bannerTheme?.resolvedBody ?? Colors.white;
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: bannerFill,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: bannerBorder),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        Icon(Icons.campaign_outlined, color: bannerForeground),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'No sponsored message right now.',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: bannerForeground,
+            if (!_heroDismissedForCommunity.contains(community.communityId)) ...[
+              Builder(
+                builder: (context) {
+                  final bannerTheme = shellSpec.theme.usesModernCardTheme
+                      ? shellSpec.theme.communityCard
+                      : null;
+                  final bannerFill =
+                      bannerTheme?.resolvedFill ??
+                      Colors.white.withValues(alpha: 0.10);
+                  final bannerBorder =
+                      bannerTheme?.resolvedBorder ??
+                      Colors.white.withValues(alpha: 0.22);
+                  final bannerForeground =
+                      bannerTheme?.resolvedBody ?? Colors.white;
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: bannerFill,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: bannerBorder),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.campaign_outlined,
+                            color: bannerForeground,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'No sponsored message right now.',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: bannerForeground,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            Builder(
-              builder: (context) {
-                final heroTheme = shellSpec.theme.usesModernCardTheme
-                    ? shellSpec.theme.communityCard
-                    : null;
-                final heroFill = heroTheme?.resolvedFill ?? accent;
-                final heroBorder = heroTheme?.resolvedBorder;
-                final heroShadow =
-                    heroTheme?.resolvedShadow ?? accent.withValues(alpha: 0.24);
-                final heroHeading = heroTheme?.resolvedHeading ?? Colors.white;
-                final heroBody =
-                    heroTheme?.resolvedBody ??
-                    Colors.white.withValues(alpha: 0.92);
-                final heroAvatarBg = heroTheme != null
-                    ? heroTheme.resolvedBorder.withValues(alpha: 0.18)
-                    : Colors.white.withValues(alpha: 0.18);
-                return DecoratedBox(
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              Builder(
+                builder: (context) {
+                  final heroTheme = shellSpec.theme.usesModernCardTheme
+                      ? shellSpec.theme.communityCard
+                      : null;
+                  final heroFill = heroTheme?.resolvedFill ?? accent;
+                  final heroBorder = heroTheme?.resolvedBorder;
+                  final heroShadow =
+                      heroTheme?.resolvedShadow ??
+                      accent.withValues(alpha: 0.24);
+                  final heroHeading =
+                      heroTheme?.resolvedHeading ?? Colors.white;
+                  final heroBody =
+                      heroTheme?.resolvedBody ??
+                      Colors.white.withValues(alpha: 0.92);
+                  final heroAvatarBg = heroTheme != null
+                      ? heroTheme.resolvedBorder.withValues(alpha: 0.18)
+                      : Colors.white.withValues(alpha: 0.18);
+                  return DecoratedBox(
                   decoration: BoxDecoration(
                     color: heroFill,
                     borderRadius: BorderRadius.circular(6),
@@ -1126,6 +1133,19 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                                 ],
                               ),
                             ),
+                            IconButton(
+                              key: ValueKey(
+                                'community-hero-dismiss-${community.communityId}',
+                              ),
+                              tooltip: 'Dismiss community information',
+                              onPressed: () => setState(() {
+                                _heroDismissedForCommunity.add(
+                                  community.communityId,
+                                );
+                              }),
+                              icon: const Icon(Icons.close, size: 28),
+                              color: heroHeading,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 18),
@@ -1157,10 +1177,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       ],
                     ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 22),
+                  );
+                },
+              ),
+              const SizedBox(height: 22),
+            ],
             _SelectedTabHeader(
               tab: selectedTab,
               accent: accent,
