@@ -878,6 +878,8 @@ IconData _iconForName(String? iconName) {
       return Icons.title;
     case 'category_outlined':
       return Icons.category_outlined;
+    case 'inventory_2_outlined':
+      return Icons.inventory_2_outlined;
     case 'verified_outlined':
       return Icons.verified_outlined;
     case 'person_outline':
