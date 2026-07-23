@@ -656,22 +656,36 @@ class _EngineNativeCalendarContentState
                   child: Column(
                     children: [
                       for (final entry in byDay[day]!) ...[
-                        ListTile(
-                          key: ValueKey(
-                            'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            color: (theme.accent ?? widget.accent).withValues(
+                              alpha: 0.12,
+                            ),
+                            border: Border.all(
+                              color: (theme.accent ?? widget.accent)
+                                  .withValues(alpha: 0.4),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          selected:
-                              entry.identity ==
-                              widget.presentation.selectedIdentity,
-                          title: Text(
-                            entry.title,
-                            style: TextStyle(color: theme.resolvedBody),
+                          child: ListTile(
+                            key: ValueKey(
+                              'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                            ),
+                            selected:
+                                entry.identity ==
+                                widget.presentation.selectedIdentity,
+                            title: Text(
+                              entry.title,
+                              style: TextStyle(color: theme.resolvedBody),
+                            ),
+                            subtitle: Text(
+                              entry.time,
+                              style: TextStyle(color: theme.resolvedBody),
+                            ),
+                            onTap: () => _selectEntry(entry.identity),
                           ),
-                          subtitle: Text(
-                            entry.time,
-                            style: TextStyle(color: theme.resolvedBody),
-                          ),
-                          onTap: () => _selectEntry(entry.identity),
                         ),
                         if (entry.identity ==
                             widget.presentation.selectedIdentity)
