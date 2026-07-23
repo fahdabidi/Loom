@@ -233,6 +233,13 @@ void main() {
           ),
         ),
       );
+      await tester.ensureVisible(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        ),
+      );
       await tester.tap(
         find.byKey(
           const ValueKey(

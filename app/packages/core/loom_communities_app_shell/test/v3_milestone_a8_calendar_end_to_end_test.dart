@@ -248,7 +248,8 @@ Finder _calendarOrdinal(int ordinal) => find.byWidgetPredicate(
 );
 
 void _addScopedCalendarFixture(Map<String, dynamic> source) {
-  final definitions = source['workflowDefinitions'] as Map<String, dynamic>;
+  final experience = source['experience'] as Map<String, dynamic>;
+  final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
   definitions['neighborhood-gathering'] = <String, dynamic>{
     'initialState': 'scheduled',
     'states': <String, dynamic>{
@@ -292,7 +293,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'personaId': <String, dynamic>{'type': 'text', 'storage': 'inline'},
     },
   };
-  final instances = source['workflowInstances'] as List<dynamic>;
+  final instances = experience['workflowInstances'] as List<dynamic>;
   instances.addAll(<dynamic>[
     <String, dynamic>{
       'instanceId': 'gathering-sunday',
@@ -514,6 +515,13 @@ void main() {
         isTrue,
       );
 
+      await tester.ensureVisible(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        ),
+      );
       await tester.tap(
         find.byKey(
           const ValueKey(
@@ -542,6 +550,13 @@ void main() {
       expect(
         find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
         findsOneWidget,
+      );
+      await tester.ensureVisible(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-summer-tournament-0',
+          ),
+        ),
       );
       await tester.tap(
         find.byKey(
@@ -1134,6 +1149,13 @@ void main() {
         await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
         await _pumpUntil(
           tester,
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-summer-tournament-0',
+            ),
+          ),
+        );
+        await tester.ensureVisible(
           find.byKey(
             const ValueKey(
               'engine-native-calendar-agenda-event-summer-tournament-0',
