@@ -849,9 +849,10 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     // truth after every refresh, so always adopt its current instance.
     _instance = widget.instance;
 
-    // Reload available actions only when their evaluation context changes.
-    // Refreshing event data alone must not reset an in-flight action request.
-    if (oldWidget.personaId != widget.personaId ||
+    // Available transitions depend on the response data held by the instance,
+    // so reload after a dispatcher refresh as well as a context change.
+    if (oldWidget.instance != widget.instance ||
+        oldWidget.personaId != widget.personaId ||
         oldWidget.machine != widget.machine ||
         oldWidget.engine != widget.engine) {
       _actionRequest++;
