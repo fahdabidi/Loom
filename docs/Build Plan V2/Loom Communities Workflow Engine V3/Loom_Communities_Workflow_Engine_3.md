@@ -312,6 +312,27 @@ schedule/agenda view):**
   density, grid-then-list vertical composition) can actually confirm. A walkthrough that only proves the
   RSVP actions still work would miss the actual point of this direction.
 
+**CALR.5 milestone breakdown (added 2026-07-22, per §5's "one concern per milestone" sizing rule).**
+Grounded by reading the current Calendar surface (`part28_engine_native_calendar_surface.dart:360-519`)
+directly rather than assuming: the month grid, a horizontal date-strip, and a chronological
+date-grouped agenda list (slim `ListTile` title+time rows) already exist — but there is **no**
+Day/Week/Pending timeframe scoping (only "whatever month is selected" is ever shown), **no**
+`responseTable`/`filterableFacets` consumption anywhere in the App Shell (both are already fully parsed
+and validator-checked — `workflow_validator.dart:243-291` — and already declared on the frozen fixture's
+`event-rsvp` binding, lines 148-157 — this is pure App-Shell consumption work, no JSON/spec change
+needed), and the "selected" full detail card always renders once at the fixed bottom of the whole list
+(`EngineNativeArchetypeCard` at line 489) rather than expanding in place under the tapped slim row, so
+the current layout does not yet match the Google Calendar date-rail/slim-card reference. No frozen-spec
+edits required for any of the four milestones below — only `part28_engine_native_calendar_surface.dart`
+and its test file are in scope.
+
+| # | Milestone | Depends on | Status |
+|---|---|---|---|
+| CALR.5a | **Timeframe scope control + generic `responseTable` resolution.** Add a Day/Week/Month/Pending segmented control above the agenda list. Month = today's existing behavior (unchanged). Day = only entries on `selectedDate`. Week = the 7-day window containing `selectedDate`. Pending = a new, fully generic helper that reads the active render binding's `responseTable` (`workflowType`/`eventField`/`pendingStates` — never hardcode `event-rsvp-response`'s field names) and keeps only events where the current persona's own row is in a pending state — proven with a second, differently-shaped synthetic `responseTable` fixture in the test, not just the real one, so it's provably generic rather than coincidentally correct for one shape. Month-grid date-cell tap sets scope to Day (currently it only calls `_selectEntry`, which selects but never re-scopes — this is the fix that makes "date-cell tap → Day view" from the milestone's original one-line description actually true). | CALR.1-CALR.3b, CALR.4h, CALR.4b | `[ ]` Not started |
+| CALR.5b | **`filterableFacets` UI.** Render a row of boolean filter chips + numeric stat labels from the active binding's `filterableFacets[]` (formula-backed, e.g. `isFull`/`hasWaitlist`/`goingCount` in the real fixture — but read generically from whatever the binding declares, same genericity bar as 5a's `responseTable` work). Toggling a boolean facet narrows the agenda list (computed per-instance via the existing formula evaluator, no new formula vocabulary needed); a non-boolean facet renders as a read-only stat, not a toggle. | CALR.5a | `[ ]` Not started |
+| CALR.5c | **Google Calendar-style layout + accordion expand-in-place.** Restructure the per-day agenda group into the reference layout: date rendered once on the left, one or more slim event cards stacked to its right for that date (not the current vertical date-header-then-list-below stack). Tapping a slim card expands it in place to the existing `_EventRsvpDetailCard`/`EngineNativeArchetypeCard` (collapsing any other expanded card), replacing the current single fixed "selected" detail card pinned to the bottom of the whole list. Reuses the exact same detail card widget already built in CALR.2 — no new detail UI. | CALR.5a, CALR.5b | `[ ]` Not started |
+| CALR.5d | **Live emulator walkthrough + full regression**, per §7's Verification Standard (full-tab card audit, screen-validation evidence matrix, random regression re-check) — **plus the side-by-side screenshot comparison against the three Google Calendar reference screenshots this milestone's own layout direction requires** (date-rail placement, slim-card density, grid-then-list vertical composition), not just a functional exercise of Day/Week/Month/Pending and the RSVP actions. Exercises the full acceptance methodology: create randomized events as organizer → switch to a real individual member account (CALR.4b) → RSVP → verify correct Day/Week/Month/Pending scoping and filterableFacets narrowing, live. | CALR.5a, CALR.5b, CALR.5c | `[ ]` Not started |
+
 ## 1e. App Shell milestones (outside the Calendar-only CALR scope)
 
 | # | Milestone | Depends on | Status |
