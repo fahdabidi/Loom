@@ -116,7 +116,7 @@ Future<void> _openFridayDetail(WidgetTester tester) async {
   await tester.tap(agenda);
   await _pumpUntil(
     tester,
-    find.byKey(ValueKey('event-rsvp-card-$_fridayInstanceId')),
+    find.byKey(const ValueKey('event-rsvp-card-$_fridayInstanceId')),
   );
   await _settle(tester);
 }
@@ -143,7 +143,7 @@ void main() {
         await _openFridayDetail(tester);
 
         expect(
-          find.byKey(ValueKey('event-rsvp-error-$_fridayInstanceId')),
+          find.byKey(const ValueKey('event-rsvp-error-$_fridayInstanceId')),
           findsNothing,
         );
         expect(
@@ -154,7 +154,9 @@ void main() {
 
         await tester.tap(
           find.byKey(
-            ValueKey('event-rsvp-$_fridayInstanceId-action-respond-maybe'),
+            const ValueKey(
+              'event-rsvp-$_fridayInstanceId-action-respond-maybe',
+            ),
           ),
         );
         await _settle(tester);
@@ -164,7 +166,7 @@ void main() {
         await _openFridayDetail(tester);
 
         expect(
-          find.byKey(ValueKey('event-rsvp-error-$_fridayInstanceId')),
+          find.byKey(const ValueKey('event-rsvp-error-$_fridayInstanceId')),
           findsNothing,
         );
         expect(
