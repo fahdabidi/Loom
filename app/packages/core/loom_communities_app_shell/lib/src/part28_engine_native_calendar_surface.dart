@@ -582,6 +582,12 @@ class _EngineNativeCalendarContentState
           ),
           const SizedBox(height: 8),
         ] else if (widget.presentation.scope == 'week') ...[
+          _EngineNativeWeekHeader(
+            date: selectedDate,
+            modernTheme: theme,
+            onPrevious: () => _moveSelectedWeek(-1),
+            onNext: () => _moveSelectedWeek(1),
+          ),
           _EngineNativeWeekStrip(
             selectedDate: selectedDate,
             byDay: byDay,
@@ -773,6 +779,17 @@ class _EngineNativeCalendarContentState
         DateTime.tryParse(widget.presentation.selectedDate ?? '') ??
         DateTime.now();
     final nextDate = selectedDate.add(Duration(days: offset));
+    setState(() {
+      widget.presentation.selectedDate = _calendarDay(nextDate);
+      widget.presentation.month = DateTime(nextDate.year, nextDate.month);
+    });
+  }
+
+  void _moveSelectedWeek(int offset) {
+    final selectedDate =
+        DateTime.tryParse(widget.presentation.selectedDate ?? '') ??
+        DateTime.now();
+    final nextDate = selectedDate.add(Duration(days: offset * 7));
     setState(() {
       widget.presentation.selectedDate = _calendarDay(nextDate);
       widget.presentation.month = DateTime(nextDate.year, nextDate.month);
@@ -1600,6 +1617,49 @@ class _EngineNativeWeekStrip extends StatelessWidget {
               );
             },
           ),
+      ],
+    );
+  }
+}
+
+class _EngineNativeWeekHeader extends StatelessWidget {
+  const _EngineNativeWeekHeader({
+    required this.date,
+    required this.modernTheme,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final DateTime date;
+  final LoomCardTheme modernTheme;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final start = date.subtract(Duration(days: date.weekday - 1));
+    final end = start.add(const Duration(days: 6));
+    return Row(
+      key: const ValueKey('engine-native-calendar-week-navigation'),
+      children: [
+        IconButton(
+          key: const ValueKey('engine-native-calendar-previous-week'),
+          onPressed: onPrevious,
+          icon: Icon(Icons.chevron_left, color: modernTheme.resolvedHeading),
+        ),
+        Expanded(
+          child: Center(
+            child: Text(
+              '${_monthLabel(start.month)} ${start.day} – ${_monthLabel(end.month)} ${end.day}, ${end.year}',
+              style: TextStyle(color: modernTheme.resolvedHeading),
+            ),
+          ),
+        ),
+        IconButton(
+          key: const ValueKey('engine-native-calendar-next-week'),
+          onPressed: onNext,
+          icon: Icon(Icons.chevron_right, color: modernTheme.resolvedHeading),
+        ),
       ],
     );
   }

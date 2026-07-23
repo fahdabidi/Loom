@@ -948,6 +948,88 @@ void main() {
     },
   );
 
+  testWidgets('navigates Week by full weeks with native previous and next buttons', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('calr7a-week-navigation', configure: _addContainerFixture),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+      );
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
+        ),
+      );
+      await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-previous-week')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-next-week')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('engine-native-calendar-next-week')),
+      );
+      await tester.pump();
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+        ),
+        findsNothing,
+      );
+      for (final date in <String>[
+        '2026-07-20',
+        '2026-07-21',
+        '2026-07-22',
+        '2026-07-23',
+        '2026-07-24',
+        '2026-07-25',
+        '2026-07-26',
+      ]) {
+        expect(
+          find.byKey(ValueKey('engine-native-calendar-week-cell-$date')),
+          findsOneWidget,
+        );
+      }
+
+      await tester.tap(
+        find.byKey(const ValueKey('engine-native-calendar-previous-week')),
+      );
+      await tester.pump();
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-week-cell-2026-07-20'),
+        ),
+        findsNothing,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
   testWidgets(
     'opens Day for empty month and week cells while entry titles select details',
     (tester) async {
