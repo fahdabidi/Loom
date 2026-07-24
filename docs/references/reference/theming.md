@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-24
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_communities_app_shell/lib/src/part17_theme_tokens.dart
@@ -80,3 +80,50 @@ unrelated ambient `ThemeData` colors.
   that remains distinct from the resolved unselected fill.
 - Legacy `CalendarMonthGrid` MUST use the resolved theme for its label,
   weekday header, cells, day number, event title, and border.
+
+## 6. `theme.calendar.dateRail` — configurable agenda date rail (PROPOSED, not yet implemented)
+
+⚠️ See `spec-version.json`'s `proposedNotImplemented.calendarDateRailBinding`. Written ahead of the App
+Shell code that will consume it, same convention as `styleField`/`responseTableBinding`.
+
+The Calendar agenda row's date rail (the small box showing which day a row belongs to) is hardcoded
+today to exactly two pieces — a weekday abbreviation over a circle-highlighted day number. A community
+may instead declare `theme.calendar.dateRail.entries`, an ordered list of small visual pieces to render
+top-to-bottom:
+
+```jsonc
+"theme": {
+  "calendar": {
+    "dateRail": {
+      "entries": [
+        { "kind": "dateToken", "token": "weekdayAbbrev", "style": "label" },
+        { "kind": "dateToken", "token": "dayOfMonth", "style": "circleHighlight", "colorSource": "accent" },
+        { "kind": "formula", "formula": "count(dayInstances)", "style": "badge", "colorSource": "styleField" }
+      ]
+    }
+  }
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `kind` | `"dateToken"` \| `"formula"` | **yes** | Where this entry's value comes from |
+| `token` | string | required when `kind: "dateToken"` | One of `weekdayAbbrev`, `dayOfMonth`, `monthAbbrev`, `year` — pure calendar arithmetic, not community data, so this is a small fixed vocabulary |
+| `formula` | string | required when `kind: "formula"` | Any expression from the existing computation model (see formulas.md), evaluated over the set of instances landing on that day (`dayInstances`) |
+| `style` | `"label"` \| `"circleHighlight"` \| `"badge"` | **yes** | Fixed render primitive — how this entry paints |
+| `colorSource` | `"accent"` \| `"styleField"` | no (default `"accent"`) | `"accent"` is today's flat behavior; `"styleField"` reuses the CALR.9b style-slot palette (`stylePaletteFrom`) so the rail's color is community-configurable too |
+
+**Closed-primitives/open-composition split**, the same relationship formula *functions* have to formula
+*composition*: `kind`/`token`/`style` are small fixed vocabularies (calendar arithmetic and render
+primitives genuinely can't be community-authored), but which entries appear, their data source, their
+order, and their color are all fully JSON-driven — a community can show anything expressible as a
+formula over that day's instances with **zero new App Shell code**.
+
+**Default and back-compat:** omitting `theme.calendar.dateRail` entirely preserves exactly today's
+behavior — equivalent to `entries: [{kind: dateToken, token: weekdayAbbrev, style: label}, {kind:
+dateToken, token: dayOfMonth, style: circleHighlight, colorSource: accent}]`. Zero behavior change for
+every community that doesn't opt in.
+
+NOT YET IMPLEMENTED: any parsing of this key into `LoomCardTheme`/the theme cascade, App Shell rendering
+of it, or validator coverage (proposed rules: `dangling_date_rail_formula`, `unknown_date_rail_token`,
+`unknown_date_rail_style`).

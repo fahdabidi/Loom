@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-17
+last_verified: 2026-07-24
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -18,6 +18,12 @@ transition **genuinely refuse** (throw). It is not a UI hint. The UI additionall
 `availableTransitionsAsync` to hide unavailable buttons, but the *security property* lives in the engine.
 
 **Semantics:** all present guard keys are **AND**-ed. An absent/empty guard means "anyone, always".
+
+⚠️ **One documented exception, at one specific call site.** `states[].editGuard` (workflow-grammar.md,
+PROPOSED) reuses this exact `WorkflowGuard` type, but the App Shell's edit-rendering check treats an
+*absent* `editGuard` as "no editing exposed," not "anyone, always" — see workflow-grammar.md's `states`
+section for why. Every other use of `WorkflowGuard` in this doc keeps the normal open-by-default
+semantics; this is a property of that one call site, not a change to the guard type itself.
 
 **Complete list: seven kinds. No others exist.**
 

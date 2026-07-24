@@ -62,6 +62,21 @@
       "accent": "#C4703F",
       "tabThemes": {
         "giving": { "accent": "#8A5A34" }
+      },
+      // PROPOSED 2026-07-24, not yet implemented (spec-version.json proposedNotImplemented.
+      // calendarDateRailBinding). Replaces the agenda row's hardcoded weekday-abbrev/day-number date
+      // rail with an explicit, community-configurable list -- this example reproduces today's exact
+      // default (first two entries) and adds a third: a small badge showing how many events land on
+      // that day, driven by the existing computation model's `count` function over the day's own
+      // instances, with zero new App Shell code once this is implemented.
+      "calendar": {
+        "dateRail": {
+          "entries": [
+            { "kind": "dateToken", "token": "weekdayAbbrev", "style": "label" },
+            { "kind": "dateToken", "token": "dayOfMonth", "style": "circleHighlight", "colorSource": "accent" },
+            { "kind": "formula", "formula": "count(dayInstances)", "style": "badge", "colorSource": "styleField" }
+          ]
+        }
       }
     },
 
@@ -120,7 +135,13 @@
           "open": {
             "label": "RSVP open",
             "tone": "positive",
-            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "capacity"]
+            // PROPOSED, not yet implemented (spec-version.json proposedNotImplemented.editGuard) --
+            // editableFields already exists and the generic editor UI already renders these fields'
+            // editors for real, but nothing gates WHO sees them today. editGuard reuses the exact
+            // WorkflowGuard shape transitions already use below, restricting editing to the organizer
+            // once the App Shell implements the read side.
+            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "capacity"],
+            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
@@ -316,7 +337,9 @@
           "open": {
             "label": "Signups open",
             "tone": "positive",
-            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "minimumAttendance"]
+            // PROPOSED editGuard -- see the identical note on event-rsvp's "open" state above.
+            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "minimumAttendance"],
+            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },

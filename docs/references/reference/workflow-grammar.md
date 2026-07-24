@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-07-24
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
@@ -39,7 +39,8 @@ field inside the object — it is ignored.
 ```jsonc
 "states": {
   "open":      { "label": "Signups open", "tone": "positive",
-                 "editableFields": ["title", "capacity"] },
+                 "editableFields": ["title", "capacity"],
+                 "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] } },
   "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
 }
 ```
@@ -49,7 +50,22 @@ field inside the object — it is ignored.
 | `label` | string | **yes** | Human-readable state name, shown in the UI |
 | `tone` | string | no | Visual tone: `positive` · `negative` · `warning` · `info` |
 | `editableFields` | string[] | no | Fields the user may edit **while in this state** |
+| `editGuard` | `WorkflowGuard` | no | Gates *who* may use `editableFields` — same shape as `transitions[].guard` (see below) |
 | `isTerminal` | bool | no (default `false`) | No transitions may leave this state |
+
+⚠️ **PROPOSED, not yet implemented** — see `spec-version.json`'s `proposedNotImplemented.editGuard`.
+`editableFields` alone has no persona check today; without `editGuard`, any persona viewing an editable
+card can edit it. Until the App Shell reads `editGuard`, treat `editableFields` on any state a member
+(not just the organizer) can view as effectively member-editable.
+
+**`editGuard` is a call-site-specific deviation from guards.md's normal "absent guard means anyone,
+always" semantics.** `editGuard`'s *type* is exactly `WorkflowGuard` (see guards.md) — no new guard
+shape — but the App Shell's "should I render `GenericWorkflowInstanceCard`'s editors" check MUST require
+`editGuard` to be present (non-null) before evaluating it or showing any editor, full stop. An *absent*
+`editGuard` means editing is not exposed at all for that state, not "anyone may edit." This differs from
+every other `WorkflowGuard` use (transitions), where an absent guard already means open, because a
+transition that isn't declared simply has no button — there's no equivalent "not declared" state for
+`editableFields` once it's non-empty, so defaulting open would silently widen permissions.
 
 ### Rules the validator enforces
 
@@ -60,6 +76,8 @@ field inside the object — it is ignored.
 - **`editableFields` may only name fields whose `writableBy` is `"formEntry"`.** A field written by an
   effect is not user-editable, and listing it is a contradiction. → `effect_field_in_editable_fields`
   (error)
+- **`editGuard.allowedPersonaIds`, if present, must name declared personas.** (proposed rule,
+  `dangling_edit_guard_persona` — not yet implemented, see `spec-version.json`)
 
 > The stuck-state check exists because of a real shipped bug: a `queued` marketplace state with zero
 > declared transitions, so queued listings had **no buttons at all**. It reached a live emulator walk
