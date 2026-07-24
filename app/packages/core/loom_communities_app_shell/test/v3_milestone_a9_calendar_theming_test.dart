@@ -325,7 +325,10 @@ void main() {
         expect(bezelDecoration.border, isNull);
         final tile = tester.widget<ListTile>(row);
         expect((tile.title! as Text).style!.color, theme.resolvedHeading);
-        expect((tile.subtitle! as Text).style!.color, theme.resolvedBody);
+        final time = tester.widget<Text>(
+          find.descendant(of: row, matching: find.text('19:00')),
+        );
+        expect(time.style!.color, theme.resolvedBody);
 
         final todayHighlight = tester.widget<Container>(
           find.byKey(

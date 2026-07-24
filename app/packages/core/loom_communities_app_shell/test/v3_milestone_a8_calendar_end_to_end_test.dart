@@ -692,6 +692,14 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-facts-event-summer-tournament-0',
+          ),
+        ),
+        findsNothing,
+      );
       expect(find.text('Selected game: TBD'), findsOneWidget);
       expect(
         find.byKey(

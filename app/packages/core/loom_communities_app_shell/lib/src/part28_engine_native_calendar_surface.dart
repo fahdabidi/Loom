@@ -817,7 +817,9 @@ class _EngineNativeCalendarContentState
                                     color: theme.resolvedBody,
                                   ),
                                 ),
-                                if (_tileFactSchema(entry).isNotEmpty) ...[
+                                if (entry.identity !=
+                                        widget.presentation.selectedIdentity &&
+                                    _tileFactSchema(entry).isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   KeyedSubtree(
                                     key: ValueKey(
