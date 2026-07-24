@@ -371,6 +371,33 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
   ]);
 }
 
+void _addAgendaTileFactFixture(Map<String, dynamic> source) {
+  final definitions =
+      (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
+          as Map<String, dynamic>;
+  final schema =
+      (definitions['event-rsvp'] as Map<String, dynamic>)['instanceDataSchema']
+          as Map<String, dynamic>;
+  (schema['location'] as Map<String, dynamic>)['displayContexts'] = <String>[
+    'tile',
+  ];
+  schema['organizerNote'] = <String, dynamic>{
+    'type': 'text',
+    'storage': 'inline',
+    'labelTemplate': '{value}',
+  };
+
+  final instances =
+      (source['experience'] as Map<String, dynamic>)['workflowInstances']
+          as List<dynamic>;
+  final friday = (instances.firstWhere(
+        (instance) =>
+            (instance as Map<String, dynamic>)['instanceId'] ==
+            'event-friday-game-night',
+      ) as Map<String, dynamic>)['instanceData'] as Map<String, dynamic>;
+  friday['organizerNote'] = 'Keep this off the compact row';
+}
+
 void _addContainerFixture(Map<String, dynamic> source) {
   final instances =
       (source['experience'] as Map<String, dynamic>)['workflowInstances']
@@ -700,6 +727,40 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'agenda rows render only explicit tile-context fact pills',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr9a-tile-facts', configure: _addAgendaTileFactFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        final agenda = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        );
+        await _pumpUntil(tester, agenda);
+
+        expect(find.descendant(of: agenda, matching: find.text('Friday game night')), findsOneWidget);
+        expect(find.descendant(of: agenda, matching: find.text('19:00')), findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-facts-event-friday-game-night-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.descendant(of: agenda, matching: find.text('Community room')), findsOneWidget);
+        expect(find.descendant(of: agenda, matching: find.text('Host: Alex Chen (Organizer)')), findsNothing);
+        expect(find.descendant(of: agenda, matching: find.text('Keep this off the compact row')), findsNothing);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets(
     'scopes Calendar entries by date range and generic response tables',

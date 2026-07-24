@@ -187,6 +187,36 @@ bool _isCalendarDetailField(InstanceDataField field) {
   return true;
 }
 
+/// Compact agenda facts are explicitly opt-in. Unlike detail facts, an
+/// unspecified display context must not make the already-dense agenda noisy.
+bool _isCalendarTileField(InstanceDataField field) =>
+    field.displayContexts?.contains('tile') ?? false;
+
+/// Fields owned by the Calendar's specialized event presentation rather than
+/// either its generic fallback facts or compact agenda pills.
+const _calendarBespokeFieldKeys = <String>{
+  'title',
+  'eventDate',
+  'goingCount',
+  'accepted',
+  'capacity',
+  'minimumAttendance',
+  'seatsRemaining',
+  'quorumMet',
+  'isFull',
+  'responses',
+  'responseCounts',
+  'maybeCount',
+  'declinedCount',
+  'waitlistedCount',
+};
+
+/// The compact row also owns event time in its ListTile subtitle.
+const _calendarTileBespokeFieldKeys = <String>{
+  ..._calendarBespokeFieldKeys,
+  'eventTime',
+};
+
 class _CalendarEntry {
   const _CalendarEntry({
     required this.resolved,
@@ -360,6 +390,22 @@ class _EngineNativeCalendarContentState
   Set<String> _detailFieldKeys(_CalendarEntry entry) => {
     for (final schema in entry.resolved.machine.instanceDataSchema.entries)
       if (_isCalendarDetailField(schema.value)) schema.key,
+  };
+
+  Map<String, WorkflowFactPillFieldSchema> _tileFactSchema(
+    _CalendarEntry entry,
+  ) => {
+    for (final schema in entry.resolved.machine.instanceDataSchema.entries)
+      if (!_calendarTileBespokeFieldKeys.contains(schema.key) &&
+          _isCalendarTileField(schema.value))
+        schema.key: WorkflowFactPillFieldSchema(
+          type: schema.value.type,
+          maxLength: schema.value.maxLength,
+          displayIcon: schema.value.displayIcon,
+          labelTemplate: schema.value.labelTemplate,
+          hideWhenEmpty: schema.value.hideWhenEmpty,
+          displayContexts: schema.value.displayContexts,
+        ),
   };
 
   List<_CalendarEntry> _entriesForScope(List<_CalendarEntry> entries) {
@@ -762,9 +808,31 @@ class _EngineNativeCalendarContentState
                               entry.title,
                               style: TextStyle(color: theme.resolvedHeading),
                             ),
-                            subtitle: Text(
-                              entry.time,
-                              style: TextStyle(color: theme.resolvedBody),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  entry.time,
+                                  style: TextStyle(
+                                    color: theme.resolvedBody,
+                                  ),
+                                ),
+                                if (_tileFactSchema(entry).isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  KeyedSubtree(
+                                    key: ValueKey(
+                                      'engine-native-calendar-agenda-facts-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                                    ),
+                                    child: WorkflowFactPillRow(
+                                      instanceData:
+                                          entry.resolved.instance.instanceData,
+                                      instanceDataSchema: _tileFactSchema(entry),
+                                      displayContext: 'tile',
+                                      accent: widget.accent,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             dense: true,
                             visualDensity: const VisualDensity(vertical: -3),
@@ -887,25 +955,6 @@ class _EventRsvpDetailCard extends StatefulWidget {
 }
 
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
-  static const _bespokeFieldKeys = <String>{
-    // The agenda/date header already owns the primary event date, while the
-    // title gets the detail card's heading treatment below.
-    'title',
-    'eventDate',
-    'goingCount',
-    'accepted',
-    'capacity',
-    'minimumAttendance',
-    'seatsRemaining',
-    'quorumMet',
-    'isFull',
-    'responses',
-    'responseCounts',
-    'maybeCount',
-    'declinedCount',
-    'waitlistedCount',
-  };
-
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
   Set<String> _eventActionIds = const {};
@@ -1215,7 +1264,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
 
   Map<String, WorkflowFactPillFieldSchema> get _fallbackFactSchema => {
     for (final entry in widget.machine.instanceDataSchema.entries)
-      if (!_bespokeFieldKeys.contains(entry.key) &&
+      if (!_calendarBespokeFieldKeys.contains(entry.key) &&
           _isCalendarDetailField(entry.value))
         entry.key: WorkflowFactPillFieldSchema(
           type: entry.value.type,
