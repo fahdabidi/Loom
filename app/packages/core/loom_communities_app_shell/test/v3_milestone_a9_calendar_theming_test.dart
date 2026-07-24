@@ -149,6 +149,24 @@ void _replaceEventDates(Map<String, dynamic> source, List<String> dates) {
   }
 }
 
+void _removeEventRsvpStyleField(Map<String, dynamic> source) {
+  final experience = source['experience'] as Map<String, dynamic>;
+  final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
+  final eventRsvp = definitions['event-rsvp'] as Map<String, dynamic>;
+  final bindings = eventRsvp['renderBindings'] as List<dynamic>;
+  (bindings.first as Map<String, dynamic>).remove('styleField');
+}
+
+Color _agendaBezelColor(WidgetTester tester, String instanceId) {
+  final row = find.byKey(
+    ValueKey('engine-native-calendar-agenda-$instanceId-0'),
+  );
+  final bezel = tester.widget<Container>(
+    find.ancestor(of: row, matching: find.byType(Container)).first,
+  );
+  return (bezel.decoration! as BoxDecoration).color!;
+}
+
 LoomWorkflowDefinition _legacyEvent(String id, DateTime date) =>
     LoomWorkflowDefinition(
       workflowId: id,
@@ -320,7 +338,7 @@ void main() {
         final bezelDecoration = bezel.decoration! as BoxDecoration;
         expect(
           bezelDecoration.color,
-          theme.accent!.withValues(alpha: 0.92),
+          stylePaletteFrom(theme.accent!)[1].withValues(alpha: 0.92),
         );
         expect(bezelDecoration.border, isNull);
         final tile = tester.widget<ListTile>(row);
@@ -357,6 +375,56 @@ void main() {
         );
       } finally {
         await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'frozen fixture resolves distinct style slots and preserves flat accent without styleField',
+    (tester) async {
+      final styled = (await tester.runAsync(() => _install('a9-style-slots')))!;
+      try {
+        await tester.pumpWidget(_engineCalendar(styled, null));
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+        );
+        final palette = stylePaletteFrom(Colors.deepPurple);
+        final summer = _agendaBezelColor(tester, 'event-summer-tournament');
+        final friday = _agendaBezelColor(tester, 'event-friday-game-night');
+        expect(summer, palette[1].withValues(alpha: 0.92));
+        expect(friday, palette[2].withValues(alpha: 0.92));
+        expect(friday, isNot(summer));
+      } finally {
+        await tester.runAsync(styled.dispose);
+      }
+
+      final unstyled = (await tester.runAsync(
+        () => _install(
+          'a9-style-field-fallback',
+          configure: _removeEventRsvpStyleField,
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_engineCalendar(unstyled, theme));
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-event-friday-game-night-0',
+            ),
+          ),
+        );
+        expect(
+          _agendaBezelColor(tester, 'event-friday-game-night'),
+          theme.accent!.withValues(alpha: 0.92),
+        );
+      } finally {
+        await tester.runAsync(unstyled.dispose);
       }
     },
   );

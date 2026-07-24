@@ -7,6 +7,27 @@ LoomWorkflowStateMachine _machine(String type, Map<String, dynamic> json) =>
 void main() {
   // ── 1. Model round-trip parsing ──────────────────────────────────────
   group('Model parsing', () {
+    test('render binding fromJson parses optional styleField', () {
+      final styled = RenderBinding.fromJson(<String, dynamic>{
+        'states': ['open'],
+        'role': 'any',
+        'tabId': 'calendar',
+        'cardSurfaceFamily': 'event-rsvp',
+        'bindingKind': 'primary',
+        'styleField': 'cardStyleId',
+      });
+      final unstyled = RenderBinding.fromJson(<String, dynamic>{
+        'states': ['open'],
+        'role': 'any',
+        'tabId': 'calendar',
+        'cardSurfaceFamily': 'event-rsvp',
+        'bindingKind': 'primary',
+      });
+
+      expect(styled.styleField, 'cardStyleId');
+      expect(unstyled.styleField, isNull);
+    });
+
     test('transition fromJson parses inputs from frozen JSON fragment', () {
       final t = LoomWorkflowTransition.fromJson(<String, dynamic>{
         'id': 'cast-vote',

@@ -238,6 +238,17 @@ class _CalendarEntry {
   String get time => '${resolved.instance.instanceData['eventTime'] ?? ''}';
 }
 
+/// Resolves a calendar entry's optional declarative style slot. Bindings that
+/// do not opt in keep their exact flat community accent.
+Color _calendarEntryStyleColor(_CalendarEntry entry, Color accent) {
+  final styleField = entry.resolved.binding.styleField;
+  if (styleField == null) return accent;
+  final styleId =
+      (entry.resolved.instance.instanceData[styleField] as num?)?.toInt() ?? 0;
+  final palette = stylePaletteFrom(accent);
+  return palette[styleId % palette.length];
+}
+
 class _CalendarProjectionException implements Exception {
   const _CalendarProjectionException(this.binding, this.message);
 
@@ -617,6 +628,7 @@ class _EngineNativeCalendarContentState
             onSelectDate: _selectDate,
             onSelectEntry: _selectMonthGridEntry,
             modernTheme: theme,
+            accent: theme.accent ?? widget.accent,
             selectedDate: widget.presentation.selectedDate,
           ),
           const SizedBox(height: 12),
@@ -668,6 +680,7 @@ class _EngineNativeCalendarContentState
             onSelectDate: _selectDate,
             onSelectEntry: _selectMonthGridEntry,
             modernTheme: theme,
+            accent: theme.accent ?? widget.accent,
           ),
           const SizedBox(height: 8),
         ] else if (widget.presentation.scope == 'day') ...[
@@ -794,7 +807,8 @@ class _EngineNativeCalendarContentState
                           margin: const EdgeInsets.fromLTRB(0, 2, 8, 2),
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: accent.withValues(alpha: 0.92),
+                            color: _calendarEntryStyleColor(entry, accent)
+                                .withValues(alpha: 0.92),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: ListTile(
@@ -1596,6 +1610,7 @@ class _EngineNativeMonthGrid extends StatelessWidget {
     required this.onSelectDate,
     required this.onSelectEntry,
     required this.modernTheme,
+    required this.accent,
     required this.selectedDate,
   });
 
@@ -1604,6 +1619,7 @@ class _EngineNativeMonthGrid extends StatelessWidget {
   final ValueChanged<String> onSelectDate;
   final ValueChanged<String> onSelectEntry;
   final LoomCardTheme modernTheme;
+  final Color accent;
   final String? selectedDate;
 
   @override
@@ -1657,13 +1673,44 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                     'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                                   ),
                                   onTap: () => onSelectEntry(entry.identity),
-                                  child: Text(
-                                    entry.title,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: modernTheme.resolvedBody,
-                                    ),
-                                  ),
+                                  child:
+                                      entry.resolved.binding.styleField == null
+                                      ? Text(
+                                          entry.title,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: modernTheme.resolvedBody,
+                                          ),
+                                        )
+                                      : Row(
+                                          children: [
+                                            Container(
+                                              width: 5,
+                                              height: 5,
+                                              margin: const EdgeInsets.only(
+                                                right: 3,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: _calendarEntryStyleColor(
+                                                  entry,
+                                                  accent,
+                                                ),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                entry.title,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color:
+                                                      modernTheme.resolvedBody,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                 ),
                             ],
                           ),
@@ -1686,6 +1733,7 @@ class _EngineNativeWeekStrip extends StatelessWidget {
     required this.onSelectDate,
     required this.onSelectEntry,
     required this.modernTheme,
+    required this.accent,
   });
 
   final DateTime selectedDate;
@@ -1693,6 +1741,7 @@ class _EngineNativeWeekStrip extends StatelessWidget {
   final ValueChanged<String> onSelectDate;
   final ValueChanged<String> onSelectEntry;
   final LoomCardTheme modernTheme;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -1733,13 +1782,41 @@ class _EngineNativeWeekStrip extends StatelessWidget {
                               'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                             ),
                             onTap: () => onSelectEntry(entry.identity),
-                            child: Text(
-                              entry.title,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: modernTheme.resolvedBody,
-                              ),
-                            ),
+                            child: entry.resolved.binding.styleField == null
+                                ? Text(
+                                    entry.title,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: modernTheme.resolvedBody,
+                                    ),
+                                  )
+                                : Row(
+                                    children: [
+                                      Container(
+                                        width: 5,
+                                        height: 5,
+                                        margin: const EdgeInsets.only(
+                                          right: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _calendarEntryStyleColor(
+                                            entry,
+                                            accent,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          entry.title,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: modernTheme.resolvedBody,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                           ),
                       ],
                     ),

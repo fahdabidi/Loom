@@ -5,6 +5,33 @@ part of '../loom_communities_app_shell.dart';
 /// (borders, buttons, badges, headings) instead of filling the whole card.
 const Color _neutralCardFill = Color(0xff1c2024);
 
+/// Produces six related but distinct event colors from one community accent.
+/// Slot zero preserves the exact accent; later slots rotate 24 degrees around
+/// its HSL hue while alternating a small lightness shift. This keeps calendar
+/// categories recognizably within the community palette without named colors.
+List<Color> stylePaletteFrom(Color baseAccent, {int slotCount = 6}) {
+  assert(slotCount > 0);
+  final base = HSLColor.fromColor(baseAccent);
+  return List<Color>.generate(slotCount, (index) {
+    if (index == 0) return baseAccent;
+    final saturationShift = switch (index % 3) {
+      0 => -0.06,
+      1 => 0.04,
+      _ => 0.08,
+    };
+    final lightnessShift = index.isOdd ? 0.08 : -0.07;
+    return base
+        .withHue((base.hue + (24 * index)) % 360)
+        .withSaturation(
+          (base.saturation + saturationShift).clamp(0.35, 1.0).toDouble(),
+        )
+        .withLightness(
+          (base.lightness + lightnessShift).clamp(0.22, 0.78).toDouble(),
+        )
+        .toColor();
+  });
+}
+
 enum LoomButtonShape { pill, rounded, square }
 
 /// Rich, partial button styling. Every field is optional so a JSON author

@@ -376,6 +376,7 @@ class RenderBinding {
   final String cardSurfaceFamily;
   final String bindingKind; // "primary" or "summary"
   final String? audienceMemberField;
+  final String? styleField;
 
   /// Repeater configuration (GAP-1) — renders per-item action buttons.
   final RepeaterSpec? repeater;
@@ -392,6 +393,7 @@ class RenderBinding {
     required this.cardSurfaceFamily,
     required this.bindingKind,
     this.audienceMemberField,
+    this.styleField,
     this.repeater,
     this.actions = const [],
     this.responseTable,
@@ -408,6 +410,7 @@ class RenderBinding {
       cardSurfaceFamily: json['cardSurfaceFamily'] as String,
       bindingKind: json['bindingKind'] as String,
       audienceMemberField: json['audienceMemberField'] as String?,
+      styleField: json['styleField'] as String?,
       repeater: json['repeater'] != null
           ? RepeaterSpec.fromJson(json['repeater'] as Map<String, dynamic>)
           : null,
