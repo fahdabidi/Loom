@@ -326,7 +326,7 @@ void main() {
         final tile = tester.widget<ListTile>(row);
         expect((tile.title! as Text).style!.color, theme.resolvedHeading);
         final time = tester.widget<Text>(
-          find.descendant(of: row, matching: find.text('19:00')),
+          find.descendant(of: row, matching: find.text('13:00')),
         );
         expect(time.style!.color, theme.resolvedBody);
 
