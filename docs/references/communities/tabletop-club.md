@@ -283,28 +283,61 @@ and approve loans of their own games.
   `styleField` uses). Designed, not yet App-Shell-implemented — see `theming.md` section 6 and
   `spec-version.json` → `proposedNotImplemented.calendarDateRailBinding`.
 
-**Pinned — found during the same A.10 walk, each needs its own dedicated design pass before any
-JSON/spec work, not folded into this revision:**
+**Pinned — found during the same A.10 walk. Investigation closed 2026-07-24 (all three below traced to
+concrete conclusions via direct code reading, no code/JSON changes made yet); each still needs its own
+dedicated design/spec pass and explicit sign-off before any JSON is written, not folded into this
+revision:**
 - **Filter Calendar by category.** `category` (`social`/`tournament`) already exists as instance data
   (built for `styleField`); exposing it as a `filterableFacets` entry is trivial, pure-JSON, no spec
-  change — genuinely ready whenever picked up, deliberately sequenced *last* among these five per
+  change — genuinely ready whenever picked up, deliberately sequenced *last* among these four per
   explicit instruction, after the bigger items below.
-- **View attendee list (who's going, not just a count).** `goingPersonaIds` already holds the real data,
-  but nothing resolves individual member ids to display names anywhere in the rendering pipeline —
-  `host`'s human-readable look (e.g. `"Alex Chen (Organizer)"`) turned out to be hand-authored plain text
-  at data-entry time, not a resolved reference, so it doesn't generalize to a dynamic per-RSVP list.
-  Needs investigation before design: where (if anywhere) do individual member display names already
-  resolve today? (`LoomAuthApi`/`resolveEnginePersonaId()` and the Multi-user login review row below are
-  the lead to chase first.)
-- **Waitlist promotion flow.** Confirmed no automatic promotion exists: when a "going" row moves away,
-  nothing transitions the oldest waitlisted row forward or notifies them — they'd have to manually
-  re-check "Going" themselves (which *would* work, since the capacity guard re-evaluates live). Real
-  automatic promotion needs the engine to trigger a transition on a *different* instance from an effect,
-  which the engine doesn't support today (only cross-instance `set` and `createInstance` are supported
-  cross-instance effects) — a new engine capability, not a JSON tweak.
-- **Recurring events.** No recurrence concept exists anywhere in the model — every event is a standalone
-  instance. The largest of the five: a real design question (does the *definition* recur, or do
-  generated instances? how do exceptions/edits-to-one-occurrence work?) before any grammar is proposed.
+- **View attendee list (who's going, not just a count) — investigation closed, no longer a design
+  unknown.** `LoomAuthApi.listAccounts({required communityExtensionId})`
+  (`part29_auth_api.dart`) already exists and already returns real per-individual `LoomAccount
+  { accountId, displayName, personaTypeId }` records — `LocalAuthApi` seeds 13 real named demo accounts
+  (`'Alex T.'`, `'Priya N.'`, etc.). Its `accountId` format (`"tabletop-member-05"`-style, per the type's
+  own doc comment) exactly matches what's already seeded throughout the frozen fixture in
+  `goingPersonaIds`/`event-rsvp-response.personaId`. **Conclusion: zero new engine/platform capability
+  needed** — this is a pure App-Shell rendering addition (build an `accountId → displayName` map via
+  `listAccounts()`, resolve ids when rendering the RSVP list), at most paired with a tiny JSON change
+  reusing grammar that already exists (`displayContexts`/`labelTemplate` on the already-declared
+  `goingPersonaIds` field), not a new grammar concept. This overturns the original "might need
+  Loom-platform-identity integration" assessment — it's now the smallest of the three, comparable to
+  `CAL.CategoryFilter`, not the biggest.
+- **Waitlist promotion flow — investigation closed, concrete design found.** Confirmed (tracing
+  `WorkflowEffect.relatedInstance` usage in `local_workflow_engine_api.dart`) that today's only
+  cross-instance effects are a direct single-field reference (`relatedInstance`) plus `set`/
+  `createInstance` — none can trigger a transition on a *queried* (as opposed to directly-pointed-to)
+  instance. Confirmed separately (`guard_evaluator.dart`) that `relatedAggregate` is a scalar
+  aggregate-vs-threshold guard check, not a target-resolution mechanism, so it can't be reused for this
+  either. **A new engine capability is genuinely required** — candidate shape: a new effect op
+  `transitionRelated` taking a `relatedQuery` (reusing `relatedAggregate`'s existing `filter` shape) plus
+  a `transitionId` to apply to the first match. The "which one, if several waitlisted rows match"
+  ordering question — previously open — is now resolved: the DB layer already has a fully generic,
+  already-implemented sort mechanism (`queryInstancesKeyset`, `database.dart`) that orders by any
+  instance-data field ascending with a deterministic id tiebreaker, already powering today's pagination;
+  `relatedQuery` would simply expose a `sortKey`/`limit: 1` using that same mechanism, no new ordering
+  concept needed. One caveat found: instance ids are randomly generated (`_generateId()`,
+  `local_workflow_engine_api.dart:970-976`), not time-ordered, so "oldest waitlisted first" needs an
+  explicit timestamp field (e.g. a new `rsvpedAt` on `event-rsvp-response`, stamped at creation) as the
+  `sortKey` — an id-based tiebreaker alone would not approximate insertion order. Still a genuinely new
+  engine capability (bigger than `editGuard`/`dateRail`), appropriately still pinned for its own JSON
+  pass — but no longer blocked on investigation, and no longer has an unresolved design question.
+- **Recurring events — investigation closed; confirmed there is no cheaper shortcut, full design still
+  needed.** No recurrence concept exists anywhere in the model — every event is a standalone instance.
+  Checked whether a lightweight "duplicate event, shift by a week" MVP could sidestep full recurrence
+  design via the already-existing `actions[].prefill` mechanism: confirmed
+  (`resolveInstanceScopedPrefill`, `instance_scoped_action_context.dart:8-24`) that `prefill` only
+  supports literal passthrough, `{context.id}`, and `{context.<field>}` direct field copy from the
+  current instance — no arithmetic, no date-shifting, no formula evaluation. Separately confirmed the
+  formula evaluator (`formula_evaluator.dart:35-40`) has no addition-direction date function at all
+  (only `daysBetween`/`daysUntil`/`subtractHours`). **Conclusion: the MVP shortcut needs its own two new
+  engine capabilities (an `addDays`/`addHours`-style formula function, plus making `prefill` values
+  formula-evaluable rather than direct-copy-only) — it is not actually cheaper than confronting
+  recurrence's real design questions head-on.** Remains the largest of the four: does the *definition*
+  recur, or do generated instances? how do exceptions/edits-to-one-occurrence work? — a full design pass
+  is still required before any grammar is proposed; this investigation only closes out "is there a
+  shortcut" (no), not the feature itself.
 
 ## 11. Review And Remediation Log
 
