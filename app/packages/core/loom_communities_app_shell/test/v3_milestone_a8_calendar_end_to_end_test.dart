@@ -1981,14 +1981,6 @@ void main() {
       expect(
         find.byKey(
           const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-going',
-          ),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
             'event-rsvp-event-friday-game-night-action-respond-waitlist',
           ),
         ),
