@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.6.0
+doc_version: 1.7.0
 status: current
-last_verified: 2026-07-21
+last_verified: 2026-07-25
 audience: llm-agent
 derived_from:
   - docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc
@@ -263,53 +263,49 @@ and approve loans of their own games.
   hardcoded color. Confirmed live: Friday game night and Summer tournament render in genuinely distinct,
   accent-derived colors. See `render-bindings.md` `styleField` section and `spec-version.json` →
   `resolvedInGrammar.styleFieldBinding`.
-- **Organizer-only event editing (PROPOSED — `editGuard`, 2026-07-24):** `event-rsvp`/`tournament-event`
-  already declare real `editableFields` (title/eventDate/eventTime/location/host/capacity), and the
-  generic instance-editing UI already renders real, type-aware editors for them — found live-missing
-  during the A.10 human review walk (the organizer had no way to fix a typo in an event's own details).
-  `editGuard` reuses the exact `WorkflowGuard` shape transitions already use, restricting who may use
-  `editableFields`. **Deliberately deviates from guards.md's normal "absent guard means anyone" default**
-  at this one call site — an absent `editGuard` means no editing exposed, not open editing — since
-  `editableFields` has no equivalent "not declared" fallback the way an undeclared transition does.
-  Designed, not yet App-Shell-implemented — see `workflow-grammar.md` `states` section and
-  `spec-version.json` → `proposedNotImplemented.editGuard`.
-- **Configurable agenda date rail (PROPOSED — `theme.calendar.dateRail`, 2026-07-24):** the agenda row's
-  date rail (weekday abbreviation over a circle-highlighted day number) is hardcoded to exactly those two
-  pieces today — found live-limiting during the same A.10 walk when a much slimmer reference design was
-  requested and the box had no way to show anything else (e.g. how many events land on a day). A
-  community may now declare `theme.calendar.dateRail.entries`, an ordered, community-configurable list —
+- **Organizer-only event editing (`editGuard`, 2026-07-24, IMPLEMENTED 2026-07-25 — CALR.10a, commits
+  `494f4cb`..`5ce77bd`, 5 rounds):** `event-rsvp`/`tournament-event` already declare real `editableFields`
+  (title/eventDate/eventTime/location/host/capacity), and Calendar's real detail card
+  (`_EventRsvpDetailCard`) now renders real, type-aware editors for them, gated by `editGuard`.
+  **Deliberately deviates from guards.md's normal "absent guard means anyone" default** at this one call
+  site — an absent `editGuard` means no editing exposed, not open editing. Independent verification caught
+  and closed a real Save-persistence bug across the 5 rounds (final root cause: the Calendar dispatcher's
+  post-mutation requery racing the write, fixed with a local, card-scoped stale-guard). Confirmed live on
+  a real Android emulator: organizer sees and can save real edits; member sees none. See
+  `workflow-grammar.md` `states` section and `spec-version.json` → `resolvedInGrammar.editGuard`.
+- **Configurable agenda date rail (`theme.calendar.dateRail`, 2026-07-24, IMPLEMENTED 2026-07-25 —
+  CALR.10b, commits `f3dbc15`/`2e0c12b`, 2 rounds):** the agenda row's date rail (weekday abbreviation
+  over a circle-highlighted day number) now genuinely renders from `theme.calendar.dateRail.entries` —
   closed-primitives/open-composition split (fixed calendar-arithmetic tokens and fixed render primitives,
   but free formula composition, ordering, and accent-derived coloring via the same style-slot palette
-  `styleField` uses). Designed, not yet App-Shell-implemented — see `theming.md` section 6 and
-  `spec-version.json` → `proposedNotImplemented.calendarDateRailBinding`.
-- **View attendee list (PROPOSED — zero new grammar needed, 2026-07-24):** investigation found the
-  data plumbing already fully declared before this pass even started — `event-rsvp`'s `responseTable`
-  binding (`{ workflowType: "event-rsvp-response", eventField: "eventId", pendingStates: ["pending"] }`)
-  plus its query-backed `responses`/`responseCounts` fields already enumerate every per-member response
-  row for an event. What's missing is purely App-Shell: resolve each row's `personaId` to a display name
-  via `LoomAuthApi.listAccounts({required communityExtensionId})` (`part29_auth_api.dart`) — already
-  exists, already returns real `LoomAccount{accountId, displayName, personaTypeId}` records whose
-  `accountId` format (`"tabletop-member-05"`-style) already matches `event-rsvp-response.personaId`
-  throughout this fixture. **No JSON change was written for this item** — genuinely nothing to add.
-  Overturns the original "might need Loom-platform-identity integration" assessment. Not yet
-  App-Shell-implemented.
-- **Waitlist promotion (PROPOSED — partially landed, 2026-07-24):** confirmed (tracing
-  `WorkflowEffect.relatedInstance` usage in `local_workflow_engine_api.dart`) that today's only
-  cross-instance effects are a direct single-field reference (`relatedInstance`) plus `set`/
-  `createInstance` — none can trigger a transition on a *queried* instance — and separately
-  (`guard_evaluator.dart`) that `relatedAggregate` is a scalar aggregate-vs-threshold guard check, not a
-  target-resolution mechanism. Designed a new effect op, `transitionRelated` (`effects.md` §11,
-  `spec-version.json` → `proposedNotImplemented.transitionRelatedEffect`): a `relatedQuery` (reuses
+  `styleField` uses), with `circleHighlight` carefully preserving the exact today-only-filled-circle rule
+  so every non-opted-in community renders pixel-identical to before. Rail width also halved (96→48px, a
+  separate, unconditional change). Confirmed live: the real fixture's 3-entry example (including a
+  `count(dayInstances)` badge) renders correctly. See `theming.md` section 6 and `spec-version.json` →
+  `resolvedInGrammar.calendarDateRailBinding`.
+- **View attendee list (zero new grammar needed, 2026-07-24, IMPLEMENTED 2026-07-25 — CAL.AttendeeList,
+  commit `94f23e4`, 1 round, zero rework):** investigation found the data plumbing already fully declared
+  before this pass even started — `event-rsvp`'s `responseTable` binding plus its query-backed
+  `responses`/`responseCounts` fields already enumerate every per-member response row for an event.
+  `LoomAuthApi.listAccounts()` resolves each row's `personaId` to a real display name. **No JSON change
+  was needed or written for this item.** Covers both attendee shapes Calendar's detail card renders:
+  `event-rsvp`'s per-row responses (grouped by state) and `tournament-event`'s flat
+  `goingPersonaIds`/`waitlistPersonaIds`; an id with no matching account falls back to the raw id (proven
+  live against the real fixture's own legacy, unseeded `tabletop-member` entry) rather than disappearing.
+- **Waitlist promotion (`transitionRelated`, 2026-07-24, IMPLEMENTED 2026-07-25 — CAL.WaitlistPromotion,
+  commit `e188463`, 2 rounds):** a new effect op (`effects.md` §11) — a `relatedQuery` (reuses
   `relatedAggregate`'s existing `filter` shape, plus `sortKey`/`limit: 1`) resolves the oldest waitlisted
   row, then `transitionId` applies to it as a real `applyTransition` call — a guard failure on the target
   is a silent no-op, not an error, which is what lets it attach unconditionally to every leave-transition
-  with no separate "did a seat open" check. `event-rsvp-response` gained a real, validator-clean
-  `rsvpedAt` field stamped by a real `set` effect on `respond-waitlist` — this part is genuinely live
-  today (only today's already-implemented grammar). **The `transitionRelated` effect calls themselves are
-  deliberately NOT written into the frozen fixture yet**: unlike `editGuard`/`dateRail` (additive optional
-  keys the parser silently ignores until implemented), `effects[].op` has a hard-coded allowlist —
-  confirmed by running `community_package_validator.dart` with a draft that included it: 2 genuine
-  `unknown_effect_op` errors, not warnings. Lands together with the real implementation.
+  with no separate "did a seat open" check. Required a real architectural fix along the way: `applyTransition`
+  now resolves guards/GAP-1 inputs in a read-only phase *before* opening its database transaction (restoring
+  its original design after a fix-round caught a real `SqliteException: cannot start a transaction within a
+  transaction` regression), so `transitionRelated` can apply a real, guard-respecting transition to another
+  instance from inside the same outer transaction with no nesting. Landed in the frozen fixture:
+  `event-rsvp-response` gained a real `rsvpedAt` field (stamped by `respond-waitlist`'s own `set` effect)
+  and `respond-maybe`/`respond-declined` both gained real `transitionRelated` effects promoting the oldest
+  waitlisted row. Both real validators re-run clean (0 errors/0 warnings). See `spec-version.json` →
+  `resolvedInGrammar.transitionRelatedEffect`.
 
 **Pinned — still awaiting their own dedicated design/spec pass, not folded into this revision:**
 - **Filter Calendar by category.** `category` (`social`/`tournament`) already exists as instance data
@@ -335,6 +331,7 @@ and approve loans of their own games.
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
+| CALR.10 + pinned-item implementation pass, 2026-07-25 | no — all JSON for this pass was already written and signed off on 2026-07-24 (see the row below); this pass is implementation + one small, previously-deferred piece of JSON (the `transitionRelated` effect calls themselves, held back by a real validator constraint) | no remaining gap — `editGuard` (CALR.10a, 5 rounds, closed a real Save-persistence bug independent verification caught), `theme.calendar.dateRail` (CALR.10b, 2 rounds, closed a real missing-field-threading compile error), attendee-list names (CAL.AttendeeList, 1 round, zero rework), and `transitionRelated` (CAL.WaitlistPromotion, 2 rounds, closed a real nested-transaction regression independent verification caught) are all now implemented and independently verified | `spec-version.json`: `editGuard`/`calendarDateRailBinding`/`transitionRelatedEffect` all moved from `proposedNotImplemented` to `resolvedInGrammar`; `effects.md`/`guards.md`/`workflow-grammar.md`/`theming.md` status language updated from PROPOSED to IMPLEMENTED (also caught and fixed two unrelated stale PROPOSED markers in `guards.md` for `relatedAggregate`, which has actually been implemented since 2026-07-17); this doc's §10 updated; frozen JSON: `event-rsvp-response.respond-maybe`/`respond-declined` gained real `transitionRelated` effects (the `rsvpedAt` field/stamp were already live). Both real validators re-run clean (0/0) | none remaining for this batch — attendee list, editGuard, dateRail, and waitlist promotion are all done. Recurring events (`CAL.Recurrence`) and Marketplace's tile-style system (`MKT.1`) remain pinned, each needing its own full design pass before any JSON | closed — all four items independently verified (120/122/124/147 test counts across rounds, final: App Shell 124/124, engine 147/147, validator 114/114, 0 analyzer issues everywhere) |
 | Pinned-item investigation + spec pass, 2026-07-24 | **partially** — attendee list turned out to need zero new grammar at all (existing `responseTable`/`responses` already enumerate the data); waitlist promotion needed one genuinely new effect op (`transitionRelated`); recurring events confirmed to have no cheaper shortcut and still needs its own full design pass | no new engine gap for attendee list (pure App-Shell rendering); waitlist promotion is a genuine new cross-instance effect op, not yet engine-implemented; recurring events out of scope for this revision entirely | `effects.md` gained op 11 (`transitionRelated`, PROPOSED) + a cross-reference note in `guards.md` on reusing `relatedAggregate`'s `filter` shape, `spec-version.json` gained `proposedNotImplemented.transitionRelatedEffect`, this doc's §10/§11 updated, frozen JSON: `event-rsvp-response` gained a real `rsvpedAt` field + a real `set` effect on `respond-waitlist` stamping it (live today, uses only already-implemented grammar) — **the `transitionRelated` effect calls themselves were NOT added to the frozen fixture**: `effects[].op` has a hard-coded allowlist in the real engine (unlike `editGuard`/`dateRail`'s silently-ignored additive keys), and a draft that included them failed `community_package_validator.dart` with 2 genuine `unknown_effect_op` errors. No JSON at all was needed or written for attendee list; no JSON was written for recurring events (no design exists yet). Both real validators re-run clean (0 errors/0 warnings) against what was actually landed | App Shell: none of this is implemented yet (attendee-list rendering, `transitionRelated` execution) — tracked in the tracker's CAL.AttendeeList/CAL.WaitlistPromotion rows | open — spec updated and approved this revision; implementation tickets not yet dispatched; recurring events still pinned pending a full design pass |
 | A.10 live emulator walk (human gate), 2026-07-24 | **yes, two** — (1) the organizer had no way to edit an already-created event's own details (wrong time, typo in location, etc.) even though the generic editing mechanism already existed elsewhere in the app; (2) the agenda date rail was hardcoded to exactly two pieces with no way to show anything else, and was requested to be visually much slimmer. Also surfaced three bigger candidate gaps (attendee list, waitlist promotion, recurring events), deliberately pinned rather than designed this revision — see §10's pinned list | no new engine gap for either spec'd item — `editGuard` reuses the existing guard evaluator (`WorkflowGuard`, already used by `transitions[].guard`) at a new call site; `dateRail` composes entirely from the existing computation model (formulas) plus the existing style-slot palette (`styleField`, CALR.9b) — neither needs a new engine primitive. The three pinned items are each a genuine new engine/rendering capability (persona-identity resolution, cross-instance transition-triggering effects, a recurrence concept) and are explicitly out of scope for this revision | `workflow-grammar.md` `states` gained `editGuard` (+ cross-reference note in `guards.md` on its deliberate absent-means-closed deviation from the guard type's normal default), `theming.md` gained section 6 (`theme.calendar.dateRail`), `spec-version.json` gained `proposedNotImplemented.editGuard`/`calendarDateRailBinding` (and `styleFieldBinding` moved to `resolvedInGrammar` — was stale, CALR.9b already shipped it 2026-07-24), this doc's §10/§11 updated, frozen JSON: `event-rsvp`/`tournament-event` both gained `editGuard: { allowedPersonaIds: ["tabletop-organizer"] }` on their `open` states, community `theme` gained a concrete `calendar.dateRail.entries` example (reproduces today's exact default plus one `formula`-kind entry). Both real validators re-run clean (0 errors/0 warnings) against the updated fixture | App Shell: `LoomWorkflowState.editGuard` parsing + the App Shell reading it (with the null-means-closed rule) before rendering `GenericWorkflowInstanceCard`'s editors on Calendar's card, currently gated only by a static `showEditors` bool; `theme.calendar.dateRail` parsing into the theme cascade + the agenda-row date rail rendering it, including halving the rail's width (`SizedBox(width: 96)` → ~48, `part28_engine_native_calendar_surface.dart:749`) — neither dispatched yet, tracked in the tracker's CALR.10 row. Pinned items (attendee list, waitlist promotion, recurring events) have no implementation scope yet — each needs its own design pass first | open — spec updated and approved this revision (JSON/docs only, per explicit instruction — no code yet); implementation tickets not yet dispatched; pinned items awaiting their own design sessions |
 | `styleField` — data-driven per-category card color, 2026-07-23 | **yes** — a live design review against the real Google Calendar Schedule-view reference found that every Calendar card renders in one flat community/tab accent, with no way to visually distinguish event categories (e.g. a game night vs. a tournament) the way the reference does with distinct colors per calendar/category | no new engine gap — the mapping logic (label value → style number) composes entirely from grammar the engine already executes (nested `if()`, proven by the already-existing `tournament-ballot.dueAt`/`reminderOffset` formula); this is a new, optional render-binding pointer field plus an App-Shell palette-resolution step, not a new engine capability | `render-bindings.md` new `styleField` section + binding-object table row + validator-rule row (`dangling_style_field`), `spec-version.json` `styleFieldBinding` added, this doc's §10 updated, frozen JSON: `event-rsvp` gained `category`/`cardStyleId` fields + `styleField` on its calendar binding (Friday game night seeded `category: "social"`), `tournament-event` gained a constant `cardStyleId` + `styleField` on its calendar binding | App Shell: **IMPLEMENTED 2026-07-24 (CALR.9b, commit `f4bf58f`)** — `stylePaletteFrom(accent)` (accent-derived style-slot palette) and `_calendarEntryStyleColor` (the archetype reading `instanceData[binding.styleField]`) are both live; confirmed on a real Android emulator that Friday game night and Summer tournament render in genuinely distinct colors | closed — implemented, independently verified (118/118 App Shell + 141/141 engine tests, 0 analyzer issues), confirmed live |

@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-24
+last_verified: 2026-07-25
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
@@ -53,10 +53,9 @@ field inside the object — it is ignored.
 | `editGuard` | `WorkflowGuard` | no | Gates *who* may use `editableFields` — same shape as `transitions[].guard` (see below) |
 | `isTerminal` | bool | no (default `false`) | No transitions may leave this state |
 
-⚠️ **PROPOSED, not yet implemented** — see `spec-version.json`'s `proposedNotImplemented.editGuard`.
-`editableFields` alone has no persona check today; without `editGuard`, any persona viewing an editable
-card can edit it. Until the App Shell reads `editGuard`, treat `editableFields` on any state a member
-(not just the organizer) can view as effectively member-editable.
+✅ **IMPLEMENTED 2026-07-25 (CALR.10a)** — see `spec-version.json`'s `resolvedInGrammar.editGuard`.
+`LoomWorkflowState.editGuard` parses as a nullable `WorkflowGuard?`, and Calendar's real detail card
+(`_EventRsvpDetailCard`) reads it before rendering editors, matching the deviation rule below exactly.
 
 **`editGuard` is a call-site-specific deviation from guards.md's normal "absent guard means anyone,
 always" semantics.** `editGuard`'s *type* is exactly `WorkflowGuard` (see guards.md) — no new guard

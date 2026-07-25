@@ -285,14 +285,22 @@
             "tone": "secondary",
             "from": ["pending", "going", "declined", "waitlisted"],
             "to": "maybe",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
-            // NOT YET WRITTEN HERE (see spec-version.json proposedNotImplemented.transitionRelatedEffect,
-            // effects.md op 11): once transitionRelated ships, this transition (and respond-declined below)
-            // will gain an effect promoting the oldest waitlisted row via `sortKey: "rsvpedAt"`. Deferred
-            // out of this fixture for now -- the real community_package_validator's effect-op allowlist is
-            // a hard enum (unlike editGuard/dateRail's additive optional keys), so an unrecognized `op`
-            // value is a genuine validation FAILURE, not a silently-ignored proposal. Landing it here would
-            // break this file's standing zero-error/zero-warning bar. Land together with the real op.
+            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            // IMPLEMENTED 2026-07-25 (transitionRelated, effects.md op 11). Fires unconditionally on
+            // every leave, regardless of which state was left. Correctness comes from respond-going's
+            // OWN relatedAggregate guard re-evaluating live against the resolved target: if no seat
+            // actually opened (this row wasn't "going", or the event is still full), the target's guard
+            // fails and this is a silent no-op, not an error.
+            "effects": [
+              { "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
+                  "sortKey": "rsvpedAt",
+                  "limit": 1
+                },
+                "transitionId": "respond-going" }
+            ]
           },
           {
             "id": "respond-declined",
@@ -301,8 +309,18 @@
             "tone": "destructive",
             "from": ["pending", "going", "maybe", "waitlisted"],
             "to": "declined",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
-            // NOT YET WRITTEN HERE -- see respond-maybe's identical note above.
+            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            // IMPLEMENTED 2026-07-25 -- see respond-maybe's identical note above.
+            "effects": [
+              { "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
+                  "sortKey": "rsvpedAt",
+                  "limit": 1
+                },
+                "transitionId": "respond-going" }
+            ]
           },
           {
             // Only offered once the event is genuinely full — a real relatedAggregate guard, so the
@@ -335,9 +353,9 @@
         "instanceDataSchema": {
           "eventId":   { "type": "text", "required": true, "storage": "inline" },
           "personaId": { "type": "text", "required": true, "storage": "inline" },
-          // PROPOSED, not yet implemented -- see respond-waitlist's effect above and
-          // spec-version.json proposedNotImplemented.transitionRelatedEffect. Written by effect only,
-          // never by the member directly.
+          // IMPLEMENTED 2026-07-25 -- stamped by respond-waitlist's own `set` effect above, read as
+          // the sortKey by respond-maybe/respond-declined's transitionRelated effects. Written by
+          // effect only, never by the member directly.
           "rsvpedAt":  { "type": "text", "writableBy": "effect", "storage": "inline" }
         }
       },

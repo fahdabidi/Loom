@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-24
+last_verified: 2026-07-25
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_communities_app_shell/lib/src/part17_theme_tokens.dart
@@ -81,15 +81,14 @@ unrelated ambient `ThemeData` colors.
 - Legacy `CalendarMonthGrid` MUST use the resolved theme for its label,
   weekday header, cells, day number, event title, and border.
 
-## 6. `theme.calendar.dateRail` — configurable agenda date rail (PROPOSED, not yet implemented)
+## 6. `theme.calendar.dateRail` — configurable agenda date rail (IMPLEMENTED 2026-07-25 — CALR.10b)
 
-⚠️ See `spec-version.json`'s `proposedNotImplemented.calendarDateRailBinding`. Written ahead of the App
-Shell code that will consume it, same convention as `styleField`/`responseTableBinding`.
+✅ See `spec-version.json`'s `resolvedInGrammar.calendarDateRailBinding`.
 
-The Calendar agenda row's date rail (the small box showing which day a row belongs to) is hardcoded
-today to exactly two pieces — a weekday abbreviation over a circle-highlighted day number. A community
-may instead declare `theme.calendar.dateRail.entries`, an ordered list of small visual pieces to render
-top-to-bottom:
+The Calendar agenda row's date rail (the small box showing which day a row belongs to) defaults to
+exactly two pieces — a weekday abbreviation over a circle-highlighted day number — when a community
+doesn't opt in. A community may instead declare `theme.calendar.dateRail.entries`, an ordered list of
+small visual pieces to render top-to-bottom:
 
 ```jsonc
 "theme": {
@@ -124,6 +123,8 @@ behavior — equivalent to `entries: [{kind: dateToken, token: weekdayAbbrev, st
 dateToken, token: dayOfMonth, style: circleHighlight, colorSource: accent}]`. Zero behavior change for
 every community that doesn't opt in.
 
-NOT YET IMPLEMENTED: any parsing of this key into `LoomCardTheme`/the theme cascade, App Shell rendering
-of it, or validator coverage (proposed rules: `dangling_date_rail_formula`, `unknown_date_rail_token`,
+IMPLEMENTED: parsing (`LoomExperienceDefinition.calendarDateRailEntries`) and App Shell rendering of all
+three `style` primitives, including `colorSource: styleField`'s resolution and the exact default/back-
+compat behavior above (confirmed via a dedicated regression test). NOT YET IMPLEMENTED: validator
+coverage (proposed rules: `dangling_date_rail_formula`, `unknown_date_rail_token`,
 `unknown_date_rail_style`).

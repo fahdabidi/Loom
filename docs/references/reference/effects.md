@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
-last_verified: 2026-07-24
+last_verified: 2026-07-25
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -15,8 +15,9 @@ derived_from:
 An effect is what **changes** when a transition fires. Effects run after guards pass, inside the same
 transaction as the state change.
 
-**Complete list: nine ops, plus one PROPOSED op (`transitionRelated`, below) not yet implemented by the
-engine.** An unrecognized `op` is an error (`unknown_effect_op`) — the parser will not guess.
+**Complete list: ten ops** (the ninth, `removeFromTileGrid`, is presentation-only; the tenth,
+`transitionRelated`, is implemented as of 2026-07-25 — see §11). An unrecognized `op` is an error
+(`unknown_effect_op`) — the parser will not guess.
 
 ## Effect object — every legal key
 
@@ -189,7 +190,7 @@ transition should bring a *new object* into existence.
 ```
 No `key`. Removes the instance's tile from a grid surface. Touches no `instanceData`.
 
-### 11 (PROPOSED, not yet implemented). `transitionRelated` — apply a transition to a *queried* instance
+### 11. `transitionRelated` — apply a transition to a *queried* instance
 
 ```jsonc
 {
@@ -232,7 +233,7 @@ served" guarantee must stamp its own explicit ordering field via a `set` effect 
 "$timestamp"` on the transition that enters the queued/waitlisted state) — instance ids are randomly
 generated and carry no temporal meaning.
 
-**Validation (once implemented):** `relatedQuery.workflowType` must be declared → else
+**Validation:** `relatedQuery.workflowType` must be declared → else
 `dangling_transition_related_workflow_type`; `transitionId` must be a transition declared on that type →
 else `dangling_transition_related_transition_id`; `sortKey`, if present, must name a field declared on
 that type → else `dangling_transition_related_sort_key`.

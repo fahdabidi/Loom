@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
-last_verified: 2026-07-24
+last_verified: 2026-07-25
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -20,16 +20,15 @@ transition **genuinely refuse** (throw). It is not a UI hint. The UI additionall
 **Semantics:** all present guard keys are **AND**-ed. An absent/empty guard means "anyone, always".
 
 ⚠️ **One documented exception, at one specific call site.** `states[].editGuard` (workflow-grammar.md,
-PROPOSED) reuses this exact `WorkflowGuard` type, but the App Shell's edit-rendering check treats an
-*absent* `editGuard` as "no editing exposed," not "anyone, always" — see workflow-grammar.md's `states`
-section for why. Every other use of `WorkflowGuard` in this doc keeps the normal open-by-default
-semantics; this is a property of that one call site, not a change to the guard type itself.
+IMPLEMENTED 2026-07-25 — CALR.10a) reuses this exact `WorkflowGuard` type, but the App Shell's
+edit-rendering check treats an *absent* `editGuard` as "no editing exposed," not "anyone, always" — see
+workflow-grammar.md's `states` section for why. Every other use of `WorkflowGuard` in this doc keeps the
+normal open-by-default semantics; this is a property of that one call site, not a change to the guard
+type itself.
 
-**Complete list: seven kinds. No others exist.**
-
-⚠️ **`relatedAggregate` (kind 6) is PROPOSED grammar, not yet engine-implemented** — written and
-validator-speced ahead of the code that executes it, same convention the frozen Tabletop Club JSON
-itself uses elsewhere ("written before the code that loads it"). The other six kinds are real today.
+**Complete list: seven kinds. No others exist.** All seven are implemented and engine-executed today,
+including `relatedAggregate` (kind 6) — confirmed via `guard_evaluator.dart`/`local_workflow_engine_api.dart`
+and proven live throughout Tabletop Club's capacity/waitlist guards (`event-rsvp-response`).
 
 ---
 
@@ -214,9 +213,9 @@ must be declared on that target type; `compareTo.relatedInstanceField` must be d
 (checked at instance level, like `relatedListMembership`).
 
 ⚠️ **This `filter` shape (field → literal / `{fieldName}` / reserved `$state`) is reused, not
-reinvented, by `effects.md`'s PROPOSED `transitionRelated` op's `relatedQuery.filter`** — the difference
-is that a guard only ever *counts* the matching rows, while `transitionRelated` *resolves and transitions
-one of them*. See [`effects.md`](./effects.md) §11.
+reinvented, by `effects.md`'s `transitionRelated` op's `relatedQuery.filter`** (implemented 2026-07-25) —
+the difference is that a guard only ever *counts* the matching rows, while `transitionRelated` *resolves
+and transitions one of them*. See [`effects.md`](./effects.md) §11.
 
 ---
 
