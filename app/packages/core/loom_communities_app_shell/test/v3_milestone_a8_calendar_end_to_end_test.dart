@@ -452,9 +452,10 @@ void main() {
           findsOneWidget,
         );
 
-        await tester.ensureVisible(titleEditor);
-        await tester.enterText(titleEditor, 'Friday game night updated');
-        final save = find.byKey(
+      await tester.ensureVisible(titleEditor);
+      await tester.enterText(titleEditor, 'Friday game night updated');
+      await tester.pump();
+      final save = find.byKey(
           const ValueKey('event-rsvp-save-event-friday-game-night'),
         );
         // The detail card is inside the Calendar's scroll view.  The title
