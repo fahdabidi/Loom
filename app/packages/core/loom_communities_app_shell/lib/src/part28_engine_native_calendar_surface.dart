@@ -972,6 +972,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
 
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   late WorkflowInstance _instance;
+  WorkflowInstance? _lastAuthoredInstance;
   final _controllers = <String, TextEditingController>{};
   final _edits = <String, dynamic>{};
   List<LoomWorkflowTransition> _actions = const [];
@@ -996,9 +997,18 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     // AS.2 deliberately retains this State while its dispatcher refreshes the
     // bindings.  Do not make the rendered event data depend on
     // WorkflowInstance identity: an engine implementation may reuse an
-    // instance object while replacing its data.  The parent is the source of
-    // truth after every refresh, so always adopt its current instance.
-    _instance = widget.instance;
+    // instance object while replacing its data. A refresh triggered by this
+    // card's own successful mutation can briefly return a stale row, though.
+    // Keep the locally authored value until the parent catches up with every
+    // field it wrote, then resume treating the parent as authoritative.
+    final authored = _lastAuthoredInstance;
+    final isStalePostMutationRefresh = authored != null &&
+        widget.instance.instanceId == authored.instanceId &&
+        !_containsData(widget.instance.instanceData, authored.instanceData);
+    if (!isStalePostMutationRefresh) {
+      _instance = widget.instance;
+      if (authored != null) _lastAuthoredInstance = null;
+    }
 
     // Available transitions depend on the response data held by the instance,
     // so reload after a dispatcher refresh as well as a context change.
@@ -1032,6 +1042,26 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       controller.dispose();
     }
     _controllers.clear();
+  }
+
+  /// Whether [data] contains every value from [expected], allowing queried
+  /// rows to include additional computed map fields.
+  bool _containsData(dynamic data, dynamic expected) {
+    if (expected is Map) {
+      if (data is! Map) return false;
+      return expected.entries.every(
+        (entry) => data.containsKey(entry.key) &&
+            _containsData(data[entry.key], entry.value),
+      );
+    }
+    if (expected is List) {
+      if (data is! List || data.length != expected.length) return false;
+      for (var index = 0; index < expected.length; index++) {
+        if (!_containsData(data[index], expected[index])) return false;
+      }
+      return true;
+    }
+    return data == expected;
   }
 
   List<String> get _editableKeys {
@@ -1303,6 +1333,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         return;
       }
       _instance = next;
+      _lastAuthoredInstance = next;
       _edits.clear();
       _resyncControllers();
       widget.onInstanceChanged?.call(next);
