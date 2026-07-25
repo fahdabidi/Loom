@@ -139,6 +139,7 @@ class _CalendarPresentationController {
   DateTime? month;
   String scope = 'month';
   final Set<String> activeFacets = <String>{};
+  final Map<String, String?> activeTextFacetValues = <String, String?>{};
 
   void reset() {
     selectedIdentity = null;
@@ -148,19 +149,22 @@ class _CalendarPresentationController {
     month = null;
     scope = 'month';
     activeFacets.clear();
+    activeTextFacetValues.clear();
   }
 }
+
+enum _CalendarFacetKind { boolean, textValue, numericStat }
 
 class _CalendarFacet {
   const _CalendarFacet({
     required this.field,
     required this.label,
-    required this.isBoolean,
+    required this.kind,
   });
 
   final String field;
   final String label;
-  final bool isBoolean;
+  final _CalendarFacetKind kind;
 }
 
 /// Calendar facts are opt-in through the detail context, or declaratively
@@ -602,13 +606,13 @@ class _EngineNativeCalendarContentState
           () => _CalendarFacet(
             field: facet.field,
             label: facet.label,
-            isBoolean:
-                entry
-                    .resolved
-                    .machine
-                    .instanceDataSchema[facet.field]
-                    ?.type ==
-                'bool',
+            kind: switch (
+              entry.resolved.machine.instanceDataSchema[facet.field]?.type
+            ) {
+              'bool' => _CalendarFacetKind.boolean,
+              'text' => _CalendarFacetKind.textValue,
+              _ => _CalendarFacetKind.numericStat,
+            },
           ),
         );
       }
@@ -632,6 +636,14 @@ class _EngineNativeCalendarContentState
         return false;
       }
     }
+    for (final selection in widget.presentation.activeTextFacetValues.entries) {
+      if (selection.value != null &&
+          _bindingDeclaresFacet(entry, selection.key) &&
+          entry.resolved.instance.instanceData[selection.key] !=
+              selection.value) {
+        return false;
+      }
+    }
     return true;
   }).toList();
 
@@ -644,6 +656,15 @@ class _EngineNativeCalendarContentState
             (num.tryParse('${entry.resolved.instance.instanceData[field]}') ??
                 0),
       );
+
+  List<String> _textFacetValues(List<_CalendarEntry> entries, String field) =>
+      entries
+          .where((entry) => _bindingDeclaresFacet(entry, field))
+          .map((entry) => entry.resolved.instance.instanceData[field])
+          .whereType<String>()
+          .toSet()
+          .toList()
+        ..sort();
 
   bool _isPendingForViewer(_CalendarEntry entry) {
     final responseTable = entry.resolved.binding.responseTable;
@@ -842,7 +863,7 @@ class _EngineNativeCalendarContentState
             runSpacing: 4,
             children: [
               for (final facet in facets)
-                if (facet.isBoolean)
+                if (facet.kind == _CalendarFacetKind.boolean)
                   FilterChip(
                     key: ValueKey('calendar-facet-${facet.field}'),
                     label: Text(facet.label),
@@ -857,6 +878,25 @@ class _EngineNativeCalendarContentState
                       }
                     }),
                   )
+                else if (facet.kind == _CalendarFacetKind.textValue)
+                  for (final value in _textFacetValues(
+                    scopedEntries,
+                    facet.field,
+                  ))
+                    FilterChip(
+                      key: ValueKey(
+                        'calendar-facet-value-${facet.field}-$value',
+                      ),
+                      label: Text(value),
+                      selected: widget.presentation.activeTextFacetValues[
+                              facet.field
+                            ] ==
+                            value,
+                      onSelected: (selected) => setState(() {
+                        widget.presentation.activeTextFacetValues[facet.field] =
+                            selected ? value : null;
+                      }),
+                    )
                 else
                   Text(
                     '${facet.label}: ${_facetTotal(scopedEntries, facet.field)}',

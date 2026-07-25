@@ -272,6 +272,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         },
         'filterableFacets': <dynamic>[
           <String, dynamic>{'field': 'featured', 'label': 'Featured'},
+          <String, dynamic>{'field': 'neighborhood', 'label': 'Neighborhood'},
           <String, dynamic>{
             'field': 'attendeeTotal',
             'label': 'Gathering attendees',
@@ -288,6 +289,10 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'source': 'query(attendance-record where gatheringKey == id)',
       },
       'featured': <String, dynamic>{'type': 'bool', 'storage': 'inline'},
+      'neighborhood': <String, dynamic>{
+        'type': 'text',
+        'storage': 'inline',
+      },
       'attendeeTotal': <String, dynamic>{
         'type': 'number',
         'storage': 'inline',
@@ -319,6 +324,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'eventDate': '2026-07-12',
         'eventTime': '09:00',
         'featured': true,
+        'neighborhood': 'Lakeside',
         'attendeeTotal': 2,
       },
     },
@@ -332,6 +338,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'eventDate': '2026-07-14',
         'eventTime': '10:00',
         'featured': false,
+        'neighborhood': 'Riverside',
         'attendeeTotal': 3,
       },
     },
@@ -344,7 +351,8 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'title': 'Saturday gathering',
         'eventDate': '2026-07-18',
         'eventTime': '11:00',
-        'featured': true,
+        'featured': false,
+        'neighborhood': 'Lakeside',
         'attendeeTotal': 5,
       },
     },
@@ -1441,6 +1449,110 @@ void main() {
         await tester.tap(day);
         await tester.pump();
         expect(find.text('Gathering attendees: 3'), findsOneWidget);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'filters text facets by one value at a time and combines them with boolean facets',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('cal-category-filter', configure: _addScopedCalendarFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+        );
+
+        final lakeside = find.byKey(
+          const ValueKey('calendar-facet-value-neighborhood-Lakeside'),
+        );
+        final riverside = find.byKey(
+          const ValueKey('calendar-facet-value-neighborhood-Riverside'),
+        );
+        await tester.ensureVisible(lakeside);
+        expect(lakeside, findsOneWidget);
+        expect(riverside, findsOneWidget);
+
+        await tester.tap(lakeside);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsNothing,
+        );
+
+        await tester.tap(riverside);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsOneWidget,
+        );
+
+        await tester.tap(riverside);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsOneWidget,
+        );
+
+        await tester.tap(lakeside);
+        await tester.pump();
+        final featured = find.byKey(const ValueKey('calendar-facet-featured'));
+        await tester.ensureVisible(featured);
+        await tester.tap(featured);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-sunday-0'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
+          ),
+          findsNothing,
+        );
       } finally {
         await tester.runAsync(installed.dispose);
       }
