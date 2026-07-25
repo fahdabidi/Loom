@@ -457,16 +457,25 @@ void main() {
         final save = find.byKey(
           const ValueKey('event-rsvp-save-event-friday-game-night'),
         );
+        // The detail card is inside the Calendar's scroll view.  The title
+        // editor is visible after the preceding ensureVisible call, but Save
+        // is below the remaining editors; bring the actual action into view
+        // before tapping it so this test exercises the mutation path.
+        await tester.ensureVisible(save);
         await tester.tap(save);
+        await tester.pump();
+        final title = find.byKey(
+          const ValueKey('event-rsvp-title-event-friday-game-night'),
+        );
+        // This is the optimistic result from _runMutation, before the
+        // dispatcher's follow-up query can replace the card's instance.
+        expect(tester.widget<Text>(title).data, 'Friday game night updated');
         for (var i = 0; i < 5; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),
           );
           await tester.pump(const Duration(milliseconds: 50));
         }
-        final title = find.byKey(
-          const ValueKey('event-rsvp-title-event-friday-game-night'),
-        );
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
         final updated = await _instance(
           tester,
