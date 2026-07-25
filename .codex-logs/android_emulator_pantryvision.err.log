@@ -1,6 +1,0 @@
-WARNING: cannnot unmap ptr 0x74599bdea000 as it is in the protected range from 0x74599bdea000 to 0x745a1bfea000
-WARNING: cannnot unmap ptr 0x745a1be01000 as it is in the protected range from 0x74599bdea000 to 0x745a1bfea000
-XIO:  fatal IO error 2 (No such file or directory) on X server ":0"
-      after 2699 requests (484 known processed) with 1 events remaining.
-XIO:  fatal IO error 2 (No such file or directory) on X server ":0"
-      after 4562 requests (4562 known processed) with 0 events remaining.
