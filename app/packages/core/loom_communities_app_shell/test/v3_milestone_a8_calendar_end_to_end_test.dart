@@ -426,6 +426,118 @@ void _addContainerFixture(Map<String, dynamic> source) {
 }
 
 void main() {
+  testWidgets(
+    'Calendar event detail editors are organizer-only and persist through the engine',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr10a-edit-guard'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final titleEditor = find.byKey(
+          const ValueKey('event-rsvp-editor-event-friday-game-night-title'),
+        );
+        await _pumpUntil(tester, titleEditor);
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-editor-event-friday-game-night-eventDate'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-editor-event-friday-game-night-capacity'),
+          ),
+          findsOneWidget,
+        );
+
+        await tester.ensureVisible(titleEditor);
+        await tester.enterText(titleEditor, 'Friday game night updated');
+        final save = find.byKey(
+          const ValueKey('event-rsvp-save-event-friday-game-night'),
+        );
+        await tester.tap(save);
+        for (var i = 0; i < 5; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        final title = find.byKey(
+          const ValueKey('event-rsvp-title-event-friday-game-night'),
+        );
+        expect(tester.widget<Text>(title).data, 'Friday game night updated');
+        final updated = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        );
+        expect(updated.instanceData['title'], 'Friday game night updated');
+
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        expect(
+          _keyPrefix('event-rsvp-editor-event-friday-game-night-'),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-save-event-friday-game-night'),
+          ),
+          findsNothing,
+        );
+
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Calendar event detail stays closed when editable fields have no editGuard',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr10a-no-edit-guard', configure: (source) {
+          final definitions =
+              (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
+                  as Map<String, dynamic>;
+          final states = (definitions['event-rsvp'] as Map<String, dynamic>)['states']
+              as Map<String, dynamic>;
+          (states['open'] as Map<String, dynamic>).remove('editGuard');
+        }),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        expect(
+          _keyPrefix('event-rsvp-editor-event-friday-game-night-'),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-save-event-friday-game-night'),
+          ),
+          findsNothing,
+        );
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        expect(
+          _keyPrefix('event-rsvp-editor-event-friday-game-night-'),
+          findsNothing,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-save-event-friday-game-night'),
+          ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets('projects the frozen Calendar into its native product structure', (
     tester,
   ) async {

@@ -270,12 +270,18 @@ class LoomWorkflowState {
   final String label;
   final String? tone;
   final List<String>? editableFields;
+  /// Optional, closed-by-default authorization for rendering field editors.
+  ///
+  /// This deliberately remains null when omitted from JSON. Unlike transition
+  /// guards, an absent edit guard must not be interpreted as an open guard.
+  final WorkflowGuard? editGuard;
   final bool isTerminal;
 
   const LoomWorkflowState({
     required this.label,
     this.tone,
     this.editableFields,
+    this.editGuard,
     this.isTerminal = false,
   });
 
@@ -286,6 +292,9 @@ class LoomWorkflowState {
       editableFields: (json['editableFields'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+      editGuard: json['editGuard'] != null
+          ? WorkflowGuard.fromJson(json['editGuard'] as Map<String, dynamic>)
+          : null,
       isTerminal: json['isTerminal'] as bool? ?? false,
     );
   }

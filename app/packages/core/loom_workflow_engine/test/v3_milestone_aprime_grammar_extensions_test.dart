@@ -7,6 +7,26 @@ LoomWorkflowStateMachine _machine(String type, Map<String, dynamic> json) =>
 void main() {
   // ── 1. Model round-trip parsing ──────────────────────────────────────
   group('Model parsing', () {
+    test('state editGuard parses when present and stays null when absent', () {
+      final guarded = LoomWorkflowState.fromJson(<String, dynamic>{
+        'label': 'Open',
+        'editableFields': ['title'],
+        'editGuard': <String, dynamic>{
+          'allowedPersonaIds': ['tabletop-organizer'],
+        },
+      });
+      final unguarded = LoomWorkflowState.fromJson(<String, dynamic>{
+        'label': 'Open',
+        'editableFields': ['title'],
+      });
+
+      expect(guarded.editGuard, isNotNull);
+      expect(guarded.editGuard!.allowedPersonaIds, ['tabletop-organizer']);
+      // An absent editGuard is closed by default, rather than becoming the
+      // open WorkflowGuard() used for absent transition guards.
+      expect(unguarded.editGuard, isNull);
+    });
+
     test('render binding fromJson parses optional styleField', () {
       final styled = RenderBinding.fromJson(<String, dynamic>{
         'states': ['open'],

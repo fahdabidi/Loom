@@ -972,6 +972,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
 
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   late WorkflowInstance _instance;
+  final _controllers = <String, TextEditingController>{};
+  final _edits = <String, dynamic>{};
   List<LoomWorkflowTransition> _actions = const [];
   Set<String> _eventActionIds = const {};
   bool _loadingActions = true;
@@ -1006,6 +1008,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         oldWidget.engine != widget.engine) {
       _actionRequest++;
       _generation++;
+      _edits.clear();
+      _disposeControllers();
       _error = null;
       _retry = null;
       _actions = const [];
@@ -1019,7 +1023,49 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   @override
   void dispose() {
     _generation++;
+    _disposeControllers();
     super.dispose();
+  }
+
+  void _disposeControllers() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    _controllers.clear();
+  }
+
+  List<String> get _editableKeys {
+    final state = widget.machine.states[_instance.currentState];
+    final guard = state?.editGuard;
+    final canEdit = guard != null &&
+        evaluateGuard(guard, widget.personaId, _instance.instanceData);
+    return canEdit
+        ? [
+            for (final key in state?.editableFields ?? const <String>[])
+              if (widget.machine.instanceDataSchema[key] case final schema?)
+                if (schema.formula == null && schema.writableBy != 'effect') key,
+          ]
+        : const <String>[];
+  }
+
+  dynamic _valueFor(String key) =>
+      _edits.containsKey(key) ? _edits[key] : _instance.instanceData[key];
+
+  TextEditingController _controllerFor(String key) => _controllers.putIfAbsent(
+    key,
+    () => TextEditingController(text: '${_valueFor(key) ?? ''}'),
+  );
+
+  void _resyncControllers() {
+    _disposeControllers();
+    for (final key in _editableKeys) {
+      final schema = widget.machine.instanceDataSchema[key]!;
+      if (schema.type != 'bool' &&
+          schema.type != 'date' &&
+          schema.type != 'time') {
+        _controllerFor(key);
+      }
+    }
   }
 
   bool _isCurrent(
@@ -1169,6 +1215,59 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     );
   }
 
+  Future<void> _save() async {
+    if (_mutating || _edits.isEmpty) return;
+    final generation = _generation;
+    final instance = _instance;
+    final machine = widget.machine;
+    final engine = widget.engine;
+    final personaId = widget.personaId;
+    final updates = <String, dynamic>{};
+    for (final key in _editableKeys) {
+      if (!_edits.containsKey(key)) continue;
+      final field = widget.machine.instanceDataSchema[key]!;
+      final value = _edits[key];
+      if (field.type == 'number' && value is String) {
+        final parsed = num.tryParse(value.trim());
+        if (parsed == null) {
+          if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+          setState(() {
+            _error = 'Enter a valid number.';
+            _retry = _save;
+          });
+          return;
+        }
+        updates[key] = parsed;
+      } else {
+        updates[key] = value;
+      }
+    }
+    if (updates.isEmpty) return;
+    await _runMutation(
+      generation: generation,
+      instance: instance,
+      machine: machine,
+      engine: engine,
+      personaId: personaId,
+      operation: () async {
+        await engine.updateInstanceFields(
+          workflowType: instance.workflowType,
+          instanceId: instance.instanceId,
+          fieldUpdates: updates,
+          personaId: personaId,
+        );
+        return WorkflowInstance(
+          instanceId: instance.instanceId,
+          workflowType: instance.workflowType,
+          currentState: instance.currentState,
+          instanceData: {...instance.instanceData, ...updates},
+          createdByPersonaId: instance.createdByPersonaId,
+        );
+      },
+      retry: _save,
+    );
+  }
+
   Future<void> _runMutation({
     required int generation,
     required WorkflowInstance instance,
@@ -1188,6 +1287,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       final next = await operation();
       if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
       _instance = next;
+      _edits.clear();
+      _resyncControllers();
       widget.onInstanceChanged?.call(next);
       if (!_isCurrent(generation, next, machine, engine, personaId)) return;
       setState(() => _mutating = false);
@@ -1292,6 +1393,147 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         ),
   };
 
+  String _fieldLabel(String key, InstanceDataField schema) {
+    final label = (schema.labelTemplate ?? '')
+        .replaceAll('{value.length}', '')
+        .replaceAll('{value}', '')
+        .replaceAll(RegExp(r'[:\-–—]+\s*$'), '')
+        .trim();
+    if (label.isNotEmpty) return label;
+    final spaced = key.replaceAllMapped(
+      RegExp(r'(?<=[a-z0-9])([A-Z])'),
+      (match) => ' ${match.group(0)}',
+    );
+    return spaced.isEmpty
+        ? spaced
+        : '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
+
+  Widget _editor(String key, InstanceDataField schema) {
+    final disabled = _mutating;
+    final editorKey = ValueKey(
+      'event-rsvp-editor-${_instance.instanceId}-$key',
+    );
+    final label = _fieldLabel(key, schema);
+    switch (schema.type) {
+      case 'bool':
+        return SwitchListTile(
+          key: editorKey,
+          title: Text(label),
+          value: _valueFor(key) == true,
+          onChanged: disabled
+              ? null
+              : (value) => setState(() => _edits[key] = value),
+        );
+      case 'date':
+        return _pickerField(
+          key: key,
+          label: label,
+          editorKey: editorKey,
+          disabled: disabled,
+          onPick: () async {
+            final generation = _generation;
+            final instance = _instance;
+            final machine = widget.machine;
+            final engine = widget.engine;
+            final personaId = widget.personaId;
+            final initial =
+                DateTime.tryParse('${_valueFor(key) ?? ''}') ?? DateTime.now();
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: initial,
+              firstDate: DateTime(1900),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null &&
+                _isCurrent(
+                  generation,
+                  instance,
+                  machine,
+                  engine,
+                  personaId,
+                )) {
+              setState(() => _edits[key] =
+                  '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}');
+            }
+          },
+        );
+      case 'time':
+        return _pickerField(
+          key: key,
+          label: label,
+          editorKey: editorKey,
+          disabled: disabled,
+          onPick: () async {
+            final generation = _generation;
+            final instance = _instance;
+            final machine = widget.machine;
+            final engine = widget.engine;
+            final personaId = widget.personaId;
+            final parts = '${_valueFor(key) ?? ''}'.split(':');
+            final picked = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay(
+                hour: int.tryParse(parts.first) ?? TimeOfDay.now().hour,
+                minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
+              ),
+            );
+            if (picked != null &&
+                _isCurrent(
+                  generation,
+                  instance,
+                  machine,
+                  engine,
+                  personaId,
+                )) {
+              setState(() => _edits[key] =
+                  '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}');
+            }
+          },
+        );
+      default:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TextField(
+            key: editorKey,
+            controller: _controllerFor(key),
+            enabled: !disabled,
+            maxLines: schema.type == 'textarea' ? null : 1,
+            keyboardType: schema.type == 'number'
+                ? const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  )
+                : TextInputType.text,
+            decoration: InputDecoration(labelText: label),
+            onChanged: (value) => setState(() => _edits[key] = value),
+          ),
+        );
+    }
+  }
+
+  Widget _pickerField({
+    required String key,
+    required String label,
+    required Key editorKey,
+    required bool disabled,
+    required Future<void> Function() onPick,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: InkWell(
+      key: editorKey,
+      onTap: disabled ? null : onPick,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          enabled: !disabled,
+          border: const OutlineInputBorder(),
+        ),
+        child: Text('${_valueFor(key) ?? ''}'),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final data = _instance.instanceData;
@@ -1313,6 +1555,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final hasCapacityInfo =
         data.containsKey('capacity') || data.containsKey('minimumAttendance');
     final fallbackFactSchema = _fallbackFactSchema;
+    final editable = _editableKeys;
     final ratio = capacity == 0
         ? 0.0
         : (goingCount.toDouble() / capacity.toDouble()).clamp(0.0, 1.0);
@@ -1438,6 +1681,17 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 ),
               ),
               const SizedBox(height: 12),
+            ],
+            if (editable.isNotEmpty) ...[
+              for (final key in editable)
+                _editor(key, widget.machine.instanceDataSchema[key]!),
+              const SizedBox(height: 8),
+              FilledButton(
+                key: ValueKey('event-rsvp-save-${_instance.instanceId}'),
+                onPressed: _mutating || _edits.isEmpty ? null : _save,
+                child: const Text('Save changes'),
+              ),
+              const SizedBox(height: 4),
             ],
             if (_loadingActions || _mutating)
               Padding(
