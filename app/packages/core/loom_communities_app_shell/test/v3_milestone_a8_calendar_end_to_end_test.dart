@@ -470,6 +470,12 @@ void main() {
         // This is the optimistic result from _runMutation, before the
         // dispatcher's follow-up query can replace the card's instance.
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-error-event-friday-game-night'),
+          ),
+          findsNothing,
+        );
         for (var i = 0; i < 5; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -477,6 +483,12 @@ void main() {
           await tester.pump(const Duration(milliseconds: 50));
         }
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-error-event-friday-game-night'),
+          ),
+          findsNothing,
+        );
         final updated = await _instance(
           tester,
           installed,

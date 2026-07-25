@@ -1243,12 +1243,20 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       }
     }
     if (updates.isEmpty) return;
+    final optimistic = WorkflowInstance(
+      instanceId: instance.instanceId,
+      workflowType: instance.workflowType,
+      currentState: instance.currentState,
+      instanceData: {...instance.instanceData, ...updates},
+      createdByPersonaId: instance.createdByPersonaId,
+    );
     await _runMutation(
       generation: generation,
       instance: instance,
       machine: machine,
       engine: engine,
       personaId: personaId,
+      optimistic: optimistic,
       operation: () async {
         await engine.updateInstanceFields(
           workflowType: instance.workflowType,
@@ -1260,7 +1268,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
           currentState: instance.currentState,
-          instanceData: {...instance.instanceData, ...updates},
+          instanceData: optimistic.instanceData,
           createdByPersonaId: instance.createdByPersonaId,
         );
       },
@@ -1274,6 +1282,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     required LoomWorkflowStateMachine machine,
     required WorkflowEngineApi engine,
     required String personaId,
+    WorkflowInstance? optimistic,
     required Future<WorkflowInstance> Function() operation,
     required Future<void> Function() retry,
   }) async {
@@ -1282,10 +1291,17 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       _mutating = true;
       _error = null;
       _retry = null;
+      if (optimistic != null) _instance = optimistic;
     });
+    if (optimistic != null) {
+      _resyncControllers();
+    }
+    final activeInstance = optimistic ?? instance;
     try {
       final next = await operation();
-      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      if (!_isCurrent(generation, activeInstance, machine, engine, personaId)) {
+        return;
+      }
       _instance = next;
       _edits.clear();
       _resyncControllers();
@@ -1294,8 +1310,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       setState(() => _mutating = false);
       await _loadActions();
     } catch (_) {
-      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      if (!_isCurrent(generation, activeInstance, machine, engine, personaId)) {
+        return;
+      }
       setState(() {
+        if (optimistic != null) _instance = instance;
         _mutating = false;
         _error = 'Could not save this change. Please try again.';
         _retry = retry;
