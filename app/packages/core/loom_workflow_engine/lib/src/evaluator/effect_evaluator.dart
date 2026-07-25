@@ -45,7 +45,7 @@ dynamic resolveEffectValue(
       value.startsWith('{input.') &&
       value.endsWith('}')) {
     final inputName = value.substring('{input.'.length, value.length - 1);
-    if (inputValues.containsKey(inputName)) return inputValues[inputName];
+    return inputValues.containsKey(inputName) ? inputValues[inputName] : null;
   }
   if (value is String) {
     var resolved = value

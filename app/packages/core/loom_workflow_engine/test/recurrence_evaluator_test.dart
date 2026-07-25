@@ -51,6 +51,25 @@ void main() {
       ]);
     });
 
+    test('forces the anchor before later weekly BYDAY matches', () {
+      final dates = computeRecurrenceOccurrences(
+        DateTime(2026, 7, 8), // Wednesday
+        _rule({
+          'freq': 'weekly',
+          'count': 5,
+          'byDayOfWeek': ['MO'],
+        }),
+      );
+
+      expect(dates, [
+        DateTime(2026, 7, 8),
+        DateTime(2026, 7, 13),
+        DateTime(2026, 7, 20),
+        DateTime(2026, 7, 27),
+        DateTime(2026, 8, 3),
+      ]);
+    });
+
     test('clamps monthly byMonthDay including February leap years', () {
       final nonLeap = computeRecurrenceOccurrences(
         DateTime(2025, 1, 31),

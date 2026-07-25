@@ -16,6 +16,10 @@ LoomWorkflowStateMachine _eventMachine() => LoomWorkflowStateMachine.fromJson({
       'inputs': {
         'freq': {'type': 'text', 'required': true},
         'count': {'type': 'number', 'required': true},
+        'interval': {'type': 'number'},
+        'byDayOfWeek': {'type': 'text'},
+        'byMonthDay': {'type': 'number'},
+        'bySetPos': {'type': 'text'},
       },
       'effects': [
         {
@@ -30,8 +34,11 @@ LoomWorkflowStateMachine _eventMachine() => LoomWorkflowStateMachine.fromJson({
           },
           'recurrenceRule': {
             'freq': '{input.freq}',
-            'interval': 1,
+            'interval': '{input.interval}',
             'count': '{input.count}',
+            'byDayOfWeek': '{input.byDayOfWeek}',
+            'byMonthDay': '{input.byMonthDay}',
+            'bySetPos': '{input.bySetPos}',
           },
         },
       ],
@@ -104,6 +111,81 @@ void main() {
             .substring(0, 10),
       ),
     );
+  });
+
+  test(
+    'uses supplied weekly weekdays while omitted optional fields resolve null',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'recurrence-optional-weekly',
+      );
+      api.registerDefinition(_eventMachine());
+      final anchorId = await api.createInstance(
+        workflowType: 'event-rsvp',
+        personaId: 'organizer',
+        initialInstanceData: {
+          'title': 'Wednesday social',
+          'eventDate': '2026-07-08',
+          'location': 'Clubhouse',
+        },
+      );
+
+      await api.applyTransition(
+        workflowType: 'event-rsvp',
+        instanceId: anchorId,
+        transitionId: 'make-recurring',
+        personaId: 'organizer',
+        inputs: {
+          'freq': 'weekly',
+          'count': 5,
+          'byDayOfWeek': ['MO'],
+        },
+      );
+
+      final dates = (await _events(api))
+          .map((event) => event.instanceData['eventDate'] as String)
+          .toList()
+        ..sort();
+      expect(dates, [
+        '2026-07-08',
+        '2026-07-13',
+        '2026-07-20',
+        '2026-07-27',
+        '2026-08-03',
+      ]);
+    },
+  );
+
+  test('defaults daily interval when all optional inputs are omitted', () async {
+    final api = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'recurrence-optional-daily',
+    );
+    api.registerDefinition(_eventMachine());
+    final anchorId = await api.createInstance(
+      workflowType: 'event-rsvp',
+      personaId: 'organizer',
+      initialInstanceData: {
+        'title': 'Daily standup',
+        'eventDate': '2026-07-10',
+        'location': 'Clubhouse',
+      },
+    );
+
+    await api.applyTransition(
+      workflowType: 'event-rsvp',
+      instanceId: anchorId,
+      transitionId: 'make-recurring',
+      personaId: 'organizer',
+      inputs: {'freq': 'daily', 'count': 3},
+    );
+
+    final dates = (await _events(api))
+        .map((event) => event.instanceData['eventDate'] as String)
+        .toList()
+      ..sort();
+    expect(dates, ['2026-07-10', '2026-07-11', '2026-07-12']);
   });
 
   test('rolls back the series when a runtime rule value is invalid', () async {

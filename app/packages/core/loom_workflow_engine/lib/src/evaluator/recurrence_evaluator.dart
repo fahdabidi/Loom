@@ -36,8 +36,7 @@ class RecurrenceRule {
     if (!const {'daily', 'weekly', 'monthly'}.contains(freq)) {
       throw StateError('recurrenceRule.freq must be daily, weekly, or monthly');
     }
-    final interval =
-        json.containsKey('interval') ? parseInt(json['interval']) : 1;
+    final interval = json['interval'] != null ? parseInt(json['interval']) : 1;
     if (interval == null || interval < 1) {
       throw StateError('recurrenceRule.interval must be an integer >= 1');
     }
@@ -47,7 +46,7 @@ class RecurrenceRule {
     }
 
     List<String>? byDayOfWeek;
-    if (json.containsKey('byDayOfWeek')) {
+    if (json['byDayOfWeek'] != null) {
       final raw = json['byDayOfWeek'];
       if (raw is! List || raw.isEmpty || raw.any((item) => item is! String)) {
         throw StateError('recurrenceRule.byDayOfWeek must be a non-empty list');
@@ -61,7 +60,7 @@ class RecurrenceRule {
     }
 
     int? byMonthDay;
-    if (json.containsKey('byMonthDay')) {
+    if (json['byMonthDay'] != null) {
       byMonthDay = parseInt(json['byMonthDay']);
       if (byMonthDay == null || byMonthDay < 1 || byMonthDay > 31) {
         throw StateError(
@@ -137,13 +136,13 @@ List<DateTime> computeRecurrenceOccurrences(DateTime anchor, RecurrenceRule rule
       }
       final weekdays = byDay.map((code) => _isoWeekdays[code]!).toList()
         ..sort();
-      final result = <DateTime>[];
+      final result = <DateTime>[anchor];
       final monday = anchor.subtract(Duration(days: anchor.weekday - 1));
       for (var week = 0; result.length < rule.count; week++) {
         final weekMonday = monday.add(Duration(days: 7 * rule.interval * week));
         for (final weekday in weekdays) {
           final candidate = weekMonday.add(Duration(days: weekday - 1));
-          if (!candidate.isBefore(anchor)) result.add(candidate);
+          if (candidate.isAfter(anchor)) result.add(candidate);
           if (result.length == rule.count) break;
         }
       }
