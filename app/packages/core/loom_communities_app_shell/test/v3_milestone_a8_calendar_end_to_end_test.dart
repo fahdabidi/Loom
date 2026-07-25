@@ -521,7 +521,7 @@ void main() {
       } finally {
         await tester.runAsync(installed.dispose);
       }
-    },
+  },
   );
 
   testWidgets(
@@ -1895,9 +1895,9 @@ void main() {
     },
   );
 
-  testWidgets('fullness guard reverses through Calendar UI and real formulas', (
-    tester,
-  ) async {
+  testWidgets(
+    'fullness guard auto-promotes a waitlisted member through Calendar UI',
+    (tester) async {
     final installed = (await tester.runAsync(() => _install('a8-fullness')))!;
     setCurrentActiveAccountId('tabletop-member-14');
     addTearDown(() => setCurrentActiveAccountId(null));
@@ -1966,9 +1966,25 @@ void main() {
         tester,
         find.byKey(
           const ValueKey(
+            'event-rsvp-event-friday-game-night-action-respond-maybe',
+          ),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-respond-declined',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
             'event-rsvp-event-friday-game-night-action-respond-going',
           ),
         ),
+        findsNothing,
       );
       expect(
         find.byKey(
@@ -1984,24 +2000,15 @@ void main() {
         'event-friday-game-night',
         personaId: 'tabletop-member-14',
       );
-      expect(open.instanceData['goingCount'], 10);
-      expect(open.instanceData['seatsRemaining'], 1);
-      expect(open.instanceData['isFull'], isFalse);
-      await _tapAction(tester, 'event-friday-game-night', 'respond-going');
-      final going = await _instance(
-        tester,
-        installed,
-        'event-friday-game-night',
-        personaId: 'tabletop-member-14',
-      );
-      expect(_responseFor(going, 'tabletop-member-14')['\$state'], 'going');
-      expect(going.instanceData['goingCount'], 11);
-      expect(going.instanceData['seatsRemaining'], 0);
-      expect(going.instanceData['isFull'], isTrue);
+      expect(_responseFor(open, 'tabletop-member-14')['\$state'], 'going');
+      expect(open.instanceData['goingCount'], 11);
+      expect(open.instanceData['seatsRemaining'], 0);
+      expect(open.instanceData['isFull'], isTrue);
     } finally {
       await tester.runAsync(installed.dispose);
     }
-  });
+  },
+  );
 
   testWidgets(
     'tournament actor-in-list guard and withdrawal are enforced through Calendar',
