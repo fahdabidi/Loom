@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
 last_verified: 2026-07-24
 audience: llm-agent
@@ -212,6 +212,11 @@ per-row table, not a list field on this instance — e.g. "no more than `capacit
 must be declared on that target type; `compareTo.relatedInstanceField` must be declared **here**;
 `compareTo.field` must be declared on the type named by `compareTo.relatedInstanceField`'s value
 (checked at instance level, like `relatedListMembership`).
+
+⚠️ **This `filter` shape (field → literal / `{fieldName}` / reserved `$state`) is reused, not
+reinvented, by `effects.md`'s PROPOSED `transitionRelated` op's `relatedQuery.filter`** — the difference
+is that a guard only ever *counts* the matching rows, while `transitionRelated` *resolves and transitions
+one of them*. See [`effects.md`](./effects.md) §11.
 
 ---
 

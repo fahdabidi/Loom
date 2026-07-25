@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-16
+last_verified: 2026-07-24
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -15,8 +15,8 @@ derived_from:
 An effect is what **changes** when a transition fires. Effects run after guards pass, inside the same
 transaction as the state change.
 
-**Complete list: nine ops. No others exist.** An unrecognized `op` is an error
-(`unknown_effect_op`) — the parser will not guess.
+**Complete list: nine ops, plus one PROPOSED op (`transitionRelated`, below) not yet implemented by the
+engine.** An unrecognized `op` is an error (`unknown_effect_op`) — the parser will not guess.
 
 ## Effect object — every legal key
 
@@ -188,6 +188,54 @@ transition should bring a *new object* into existence.
 { "op": "removeFromTileGrid" }
 ```
 No `key`. Removes the instance's tile from a grid surface. Touches no `instanceData`.
+
+### 11 (PROPOSED, not yet implemented). `transitionRelated` — apply a transition to a *queried* instance
+
+```jsonc
+{
+  "op": "transitionRelated",
+  "relatedQuery": {
+    "workflowType": "event-rsvp-response",
+    "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
+    "sortKey": "rsvpedAt",
+    "limit": 1
+  },
+  "transitionId": "respond-going"
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `relatedQuery` | object | Same shape as `guards.md`'s `relatedAggregate.filter` (field → literal, `{fieldName}` interpolated against **this** instance, or the reserved `$state` key), plus `sortKey` (a field on the **target** type, ascending) and `limit` (currently only `1` is defined). |
+| `transitionId` | string | A transition declared on `relatedQuery.workflowType`. Applied to the **first** matching row after sorting. |
+
+**Why this exists:** every other cross-instance mechanism either writes one field on one directly-named
+instance (`relatedInstance`, §8) or spawns a brand-new one (`createInstance`, §9). Nothing today can
+*find* a set of sibling instances and drive one of them through its own state machine — the gap this
+closes is waitlist promotion: a seat opens on `event-rsvp`, and the **oldest** waitlisted
+`event-rsvp-response` row (not a specific, already-known instanceId) needs to be pushed to `going`.
+
+**Semantics — this is a real `applyTransition` call, not a bypass.** The resolved target instance is
+transitioned exactly as if `WorkflowEngineApi.applyTransition` were called on it directly: the target
+transition's own `guard` (including its own `relatedAggregate`, if any) is evaluated fresh, against the
+target's current data, at the moment this effect runs. **If the target's guard fails, the effect is a
+silent no-op** — it does not error, and it does not retry against the next-best match. This is a
+deliberate design choice: it lets `transitionRelated` be attached unconditionally to every transition
+that *might* free a seat (e.g. `event-rsvp-response`'s `respond-maybe`/`respond-declined`, regardless of
+which state the row is leaving), without a separate "did this actually free a seat?" formula check —
+correctness falls out of the target's own capacity guard re-evaluating live, the same guard that already
+gates a member's own manual "Going" tap.
+
+**Ordering caveat:** `sortKey` sorts ascending by the named field's value on `instanceData` — it does
+**not** fall back to insertion order. A workflow relying on `sortKey` for a real "first come, first
+served" guarantee must stamp its own explicit ordering field via a `set` effect (e.g. `"rsvpedAt":
+"$timestamp"` on the transition that enters the queued/waitlisted state) — instance ids are randomly
+generated and carry no temporal meaning.
+
+**Validation (once implemented):** `relatedQuery.workflowType` must be declared → else
+`dangling_transition_related_workflow_type`; `transitionId` must be a transition declared on that type →
+else `dangling_transition_related_transition_id`; `sortKey`, if present, must name a field declared on
+that type → else `dangling_transition_related_sort_key`.
 
 ---
 

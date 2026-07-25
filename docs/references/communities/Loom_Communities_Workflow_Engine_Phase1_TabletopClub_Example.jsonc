@@ -286,6 +286,13 @@
             "from": ["pending", "going", "declined", "waitlisted"],
             "to": "maybe",
             "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
+            // NOT YET WRITTEN HERE (see spec-version.json proposedNotImplemented.transitionRelatedEffect,
+            // effects.md op 11): once transitionRelated ships, this transition (and respond-declined below)
+            // will gain an effect promoting the oldest waitlisted row via `sortKey: "rsvpedAt"`. Deferred
+            // out of this fixture for now -- the real community_package_validator's effect-op allowlist is
+            // a hard enum (unlike editGuard/dateRail's additive optional keys), so an unrecognized `op`
+            // value is a genuine validation FAILURE, not a silently-ignored proposal. Landing it here would
+            // break this file's standing zero-error/zero-warning bar. Land together with the real op.
           },
           {
             "id": "respond-declined",
@@ -295,6 +302,7 @@
             "from": ["pending", "going", "maybe", "waitlisted"],
             "to": "declined",
             "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
+            // NOT YET WRITTEN HERE -- see respond-maybe's identical note above.
           },
           {
             // Only offered once the event is genuinely full — a real relatedAggregate guard, so the
@@ -315,13 +323,22 @@
                 "comparator": ">=",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
               }
-            }
+            },
+            // Stamps the FIFO ordering field transitionRelated's sortKey reads above -- instance ids are
+            // randomly generated, not time-ordered, so waitlist position needs its own explicit timestamp.
+            "effects": [
+              { "op": "set", "key": "rsvpedAt", "value": "$timestamp" }
+            ]
           }
         ],
         "renderBindings": [],
         "instanceDataSchema": {
           "eventId":   { "type": "text", "required": true, "storage": "inline" },
-          "personaId": { "type": "text", "required": true, "storage": "inline" }
+          "personaId": { "type": "text", "required": true, "storage": "inline" },
+          // PROPOSED, not yet implemented -- see respond-waitlist's effect above and
+          // spec-version.json proposedNotImplemented.transitionRelatedEffect. Written by effect only,
+          // never by the member directly.
+          "rsvpedAt":  { "type": "text", "writableBy": "effect", "storage": "inline" }
         }
       },
 
