@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
 last_verified: 2026-07-25
 audience: llm-agent
@@ -15,23 +15,32 @@ derived_from:
 An effect is what **changes** when a transition fires. Effects run after guards pass, inside the same
 transaction as the state change.
 
-**Complete list: ten ops** (the ninth, `removeFromTileGrid`, is presentation-only; the tenth,
-`transitionRelated`, is implemented as of 2026-07-25 — see §11). An unrecognized `op` is an error
-(`unknown_effect_op`) — the parser will not guess.
+**Complete list: ten ops implemented, one PROPOSED (eleven total)** (op 10, `removeFromTileGrid`, is
+presentation-only; op 11, `transitionRelated`, is implemented as of 2026-07-25 — see §11; op 12,
+`generateRecurringInstances`, is **PROPOSED, not yet implemented** — see §12). An unrecognized `op` is an
+error (`unknown_effect_op`) — the parser will not guess. This means op 12's shape below is documented as
+the target grammar for CAL.Recurrence's implementation ticket, but **must not** be written into the
+frozen Tabletop Club fixture until the engine genuinely recognizes it — the real validator's `op`
+allowlist is hard-coded, and `transitionRelated` hit exactly this trap earlier (a draft fixture using it
+before the engine implemented it failed with real `unknown_effect_op` errors).
 
 ## Effect object — every legal key
 
 ```jsonc
 {
-  "op": "<one of the nine>",       // REQUIRED
-  "key": "<field name>",           // for data ops; null for branch/createInstance/removeFromTileGrid
+  "op": "<one of the eleven>",     // REQUIRED
+  "key": "<field name>",           // for data ops; null for branch/createInstance/removeFromTileGrid/generateRecurringInstances
   "value": <any>,                  // for data ops
   "relatedInstance": "<field>",    // cross-instance write (see §8)
-  "workflowType": "<type>",        // createInstance only
-  "fields": { },                   // createInstance only
+  "workflowType": "<type>",        // createInstance, generateRecurringInstances
+  "fields": { },                   // createInstance, generateRecurringInstances (per-occurrence template)
   "if": "<formula>",               // branch only
   "then": [ ],                     // branch only
-  "else": [ ]                      // branch only
+  "else": [ ],                     // branch only
+  "relatedQuery": { },             // transitionRelated only
+  "transitionId": "<id>",          // transitionRelated only
+  "anchorField": "<field>",        // generateRecurringInstances only (PROPOSED, §12)
+  "recurrenceRule": { }            // generateRecurringInstances only (PROPOSED, §12)
 }
 ```
 
@@ -78,7 +87,7 @@ parameterless transition second) — see [`guide/04-antipatterns.md`](../guide/0
 
 ---
 
-## The nine ops
+## The ten ops (plus one PROPOSED)
 
 ### 1. `set` — assign a value
 
@@ -238,6 +247,85 @@ generated and carry no temporal meaning.
 else `dangling_transition_related_transition_id`; `sortKey`, if present, must name a field declared on
 that type → else `dangling_transition_related_sort_key`.
 
+### 12. `generateRecurringInstances` — PROPOSED, not yet implemented
+
+**Design closed 2026-07-25 (CAL.Recurrence). No engine or validator support exists yet — see the warning
+under "Complete list" above before using this in any real fixture.**
+
+```jsonc
+{
+  "op": "generateRecurringInstances",
+  "workflowType": "event-rsvp",
+  "anchorField": "eventDate",
+  "fields": {
+    "title": "{title}", "eventDate": "{eventDate}", "location": "{location}",
+    "seriesId": "$newSeriesId"
+  },
+  "recurrenceRule": {
+    "freq": "weekly",
+    "interval": 1,
+    "count": 12,
+    "byDayOfWeek": ["FR"]
+  }
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `workflowType` | string | The type to spawn occurrences of. MUST be declared. |
+| `anchorField` | string | Which key in `fields` holds the base date; the computed occurrence date overwrites this field per-occurrence. MUST be a key present in `fields`, and MUST name a `"date"`-typed field on `workflowType`. |
+| `fields` | object | Per-occurrence `instanceData` template — same interpolation as `createInstance.fields` (§9), plus one reserved token below. Every key MUST be declared on `workflowType`. |
+| `recurrenceRule` | object | The pattern — see below. |
+
+**Reserved token `$newSeriesId`** (available only inside this op's own `fields`): resolves to one fresh id,
+minted once per effect application (not once per occurrence) — every generated occurrence, and the
+anchor instance itself, share the same value. This is deliberately separate from `$actor`/`$timestamp`:
+those resolve from ambient call context on every use, but `$newSeriesId` is a value the effect handler
+mints itself.
+
+**`recurrenceRule` shape:**
+
+| Field | Type | Meaning |
+|---|---|---|
+| `freq` | `"daily"` \| `"weekly"` \| `"monthly"` | Required. |
+| `interval` | integer, default `1` | Every N days/weeks/months. |
+| `count` | integer, 1–366 | **Required.** Total occurrences in the series, including the anchor itself — bounds this to eager, fixed-size generation; there is no infinite/open-ended recurrence. |
+| `byDayOfWeek` | list of `"MO"`/`"TU"`/`"WE"`/`"TH"`/`"FR"`/`"SA"`/`"SU"` | `weekly`: which weekdays each interval-week (omit → defaults to the anchor's own weekday). `monthly`: exactly one code, only meaningful paired with `bySetPos`. Invalid for `daily`. |
+| `byMonthDay` | integer, 1–31 | `monthly` only. A fixed day-of-month, **clamped to the target month's real last day** (e.g. `31` lands on Apr 30, Feb 28, or Feb 29 in a leap year — recomputed fresh per occurrence). Mutually exclusive with `bySetPos`. |
+| `bySetPos` | `"first"`/`"second"`/`"third"`/`"fourth"`/`"last"` | `monthly` only, requires exactly one `byDayOfWeek` entry (e.g. `byDayOfWeek: ["FR"]` + `bySetPos: "last"` → "last Friday of the month"). If an ordinal position doesn't exist in a given month, falls back to that month's last occurrence of the weekday for that occurrence only — `count` is never short-counted. Mutually exclusive with `byMonthDay`. |
+
+**Occurrence 0 is the anchor instance itself** — the instance the transition fired on gets `seriesId`
+stamped onto it in place; it is never duplicated. Occurrences `1..count-1` are brand-new, independent
+sibling instances, each one exactly as normal and independent as any other instance of that
+`workflowType` — the same RSVP/edit/cancel mechanics that already work for a single event work
+per-occurrence for free, with zero new per-occurrence interaction model.
+
+**Deleting one occurrence vs. the whole series:** deleting a single occurrence needs no new capability —
+it's that occurrence's own existing cancel/decline transition, unchanged. Deleting an entire series is
+**not** a new engine bulk-effect op — it's client-orchestrated: query every instance of the same
+`workflowType` sharing that `seriesId`, and call each one's existing single-instance cancel transition in
+a loop.
+
+**Why bespoke Dart, not the formula evaluator:** `monthly`'s `byMonthDay`-with-clamping and
+`bySetPos`-with-fallback logic is real month/weekday-boundary arithmetic. Expressing this as composed
+generic formula primitives would mean building something close to an RRULE engine inside a
+general-purpose expression language — over-generalizing it for one narrow feature. The date computation
+is real `DateTime` arithmetic in a dedicated evaluator, not a formula.
+
+**Validation (planned, not yet built):** `workflowType` must be declared → else
+`dangling_generate_recurring_target`; `fields` keys must be declared on the target →
+`dangling_instance_data_key`; MUST NOT write a computed field of the target →
+`computed_field_written_by_effect`; `anchorField` must be a key present in `fields` and must name a
+`"date"`-typed target field → else `dangling_recurrence_anchor_field` /
+`invalid_recurrence_anchor_field_type`; `recurrenceRule.freq`/`count` are required and range-checked →
+else `missing_recurrence_freq` / `invalid_recurrence_freq` / `missing_recurrence_count` /
+`invalid_recurrence_count`; `byMonthDay`/`bySetPos` are mutually exclusive →
+`recurrence_month_day_set_pos_conflict`; each field is only valid for its applicable `freq` →
+`recurrence_field_invalid_for_freq`. A value supplied as a runtime `{input.x}` token (organizer-entered,
+not statically known) is skipped by the static validator and backstopped by a runtime error instead —
+same deliberate validator/runtime split already documented for `transitionRelated`'s silent guard-failure
+behavior.
+
 ---
 
 ## Worked example — tie → real runoff, else propagate the winner
@@ -276,7 +364,7 @@ formulas; the runoff and the propagation are effects.
 
 | Rule | Error |
 |---|---|
-| `op` must be one of the nine | `unknown_effect_op` |
+| `op` must be a known op | `unknown_effect_op` |
 | `key` must be declared in this schema (same-instance ops) | `dangling_instance_data_key` |
 | MUST NOT write a computed (`formula`) field | `computed_field_written_by_effect` |
 | `relatedInstance` must be a declared field on **this** instance | `dangling_related_instance_field` |
@@ -284,6 +372,12 @@ formulas; the runoff and the propagation are effects.
 | `createInstance.fields` keys must be declared on the **target** | `dangling_instance_data_key` |
 | `branch.if` must be a valid formula over this schema | `invalid_formula_syntax` / `unknown_formula_field` |
 | Effects inside `then`/`else` are validated recursively | (all of the above) |
+| `transitionRelated.relatedQuery.workflowType` must be declared | `dangling_transition_related_workflow_type` |
+| `transitionRelated.transitionId` must exist on that type | `dangling_transition_related_transition_id` |
+| `transitionRelated.relatedQuery.sortKey`, if present, must be declared on that type | `dangling_transition_related_sort_key` |
+| *(PROPOSED, §12)* `generateRecurringInstances.workflowType` must be declared | `dangling_generate_recurring_target` |
+| *(PROPOSED, §12)* `generateRecurringInstances.anchorField` must be a `fields` key naming a `"date"` field | `dangling_recurrence_anchor_field` / `invalid_recurrence_anchor_field_type` |
+| *(PROPOSED, §12)* `recurrenceRule.freq`/`count` required and range-checked; `byMonthDay`/`bySetPos` mutually exclusive; fields must match their applicable `freq` | `missing_recurrence_freq` / `invalid_recurrence_freq` / `missing_recurrence_count` / `invalid_recurrence_count` / `recurrence_month_day_set_pos_conflict` / `recurrence_field_invalid_for_freq` |
 
 ## Selection table
 
@@ -298,3 +392,5 @@ formulas; the runoff and the propagation are effects.
 | Do A or B depending on a condition | `branch` |
 | Bring a new object into existence | `createInstance` |
 | Write onto a different instance | `set` + `relatedInstance` |
+| Find a queried sibling and drive its own state machine | `transitionRelated` |
+| Spawn a bounded recurring series (fixed count, no infinite recurrence) | *(PROPOSED, §12)* `generateRecurringInstances` |
