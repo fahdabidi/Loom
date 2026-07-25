@@ -1009,6 +1009,7 @@ class _EngineNativeCalendarContentState
                             ),
                             resolved: entry.resolved,
                             engine: widget.engine,
+                            communityExtensionId: widget.communityExtensionId,
                             personaId: widget.personaId,
                             accent: widget.accent,
                             onInstanceChanged: widget.onInstanceChanged,
@@ -1085,12 +1086,20 @@ class _EngineNativeCalendarContentState
   }
 }
 
+class _EventAttendeeGroup {
+  const _EventAttendeeGroup({required this.label, required this.names});
+
+  final String label;
+  final List<String> names;
+}
+
 class _EventRsvpDetailCard extends StatefulWidget {
   const _EventRsvpDetailCard({
     super.key,
     required this.instance,
     required this.machine,
     required this.engine,
+    required this.communityExtensionId,
     required this.personaId,
     required this.accent,
     required this.onInstanceChanged,
@@ -1101,6 +1110,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
   final WorkflowInstance instance;
   final LoomWorkflowStateMachine machine;
   final WorkflowEngineApi engine;
+  final String communityExtensionId;
   final String personaId;
   final Color accent;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
@@ -1123,13 +1133,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   String? _error;
   Future<void> Function()? _retry;
   int _actionRequest = 0;
+  int _accountRequest = 0;
   int _generation = 0;
+  Map<String, String>? _accountNames;
 
   @override
   void initState() {
     super.initState();
     _instance = widget.instance;
     _loadActions();
+    _loadAccountNames();
   }
 
   @override
@@ -1169,11 +1182,15 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       _mutating = false;
       _loadActions();
     }
+    if (oldWidget.communityExtensionId != widget.communityExtensionId) {
+      _loadAccountNames();
+    }
   }
 
   @override
   void dispose() {
     _generation++;
+    _accountRequest++;
     _disposeControllers();
     super.dispose();
   }
@@ -1269,6 +1286,80 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     }
     return null;
   }
+
+  Future<void> _loadAccountNames() async {
+    final communityExtensionId = widget.communityExtensionId;
+    final request = ++_accountRequest;
+    try {
+      final accounts = await (_globalAuthApi ?? LocalAuthApi()).listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
+      if (!mounted ||
+          request != _accountRequest ||
+          widget.communityExtensionId != communityExtensionId) {
+        return;
+      }
+      setState(() {
+        _accountNames = {
+          for (final account in accounts) account.accountId: account.displayName,
+        };
+      });
+    } catch (_) {
+      if (!mounted ||
+          request != _accountRequest ||
+          widget.communityExtensionId != communityExtensionId) {
+        return;
+      }
+      setState(() => _accountNames = const {});
+    }
+  }
+
+  String _displayNameFor(String personaId) =>
+      _accountNames?[personaId] ?? personaId;
+
+  List<_EventAttendeeGroup> get _attendeeGroups {
+    final groups = <String, List<String>>{};
+    if (_usesResponseRows) {
+      final responses = _instance.instanceData['responses'];
+      if (responses is! List) return const [];
+      for (final response in responses) {
+        if (response is! Map) continue;
+        final personaId = response['personaId']?.toString();
+        if (personaId == null || personaId.isEmpty) continue;
+        final state = response['\$state']?.toString() ?? 'pending';
+        (groups[_attendeeStateLabel(state)] ??= []).add(
+          _displayNameFor(personaId),
+        );
+      }
+    } else {
+      for (final entry in const [
+        ('Going', 'goingPersonaIds'),
+        ('Waitlisted', 'waitlistPersonaIds'),
+      ]) {
+        final personaIds = _instance.instanceData[entry.$2];
+        if (personaIds is! List) continue;
+        for (final personaId in personaIds) {
+          final id = personaId?.toString();
+          if (id == null || id.isEmpty) continue;
+          (groups[entry.$1] ??= []).add(_displayNameFor(id));
+        }
+      }
+    }
+    return [
+      for (final entry in groups.entries)
+        if (entry.value.isNotEmpty)
+          _EventAttendeeGroup(label: entry.key, names: entry.value),
+    ];
+  }
+
+  String _attendeeStateLabel(String state) => switch (state) {
+    'going' => 'Going',
+    'maybe' => 'Maybe',
+    'waitlisted' => 'Waitlisted',
+    'declined' => 'Declined',
+    'pending' => 'Pending',
+    _ => state,
+  };
 
   Future<void> _loadActions() async {
     final generation = _generation;
@@ -1747,6 +1838,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         data.containsKey('capacity') || data.containsKey('minimumAttendance');
     final fallbackFactSchema = _fallbackFactSchema;
     final editable = _editableKeys;
+    final attendeeGroups = _attendeeGroups;
     final ratio = capacity == 0
         ? 0.0
         : (goingCount.toDouble() / capacity.toDouble()).clamp(0.0, 1.0);
@@ -1859,6 +1951,36 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 ),
               ),
             if (onWaitlist) const SizedBox(height: 12),
+            if (attendeeGroups.isNotEmpty) ...[
+              KeyedSubtree(
+                key: ValueKey('event-rsvp-attendees-${_instance.instanceId}'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Attendees',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    for (final group in attendeeGroups) ...[
+                      Text(
+                        group.label,
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      for (final name in group.names)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text('• $name'),
+                        ),
+                      const SizedBox(height: 6),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (fallbackFactSchema.isNotEmpty) ...[
               KeyedSubtree(
                 key: ValueKey(

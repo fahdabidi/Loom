@@ -113,6 +113,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                       ),
                       resolved: resolved,
                       engine: engine,
+                      communityExtensionId: widget.experience.extensionId,
                       personaId: personaId,
                       accent: widget.accent,
                       onInstanceChanged: changed,

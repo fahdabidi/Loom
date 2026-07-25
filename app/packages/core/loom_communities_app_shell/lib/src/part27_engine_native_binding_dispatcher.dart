@@ -284,6 +284,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
     required this.contentKey,
     required this.resolved,
     required this.engine,
+    required this.communityExtensionId,
     required this.personaId,
     required this.accent,
     required this.onInstanceChanged,
@@ -299,6 +300,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
   final Key contentKey;
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
+  final String communityExtensionId;
   final String personaId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
@@ -317,6 +319,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           instance: resolved.instance,
           machine: resolved.machine,
           engine: engine,
+          communityExtensionId: communityExtensionId,
           personaId: personaId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,

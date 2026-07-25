@@ -214,6 +214,15 @@ Future<void> _selectAgenda(
   await tester.pump();
 }
 
+Future<void> _useFixtureAccounts(_InstalledTabletop installed) async {
+  final auth = LocalAuthApi();
+  auth.seedAccounts(
+    installed.community.extensionId,
+    await auth.listAccounts(communityExtensionId: 'ext_verify_tabletop_club'),
+  );
+  setGlobalAuthApi(auth);
+}
+
 void main() {
   // ---------------------------------------------------------------------------
   // Test 1: Selecting the Friday game-night event renders the bespoke
@@ -349,6 +358,73 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'Calendar attendee lists resolve frozen-fixture names by response state',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a11-attendee-names'),
+      ))!;
+      try {
+        await tester.runAsync(() => _useFixtureAccounts(installed));
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+
+        final attendees = find.byKey(
+          const ValueKey('event-rsvp-attendees-event-friday-game-night'),
+        );
+        await _pumpUntil(tester, attendees);
+        await _pumpUntil(tester, find.text('• Jordan W.'));
+        expect(find.descendant(of: attendees, matching: find.text('Going')), findsOneWidget);
+        expect(
+          find.descendant(of: attendees, matching: find.text('• Jordan W.')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: attendees,
+            matching: find.text('• tabletop-member-03'),
+          ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Calendar attendee lists resolve tournament names and retain unknown ids',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a11-tournament-attendees'),
+      ))!;
+      try {
+        await tester.runAsync(() => _useFixtureAccounts(installed));
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-summer-tournament', 0);
+
+        final attendees = find.byKey(
+          const ValueKey('event-rsvp-attendees-event-summer-tournament'),
+        );
+        await _pumpUntil(tester, attendees);
+        await _pumpUntil(tester, find.text('• Jordan W.'));
+        expect(find.descendant(of: attendees, matching: find.text('Going')), findsOneWidget);
+        expect(
+          find.descendant(of: attendees, matching: find.text('• Jordan W.')),
+          findsOneWidget,
+        );
+        // The frozen list includes this legacy, unseeded persona id. It must
+        // remain visible even when account lookup cannot resolve it.
+        expect(
+          find.descendant(of: attendees, matching: find.text('• tabletop-member')),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   // ---------------------------------------------------------------------------
   // Test 3: Tapping "Going" updates the viewer's response row through the
