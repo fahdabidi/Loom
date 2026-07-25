@@ -32,6 +32,35 @@ class WorkflowAuthorizationError implements Exception {
   String toString() => 'Authorization error: $message';
 }
 
+/// Distinguishes an unavailable transition caused by its guard from other
+/// transition failures. `transitionRelated` intentionally treats only this
+/// case as a no-op.
+class _TransitionGuardFailure implements Exception {
+  final String message;
+
+  const _TransitionGuardFailure(this.message);
+}
+
+/// The read-only result of resolving a transition's availability.
+///
+/// Resolution includes all checks which may reject a public transition before
+/// its transaction begins: the declared state, guards, and required inputs.
+class _ResolvedTransition {
+  final LoomWorkflowStateMachine machine;
+  final WorkflowInstanceRow row;
+  final Map<String, dynamic> data;
+  final LoomWorkflowTransition transition;
+  final Map<String, dynamic>? inputs;
+
+  const _ResolvedTransition({
+    required this.machine,
+    required this.row,
+    required this.data,
+    required this.transition,
+    required this.inputs,
+  });
+}
+
 /// SQLite-backed implementation of [WorkflowEngineApi].
 ///
 /// Uses [WorkflowDatabase] (sqlite3, transitively available via drift) so
@@ -364,6 +393,51 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String personaId,
     Map<String, dynamic>? inputs,
   }) async {
+    try {
+      // Resolve guards and GAP-1 inputs before opening a transaction. Besides
+      // preserving the public validation contract, this means an expected
+      // StateError never enters the database transaction machinery.
+      final resolved = await _resolveTransition(
+        workflowType: workflowType,
+        instanceId: instanceId,
+        transitionId: transitionId,
+        personaId: personaId,
+        inputs: inputs,
+        validateInputs: true,
+      );
+      late final WorkflowTransitionResult result;
+      await _db.transaction(() async {
+        result = await _applyTransitionWithinTransaction(
+          resolved: resolved,
+          personaId: personaId,
+        );
+      });
+      final machine = await _getDefinition(workflowType);
+      return WorkflowTransitionResult(
+        newState: result.newState,
+        newInstanceData: await _hydrateSourceFields(
+          result.newInstanceData,
+          machine!,
+          instanceId,
+        ),
+      );
+    } on _TransitionGuardFailure catch (error) {
+      throw StateError(error.message);
+    }
+  }
+
+  /// Resolves a transition without performing writes or opening a transaction.
+  ///
+  /// This phase deliberately contains all failures which must occur before a
+  /// top-level [applyTransition] transaction, including GAP-1 input checks.
+  Future<_ResolvedTransition> _resolveTransition({
+    required String workflowType,
+    required String instanceId,
+    required String transitionId,
+    required String personaId,
+    Map<String, dynamic>? inputs,
+    required bool validateInputs,
+  }) async {
     final machine = await _getDefinition(workflowType);
     if (machine == null) {
       throw StateError('Unknown workflow type: $workflowType');
@@ -392,14 +466,29 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       skipRelatedAggregate: true,
     );
 
-    final transition = transitions.firstWhere(
+    final declaredTransition = machine.transitions.firstWhere(
       (t) => t.id == transitionId,
-      orElse: () => throw StateError(
-        'Transition $transitionId not available from state ${row.currentState}',
-      ),
+      orElse: () => throw StateError('Unknown transition $transitionId'),
     );
-    if (!await _passesRelatedListGuard(transition.guard, data, personaId)) {
+    if (!declaredTransition.from.contains(row.currentState)) {
       throw StateError(
+        'Transition $transitionId not available from state ${row.currentState}',
+      );
+    }
+    LoomWorkflowTransition? transition;
+    for (final candidate in transitions) {
+      if (candidate.id == transitionId) {
+        transition = candidate;
+        break;
+      }
+    }
+    if (transition == null) {
+      throw _TransitionGuardFailure(
+        'Transition $transitionId is not available for $personaId',
+      );
+    }
+    if (!await _passesRelatedListGuard(transition.guard, data, personaId)) {
+      throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $personaId',
       );
     }
@@ -408,13 +497,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       data,
       personaId,
     )) {
-      throw StateError(
+      throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $personaId',
       );
     }
 
-    // GAP-1: validate required transition inputs (outside transaction)
-    if (transition.inputs != null) {
+    // GAP-1: validate required transition inputs outside a transaction.
+    if (validateInputs && transition.inputs != null) {
       for (final entry in transition.inputs!.entries) {
         if (entry.value.required &&
             (inputs == null || !inputs.containsKey(entry.key))) {
@@ -425,37 +514,73 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       }
     }
 
-    late final Map<String, dynamic> newData;
-    late final String newState;
-    await _db.transaction(() async {
-      newData = await _applyExtendedEffects(
-        transition.effects,
-        machine: machine,
-        sourceData: data,
-        personaId: personaId,
-        inputValues: inputs,
-        instanceId: instanceId,
-      );
-      newState = transition.to ?? row.currentState;
+    return _ResolvedTransition(
+      machine: machine,
+      row: row,
+      data: data,
+      transition: transition,
+      inputs: inputs,
+    );
+  }
 
+  /// Applies a resolved transition while the caller owns the database
+  /// transaction.
+  ///
+  /// Cross-instance effects use this helper directly so they neither nest
+  /// transactions nor bypass the target's live guards.
+  Future<WorkflowTransitionResult> _applyTransitionWithinTransaction({
+    required _ResolvedTransition resolved,
+    required String personaId,
+  }) async {
+    final machine = resolved.machine;
+    final row = resolved.row;
+    final data = resolved.data;
+    final transition = resolved.transition;
+    final inputs = resolved.inputs;
+    final instanceId = row.instanceId;
+
+    final newState = transition.to ?? row.currentState;
+
+    if (_containsTransitionRelated(transition.effects)) {
+      // Make this transition's new state visible to cross-instance effects.
+      // This is essential when a target's fresh relatedAggregate guard
+      // observes the source row (for example, a going RSVP releasing a seat
+      // for a waitlist promotion). The surrounding transaction rolls this
+      // provisional update back if an effect later fails.
       await _db.updateInstanceState(
         instanceId: instanceId,
         newState: newState,
         newInstanceData: _withComputedFields(
-          newData,
+          data,
           machine,
           viewerId: personaId,
           actorId: personaId,
         ),
       );
-    });
+    }
 
-    // GAP-4: hydrate source-backed fields after the transaction commits
-    final hydrated = await _hydrateSourceFields(newData, machine, instanceId);
+    final newData = await _applyExtendedEffects(
+      transition.effects,
+      machine: machine,
+      sourceData: data,
+      personaId: personaId,
+      inputValues: inputs,
+      instanceId: instanceId,
+    );
+    await _db.updateInstanceState(
+      instanceId: instanceId,
+      newState: newState,
+      newInstanceData: _withComputedFields(
+        newData,
+        machine,
+        viewerId: personaId,
+        actorId: personaId,
+      ),
+    );
 
     return WorkflowTransitionResult(
       newState: newState,
-      newInstanceData: hydrated,
+      newInstanceData: newData,
     );
   }
 
@@ -824,6 +949,61 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           );
           continue;
         }
+        if (effect.op == 'transitionRelated') {
+          final relatedQuery = effect.relatedQuery;
+          final transitionId = effect.transitionId;
+          if (relatedQuery == null || transitionId == null) {
+            throw StateError(
+              'transitionRelated requires relatedQuery and transitionId',
+            );
+          }
+          final filter = <String, dynamic>{
+            for (final entry in relatedQuery.filter.entries)
+              entry.key: _resolveRelatedAggregateValue(entry.value, computed),
+          };
+          final matches = (await _readAllInstancesOfType(relatedQuery.workflowType))
+              .where(
+                (row) => filter.entries.every(
+                  (entry) => row[entry.key] == entry.value,
+                ),
+              )
+              .toList();
+          final sortKey = relatedQuery.sortKey;
+          if (sortKey != null) {
+            matches.sort((left, right) {
+              final leftValue = left[sortKey];
+              final rightValue = right[sortKey];
+              if (leftValue == null && rightValue == null) return 0;
+              if (leftValue == null) return -1;
+              if (rightValue == null) return 1;
+              if (leftValue is Comparable && rightValue is Comparable) {
+                return leftValue.compareTo(rightValue);
+              }
+              return 0;
+            });
+          }
+          if (matches.isEmpty) continue;
+          final targetId = matches.first[r'$id'];
+          if (targetId is! String) {
+            throw StateError('transitionRelated match is missing reserved \$id');
+          }
+          try {
+            final resolved = await _resolveTransition(
+              workflowType: relatedQuery.workflowType,
+              instanceId: targetId,
+              transitionId: transitionId,
+              personaId: personaId,
+              validateInputs: false,
+            );
+            await _applyTransitionWithinTransaction(
+              resolved: resolved,
+              personaId: personaId,
+            );
+          } on _TransitionGuardFailure {
+            // A target guard failure deliberately does not affect the source.
+          }
+          continue;
+        }
         if (effect.key != null &&
             machine.instanceDataSchema[effect.key]?.formula != null) {
           throw WorkflowAuthorizationError(
@@ -844,6 +1024,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     await applyList(effects);
     return data;
   }
+
+  bool _containsTransitionRelated(List<WorkflowEffect> effects) => effects.any(
+    (effect) =>
+        effect.op == 'transitionRelated' ||
+        _containsTransitionRelated(effect.thenEffects) ||
+        _containsTransitionRelated(effect.elseEffects),
+  );
 
   /// Executes GAP-4 source queries for every field with a `source`
   /// on the given machine and populates them into [data].
@@ -1008,6 +1195,17 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
                         if (e.fields != null) 'fields': e.fields,
                         if (e.relatedInstance != null)
                           'relatedInstance': e.relatedInstance,
+                        if (e.relatedQuery != null)
+                          'relatedQuery': {
+                            'workflowType': e.relatedQuery!.workflowType,
+                            'filter': e.relatedQuery!.filter,
+                            if (e.relatedQuery!.sortKey != null)
+                              'sortKey': e.relatedQuery!.sortKey,
+                            if (e.relatedQuery!.limit != null)
+                              'limit': e.relatedQuery!.limit,
+                          },
+                        if (e.transitionId != null)
+                          'transitionId': e.transitionId,
                         if (e.condition != null) 'if': e.condition,
                         if (e.thenEffects.isNotEmpty)
                           'then': e.thenEffects
@@ -1102,6 +1300,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (effect.fields != null) 'fields': effect.fields,
     if (effect.relatedInstance != null)
       'relatedInstance': effect.relatedInstance,
+    if (effect.relatedQuery != null)
+      'relatedQuery': {
+        'workflowType': effect.relatedQuery!.workflowType,
+        'filter': effect.relatedQuery!.filter,
+        if (effect.relatedQuery!.sortKey != null)
+          'sortKey': effect.relatedQuery!.sortKey,
+        if (effect.relatedQuery!.limit != null)
+          'limit': effect.relatedQuery!.limit,
+      },
+    if (effect.transitionId != null) 'transitionId': effect.transitionId,
     if (effect.condition != null) 'if': effect.condition,
     if (effect.thenEffects.isNotEmpty)
       'then': effect.thenEffects.map(_serializeEffect).toList(),

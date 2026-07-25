@@ -73,6 +73,7 @@ class WorkflowValidator {
     'branch',
     'createInstance',
     'removeFromTileGrid',
+    'transitionRelated',
   };
 
   static const _knownInputTypes = <String>{
@@ -710,6 +711,47 @@ class WorkflowValidator {
               ),
             );
           }
+        }
+        continue;
+      }
+
+      if (effect.op == 'transitionRelated') {
+        final relatedQuery = effect.relatedQuery;
+        final targetType = relatedQuery?.workflowType;
+        final target = targetType == null ? null : allWorkflows[targetType];
+        if (target == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_transition_related_workflow_type',
+              message:
+                  'transitionRelated references workflowType "${targetType ?? '<missing>'}", which is not a known workflow type in the loaded definitions set.',
+              location: '$location/relatedQuery/workflowType',
+            ),
+          );
+          continue;
+        }
+        final transitionId = effect.transitionId;
+        if (transitionId == null ||
+            !target.transitions.any((candidate) => candidate.id == transitionId)) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_transition_related_transition_id',
+              message:
+                  'transitionRelated transitionId "${transitionId ?? '<missing>'}" is not declared on "$targetType".',
+              location: '$location/transitionId',
+            ),
+          );
+        }
+        final sortKey = relatedQuery!.sortKey;
+        if (sortKey != null && !target.instanceDataSchema.containsKey(sortKey)) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_transition_related_sort_key',
+              message:
+                  'transitionRelated sortKey "$sortKey" is not declared in "$targetType"\'s instanceDataSchema.',
+              location: '$location/relatedQuery/sortKey',
+            ),
+          );
         }
         continue;
       }

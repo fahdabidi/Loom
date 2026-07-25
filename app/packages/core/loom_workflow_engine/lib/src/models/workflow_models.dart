@@ -104,6 +104,30 @@ class RelatedAggregateGuard {
       );
 }
 
+/// A query that selects an instance to transition from another instance's
+/// effect.
+class RelatedTransitionQuery {
+  final String workflowType;
+  final Map<String, dynamic> filter;
+  final String? sortKey;
+  final int? limit;
+
+  const RelatedTransitionQuery({
+    required this.workflowType,
+    required this.filter,
+    this.sortKey,
+    this.limit,
+  });
+
+  factory RelatedTransitionQuery.fromJson(Map<String, dynamic> json) =>
+      RelatedTransitionQuery(
+        workflowType: json['workflowType'] as String,
+        filter: Map<String, dynamic>.from(json['filter'] as Map),
+        sortKey: json['sortKey'] as String?,
+        limit: json['limit'] as int?,
+      );
+}
+
 class RelatedListGuard {
   final String relatedInstanceField;
   final String relatedListField;
@@ -162,6 +186,8 @@ class WorkflowEffect {
   final String? workflowType;
   final Map<String, dynamic>? fields;
   final String? relatedInstance;
+  final RelatedTransitionQuery? relatedQuery;
+  final String? transitionId;
   final String? condition;
   final List<WorkflowEffect> thenEffects;
   final List<WorkflowEffect> elseEffects;
@@ -173,6 +199,8 @@ class WorkflowEffect {
     this.workflowType,
     this.fields,
     this.relatedInstance,
+    this.relatedQuery,
+    this.transitionId,
     this.condition,
     this.thenEffects = const [],
     this.elseEffects = const [],
@@ -188,6 +216,12 @@ class WorkflowEffect {
         (key, value) => MapEntry(key, value),
       ),
       relatedInstance: json['relatedInstance'] as String?,
+      relatedQuery: json['relatedQuery'] != null
+          ? RelatedTransitionQuery.fromJson(
+              json['relatedQuery'] as Map<String, dynamic>,
+            )
+          : null,
+      transitionId: json['transitionId'] as String?,
       condition: json['if'] as String?,
       thenEffects:
           (json['then'] as List<dynamic>?)

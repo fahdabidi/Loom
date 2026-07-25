@@ -168,6 +168,90 @@ void main() {
       expect(_has(report, 'unknown_effect_op'), isTrue);
     });
 
+    test('validates transitionRelated references and recognizes the op', () {
+      final target = _machine(
+        'target',
+        schema: {
+          'createdAt': {'type': 'text'},
+        },
+      );
+      final wellFormed = _validate(
+        {},
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'target',
+              'filter': {r'$state': 'open'},
+              'sortKey': 'createdAt',
+              'limit': 1,
+            },
+            'transitionId': 'continue',
+          },
+        ],
+        extraWorkflows: {'target': target},
+      );
+      expect(_has(wellFormed, 'unknown_effect_op'), isFalse);
+      expect(wellFormed.passed, isTrue, reason: wellFormed.findings.join('\n'));
+
+      final missingType = _validate(
+        {},
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'missing',
+              'filter': <String, dynamic>{},
+            },
+            'transitionId': 'continue',
+          },
+        ],
+      );
+      expect(
+        _has(missingType, 'dangling_transition_related_workflow_type'),
+        isTrue,
+      );
+
+      final badTransition = _validate(
+        {},
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'target',
+              'filter': <String, dynamic>{},
+            },
+            'transitionId': 'missing',
+          },
+        ],
+        extraWorkflows: {'target': target},
+      );
+      expect(
+        _has(badTransition, 'dangling_transition_related_transition_id'),
+        isTrue,
+      );
+
+      final badSortKey = _validate(
+        {},
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'target',
+              'filter': <String, dynamic>{},
+              'sortKey': 'missing',
+            },
+            'transitionId': 'continue',
+          },
+        ],
+        extraWorkflows: {'target': target},
+      );
+      expect(
+        _has(badSortKey, 'dangling_transition_related_sort_key'),
+        isTrue,
+      );
+    });
+
     test('catches an unknown field in a guard formula', () {
       final report = _validate({}, guard: {'formula': 'size(nope) > 1'});
 
