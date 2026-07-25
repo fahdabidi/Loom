@@ -321,7 +321,8 @@ is real `DateTime` arithmetic in a dedicated evaluator, not a formula.
 else `missing_recurrence_freq` / `invalid_recurrence_freq` / `missing_recurrence_count` /
 `invalid_recurrence_count`; `byMonthDay`/`bySetPos` are mutually exclusive →
 `recurrence_month_day_set_pos_conflict`; each field is only valid for its applicable `freq` →
-`recurrence_field_invalid_for_freq`. A value supplied as a runtime `{input.x}` token (organizer-entered,
+`recurrence_field_invalid_for_freq`; monthly `byDayOfWeek` requires `bySetPos` →
+`recurrence_weekday_without_set_pos`. A value supplied as a runtime `{input.x}` token (organizer-entered,
 not statically known) is skipped by the static validator and backstopped by a runtime error instead —
 same deliberate validator/runtime split already documented for `transitionRelated`'s silent guard-failure
 behavior.
@@ -377,7 +378,7 @@ formulas; the runoff and the propagation are effects.
 | `transitionRelated.relatedQuery.sortKey`, if present, must be declared on that type | `dangling_transition_related_sort_key` |
 | *(PROPOSED, §12)* `generateRecurringInstances.workflowType` must be declared | `dangling_generate_recurring_target` |
 | *(PROPOSED, §12)* `generateRecurringInstances.anchorField` must be a `fields` key naming a `"date"` field | `dangling_recurrence_anchor_field` / `invalid_recurrence_anchor_field_type` |
-| *(PROPOSED, §12)* `recurrenceRule.freq`/`count` required and range-checked; `byMonthDay`/`bySetPos` mutually exclusive; fields must match their applicable `freq` | `missing_recurrence_freq` / `invalid_recurrence_freq` / `missing_recurrence_count` / `invalid_recurrence_count` / `recurrence_month_day_set_pos_conflict` / `recurrence_field_invalid_for_freq` |
+| *(PROPOSED, §12)* `recurrenceRule.freq`/`count` required and range-checked; `byMonthDay`/`bySetPos` mutually exclusive; monthly `byDayOfWeek` requires `bySetPos`; fields must match their applicable `freq` | `missing_recurrence_freq` / `invalid_recurrence_freq` / `missing_recurrence_count` / `invalid_recurrence_count` / `recurrence_month_day_set_pos_conflict` / `recurrence_weekday_without_set_pos` / `recurrence_field_invalid_for_freq` |
 
 ## Selection table
 

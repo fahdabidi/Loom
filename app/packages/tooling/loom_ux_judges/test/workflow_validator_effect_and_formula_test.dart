@@ -44,6 +44,39 @@ ValidationReport _validate(
 bool _has(ValidationReport report, String type) =>
     report.errors.any((finding) => finding.type == type);
 
+Map<String, dynamic> _validRecurringEffect() => {
+  'op': 'generateRecurringInstances',
+  'workflowType': 'event-rsvp',
+  'anchorField': 'eventDate',
+  'fields': {
+    'title': '{title}',
+    'eventDate': '{eventDate}',
+    'location': '{location}',
+  },
+  'recurrenceRule': {
+    'freq': 'weekly',
+    'interval': 1,
+    'count': 12,
+    'byDayOfWeek': ['FR'],
+  },
+};
+
+LoomWorkflowStateMachine _recurringTarget() => _machine(
+  'event-rsvp',
+  schema: {
+    'title': {'type': 'text'},
+    'eventDate': {'type': 'date'},
+    'location': {'type': 'text'},
+    'computed': {'type': 'text', 'formula': '"computed"'},
+  },
+);
+
+ValidationReport _validateRecurring(Map<String, dynamic> effect) => _validate(
+  {},
+  effects: [effect],
+  extraWorkflows: {'event-rsvp': _recurringTarget()},
+);
+
 void main() {
   group('WorkflowValidator effects and transition formulas', () {
     test('catches an undeclared key in a nested branch effect', () {
@@ -250,6 +283,152 @@ void main() {
         _has(badSortKey, 'dangling_transition_related_sort_key'),
         isTrue,
       );
+    });
+
+    test('accepts the documented generateRecurringInstances example', () {
+      final report = _validateRecurring(_validRecurringEffect());
+
+      expect(report.passed, isTrue, reason: report.findings.join('\n'));
+      expect(_has(report, 'unknown_effect_op'), isFalse);
+    });
+
+    test('reports every generateRecurringInstances structural rule', () {
+      final cases = <String, Map<String, dynamic>>{
+        'dangling_generate_recurring_target': {
+          ..._validRecurringEffect(),
+          'workflowType': 'missing',
+        },
+        'dangling_instance_data_key': {
+          ..._validRecurringEffect(),
+          'fields': {'eventDate': '{eventDate}', 'unknown': 'x'},
+        },
+        'computed_field_written_by_effect': {
+          ..._validRecurringEffect(),
+          'fields': {'eventDate': '{eventDate}', 'computed': 'x'},
+        },
+        'missing_recurrence_anchor_field': {
+          ..._validRecurringEffect(),
+          'anchorField': '',
+        },
+        'dangling_recurrence_anchor_field': {
+          ..._validRecurringEffect(),
+          'anchorField': 'title',
+          'fields': {'eventDate': '{eventDate}'},
+        },
+        'invalid_recurrence_anchor_field_type': {
+          ..._validRecurringEffect(),
+          'anchorField': 'title',
+        },
+        'missing_recurrence_rule': {
+          ..._validRecurringEffect(),
+          'recurrenceRule': null,
+        },
+      };
+
+      for (final entry in cases.entries) {
+        final report = _validateRecurring(entry.value);
+        expect(_has(report, entry.key), isTrue, reason: entry.key);
+
+        final corrected = _validateRecurring(_validRecurringEffect());
+        expect(_has(corrected, entry.key), isFalse, reason: entry.key);
+      }
+    });
+
+    test('reports every generateRecurringInstances recurrence rule', () {
+      Map<String, dynamic> withRule(Map<String, dynamic> rule) => {
+        ..._validRecurringEffect(),
+        'recurrenceRule': rule,
+      };
+      final cases = <String, Map<String, dynamic>>{
+        'missing_recurrence_freq': withRule({'count': 1}),
+        'invalid_recurrence_freq': withRule({'freq': 'yearly', 'count': 1}),
+        'missing_recurrence_count': withRule({'freq': 'weekly'}),
+        'invalid_recurrence_count': withRule({'freq': 'weekly', 'count': 367}),
+        'invalid_recurrence_interval':
+            withRule({'freq': 'weekly', 'count': 1, 'interval': 0}),
+        'invalid_recurrence_weekday_code':
+            withRule({'freq': 'weekly', 'count': 1, 'byDayOfWeek': ['XX']}),
+        'invalid_recurrence_month_day':
+            withRule({'freq': 'monthly', 'count': 1, 'byMonthDay': 32}),
+        'invalid_recurrence_set_pos_value':
+            withRule({'freq': 'monthly', 'count': 1, 'bySetPos': 'fifth'}),
+        'recurrence_field_invalid_for_freq':
+            withRule({'freq': 'daily', 'count': 1, 'byDayOfWeek': ['MO']}),
+        'recurrence_month_day_set_pos_conflict': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'byMonthDay': 1,
+          'bySetPos': 'first',
+          'byDayOfWeek': ['MO'],
+        }),
+        'dangling_recurrence_set_pos_without_weekday':
+            withRule({'freq': 'monthly', 'count': 1, 'bySetPos': 'first'}),
+        'invalid_recurrence_set_pos_weekday_count': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'bySetPos': 'first',
+          'byDayOfWeek': ['MO', 'TU'],
+        }),
+        'recurrence_weekday_without_set_pos':
+            withRule({'freq': 'monthly', 'count': 1, 'byDayOfWeek': ['MO']}),
+      };
+
+      for (final entry in cases.entries) {
+        final report = _validateRecurring(entry.value);
+        expect(_has(report, entry.key), isTrue, reason: entry.key);
+
+        final corrected = _validateRecurring(_validRecurringEffect());
+        expect(_has(corrected, entry.key), isFalse, reason: entry.key);
+      }
+    });
+
+    test('requires monthly static byDayOfWeek to have static bySetPos', () {
+      final missingSetPos = _validateRecurring({
+        ..._validRecurringEffect(),
+        'recurrenceRule': {
+          'freq': 'monthly',
+          'count': 1,
+          'byDayOfWeek': ['MO'],
+        },
+      });
+      expect(_has(missingSetPos, 'recurrence_weekday_without_set_pos'), isTrue);
+
+      final withSetPos = _validateRecurring({
+        ..._validRecurringEffect(),
+        'recurrenceRule': {
+          'freq': 'monthly',
+          'count': 1,
+          'byDayOfWeek': ['MO'],
+          'bySetPos': 'first',
+        },
+      });
+      expect(_has(withSetPos, 'recurrence_weekday_without_set_pos'), isFalse);
+
+      final tokenWeekday = _validateRecurring({
+        ..._validRecurringEffect(),
+        'recurrenceRule': {
+          'freq': 'monthly',
+          'count': 1,
+          'byDayOfWeek': '{input.byDayOfWeek}',
+        },
+      });
+      expect(_has(tokenWeekday, 'recurrence_weekday_without_set_pos'), isFalse);
+    });
+
+    test('skips static recurrence checks for runtime input tokens', () {
+      final report = _validateRecurring({
+        ..._validRecurringEffect(),
+        'recurrenceRule': {
+          'freq': '{input.freq}',
+          'count': '{input.count}',
+          'interval': '{input.interval}',
+          'byDayOfWeek': '{input.byDayOfWeek}',
+          'byMonthDay': '{input.byMonthDay}',
+          'bySetPos': '{input.bySetPos}',
+        },
+      });
+
+      expect(report.passed, isTrue, reason: report.findings.join('\n'));
     });
 
     test('catches an unknown field in a guard formula', () {

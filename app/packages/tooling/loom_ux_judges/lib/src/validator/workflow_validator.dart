@@ -74,6 +74,7 @@ class WorkflowValidator {
     'createInstance',
     'removeFromTileGrid',
     'transitionRelated',
+    'generateRecurringInstances',
   };
 
   static const _knownInputTypes = <String>{
@@ -625,6 +626,16 @@ class WorkflowValidator {
     String path,
     List<ValidationFinding> findings,
   ) {
+    bool _isInputToken(dynamic value) =>
+        value is String &&
+        RegExp(r'^\{input\.[a-zA-Z0-9_]+\}$').hasMatch(value);
+
+    int? parseInt(dynamic value) {
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+
     for (var i = 0; i < effects.length; i++) {
       final effect = effects[i];
       final location =
@@ -752,6 +763,307 @@ class WorkflowValidator {
               location: '$location/relatedQuery/sortKey',
             ),
           );
+        }
+        continue;
+      }
+
+      if (effect.op == 'generateRecurringInstances') {
+        final targetType = effect.workflowType;
+        final target = targetType == null || _isInputToken(targetType)
+            ? null
+            : allWorkflows[targetType];
+        if (targetType == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_generate_recurring_target',
+              message:
+                  'generateRecurringInstances references workflowType "${targetType ?? '<missing>'}", which is not a known workflow type in the loaded definitions set.',
+              location: '$location/workflowType',
+            ),
+          );
+          continue;
+        }
+        if (!_isInputToken(targetType) && target == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_generate_recurring_target',
+              message:
+                  'generateRecurringInstances references workflowType "$targetType", which is not a known workflow type in the loaded definitions set.',
+              location: '$location/workflowType',
+            ),
+          );
+          continue;
+        }
+
+        if (target != null) {
+          for (final key in (effect.fields ?? const <String, dynamic>{}).keys) {
+            final targetField = target.instanceDataSchema[key];
+            if (targetField == null) {
+              findings.add(
+                ValidationFinding(
+                  type: 'dangling_instance_data_key',
+                  message:
+                      'generateRecurringInstances sets "$key", which is not declared in "$targetType"\'s instanceDataSchema.',
+                  location: '$location/fields/$key',
+                ),
+              );
+            } else if (targetField.formula != null ||
+                targetField.source != null) {
+              findings.add(
+                ValidationFinding(
+                  type: 'computed_field_written_by_effect',
+                  message:
+                      'generateRecurringInstances sets computed field "$key" on "$targetType". Computed fields are read-only.',
+                  location: '$location/fields/$key',
+                ),
+              );
+            }
+          }
+        }
+
+        final anchorField = effect.anchorField;
+        if (anchorField == null || anchorField.isEmpty) {
+          findings.add(
+            ValidationFinding(
+              type: 'missing_recurrence_anchor_field',
+              message:
+                  'generateRecurringInstances requires a non-empty anchorField.',
+              location: '$location/anchorField',
+            ),
+          );
+        } else if (!_isInputToken(anchorField)) {
+          if (!(effect.fields ?? const <String, dynamic>{})
+              .containsKey(anchorField)) {
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_recurrence_anchor_field',
+                message:
+                    'generateRecurringInstances anchorField "$anchorField" must be a key in fields.',
+                location: '$location/anchorField',
+              ),
+            );
+          }
+          final targetField = target?.instanceDataSchema[anchorField];
+          if (targetField != null && targetField.type != 'date') {
+            findings.add(
+              ValidationFinding(
+                type: 'invalid_recurrence_anchor_field_type',
+                message:
+                    'generateRecurringInstances anchorField "$anchorField" must name a date field on "$targetType".',
+                location: '$location/anchorField',
+              ),
+            );
+          }
+        }
+
+        final recurrenceRule = effect.recurrenceRule;
+        if (recurrenceRule == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'missing_recurrence_rule',
+              message: 'generateRecurringInstances requires a recurrenceRule.',
+              location: '$location/recurrenceRule',
+            ),
+          );
+          continue;
+        }
+
+        final freq = recurrenceRule['freq'];
+        final hasStaticFreq = !_isInputToken(freq);
+        final validFreq = freq is String &&
+            const {'daily', 'weekly', 'monthly'}.contains(freq);
+        if (freq == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'missing_recurrence_freq',
+              message: 'recurrenceRule.freq is required.',
+              location: '$location/recurrenceRule/freq',
+            ),
+          );
+        } else if (hasStaticFreq && !validFreq) {
+          findings.add(
+            ValidationFinding(
+              type: 'invalid_recurrence_freq',
+              message:
+                  'recurrenceRule.freq must be daily, weekly, or monthly.',
+              location: '$location/recurrenceRule/freq',
+            ),
+          );
+        }
+
+        final count = recurrenceRule['count'];
+        if (count == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'missing_recurrence_count',
+              message: 'recurrenceRule.count is required.',
+              location: '$location/recurrenceRule/count',
+            ),
+          );
+        } else if (!_isInputToken(count)) {
+          final parsedCount = parseInt(count);
+          if (parsedCount == null || parsedCount < 1 || parsedCount > 366) {
+            findings.add(
+              ValidationFinding(
+                type: 'invalid_recurrence_count',
+                message:
+                    'recurrenceRule.count must be an integer from 1 to 366.',
+                location: '$location/recurrenceRule/count',
+              ),
+            );
+          }
+        }
+
+        final interval = recurrenceRule['interval'];
+        if (interval != null && !_isInputToken(interval)) {
+          final parsedInterval = parseInt(interval);
+          if (parsedInterval == null || parsedInterval < 1) {
+            findings.add(
+              ValidationFinding(
+                type: 'invalid_recurrence_interval',
+                message: 'recurrenceRule.interval must be an integer >= 1.',
+                location: '$location/recurrenceRule/interval',
+              ),
+            );
+          }
+        }
+
+        final byDayOfWeek = recurrenceRule['byDayOfWeek'];
+        final hasStaticByDayOfWeek =
+            byDayOfWeek != null && !_isInputToken(byDayOfWeek);
+        if (hasStaticByDayOfWeek &&
+            (byDayOfWeek is! List ||
+                byDayOfWeek.isEmpty ||
+                byDayOfWeek.any(
+                  (value) =>
+                      value is! String ||
+                      !const {'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'}
+                          .contains(value),
+                ) ||
+                byDayOfWeek.toSet().length != byDayOfWeek.length)) {
+          findings.add(
+            ValidationFinding(
+              type: 'invalid_recurrence_weekday_code',
+              message:
+                  'recurrenceRule.byDayOfWeek must be a non-empty list of unique weekday codes.',
+              location: '$location/recurrenceRule/byDayOfWeek',
+            ),
+          );
+        }
+
+        final byMonthDay = recurrenceRule['byMonthDay'];
+        final hasStaticByMonthDay =
+            byMonthDay != null && !_isInputToken(byMonthDay);
+        if (hasStaticByMonthDay) {
+          final parsedMonthDay = parseInt(byMonthDay);
+          if (parsedMonthDay == null ||
+              parsedMonthDay < 1 ||
+              parsedMonthDay > 31) {
+            findings.add(
+              ValidationFinding(
+                type: 'invalid_recurrence_month_day',
+                message:
+                    'recurrenceRule.byMonthDay must be an integer from 1 to 31.',
+                location: '$location/recurrenceRule/byMonthDay',
+              ),
+            );
+          }
+        }
+
+        final bySetPos = recurrenceRule['bySetPos'];
+        final hasStaticBySetPos =
+            bySetPos != null && !_isInputToken(bySetPos);
+        if (hasStaticBySetPos &&
+            (bySetPos is! String ||
+                !const {'first', 'second', 'third', 'fourth', 'last'}
+                    .contains(bySetPos))) {
+          findings.add(
+            ValidationFinding(
+              type: 'invalid_recurrence_set_pos_value',
+              message:
+                  'recurrenceRule.bySetPos must be first, second, third, fourth, or last.',
+              location: '$location/recurrenceRule/bySetPos',
+            ),
+          );
+        }
+
+        if (validFreq) {
+          if (freq == 'daily') {
+            for (final field in <String, dynamic>{
+              'byDayOfWeek': byDayOfWeek,
+              'byMonthDay': byMonthDay,
+              'bySetPos': bySetPos,
+            }.entries) {
+              if (field.value != null && !_isInputToken(field.value)) {
+                findings.add(
+                  ValidationFinding(
+                    type: 'recurrence_field_invalid_for_freq',
+                    message:
+                        'recurrenceRule.${field.key} is invalid for daily recurrence.',
+                    location: '$location/recurrenceRule/${field.key}',
+                  ),
+                );
+              }
+            }
+          } else if (freq == 'weekly') {
+            for (final field in <String, dynamic>{
+              'byMonthDay': byMonthDay,
+              'bySetPos': bySetPos,
+            }.entries) {
+              if (field.value != null && !_isInputToken(field.value)) {
+                findings.add(
+                  ValidationFinding(
+                    type: 'recurrence_field_invalid_for_freq',
+                    message:
+                        'recurrenceRule.${field.key} is invalid for weekly recurrence.',
+                    location: '$location/recurrenceRule/${field.key}',
+                  ),
+                );
+              }
+            }
+          } else if (freq == 'monthly') {
+            if (hasStaticByMonthDay && hasStaticBySetPos) {
+              findings.add(
+                ValidationFinding(
+                  type: 'recurrence_month_day_set_pos_conflict',
+                  message:
+                      'monthly recurrence cannot use both byMonthDay and bySetPos.',
+                  location: '$location/recurrenceRule',
+                ),
+              );
+            }
+            if (hasStaticBySetPos) {
+              if (byDayOfWeek == null) {
+                findings.add(
+                  ValidationFinding(
+                    type: 'dangling_recurrence_set_pos_without_weekday',
+                    message:
+                        'monthly recurrence bySetPos requires byDayOfWeek.',
+                    location: '$location/recurrenceRule/byDayOfWeek',
+                  ),
+                );
+              } else if (hasStaticByDayOfWeek &&
+                  (byDayOfWeek is! List || byDayOfWeek.length != 1)) {
+                findings.add(
+                  ValidationFinding(
+                    type: 'invalid_recurrence_set_pos_weekday_count',
+                    message:
+                        'monthly recurrence bySetPos requires exactly one byDayOfWeek entry.',
+                    location: '$location/recurrenceRule/byDayOfWeek',
+                  ),
+                );
+              }
+            }
+            if (hasStaticByDayOfWeek && bySetPos == null) {
+              findings.add(
+                ValidationFinding(
+                  type: 'recurrence_weekday_without_set_pos',
+                  message: 'monthly recurrence byDayOfWeek requires bySetPos.',
+                  location: '$location/recurrenceRule/byDayOfWeek',
+                ),
+              );
+            }
+          }
         }
         continue;
       }
