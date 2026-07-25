@@ -380,6 +380,108 @@ void main() {
   );
 
   testWidgets(
+    'frozen fixture renders its configured date rail and day-instance badge',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a9-configurable-date-rail'),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          _engineCalendar(
+            installed,
+            theme,
+            currentDate: () => DateTime(2026, 7, 10),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
+          ),
+        );
+
+        final rail = find.byKey(
+          const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
+        );
+        expect(find.descendant(of: rail, matching: find.text('FRI')), findsOneWidget);
+        expect(find.descendant(of: rail, matching: find.text('10')), findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-agenda-date-entry-2026-07-10-2',
+            ),
+          ),
+          findsOneWidget,
+        );
+        // The frozen fixture has both Friday game night and the summer
+        // tournament on this date, so the formula is evaluated over two
+        // day-local instances rather than a global or hardcoded count.
+        expect(find.descendant(of: rail, matching: find.text('2')), findsOneWidget);
+
+        final group = tester.widget<Container>(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
+          ),
+        );
+        final row = group.child! as Row;
+        expect((row.children.first as SizedBox).width, 48);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'an absent date rail retains the default weekday and today-only circle',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a9-default-date-rail',
+          configure: (source) {
+            final experience = source['experience'] as Map<String, dynamic>;
+            final theme = experience['theme'] as Map<String, dynamic>;
+            theme.remove('calendar');
+          },
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          _engineCalendar(
+            installed,
+            theme,
+            currentDate: () => DateTime(2026, 7, 10),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
+          ),
+        );
+        final rail = find.byKey(
+          const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
+        );
+        expect(find.descendant(of: rail, matching: find.text('FRI')), findsOneWidget);
+        expect(find.descendant(of: rail, matching: find.text('10')), findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-date-entry-2026-07-10-2'),
+          ),
+          findsNothing,
+        );
+        final today = tester.widget<Container>(
+          find.byKey(
+            const ValueKey('engine-native-calendar-agenda-today-2026-07-10'),
+          ),
+        );
+        expect((today.decoration! as BoxDecoration).shape, BoxShape.circle);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
     'frozen fixture resolves distinct style slots and preserves flat accent without styleField',
     (tester) async {
       final styled = (await tester.runAsync(() => _install('a9-style-slots')))!;

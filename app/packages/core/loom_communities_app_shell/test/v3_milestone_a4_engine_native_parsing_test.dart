@@ -132,6 +132,35 @@ void main() {
       (instance) => instance.instanceId == 'event-friday-game-night',
     );
     expect(friday.currentState, 'open');
+    expect(experience.calendarDateRailEntries, hasLength(3));
+    expect(
+      experience.calendarDateRailEntries!
+          .map((entry) => <String?>[
+                entry.kind,
+                entry.token,
+                entry.formula,
+                entry.style,
+                entry.colorSource,
+              ])
+          .toList(),
+      <List<String?>>[
+        <String?>['dateToken', 'weekdayAbbrev', null, 'label', null],
+        <String?>[
+          'dateToken',
+          'dayOfMonth',
+          null,
+          'circleHighlight',
+          'accent',
+        ],
+        <String?>[
+          'formula',
+          null,
+          'count(dayInstances)',
+          'badge',
+          'styleField',
+        ],
+      ],
+    );
   });
 
   test('2 absent stamp preserves the legacy shallow projection', () {
@@ -252,6 +281,7 @@ void main() {
       expect(experience.workflowDefinitions, isNotNull);
       expect(experience.workflowDefinitions!.keys, <String>['valid']);
       expect(experience.workflowInstances, hasLength(1));
+      expect(experience.calendarDateRailEntries, isNull);
     },
   );
 }

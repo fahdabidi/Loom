@@ -1407,6 +1407,7 @@ class LoomExperienceDefinition {
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
+    this.calendarDateRailEntries,
     this.tabThemeOverrides = const {},
     this.creatableAction,
     this.tabCreatableActionStyles = const {},
@@ -1435,11 +1436,33 @@ class LoomExperienceDefinition {
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;
+  final List<CalendarDateRailEntry>? calendarDateRailEntries;
   final Map<String, LoomCardTheme> tabThemeOverrides;
   final LoomCreatableActionStyle? creatableAction;
   final Map<String, LoomCreatableActionStyle> tabCreatableActionStyles;
   final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
   final List<LoomWorkflowSeedInstance>? workflowInstances;
+}
+
+/// A declarative item in Calendar's per-day agenda date rail.
+///
+/// These fields intentionally mirror the community configuration exactly;
+/// absent rails are resolved by the Calendar renderer for backwards
+/// compatibility with its original two-item presentation.
+class CalendarDateRailEntry {
+  const CalendarDateRailEntry({
+    this.kind,
+    this.token,
+    this.formula,
+    this.style,
+    this.colorSource,
+  });
+
+  final String? kind;
+  final String? token;
+  final String? formula;
+  final String? style;
+  final String? colorSource;
 }
 
 /// Community-wide or per-tab presentation defaults for `creatable` bindings.

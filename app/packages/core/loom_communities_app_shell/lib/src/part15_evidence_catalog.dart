@@ -242,6 +242,62 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   );
 }
 
+List<CalendarDateRailEntry>? _parseCalendarDateRailEntries(Object? themeRaw) {
+  if (themeRaw is! Map) return null;
+  final calendarRaw = themeRaw['calendar'];
+  if (calendarRaw is! Map) return null;
+  final dateRailRaw = calendarRaw['dateRail'];
+  if (dateRailRaw is! Map) return null;
+  final entriesRaw = dateRailRaw['entries'];
+  if (entriesRaw is! List) return null;
+
+  final entries = <CalendarDateRailEntry>[];
+  for (final rawEntry in entriesRaw) {
+    if (rawEntry is! Map) continue;
+    try {
+      final kind = rawEntry['kind'];
+      final style = rawEntry['style'];
+      final token = rawEntry['token'];
+      final formula = rawEntry['formula'];
+      final colorSource = rawEntry['colorSource'];
+      if (kind is! String || style is! String) continue;
+      if (kind != 'dateToken' && kind != 'formula') continue;
+      if (style != 'label' && style != 'circleHighlight' && style != 'badge') {
+        continue;
+      }
+      if (kind == 'dateToken' && token is! String) continue;
+      if (kind == 'formula' && formula is! String) continue;
+      if (token != null && token is! String) continue;
+      if (formula != null && formula is! String) continue;
+      if (colorSource != null && colorSource is! String) continue;
+      if (token != null &&
+          !const <String>{
+            'weekdayAbbrev',
+            'dayOfMonth',
+            'monthAbbrev',
+            'year',
+          }.contains(token)) {
+        continue;
+      }
+      if (colorSource != null &&
+          colorSource != 'accent' &&
+          colorSource != 'styleField') {
+        continue;
+      }
+      entries.add(
+        CalendarDateRailEntry(
+          kind: kind,
+          token: token as String?,
+          formula: formula as String?,
+          style: style,
+          colorSource: colorSource as String?,
+        ),
+      );
+    } catch (_) {}
+  }
+  return entries;
+}
+
 LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   String extensionId, {
   String? displayName,
@@ -285,6 +341,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
         ]
       : <LoomPersonaDefinition>[];
   final themeRaw = experienceConfiguration['theme'];
+  final calendarDateRailEntries = _parseCalendarDateRailEntries(themeRaw);
   final creatableAction = _parseCreatableActionStyle(
     experienceConfiguration['creatableAction'],
   );
@@ -307,6 +364,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
     workflows: const [],
     personas: personas.isEmpty ? null : personas,
     themeOverride: _parseCardTheme(themeRaw),
+    calendarDateRailEntries: calendarDateRailEntries,
     tabThemeOverrides: _parseTabThemes(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),

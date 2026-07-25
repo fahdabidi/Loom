@@ -117,6 +117,7 @@ class _EngineNativeCalendarSurfaceState
             viewerPersonaId: widget.persona.personaId,
             personaId: resolveEnginePersonaId(widget.persona.personaId),
             accent: widget.accent,
+            calendarDateRailEntries: widget.experience.calendarDateRailEntries,
             currentDate: widget.currentDate,
             modernTheme: widget.modernTheme,
             onInstanceChanged: changed,
@@ -249,6 +250,147 @@ Color _calendarEntryStyleColor(_CalendarEntry entry, Color accent) {
   return palette[styleId % palette.length];
 }
 
+const _defaultCalendarDateRailEntries = <CalendarDateRailEntry>[
+  CalendarDateRailEntry(kind: 'dateToken', token: 'weekdayAbbrev', style: 'label'),
+  CalendarDateRailEntry(
+    kind: 'dateToken',
+    token: 'dayOfMonth',
+    style: 'circleHighlight',
+    colorSource: 'accent',
+  ),
+];
+
+const _calendarWeekdayAbbreviations = <String>[
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+  'SUN',
+];
+
+const _calendarMonthAbbreviations = <String>[
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+];
+
+String _calendarDateRailValue(
+  CalendarDateRailEntry entry,
+  DateTime date,
+  List<_CalendarEntry> dayEntries,
+) {
+  if (entry.kind == 'dateToken') {
+    switch (entry.token) {
+      case 'weekdayAbbrev':
+        return _calendarWeekdayAbbreviations[date.weekday - 1];
+      case 'dayOfMonth':
+        return '${date.day}';
+      case 'monthAbbrev':
+        return _calendarMonthAbbreviations[date.month - 1];
+      case 'year':
+        return '${date.year}';
+    }
+  }
+  if (entry.kind == 'formula' && entry.formula != null) {
+    try {
+      final value = evaluateFormula(
+        entry.formula!,
+        instanceData: <String, dynamic>{
+          'dayInstances': <Map<String, dynamic>>[
+            for (final calendarEntry in dayEntries)
+              calendarEntry.resolved.instance.instanceData,
+          ],
+        },
+      );
+      return '$value';
+    } catch (_) {
+      return '';
+    }
+  }
+  return '';
+}
+
+Color _calendarDateRailColor(
+  CalendarDateRailEntry entry,
+  List<_CalendarEntry> dayEntries,
+  Color accent,
+) => entry.colorSource == 'styleField' && dayEntries.isNotEmpty
+    ? _calendarEntryStyleColor(dayEntries.first, accent)
+    : accent;
+
+Widget _calendarDateRailWidget({
+  required CalendarDateRailEntry entry,
+  required String value,
+  required Color color,
+  required bool isToday,
+  required LoomCardTheme theme,
+  required Key key,
+  Key? legacyTodayKey,
+}) {
+  switch (entry.style) {
+    case 'circleHighlight':
+      return Container(
+        key: legacyTodayKey ?? key,
+        width: 36,
+        height: 36,
+        alignment: Alignment.center,
+        decoration: isToday
+            ? BoxDecoration(color: color, shape: BoxShape.circle)
+            : null,
+        child: Text(
+          value,
+          style: TextStyle(
+            color: theme.resolvedHeading,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    case 'badge':
+      return Container(
+        key: key,
+        constraints: const BoxConstraints(minHeight: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.18),
+          border: Border.all(color: color.withValues(alpha: 0.75)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          value,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    case 'label':
+    default:
+      return Text(
+        value,
+        key: key,
+        style: TextStyle(
+          color: theme.resolvedBody,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      );
+  }
+}
+
 class _CalendarProjectionException implements Exception {
   const _CalendarProjectionException(this.binding, this.message);
 
@@ -270,6 +412,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.viewerPersonaId,
     required this.personaId,
     required this.accent,
+    this.calendarDateRailEntries,
     required this.currentDate,
     required this.modernTheme,
     required this.onInstanceChanged,
@@ -284,6 +427,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final String viewerPersonaId;
   final String personaId;
   final Color accent;
+  final List<CalendarDateRailEntry>? calendarDateRailEntries;
   final DateTime Function() currentDate;
   final LoomCardTheme? modernTheme;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
@@ -736,6 +880,11 @@ class _EngineNativeCalendarContentState
                   agendaDate.month == now.month &&
                   agendaDate.day == now.day;
               final accent = theme.accent ?? widget.accent;
+              final dayEntries = byDay[day] ?? const <_CalendarEntry>[];
+              final dateRailEntries =
+                  widget.calendarDateRailEntries?.isNotEmpty == true
+                  ? widget.calendarDateRailEntries!
+                  : _defaultCalendarDateRailEntries;
               return Container(
             key: ValueKey('engine-native-calendar-agenda-group-$day'),
             decoration: BoxDecoration(
@@ -746,55 +895,47 @@ class _EngineNativeCalendarContentState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 96,
+                  width: 48,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: 4,
                       vertical: 10,
                     ),
                     child: Column(
                       key: ValueKey('engine-native-calendar-agenda-date-$day'),
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          const <String>[
-                            'MON',
-                            'TUE',
-                            'WED',
-                            'THU',
-                            'FRI',
-                            'SAT',
-                            'SUN',
-                          ][agendaDate.weekday - 1],
-                          style: TextStyle(
-                            color: theme.resolvedBody,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Container(
-                          key: ValueKey(
-                            'engine-native-calendar-agenda-today-$day',
-                          ),
-                          width: 36,
-                          height: 36,
-                          alignment: Alignment.center,
-                          decoration: isToday
-                              ? BoxDecoration(
-                                  color: accent,
-                                  shape: BoxShape.circle,
-                                )
-                              : null,
-                          child: Text(
-                            '${agendaDate.day}',
-                            style: TextStyle(
-                              color: theme.resolvedHeading,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                        for (var index = 0;
+                            index < dateRailEntries.length;
+                            index++) ...[
+                          if (index > 0) const SizedBox(height: 2),
+                          _calendarDateRailWidget(
+                            entry: dateRailEntries[index],
+                            value: _calendarDateRailValue(
+                              dateRailEntries[index],
+                              agendaDate,
+                              dayEntries,
                             ),
+                            color: _calendarDateRailColor(
+                              dateRailEntries[index],
+                              dayEntries,
+                              accent,
+                            ),
+                            isToday: isToday,
+                            theme: theme,
+                            key: ValueKey(
+                              'engine-native-calendar-agenda-date-entry-$day-$index',
+                            ),
+                            legacyTodayKey:
+                                dateRailEntries[index].style ==
+                                        'circleHighlight' &&
+                                    index == 1
+                                ? ValueKey(
+                                    'engine-native-calendar-agenda-today-$day',
+                                  )
+                                : null,
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
