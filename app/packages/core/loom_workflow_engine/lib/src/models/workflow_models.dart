@@ -188,6 +188,8 @@ class WorkflowEffect {
   final String? relatedInstance;
   final RelatedTransitionQuery? relatedQuery;
   final String? transitionId;
+  final String? anchorField;
+  final Map<String, dynamic>? recurrenceRule;
   final String? condition;
   final List<WorkflowEffect> thenEffects;
   final List<WorkflowEffect> elseEffects;
@@ -201,6 +203,8 @@ class WorkflowEffect {
     this.relatedInstance,
     this.relatedQuery,
     this.transitionId,
+    this.anchorField,
+    this.recurrenceRule,
     this.condition,
     this.thenEffects = const [],
     this.elseEffects = const [],
@@ -222,6 +226,10 @@ class WorkflowEffect {
             )
           : null,
       transitionId: json['transitionId'] as String?,
+      anchorField: json['anchorField'] as String?,
+      recurrenceRule: (json['recurrenceRule'] as Map<String, dynamic>?)?.map(
+        (key, value) => MapEntry(key, value),
+      ),
       condition: json['if'] as String?,
       thenEffects:
           (json['then'] as List<dynamic>?)

@@ -5,6 +5,7 @@ import 'dart:math';
 import '../evaluator/effect_evaluator.dart';
 import '../evaluator/formula_evaluator.dart';
 import '../evaluator/guard_evaluator.dart';
+import '../evaluator/recurrence_evaluator.dart';
 import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
@@ -1001,6 +1002,75 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             );
           } on _TransitionGuardFailure {
             // A target guard failure deliberately does not affect the source.
+          }
+          continue;
+        }
+        if (effect.op == 'generateRecurringInstances') {
+          final workflowType = effect.workflowType;
+          final anchorField = effect.anchorField;
+          final fields = effect.fields;
+          final recurrenceRuleTemplate = effect.recurrenceRule;
+          if (workflowType == null || anchorField == null || fields == null ||
+              recurrenceRuleTemplate == null) {
+            throw StateError(
+              'generateRecurringInstances requires workflowType, anchorField, fields, '
+              'and recurrenceRule',
+            );
+          }
+          if (!fields.containsKey(anchorField)) {
+            throw StateError(
+              'generateRecurringInstances anchorField "$anchorField" must be a key in fields',
+            );
+          }
+
+          final seriesId = _generateId();
+          final fieldsWithSeriesToken =
+              substituteSeriesIdToken(fields, seriesId);
+          final resolvedRule = resolveEffectValue(
+            recurrenceRuleTemplate,
+            personaId,
+            computed,
+            inputValues: inputValues,
+            instanceId: instanceId,
+          );
+          final rule = RecurrenceRule.fromResolvedJson(
+            Map<String, dynamic>.from(resolvedRule as Map),
+          );
+          final anchorRaw = resolveEffectValue(
+            (fieldsWithSeriesToken as Map)[anchorField],
+            personaId,
+            computed,
+            inputValues: inputValues,
+            instanceId: instanceId,
+          );
+          final anchor = DateTime.parse(anchorRaw as String);
+          final occurrenceDates = computeRecurrenceOccurrences(anchor, rule);
+
+          data = applyEffects(
+            [WorkflowEffect(op: 'set', key: 'seriesId', value: seriesId)],
+            personaId,
+            data,
+            instanceId: instanceId,
+          );
+          for (var i = 1; i < occurrenceDates.length; i++) {
+            final occurrenceFields =
+                Map<String, dynamic>.from(fieldsWithSeriesToken)
+                  ..[anchorField] =
+                      occurrenceDates[i].toIso8601String().substring(0, 10);
+            final resolvedFields = resolveEffectValue(
+              occurrenceFields,
+              personaId,
+              computed,
+              inputValues: inputValues,
+              instanceId: instanceId,
+            );
+            await _createInstanceValidated(
+              workflowType: workflowType,
+              initialInstanceData: Map<String, dynamic>.from(
+                resolvedFields as Map,
+              ),
+              personaId: personaId,
+            );
           }
           continue;
         }

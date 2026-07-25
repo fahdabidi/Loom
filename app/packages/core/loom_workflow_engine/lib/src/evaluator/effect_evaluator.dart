@@ -40,6 +40,13 @@ dynamic resolveEffectValue(
   String? instanceId,
 }) {
   if (value == '\$actor') return personaId;
+  if (value is String &&
+      inputValues != null &&
+      value.startsWith('{input.') &&
+      value.endsWith('}')) {
+    final inputName = value.substring('{input.'.length, value.length - 1);
+    if (inputValues.containsKey(inputName)) return inputValues[inputName];
+  }
   if (value is String) {
     var resolved = value
         .replaceAll('\$actor', personaId)
@@ -68,6 +75,25 @@ dynamic resolveEffectValue(
       (key, item) =>
           MapEntry(key, resolveEffectValue(item, personaId, instanceData,
               inputValues: inputValues, instanceId: instanceId)),
+    );
+  }
+  return value;
+}
+
+/// Substitutes the literal `$newSeriesId` token in [value] with [seriesId].
+///
+/// This deliberately remains separate from [resolveEffectValue]: this token is
+/// minted once by `generateRecurringInstances`, rather than from ambient call
+/// context on each resolution.
+dynamic substituteSeriesIdToken(dynamic value, String seriesId) {
+  if (value == '\$newSeriesId') return seriesId;
+  if (value is String) return value.replaceAll('\$newSeriesId', seriesId);
+  if (value is List) {
+    return value.map((v) => substituteSeriesIdToken(v, seriesId)).toList();
+  }
+  if (value is Map) {
+    return value.map(
+      (k, v) => MapEntry(k, substituteSeriesIdToken(v, seriesId)),
     );
   }
   return value;
