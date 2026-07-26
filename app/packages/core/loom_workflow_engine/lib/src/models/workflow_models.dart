@@ -25,6 +25,7 @@ class WorkflowGuard {
   final RelatedListGuard? relatedListMembership;
   final RelatedAggregateGuard? relatedAggregate;
   final CancellationDeadlineGuard? cancellationDeadline;
+  final LocationOverlapGuard? locationOverlap;
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
@@ -35,6 +36,7 @@ class WorkflowGuard {
     this.relatedListMembership,
     this.relatedAggregate,
     this.cancellationDeadline,
+    this.locationOverlap,
     this.requiresWorkflowsComplete,
   });
 
@@ -68,6 +70,11 @@ class WorkflowGuard {
               json['cancellationDeadline'] as Map<String, dynamic>,
             )
           : null,
+      locationOverlap: json['locationOverlap'] != null
+          ? LocationOverlapGuard.fromJson(
+              json['locationOverlap'] as Map<String, dynamic>,
+            )
+          : null,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -83,6 +90,7 @@ class WorkflowGuard {
       relatedListMembership == null &&
       relatedAggregate == null &&
       cancellationDeadline == null &&
+      locationOverlap == null &&
       (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
 }
 
@@ -104,6 +112,31 @@ class CancellationDeadlineGuard {
         dateField: json['dateField'] as String,
         timeField: json['timeField'] as String?,
         hoursBefore: json['hoursBefore'] as num,
+      );
+}
+
+/// Prevents overlapping bookings of the same location within one workflow
+/// type. Evaluation requires a live sibling-instance query, so it is handled
+/// by [LocalWorkflowEngineApi] rather than [evaluateGuard].
+class LocationOverlapGuard {
+  final String locationField;
+  final String dateField;
+  final String? timeField;
+  final num durationMinutes;
+
+  const LocationOverlapGuard({
+    required this.locationField,
+    required this.dateField,
+    this.timeField,
+    required this.durationMinutes,
+  });
+
+  factory LocationOverlapGuard.fromJson(Map<String, dynamic> json) =>
+      LocationOverlapGuard(
+        locationField: json['locationField'] as String,
+        dateField: json['dateField'] as String,
+        timeField: json['timeField'] as String?,
+        durationMinutes: json['durationMinutes'] as num,
       );
 }
 

@@ -649,6 +649,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           creationGuard,
           initialInstanceData,
           personaId,
+          workflowType: workflowType,
         )) {
       throw StateError(
         'Creation of $workflowType is not available for $personaId',
@@ -778,8 +779,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
       if (fieldUpdates.isNotEmpty) {
         final editGuard = stateDef.editGuard;
+        // A location-overlap edit guard must examine the proposed booking,
+        // while existing edit guards retain their established current-data
+        // authorization semantics.
+        final guardData = editGuard?.locationOverlap != null
+            ? {...data, ...fieldUpdates}
+            : data;
         if (editGuard != null &&
-            !await _passesGuard(editGuard, data, personaId)) {
+            !await _passesGuard(
+              editGuard,
+              guardData,
+              personaId,
+              workflowType: workflowType,
+              instanceId: instanceId,
+            )) {
           throw WorkflowAuthorizationError(
             'Fields are not editable in state "${row.currentState}" for $personaId',
           );
@@ -824,10 +837,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   Future<bool> _passesGuard(
     WorkflowGuard guard,
     Map<String, dynamic> data,
-    String personaId,
-  ) async {
+    String personaId, {
+    String? workflowType,
+    String? instanceId,
+  }) async {
     if (!await _passesRelatedListGuard(guard, data, personaId)) return false;
     if (!await _passesRelatedAggregateGuard(guard, data, personaId)) {
+      return false;
+    }
+    if (!await _passesLocationOverlapGuard(
+      guard,
+      data,
+      workflowType: workflowType,
+      instanceId: instanceId,
+    )) {
       return false;
     }
     return evaluateGuard(
@@ -838,6 +861,48 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       skipRelatedAggregate: true,
       clock: _clock,
     );
+  }
+
+  Future<bool> _passesLocationOverlapGuard(
+    WorkflowGuard guard,
+    Map<String, dynamic> sourceData, {
+    required String? workflowType,
+    required String? instanceId,
+  }) async {
+    final overlap = guard.locationOverlap;
+    if (overlap == null) return true;
+    if (workflowType == null) return false;
+
+    final location = sourceData[overlap.locationField];
+    final start = combineDateAndTime(
+      sourceData,
+      dateField: overlap.dateField,
+      timeField: overlap.timeField,
+    );
+    if (start == null || overlap.durationMinutes <= 0) return false;
+    final end = start.add(
+      Duration(milliseconds: (overlap.durationMinutes * Duration.millisecondsPerMinute).round()),
+    );
+
+    for (final candidate in await _readAllInstancesOfType(workflowType)) {
+      if (candidate[r'$id'] == instanceId ||
+          candidate[overlap.locationField] != location) {
+        continue;
+      }
+      final candidateStart = combineDateAndTime(
+        candidate,
+        dateField: overlap.dateField,
+        timeField: overlap.timeField,
+      );
+      if (candidateStart == null) continue;
+      final candidateEnd = candidateStart.add(
+        Duration(milliseconds: (overlap.durationMinutes * Duration.millisecondsPerMinute).round()),
+      );
+      if (start.isBefore(candidateEnd) && candidateStart.isBefore(end)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<bool> _passesRelatedListGuard(
@@ -1422,6 +1487,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         if (guard.cancellationDeadline!.timeField != null)
           'timeField': guard.cancellationDeadline!.timeField,
         'hoursBefore': guard.cancellationDeadline!.hoursBefore,
+      };
+    }
+    if (guard.locationOverlap != null) {
+      m['locationOverlap'] = {
+        'locationField': guard.locationOverlap!.locationField,
+        'dateField': guard.locationOverlap!.dateField,
+        if (guard.locationOverlap!.timeField != null)
+          'timeField': guard.locationOverlap!.timeField,
+        'durationMinutes': guard.locationOverlap!.durationMinutes,
       };
     }
     if (guard.requiresWorkflowsComplete != null &&

@@ -152,7 +152,15 @@
               "title", "eventDate", "eventTime", "location", "host", "capacity",
               "allDay", "eventEndDate", "locationType", "videoLink"
             ],
-            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
+            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "creationGuard": {
+              "locationOverlap": {
+                "locationField": "location",
+                "dateField": "eventDate",
+                "timeField": "eventTime",
+                "durationMinutes": 120
+              }
+            }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
@@ -488,7 +496,15 @@
               "title", "eventDate", "eventTime", "location", "host", "minimumAttendance",
               "allDay", "eventEndDate", "locationType", "videoLink"
             ],
-            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
+            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "creationGuard": {
+              "locationOverlap": {
+                "locationField": "location",
+                "dateField": "eventDate",
+                "timeField": "eventTime",
+                "durationMinutes": 120
+              }
+            }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },

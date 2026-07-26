@@ -102,15 +102,33 @@ DateTime? _cancellationDeadline(
   CancellationDeadlineGuard guard,
   Map<String, dynamic> instanceData,
 ) {
-  final rawDate = instanceData[guard.dateField];
+  final start = combineDateAndTime(
+    instanceData,
+    dateField: guard.dateField,
+    timeField: guard.timeField,
+  );
+  if (start == null) return null;
+  return start.subtract(
+    Duration(milliseconds: (guard.hoursBefore * Duration.millisecondsPerHour).round()),
+  );
+}
+
+/// Combines Loom's ISO date and optional `HH:mm` time fields into a local
+/// timestamp. Invalid or missing values return null so guards fail closed.
+DateTime? combineDateAndTime(
+  Map<String, dynamic> instanceData, {
+  required String dateField,
+  required String? timeField,
+}) {
+  final rawDate = instanceData[dateField];
   if (rawDate is! String || rawDate.isEmpty) return null;
   final date = DateTime.tryParse(rawDate);
   if (date == null) return null;
 
   var hour = 0;
   var minute = 0;
-  if (guard.timeField != null) {
-    final rawTime = instanceData[guard.timeField!];
+  if (timeField != null) {
+    final rawTime = instanceData[timeField];
     if (rawTime is String && rawTime.isNotEmpty) {
       final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(rawTime);
       if (match == null) return null;
@@ -120,9 +138,7 @@ DateTime? _cancellationDeadline(
     }
   }
 
-  return DateTime(date.year, date.month, date.day, hour, minute).subtract(
-    Duration(milliseconds: (guard.hoursBefore * Duration.millisecondsPerHour).round()),
-  );
+  return DateTime(date.year, date.month, date.day, hour, minute);
 }
 
 bool _compare(num actual, num expected, String comparator) {
