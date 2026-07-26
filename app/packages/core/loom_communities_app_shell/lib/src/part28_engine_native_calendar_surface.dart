@@ -197,6 +197,17 @@ bool _isCalendarDetailField(InstanceDataField field) {
 bool _isCalendarTileField(InstanceDataField field) =>
     field.displayContexts?.contains('tile') ?? false;
 
+/// Editing visibility uses the engine's formula language, evaluated against
+/// the in-progress values supplied by the editor rather than persisted data.
+bool _isEditingFieldVisible(
+  InstanceDataField field,
+  Map<String, dynamic> values,
+) {
+  final formula = field.visibleWhenEditing;
+  if (formula == null) return true;
+  return evaluateFormula(formula, instanceData: values) == true;
+}
+
 /// Fields owned by the Calendar's specialized event presentation rather than
 /// either its generic fallback facts or compact agenda pills.
 const _calendarBespokeFieldKeys = <String>{
@@ -233,9 +244,9 @@ class _CalendarEntry {
   final DateTime date;
   final int minutes;
 
-  /// A definition binding ordinal is part of A.7's lossless identity. An
-  /// instance may legitimately resolve more than one Calendar binding.
-  String get identity => resolved.identity;
+  /// Bindings are losslessly identified by A.7, while Calendar projections
+  /// also need to distinguish each date an individual binding spans.
+  String get identity => '${resolved.identity}#${dateKey}';
   String get instanceId => resolved.instance.instanceId;
   String get title =>
       '${resolved.instance.instanceData['title'] ?? instanceId}';
@@ -517,19 +528,30 @@ class _EngineNativeCalendarContentState
       final parts = '${data['eventTime'] ?? ''}'.split(':');
       final hour = int.tryParse(parts.first);
       final minute = parts.length == 2 ? int.tryParse(parts[1]) : null;
-      if (hour == null || minute == null || hour > 23 || minute > 59) {
+      final allDay = data['allDay'] == true;
+      if (!allDay &&
+          (hour == null || minute == null || hour > 23 || minute > 59)) {
         throw _CalendarProjectionException(
           resolved,
           'event time is missing or invalid',
         );
       }
-      value.add(
-        _CalendarEntry(
-          resolved: resolved,
-          date: DateTime(parsedDate.year, parsedDate.month, parsedDate.day),
-          minutes: hour * 60 + minute,
-        ),
-      );
+      final start = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+      final parsedEndDate = DateTime.tryParse('${data['eventEndDate'] ?? ''}');
+      final end = parsedEndDate != null && parsedEndDate.isAfter(start)
+          ? DateTime(parsedEndDate.year, parsedEndDate.month, parsedEndDate.day)
+          : start;
+      for (var date = start;
+          !date.isAfter(end);
+          date = date.add(const Duration(days: 1))) {
+        value.add(
+          _CalendarEntry(
+            resolved: resolved,
+            date: date,
+            minutes: allDay ? 0 : hour! * 60 + minute!,
+          ),
+        );
+      }
     }
     value.sort((a, b) {
       final date = a.date.compareTo(b.date);
@@ -1271,7 +1293,12 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         ? [
             for (final key in state?.editableFields ?? const <String>[])
               if (widget.machine.instanceDataSchema[key] case final schema?)
-                if (schema.formula == null && schema.writableBy != 'effect') key,
+                if (schema.formula == null && schema.writableBy != 'effect')
+                  if (_isEditingFieldVisible(schema, {
+                    ..._instance.instanceData,
+                    ..._edits,
+                  }))
+                    key,
           ]
         : const <String>[];
   }

@@ -547,6 +547,10 @@ class InstanceDataField {
   /// or form edits.
   final String? formula;
 
+  /// An optional formula which controls whether this field is shown by a
+  /// schema-driven creation or editing surface.
+  final String? visibleWhenEditing;
+
   const InstanceDataField({
     required this.type,
     this.required = false,
@@ -562,6 +566,7 @@ class InstanceDataField {
     this.maxLength,
     this.source,
     this.formula,
+    this.visibleWhenEditing,
   });
 
   factory InstanceDataField.fromJson(Map<String, dynamic> json) {
@@ -582,6 +587,7 @@ class InstanceDataField {
       maxLength: json['maxLength'] as int?,
       source: json['source'] as String?,
       formula: json['formula'] as String?,
+      visibleWhenEditing: json['visibleWhenEditing'] as String?,
     );
   }
 }

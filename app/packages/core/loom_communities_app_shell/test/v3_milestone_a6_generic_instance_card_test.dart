@@ -19,6 +19,10 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
         'at',
         'enabled',
         'amount',
+        'allDay',
+        'eventTime',
+        'locationType',
+        'videoLink',
         'computed',
         'effectOnly',
       ],
@@ -84,6 +88,16 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
     'at': {'type': 'time'},
     'enabled': {'type': 'bool'},
     'amount': {'type': 'number'},
+    'allDay': {'type': 'bool'},
+    'eventTime': {
+      'type': 'time',
+      'visibleWhenEditing': '!(allDay == true)',
+    },
+    'locationType': {'type': 'text'},
+    'videoLink': {
+      'type': 'text',
+      'visibleWhenEditing': "locationType == 'video'",
+    },
     'computed': {'type': 'text', 'formula': 'text'},
     'effectOnly': {'type': 'text', 'writableBy': 'effect'},
     'receipt': {'type': 'text'},
@@ -114,6 +128,9 @@ Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seed() async {
       'at': '09:30',
       'enabled': false,
       'amount': 2,
+      'allDay': false,
+      'eventTime': '09:30',
+      'locationType': 'in person',
     },
   );
   final row = (await api.queryInstances(
@@ -302,6 +319,41 @@ void main() {
       }
     },
   );
+
+  testWidgets('re-evaluates editing visibility from unsaved generic edits', (
+    tester,
+  ) async {
+    final (api, instance) = await _seed();
+    await tester.pumpWidget(_host(_card(api, instance)));
+    await tester.pump();
+
+    final allDay = find.byKey(
+      ValueKey('generic-instance-editor-${instance.instanceId}-allDay'),
+    );
+    final eventTime = find.byKey(
+      ValueKey('generic-instance-editor-${instance.instanceId}-eventTime'),
+    );
+    final locationType = find.byKey(
+      ValueKey('generic-instance-editor-${instance.instanceId}-locationType'),
+    );
+    final videoLink = find.byKey(
+      ValueKey('generic-instance-editor-${instance.instanceId}-videoLink'),
+    );
+    expect(eventTime, findsOneWidget);
+    expect(videoLink, findsNothing);
+
+    await tester.ensureVisible(allDay);
+    await tester.tap(allDay);
+    await tester.pump();
+    expect(eventTime, findsNothing);
+    await tester.ensureVisible(locationType);
+    await tester.enterText(locationType, 'video');
+    await tester.pump();
+    expect(videoLink, findsOneWidget);
+    await tester.enterText(locationType, 'in person');
+    await tester.pump();
+    expect(videoLink, findsNothing);
+  });
 
   testWidgets(
     'public fact and action seams preserve declared icons and generic tones',
@@ -681,7 +733,15 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('09:30'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(
+            ValueKey('generic-instance-editor-${instance.instanceId}-at'),
+          ),
+          matching: find.text('09:30'),
+        ),
+        findsOneWidget,
+      );
       for (final key in ['computed', 'effectOnly']) {
         expect(
           find.byKey(

@@ -49,7 +49,7 @@ class _GenericWorkflowCreationCardState
     return [
       for (final key in editable)
         if (widget.machine.instanceDataSchema[key] case final schema?)
-          MapEntry(key, schema),
+          if (_isEditingFieldVisible(schema, _values)) MapEntry(key, schema),
     ];
   }
 
@@ -228,7 +228,7 @@ class _GenericWorkflowCreationCardState
                   )
                 : TextInputType.text,
             decoration: InputDecoration(labelText: label),
-            onChanged: (value) => _values[key] = value,
+            onChanged: (value) => setState(() => _values[key] = value),
           ),
         );
     }

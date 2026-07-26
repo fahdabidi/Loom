@@ -20,6 +20,35 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
   },
 }, 'test-creation');
 
+LoomWorkflowStateMachine _conditionalMachine() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'draft',
+      'states': {
+        'draft': {
+          'label': 'Draft',
+          'editableFields': [
+            'allDay',
+            'eventTime',
+            'locationType',
+            'videoLink',
+          ],
+        },
+      },
+      'transitions': const <Map<String, dynamic>>[],
+      'instanceDataSchema': {
+        'allDay': {'type': 'bool'},
+        'eventTime': {
+          'type': 'time',
+          'visibleWhenEditing': '!(allDay == true)',
+        },
+        'locationType': {'type': 'text'},
+        'videoLink': {
+          'type': 'text',
+          'visibleWhenEditing': "locationType == 'video'",
+        },
+      },
+    }, 'conditional-creation');
+
 Future<LocalWorkflowEngineApi> _engine() async {
   final engine = LocalWorkflowEngineApi(
     db: WorkflowDatabase.memory(),
@@ -113,5 +142,54 @@ void main() {
     // The 'Capacity' labelTemplate has no trailing colon/dash, so the
     // label must appear exactly as-is — not stripped or range-mangled.
     expect(find.text('Capacity'), findsOneWidget);
+  });
+
+  testWidgets('re-evaluates editing visibility from the creation values', (
+    tester,
+  ) async {
+    final engine = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'conditional-creation-card-test',
+    );
+    final machine = _conditionalMachine();
+    engine.registerDefinition(machine);
+    await tester.pumpWidget(
+      _host(
+        GenericWorkflowCreationCard(
+          workflowType: 'conditional-creation',
+          machine: machine,
+          engine: engine,
+          personaId: 'member',
+          keyPrefix: 'conditional',
+        ),
+      ),
+    );
+
+    final allDay = find.byKey(const ValueKey('conditional-editor-allDay'));
+    final eventTime = find.byKey(
+      const ValueKey('conditional-editor-eventTime'),
+    );
+    final locationType = find.byKey(
+      const ValueKey('conditional-editor-locationType'),
+    );
+    final videoLink = find.byKey(
+      const ValueKey('conditional-editor-videoLink'),
+    );
+    expect(eventTime, findsOneWidget);
+    expect(videoLink, findsNothing);
+
+    await tester.tap(allDay);
+    await tester.pump();
+    expect(eventTime, findsNothing);
+    await tester.tap(allDay);
+    await tester.pump();
+    expect(eventTime, findsOneWidget);
+
+    await tester.enterText(locationType, 'video');
+    await tester.pump();
+    expect(videoLink, findsOneWidget);
+    await tester.enterText(locationType, 'in person');
+    await tester.pump();
+    expect(videoLink, findsNothing);
   });
 }

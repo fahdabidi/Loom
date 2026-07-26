@@ -1358,6 +1358,78 @@ void main() {
     },
   );
 
+  testWidgets('projects a multi-day event into Month, Week, and Day dates', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('calr24-multi-day', configure: (source) {
+        final instances =
+            (source['experience'] as Map<String, dynamic>)['workflowInstances']
+                as List<dynamic>;
+        final friday = instances.cast<Map<String, dynamic>>().firstWhere(
+          (instance) => instance['instanceId'] == 'event-friday-game-night',
+        );
+        (friday['instanceData'] as Map<String, dynamic>)['eventEndDate'] =
+            '2026-07-12';
+      }),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+      );
+      for (final day in ['2026-07-10', '2026-07-11', '2026-07-12']) {
+        final cell = find.byKey(ValueKey('engine-native-calendar-date-$day'));
+        expect(cell, findsOneWidget);
+        expect(
+          find.descendant(of: cell, matching: find.text('Friday game night')),
+          findsOneWidget,
+        );
+      }
+
+      await tester.tap(
+        find.byKey(const ValueKey('engine-native-calendar-date-2026-07-11')),
+      );
+      await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+      await tester.pump();
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey('engine-native-calendar-week-cell-2026-07-11'),
+          ),
+          matching: find.text('Friday game night'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-agenda-group-2026-07-11'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('calendar-scope-day')));
+      await tester.pump();
+      expect(
+        find.byKey(
+          const ValueKey('engine-native-calendar-agenda-group-2026-07-11'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        ),
+        findsOneWidget,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
   testWidgets(
     'places Calendar scope selector before the active scope container',
     (tester) async {

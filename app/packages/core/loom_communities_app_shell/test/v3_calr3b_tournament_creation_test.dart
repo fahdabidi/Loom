@@ -118,22 +118,28 @@ Future<void> _submitNewTournament(WidgetTester tester) async {
     find.byKey(const ValueKey('new-tournament-event-editor-minimumAttendance')),
     '8',
   );
-  await tester.tap(
-    find.byKey(const ValueKey('new-tournament-event-editor-eventDate')),
+  final eventDate = find.byKey(
+    const ValueKey('new-tournament-event-editor-eventDate'),
   );
+  await tester.ensureVisible(eventDate);
+  await tester.tap(eventDate);
   await _settleBounded(tester);
   await tester.tap(find.text('15').last);
   await tester.tap(find.text('OK').last);
   await _settleBounded(tester);
-  await tester.tap(
-    find.byKey(const ValueKey('new-tournament-event-editor-eventTime')),
+  final eventTime = find.byKey(
+    const ValueKey('new-tournament-event-editor-eventTime'),
   );
+  await tester.ensureVisible(eventTime);
+  await tester.tap(eventTime);
   await _settleBounded(tester);
   await tester.tap(find.text('OK').last);
   await _settleBounded(tester);
-  await tester.tap(
-    find.byKey(const ValueKey('new-tournament-event-submit')),
+  final submit = find.byKey(
+    const ValueKey('new-tournament-event-submit'),
   );
+  await tester.ensureVisible(submit);
+  await tester.tap(submit);
   await _settleBounded(tester);
 }
 

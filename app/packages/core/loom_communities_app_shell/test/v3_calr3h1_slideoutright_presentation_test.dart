@@ -136,16 +136,22 @@ Future<void> _submitNewEvent(WidgetTester tester) async {
     find.byKey(const ValueKey('new-event-editor-capacity')),
     '24',
   );
-  await tester.tap(find.byKey(const ValueKey('new-event-editor-eventDate')));
+  final eventDate = find.byKey(const ValueKey('new-event-editor-eventDate'));
+  await tester.ensureVisible(eventDate);
+  await tester.tap(eventDate);
   await _settleBounded(tester);
   await tester.tap(find.text('15').last);
   await tester.tap(find.text('OK').last);
   await _settleBounded(tester);
-  await tester.tap(find.byKey(const ValueKey('new-event-editor-eventTime')));
+  final eventTime = find.byKey(const ValueKey('new-event-editor-eventTime'));
+  await tester.ensureVisible(eventTime);
+  await tester.tap(eventTime);
   await _settleBounded(tester);
   await tester.tap(find.text('OK').last);
   await _settleBounded(tester);
-  await tester.tap(find.byKey(const ValueKey('new-event-submit')));
+  final submit = find.byKey(const ValueKey('new-event-submit'));
+  await tester.ensureVisible(submit);
+  await tester.tap(submit);
   await _settleBounded(tester);
 }
 

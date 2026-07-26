@@ -104,7 +104,12 @@ class _GenericWorkflowInstanceCardState
     return [
       for (final key in state?.editableFields ?? const <String>[])
         if (widget.machine.instanceDataSchema[key] case final schema?)
-          if (schema.formula == null && schema.writableBy != 'effect') key,
+          if (schema.formula == null && schema.writableBy != 'effect')
+            if (_isEditingFieldVisible(schema, {
+              ..._instance.instanceData,
+              ..._edits,
+            }))
+              key,
     ];
   }
 
