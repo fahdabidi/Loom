@@ -130,7 +130,9 @@ void _replaceEventDates(Map<String, dynamic> source, List<String> dates) {
     if (value is Map) {
       for (final key in value.keys.toList()) {
         final child = value[key];
-        if (key == 'eventDate' && child is String) {
+        if (key == 'eventDate' &&
+            child is String &&
+            !(child.startsWith('{') && child.endsWith('}'))) {
           value[key] = dates[index++];
         } else {
           visit(child);

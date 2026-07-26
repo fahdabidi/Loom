@@ -127,6 +127,7 @@ void main() {
     );
     expect(definitions['event-rsvp']!.transitions.map((t) => t.id), <String>[
       'cancel-event',
+      'make-recurring',
     ]);
     final friday = instances!.singleWhere(
       (instance) => instance.instanceId == 'event-friday-game-night',
