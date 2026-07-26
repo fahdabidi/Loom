@@ -20,6 +20,7 @@ bool evaluateGuard(
   num? precomputedRelatedAggregate,
   num? resolvedRelatedAggregateCompareTo,
   bool skipRelatedAggregate = false,
+  DateTime Function()? clock,
 }) {
   // allowedPersonaIds — if non-null and non-empty, the persona's *type*
   // (when available) or individual id must be in the list.
@@ -54,8 +55,19 @@ bool evaluateGuard(
       instanceData: instanceData,
       viewerId: personaId,
       actorId: personaId,
+      clock: clock,
     );
     if (value is! bool || !value) return false;
+  }
+
+  if (guard.cancellationDeadline != null) {
+    final deadline = _cancellationDeadline(
+      guard.cancellationDeadline!,
+      instanceData,
+    );
+    if (deadline == null || (clock ?? DateTime.now)().isAfter(deadline)) {
+      return false;
+    }
   }
 
   if (guard.relatedAggregate != null && !skipRelatedAggregate) {
@@ -84,6 +96,33 @@ bool evaluateGuard(
   }
 
   return true;
+}
+
+DateTime? _cancellationDeadline(
+  CancellationDeadlineGuard guard,
+  Map<String, dynamic> instanceData,
+) {
+  final rawDate = instanceData[guard.dateField];
+  if (rawDate is! String || rawDate.isEmpty) return null;
+  final date = DateTime.tryParse(rawDate);
+  if (date == null) return null;
+
+  var hour = 0;
+  var minute = 0;
+  if (guard.timeField != null) {
+    final rawTime = instanceData[guard.timeField!];
+    if (rawTime is String && rawTime.isNotEmpty) {
+      final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(rawTime);
+      if (match == null) return null;
+      hour = int.parse(match.group(1)!);
+      minute = int.parse(match.group(2)!);
+      if (hour > 23 || minute > 59) return null;
+    }
+  }
+
+  return DateTime(date.year, date.month, date.day, hour, minute).subtract(
+    Duration(milliseconds: (guard.hoursBefore * Duration.millisecondsPerHour).round()),
+  );
 }
 
 bool _compare(num actual, num expected, String comparator) {

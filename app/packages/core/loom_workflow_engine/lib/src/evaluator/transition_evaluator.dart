@@ -16,6 +16,7 @@ List<LoomWorkflowTransition> availableTransitions(
   String? personaTypeId,
   Set<String>? completedWorkflowIds,
   bool skipRelatedAggregate = false,
+  DateTime Function()? clock,
 }) {
   return machine
       .transitionsFrom(currentState)
@@ -27,6 +28,7 @@ List<LoomWorkflowTransition> availableTransitions(
           personaTypeId: personaTypeId,
           completedWorkflowIds: completedWorkflowIds,
           skipRelatedAggregate: skipRelatedAggregate,
+          clock: clock,
         ),
       )
       .toList();

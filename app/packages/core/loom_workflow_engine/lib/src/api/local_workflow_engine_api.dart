@@ -69,6 +69,7 @@ class _ResolvedTransition {
 class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final WorkflowDatabase _db;
   final String _communityId;
+  final DateTime Function() _clock;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -87,8 +88,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   LocalWorkflowEngineApi({
     required WorkflowDatabase db,
     required String communityId,
+    DateTime Function()? clock,
   }) : _db = db,
-       _communityId = communityId;
+       _communityId = communityId,
+       _clock = clock ?? DateTime.now;
 
   // ── populate definitions (called before any API use) ──────────────────
 
@@ -318,6 +321,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       personaId,
       _withComputedFields(instanceData, machine, viewerId: personaId),
       personaTypeId: _personaTypeById[personaId],
+      clock: _clock,
     );
   }
 
@@ -339,6 +343,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       _withComputedFields(instanceData, machine, viewerId: personaId),
       personaTypeId: _personaTypeById[personaId],
       skipRelatedAggregate: true,
+      clock: _clock,
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
@@ -465,6 +470,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       personaTypeId: _personaTypeById[personaId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
+      clock: _clock,
     );
 
     final declaredTransition = machine.transitions.firstWhere(
@@ -830,6 +836,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       data,
       personaTypeId: _personaTypeById[personaId],
       skipRelatedAggregate: true,
+      clock: _clock,
     );
   }
 
@@ -1244,6 +1251,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       formulas: evaluable,
       viewerId: viewerId,
       actorId: actorId,
+      clock: _clock,
     );
   }
 
@@ -1407,6 +1415,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       m['relatedInstanceField'] =
           guard.relatedListMembership!.relatedInstanceField;
       m['relatedListField'] = guard.relatedListMembership!.relatedListField;
+    }
+    if (guard.cancellationDeadline != null) {
+      m['cancellationDeadline'] = {
+        'dateField': guard.cancellationDeadline!.dateField,
+        if (guard.cancellationDeadline!.timeField != null)
+          'timeField': guard.cancellationDeadline!.timeField,
+        'hoursBefore': guard.cancellationDeadline!.hoursBefore,
+      };
     }
     if (guard.requiresWorkflowsComplete != null &&
         guard.requiresWorkflowsComplete!.isNotEmpty) {

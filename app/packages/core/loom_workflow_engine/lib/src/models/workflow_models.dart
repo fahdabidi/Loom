@@ -24,6 +24,7 @@ class WorkflowGuard {
   final String? formula;
   final RelatedListGuard? relatedListMembership;
   final RelatedAggregateGuard? relatedAggregate;
+  final CancellationDeadlineGuard? cancellationDeadline;
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
@@ -33,6 +34,7 @@ class WorkflowGuard {
     this.formula,
     this.relatedListMembership,
     this.relatedAggregate,
+    this.cancellationDeadline,
     this.requiresWorkflowsComplete,
   });
 
@@ -61,6 +63,11 @@ class WorkflowGuard {
               json['relatedAggregate'] as Map<String, dynamic>,
             )
           : null,
+      cancellationDeadline: json['cancellationDeadline'] != null
+          ? CancellationDeadlineGuard.fromJson(
+              json['cancellationDeadline'] as Map<String, dynamic>,
+            )
+          : null,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -75,7 +82,29 @@ class WorkflowGuard {
       formula == null &&
       relatedListMembership == null &&
       relatedAggregate == null &&
+      cancellationDeadline == null &&
       (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
+}
+
+/// A cutoff that permits a transition only while enough time remains before
+/// an instance's date (and optional time) field.
+class CancellationDeadlineGuard {
+  final String dateField;
+  final String? timeField;
+  final num hoursBefore;
+
+  const CancellationDeadlineGuard({
+    required this.dateField,
+    this.timeField,
+    required this.hoursBefore,
+  });
+
+  factory CancellationDeadlineGuard.fromJson(Map<String, dynamic> json) =>
+      CancellationDeadlineGuard(
+        dateField: json['dateField'] as String,
+        timeField: json['timeField'] as String?,
+        hoursBefore: json['hoursBefore'] as num,
+      );
 }
 
 /// A live aggregate over instances in a related workflow type.
