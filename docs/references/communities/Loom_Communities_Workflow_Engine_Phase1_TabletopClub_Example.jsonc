@@ -154,6 +154,58 @@
             "from": ["open"],
             "to": "cancelled",
             "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+          },
+          {
+            // IMPLEMENTED 2026-07-25 (CAL.Recurrence, effects.md op 12). Orthogonal, no-state-change
+            // transition (to: null) -- spawns count-1 real sibling instances via bespoke Dart date
+            // arithmetic, stamps this instance's own seriesId in place as occurrence 0. The
+            // "seriesId == null" formula guard self-removes this button after it fires once, since a
+            // series can only be created from its anchor a single time.
+            "id": "make-recurring",
+            "label": "Make recurring",
+            "icon": "event_repeat",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["tabletop-organizer"],
+              "formula": "seriesId == null"
+            },
+            // Optional recurrenceRule fields (interval/byDayOfWeek/byMonthDay/bySetPos) are genuinely
+            // omittable per-call -- an absent {input.x} token resolves to null, not a stringified
+            // literal (fixed as part of this same implementation pass).
+            "inputs": {
+              "freq": { "type": "text", "required": true },
+              "interval": { "type": "number" },
+              "count": { "type": "number", "required": true },
+              "byDayOfWeek": { "type": "list" },
+              "byMonthDay": { "type": "number" },
+              "bySetPos": { "type": "text" }
+            },
+            "effects": [
+              { "op": "generateRecurringInstances",
+                "workflowType": "event-rsvp",
+                "anchorField": "eventDate",
+                "fields": {
+                  "title": "{title}",
+                  "eventDate": "{eventDate}",
+                  "eventTime": "{eventTime}",
+                  "location": "{location}",
+                  "host": "{host}",
+                  "capacity": "{capacity}",
+                  "category": "{category}",
+                  "seriesId": "$newSeriesId"
+                },
+                "recurrenceRule": {
+                  "freq": "{input.freq}",
+                  "interval": "{input.interval}",
+                  "count": "{input.count}",
+                  "byDayOfWeek": "{input.byDayOfWeek}",
+                  "byMonthDay": "{input.byMonthDay}",
+                  "bySetPos": "{input.bySetPos}"
+                }
+              }
+            ]
           }
         ],
         "renderBindings": [
@@ -233,6 +285,13 @@
           // by tournament-ballot.dueAt's reminderOffset mapping. No new formula function needed.
           "cardStyleId": { "type": "number",
             "formula": "if(category == 'tournament', 1, if(category == 'social', 2, 0))",
+            "displayContexts": [] },
+
+          // IMPLEMENTED 2026-07-25 (CAL.Recurrence). Stamped once by make-recurring's own effect --
+          // never writable by a member/organizer directly, and never present on the seeded fixture data
+          // below (every seeded event is a standalone instance until an organizer opts it into a
+          // series live). Shared by every instance make-recurring generates from the same anchor.
+          "seriesId": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayContexts": [] }
         }
       },
