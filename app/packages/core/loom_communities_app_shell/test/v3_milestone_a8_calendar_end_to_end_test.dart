@@ -2336,6 +2336,124 @@ void main() {
   );
 
   testWidgets(
+    'organizers can delete a recurring series while members and single events cannot',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-delete-recurring-series'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-delete-series-event-friday-game-night',
+            ),
+          ),
+          findsNothing,
+        );
+
+        final makeRecurring = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-make-recurring',
+          ),
+        );
+        await _pumpUntil(tester, makeRecurring);
+        await tester.ensureVisible(makeRecurring);
+        await tester.tap(makeRecurring);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('recurrence-count')),
+          '3',
+        );
+        await tester.tap(find.byKey(const ValueKey('recurrence-weekday-FR')));
+        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        for (var i = 0; i < 12; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final seriesMembers = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          final anchor = page.items.singleWhere(
+            (item) => item.instanceId == 'event-friday-game-night',
+          );
+          return page.items
+              .where(
+                (item) =>
+                    item.workflowType == 'event-rsvp' &&
+                    item.instanceData['seriesId'] ==
+                        anchor.instanceData['seriesId'],
+              )
+              .toList();
+        }))!;
+        expect(seriesMembers, hasLength(3));
+
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        await _pumpUntil(
+          tester,
+          find.text('No response record is available for you for this event.'),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-delete-series-event-friday-game-night',
+            ),
+          ),
+          findsNothing,
+        );
+
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final deleteSeries = find.byKey(
+          const ValueKey('event-rsvp-delete-series-event-friday-game-night'),
+        );
+        await _pumpUntil(tester, deleteSeries);
+        await tester.ensureVisible(deleteSeries);
+        await tester.tap(deleteSeries);
+        for (var i = 0; i < 18; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final cancelledMembers = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          final memberIds = seriesMembers
+              .map((member) => member.instanceId)
+              .toSet();
+          return page.items
+              .where((item) => memberIds.contains(item.instanceId))
+              .toList();
+        }))!;
+        expect(cancelledMembers, hasLength(3));
+        expect(
+          cancelledMembers.map((member) => member.currentState),
+          everyElement('cancelled'),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
     'only organizer cancels Friday and its summary binding remains read-only',
     (tester) async {
       final installed = (await tester.runAsync(

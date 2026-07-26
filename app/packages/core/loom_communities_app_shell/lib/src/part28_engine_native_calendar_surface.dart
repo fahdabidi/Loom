@@ -1606,6 +1606,80 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     );
   }
 
+  Future<void> _deleteSeries() {
+    final generation = _generation;
+    final instance = _instance;
+    final machine = widget.machine;
+    final engine = widget.engine;
+    final personaId = widget.personaId;
+    final seriesId = instance.instanceData['seriesId'];
+    if (seriesId == null) return Future.value();
+    return _runMutation(
+      generation: generation,
+      instance: instance,
+      machine: machine,
+      engine: engine,
+      personaId: personaId,
+      operation: () async {
+        final members = <WorkflowInstance>[];
+        final seenCursors = <String>{};
+        String? cursor;
+        while (true) {
+          final page = await engine.queryInstances(
+            tabId: 'calendar',
+            personaId: personaId,
+            limit: 100,
+            cursor: cursor,
+          );
+          members.addAll(
+            page.items.where(
+              (candidate) =>
+                  candidate.workflowType == 'event-rsvp' &&
+                  candidate.instanceData['seriesId'] == seriesId,
+            ),
+          );
+          if (!page.hasMore) break;
+          final nextCursor = page.nextCursor;
+          if (nextCursor == null ||
+              nextCursor.trim().isEmpty ||
+              !seenCursors.add(nextCursor)) {
+            throw StateError(
+              'Invalid pagination cursor while loading calendar for $personaId',
+            );
+          }
+          cursor = nextCursor;
+        }
+        WorkflowInstance? updatedSelf;
+        for (final member in members) {
+          final result = await engine.applyTransition(
+            workflowType: 'event-rsvp',
+            instanceId: member.instanceId,
+            transitionId: 'cancel-event',
+            personaId: personaId,
+          );
+          if (member.instanceId == instance.instanceId) {
+            updatedSelf = WorkflowInstance(
+              instanceId: instance.instanceId,
+              workflowType: instance.workflowType,
+              currentState: result.newState,
+              instanceData: result.newInstanceData,
+              createdByPersonaId: instance.createdByPersonaId,
+            );
+          }
+        }
+        return updatedSelf ??
+            WorkflowInstance(
+              instanceId: instance.instanceId,
+              workflowType: instance.workflowType,
+              currentState: 'cancelled',
+              instanceData: instance.instanceData,
+              createdByPersonaId: instance.createdByPersonaId,
+            );
+      },
+      retry: _deleteSeries,
+    );
+  }
+
   Future<void> _save() async {
     if (_mutating || _edits.isEmpty) return;
     final generation = _generation;
@@ -2186,6 +2260,18 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                           : action.id == 'make-recurring'
                           ? _showRecurrenceDialog
                           : () => _applyTransition(action.id),
+                    ),
+                  if (_instance.instanceData['seriesId'] != null &&
+                      _eventActionIds.contains('cancel-event'))
+                    _RsvpActionChip(
+                      key: ValueKey(
+                        'event-rsvp-delete-series-${_instance.instanceId}',
+                      ),
+                      label: 'Delete series',
+                      iconName: 'cancel',
+                      tone: WorkflowActionTone.destructive,
+                      selected: false,
+                      onPressed: _mutating ? null : _deleteSeries,
                     ),
                 ],
               ),
