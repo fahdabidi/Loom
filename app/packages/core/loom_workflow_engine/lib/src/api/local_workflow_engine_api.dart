@@ -631,6 +631,24 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
     _validateSeedData(machine, initialInstanceData);
 
+    final initialState = machine.states[machine.initialState];
+    if (initialState == null) {
+      throw StateError(
+        'Unknown state ${machine.initialState} for $workflowType',
+      );
+    }
+    final creationGuard = initialState.creationGuard;
+    if (creationGuard != null &&
+        !await _passesGuard(
+          creationGuard,
+          initialInstanceData,
+          personaId,
+        )) {
+      throw StateError(
+        'Creation of $workflowType is not available for $personaId',
+      );
+    }
+
     final instanceId = '${_communityId}_${workflowType}_${_generateId()}';
     await _db.insertInstance(
       instanceId: instanceId,
@@ -751,6 +769,17 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         throw StateError('Unknown state ${row.currentState} for $workflowType');
       }
 
+      final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+      if (fieldUpdates.isNotEmpty) {
+        final editGuard = stateDef.editGuard;
+        if (editGuard != null &&
+            !await _passesGuard(editGuard, data, personaId)) {
+          throw WorkflowAuthorizationError(
+            'Fields are not editable in state "${row.currentState}" for $personaId',
+          );
+        }
+      }
+
       final editable = stateDef.editableFields ?? const [];
       for (final key in fieldUpdates.keys) {
         if (!editable.contains(key)) {
@@ -771,7 +800,6 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         }
       }
 
-      final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
       data.addAll(fieldUpdates);
       await _db.updateInstanceState(
         instanceId: instanceId,
@@ -782,6 +810,28 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /// Checks a guard's database-backed conditions before its synchronous ones.
+  ///
+  /// [evaluateGuard] intentionally skips related aggregates here because the
+  /// preceding helper resolves and evaluates them against live database data.
+  Future<bool> _passesGuard(
+    WorkflowGuard guard,
+    Map<String, dynamic> data,
+    String personaId,
+  ) async {
+    if (!await _passesRelatedListGuard(guard, data, personaId)) return false;
+    if (!await _passesRelatedAggregateGuard(guard, data, personaId)) {
+      return false;
+    }
+    return evaluateGuard(
+      guard,
+      personaId,
+      data,
+      personaTypeId: _personaTypeById[personaId],
+      skipRelatedAggregate: true,
+    );
+  }
 
   Future<bool> _passesRelatedListGuard(
     WorkflowGuard guard,
@@ -1241,6 +1291,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           'label': v.label,
           if (v.tone != null) 'tone': v.tone,
           if (v.editableFields != null) 'editableFields': v.editableFields,
+          if (v.editGuard != null) 'editGuard': _serializeGuard(v.editGuard!),
+          if (v.creationGuard != null)
+            'creationGuard': _serializeGuard(v.creationGuard!),
         }),
       ),
       'transitions': machine.transitions

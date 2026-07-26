@@ -317,6 +317,12 @@ class LoomWorkflowState {
   /// This deliberately remains null when omitted from JSON. Unlike transition
   /// guards, an absent edit guard must not be interpreted as an open guard.
   final WorkflowGuard? editGuard;
+
+  /// Optional authorization for creating an instance in this state.
+  ///
+  /// Unlike [editGuard], an absent creation guard deliberately means creation
+  /// remains open.
+  final WorkflowGuard? creationGuard;
   final bool isTerminal;
 
   const LoomWorkflowState({
@@ -324,6 +330,7 @@ class LoomWorkflowState {
     this.tone,
     this.editableFields,
     this.editGuard,
+    this.creationGuard,
     this.isTerminal = false,
   });
 
@@ -336,6 +343,11 @@ class LoomWorkflowState {
           .toList(),
       editGuard: json['editGuard'] != null
           ? WorkflowGuard.fromJson(json['editGuard'] as Map<String, dynamic>)
+          : null,
+      creationGuard: json['creationGuard'] != null
+          ? WorkflowGuard.fromJson(
+              json['creationGuard'] as Map<String, dynamic>,
+            )
           : null,
       isTerminal: json['isTerminal'] as bool? ?? false,
     );

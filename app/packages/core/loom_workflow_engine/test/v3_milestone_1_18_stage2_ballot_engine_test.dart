@@ -95,10 +95,10 @@ void main() {
       _machine('ballot', {
         'initialState': 'open',
         'states': {
-          'open': {
-            'label': 'Open',
-            'editableFields': ['pendingChoice', 'ballots'],
-          },
+            'open': {
+              'label': 'Open',
+              'editableFields': ['pendingChoice', 'ballots'],
+            },
           'closed': {'label': 'Closed'},
         },
         'transitions': [
