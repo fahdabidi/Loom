@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.4.0
+doc_version: 1.6.0
 status: current
-last_verified: 2026-07-25
+last_verified: 2026-07-26
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -26,9 +26,19 @@ workflow-grammar.md's `states` section for why. Every other use of `WorkflowGuar
 normal open-by-default semantics; this is a property of that one call site, not a change to the guard
 type itself.
 
-**Complete list: seven kinds. No others exist.** All seven are implemented and engine-executed today,
-including `relatedAggregate` (kind 6) — confirmed via `guard_evaluator.dart`/`local_workflow_engine_api.dart`
-and proven live throughout Tabletop Club's capacity/waitlist guards (`event-rsvp-response`).
+**Complete list: ten kinds.** Kinds 1-7 are implemented and engine-executed today, confirmed via
+`guard_evaluator.dart`/`local_workflow_engine_api.dart` and proven live throughout Tabletop Club's
+capacity/waitlist guards (`event-rsvp-response`). **Kinds 8-10 (`cancellationDeadline`,
+`locationOverlap`, `actorEqualsField`) are PROPOSED — kinds 8-9 from the 2026-07-25 CAL.Calendar2 design
+pass, kind 10 from the 2026-07-26 CAL.Notify design pass — grammar specified below, not yet
+engine-implemented.** See each section's own status callout, and `spec-version.json` →
+`proposedNotImplemented` for the full narrative.
+
+⚠️ **Guards also now have a second usage site beyond transitions.** `states[].creationGuard`
+(workflow-grammar.md, PROPOSED — CAL.Calendar2.0) reuses this exact `WorkflowGuard` type to gate
+**instance creation itself**, not just transitions — see workflow-grammar.md's `states` section for why
+this was needed (today, `createInstance`/`createInstances` run zero guard checks of any kind) and how its
+default-when-absent semantics deliberately differ from `editGuard`'s.
 
 ---
 
@@ -178,8 +188,18 @@ field on this instance.
 | `workflowType` | string | The related table's workflow type. MUST be declared. |
 | `filter` | object | Field → value map, matched against each candidate row. Values may be `{fieldName}` (interpolated against **this** instance), a literal, or the reserved key `$state` naming the row's own current FSM state (not an `instanceData` field — see [`formulas.md`](./formulas.md)'s `$state` note). |
 | `op` | string | `count` \| `sum` \| `avg` \| `min` \| `max` \| `countDistinct` — same vocabulary as `aggregate()`. |
+| `field` | string | **Required whenever `op` is anything other than `count`.** Names the field on each matched row to aggregate over. PROPOSED 2026-07-25 (CAL.Calendar2.8) — see the correction note immediately below. |
 | `comparator` | string | `<` `<=` `>` `>=` `==` `!=` |
 | `compareTo` | number \| object | Either a literal threshold, or `{ "relatedInstanceField": "<field on this instance>", "field": "<field on that related instance>" }` — read a threshold off a *different* related instance, same cross-instance-lookup shape as `relatedListMembership` below. |
+
+⚠️ **Correction, found 2026-07-25 (CAL.Calendar2 design pass): `sum`/`avg`/`min`/`max`/`countDistinct` do
+NOT actually work today, despite being documented above as available.** `RelatedAggregateGuard`
+(`workflow_models.dart`) has no field/column parameter at all, and its caller
+(`_passesRelatedAggregateGuard`, `local_workflow_engine_api.dart`) hardcodes `column: ''` when calling the
+real `aggregate()` method — which requires a genuine column for every op except `count`. Any community
+JSON written today with `"op": "sum"` silently aggregates over an empty-string column and produces a
+meaningless result; it does not error. **Only `op: "count"` is safe to use in a real fixture until the
+`field` parameter above is engine-implemented** (PROPOSED, CAL.Calendar2.8 — not yet built).
 
 **Evaluation:** the engine computes this aggregate **fresh**, via the same real `aggregate()` method a
 direct API caller would use — not a cached or stale value. Because `evaluateGuard` itself stays
@@ -238,6 +258,117 @@ A cycle across workflows is an error. → `dependency_cycle`
 
 ---
 
+## 8. `cancellationDeadline` — a time-before-the-event cutoff
+
+**PROPOSED 2026-07-25 (CAL.Calendar2.2) — not yet engine-implemented.** Grammar specified here so a
+ticket can be written directly from it; no Dart exists for this kind yet.
+
+**"The actor may only fire this transition while at least `hoursBefore` hours remain before a real
+date+time on this instance."**
+
+```jsonc
+"guard": {
+  "cancellationDeadline": { "dateField": "eventDate", "timeField": "eventTime", "hoursBefore": 24 }
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `dateField` | string | A `date`-typed field on **this** instance. MUST be declared. |
+| `timeField` | string \| null | A `time`-typed field on **this** instance, combined with `dateField` into one real timestamp. Optional — omit for an all-day event, in which case the deadline is computed from midnight of `dateField`. |
+| `hoursBefore` | number | Must be positive. The guard passes while `now() <= combine(dateField, timeField) - hoursBefore hours`. |
+
+**Why not a `formula` guard instead** (e.g. `isBefore(now(), subtractHours(eventDate, 24))`): `eventDate`
+alone is a bare date string — `formula_evaluator.dart`'s `_date()` helper parses it as midnight, so a plain
+formula guard referencing only `eventDate` would compute a cutoff up to 24 hours too generous for an
+event that starts later in the day. This dedicated guard kind combines both fields correctly and is
+validator-checkable (wrong field name/type is a static error, not a runtime `FormulaEvaluationException`).
+
+**Use for:** "members can't back out within 24 hours of the event"; "can't join the waitlist same-day."
+
+**Validation (once implemented):** `dateField` must be declared with `type: "date"`; `timeField`, if
+present, must be declared with `type: "time"`; `hoursBefore` must be a positive number.
+
+---
+
+## 9. `locationOverlap` — prevent double-booking a shared resource
+
+**PROPOSED 2026-07-25 (CAL.Calendar2.9) — not yet engine-implemented.** Confirmed as a genuinely new
+capability, not a cheap formula composition: `source_query.dart`'s `query(...)` grammar supports only a
+single equality condition (no compound filters, no self-exclusion), and the formula language has no
+generic per-element map/filter to scan a list and compare time ranges from smaller primitives. This is
+closer in shape to `effects.md`'s bespoke `recurrence_evaluator.dart` arithmetic than a one-line addition.
+
+**"No other instance of this same workflow type may share this instance's own `locationField` value with
+an overlapping time range."** Unlike `relatedAggregate`, this does not name a separate related
+`workflowType` — it always scans sibling instances of **this instance's own type**.
+
+```jsonc
+"guard": {
+  "locationOverlap": {
+    "locationField": "location",
+    "dateField": "eventDate",
+    "timeField": "eventTime",
+    "durationMinutes": 120
+  }
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `locationField` | string | A field on **this** instance (and every sibling instance of the same type) whose value identifies the shared resource. MUST be declared. |
+| `dateField` | string | A `date`-typed field, combined with `timeField` into this instance's own start timestamp. MUST be declared. |
+| `timeField` | string \| null | A `time`-typed field. Optional, same all-day fallback as `cancellationDeadline`. |
+| `durationMinutes` | number | This instance's assumed duration, used to compute its own `[start, start + durationMinutes)` range for the overlap check. Must be positive. |
+
+**Evaluation:** fails if any other instance of the same workflow type has an equal `locationField` value
+and a `[start, start + durationMinutes)` range that overlaps this instance's own. **This is a hard guard —
+it blocks the mutation outright**, not a display-only warning.
+
+**Use as a `creationGuard`** (workflow-grammar.md) so a genuinely conflicting event can never be created
+in the first place — including every sibling a recurring series generates, since `creationGuard` is
+checked at the one shared choke point (`_createInstanceValidated`) every creation path already funnels
+through, `generateRecurringInstances`'s per-occurrence creation included.
+
+**Use for:** "Main Hall can't be double-booked for two overlapping game nights."
+
+**Validation (once implemented):** `locationField`/`dateField` must be declared with the right types;
+`timeField`, if present, must be `type: "time"`; `durationMinutes` must be a positive number.
+
+---
+
+## 10. `actorEqualsField` — the actor must be the persona named on this instance
+
+**PROPOSED 2026-07-26 (CAL.Notify design pass) — not yet engine-implemented.** Found while designing a
+`notification` workflow type: `instanceDataEquals` only compares a field to a fixed literal, and
+`actorInList` only checks membership in a **list**-valued field — neither can express "the actor must
+equal this single scalar field's own value," a genuinely common shape ("only the recipient can dismiss
+their own notification," "only the assigned reviewer may approve").
+
+```jsonc
+"guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `key` | string | A scalar (non-list) field on **this** instance. MUST be declared. The guard passes only if `$actor == instanceData[key]`. |
+
+**Use for:** "only the recipient may mark their own notification read" — the alternative (relying on the
+UI to only ever *show* a viewer their own notifications) is a UI convention, not engine enforcement; a
+direct API call would bypass it, the same category of gap `editGuard`'s original App-Shell-only
+enforcement had (see `spec-version.json` → `editGuardEngineEnforcement`).
+
+```jsonc
+// On notification's mark-read transition:
+"guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+```
+
+**Validation (once implemented):** `key` must be declared on this workflow's own `instanceDataSchema`,
+and must not be a list-typed field (use `actorInList` for that shape instead). → else
+`dangling_actor_equals_field` / `actor_equals_field_on_list_type`.
+
+---
+
 ## Combining guards (AND)
 
 ```jsonc
@@ -265,6 +396,9 @@ usually clearer anyway — they typically want different labels ("Borrow" vs "Jo
 | Only if actor is on a list belonging to **another** instance | `relatedListMembership` |
 | Only if a live count/sum over a **related table** clears a threshold | `relatedAggregate` |
 | Only if actor finished **another workflow** | `requiresWorkflowsComplete` |
+| Only while a real deadline hasn't passed | `cancellationDeadline` (PROPOSED) |
+| Only if no sibling instance double-books a shared resource | `locationOverlap` (PROPOSED) |
+| Only if the actor is the specific persona named on this instance | `actorEqualsField` (PROPOSED) |
 
 ## Anti-patterns
 

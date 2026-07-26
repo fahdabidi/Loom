@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.9.0
+doc_version: 1.10.0
 status: current
-last_verified: 2026-07-25
+last_verified: 2026-07-26
 audience: llm-agent
 derived_from:
   - docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc
@@ -307,6 +307,98 @@ and approve loans of their own games.
   waitlisted row. Both real validators re-run clean (0 errors/0 warnings). See `spec-version.json` →
   `resolvedInGrammar.transitionRelatedEffect`.
 
+- **The full Calendar experience — design closed 2026-07-26, audited against Google/Apple/Samsung Calendar
+  and specialized booking/appointment calendars (CAL.Calendar2, PROPOSED — not yet implemented).** With
+  CAL.Recurrence shipped, Calendar was audited end-to-end against real calendar products, rather than only
+  against what the frozen fixture happened to already exercise. The audit found two real, previously
+  undocumented gaps and produced ten scoped tickets — see `spec-version.json` →
+  `proposedNotImplemented` for the full per-item narrative and `guards.md`/`workflow-grammar.md` for the
+  grammar itself. Nothing below is implemented yet; each item is marked with its actual ticket.
+  - **CAL.Calendar2.0 — state-level guard enforcement.** Two real gaps found by reading the engine
+    directly, not assuming the docs: (1) `editGuard` is only checked by the App Shell's UI, never by
+    `updateInstanceFields` itself — a client bypassing the UI could edit organizer-only fields today; (2)
+    instance creation (`createInstance`/`createInstances`) runs zero guard checks of any kind, only schema
+    validation — there was no way for a new `states[].creationGuard` (below) to ever run. Both close via
+    the same fix: wire `evaluateGuard` into the real mutation entrypoints, not just `applyTransition`.
+  - **CAL.Calendar2.1 — generic transition-input dialog.** Today every transition needing `inputs`
+    (GAP-1) ships its own bespoke hand-built dialog (`make-recurring`'s `_RecurrenceRulePickerDialog` is
+    the only example) — the generic action dispatch (`part26_generic_instance_card.dart`) has no
+    input-collection path at all. Proposes a generic, reusable form auto-rendered from any transition's
+    declared `inputs`, migrating `make-recurring` onto it so there is exactly one code path going forward.
+  - **CAL.Calendar2.2 — cancellation deadline guard (`guards.md` kind 8, `cancellationDeadline`,
+    PROPOSED).** "Members can't back out within 24h of the event." A dedicated guard kind, not a `formula`
+    string — `eventDate` alone parses to midnight, so a formula-only cutoff would be inaccurately generous
+    for any event with a real start time later in the day.
+  - **CAL.Calendar2.3 — all-day events.** New `allDay: bool` field.
+  - **CAL.Calendar2.4 — multi-day/spanning events.** New `eventEndDate` field; the App Shell's month/
+    week/day grouping (currently one-day-per-instance) needs real rendering work to place a single
+    instance on every date it spans — schema alone doesn't close this one.
+  - **CAL.Calendar2.5 — structured location.** `locationType` (`"physical"`/`"video"`) + conditional
+    `videoLink`.
+  - **CAL.Calendar2.5b — structured RSVP details.** Optional `dietaryNotes`/`comments` GAP-1 inputs on
+    `respond-going`, written onto the response row via a `set` effect; depends on .1 to actually collect
+    them from a member.
+  - **CAL.Calendar2.6 / .7 — recurring-series edit/delete scope.** Real correctness gap: today's "Delete
+    series" cancels every sibling unconditionally, including ones already in the past — real calendars
+    separate "this event" / "this and following" / "all events" specifically to avoid retroactively
+    touching history. Client-orchestrated (same pagination-and-loop shape as today's delete-series), no
+    new engine primitive.
+  - **CAL.Calendar2.8 — party size / plus-ones.** Blocked on a real bug found during this audit:
+    `relatedAggregate`'s `sum`/`avg`/`min`/`max` ops are documented as working but actually aren't (see
+    `spec-version.json` → `relatedAggregateFieldParam`) — fixing that is a prerequisite, not optional.
+  - **CAL.Calendar2.9 — location/resource double-booking guard (`guards.md` kind 9, `locationOverlap`,
+    PROPOSED; hard guard, blocks the mutation).** Genuinely non-trivial, not a cheap one-function add: needs
+    a duration field (events have no end time today), and a bespoke scan function, since the formula
+    language has no generic per-element map/filter to compose one from smaller primitives. Depends on
+    CAL.Calendar2.0's new `creationGuard` to have anywhere to run at creation time.
+  - **Deferred, not proposed as tickets:** modifying an active series' future pattern in place (today's
+    "delete series + make-recurring again" already reaches the same end state); timezone handling
+    (single-location communities); a free/busy scheduling assistant (doesn't fit the community
+    broadcast-event model); ICS export; paid/ticketed events (overlaps Giving's dues mechanism — a future
+    cross-tab concern, not Calendar-only scope).
+
+- **Targeted per-persona notifications — CAL.Notify, design closed 2026-07-26 (PROPOSED — not yet
+  implemented).** Real gap found during the Calendar audit, but cross-cutting (Marketplace/Giving would
+  want it too), so scoped as its own initiative rather than bundled into CAL.Calendar2. Loom has no way
+  today to notify one specific member (event edited/cancelled, promoted off a waitlist) — only a manual,
+  organizer-published broadcast announcement (`tabletop-meetup-announcement`).
+  - **Role/recipient question — resolved, needed no grammar change at all.** The original worry (`role:
+    "actor"` is tied to `createdByPersonaId`, wrong for a notification's recipient) doesn't hold: role
+    resolution is already a caller-supplied Dart callback per rendering surface
+    (`EngineNativeBindingDispatcher`'s `rolesForInstance`), not a framework-hardcoded concept —
+    `part32_engine_native_list_surface.dart`'s own inline lambda (`createdByPersonaId == viewerPersonaId`)
+    is just *that* surface's convention, not a constraint of the grammar. A notification-rendering surface
+    supplies its own lambda instead, keyed on `recipientPersonaId`. `notification`'s own JSON still
+    declares plain `"role": "actor"` — completely standard.
+  - **New guard kind 10, `actorEqualsField`** (`guards.md`, PROPOSED): `{ key }`, passing only if `$actor
+    == instanceData[key]`. Needed for `mark-read` — neither `instanceDataEquals` (fixed literal only) nor
+    `actorInList` (list-membership only) can express "the actor must equal this scalar field's own
+    value." Without it, "only the recipient can dismiss their own notification" would be a UI convention
+    (relying on `rolesForInstance` filtering to keep other members' notifications out of view), not real
+    engine enforcement — the same category of gap CAL.Calendar2.0 closes for `editGuard`/creation.
+  - **`transitionRelated` gains `onSuccessEffects`** (`effects.md` §11, PROPOSED) — a real, necessary
+    engine extension, not the zero-cost shortcut this doc originally assumed. An unconditional effect
+    attached directly to `respond-going`'s own effects can't distinguish "promoted via `transitionRelated`"
+    from "member manually tapped Going" — both fire the identical transition, so a notification effect
+    placed there would wrongly fire on every ordinary self-initiated RSVP too. `onSuccessEffects` runs
+    only when `transitionRelated`'s own resolved target actually succeeds, interpolated against that
+    target's own data — giving the promotion notification the *specific* wording it needs
+    ("You're off the waitlist!") without spamming a member who RSVP'd going on their own.
+  - **New `notification` workflow type** (PROPOSED, not yet in the frozen fixture — same discipline as
+    CAL.Calendar2's held-back guard usages, since both new guard/effect capabilities it needs are
+    unimplemented): `unread` (initial) → `read` (terminal), one `mark-read` transition, schema
+    `{ recipientPersonaId, title, body, createdAt }`.
+  - **Event-changed/cancelled notifications are client-orchestrated**, mirroring `delete-series`'s
+    existing pagination-loop pattern exactly (paginate affected `event-rsvp-response` rows, call
+    `createInstance` once per recipient) — no new engine primitive needed for this half.
+  - **Rendering surface, resolved with the user: temporarily on Calendar** (already wired to the generic
+    engine-native pipeline), explicitly **not** Home — Home isn't on that pipeline yet (Phase B's own
+    already-documented blocker) and pulling that fix into CAL.Notify's scope was deliberately declined to
+    stay architecturally pure. **Flagged here for Phase B**: once Home is wired to the generic pipeline,
+    migrate `notification`'s render binding there and remove the temporary Calendar-tab one.
+  - See `spec-version.json` → `proposedNotImplemented` (`actorEqualsFieldGuard`,
+    `transitionRelatedOnSuccessEffects`, `notificationWorkflowType`) for the complete narrative.
+
 **Recently closed:**
 - **Filter Calendar by category (2026-07-25, IMPLEMENTED — CAL.CategoryFilter, commit `468b64b`, 1
   round):** the original "trivial, pure-JSON, matches `isFull`/`hasWaitlist`/`goingCount` exactly" scoping
@@ -349,6 +441,8 @@ and approve loans of their own games.
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
+| CAL.Notify design pass, 2026-07-26 | **yes** — targeted per-persona notifications, deferred from the Calendar audit as its own initiative, fully designed and locked this pass | **yes, none of it is engine-implemented yet, and the design investigation itself corrected one of its own earlier assumptions**: the original plan claimed waitlist-promotion notifications would need zero new engine primitives (attach an effect directly to `respond-going`) — investigating further found this would wrongly fire on every ordinary self-initiated RSVP too, since a manual "Going" tap and a `transitionRelated`-driven promotion both call the identical transition; the real fix needed is `transitionRelated` gaining an `onSuccessEffects` field, genuine new engine work. Separately, the recipient-scoping blocker resolved to a NON-gap: `role` resolution was assumed hardcoded to `createdByPersonaId`, but reading `part27_engine_native_binding_dispatcher.dart` found it's already a caller-supplied callback per surface — zero grammar change needed there | `guards.md` gained kind 10 (`actorEqualsField`, PROPOSED); `effects.md` §11 (`transitionRelated`) gained `onSuccessEffects` (PROPOSED) + corrected a stale "eleven ops" count (was already listing a 12th); `spec-version.json` gained three new `proposedNotImplemented` entries; this doc's §10/§11 updated. No frozen-fixture changes — the new `notification` workflow type depends on two unimplemented guard/effect capabilities, so adding it now would be inert, same discipline as CAL.Calendar2's held-back guard usages | App Shell/engine: nothing implemented yet — `actorEqualsField`, `onSuccessEffects`, the `notification` workflow type, its Calendar-tab rendering (a workflow-type-dispatched `rolesForInstance` lambda), and the client-orchestrated event-changed/cancelled fan-out are all tracked as CAL.Notify.1-6 rows | open — spec updated and approved this revision (JSON/docs only, per standing instruction); implementation tickets not yet dispatched. Rendering deliberately placed on Calendar, not Home, pending Phase B's own pipeline work — flagged there for future migration |
+| Full Calendar-experience audit, 2026-07-26 | **yes, comprehensively** — with CAL.Recurrence shipped, Calendar was audited end-to-end against Google/Apple/Samsung Calendar and specialized booking/appointment calendars (not just what the frozen fixture happened to exercise), producing ten scoped tickets (CAL.Calendar2.0-.9) plus a separately-scoped cross-cutting initiative (CAL.Notify) | **yes, two real gaps found by reading the engine directly, not the docs**: (1) `guards.md`'s `relatedAggregate` documents `sum`/`avg`/`min`/`max`/`countDistinct` as working, but `RelatedAggregateGuard` has no field parameter and its caller hardcodes an empty-string column — those five ops silently compute garbage today, not an error; (2) `role: "actor"` render-binding scoping is tied to `createdByPersonaId`, which would incorrectly scope a future per-recipient notification type. Also confirmed instance creation runs zero guard checks of any kind today (only schema validation) — closing this is a prerequisite for CAL.Calendar2.9's hard guard to have anywhere to run | `guards.md` gained kinds 8-9 (`cancellationDeadline`, `locationOverlap`, both PROPOSED) plus the `relatedAggregate` correction; `workflow-grammar.md` gained `states[].creationGuard` (PROPOSED, deliberately opposite default-semantics from `editGuard`); `spec-version.json` gained six new `proposedNotImplemented` entries; this doc's §10/§11 updated. Fixture: purely additive, already-functional schema fields (`allDay`, `eventEndDate`, `locationType`/`videoLink`) and an optional `dietaryNotes`/`comments` GAP-1 input pair on `respond-going` were added now; guard-kind usages (`cancellationDeadline`/`locationOverlap`/`creationGuard`) and the `partySize`/`relatedAggregate.field` capacity-guard change were deliberately withheld from the frozen fixture — same reasoning as CAL.Recurrence's own design pass: wiring a not-yet-implemented guard kind into the real fixture would be either silently inert or (for `partySize`) actively defeat real capacity enforcement until the engine fix ships | App Shell/engine: nothing in CAL.Calendar2.0-.9 implemented yet — tracked as its own set of tracker rows. CAL.Notify has no JSON yet at all, pending its own short design resolution (the `role`/recipient-field question) | open — spec/JSON updated and approved this revision (JSON/docs only, per explicit instruction); implementation tickets not yet dispatched; CAL.Notify awaiting its own design sub-pass |
 | CAL.Recurrence full implementation (7 milestones), 2026-07-25 | no — JSON grammar was already written, locked, and signed off in the prior pass (see the row below) | no remaining gap — engine (`generateRecurringInstances` effect + `recurrence_evaluator.dart` date math), validator (full static rule coverage), frozen fixture (`make-recurring` transition), and App-Shell (creation dialog + delete-series action) all implemented and independently verified across 7 milestones and their fix-rounds | `spec-version.json`: `generateRecurringInstancesEffect` moved from `proposedNotImplemented` to `resolvedInGrammar`; `effects.md` §12 status updated PROPOSED → implemented, op-count/rules/selection-table language updated, plus two new implementation-detail notes (absent-optional-token resolution, weekly-anchor-forcing) added for future JSON authors; this doc's §10 updated (recurring events moved out of the pinned list entirely, into "recently closed") | App Shell: `_RecurrenceRulePickerDialog` + `_applyMakeRecurring`'s sibling-lookup/RSVP-seeding (`part28_engine_native_calendar_surface.dart`, CAL.Recurrence.4, commit `7128d9a`) and `_deleteSeries` (CAL.Recurrence.5, commit `4eb10d8`) — both **IMPLEMENTED**. Three real bugs independently found and fixed along the way (two engine, one validator/engine mismatch) before the fixture could safely use the op; a further three test-authoring mistakes (two in CAL.Recurrence.4's own new tests, three in CAL.Recurrence.5's) were each root-caused and fixed in their own dispatched fix-round, none required touching production code | closed — all 7 milestones independently verified end-to-end: `loom_workflow_engine` 159/159, `loom_ux_judges` 119/119, `loom_communities_app_shell` 128/128, 0 analyzer issues everywhere, both real validators (`community_package_validator.dart`/`workflow_state_machine_validator.dart`) clean against the updated fixture. Only `MKT.1` remains pinned, still awaiting its own design pass. |
 | CAL.CategoryFilter implementation + regression fix + CAL.Recurrence design pass, 2026-07-25 | **partially** — `category` filtering's original "trivial JSON" scoping was itself wrong (would have shipped a non-functional stat display, not a filter); recurring events' design is now closed (eager instance generation, full daily/weekly/monthly-incl.-last-weekday pattern set), but is JSON/docs only this pass, deliberately not yet in the frozen fixture | `category` filtering needed a real, small, generic App-Shell addition (a third facet rendering kind), not zero code as originally scoped; independently verifying it surfaced an unrelated **pre-existing regression** (a Calendar test asserting the old, pre-waitlist-promotion manual-refill flow, silently broken since CAL.WaitlistPromotion's fixture JSON landed because the app-shell suite was never re-run against it) — fixed in the same pass; recurring events needs a genuinely new engine effect op (bespoke Dart date arithmetic, not the formula evaluator) plus App-Shell UI, none of it built yet | `spec-version.json` gained `proposedNotImplemented.generateRecurringInstancesEffect`; `effects.md` gained §12 (`generateRecurringInstances`, PROPOSED) plus op-count/rules/selection-table updates; this doc's §10 updated (CategoryFilter moved to "Recently closed," recurring events moved to "Design closed, awaiting implementation") | CAL.CategoryFilter: `_CalendarFacetKind.textValue` + selection state + chip rendering (`part28_engine_native_calendar_surface.dart`) — **IMPLEMENTED**, commit `468b64b`. Regression fix: `v3_milestone_a8_calendar_end_to_end_test.dart` test rewrite — **IMPLEMENTED**, commits `ac100e2`/`2df0462`. Recurring events: engine effect op + evaluator + validator rules + App-Shell picker dialog + delete-series action — **none dispatched yet**, tracked as CAL.Recurrence.1-7 | CAL.CategoryFilter closed (independently verified, 125/125 app-shell); recurring events open — spec updated and written this pass, implementation tickets not yet dispatched |
 | CALR.10 + pinned-item implementation pass, 2026-07-25 | no — all JSON for this pass was already written and signed off on 2026-07-24 (see the row below); this pass is implementation + one small, previously-deferred piece of JSON (the `transitionRelated` effect calls themselves, held back by a real validator constraint) | no remaining gap — `editGuard` (CALR.10a, 5 rounds, closed a real Save-persistence bug independent verification caught), `theme.calendar.dateRail` (CALR.10b, 2 rounds, closed a real missing-field-threading compile error), attendee-list names (CAL.AttendeeList, 1 round, zero rework), and `transitionRelated` (CAL.WaitlistPromotion, 2 rounds, closed a real nested-transaction regression independent verification caught) are all now implemented and independently verified | `spec-version.json`: `editGuard`/`calendarDateRailBinding`/`transitionRelatedEffect` all moved from `proposedNotImplemented` to `resolvedInGrammar`; `effects.md`/`guards.md`/`workflow-grammar.md`/`theming.md` status language updated from PROPOSED to IMPLEMENTED (also caught and fixed two unrelated stale PROPOSED markers in `guards.md` for `relatedAggregate`, which has actually been implemented since 2026-07-17); this doc's §10 updated; frozen JSON: `event-rsvp-response.respond-maybe`/`respond-declined` gained real `transitionRelated` effects (the `rsvpedAt` field/stamp were already live). Both real validators re-run clean (0/0) | none remaining for this batch — attendee list, editGuard, dateRail, and waitlist promotion are all done. Recurring events (`CAL.Recurrence`) and Marketplace's tile-style system (`MKT.1`) remain pinned, each needing its own full design pass before any JSON | closed — all four items independently verified (120/122/124/147 test counts across rounds, final: App Shell 124/124, engine 147/147, validator 114/114, 0 analyzer issues everywhere) |

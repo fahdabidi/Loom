@@ -135,12 +135,23 @@
           "open": {
             "label": "RSVP open",
             "tone": "positive",
-            // PROPOSED, not yet implemented (spec-version.json proposedNotImplemented.editGuard) --
-            // editableFields already exists and the generic editor UI already renders these fields'
-            // editors for real, but nothing gates WHO sees them today. editGuard reuses the exact
-            // WorkflowGuard shape transitions already use below, restricting editing to the organizer
-            // once the App Shell implements the read side.
-            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "capacity"],
+            // IMPLEMENTED 2026-07-25 (CALR.10a) -- editGuard genuinely gates who sees these editors;
+            // spec-version.json resolvedInGrammar.editGuard. NOTE (CAL.Calendar2.0, PROPOSED): today
+            // this guard is only checked by the App Shell's own UI -- updateInstanceFields itself does
+            // not yet call evaluateGuard against it, a real gap CAL.Calendar2.0 closes engine-side.
+            //
+            // allDay/eventEndDate/locationType/videoLink are NEW 2026-07-26 (CAL.Calendar2.3/.4/.5,
+            // PROPOSED). These four are plain instanceDataSchema fields using only already-implemented
+            // grammar (formEntry + editableFields) -- genuinely functional today via the generic editor,
+            // no engine change needed for storage/editing itself. What's NOT yet built: the App Shell
+            // doesn't yet conditionally hide eventTime when allDay is set, doesn't yet place a
+            // multi-day instance on every date between eventDate and eventEndDate (month/week/day
+            // grouping today assumes one day per instance), and doesn't yet conditionally show
+            // videoLink only when locationType == "video".
+            "editableFields": [
+              "title", "eventDate", "eventTime", "location", "host", "capacity",
+              "allDay", "eventEndDate", "locationType", "videoLink"
+            ],
             "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
@@ -251,6 +262,20 @@
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
 
+          // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED). Plain formEntry fields, functional today
+          // for storage/editing via the generic editor -- see the "open" state's own comment above for
+          // exactly what App Shell rendering work is still outstanding for each.
+          "allDay": { "type": "bool", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
+          "eventEndDate": { "type": "date", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "event", "labelTemplate": "Through {value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"] },
+          "locationType": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
+          "videoLink": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "videocam_outlined", "labelTemplate": "{value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"] },
+
           // QUERY-BACKED: every response row for this event (GAP-4 pattern) — one row per community
           // member, bulk-created via createInstances the moment this event is created. Not stored
           // here; read from the event-rsvp-response table on demand, same pattern as
@@ -328,6 +353,11 @@
               "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
               // Cross-instance aggregate: count this event's OWN going-rows live and compare against
               // capacity read off the related event-rsvp instance named by this row's own eventId.
+              // NOTE (CAL.Calendar2.8, PROPOSED): party-size/plus-ones would change this op from
+              // "count" to "sum" over a new partySize field -- deliberately NOT done here yet, since
+              // relatedAggregate's "sum" is currently non-functional (see guards.md's correction note
+              // and spec-version.json's relatedAggregateFieldParam); flipping this op today, before that
+              // engine fix ships, would silently disable real capacity enforcement rather than improve it.
               "relatedAggregate": {
                 "workflowType": "event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
@@ -335,7 +365,21 @@
                 "comparator": "<",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
               }
-            }
+            },
+            // NEW 2026-07-26 (CAL.Calendar2.5b, PROPOSED). Both optional -- an omitted GAP-1 input
+            // resolves to null (CAL.Recurrence.1 fix2's exact-match behavior), not a stringified
+            // literal, so leaving either blank is safe. Purely descriptive: no guard/capacity
+            // interaction, so safe to wire into the real fixture now, unlike partySize above. Collecting
+            // these from a member still needs CAL.Calendar2.1's generic input dialog -- the transition
+            // itself already works today via a direct applyTransition(..., inputs: {...}) call.
+            "inputs": {
+              "dietaryNotes": { "type": "text" },
+              "comments": { "type": "text" }
+            },
+            "effects": [
+              { "op": "set", "key": "dietaryNotes", "value": "{input.dietaryNotes}" },
+              { "op": "set", "key": "comments", "value": "{input.comments}" }
+            ]
           },
           {
             "id": "respond-maybe",
@@ -415,7 +459,13 @@
           // IMPLEMENTED 2026-07-25 -- stamped by respond-waitlist's own `set` effect above, read as
           // the sortKey by respond-maybe/respond-declined's transitionRelated effects. Written by
           // effect only, never by the member directly.
-          "rsvpedAt":  { "type": "text", "writableBy": "effect", "storage": "inline" }
+          "rsvpedAt":  { "type": "text", "writableBy": "effect", "storage": "inline" },
+
+          // NEW 2026-07-26 (CAL.Calendar2.5b, PROPOSED). Written by respond-going's own new `set`
+          // effects above via {input.x} tokens -- writableBy stays "effect" (never formEntry) because
+          // the member never edits this row directly; the value arrives as a transition input instead.
+          "dietaryNotes": { "type": "text", "writableBy": "effect", "storage": "inline" },
+          "comments": { "type": "text", "writableBy": "effect", "storage": "inline" }
         }
       },
 
@@ -431,8 +481,13 @@
           "open": {
             "label": "Signups open",
             "tone": "positive",
-            // PROPOSED editGuard -- see the identical note on event-rsvp's "open" state above.
-            "editableFields": ["title", "eventDate", "eventTime", "location", "host", "minimumAttendance"],
+            // IMPLEMENTED editGuard (CALR.10a) + NEW 2026-07-26 allDay/eventEndDate/locationType/
+            // videoLink (CAL.Calendar2.3/.4/.5, PROPOSED) -- see the identical, fuller note on
+            // event-rsvp's "open" state above; applies here unchanged.
+            "editableFields": [
+              "title", "eventDate", "eventTime", "location", "host", "minimumAttendance",
+              "allDay", "eventEndDate", "locationType", "videoLink"
+            ],
             "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
@@ -520,6 +575,20 @@
           "minimumAttendance": { "type": "number", "required": true, "writableBy": "formEntry",
             "storage": "inline", "displayIcon": "groups_outlined",
             "labelTemplate": "Min. attendance: {value}", "displayContexts": ["detail"] },
+
+          // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED) -- see the fuller comment on event-rsvp's
+          // own copy of these same fields above; identical status here.
+          "allDay": { "type": "bool", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
+          "eventEndDate": { "type": "date", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "event", "labelTemplate": "Through {value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"] },
+          "locationType": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
+          "videoLink": { "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "videocam_outlined", "labelTemplate": "{value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"] },
+
           "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
           "selectedGame": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayIcon": "casino", "labelTemplate": "Selected game: {value}",

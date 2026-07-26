@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
 last_verified: 2026-07-25
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -51,6 +51,7 @@ field inside the object — it is ignored.
 | `tone` | string | no | Visual tone: `positive` · `negative` · `warning` · `info` |
 | `editableFields` | string[] | no | Fields the user may edit **while in this state** |
 | `editGuard` | `WorkflowGuard` | no | Gates *who* may use `editableFields` — same shape as `transitions[].guard` (see below) |
+| `creationGuard` | `WorkflowGuard` | no | Gates whether a **new instance** may be created into this state at all — see below. PROPOSED, not yet implemented. |
 | `isTerminal` | bool | no (default `false`) | No transitions may leave this state |
 
 ✅ **IMPLEMENTED 2026-07-25 (CALR.10a)** — see `spec-version.json`'s `resolvedInGrammar.editGuard`.
@@ -66,6 +67,25 @@ every other `WorkflowGuard` use (transitions), where an absent guard already mea
 transition that isn't declared simply has no button — there's no equivalent "not declared" state for
 `editableFields` once it's non-empty, so defaulting open would silently widen permissions.
 
+⚠️ **`creationGuard` — PROPOSED 2026-07-25 (CAL.Calendar2.0/2.9 design pass), not yet implemented.** Found
+during the CAL.Calendar2 audit: `createInstance`/`createInstances` (`local_workflow_engine_api.dart`,
+`_createInstanceValidated`) run zero guard checks today — only schema validation (`_validateSeedData`).
+Guards have only ever gated *transitions*. `creationGuard` closes this for the one case that genuinely
+needs it: `guards.md`'s new `locationOverlap` kind must be checked before a conflicting instance is ever
+persisted, not after. Same `WorkflowGuard` type as `editGuard` — no new guard shape.
+
+**`creationGuard`'s absent-default is the OPPOSITE of `editGuard`'s.** An absent `creationGuard` means
+"anyone may create, always" — the *normal* guards.md default — not "no creation allowed." This is
+deliberate: almost no workflow type will ever declare one, and every existing "New X" FAB across every
+community depends on creation staying open by default. `editGuard`'s inverted default exists specifically
+*because* exposing edit UI is the riskier direction to default open; creation is not analogous — it already
+works everywhere today with no guard at all, so introducing the key must not silently change that.
+
+`creationGuard` is checked by `_createInstanceValidated` — the one shared choke point behind
+`createInstance`, `createInstances`, **and** every occurrence `generateRecurringInstances` spawns — so a
+`locationOverlap` guard declared here automatically covers recurring-series siblings too, with no separate
+plumbing.
+
 ### Rules the validator enforces
 
 - **Every non-terminal state must have ≥1 outgoing transition.** Otherwise it is a **stuck state** — an
@@ -77,6 +97,9 @@ transition that isn't declared simply has no button — there's no equivalent "n
   (error)
 - **`editGuard.allowedPersonaIds`, if present, must name declared personas.** (proposed rule,
   `dangling_edit_guard_persona` — not yet implemented, see `spec-version.json`)
+- **`creationGuard`, if present, must be a well-formed `WorkflowGuard`** — every field-name it references
+  (e.g. `locationOverlap.locationField`) must be declared in this workflow's own `instanceDataSchema`.
+  (proposed rule, `dangling_creation_guard_field` — not yet implemented)
 
 > The stuck-state check exists because of a real shipped bug: a `queued` marketplace state with zero
 > declared transitions, so queued listings had **no buttons at all**. It reached a live emulator walk
