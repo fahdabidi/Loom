@@ -47,6 +47,15 @@ dynamic resolveEffectValue(
     final inputName = value.substring('{input.'.length, value.length - 1);
     return inputValues.containsKey(inputName) ? inputValues[inputName] : null;
   }
+  if (value is String &&
+      value.startsWith('{') &&
+      value.endsWith('}') &&
+      !value.startsWith('{input.')) {
+    final fieldName = value.substring(1, value.length - 1);
+    if (instanceData.containsKey(fieldName)) {
+      return instanceData[fieldName];
+    }
+  }
   if (value is String) {
     var resolved = value
         .replaceAll('\$actor', personaId)
