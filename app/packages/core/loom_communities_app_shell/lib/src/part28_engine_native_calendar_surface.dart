@@ -1517,6 +1517,95 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     );
   }
 
+  Future<void> _showRecurrenceDialog() async {
+    final inputs = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const _RecurrenceRulePickerDialog(),
+    );
+    if (inputs == null) return;
+    await _applyMakeRecurring(inputs);
+  }
+
+  Future<void> _applyMakeRecurring(Map<String, dynamic> inputs) {
+    final generation = _generation;
+    final instance = _instance;
+    final machine = widget.machine;
+    final engine = widget.engine;
+    final personaId = widget.personaId;
+    return _runMutation(
+      generation: generation,
+      instance: instance,
+      machine: machine,
+      engine: engine,
+      personaId: personaId,
+      operation: () async {
+        final result = await engine.applyTransition(
+          workflowType: instance.workflowType,
+          instanceId: instance.instanceId,
+          transitionId: 'make-recurring',
+          personaId: personaId,
+          inputs: inputs,
+        );
+        final seriesId = result.newInstanceData['seriesId']?.toString();
+        if (seriesId != null && seriesId.isNotEmpty) {
+          final siblings = <WorkflowInstance>[];
+          final seenCursors = <String>{};
+          String? cursor;
+          while (true) {
+            final page = await engine.queryInstances(
+              tabId: 'calendar',
+              personaId: personaId,
+              limit: 100,
+              cursor: cursor,
+            );
+            siblings.addAll(
+              page.items.where(
+                (candidate) =>
+                    candidate.workflowType == 'event-rsvp' &&
+                    candidate.instanceData['seriesId'] == seriesId &&
+                    candidate.instanceId != instance.instanceId,
+              ),
+            );
+            if (!page.hasMore) break;
+            final nextCursor = page.nextCursor;
+            if (nextCursor == null ||
+                nextCursor.trim().isEmpty ||
+                !seenCursors.add(nextCursor)) {
+              throw StateError(
+                'Invalid pagination cursor while loading calendar for $personaId',
+              );
+            }
+            cursor = nextCursor;
+          }
+          if (siblings.isNotEmpty) {
+            final accounts = await (_globalAuthApi ?? LocalAuthApi())
+                .listAccounts(
+                  communityExtensionId: widget.communityExtensionId,
+                );
+            for (final sibling in siblings) {
+              await engine.createInstances(
+                workflowType: 'event-rsvp-response',
+                initialInstanceDataList: [
+                  for (final account in accounts)
+                    {'eventId': sibling.instanceId, 'personaId': account.accountId},
+                ],
+                personaId: personaId,
+              );
+            }
+          }
+        }
+        return WorkflowInstance(
+          instanceId: instance.instanceId,
+          workflowType: instance.workflowType,
+          currentState: result.newState,
+          instanceData: result.newInstanceData,
+          createdByPersonaId: instance.createdByPersonaId,
+        );
+      },
+      retry: () => _applyMakeRecurring(inputs),
+    );
+  }
+
   Future<void> _save() async {
     if (_mutating || _edits.isEmpty) return;
     final generation = _generation;
@@ -2094,6 +2183,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                           _mutating ||
                               (_usesResponseRows && _isSelected(action))
                           ? null
+                          : action.id == 'make-recurring'
+                          ? _showRecurrenceDialog
                           : () => _applyTransition(action.id),
                     ),
                 ],
@@ -2121,6 +2212,268 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       ),
     );
   }
+}
+
+class _RecurrenceRulePickerDialog extends StatefulWidget {
+  const _RecurrenceRulePickerDialog();
+
+  @override
+  State<_RecurrenceRulePickerDialog> createState() =>
+      _RecurrenceRulePickerDialogState();
+}
+
+class _RecurrenceRulePickerDialogState
+    extends State<_RecurrenceRulePickerDialog> {
+  static const _weekdays = <(String, String)>[
+    ('MO', 'Mon'),
+    ('TU', 'Tue'),
+    ('WE', 'Wed'),
+    ('TH', 'Thu'),
+    ('FR', 'Fri'),
+    ('SA', 'Sat'),
+    ('SU', 'Sun'),
+  ];
+  static const _setPositions = <(String, String)>[
+    ('first', 'First'),
+    ('second', 'Second'),
+    ('third', 'Third'),
+    ('fourth', 'Fourth'),
+    ('last', 'Last'),
+  ];
+
+  final _interval = TextEditingController(text: '1');
+  final _count = TextEditingController();
+  final _monthDay = TextEditingController();
+  String _freq = 'weekly';
+  final Set<String> _selectedWeekdays = <String>{};
+  bool _monthUsesSetPosition = false;
+  String _setPosition = 'first';
+  String _setPositionWeekday = 'MO';
+  String? _validationMessage;
+
+  @override
+  void dispose() {
+    _interval.dispose();
+    _count.dispose();
+    _monthDay.dispose();
+    super.dispose();
+  }
+
+  int? _number(TextEditingController controller) =>
+      int.tryParse(controller.text.trim());
+
+  void _confirm() {
+    final interval = _number(_interval);
+    final count = _number(_count);
+    if (interval == null || interval < 1) {
+      setState(() => _validationMessage = 'Interval must be at least 1.');
+      return;
+    }
+    if (count == null || count < 1 || count > 366) {
+      setState(() => _validationMessage = 'Enter a count from 1 to 366.');
+      return;
+    }
+    final result = <String, dynamic>{
+      'freq': _freq,
+      'interval': interval,
+      'count': count,
+    };
+    if (_freq == 'weekly' && _selectedWeekdays.isNotEmpty) {
+      result['byDayOfWeek'] = [
+        for (final weekday in _weekdays)
+          if (_selectedWeekdays.contains(weekday.$1)) weekday.$1,
+      ];
+    }
+    if (_freq == 'monthly') {
+      if (_monthUsesSetPosition) {
+        result['bySetPos'] = _setPosition;
+        result['byDayOfWeek'] = [_setPositionWeekday];
+      } else if (_monthDay.text.trim().isNotEmpty) {
+        final monthDay = _number(_monthDay);
+        if (monthDay == null || monthDay < 1 || monthDay > 31) {
+          setState(() => _validationMessage = 'Day of month must be 1 to 31.');
+          return;
+        }
+        result['byMonthDay'] = monthDay;
+      }
+    }
+    Navigator.of(context).pop(result);
+  }
+
+  String get _intervalUnit => switch (_freq) {
+    'daily' => 'day',
+    'monthly' => 'month',
+    _ => 'week',
+  };
+
+  Widget _numberField({
+    required Key key,
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+  }) => TextField(
+    key: key,
+    controller: controller,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(labelText: label, hintText: hint),
+    onChanged: (_) {
+      if (_validationMessage != null) setState(() => _validationMessage = null);
+    },
+  );
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    key: const ValueKey('recurrence-rule-picker-dialog'),
+    title: const Text('Make recurring'),
+    content: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SegmentedButton<String>(
+            key: const ValueKey('recurrence-frequency'),
+            segments: const [
+              ButtonSegment(value: 'daily', label: Text('Daily')),
+              ButtonSegment(value: 'weekly', label: Text('Weekly')),
+              ButtonSegment(value: 'monthly', label: Text('Monthly')),
+            ],
+            selected: {_freq},
+            onSelectionChanged: (value) => setState(() {
+              _freq = value.single;
+              _validationMessage = null;
+            }),
+          ),
+          const SizedBox(height: 12),
+          _numberField(
+            key: const ValueKey('recurrence-interval'),
+            controller: _interval,
+            label: 'Every N ${_intervalUnit}s',
+          ),
+          const SizedBox(height: 12),
+          _numberField(
+            key: const ValueKey('recurrence-count'),
+            controller: _count,
+            label: 'Occurrences',
+            hint: '1–366',
+          ),
+          if (_freq == 'weekly') ...[
+            const SizedBox(height: 16),
+            const Text('Repeat on (optional)'),
+            Wrap(
+              spacing: 6,
+              children: [
+                for (final weekday in _weekdays)
+                  FilterChip(
+                    key: ValueKey('recurrence-weekday-${weekday.$1}'),
+                    label: Text(weekday.$2),
+                    selected: _selectedWeekdays.contains(weekday.$1),
+                    onSelected: (selected) => setState(() {
+                      if (selected) {
+                        _selectedWeekdays.add(weekday.$1);
+                      } else {
+                        _selectedWeekdays.remove(weekday.$1);
+                      }
+                    }),
+                  ),
+              ],
+            ),
+          ],
+          if (_freq == 'monthly') ...[
+            const SizedBox(height: 12),
+            RadioGroup<bool>(
+              groupValue: _monthUsesSetPosition,
+              onChanged: (value) =>
+                  setState(() => _monthUsesSetPosition = value!),
+              child: Column(
+                children: [
+                  RadioListTile<bool>(
+                    key: const ValueKey('recurrence-month-day-mode'),
+                    value: false,
+                    title: const Text('Day of month'),
+                  ),
+                  if (!_monthUsesSetPosition)
+                    _numberField(
+                      key: const ValueKey('recurrence-month-day'),
+                      controller: _monthDay,
+                      label: 'Day of month',
+                      hint: '1–31',
+                    ),
+                  RadioListTile<bool>(
+                    key: const ValueKey('recurrence-month-position-mode'),
+                    value: true,
+                    title: const Text('Weekday position'),
+                  ),
+                  if (_monthUsesSetPosition)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            key: const ValueKey('recurrence-set-position'),
+                            initialValue: _setPosition,
+                            decoration: const InputDecoration(labelText: 'Which'),
+                            items: [
+                              for (final position in _setPositions)
+                                DropdownMenuItem(
+                                  value: position.$1,
+                                  child: Text(position.$2),
+                                ),
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _setPosition = value!),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            key: const ValueKey(
+                              'recurrence-set-position-weekday',
+                            ),
+                            initialValue: _setPositionWeekday,
+                            decoration: const InputDecoration(
+                              labelText: 'Weekday',
+                            ),
+                            items: [
+                              for (final weekday in _weekdays)
+                                DropdownMenuItem(
+                                  value: weekday.$1,
+                                  child: Text(weekday.$2),
+                                ),
+                            ],
+                            onChanged: (value) => setState(
+                              () => _setPositionWeekday = value!,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ],
+          if (_validationMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _validationMessage!,
+              key: const ValueKey('recurrence-validation-error'),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        key: const ValueKey('recurrence-cancel'),
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(
+        key: const ValueKey('recurrence-confirm'),
+        onPressed: _confirm,
+        child: const Text('Create series'),
+      ),
+    ],
+  );
 }
 
 class _RsvpActionChip extends StatelessWidget {

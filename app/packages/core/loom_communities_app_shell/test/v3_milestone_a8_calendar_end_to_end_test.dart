@@ -525,6 +525,205 @@ void main() {
   );
 
   testWidgets(
+    'Make recurring creates calendar occurrences and seeds every RSVP response row',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-make-recurring'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-make-recurring',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('recurrence-count')),
+          '3',
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('recurrence-weekday-FR')),
+        );
+        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        for (var i = 0; i < 12; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final events = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          final anchor = page.items.singleWhere(
+            (item) => item.instanceId == 'event-friday-game-night',
+          );
+          return page.items
+              .where(
+                (item) =>
+                    item.workflowType == 'event-rsvp' &&
+                    item.instanceData['seriesId'] == anchor.instanceData['seriesId'],
+              )
+              .toList();
+        }))!;
+        expect(events, hasLength(3));
+        expect(
+          events.map((event) => event.instanceData['eventDate']).toSet(),
+          containsAll(<String>['2026-07-10', '2026-07-17', '2026-07-24']),
+        );
+        final accountIds = (await tester.runAsync(() async =>
+            (await LocalAuthApi().listAccounts(
+              communityExtensionId: installed.community.extensionId,
+            )).map((account) => account.accountId).toSet()))!;
+        for (final event in events.where(
+          (event) => event.instanceId != 'event-friday-game-night',
+        )) {
+          await _pumpUntil(
+            tester,
+            _keyPrefix('engine-native-calendar-entry-${event.instanceId}-'),
+          );
+          final responses = (await tester.runAsync(() async {
+            final page = await installed.engine.queryInstances(
+              tabId: 'calendar',
+              personaId: 'tabletop-organizer',
+              limit: 100,
+            );
+            return page.items
+                .where(
+                  (item) =>
+                      item.workflowType == 'event-rsvp-response' &&
+                      item.instanceData['eventId'] == event.instanceId,
+                )
+                .toList();
+          }))!;
+          expect(responses, hasLength(accountIds.length));
+          expect(
+            responses.map((response) => response.instanceData['personaId']).toSet(),
+            accountIds,
+          );
+        }
+        expect(action, findsNothing);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Make recurring uses the final monthly weekday-position dropdown values',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-monthly-weekday-position'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-make-recurring',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+        );
+
+        await tester.tap(find.text('Monthly'));
+        await tester.pump();
+        await tester.tap(
+          find.byKey(const ValueKey('recurrence-month-position-mode')),
+        );
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const ValueKey('recurrence-count')),
+          '3',
+        );
+
+        final ordinal = find.byKey(
+          const ValueKey('recurrence-set-position'),
+        );
+        await tester.tap(ordinal);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Third').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Third'), findsOneWidget);
+        await tester.tap(ordinal);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Last').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Last'), findsOneWidget);
+
+        final weekday = find.byKey(
+          const ValueKey('recurrence-set-position-weekday'),
+        );
+        await tester.tap(weekday);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Fri').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Fri'), findsOneWidget);
+        await tester.tap(weekday);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Wed').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Wed'), findsOneWidget);
+
+        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        for (var i = 0; i < 12; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final dates = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          return page.items
+              .where(
+                (item) =>
+                    item.workflowType == 'event-rsvp' &&
+                    item.instanceData['seriesId'] != null,
+              )
+              .map((item) => item.instanceData['eventDate'])
+              .toList();
+        }))!;
+        // Last Wednesday proves the final (rather than initial or first changed)
+        // ordinal and weekday values were passed to applyTransition.
+        expect(dates, hasLength(3));
+        expect(
+          dates,
+          containsAll(<String>[
+            '2026-07-10',
+            '2026-08-26',
+            '2026-09-30',
+          ]),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
     'Calendar event detail stays closed when editable fields have no editGuard',
     (tester) async {
       final installed = (await tester.runAsync(
