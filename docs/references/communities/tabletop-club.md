@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.8.0
+doc_version: 1.9.0
 status: current
 last_verified: 2026-07-25
 audience: llm-agent
@@ -319,34 +319,37 @@ and approve loans of their own games.
   a pre-existing, unrelated test regression this same verification pass found and fixed —
   `CAL.FullnessGuardTestFix`).
 
-**Design closed, awaiting implementation:**
-- **Recurring events (design closed 2026-07-25 — CAL.Recurrence).** No recurrence concept exists anywhere
-  in the model — every event is a standalone instance. Confirmed (twice, independently) there is no
-  JSON-only shortcut: `resolveInstanceScopedPrefill` (`instance_scoped_action_context.dart`, whole file
-  25 lines) only supports literal passthrough, `{context.id}`, and `{context.<field>}` direct field copy;
-  `createInstance.fields` (`effect_evaluator.dart`'s `resolveEffectValue`) is equally interpolation-only;
-  the formula evaluator (`formula_evaluator.dart`) has no forward-direction date function at all (only
-  `daysBetween`/`daysUntil`/`subtractHours`). **Design chosen: eager instance generation** — a new
-  `make-recurring` transition on `event-rsvp` (self-removing after firing once, via `formula: "seriesId
-  == null"`) carries a new effect, `generateRecurringInstances` (`effects.md` §12, PROPOSED), which mints
-  one `seriesId`, stamps it on the anchor instance (occurrence 0), and creates `count - 1` real,
-  independent sibling instances via bespoke Dart date arithmetic — not the formula evaluator, since the
-  full pattern set requested (daily/weekly-by-weekday/monthly-by-date-with-clamping/monthly-by-last-or-
-  Nth-weekday) is real month-boundary arithmetic that would over-generalize the formula language if forced
+- **Recurring events (2026-07-25, IMPLEMENTED — CAL.Recurrence, 7 milestones, commits `2974310`/`e653074`
+  engine, `91ef180` validator, `f5d30b9`/`b4ee5c2` frozen fixture, `7128d9a` App-Shell creation UI,
+  `4eb10d8` App-Shell delete-series).** No recurrence concept existed anywhere in the model — every event
+  was a standalone instance. Confirmed (twice, independently) there was no JSON-only shortcut:
+  `resolveInstanceScopedPrefill`/`createInstance.fields` are interpolation-only, and the formula evaluator
+  has no forward-direction date function. **Design: eager instance generation** — a new `make-recurring`
+  transition on `event-rsvp` (self-removing after firing once, via `formula: "seriesId == null"`) carries
+  a new effect op, `generateRecurringInstances` (`effects.md` §12), which mints one `seriesId`, stamps it
+  on the anchor instance (occurrence 0), and creates `count - 1` real, independent sibling instances via
+  bespoke Dart date arithmetic (`recurrence_evaluator.dart`) — not the formula evaluator, since the full
+  requested pattern set (daily/weekly-by-weekday/monthly-by-date-with-clamping/monthly-by-last-or-Nth-
+  weekday) is real month-boundary arithmetic that would over-generalize the formula language if forced
   through it. Every generated occurrence is immediately a normal, independent instance — RSVP,
   per-occurrence edit, per-occurrence cancel all already work unchanged. Deleting one occurrence needs no
   new capability; deleting the whole series is App-Shell client-orchestration (query every sibling
-  sharing `seriesId`, loop the existing cancel transition) — not a new engine bulk-op. See
-  `spec-version.json` → `proposedNotImplemented.generateRecurringInstancesEffect` and `effects.md` §12 for
-  the full grammar. **Not yet implemented** — the frozen fixture is deliberately not touched in this pass
-  (the engine's `op` allowlist is hard-coded; adding the transition/effect before the engine recognizes it
-  would fail validation, same trap `transitionRelated` hit earlier). Implementation tickets not yet
-  dispatched.
+  sharing `seriesId`, loop the existing `cancel-event` transition) — not a new engine bulk-op. **The
+  implementation cycle independently caught and fixed three real, distinct bugs before the feature could
+  be trusted**: (1) an omitted optional `recurrenceRule` field resolved to a garbage literal token string
+  instead of `null`; (2) the weekly `byDayOfWeek` walk assumed occurrence 0 always equals the anchor,
+  false whenever the anchor's own weekday isn't itself requested; (3) the validator never asked to catch
+  a monthly `byDayOfWeek` without `bySetPos`, even though the engine itself already rejected it — a real
+  validator/engine mismatch the original ticket missed. Independently verified end-to-end:
+  `loom_workflow_engine` 159/159, `loom_ux_judges` 119/119, `loom_communities_app_shell` 128/128, both
+  real validators clean against the updated fixture. See `spec-version.json` →
+  `resolvedInGrammar.generateRecurringInstancesEffect` for the complete implementation narrative.
 
 ## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
+| CAL.Recurrence full implementation (7 milestones), 2026-07-25 | no — JSON grammar was already written, locked, and signed off in the prior pass (see the row below) | no remaining gap — engine (`generateRecurringInstances` effect + `recurrence_evaluator.dart` date math), validator (full static rule coverage), frozen fixture (`make-recurring` transition), and App-Shell (creation dialog + delete-series action) all implemented and independently verified across 7 milestones and their fix-rounds | `spec-version.json`: `generateRecurringInstancesEffect` moved from `proposedNotImplemented` to `resolvedInGrammar`; `effects.md` §12 status updated PROPOSED → implemented, op-count/rules/selection-table language updated, plus two new implementation-detail notes (absent-optional-token resolution, weekly-anchor-forcing) added for future JSON authors; this doc's §10 updated (recurring events moved out of the pinned list entirely, into "recently closed") | App Shell: `_RecurrenceRulePickerDialog` + `_applyMakeRecurring`'s sibling-lookup/RSVP-seeding (`part28_engine_native_calendar_surface.dart`, CAL.Recurrence.4, commit `7128d9a`) and `_deleteSeries` (CAL.Recurrence.5, commit `4eb10d8`) — both **IMPLEMENTED**. Three real bugs independently found and fixed along the way (two engine, one validator/engine mismatch) before the fixture could safely use the op; a further three test-authoring mistakes (two in CAL.Recurrence.4's own new tests, three in CAL.Recurrence.5's) were each root-caused and fixed in their own dispatched fix-round, none required touching production code | closed — all 7 milestones independently verified end-to-end: `loom_workflow_engine` 159/159, `loom_ux_judges` 119/119, `loom_communities_app_shell` 128/128, 0 analyzer issues everywhere, both real validators (`community_package_validator.dart`/`workflow_state_machine_validator.dart`) clean against the updated fixture. Only `MKT.1` remains pinned, still awaiting its own design pass. |
 | CAL.CategoryFilter implementation + regression fix + CAL.Recurrence design pass, 2026-07-25 | **partially** — `category` filtering's original "trivial JSON" scoping was itself wrong (would have shipped a non-functional stat display, not a filter); recurring events' design is now closed (eager instance generation, full daily/weekly/monthly-incl.-last-weekday pattern set), but is JSON/docs only this pass, deliberately not yet in the frozen fixture | `category` filtering needed a real, small, generic App-Shell addition (a third facet rendering kind), not zero code as originally scoped; independently verifying it surfaced an unrelated **pre-existing regression** (a Calendar test asserting the old, pre-waitlist-promotion manual-refill flow, silently broken since CAL.WaitlistPromotion's fixture JSON landed because the app-shell suite was never re-run against it) — fixed in the same pass; recurring events needs a genuinely new engine effect op (bespoke Dart date arithmetic, not the formula evaluator) plus App-Shell UI, none of it built yet | `spec-version.json` gained `proposedNotImplemented.generateRecurringInstancesEffect`; `effects.md` gained §12 (`generateRecurringInstances`, PROPOSED) plus op-count/rules/selection-table updates; this doc's §10 updated (CategoryFilter moved to "Recently closed," recurring events moved to "Design closed, awaiting implementation") | CAL.CategoryFilter: `_CalendarFacetKind.textValue` + selection state + chip rendering (`part28_engine_native_calendar_surface.dart`) — **IMPLEMENTED**, commit `468b64b`. Regression fix: `v3_milestone_a8_calendar_end_to_end_test.dart` test rewrite — **IMPLEMENTED**, commits `ac100e2`/`2df0462`. Recurring events: engine effect op + evaluator + validator rules + App-Shell picker dialog + delete-series action — **none dispatched yet**, tracked as CAL.Recurrence.1-7 | CAL.CategoryFilter closed (independently verified, 125/125 app-shell); recurring events open — spec updated and written this pass, implementation tickets not yet dispatched |
 | CALR.10 + pinned-item implementation pass, 2026-07-25 | no — all JSON for this pass was already written and signed off on 2026-07-24 (see the row below); this pass is implementation + one small, previously-deferred piece of JSON (the `transitionRelated` effect calls themselves, held back by a real validator constraint) | no remaining gap — `editGuard` (CALR.10a, 5 rounds, closed a real Save-persistence bug independent verification caught), `theme.calendar.dateRail` (CALR.10b, 2 rounds, closed a real missing-field-threading compile error), attendee-list names (CAL.AttendeeList, 1 round, zero rework), and `transitionRelated` (CAL.WaitlistPromotion, 2 rounds, closed a real nested-transaction regression independent verification caught) are all now implemented and independently verified | `spec-version.json`: `editGuard`/`calendarDateRailBinding`/`transitionRelatedEffect` all moved from `proposedNotImplemented` to `resolvedInGrammar`; `effects.md`/`guards.md`/`workflow-grammar.md`/`theming.md` status language updated from PROPOSED to IMPLEMENTED (also caught and fixed two unrelated stale PROPOSED markers in `guards.md` for `relatedAggregate`, which has actually been implemented since 2026-07-17); this doc's §10 updated; frozen JSON: `event-rsvp-response.respond-maybe`/`respond-declined` gained real `transitionRelated` effects (the `rsvpedAt` field/stamp were already live). Both real validators re-run clean (0/0) | none remaining for this batch — attendee list, editGuard, dateRail, and waitlist promotion are all done. Recurring events (`CAL.Recurrence`) and Marketplace's tile-style system (`MKT.1`) remain pinned, each needing its own full design pass before any JSON | closed — all four items independently verified (120/122/124/147 test counts across rounds, final: App Shell 124/124, engine 147/147, validator 114/114, 0 analyzer issues everywhere) |
 | Pinned-item investigation + spec pass, 2026-07-24 | **partially** — attendee list turned out to need zero new grammar at all (existing `responseTable`/`responses` already enumerate the data); waitlist promotion needed one genuinely new effect op (`transitionRelated`); recurring events confirmed to have no cheaper shortcut and still needs its own full design pass | no new engine gap for attendee list (pure App-Shell rendering); waitlist promotion is a genuine new cross-instance effect op, not yet engine-implemented; recurring events out of scope for this revision entirely | `effects.md` gained op 11 (`transitionRelated`, PROPOSED) + a cross-reference note in `guards.md` on reusing `relatedAggregate`'s `filter` shape, `spec-version.json` gained `proposedNotImplemented.transitionRelatedEffect`, this doc's §10/§11 updated, frozen JSON: `event-rsvp-response` gained a real `rsvpedAt` field + a real `set` effect on `respond-waitlist` stamping it (live today, uses only already-implemented grammar) — **the `transitionRelated` effect calls themselves were NOT added to the frozen fixture**: `effects[].op` has a hard-coded allowlist in the real engine (unlike `editGuard`/`dateRail`'s silently-ignored additive keys), and a draft that included them failed `community_package_validator.dart` with 2 genuine `unknown_effect_op` errors. No JSON at all was needed or written for attendee list; no JSON was written for recurring events (no design exists yet). Both real validators re-run clean (0 errors/0 warnings) against what was actually landed | App Shell: none of this is implemented yet (attendee-list rendering, `transitionRelated` execution) — tracked in the tracker's CAL.AttendeeList/CAL.WaitlistPromotion rows | open — spec updated and approved this revision; implementation tickets not yet dispatched; recurring events still pinned pending a full design pass |
