@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.4.0
+doc_version: 1.5.0
 status: current
-last_verified: 2026-07-26
+last_verified: 2026-07-27
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
@@ -138,6 +138,10 @@ plumbing.
 | `inputs` | object | no | Organizer-entered values, collected in a dialog. See below. |
 
 ### `transitions[].inputs`
+
+✅ **IMPLEMENTED 2026-07-26 (CAL.Calendar2.1, commit `58cba6f`)** — `GenericTransitionInputDialog`
+(`part26_generic_instance_card.dart`) and every field below are real and independently verified end-to-end,
+including `make-recurring`'s full migration off its old bespoke picker.
 
 A map of input name → spec. When present and non-empty, firing the transition first shows a
 generic, schema-driven dialog (App-Shell's `GenericTransitionInputDialog`) that collects one value
