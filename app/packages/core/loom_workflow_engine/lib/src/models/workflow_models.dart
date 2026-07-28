@@ -4,13 +4,36 @@
 class TransitionInputSpec {
   final String type;
   final bool required;
+  final String? visibleWhen;
+  final List<String>? options;
+  final String? modeGroup;
+  final String? modeValue;
+  final int? maxSelections;
+  final String? writesTo;
 
-  const TransitionInputSpec({required this.type, this.required = false});
+  const TransitionInputSpec({
+    required this.type,
+    this.required = false,
+    this.visibleWhen,
+    this.options,
+    this.modeGroup,
+    this.modeValue,
+    this.maxSelections,
+    this.writesTo,
+  });
 
   factory TransitionInputSpec.fromJson(Map<String, dynamic> json) =>
       TransitionInputSpec(
         type: json['type'] as String,
         required: json['required'] as bool? ?? false,
+        visibleWhen: json['visibleWhen'] as String?,
+        options: (json['options'] as List<dynamic>?)
+            ?.map((value) => value as String)
+            .toList(),
+        modeGroup: json['modeGroup'] as String?,
+        modeValue: json['modeValue'] as String?,
+        maxSelections: json['maxSelections'] as int?,
+        writesTo: json['writesTo'] as String?,
       );
 }
 

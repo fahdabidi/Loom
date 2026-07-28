@@ -249,7 +249,23 @@ class _GenericWorkflowInstanceCardState
     );
   }
 
-  Future<void> _applyTransition(String transitionId) {
+  Future<void> _applyTransition(String transitionId) async {
+    final transition = widget.machine.transitions
+        .where((candidate) => candidate.id == transitionId)
+        .firstOrNull;
+    final declaredInputs = transition?.inputs;
+    final inputs = declaredInputs == null || declaredInputs.isEmpty
+        ? null
+        : await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (context) => GenericTransitionInputDialog(
+              transition: transition!,
+              instanceData: _instance.instanceData,
+            ),
+          );
+    if (declaredInputs != null && declaredInputs.isNotEmpty && inputs == null) {
+      return;
+    }
     final generation = _generation;
     final instance = _instance;
     final machine = widget.machine;
@@ -267,6 +283,7 @@ class _GenericWorkflowInstanceCardState
           instanceId: instance.instanceId,
           transitionId: transitionId,
           personaId: personaId,
+          inputs: inputs,
         );
         return WorkflowInstance(
           instanceId: instance.instanceId,
@@ -589,5 +606,285 @@ class _GenericWorkflowInstanceCardState
     );
     if (spaced.isEmpty) return spaced;
     return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
+}
+
+/// Schema-driven collection of GAP-1 transition inputs.  Visibility is
+/// evaluated against persisted instance data plus the values currently entered
+/// in this dialog, so dependent fields update without a second parser.
+class GenericTransitionInputDialog extends StatefulWidget {
+  const GenericTransitionInputDialog({
+    super.key,
+    required this.transition,
+    required this.instanceData,
+  });
+
+  final LoomWorkflowTransition transition;
+  final Map<String, dynamic> instanceData;
+
+  @override
+  State<GenericTransitionInputDialog> createState() =>
+      _GenericTransitionInputDialogState();
+}
+
+class _GenericTransitionInputDialogState
+    extends State<GenericTransitionInputDialog> {
+  final _controllers = <String, TextEditingController>{};
+  final _values = <String, dynamic>{};
+  final _modes = <String, String>{};
+  String? _validationMessage;
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _controllerFor(String key) => _controllers.putIfAbsent(
+    key,
+    () => TextEditingController(text: '${_values[key] ?? ''}'),
+  );
+
+  Map<String, dynamic> get _formulaValues => {
+    ...widget.instanceData,
+    ..._values,
+    ..._modes,
+  };
+
+  bool _visible(TransitionInputSpec spec) {
+    final formula = spec.visibleWhen;
+    return formula == null || evaluateFormula(formula, instanceData: _formulaValues) == true;
+  }
+
+  String _label(String key) {
+    final spaced = key.replaceAllMapped(
+      RegExp(r'(?<=[a-z0-9])([A-Z])'),
+      (match) => ' ${match.group(0)}',
+    );
+    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
+
+  Iterable<MapEntry<String, TransitionInputSpec>> get _entries =>
+      widget.transition.inputs!.entries;
+
+  String? _modeFor(String group) => _modes[group] ??
+      _entries
+          .where(
+            (entry) =>
+                entry.value.modeGroup == group &&
+                _visible(entry.value) &&
+                (entry.value.writesTo == null ||
+                    entry.value.writesTo == entry.key),
+          )
+          .map((entry) => entry.value.modeValue)
+          .whereType<String>()
+          .cast<String?>()
+          .firstOrNull;
+
+  bool _relevant(String key, TransitionInputSpec spec) {
+    final group = spec.modeGroup;
+    if (group == null) return true;
+    return _modeFor(group) == spec.modeValue;
+  }
+
+  void _confirm() {
+    final result = <String, dynamic>{};
+    for (final entry in _entries) {
+      final key = entry.key;
+      final spec = entry.value;
+      if (!_visible(spec) || !_relevant(key, spec)) continue;
+      var value = _values[key];
+      if (spec.type == 'number' && value is String && value.trim().isNotEmpty) {
+        value = num.tryParse(value.trim());
+        if (value == null) {
+          setState(() => _validationMessage = '${_label(key)} must be a valid number.');
+          return;
+        }
+      }
+      if (spec.type == 'list' && spec.options == null && value is String) {
+        value = value
+            .split(',')
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList();
+      }
+      final empty = value == null ||
+          (value is String && value.trim().isEmpty) ||
+          (value is List && value.isEmpty);
+      if (spec.required && empty) {
+        setState(() => _validationMessage = '${_label(key)} is required.');
+        return;
+      }
+      if (!empty) result[spec.writesTo ?? key] = value;
+    }
+    Navigator.of(context).pop(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final renderedGroups = <String>{};
+    return AlertDialog(
+      key: const ValueKey('generic-transition-input-dialog'),
+      title: Text(widget.transition.label),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final entry in _entries) ...[
+              if (entry.value.modeGroup case final group?)
+                if (renderedGroups.add(group)) _modeGroup(group),
+              if (_visible(entry.value) && _relevant(entry.key, entry.value))
+                _field(entry.key, entry.value),
+            ],
+            if (_validationMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _validationMessage!,
+                  key: const ValueKey('generic-transition-input-validation-error'),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          key: const ValueKey('generic-transition-input-cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          key: const ValueKey('generic-transition-input-confirm'),
+          onPressed: _confirm,
+          child: Text(widget.transition.label),
+        ),
+      ],
+    );
+  }
+
+  Widget _modeGroup(String group) {
+    final options = _entries
+        .where(
+          (entry) =>
+              entry.value.modeGroup == group &&
+              _visible(entry.value) &&
+              (entry.value.writesTo == null ||
+                  entry.value.writesTo == entry.key),
+        )
+        .toList();
+    if (options.isEmpty) return const SizedBox();
+    final current = _modeFor(group);
+    return RadioGroup<String>(
+      groupValue: current,
+      onChanged: (value) => setState(() {
+        if (value != null) _modes[group] = value;
+        _validationMessage = null;
+      }),
+      child: Column(
+        children: [
+          for (final option in options)
+            RadioListTile<String>(
+              key: ValueKey('generic-transition-input-mode-$group-${option.value.modeValue}'),
+              value: option.value.modeValue!,
+              title: Text(_label(option.key)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _field(String key, TransitionInputSpec spec) {
+    final fieldKey = ValueKey('generic-transition-input-$key');
+    // `options` is multi-select for lists.  A text input can also declare
+    // options when its persisted contract is a scalar (for example the
+    // recurrence position); that remains a single stored string.
+    if (spec.type == 'text' && spec.options != null) {
+      final selected = _values[key] as String?;
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_label(key)),
+            Wrap(
+              spacing: 6,
+              children: [
+                for (final option in spec.options!)
+                  ChoiceChip(
+                    key: ValueKey('generic-transition-input-$key-$option'),
+                    label: Text(option),
+                    selected: selected == option,
+                    onSelected: (_) => setState(() {
+                      _values[key] = option;
+                      _validationMessage = null;
+                    }),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+    if (spec.type == 'list' && spec.options != null) {
+      final selected = (_values[key] as List<String>?) ?? <String>[];
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_label(key)),
+            Wrap(
+              spacing: 6,
+              children: [
+                for (final option in spec.options!)
+                  FilterChip(
+                    key: ValueKey('generic-transition-input-$key-$option'),
+                    label: Text(option),
+                    selected: selected.contains(option),
+                    onSelected: (isSelected) => setState(() {
+                      final next = [...selected];
+                      if (isSelected) {
+                        final maxSelections = spec.maxSelections;
+                        if (maxSelections != null &&
+                            maxSelections > 0 &&
+                            next.length >= maxSelections) {
+                          next.removeAt(0);
+                        }
+                        next.add(option);
+                      } else {
+                        next.remove(option);
+                      }
+                      _values[key] = next;
+                      _validationMessage = null;
+                    }),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: TextField(
+        key: fieldKey,
+        controller: _controllerFor(key),
+        keyboardType: spec.type == 'number'
+            ? const TextInputType.numberWithOptions(decimal: true, signed: true)
+            : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: _label(key),
+          hintText: spec.type == 'list' ? 'Comma-separated values' : null,
+        ),
+        onChanged: (value) => setState(() {
+          _values[key] = value;
+          _validationMessage = null;
+        }),
+      ),
+    );
   }
 }

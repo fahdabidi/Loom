@@ -184,6 +184,17 @@ Future<void> _tapAction(
   await tester.pump();
   await tester.tap(action);
   await tester.pump();
+  final dialog = find.byKey(
+    const ValueKey('generic-transition-input-dialog'),
+  );
+  if (dialog.evaluate().isNotEmpty) {
+    final confirm = find.byKey(
+      const ValueKey('generic-transition-input-confirm'),
+    );
+    await tester.ensureVisible(confirm);
+    await tester.tap(confirm);
+    await tester.pump();
+  }
   // The selected A.6 card mutates and then A.7 re-queries the shared engine.
   // Give both real database operations a bounded real-async/pump handshake.
   for (var i = 0; i < 5; i++) {
@@ -544,16 +555,25 @@ void main() {
         await tester.pump();
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
         );
         await tester.enterText(
-          find.byKey(const ValueKey('recurrence-count')),
+          find.byKey(const ValueKey('generic-transition-input-freq')),
+          'weekly',
+        );
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-count')),
           '3',
         );
         await tester.tap(
-          find.byKey(const ValueKey('recurrence-weekday-FR')),
+          find.byKey(
+            const ValueKey('generic-transition-input-byDayOfWeekWeekly-FR'),
+          ),
         );
-        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-confirm')),
+        );
         for (var i = 0; i < 12; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -622,8 +642,13 @@ void main() {
   );
 
   testWidgets(
-    'Make recurring uses the final monthly weekday-position dropdown values',
+    'Make recurring uses the final monthly weekday-position chip values',
     (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final installed = (await tester.runAsync(
         () => _install('a8-monthly-weekday-position'),
       ))!;
@@ -641,49 +666,51 @@ void main() {
         await tester.pump();
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
         );
-
-        await tester.tap(find.text('Monthly'));
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-freq')),
+          'monthly',
+        );
         await tester.pump();
         await tester.tap(
-          find.byKey(const ValueKey('recurrence-month-position-mode')),
+          find.byKey(
+            const ValueKey(
+              'generic-transition-input-mode-monthlyPattern-lastOrNthWeekday',
+            ),
+          ),
         );
         await tester.pump();
         await tester.enterText(
-          find.byKey(const ValueKey('recurrence-count')),
+          find.byKey(const ValueKey('generic-transition-input-count')),
           '3',
         );
-
-        final ordinal = find.byKey(
-          const ValueKey('recurrence-set-position'),
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-bySetPos-third')),
         );
-        await tester.tap(ordinal);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Third').last);
-        await tester.pumpAndSettle();
-        expect(find.text('Third'), findsOneWidget);
-        await tester.tap(ordinal);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Last').last);
-        await tester.pumpAndSettle();
-        expect(find.text('Last'), findsOneWidget);
-
-        final weekday = find.byKey(
-          const ValueKey('recurrence-set-position-weekday'),
+        await tester.pump();
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-bySetPos-last')),
         );
-        await tester.tap(weekday);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Fri').last);
-        await tester.pumpAndSettle();
-        expect(find.text('Fri'), findsOneWidget);
-        await tester.tap(weekday);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Wed').last);
-        await tester.pumpAndSettle();
-        expect(find.text('Wed'), findsOneWidget);
+        await tester.pump();
+        await tester.tap(
+          find.byKey(
+            const ValueKey('generic-transition-input-byDayOfWeekMonthly-FR'),
+          ),
+        );
+        await tester.pump();
+        await tester.tap(
+          find.byKey(
+            const ValueKey('generic-transition-input-byDayOfWeekMonthly-WE'),
+          ),
+        );
+        await tester.pump();
 
-        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        final confirm = find.byKey(
+          const ValueKey('generic-transition-input-confirm'),
+        );
+        await tester.ensureVisible(confirm);
+        await tester.tap(confirm);
         for (var i = 0; i < 12; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -716,6 +743,76 @@ void main() {
             '2026-08-26',
             '2026-09-30',
           ]),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Make recurring creates monthly day-of-month occurrences through generic inputs',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-monthly-day-of-month'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-make-recurring',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-freq')),
+          'monthly',
+        );
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-count')),
+          '3',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-byMonthDay')),
+          '15',
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-confirm')),
+        );
+        for (var i = 0; i < 12; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        final dates = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          return page.items
+              .where(
+                (item) =>
+                    item.workflowType == 'event-rsvp' &&
+                    item.instanceData['seriesId'] != null,
+              )
+              .map((item) => item.instanceData['eventDate'])
+              .toList();
+        }))!;
+        expect(dates, hasLength(3));
+        expect(
+          dates,
+          containsAll(<String>['2026-07-10', '2026-08-15', '2026-09-15']),
         );
       } finally {
         await tester.runAsync(installed.dispose);
@@ -2146,6 +2243,17 @@ void main() {
 
         await tester.tap(action);
         await tester.pump();
+        final dialog = find.byKey(
+          const ValueKey('generic-transition-input-dialog'),
+        );
+        if (dialog.evaluate().isNotEmpty) {
+          final confirm = find.byKey(
+            const ValueKey('generic-transition-input-confirm'),
+          );
+          await tester.ensureVisible(confirm);
+          await tester.tap(confirm);
+          await tester.pump();
+        }
         for (var i = 0; i < 5; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -2160,6 +2268,66 @@ void main() {
           'event-friday-game-night',
         );
         expect(_responseFor(going, 'tabletop-organizer')['\$state'], 'going');
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Calendar RSVP shows dietary notes below the attendee name',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('a8-rsvp-dietary-notes'),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-respond-going',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
+        );
+        await tester.enterText(
+          find.byKey(
+            const ValueKey('generic-transition-input-dietaryNotes'),
+          ),
+          'Vegetarian',
+        );
+        final confirm = find.byKey(
+          const ValueKey('generic-transition-input-confirm'),
+        );
+        await tester.ensureVisible(confirm);
+        await tester.tap(confirm);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
+          ),
+        );
+
+        final attendees = find.byKey(
+          const ValueKey('event-rsvp-attendees-event-friday-game-night'),
+        );
+        expect(
+          find.descendant(of: attendees, matching: find.text('Vegetarian')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
+          ),
+          findsOneWidget,
+        );
       } finally {
         await tester.runAsync(installed.dispose);
       }
@@ -2436,14 +2604,25 @@ void main() {
         await tester.pump();
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('recurrence-rule-picker-dialog')),
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
         );
         await tester.enterText(
-          find.byKey(const ValueKey('recurrence-count')),
+          find.byKey(const ValueKey('generic-transition-input-freq')),
+          'weekly',
+        );
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-count')),
           '3',
         );
-        await tester.tap(find.byKey(const ValueKey('recurrence-weekday-FR')));
-        await tester.tap(find.byKey(const ValueKey('recurrence-confirm')));
+        await tester.tap(
+          find.byKey(
+            const ValueKey('generic-transition-input-byDayOfWeekWeekly-FR'),
+          ),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-confirm')),
+        );
         for (var i = 0; i < 12; i++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 20)),

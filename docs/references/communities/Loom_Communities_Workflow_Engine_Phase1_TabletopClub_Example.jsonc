@@ -197,9 +197,41 @@
               "freq": { "type": "text", "required": true },
               "interval": { "type": "number" },
               "count": { "type": "number", "required": true },
-              "byDayOfWeek": { "type": "list" },
-              "byMonthDay": { "type": "number" },
-              "bySetPos": { "type": "text" }
+              // byDayOfWeek is split into two mode-scoped inputs sharing one output key
+              // (writesTo) because its cardinality genuinely differs by mode: weekly
+              // recurrence allows any number of weekdays, but the monthly "last/Nth
+              // weekday" mode requires exactly one (recurrence_evaluator.dart enforces
+              // this -- bySetPos requires byDayOfWeek.length == 1). maxSelections lets
+              // the same multi-select chip widget enforce that cap in the UI itself,
+              // rather than round-tripping a StateError from the engine.
+              "byDayOfWeekWeekly": {
+                "type": "list",
+                "options": ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
+                "visibleWhen": "freq == 'weekly'",
+                "writesTo": "byDayOfWeek"
+              },
+              "byDayOfWeekMonthly": {
+                "type": "list",
+                "options": ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
+                "maxSelections": 1,
+                "visibleWhen": "freq == 'monthly'",
+                "modeGroup": "monthlyPattern",
+                "modeValue": "lastOrNthWeekday",
+                "writesTo": "byDayOfWeek"
+              },
+              "byMonthDay": {
+                "type": "number",
+                "visibleWhen": "freq == 'monthly'",
+                "modeGroup": "monthlyPattern",
+                "modeValue": "dayOfMonth"
+              },
+              "bySetPos": {
+                "type": "text",
+                "options": ["first", "second", "third", "fourth", "last"],
+                "visibleWhen": "freq == 'monthly'",
+                "modeGroup": "monthlyPattern",
+                "modeValue": "lastOrNthWeekday"
+              }
             },
             "effects": [
               { "op": "generateRecurringInstances",

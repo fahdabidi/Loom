@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
-last_verified: 2026-07-25
+last_verified: 2026-07-26
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
@@ -119,7 +119,8 @@ plumbing.
   "to": null,                      // target state, or null (see below)
   "guard": { /* ... */ },          // optional — see reference/guards.md
   "effects": [ /* ... */ ],        // optional — see reference/effects.md
-  "linkedWorkflowId": "some-type"  // optional — fires a linked action surface
+  "linkedWorkflowId": "some-type", // optional — fires a linked action surface
+  "inputs": { /* ... */ }          // optional — see "transitions[].inputs" below
 }
 ```
 
@@ -134,6 +135,52 @@ plumbing.
 | `guard` | object | no | Who/when. [guards.md](./guards.md) |
 | `effects` | object[] | no | What changes. [effects.md](./effects.md) |
 | `linkedWorkflowId` | string | no | Opens a linked confirmation/action surface |
+| `inputs` | object | no | Organizer-entered values, collected in a dialog. See below. |
+
+### `transitions[].inputs`
+
+A map of input name → spec. When present and non-empty, firing the transition first shows a
+generic, schema-driven dialog (App-Shell's `GenericTransitionInputDialog`) that collects one value
+per entry before the transition is applied. Collected values are available to `effects` as
+`{input.<name>}` (see [effects.md](./effects.md)).
+
+```jsonc
+"inputs": {
+  "freq": { "type": "text", "required": true },
+  "byDayOfWeekWeekly": {
+    "type": "list",
+    "options": ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
+    "visibleWhen": "freq == 'weekly'",
+    "writesTo": "byDayOfWeek"
+  },
+  "byDayOfWeekMonthly": {
+    "type": "list",
+    "options": ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
+    "maxSelections": 1,
+    "visibleWhen": "freq == 'monthly'",
+    "modeGroup": "monthlyPattern",
+    "modeValue": "lastOrNthWeekday",
+    "writesTo": "byDayOfWeek"
+  }
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `type` | string | **yes** | `text` · `number` · `list`. Governs both the rendered widget and the value's shape. |
+| `required` | bool | no | Blocks confirmation until a non-empty value is entered. Default `false`. |
+| `options` | string[] | no | Renders as chips instead of a free-text field. `type: "text"` + `options` is single-select (`ChoiceChip`); `type: "list"` + `options` is multi-select (`FilterChip`), producing a `List<String>`. |
+| `visibleWhen` | formula | no | Evaluated live against persisted instance data merged with the values entered so far in this dialog (including other inputs' current picks). Hidden inputs contribute nothing to the result. Same formula grammar as guards — see [guards.md](./guards.md). |
+| `modeGroup` / `modeValue` | string | no | Groups mutually-exclusive inputs behind one radio choice. All entries sharing a `modeGroup` render together as a `RadioGroup`; an input tagged with `modeGroup`/`modeValue` is only collected when that group's current selection equals its own `modeValue`. |
+| `maxSelections` | number | no | Caps a `type: "list"` + `options` (multi-select) input. Selecting past the cap evicts the oldest pick — a UI-side single-select-via-chips convenience, most commonly `1`. Absent means unbounded. |
+| `writesTo` | string | no | Overrides the instance-data / `{input.x}` key this entry's value is collected under (default: the entry's own map key). Lets two mode-scoped inputs with different shapes (e.g. different `maxSelections`) share one logical output field — only one is ever visible/relevant at a time, so there is no write collision. |
+
+**Why split `byDayOfWeek` into two inputs above**: its cardinality genuinely differs by mode — weekly
+recurrence allows any number of weekdays, but the monthly "last/Nth weekday" mode requires
+*exactly* one (`recurrence_evaluator.dart` enforces this: `bySetPos` requires `byDayOfWeek.length
+== 1`). Rather than inventing a formula-conditioned cardinality field, cardinality stays a static
+per-input property (`maxSelections`) and two mode-scoped inputs share one output key via
+`writesTo`.
 
 ### `to: null` — orthogonal transitions
 

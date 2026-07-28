@@ -7,6 +7,76 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
 
+LoomWorkflowTransition _recurrenceInputTransition() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'open',
+      'states': {
+        'open': {'label': 'Open'},
+      },
+      'transitions': [
+        {
+          'id': 'make-recurring',
+          'label': 'Make recurring',
+          'from': ['open'],
+          'to': null,
+          'inputs': {
+            'freq': {'type': 'text', 'required': true},
+            'byDayOfWeekWeekly': {
+              'type': 'list',
+              'options': ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'],
+              'visibleWhen': "freq == 'weekly'",
+              'writesTo': 'byDayOfWeek',
+            },
+            'byDayOfWeekMonthly': {
+              'type': 'list',
+              'options': ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'],
+              'maxSelections': 1,
+              'visibleWhen': "freq == 'monthly'",
+              'modeGroup': 'monthlyPattern',
+              'modeValue': 'lastOrNthWeekday',
+              'writesTo': 'byDayOfWeek',
+            },
+            'byMonthDay': {
+              'type': 'number',
+              'visibleWhen': "freq == 'monthly'",
+              'modeGroup': 'monthlyPattern',
+              'modeValue': 'dayOfMonth',
+            },
+            'bySetPos': {
+              'type': 'text',
+              'options': ['first', 'second', 'third', 'fourth', 'last'],
+              'visibleWhen': "freq == 'monthly'",
+              'modeGroup': 'monthlyPattern',
+              'modeValue': 'lastOrNthWeekday',
+            },
+          },
+        },
+      ],
+    }, 'recurrence-input-test').transitions.single;
+
+Widget _transitionInputHost(
+  LoomWorkflowTransition transition,
+  ValueChanged<Map<String, dynamic>?> onResult,
+) => MaterialApp(
+  home: Scaffold(
+    body: Builder(
+      builder: (context) => FilledButton(
+        key: const ValueKey('open-transition-input-dialog'),
+        onPressed: () async => onResult(
+          await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (context) => GenericTransitionInputDialog(
+              transition: transition,
+              instanceData: const {},
+            ),
+          ),
+        ),
+        child: const Text('Open'),
+      ),
+    ),
+  ),
+);
+
 LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
   'initialState': 'open',
   'states': {
@@ -282,6 +352,116 @@ GenericWorkflowInstanceCard _card(
 );
 
 void main() {
+  testWidgets(
+    'weekly recurrence keeps unbounded weekday selections and writes to byDayOfWeek',
+    (tester) async {
+      Map<String, dynamic>? result;
+      await tester.pumpWidget(
+        _transitionInputHost(_recurrenceInputTransition(), (value) {
+          result = value;
+        }),
+      );
+      await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+      await tester.pump();
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-freq')),
+        'weekly',
+      );
+      await tester.pump();
+      for (final weekday in ['MO', 'WE', 'FR']) {
+        await tester.tap(
+          find.byKey(
+            ValueKey('generic-transition-input-byDayOfWeekWeekly-$weekday'),
+          ),
+        );
+        await tester.pump();
+      }
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(result, {'freq': 'weekly', 'byDayOfWeek': ['MO', 'WE', 'FR']});
+      expect(result!.containsKey('byDayOfWeekWeekly'), isFalse);
+    },
+  );
+
+  testWidgets(
+    'monthly weekday recurrence caps selections and has only two mode choices',
+    (tester) async {
+      Map<String, dynamic>? result;
+      await tester.pumpWidget(
+        _transitionInputHost(_recurrenceInputTransition(), (value) {
+          result = value;
+        }),
+      );
+      await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+      await tester.pump();
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-freq')),
+        'monthly',
+      );
+      await tester.pump();
+
+      final modeChoices = find.byType(RadioListTile<String>);
+      expect(modeChoices, findsNWidgets(2));
+      expect(find.text('By day of week monthly'), findsNothing);
+      await tester.tap(
+        find.byKey(
+          const ValueKey(
+            'generic-transition-input-mode-monthlyPattern-lastOrNthWeekday',
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(
+        find.byKey(
+          const ValueKey('generic-transition-input-byDayOfWeekMonthly-MO'),
+        ),
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey('generic-transition-input-byDayOfWeekMonthly-FR'),
+        ),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(result, {'freq': 'monthly', 'byDayOfWeek': ['FR']});
+      expect(result!.containsKey('byDayOfWeekMonthly'), isFalse);
+    },
+  );
+
+  testWidgets('monthly day-of-month mode remains selected and collected', (
+    tester,
+  ) async {
+    Map<String, dynamic>? result;
+    await tester.pumpWidget(
+      _transitionInputHost(_recurrenceInputTransition(), (value) {
+        result = value;
+      }),
+    );
+    await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const ValueKey('generic-transition-input-freq')),
+      'monthly',
+    );
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const ValueKey('generic-transition-input-byMonthDay')),
+      '15',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('generic-transition-input-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(result, {'freq': 'monthly', 'byMonthDay': 15});
+  });
+
   testWidgets(
     'renders display schema across contexts without empty false or zero loss',
     (tester) async {

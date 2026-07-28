@@ -192,6 +192,17 @@ Future<void> _tapRsvpAction(
   await tester.pump();
   await tester.tap(action);
   await tester.pump();
+  final dialog = find.byKey(
+    const ValueKey('generic-transition-input-dialog'),
+  );
+  if (dialog.evaluate().isNotEmpty) {
+    final confirm = find.byKey(
+      const ValueKey('generic-transition-input-confirm'),
+    );
+    await tester.ensureVisible(confirm);
+    await tester.tap(confirm);
+    await tester.pump();
+  }
   for (var i = 0; i < 5; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),

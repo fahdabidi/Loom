@@ -1148,11 +1148,25 @@ class _EngineNativeCalendarContentState
   }
 }
 
+class _EventAttendeeEntry {
+  const _EventAttendeeEntry({
+    required this.personaId,
+    required this.name,
+    this.dietaryNotes,
+    this.comments,
+  });
+
+  final String personaId;
+  final String name;
+  final String? dietaryNotes;
+  final String? comments;
+}
+
 class _EventAttendeeGroup {
-  const _EventAttendeeGroup({required this.label, required this.names});
+  const _EventAttendeeGroup({required this.label, required this.entries});
 
   final String label;
-  final List<String> names;
+  final List<_EventAttendeeEntry> entries;
 }
 
 class _EventRsvpDetailCard extends StatefulWidget {
@@ -1385,7 +1399,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       _accountNames?[personaId] ?? personaId;
 
   List<_EventAttendeeGroup> get _attendeeGroups {
-    final groups = <String, List<String>>{};
+    final groups = <String, List<_EventAttendeeEntry>>{};
     if (_usesResponseRows) {
       final responses = _instance.instanceData['responses'];
       if (responses is! List) return const [];
@@ -1395,7 +1409,12 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         if (personaId == null || personaId.isEmpty) continue;
         final state = response['\$state']?.toString() ?? 'pending';
         (groups[_attendeeStateLabel(state)] ??= []).add(
-          _displayNameFor(personaId),
+          _EventAttendeeEntry(
+            personaId: personaId,
+            name: _displayNameFor(personaId),
+            dietaryNotes: _nonEmptyValue(response['dietaryNotes']),
+            comments: _nonEmptyValue(response['comments']),
+          ),
         );
       }
     } else {
@@ -1408,15 +1427,22 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         for (final personaId in personaIds) {
           final id = personaId?.toString();
           if (id == null || id.isEmpty) continue;
-          (groups[entry.$1] ??= []).add(_displayNameFor(id));
+          (groups[entry.$1] ??= []).add(
+            _EventAttendeeEntry(personaId: id, name: _displayNameFor(id)),
+          );
         }
       }
     }
     return [
       for (final entry in groups.entries)
         if (entry.value.isNotEmpty)
-          _EventAttendeeGroup(label: entry.key, names: entry.value),
+          _EventAttendeeGroup(label: entry.key, entries: entry.value),
     ];
+  }
+
+  String? _nonEmptyValue(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   String _attendeeStateLabel(String state) => switch (state) {
@@ -1494,7 +1520,29 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     }
   }
 
-  Future<void> _applyTransition(String transitionId) {
+  Future<void> _applyTransition(String transitionId) async {
+    final transition = _actions
+        .where((candidate) => candidate.id == transitionId)
+        .firstOrNull;
+    final declaredInputs = transition?.inputs;
+    final inputs = declaredInputs == null || declaredInputs.isEmpty
+        ? null
+        : await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (context) => GenericTransitionInputDialog(
+              transition: transition!,
+              instanceData: _instance.instanceData,
+            ),
+          );
+    if (declaredInputs != null && declaredInputs.isNotEmpty && inputs == null) {
+      return;
+    }
+    // The recurring-series post-processing remains intentionally isolated in
+    // its existing method; input collection is now the same generic path as
+    // every other transition.
+    if (transitionId == 'make-recurring') {
+      return _applyMakeRecurring(inputs!);
+    }
     final generation = _generation;
     final instance = _instance;
     final machine = widget.machine;
@@ -1521,6 +1569,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               : response['\$id'] as String,
           transitionId: transitionId,
           personaId: personaId,
+          inputs: inputs,
         );
         if (response != null && !appliesToEvent) {
           final page = await engine.queryInstances(
@@ -1542,15 +1591,6 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       },
       retry: () => _applyTransition(transitionId),
     );
-  }
-
-  Future<void> _showRecurrenceDialog() async {
-    final inputs = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => const _RecurrenceRulePickerDialog(),
-    );
-    if (inputs == null) return;
-    await _applyMakeRecurring(inputs);
   }
 
   Future<void> _applyMakeRecurring(Map<String, dynamic> inputs) {
@@ -2199,10 +2239,49 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                         group.label,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
-                      for (final name in group.names)
+                      for (final attendee in group.entries)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
-                          child: Text('• $name'),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('• ${attendee.name}'),
+                              if (attendee.dietaryNotes != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 12),
+                                  child: Text(
+                                    attendee.dietaryNotes!,
+                                    key: ValueKey(
+                                      'event-rsvp-attendee-dietary-${attendee.personaId}',
+                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.65),
+                                        ),
+                                  ),
+                                ),
+                              if (attendee.comments != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 12),
+                                  child: Text(
+                                    attendee.comments!,
+                                    key: ValueKey(
+                                      'event-rsvp-attendee-comments-${attendee.personaId}',
+                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.65),
+                                        ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       const SizedBox(height: 6),
                     ],
@@ -2284,8 +2363,6 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                           _mutating ||
                               (_usesResponseRows && _isSelected(action))
                           ? null
-                          : action.id == 'make-recurring'
-                          ? _showRecurrenceDialog
                           : () => _applyTransition(action.id),
                     ),
                   if (_instance.instanceData['seriesId'] != null &&
@@ -2325,268 +2402,6 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       ),
     );
   }
-}
-
-class _RecurrenceRulePickerDialog extends StatefulWidget {
-  const _RecurrenceRulePickerDialog();
-
-  @override
-  State<_RecurrenceRulePickerDialog> createState() =>
-      _RecurrenceRulePickerDialogState();
-}
-
-class _RecurrenceRulePickerDialogState
-    extends State<_RecurrenceRulePickerDialog> {
-  static const _weekdays = <(String, String)>[
-    ('MO', 'Mon'),
-    ('TU', 'Tue'),
-    ('WE', 'Wed'),
-    ('TH', 'Thu'),
-    ('FR', 'Fri'),
-    ('SA', 'Sat'),
-    ('SU', 'Sun'),
-  ];
-  static const _setPositions = <(String, String)>[
-    ('first', 'First'),
-    ('second', 'Second'),
-    ('third', 'Third'),
-    ('fourth', 'Fourth'),
-    ('last', 'Last'),
-  ];
-
-  final _interval = TextEditingController(text: '1');
-  final _count = TextEditingController();
-  final _monthDay = TextEditingController();
-  String _freq = 'weekly';
-  final Set<String> _selectedWeekdays = <String>{};
-  bool _monthUsesSetPosition = false;
-  String _setPosition = 'first';
-  String _setPositionWeekday = 'MO';
-  String? _validationMessage;
-
-  @override
-  void dispose() {
-    _interval.dispose();
-    _count.dispose();
-    _monthDay.dispose();
-    super.dispose();
-  }
-
-  int? _number(TextEditingController controller) =>
-      int.tryParse(controller.text.trim());
-
-  void _confirm() {
-    final interval = _number(_interval);
-    final count = _number(_count);
-    if (interval == null || interval < 1) {
-      setState(() => _validationMessage = 'Interval must be at least 1.');
-      return;
-    }
-    if (count == null || count < 1 || count > 366) {
-      setState(() => _validationMessage = 'Enter a count from 1 to 366.');
-      return;
-    }
-    final result = <String, dynamic>{
-      'freq': _freq,
-      'interval': interval,
-      'count': count,
-    };
-    if (_freq == 'weekly' && _selectedWeekdays.isNotEmpty) {
-      result['byDayOfWeek'] = [
-        for (final weekday in _weekdays)
-          if (_selectedWeekdays.contains(weekday.$1)) weekday.$1,
-      ];
-    }
-    if (_freq == 'monthly') {
-      if (_monthUsesSetPosition) {
-        result['bySetPos'] = _setPosition;
-        result['byDayOfWeek'] = [_setPositionWeekday];
-      } else if (_monthDay.text.trim().isNotEmpty) {
-        final monthDay = _number(_monthDay);
-        if (monthDay == null || monthDay < 1 || monthDay > 31) {
-          setState(() => _validationMessage = 'Day of month must be 1 to 31.');
-          return;
-        }
-        result['byMonthDay'] = monthDay;
-      }
-    }
-    Navigator.of(context).pop(result);
-  }
-
-  String get _intervalUnit => switch (_freq) {
-    'daily' => 'day',
-    'monthly' => 'month',
-    _ => 'week',
-  };
-
-  Widget _numberField({
-    required Key key,
-    required TextEditingController controller,
-    required String label,
-    String? hint,
-  }) => TextField(
-    key: key,
-    controller: controller,
-    keyboardType: TextInputType.number,
-    decoration: InputDecoration(labelText: label, hintText: hint),
-    onChanged: (_) {
-      if (_validationMessage != null) setState(() => _validationMessage = null);
-    },
-  );
-
-  @override
-  Widget build(BuildContext context) => AlertDialog(
-    key: const ValueKey('recurrence-rule-picker-dialog'),
-    title: const Text('Make recurring'),
-    content: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SegmentedButton<String>(
-            key: const ValueKey('recurrence-frequency'),
-            segments: const [
-              ButtonSegment(value: 'daily', label: Text('Daily')),
-              ButtonSegment(value: 'weekly', label: Text('Weekly')),
-              ButtonSegment(value: 'monthly', label: Text('Monthly')),
-            ],
-            selected: {_freq},
-            onSelectionChanged: (value) => setState(() {
-              _freq = value.single;
-              _validationMessage = null;
-            }),
-          ),
-          const SizedBox(height: 12),
-          _numberField(
-            key: const ValueKey('recurrence-interval'),
-            controller: _interval,
-            label: 'Every N ${_intervalUnit}s',
-          ),
-          const SizedBox(height: 12),
-          _numberField(
-            key: const ValueKey('recurrence-count'),
-            controller: _count,
-            label: 'Occurrences',
-            hint: '1–366',
-          ),
-          if (_freq == 'weekly') ...[
-            const SizedBox(height: 16),
-            const Text('Repeat on (optional)'),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final weekday in _weekdays)
-                  FilterChip(
-                    key: ValueKey('recurrence-weekday-${weekday.$1}'),
-                    label: Text(weekday.$2),
-                    selected: _selectedWeekdays.contains(weekday.$1),
-                    onSelected: (selected) => setState(() {
-                      if (selected) {
-                        _selectedWeekdays.add(weekday.$1);
-                      } else {
-                        _selectedWeekdays.remove(weekday.$1);
-                      }
-                    }),
-                  ),
-              ],
-            ),
-          ],
-          if (_freq == 'monthly') ...[
-            const SizedBox(height: 12),
-            RadioGroup<bool>(
-              groupValue: _monthUsesSetPosition,
-              onChanged: (value) =>
-                  setState(() => _monthUsesSetPosition = value!),
-              child: Column(
-                children: [
-                  RadioListTile<bool>(
-                    key: const ValueKey('recurrence-month-day-mode'),
-                    value: false,
-                    title: const Text('Day of month'),
-                  ),
-                  if (!_monthUsesSetPosition)
-                    _numberField(
-                      key: const ValueKey('recurrence-month-day'),
-                      controller: _monthDay,
-                      label: 'Day of month',
-                      hint: '1–31',
-                    ),
-                  RadioListTile<bool>(
-                    key: const ValueKey('recurrence-month-position-mode'),
-                    value: true,
-                    title: const Text('Weekday position'),
-                  ),
-                  if (_monthUsesSetPosition)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            key: const ValueKey('recurrence-set-position'),
-                            initialValue: _setPosition,
-                            decoration: const InputDecoration(labelText: 'Which'),
-                            items: [
-                              for (final position in _setPositions)
-                                DropdownMenuItem(
-                                  value: position.$1,
-                                  child: Text(position.$2),
-                                ),
-                            ],
-                            onChanged: (value) =>
-                                setState(() => _setPosition = value!),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            key: const ValueKey(
-                              'recurrence-set-position-weekday',
-                            ),
-                            initialValue: _setPositionWeekday,
-                            decoration: const InputDecoration(
-                              labelText: 'Weekday',
-                            ),
-                            items: [
-                              for (final weekday in _weekdays)
-                                DropdownMenuItem(
-                                  value: weekday.$1,
-                                  child: Text(weekday.$2),
-                                ),
-                            ],
-                            onChanged: (value) => setState(
-                              () => _setPositionWeekday = value!,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          ],
-          if (_validationMessage != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _validationMessage!,
-              key: const ValueKey('recurrence-validation-error'),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-        ],
-      ),
-    ),
-    actions: [
-      TextButton(
-        key: const ValueKey('recurrence-cancel'),
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('Cancel'),
-      ),
-      FilledButton(
-        key: const ValueKey('recurrence-confirm'),
-        onPressed: _confirm,
-        child: const Text('Create series'),
-      ),
-    ],
-  );
 }
 
 class _RsvpActionChip extends StatelessWidget {
