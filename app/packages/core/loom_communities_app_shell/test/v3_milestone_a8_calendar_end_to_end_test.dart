@@ -13,7 +13,7 @@ const _fixtureRelative =
 
 File _fixtureFile() {
   var directory = Directory.current;
-  for (var i = 0; i < 8; i++) {
+  for (var i = 0; i < 12; i++) {
     final candidate = File('${directory.path}/$_fixtureRelative');
     if (candidate.existsSync()) return candidate;
     directory = directory.parent;
@@ -444,6 +444,77 @@ void _addContainerFixture(Map<String, dynamic> source) {
   }
 }
 
+void _addEditScopeSeriesFixture(Map<String, dynamic> source) {
+  final instances =
+      (source['experience'] as Map<String, dynamic>)['workflowInstances']
+          as List<dynamic>;
+  final anchor = instances.firstWhere(
+    (instance) =>
+        (instance as Map<String, dynamic>)['instanceId'] ==
+        'event-friday-game-night',
+  ) as Map<String, dynamic>;
+  final anchorData = anchor['instanceData'] as Map<String, dynamic>;
+  anchorData
+    ..['seriesId'] = 'edit-scope-series'
+    ..['eventDate'] = '2026-07-17'
+    ..['location'] = 'Anchor location';
+  for (final sibling in const <(String, String, String)>[
+    ('event-edit-scope-earlier', '2026-07-10', 'Earlier location'),
+    ('event-edit-scope-later', '2026-07-24', 'Later location'),
+  ]) {
+    instances.add(<String, dynamic>{
+      ...anchor,
+      'instanceId': sibling.$1,
+      'instanceData': <String, dynamic>{
+        ...anchorData,
+        'title': sibling.$1,
+        'eventDate': sibling.$2,
+        'location': sibling.$3,
+      },
+    });
+  }
+}
+
+Future<void> _settleMutation(WidgetTester tester) async {
+  for (var i = 0; i < 12; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _saveLocationWithScope(
+  WidgetTester tester, {
+  required String instanceId,
+  required String location,
+  String? scope,
+}) async {
+  final editor = find.byKey(
+    ValueKey('event-rsvp-editor-$instanceId-location'),
+  );
+  await _pumpUntil(tester, editor);
+  await tester.ensureVisible(editor);
+  await tester.enterText(editor, location);
+  // enterText updates _edits synchronously, but the Save button remains the
+  // previously rendered disabled button until this rebuild runs.
+  await tester.pump();
+  final save = find.byKey(ValueKey('event-rsvp-save-$instanceId'));
+  await tester.ensureVisible(save);
+  await tester.pump();
+  await tester.tap(save, warnIfMissed: false);
+  await tester.pump();
+  if (scope != null) {
+    await _pumpUntil(
+      tester,
+      find.byKey(const ValueKey('edit-scope-picker-dialog')),
+    );
+    await tester.tap(find.byKey(ValueKey('edit-scope-picker-$scope')));
+    await tester.tap(find.byKey(const ValueKey('edit-scope-picker-confirm')));
+  }
+  await _settleMutation(tester);
+}
+
 void main() {
   testWidgets(
     'Calendar event detail editors are organizer-only and persist through the engine',
@@ -534,6 +605,144 @@ void main() {
       }
   },
   );
+
+  testWidgets('recurring edit scope saves only the selected occurrence', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-edit-scope-this',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _saveLocationWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        location: 'This event location',
+        scope: 'thisEvent',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-earlier'))
+            .instanceData['location'],
+        'Earlier location',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-friday-game-night'))
+            .instanceData['location'],
+        'This event location',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-later'))
+            .instanceData['location'],
+        'Later location',
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets('recurring edit scope saves this and following occurrences', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-edit-scope-following',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _saveLocationWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        location: 'Following location',
+        scope: 'thisAndFollowing',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-earlier'))
+            .instanceData['location'],
+        'Earlier location',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-friday-game-night'))
+            .instanceData['location'],
+        'Following location',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-later'))
+            .instanceData['location'],
+        'Following location',
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets('recurring edit scope saves every occurrence in the series', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-edit-scope-all',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _saveLocationWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        location: 'Series location',
+        scope: 'all',
+      );
+      for (final instanceId in const [
+        'event-edit-scope-earlier',
+        'event-friday-game-night',
+        'event-edit-scope-later',
+      ]) {
+        expect(
+          (await _instance(tester, installed, instanceId))
+              .instanceData['location'],
+          'Series location',
+        );
+      }
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets('single-event edits do not show a recurring edit scope picker', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('a8-edit-scope-none'),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _saveLocationWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        location: 'Single event location',
+      );
+      expect(
+        find.byKey(const ValueKey('edit-scope-picker-dialog')),
+        findsNothing,
+      );
+      expect(
+        (await _instance(tester, installed, 'event-friday-game-night'))
+            .instanceData['location'],
+        'Single event location',
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 
   testWidgets(
     'Make recurring creates calendar occurrences and seeds every RSVP response row',

@@ -1197,6 +1197,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
   State<_EventRsvpDetailCard> createState() => _EventRsvpDetailCardState();
 }
 
+enum _EditScope { thisEvent, thisAndFollowing, all }
+
 class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   late WorkflowInstance _instance;
   WorkflowInstance? _lastAuthoredInstance;
@@ -1775,6 +1777,17 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       }
     }
     if (updates.isEmpty) return;
+    final seriesId = instance.instanceData['seriesId'];
+    final scope = seriesId == null
+        ? _EditScope.thisEvent
+        : await showDialog<_EditScope>(
+            context: context,
+            builder: (context) => const _EditScopePickerDialog(),
+          );
+    if (scope == null ||
+        !_isCurrent(generation, instance, machine, engine, personaId)) {
+      return;
+    }
     final optimistic = WorkflowInstance(
       instanceId: instance.instanceId,
       workflowType: instance.workflowType,
@@ -1782,6 +1795,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       instanceData: {...instance.instanceData, ...updates},
       createdByPersonaId: instance.createdByPersonaId,
     );
+    String? partialFailureMessage;
     await _runMutation(
       generation: generation,
       instance: instance,
@@ -1790,12 +1804,81 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       personaId: personaId,
       optimistic: optimistic,
       operation: () async {
-        await engine.updateInstanceFields(
-          workflowType: instance.workflowType,
-          instanceId: instance.instanceId,
-          fieldUpdates: updates,
-          personaId: personaId,
-        );
+        if (scope == _EditScope.thisEvent) {
+          await engine.updateInstanceFields(
+            workflowType: instance.workflowType,
+            instanceId: instance.instanceId,
+            fieldUpdates: updates,
+            personaId: personaId,
+          );
+        } else {
+          final members = <WorkflowInstance>[];
+          final seenCursors = <String>{};
+          String? cursor;
+          while (true) {
+            final page = await engine.queryInstances(
+              tabId: 'calendar',
+              personaId: personaId,
+              limit: 100,
+              cursor: cursor,
+            );
+            members.addAll(
+              page.items.where(
+                (candidate) =>
+                    candidate.workflowType == instance.workflowType &&
+                    candidate.instanceData['seriesId'] == seriesId,
+              ),
+            );
+            if (!page.hasMore) break;
+            final nextCursor = page.nextCursor;
+            if (nextCursor == null ||
+                nextCursor.trim().isEmpty ||
+                !seenCursors.add(nextCursor)) {
+              throw StateError(
+                'Invalid pagination cursor while loading calendar for $personaId',
+              );
+            }
+            cursor = nextCursor;
+          }
+          final anchorDate = instance.instanceData['eventDate']?.toString();
+          final failures = <String>[];
+          for (final member in members) {
+            if (scope == _EditScope.thisAndFollowing &&
+                member.instanceId != instance.instanceId &&
+                (anchorDate == null ||
+                    (member.instanceData['eventDate']?.toString() ?? '')
+                            .compareTo(anchorDate) <
+                        0)) {
+              continue;
+            }
+            if (member.instanceId == instance.instanceId) {
+              await engine.updateInstanceFields(
+                workflowType: member.workflowType,
+                instanceId: member.instanceId,
+                fieldUpdates: updates,
+                personaId: personaId,
+              );
+              continue;
+            }
+            try {
+              await engine.updateInstanceFields(
+                workflowType: member.workflowType,
+                instanceId: member.instanceId,
+                fieldUpdates: updates,
+                personaId: personaId,
+              );
+            } catch (_) {
+              // A malformed sibling may not permit every field in [updates].
+              // Continue so valid series members still receive the edit.
+              failures.add(member.instanceId);
+            }
+          }
+          if (failures.isNotEmpty) {
+            partialFailureMessage =
+              'Saved this event, but could not update ${failures.length} '
+              'other event${failures.length == 1 ? '' : 's'} in the series.';
+          }
+        }
         return WorkflowInstance(
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
@@ -1805,6 +1888,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         );
       },
       retry: _save,
+      successWarning: () => partialFailureMessage,
     );
   }
 
@@ -1817,6 +1901,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     WorkflowInstance? optimistic,
     required Future<WorkflowInstance> Function() operation,
     required Future<void> Function() retry,
+    String? Function()? successWarning,
   }) async {
     if (_mutating) return;
     setState(() {
@@ -1842,6 +1927,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (!_isCurrent(generation, next, machine, engine, personaId)) return;
       setState(() => _mutating = false);
       await _loadActions();
+      final warning = successWarning?.call();
+      if (warning != null &&
+          _isCurrent(generation, next, machine, engine, personaId)) {
+        setState(() => _error = warning);
+      }
     } catch (_) {
       if (!_isCurrent(generation, activeInstance, machine, engine, personaId)) {
         return;
@@ -2329,11 +2419,12 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 child: Row(
                   children: [
                     Expanded(child: Text(_error!)),
-                    TextButton(
-                      key: ValueKey('event-rsvp-retry-${_instance.instanceId}'),
-                      onPressed: _mutating ? null : () => _retry?.call(),
-                      child: const Text('Retry'),
-                    ),
+                    if (_retry != null)
+                      TextButton(
+                        key: ValueKey('event-rsvp-retry-${_instance.instanceId}'),
+                        onPressed: _mutating ? null : () => _retry?.call(),
+                        child: const Text('Retry'),
+                      ),
                   ],
                 ),
               ),
@@ -2612,6 +2703,54 @@ class _EngineNativeMonthGrid extends StatelessWidget {
       ],
     );
   }
+}
+
+class _EditScopePickerDialog extends StatefulWidget {
+  const _EditScopePickerDialog();
+
+  @override
+  State<_EditScopePickerDialog> createState() => _EditScopePickerDialogState();
+}
+
+class _EditScopePickerDialogState extends State<_EditScopePickerDialog> {
+  _EditScope _scope = _EditScope.thisEvent;
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    key: const ValueKey('edit-scope-picker-dialog'),
+    title: const Text('Save changes to:'),
+    content: RadioGroup<_EditScope>(
+      groupValue: _scope,
+      onChanged: (value) => setState(() => _scope = value!),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final option in const [
+            (_EditScope.thisEvent, 'This event only'),
+            (_EditScope.thisAndFollowing, 'This and following events'),
+            (_EditScope.all, 'All events in the series'),
+          ])
+            RadioListTile<_EditScope>(
+              key: ValueKey('edit-scope-picker-${option.$1.name}'),
+              value: option.$1,
+              title: Text(option.$2),
+            ),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        key: const ValueKey('edit-scope-picker-cancel'),
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(
+        key: const ValueKey('edit-scope-picker-confirm'),
+        onPressed: () => Navigator.of(context).pop(_scope),
+        child: const Text('Save'),
+      ),
+    ],
+  );
 }
 
 class _EngineNativeWeekStrip extends StatelessWidget {
