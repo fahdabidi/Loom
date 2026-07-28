@@ -13,7 +13,7 @@ const _fixtureRelative =
 
 File _fixtureFile() {
   var directory = Directory.current;
-  for (var i = 0; i < 12; i++) {
+  for (var i = 0; i < 24; i++) {
     final candidate = File('${directory.path}/$_fixtureRelative');
     if (candidate.existsSync()) return candidate;
     directory = directory.parent;
@@ -476,7 +476,7 @@ void _addEditScopeSeriesFixture(Map<String, dynamic> source) {
 }
 
 Future<void> _settleMutation(WidgetTester tester) async {
-  for (var i = 0; i < 12; i++) {
+  for (var i = 0; i < 24; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
@@ -512,6 +512,26 @@ Future<void> _saveLocationWithScope(
     await tester.tap(find.byKey(ValueKey('edit-scope-picker-$scope')));
     await tester.tap(find.byKey(const ValueKey('edit-scope-picker-confirm')));
   }
+  await _settleMutation(tester);
+}
+
+Future<void> _deleteSeriesWithScope(
+  WidgetTester tester, {
+  required String instanceId,
+  required String scope,
+}) async {
+  final deleteSeries = find.byKey(
+    ValueKey('event-rsvp-delete-series-$instanceId'),
+  );
+  await _pumpUntil(tester, deleteSeries);
+  await tester.ensureVisible(deleteSeries);
+  await tester.tap(deleteSeries, warnIfMissed: false);
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('delete-scope-picker-dialog')),
+  );
+  await tester.tap(find.byKey(ValueKey('delete-scope-picker-$scope')));
+  await tester.tap(find.byKey(const ValueKey('delete-scope-picker-confirm')));
   await _settleMutation(tester);
 }
 
@@ -739,6 +759,111 @@ void main() {
             .instanceData['location'],
         'Single event location',
       );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets('recurring delete scope cancels only the selected occurrence', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-delete-scope-this',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _deleteSeriesWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        scope: 'thisEvent',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-earlier'))
+            .currentState,
+        'open',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-friday-game-night'))
+            .currentState,
+        'cancelled',
+      );
+      expect(
+        (await _instance(tester, installed, 'event-edit-scope-later'))
+            .currentState,
+        'open',
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
+
+  testWidgets(
+    'recurring delete scope cancels this and following occurrences',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a8-delete-scope-following',
+          configure: _addEditScopeSeriesFixture,
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        await _deleteSeriesWithScope(
+          tester,
+          instanceId: 'event-friday-game-night',
+          scope: 'thisAndFollowing',
+        );
+        expect(
+          (await _instance(tester, installed, 'event-edit-scope-earlier'))
+              .currentState,
+          'open',
+        );
+        expect(
+          (await _instance(tester, installed, 'event-friday-game-night'))
+              .currentState,
+          'cancelled',
+        );
+        expect(
+          (await _instance(tester, installed, 'event-edit-scope-later'))
+              .currentState,
+          'cancelled',
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets('recurring delete scope cancels every occurrence', (tester) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-delete-scope-all',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _deleteSeriesWithScope(
+        tester,
+        instanceId: 'event-friday-game-night',
+        scope: 'all',
+      );
+      for (final instanceId in const [
+        'event-edit-scope-earlier',
+        'event-friday-game-night',
+        'event-edit-scope-later',
+      ]) {
+        expect(
+          (await _instance(tester, installed, instanceId)).currentState,
+          'cancelled',
+        );
+      }
     } finally {
       await tester.runAsync(installed.dispose);
     }
@@ -2876,18 +3001,11 @@ void main() {
 
         await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
         await _selectAgenda(tester, 'event-friday-game-night', 0);
-        final deleteSeries = find.byKey(
-          const ValueKey('event-rsvp-delete-series-event-friday-game-night'),
+        await _deleteSeriesWithScope(
+          tester,
+          instanceId: 'event-friday-game-night',
+          scope: 'all',
         );
-        await _pumpUntil(tester, deleteSeries);
-        await tester.ensureVisible(deleteSeries);
-        await tester.tap(deleteSeries);
-        for (var i = 0; i < 18; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
 
         final cancelledMembers = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(

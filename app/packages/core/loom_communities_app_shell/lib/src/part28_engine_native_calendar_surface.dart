@@ -1675,14 +1675,30 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     );
   }
 
-  Future<void> _deleteSeries() {
+  Future<void> _deleteSeries() async {
     final generation = _generation;
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
     final seriesId = instance.instanceData['seriesId'];
-    if (seriesId == null) return Future.value();
+    if (seriesId == null) return;
+    final scope = await showDialog<_EditScope>(
+      context: context,
+      builder: (context) => const _EditScopePickerDialog(
+        keyPrefix: 'delete-scope-picker',
+        title: 'Delete:',
+        confirmLabel: 'Delete',
+      ),
+    );
+    if (scope == null ||
+        !_isCurrent(generation, instance, machine, engine, personaId)) {
+      return;
+    }
+    if (scope == _EditScope.thisEvent) {
+      return _applyTransition('cancel-event');
+    }
+    final anchorDate = instance.instanceData['eventDate']?.toString();
     return _runMutation(
       generation: generation,
       instance: instance,
@@ -1720,6 +1736,14 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         }
         WorkflowInstance? updatedSelf;
         for (final member in members) {
+          if (scope == _EditScope.thisAndFollowing &&
+              member.instanceId != instance.instanceId &&
+              (anchorDate == null ||
+                  (member.instanceData['eventDate']?.toString() ?? '')
+                          .compareTo(anchorDate) <
+                      0)) {
+            continue;
+          }
           final result = await engine.applyTransition(
             workflowType: 'event-rsvp',
             instanceId: member.instanceId,
@@ -1782,7 +1806,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         ? _EditScope.thisEvent
         : await showDialog<_EditScope>(
             context: context,
-            builder: (context) => const _EditScopePickerDialog(),
+            builder: (context) => const _EditScopePickerDialog(
+              keyPrefix: 'edit-scope-picker',
+              title: 'Save changes to:',
+              confirmLabel: 'Save',
+            ),
           );
     if (scope == null ||
         !_isCurrent(generation, instance, machine, engine, personaId)) {
@@ -2706,7 +2734,15 @@ class _EngineNativeMonthGrid extends StatelessWidget {
 }
 
 class _EditScopePickerDialog extends StatefulWidget {
-  const _EditScopePickerDialog();
+  const _EditScopePickerDialog({
+    required this.keyPrefix,
+    required this.title,
+    required this.confirmLabel,
+  });
+
+  final String keyPrefix;
+  final String title;
+  final String confirmLabel;
 
   @override
   State<_EditScopePickerDialog> createState() => _EditScopePickerDialogState();
@@ -2717,8 +2753,8 @@ class _EditScopePickerDialogState extends State<_EditScopePickerDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    key: const ValueKey('edit-scope-picker-dialog'),
-    title: const Text('Save changes to:'),
+    key: ValueKey('${widget.keyPrefix}-dialog'),
+    title: Text(widget.title),
     content: RadioGroup<_EditScope>(
       groupValue: _scope,
       onChanged: (value) => setState(() => _scope = value!),
@@ -2731,7 +2767,7 @@ class _EditScopePickerDialogState extends State<_EditScopePickerDialog> {
             (_EditScope.all, 'All events in the series'),
           ])
             RadioListTile<_EditScope>(
-              key: ValueKey('edit-scope-picker-${option.$1.name}'),
+              key: ValueKey('${widget.keyPrefix}-${option.$1.name}'),
               value: option.$1,
               title: Text(option.$2),
             ),
@@ -2740,14 +2776,14 @@ class _EditScopePickerDialogState extends State<_EditScopePickerDialog> {
     ),
     actions: [
       TextButton(
-        key: const ValueKey('edit-scope-picker-cancel'),
+        key: ValueKey('${widget.keyPrefix}-cancel'),
         onPressed: () => Navigator.of(context).pop(),
         child: const Text('Cancel'),
       ),
       FilledButton(
-        key: const ValueKey('edit-scope-picker-confirm'),
+        key: ValueKey('${widget.keyPrefix}-confirm'),
         onPressed: () => Navigator.of(context).pop(_scope),
-        child: const Text('Save'),
+        child: Text(widget.confirmLabel),
       ),
     ],
   );
