@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.7.0
+doc_version: 1.8.0
 status: current
-last_verified: 2026-07-29
+last_verified: 2026-07-31
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -26,13 +26,11 @@ workflow-grammar.md's `states` section for why. Every other use of `WorkflowGuar
 normal open-by-default semantics; this is a property of that one call site, not a change to the guard
 type itself.
 
-**Complete list: ten kinds.** Kinds 1-7 are implemented and engine-executed today, confirmed via
+**Complete list: ten kinds, all ten implemented and engine-executed today.** Confirmed via
 `guard_evaluator.dart`/`local_workflow_engine_api.dart` and proven live throughout Tabletop Club's
-capacity/waitlist guards (`event-rsvp-response`). **Kinds 8-10 (`cancellationDeadline`,
-`locationOverlap`, `actorEqualsField`) are PROPOSED — kinds 8-9 from the 2026-07-25 CAL.Calendar2 design
-pass, kind 10 from the 2026-07-26 CAL.Notify design pass — grammar specified below, not yet
-engine-implemented.** See each section's own status callout, and `spec-version.json` →
-`proposedNotImplemented` for the full narrative.
+capacity/waitlist guards (`event-rsvp-response`) and, as of CAL.Calendar2/CAL.Notify, its cancellation
+deadlines, location-overlap protection, and recipient-gated notifications too. See each section's own
+status callout, and `spec-version.json` for the individual implementation dates/commits.
 
 ⚠️ **Guards also now have a second usage site beyond transitions.** `states[].creationGuard`
 (workflow-grammar.md, PROPOSED — CAL.Calendar2.0) reuses this exact `WorkflowGuard` type to gate
@@ -266,8 +264,9 @@ A cycle across workflows is an error. → `dependency_cycle`
 
 ## 8. `cancellationDeadline` — a time-before-the-event cutoff
 
-**PROPOSED 2026-07-25 (CAL.Calendar2.2) — not yet engine-implemented.** Grammar specified here so a
-ticket can be written directly from it; no Dart exists for this kind yet.
+✅ **IMPLEMENTED 2026-07-26 (CAL.Calendar2.2, commit `062d0d5`)** — `CancellationDeadlineGuard`,
+`guard_evaluator.dart`'s evaluation branch, and the injectable-clock support it needed all shipped and are
+independently verified end-to-end.
 
 **"The actor may only fire this transition while at least `hoursBefore` hours remain before a real
 date+time on this instance."**
@@ -299,11 +298,11 @@ present, must be declared with `type: "time"`; `hoursBefore` must be a positive 
 
 ## 9. `locationOverlap` — prevent double-booking a shared resource
 
-**PROPOSED 2026-07-25 (CAL.Calendar2.9) — not yet engine-implemented.** Confirmed as a genuinely new
-capability, not a cheap formula composition: `source_query.dart`'s `query(...)` grammar supports only a
-single equality condition (no compound filters, no self-exclusion), and the formula language has no
-generic per-element map/filter to scan a list and compare time ranges from smaller primitives. This is
-closer in shape to `effects.md`'s bespoke `recurrence_evaluator.dart` arithmetic than a one-line addition.
+✅ **IMPLEMENTED 2026-07-26 (CAL.Calendar2.9, commit `6589a88`)** — a genuinely new capability, not a cheap
+formula composition: `source_query.dart`'s `query(...)` grammar supports only a single equality condition
+(no compound filters, no self-exclusion), so this needed a real async database scan
+(`_passesLocationOverlapGuard`) with proper interval-overlap math, closer in shape to `effects.md`'s bespoke
+`recurrence_evaluator.dart` arithmetic than a one-line addition.
 
 **"No other instance of this same workflow type may share this instance's own `locationField` value with
 an overlapping time range."** Unlike `relatedAggregate`, this does not name a separate related
@@ -345,11 +344,12 @@ through, `generateRecurringInstances`'s per-occurrence creation included.
 
 ## 10. `actorEqualsField` — the actor must be the persona named on this instance
 
-**PROPOSED 2026-07-26 (CAL.Notify design pass) — not yet engine-implemented.** Found while designing a
-`notification` workflow type: `instanceDataEquals` only compares a field to a fixed literal, and
-`actorInList` only checks membership in a **list**-valued field — neither can express "the actor must
-equal this single scalar field's own value," a genuinely common shape ("only the recipient can dismiss
-their own notification," "only the assigned reviewer may approve").
+✅ **IMPLEMENTED 2026-07-31 (CAL.Notify.1, commit `06f53ed`; validator rules CAL.Notify.2, commit
+`572b8f6`)** — found while designing a `notification` workflow type: `instanceDataEquals` only compares a
+field to a fixed literal, and `actorInList` only checks membership in a **list**-valued field — neither can
+express "the actor must equal this single scalar field's own value," a genuinely common shape ("only the
+recipient can dismiss their own notification," "only the assigned reviewer may approve"). Now live in the
+frozen fixture, gating `notification`'s own `mark-read` transition (CAL.Notify.3).
 
 ```jsonc
 "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
@@ -402,9 +402,9 @@ usually clearer anyway — they typically want different labels ("Borrow" vs "Jo
 | Only if actor is on a list belonging to **another** instance | `relatedListMembership` |
 | Only if a live count/sum over a **related table** clears a threshold | `relatedAggregate` |
 | Only if actor finished **another workflow** | `requiresWorkflowsComplete` |
-| Only while a real deadline hasn't passed | `cancellationDeadline` (PROPOSED) |
-| Only if no sibling instance double-books a shared resource | `locationOverlap` (PROPOSED) |
-| Only if the actor is the specific persona named on this instance | `actorEqualsField` (PROPOSED) |
+| Only while a real deadline hasn't passed | `cancellationDeadline` |
+| Only if no sibling instance double-books a shared resource | `locationOverlap` |
+| Only if the actor is the specific persona named on this instance | `actorEqualsField` |
 
 ## Anti-patterns
 

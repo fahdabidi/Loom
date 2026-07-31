@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.6.0
+doc_version: 1.7.0
 status: current
-last_verified: 2026-07-26
+last_verified: 2026-07-31
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -18,8 +18,9 @@ transaction as the state change.
 
 **Complete list: twelve ops** (corrected 2026-07-26 — this count was stale at "eleven" despite already
 listing op 12 below). Op 10, `removeFromTileGrid`, is presentation-only; op 11, `transitionRelated`, is
-implemented as of 2026-07-25 — see §11, which gains an optional `onSuccessEffects` field 2026-07-26
-(PROPOSED, CAL.Notify.1, not yet engine-implemented); op 12, `generateRecurringInstances`, is implemented
+implemented as of 2026-07-25 — see §11, whose optional `onSuccessEffects` field (added 2026-07-26) is
+implemented as of 2026-07-31 (CAL.Notify.1, commit `06f53ed`; validator rules CAL.Notify.2, commit
+`572b8f6`); op 12, `generateRecurringInstances`, is implemented
 as of 2026-07-25 — see §12. An unrecognized `op` is an error (`unknown_effect_op`) — the parser will not
 guess.
 
@@ -217,7 +218,7 @@ No `key`. Removes the instance's tile from a grid surface. Touches no `instanceD
 |---|---|---|
 | `relatedQuery` | object | Same shape as `guards.md`'s `relatedAggregate.filter` (field → literal, `{fieldName}` interpolated against **this** instance, or the reserved `$state` key), plus `sortKey` (a field on the **target** type, ascending) and `limit` (currently only `1` is defined). |
 | `transitionId` | string | A transition declared on `relatedQuery.workflowType`. Applied to the **first** matching row after sorting. |
-| `onSuccessEffects` | `WorkflowEffect[]` | PROPOSED 2026-07-26 (CAL.Notify.1, not yet engine-implemented). Optional. Additional effects run **only when the resolved target's transition actually succeeds** — not when its guard fails (matching the existing silent-no-op semantics below), and never for an ordinary, direct call to the same `transitionId` outside this effect. Interpolation inside these effects resolves against the **target** instance's own data (e.g. `{personaId}` reads the promoted `event-rsvp-response` row's own field), not the instance that declared `transitionRelated`. |
+| `onSuccessEffects` | `WorkflowEffect[]` | IMPLEMENTED 2026-07-31 (CAL.Notify.1, commit `06f53ed`; validator rules CAL.Notify.2, commit `572b8f6`). Optional. Additional effects run **only when the resolved target's transition actually succeeds** — not when its guard fails (matching the existing silent-no-op semantics below), and never for an ordinary, direct call to the same `transitionId` outside this effect. Interpolation inside these effects resolves against the **target** instance's own data (e.g. `{personaId}` reads the promoted `event-rsvp-response` row's own field), not the instance that declared `transitionRelated`. |
 
 **Why this exists:** every other cross-instance mechanism either writes one field on one directly-named
 instance (`relatedInstance`, §8) or spawns a brand-new one (`createInstance`, §9). Nothing today can
@@ -242,7 +243,7 @@ served" guarantee must stamp its own explicit ordering field via a `set` effect 
 "$timestamp"` on the transition that enters the queued/waitlisted state) — instance ids are randomly
 generated and carry no temporal meaning.
 
-**`onSuccessEffects` — PROPOSED 2026-07-26 (CAL.Notify.1), not yet engine-implemented.** Found needed
+**`onSuccessEffects` — IMPLEMENTED 2026-07-31 (CAL.Notify.1, commit `06f53ed`).** Found needed
 while designing CAL.Notify: a plain effect attached directly to the *target* transition (e.g.
 `respond-going`'s own effects) cannot distinguish "I was promoted via `transitionRelated`" from "I
 manually tapped Going" — both paths call the exact same transition, so an unconditional effect there
