@@ -41,6 +41,12 @@ bool evaluateGuard(
     }
   }
 
+  // actorEqualsField — this guard names one specific persona, so it must use
+  // the individual account id rather than the persona type/role id.
+  if (guard.actorEqualsField != null) {
+    if (personaId != instanceData[guard.actorEqualsField!.key]) return false;
+  }
+
   // instanceDataEquals — checks value equality on an arbitrary field.
   if (guard.instanceDataEquals != null) {
     final current = instanceData[guard.instanceDataEquals!.key];

@@ -1118,10 +1118,30 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               personaId: personaId,
               validateInputs: false,
             );
-            await _applyTransitionWithinTransaction(
+            final targetResult = await _applyTransitionWithinTransaction(
               resolved: resolved,
               personaId: personaId,
             );
+            final onSuccessEffects = effect.onSuccessEffects;
+            if (onSuccessEffects != null) {
+              final targetData = await _applyExtendedEffects(
+                onSuccessEffects,
+                machine: resolved.machine,
+                sourceData: targetResult.newInstanceData,
+                personaId: personaId,
+                instanceId: targetId,
+              );
+              await _db.updateInstanceState(
+                instanceId: targetId,
+                newState: targetResult.newState,
+                newInstanceData: _withComputedFields(
+                  targetData,
+                  resolved.machine,
+                  viewerId: personaId,
+                  actorId: personaId,
+                ),
+              );
+            }
           } on _TransitionGuardFailure {
             // A target guard failure deliberately does not affect the source.
           }
@@ -1402,6 +1422,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
                           },
                         if (e.transitionId != null)
                           'transitionId': e.transitionId,
+                        if (e.onSuccessEffects != null)
+                          'onSuccessEffects': e.onSuccessEffects!
+                              .map(_serializeEffect)
+                              .toList(),
                         if (e.condition != null) 'if': e.condition,
                         if (e.thenEffects.isNotEmpty)
                           'then': e.thenEffects
@@ -1469,6 +1493,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         'present': guard.actorInList!.present,
       };
     }
+    if (guard.actorEqualsField != null) {
+      m['actorEqualsField'] = {'key': guard.actorEqualsField!.key};
+    }
     if (guard.instanceDataEquals != null) {
       m['instanceDataEquals'] = {
         'key': guard.instanceDataEquals!.key,
@@ -1523,6 +1550,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           'limit': effect.relatedQuery!.limit,
       },
     if (effect.transitionId != null) 'transitionId': effect.transitionId,
+    if (effect.onSuccessEffects != null)
+      'onSuccessEffects': effect.onSuccessEffects!
+          .map(_serializeEffect)
+          .toList(),
     if (effect.condition != null) 'if': effect.condition,
     if (effect.thenEffects.isNotEmpty)
       'then': effect.thenEffects.map(_serializeEffect).toList(),

@@ -37,10 +37,21 @@ class TransitionInputSpec {
       );
 }
 
+/// A scalar field whose value must equal the acting individual persona ID.
+class ActorEqualsFieldGuard {
+  final String key;
+
+  const ActorEqualsFieldGuard({required this.key});
+
+  factory ActorEqualsFieldGuard.fromJson(Map<String, dynamic> json) =>
+      ActorEqualsFieldGuard(key: json['key'] as String);
+}
+
 /// A guard condition on a transition. All non-null fields must pass (AND semantics).
 class WorkflowGuard {
   final List<String>? allowedPersonaIds;
   final ListMembershipGuard? actorInList;
+  final ActorEqualsFieldGuard? actorEqualsField;
   final KeyValueGuard? instanceDataEquals;
 
   /// A computed-field formula which must evaluate to true.
@@ -54,6 +65,7 @@ class WorkflowGuard {
   const WorkflowGuard({
     this.allowedPersonaIds,
     this.actorInList,
+    this.actorEqualsField,
     this.instanceDataEquals,
     this.formula,
     this.relatedListMembership,
@@ -72,6 +84,11 @@ class WorkflowGuard {
       actorInList: json['actorInList'] != null
           ? ListMembershipGuard.fromJson(
               json['actorInList'] as Map<String, dynamic>,
+            )
+          : null,
+      actorEqualsField: json['actorEqualsField'] != null
+          ? ActorEqualsFieldGuard.fromJson(
+              json['actorEqualsField'] as Map<String, dynamic>,
             )
           : null,
       instanceDataEquals: json['instanceDataEquals'] != null
@@ -108,6 +125,7 @@ class WorkflowGuard {
   bool get isEmpty =>
       (allowedPersonaIds == null || allowedPersonaIds!.isEmpty) &&
       actorInList == null &&
+      actorEqualsField == null &&
       instanceDataEquals == null &&
       formula == null &&
       relatedListMembership == null &&
@@ -281,6 +299,7 @@ class WorkflowEffect {
   final String? condition;
   final List<WorkflowEffect> thenEffects;
   final List<WorkflowEffect> elseEffects;
+  final List<WorkflowEffect>? onSuccessEffects;
 
   const WorkflowEffect({
     required this.op,
@@ -296,9 +315,19 @@ class WorkflowEffect {
     this.condition,
     this.thenEffects = const [],
     this.elseEffects = const [],
+    this.onSuccessEffects,
   });
 
   factory WorkflowEffect.fromJson(Map<String, dynamic> json) {
+    List<WorkflowEffect> parseEffects(dynamic value) =>
+        (value as List<dynamic>?)
+            ?.map(
+              (effect) =>
+                  WorkflowEffect.fromJson(effect as Map<String, dynamic>),
+            )
+            .toList() ??
+        const [];
+
     return WorkflowEffect(
       op: (json['op'] as String?) ?? '',
       key: json['key'] as String?,
@@ -319,22 +348,11 @@ class WorkflowEffect {
         (key, value) => MapEntry(key, value),
       ),
       condition: json['if'] as String?,
-      thenEffects:
-          (json['then'] as List<dynamic>?)
-              ?.map(
-                (effect) =>
-                    WorkflowEffect.fromJson(effect as Map<String, dynamic>),
-              )
-              .toList() ??
-          const [],
-      elseEffects:
-          (json['else'] as List<dynamic>?)
-              ?.map(
-                (effect) =>
-                    WorkflowEffect.fromJson(effect as Map<String, dynamic>),
-              )
-              .toList() ??
-          const [],
+      thenEffects: parseEffects(json['then']),
+      elseEffects: parseEffects(json['else']),
+      onSuccessEffects: json['onSuccessEffects'] == null
+          ? null
+          : parseEffects(json['onSuccessEffects']),
     );
   }
 

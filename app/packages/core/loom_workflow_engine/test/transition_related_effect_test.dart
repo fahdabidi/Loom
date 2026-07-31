@@ -23,43 +23,62 @@ Map<String, dynamic> _targetDefinition() => {
     'eventId': {'type': 'text'},
     'rsvpedAt': {'type': 'text'},
     'allowPromotion': {'type': 'bool'},
+    'personaId': {'type': 'personaId'},
   },
 };
 
-Map<String, dynamic> _sourceDefinition() => {
-  'initialState': 'open',
-  'states': {
-    'open': {'label': 'Open'},
-    'done': {'label': 'Done'},
-  },
-  'transitions': [
-    {
-      'id': 'release-seat',
-      'label': 'Release seat',
-      'from': ['open'],
-      'to': 'done',
-      'effects': [
-        {
-          'op': 'branch',
-          'if': 'true',
-          'then': [
-            {
-              'op': 'transitionRelated',
-              'relatedQuery': {
-                'workflowType': 'response',
-                'filter': {'eventId': '{eventId}', r'$state': 'waitlisted'},
-                'sortKey': 'rsvpedAt',
-                'limit': 1,
-              },
-              'transitionId': 'respond-going',
-            },
-          ],
-        },
-      ],
+Map<String, dynamic> _sourceDefinition({
+  List<Map<String, dynamic>>? onSuccessEffects,
+}) {
+  final transitionRelated = <String, dynamic>{
+    'op': 'transitionRelated',
+    'relatedQuery': {
+      'workflowType': 'response',
+      'filter': {'eventId': '{eventId}', r'$state': 'waitlisted'},
+      'sortKey': 'rsvpedAt',
+      'limit': 1,
     },
-  ],
+    'transitionId': 'respond-going',
+    if (onSuccessEffects != null) 'onSuccessEffects': onSuccessEffects,
+  };
+
+  return {
+    'initialState': 'open',
+    'states': {
+      'open': {'label': 'Open'},
+      'done': {'label': 'Done'},
+    },
+    'transitions': [
+      {
+        'id': 'release-seat',
+        'label': 'Release seat',
+        'from': ['open'],
+        'to': 'done',
+        'effects': [
+          {
+            'op': 'branch',
+            'if': 'true',
+            'then': [transitionRelated],
+          },
+        ],
+      },
+    ],
+    'instanceDataSchema': {
+      'eventId': {'type': 'text'},
+      'personaId': {'type': 'personaId'},
+    },
+  };
+}
+
+Map<String, dynamic> _notificationDefinition() => {
+  'initialState': 'unread',
+  'states': {
+    'unread': {'label': 'Unread'},
+  },
+  'transitions': <Map<String, dynamic>>[],
   'instanceDataSchema': {
-    'eventId': {'type': 'text'},
+    'recipientPersonaId': {'type': 'personaId', 'required': true},
+    'kind': {'type': 'text', 'required': true},
   },
 };
 
@@ -93,6 +112,40 @@ void main() {
     expect(effect.relatedQuery?.limit, 1);
     expect(effect.transitionId, 'respond-going');
   });
+
+  test(
+    'WorkflowEffect parses recursive transitionRelated onSuccessEffects',
+    () {
+      final effect = WorkflowEffect.fromJson({
+        'op': 'transitionRelated',
+        'relatedQuery': {
+          'workflowType': 'response',
+          'filter': {'eventId': '{eventId}'},
+        },
+        'transitionId': 'respond-going',
+        'onSuccessEffects': [
+          {
+            'op': 'branch',
+            'if': 'true',
+            'then': [
+              {
+                'op': 'createInstance',
+                'workflowType': 'notification',
+                'fields': {'recipientPersonaId': '{personaId}'},
+              },
+            ],
+          },
+        ],
+      });
+
+      expect(effect.onSuccessEffects, hasLength(1));
+      expect(effect.onSuccessEffects!.single.thenEffects, hasLength(1));
+      expect(
+        effect.onSuccessEffects!.single.thenEffects.single.workflowType,
+        'notification',
+      );
+    },
+  );
 
   test('transitionRelated promotes the oldest matching instance', () async {
     final api = LocalWorkflowEngineApi(
@@ -198,4 +251,156 @@ void main() {
 
     expect(await _stateFor(api, source), 'done');
   });
+
+  test(
+    'transitionRelated onSuccessEffects run once with target data',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'transition-related-success-effects',
+      );
+      api.registerDefinition(_machine('response', _targetDefinition()));
+      api.registerDefinition(
+        _machine(
+          'event',
+          _sourceDefinition(
+            onSuccessEffects: [
+              {
+                'op': 'createInstance',
+                'workflowType': 'notification',
+                'fields': {
+                  'recipientPersonaId': '{personaId}',
+                  'kind': 'promotion',
+                },
+              },
+              {
+                'op': 'createInstance',
+                'workflowType': 'notification',
+                'fields': {
+                  'recipientPersonaId': '{personaId}',
+                  'kind': 'audit',
+                },
+              },
+            ],
+          ),
+        ),
+      );
+      api.registerDefinition(
+        _machine('notification', _notificationDefinition()),
+      );
+
+      final target = await api.createInstance(
+        workflowType: 'response',
+        personaId: 'promoted-member',
+        initialInstanceData: {
+          'eventId': 'event-1',
+          'rsvpedAt': '2026-07-01T10:00:00Z',
+          'allowPromotion': true,
+          'personaId': 'promoted-member',
+        },
+      );
+      final source = await api.createInstance(
+        workflowType: 'event',
+        personaId: 'source-actor',
+        initialInstanceData: {
+          'eventId': 'event-1',
+          'personaId': 'source-actor',
+        },
+      );
+
+      await api.applyTransition(
+        workflowType: 'event',
+        instanceId: source,
+        transitionId: 'release-seat',
+        personaId: 'source-actor',
+      );
+
+      final notifications =
+          (await api.queryInstances(
+                tabId: 'messages',
+                personaId: 'source-actor',
+              )).items
+              .where((instance) => instance.workflowType == 'notification')
+              .toList();
+      expect(notifications, hasLength(2));
+      expect(
+        notifications.map((instance) => instance.instanceData['kind']).toSet(),
+        {'promotion', 'audit'},
+      );
+      expect(
+        notifications
+            .map((instance) => instance.instanceData['recipientPersonaId'])
+            .toSet(),
+        {'promoted-member'},
+      );
+      expect(await _stateFor(api, target), 'going');
+    },
+  );
+
+  test(
+    'transitionRelated onSuccessEffects do not run on target guard failure',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'transition-related-failed-success-effects',
+      );
+      api.registerDefinition(_machine('response', _targetDefinition()));
+      api.registerDefinition(
+        _machine(
+          'event',
+          _sourceDefinition(
+            onSuccessEffects: [
+              {
+                'op': 'createInstance',
+                'workflowType': 'notification',
+                'fields': {
+                  'recipientPersonaId': '{personaId}',
+                  'kind': 'promotion',
+                },
+              },
+            ],
+          ),
+        ),
+      );
+      api.registerDefinition(
+        _machine('notification', _notificationDefinition()),
+      );
+
+      final target = await api.createInstance(
+        workflowType: 'response',
+        personaId: 'promoted-member',
+        initialInstanceData: {
+          'eventId': 'event-1',
+          'rsvpedAt': '2026-07-01T10:00:00Z',
+          'allowPromotion': false,
+          'personaId': 'promoted-member',
+        },
+      );
+      final source = await api.createInstance(
+        workflowType: 'event',
+        personaId: 'source-actor',
+        initialInstanceData: {
+          'eventId': 'event-1',
+          'personaId': 'source-actor',
+        },
+      );
+
+      await api.applyTransition(
+        workflowType: 'event',
+        instanceId: source,
+        transitionId: 'release-seat',
+        personaId: 'source-actor',
+      );
+
+      final notifications =
+          (await api.queryInstances(
+                tabId: 'messages',
+                personaId: 'source-actor',
+              )).items
+              .where((instance) => instance.workflowType == 'notification')
+              .toList();
+      expect(notifications, isEmpty);
+      expect(await _stateFor(api, target), 'waitlisted');
+    },
+  );
 }
