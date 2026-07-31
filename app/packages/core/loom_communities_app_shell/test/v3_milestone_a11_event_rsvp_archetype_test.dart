@@ -182,8 +182,9 @@ Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
 Future<void> _tapRsvpAction(
   WidgetTester tester,
   String instanceId,
-  String transitionId,
-) async {
+  String transitionId, {
+  num? partySize,
+}) async {
   final action = find.byKey(
     ValueKey('event-rsvp-$instanceId-action-$transitionId'),
   );
