@@ -79,6 +79,47 @@ ValidationReport _validateRecurring(Map<String, dynamic> effect) => _validate(
 
 void main() {
   group('WorkflowValidator effects and transition formulas', () {
+    test('reports an undeclared actorEqualsField key', () {
+      final report = _validate(
+        {},
+        guard: {
+          'actorEqualsField': {'key': 'recipientPersonaId'},
+        },
+      );
+
+      expect(_has(report, 'dangling_actor_equals_field'), isTrue);
+      expect(_has(report, 'actor_equals_field_on_list_type'), isFalse);
+    });
+
+    test('reports a list-typed actorEqualsField key', () {
+      final report = _validate(
+        {
+          'recipientPersonaIds': {'type': 'list'},
+        },
+        guard: {
+          'actorEqualsField': {'key': 'recipientPersonaIds'},
+        },
+      );
+
+      expect(_has(report, 'dangling_actor_equals_field'), isFalse);
+      expect(_has(report, 'actor_equals_field_on_list_type'), isTrue);
+    });
+
+    test('accepts a scalar actorEqualsField key', () {
+      final report = _validate(
+        {
+          'recipientPersonaId': {'type': 'personaId'},
+        },
+        guard: {
+          'actorEqualsField': {'key': 'recipientPersonaId'},
+        },
+      );
+
+      expect(report.passed, isTrue, reason: report.findings.join('\n'));
+      expect(_has(report, 'dangling_actor_equals_field'), isFalse);
+      expect(_has(report, 'actor_equals_field_on_list_type'), isFalse);
+    });
+
     test('catches an undeclared key in a nested branch effect', () {
       final report = _validate(
         {
@@ -283,6 +324,66 @@ void main() {
         _has(badSortKey, 'dangling_transition_related_sort_key'),
         isTrue,
       );
+    });
+
+    test('validates transitionRelated onSuccessEffects against the target schema', () {
+      final target = _machine(
+        'target',
+        schema: {
+          'targetValue': {'type': 'text'},
+        },
+      );
+      final report = _validate(
+        {
+          'sourceValue': {'type': 'text'},
+        },
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'target',
+              'filter': <String, dynamic>{},
+            },
+            'transitionId': 'continue',
+            'onSuccessEffects': [
+              {'op': 'set', 'key': 'targetValue', 'value': 'updated'},
+            ],
+          },
+        ],
+        extraWorkflows: {'target': target},
+      );
+
+      expect(report.passed, isTrue, reason: report.findings.join('\n'));
+    });
+
+    test('reports an undeclared field in target onSuccessEffects', () {
+      final target = _machine(
+        'target',
+        schema: {
+          'targetValue': {'type': 'text'},
+        },
+      );
+      final report = _validate(
+        {
+          'sourceOnly': {'type': 'text'},
+        },
+        effects: [
+          {
+            'op': 'transitionRelated',
+            'relatedQuery': {
+              'workflowType': 'target',
+              'filter': <String, dynamic>{},
+            },
+            'transitionId': 'continue',
+            'onSuccessEffects': [
+              {'op': 'set', 'key': 'sourceOnly', 'value': 'wrong'},
+            ],
+          },
+        ],
+        extraWorkflows: {'target': target},
+      );
+
+      expect(_has(report, 'dangling_instance_data_key'), isTrue);
     });
 
     test('accepts the documented generateRecurringInstances example', () {

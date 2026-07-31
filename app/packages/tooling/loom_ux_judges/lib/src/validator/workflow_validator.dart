@@ -599,6 +599,36 @@ class WorkflowValidator {
         }
       }
 
+      if (t.guard.actorEqualsField != null) {
+        final key = t.guard.actorEqualsField!.key;
+        final field = machine.instanceDataSchema[key];
+        if (field == null) {
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_actor_equals_field',
+              message:
+                  'Transition "${t.id}"\'s guard.actorEqualsField references '
+                  '"$key", which is not declared in instanceDataSchema.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/guard/actorEqualsField',
+            ),
+          );
+        } else if (field.type == 'list' || field.type == 'list?') {
+          findings.add(
+            ValidationFinding(
+              type: 'actor_equals_field_on_list_type',
+              message:
+                  'Transition "${t.id}"\'s guard.actorEqualsField references '
+                  '"$key", which is list-typed. actorEqualsField compares a single '
+                  'scalar value and cannot be used with a list field (use '
+                  'actorInList instead).',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/guard/actorEqualsField',
+            ),
+          );
+        }
+      }
+
       if (t.guard.relatedListMembership != null) {
         final field = t.guard.relatedListMembership!.relatedInstanceField;
         if (!machine.instanceDataSchema.containsKey(field)) {
@@ -762,6 +792,17 @@ class WorkflowValidator {
                   'transitionRelated sortKey "$sortKey" is not declared in "$targetType"\'s instanceDataSchema.',
               location: '$location/relatedQuery/sortKey',
             ),
+          );
+        }
+        final onSuccessEffects = effect.onSuccessEffects;
+        if (onSuccessEffects != null) {
+          _checkEffects(
+            target,
+            allWorkflows,
+            transition,
+            onSuccessEffects,
+            '$location/onSuccessEffects',
+            findings,
           );
         }
         continue;
