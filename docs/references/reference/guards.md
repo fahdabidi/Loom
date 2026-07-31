@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.6.0
+doc_version: 1.7.0
 status: current
-last_verified: 2026-07-26
+last_verified: 2026-07-29
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -200,6 +200,12 @@ real `aggregate()` method — which requires a genuine column for every op excep
 JSON written today with `"op": "sum"` silently aggregates over an empty-string column and produces a
 meaningless result; it does not error. **Only `op: "count"` is safe to use in a real fixture until the
 `field` parameter above is engine-implemented** (PROPOSED, CAL.Calendar2.8 — not yet built).
+
+**NEW 2026-07-26 (CAL.Calendar2.8, PROPOSED, engine not yet built): the frozen fixture's `respond-going`
+transition now declares `"op": "sum", "field": "partySize"`** (party-size/plus-ones) — this is deliberately
+INERT today, landing atomically alongside the `field`-parameter engine fix in the same implementation pass,
+never shipped ahead of it. Do not treat its presence in the fixture as evidence the engine change has
+landed; check `spec-version.json` → `relatedAggregateFieldParam` for the real implementation status.
 
 **Evaluation:** the engine computes this aggregate **fresh**, via the same real `aggregate()` method a
 direct API caller would use — not a cached or stale value. Because `evaluateGuard` itself stays

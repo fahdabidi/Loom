@@ -391,34 +391,40 @@
             "to": "going",
             "guard": {
               "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              // Cross-instance aggregate: count this event's OWN going-rows live and compare against
-              // capacity read off the related event-rsvp instance named by this row's own eventId.
-              // NOTE (CAL.Calendar2.8, PROPOSED): party-size/plus-ones would change this op from
-              // "count" to "sum" over a new partySize field -- deliberately NOT done here yet, since
-              // relatedAggregate's "sum" is currently non-functional (see guards.md's correction note
-              // and spec-version.json's relatedAggregateFieldParam); flipping this op today, before that
-              // engine fix ships, would silently disable real capacity enforcement rather than improve it.
+              // Cross-instance aggregate: sum this event's OWN going-rows' partySize live and compare
+              // against capacity read off the related event-rsvp instance named by this row's own
+              // eventId. CAL.Calendar2.8, PROPOSED -- depends on RelatedAggregateGuard gaining a `field`
+              // parameter wired through to aggregate()'s real `column` argument (currently hardcoded
+              // `''`, so `sum` silently computes garbage today -- see guards.md's correction note and
+              // spec-version.json's relatedAggregateFieldParam). This op/field pairing is INERT until
+              // that engine fix ships alongside it in the same pass -- both land together, atomically.
               "relatedAggregate": {
                 "workflowType": "event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "count",
+                "op": "sum",
+                "field": "partySize",
                 "comparator": "<",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
               }
             },
-            // NEW 2026-07-26 (CAL.Calendar2.5b, PROPOSED). Both optional -- an omitted GAP-1 input
-            // resolves to null (CAL.Recurrence.1 fix2's exact-match behavior), not a stringified
-            // literal, so leaving either blank is safe. Purely descriptive: no guard/capacity
-            // interaction, so safe to wire into the real fixture now, unlike partySize above. Collecting
-            // these from a member still needs CAL.Calendar2.1's generic input dialog -- the transition
-            // itself already works today via a direct applyTransition(..., inputs: {...}) call.
+            // NEW 2026-07-26 (CAL.Calendar2.5b, PROPOSED). dietaryNotes/comments are both optional -- an
+            // omitted GAP-1 input resolves to null (CAL.Recurrence.1 fix2's exact-match behavior), not a
+            // stringified literal, so leaving either blank is safe.
+            // partySize (CAL.Calendar2.8, PROPOSED) is REQUIRED, unlike those two: it feeds directly into
+            // the capacity guard's `sum` above, and every existing seeded response row was backfilled
+            // with `partySize: 1` (see workflowInstances below) so summing over it never silently
+            // undercounts pre-existing attendees. Collecting these from a member uses CAL.Calendar2.1's
+            // generic input dialog -- the transition itself already works today via a direct
+            // applyTransition(..., inputs: {...}) call.
             "inputs": {
               "dietaryNotes": { "type": "text" },
-              "comments": { "type": "text" }
+              "comments": { "type": "text" },
+              "partySize": { "type": "number", "required": true }
             },
             "effects": [
               { "op": "set", "key": "dietaryNotes", "value": "{input.dietaryNotes}" },
-              { "op": "set", "key": "comments", "value": "{input.comments}" }
+              { "op": "set", "key": "comments", "value": "{input.comments}" },
+              { "op": "set", "key": "partySize", "value": "{input.partySize}" }
             ]
           },
           {
@@ -505,7 +511,13 @@
           // effects above via {input.x} tokens -- writableBy stays "effect" (never formEntry) because
           // the member never edits this row directly; the value arrives as a transition input instead.
           "dietaryNotes": { "type": "text", "writableBy": "effect", "storage": "inline" },
-          "comments": { "type": "text", "writableBy": "effect", "storage": "inline" }
+          "comments": { "type": "text", "writableBy": "effect", "storage": "inline" },
+
+          // NEW 2026-07-26 (CAL.Calendar2.8, PROPOSED). Feeds the capacity guard's `sum` aggregate above
+          // -- writableBy "effect" for the same reason as dietaryNotes/comments. Every seeded response
+          // row below is backfilled with `partySize: 1` so the guard's sum never silently undercounts
+          // pre-existing attendees the moment this op lands.
+          "partySize": { "type": "number", "writableBy": "effect", "storage": "inline" }
         }
       },
 
@@ -1609,43 +1621,43 @@
       // lists encoded: 11 members going, the organizer maybe, member-14 never having responded.
       { "instanceId": "resp-friday-organizer", "workflowType": "event-rsvp-response",
         "currentState": "maybe", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-organizer" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-organizer", "partySize": 1 } },
       { "instanceId": "resp-friday-member-03", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-03" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-03", "partySize": 1 } },
       { "instanceId": "resp-friday-member-04", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-04" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-04", "partySize": 1 } },
       { "instanceId": "resp-friday-member-05", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-05" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-05", "partySize": 1 } },
       { "instanceId": "resp-friday-member-06", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-06" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-06", "partySize": 1 } },
       { "instanceId": "resp-friday-member-07", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-07" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-07", "partySize": 1 } },
       { "instanceId": "resp-friday-member-08", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-08" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-08", "partySize": 1 } },
       { "instanceId": "resp-friday-member-09", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-09" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-09", "partySize": 1 } },
       { "instanceId": "resp-friday-member-10", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-10" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-10", "partySize": 1 } },
       { "instanceId": "resp-friday-member-11", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-11" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-11", "partySize": 1 } },
       { "instanceId": "resp-friday-member-12", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-12" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-12", "partySize": 1 } },
       { "instanceId": "resp-friday-member-13", "workflowType": "event-rsvp-response",
         "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-13" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-13", "partySize": 1 } },
       { "instanceId": "resp-friday-member-14", "workflowType": "event-rsvp-response",
         "currentState": "pending", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-14" } },
+        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-14", "partySize": 1 } },
 
       // ---- Calendar + Home: the summer tournament (drives ballot eligibility) --------------------
       {
