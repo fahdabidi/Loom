@@ -110,6 +110,7 @@ void main() {
         'tournament-event',
         'tournament-ballot',
         'tournament-vote',
+        'notification',
         'equipment-loan',
         'equipment-giveaway',
         'tabletop-game-loan',

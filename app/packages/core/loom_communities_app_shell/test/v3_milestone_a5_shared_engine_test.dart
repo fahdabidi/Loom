@@ -167,7 +167,7 @@ void main() {
         },
         personaId: 'tabletop-member',
       );
-      expect(resolved.workflowDefinitions, hasLength(12));
+      expect(resolved.workflowDefinitions, hasLength(13));
     } finally {
       await temp.delete(recursive: true);
     }
