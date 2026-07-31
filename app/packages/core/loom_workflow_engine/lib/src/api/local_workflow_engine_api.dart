@@ -934,7 +934,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     };
     final aggregate = await this.aggregate(
       workflowType: related.workflowType,
-      column: '',
+      column: related.field ?? '',
       op: related.op,
       filter: filter,
     );

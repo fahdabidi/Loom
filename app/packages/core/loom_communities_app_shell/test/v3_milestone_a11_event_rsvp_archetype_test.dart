@@ -197,6 +197,15 @@ Future<void> _tapRsvpAction(
     const ValueKey('generic-transition-input-dialog'),
   );
   if (dialog.evaluate().isNotEmpty) {
+    final partySizeInput = find.byKey(
+      const ValueKey('generic-transition-input-partySize'),
+    );
+    if (partySizeInput.evaluate().isNotEmpty) {
+      await tester.enterText(
+        partySizeInput,
+        (partySize ?? 1).toString(),
+      );
+    }
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
     );
@@ -470,7 +479,12 @@ void main() {
       expect(_responseFor(before, 'tabletop-member-14')['\$state'], 'pending');
       expect(before.instanceData['goingCount'], 11);
 
-      await _tapRsvpAction(tester, 'event-friday-game-night', 'respond-going');
+      await _tapRsvpAction(
+        tester,
+        'event-friday-game-night',
+        'respond-going',
+        partySize: 3,
+      );
 
       // After: the same real response row is going and the event formula updates.
       final after = await _instance(
@@ -483,6 +497,7 @@ void main() {
         'resp-friday-member-14',
       );
       expect(_responseFor(after, 'tabletop-member-14')['\$state'], 'going');
+      expect(_responseFor(after, 'tabletop-member-14')['partySize'], 3);
       expect(after.instanceData['goingCount'], 12);
       expect(after.instanceData['seatsRemaining'], 8);
 

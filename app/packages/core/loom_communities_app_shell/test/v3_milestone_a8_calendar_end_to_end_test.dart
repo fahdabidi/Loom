@@ -174,8 +174,9 @@ Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
 Future<void> _tapAction(
   WidgetTester tester,
   String instanceId,
-  String transitionId,
-) async {
+  String transitionId, {
+  num? partySize,
+}) async {
   final action = find.byKey(
     ValueKey('event-rsvp-$instanceId-action-$transitionId'),
   );
@@ -188,6 +189,15 @@ Future<void> _tapAction(
     const ValueKey('generic-transition-input-dialog'),
   );
   if (dialog.evaluate().isNotEmpty) {
+    final partySizeInput = find.byKey(
+      const ValueKey('generic-transition-input-partySize'),
+    );
+    if (partySizeInput.evaluate().isNotEmpty) {
+      await tester.enterText(
+        partySizeInput,
+        (partySize ?? 1).toString(),
+      );
+    }
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
     );
@@ -2581,6 +2591,12 @@ void main() {
           const ValueKey('generic-transition-input-dialog'),
         );
         if (dialog.evaluate().isNotEmpty) {
+          final partySizeInput = find.byKey(
+            const ValueKey('generic-transition-input-partySize'),
+          );
+          if (partySizeInput.evaluate().isNotEmpty) {
+            await tester.enterText(partySizeInput, '1');
+          }
           final confirm = find.byKey(
             const ValueKey('generic-transition-input-confirm'),
           );
@@ -2636,6 +2652,12 @@ void main() {
           ),
           'Vegetarian',
         );
+        final partySizeInput = find.byKey(
+          const ValueKey('generic-transition-input-partySize'),
+        );
+        if (partySizeInput.evaluate().isNotEmpty) {
+          await tester.enterText(partySizeInput, '1');
+        }
         final confirm = find.byKey(
           const ValueKey('generic-transition-input-confirm'),
         );

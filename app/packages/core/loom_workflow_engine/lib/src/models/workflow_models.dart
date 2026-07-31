@@ -168,6 +168,7 @@ class RelatedAggregateGuard {
   final String workflowType;
   final Map<String, dynamic> filter;
   final String op;
+  final String? field;
   final String comparator;
   final dynamic compareTo;
 
@@ -175,6 +176,7 @@ class RelatedAggregateGuard {
     required this.workflowType,
     required this.filter,
     required this.op,
+    this.field,
     required this.comparator,
     required this.compareTo,
   });
@@ -184,6 +186,7 @@ class RelatedAggregateGuard {
         workflowType: json['workflowType'] as String,
         filter: Map<String, dynamic>.from(json['filter'] as Map),
         op: json['op'] as String,
+        field: json['field'] as String?,
         comparator: json['comparator'] as String,
         compareTo: json['compareTo'],
       );
