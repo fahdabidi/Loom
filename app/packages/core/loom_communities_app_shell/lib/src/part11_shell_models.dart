@@ -1410,6 +1410,7 @@ class LoomExperienceDefinition {
     this.calendarDateRailEntries,
     this.tabThemeOverrides = const {},
     this.creatableAction,
+    this.notificationPresentation,
     this.tabCreatableActionStyles = const {},
     this.workflowDefinitions,
     this.workflowInstances,
@@ -1439,9 +1440,13 @@ class LoomExperienceDefinition {
   final List<CalendarDateRailEntry>? calendarDateRailEntries;
   final Map<String, LoomCardTheme> tabThemeOverrides;
   final LoomCreatableActionStyle? creatableAction;
+  final LoomNotificationPresentation? notificationPresentation;
   final Map<String, LoomCreatableActionStyle> tabCreatableActionStyles;
   final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
   final List<LoomWorkflowSeedInstance>? workflowInstances;
+
+  String get resolvedNotificationPresentationStyle =>
+      notificationPresentation?.style ?? 'bell';
 }
 
 /// A declarative item in Calendar's per-day agenda date rail.
@@ -1482,6 +1487,16 @@ class LoomCreatableActionStyle {
       multiActionStyle: json['multiActionStyle'] as String?,
       presentationStyle: json['presentationStyle'] as String?,
     );
+  }
+}
+
+class LoomNotificationPresentation {
+  const LoomNotificationPresentation({this.style});
+
+  final String? style;
+
+  factory LoomNotificationPresentation.fromJson(Map<String, Object?> json) {
+    return LoomNotificationPresentation(style: json['style'] as String?);
   }
 }
 

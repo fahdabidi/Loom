@@ -105,6 +105,9 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   final creatableAction = _parseCreatableActionStyle(
     experienceConfiguration['creatableAction'],
   );
+  final notificationPresentation = _parseNotificationPresentation(
+    experienceConfiguration['notificationPresentation'],
+  );
   final tabCreatableActionStyles = _parseTabCreatableActionStyles(
     experienceConfiguration['tabCreatableActionStyles'],
   );
@@ -225,6 +228,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
     creatableAction: creatableAction,
+    notificationPresentation: notificationPresentation,
     tabCreatableActionStyles: tabCreatableActionStyles,
     threads: threads,
     notifications: notifications,
@@ -345,6 +349,9 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   final creatableAction = _parseCreatableActionStyle(
     experienceConfiguration['creatableAction'],
   );
+  final notificationPresentation = _parseNotificationPresentation(
+    experienceConfiguration['notificationPresentation'],
+  );
   final tabCreatableActionStyles = _parseTabCreatableActionStyles(
     experienceConfiguration['tabCreatableActionStyles'],
   );
@@ -369,6 +376,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
     creatableAction: creatableAction,
+    notificationPresentation: notificationPresentation,
     tabCreatableActionStyles: tabCreatableActionStyles,
     workflowDefinitions: definitions,
     workflowInstances: instances.isEmpty ? null : instances,
@@ -416,6 +424,11 @@ List<LoomMarketplaceListing>? _marketplaceListingsFromEngineNative(
 LoomCreatableActionStyle? _parseCreatableActionStyle(Object? raw) {
   if (raw is! Map) return null;
   return LoomCreatableActionStyle.fromJson(Map<String, Object?>.from(raw));
+}
+
+LoomNotificationPresentation? _parseNotificationPresentation(Object? raw) {
+  if (raw is! Map) return null;
+  return LoomNotificationPresentation.fromJson(Map<String, Object?>.from(raw));
 }
 
 Map<String, LoomCreatableActionStyle> _parseTabCreatableActionStyles(

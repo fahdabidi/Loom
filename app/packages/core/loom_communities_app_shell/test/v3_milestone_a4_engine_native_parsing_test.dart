@@ -102,6 +102,8 @@ void main() {
     final instances = experience.workflowInstances;
 
     expect(definitions, isNotNull);
+    expect(experience.notificationPresentation?.style, 'bell');
+    expect(experience.resolvedNotificationPresentationStyle, 'bell');
     expect(
       definitions!.keys,
       unorderedEquals(<String>[
@@ -163,6 +165,34 @@ void main() {
         ],
       ],
     );
+  });
+
+  test('engine-native notification presentation parses and defaults', () {
+    final configured = experienceForExtensionId(
+      'a4-notification-presentation-fab',
+      experienceConfiguration: _v2Experience()
+        ..['notificationPresentation'] = <String, Object?>{'style': 'fab'},
+    );
+    expect(configured.notificationPresentation?.style, 'fab');
+    expect(configured.resolvedNotificationPresentationStyle, 'fab');
+
+    final absent = experienceForExtensionId(
+      'a4-notification-presentation-absent',
+      experienceConfiguration: _v2Experience(),
+    );
+    expect(absent.notificationPresentation, isNull);
+    expect(absent.resolvedNotificationPresentationStyle, 'bell');
+  });
+
+  test('legacy notification presentation parses for both schema paths', () {
+    final experience = experienceForExtensionId(
+      'a4-legacy-notification-presentation',
+      experienceConfiguration: _legacyExperience()
+        ..['notificationPresentation'] = <String, Object?>{
+          'style': 'dedicatedTab',
+        },
+    );
+    expect(experience.notificationPresentation?.style, 'dedicatedTab');
   });
 
   test('2 absent stamp preserves the legacy shallow projection', () {
