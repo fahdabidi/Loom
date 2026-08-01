@@ -212,8 +212,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         useSafeArea: true,
         builder: (context) => _CreatableActionBottomSheet(content: content),
       ),
-      'slideOutLeft' ||
-      'slideOutRight' => await _showCreatableActionSidePanel(
+      'slideOutLeft' || 'slideOutRight' => await _showCreatableActionSidePanel(
         content: content,
         fromLeft: presentationStyle == 'slideOutLeft',
       ),
@@ -746,9 +745,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           ? TextStyle(color: communityCard.resolvedBody)
                           : null,
                     ),
-                    onTap: () => Navigator.of(
-                      context,
-                    ).pop('_sign-in-specific-person'),
+                    onTap: () =>
+                        Navigator.of(context).pop('_sign-in-specific-person'),
                   ),
                 ],
               ),
@@ -916,13 +914,14 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               if (binding.tabId == selectedTab.tabId &&
                   action.kind == 'create' &&
                   (action.scope == null || action.scope == 'tab') &&
-                  action.byPersonaIds?.contains(activePersona.personaId) == true)
-              _CreatableWorkflowAction(
-                workflowType: definition.key,
-                machine: definition.value,
-                label: action.label!,
-                cardSurfaceFamily: binding.cardSurfaceFamily,
-              ),
+                  action.byPersonaIds?.contains(activePersona.personaId) ==
+                      true)
+                _CreatableWorkflowAction(
+                  workflowType: definition.key,
+                  machine: definition.value,
+                  label: action.label!,
+                  cardSurfaceFamily: binding.cardSurfaceFamily,
+                ),
     ];
     final instanceScopedFabActions = <_CreatableWorkflowAction>[
       if (_focusedInstanceForActiveTab case final focusedInstance?)
@@ -936,16 +935,18 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     if (action.kind == 'create' &&
                         action.scope == 'instance' &&
                         action.presentation == 'fab' &&
-                        action.byPersonaIds?.contains(activePersona.personaId) ==
+                        action.byPersonaIds?.contains(
+                              activePersona.personaId,
+                            ) ==
                             true)
-                      if (experience.workflowDefinitions![
-                            action.workflowType ?? definition.key
-                          ]
+                      if (experience.workflowDefinitions![action.workflowType ??
+                              definition.key]
                           case final machine?)
                         _CreatableWorkflowAction(
                           workflowType: action.workflowType ?? definition.key,
                           machine: machine,
-                          label: action.label ??
+                          label:
+                              action.label ??
                               'New ${action.workflowType ?? definition.key}',
                           cardSurfaceFamily: machine.renderBindings.isEmpty
                               ? binding.cardSurfaceFamily
@@ -980,6 +981,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         backgroundColor: accent,
         foregroundColor: Colors.white,
         actions: [
+          if (experience.resolvedNotificationPresentationStyle == 'bell')
+            NotificationBellButton(
+              extensionId: community.extensionId,
+              personaId: activePersona.personaId,
+            ),
           IconButton(
             key: const ValueKey('messages-button'),
             tooltip: 'Messages',
@@ -1008,7 +1014,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!_heroDismissedForCommunity.contains(community.communityId)) ...[
+            if (!_heroDismissedForCommunity.contains(
+              community.communityId,
+            )) ...[
               Builder(
                 builder: (context) {
                   final bannerTheme = shellSpec.theme.usesModernCardTheme
@@ -1071,112 +1079,112 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       ? heroTheme.resolvedBorder.withValues(alpha: 0.18)
                       : Colors.white.withValues(alpha: 0.18);
                   return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: heroFill,
-                    borderRadius: BorderRadius.circular(6),
-                    border: heroBorder != null
-                        ? Border.all(color: heroBorder)
-                        : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: heroShadow,
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              key: ValueKey(
-                                'opened-community-identity-${community.communityId}',
-                              ),
-                              radius: 32,
-                              backgroundColor: heroAvatarBg,
-                              child: Icon(
-                                _communityIconFor(experience.extensionId),
-                                size: 34,
-                                color: heroHeading,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    community.displayName,
-                                    key: ValueKey(
-                                      'opened-community-${community.communityId}',
-                                    ),
-                                    style: textTheme.headlineSmall?.copyWith(
-                                      color: heroHeading,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    experience.tagline,
-                                    key: ValueKey(
-                                      'experience-tagline-${community.extensionId}',
-                                    ),
-                                    style: textTheme.bodyLarge?.copyWith(
-                                      color: heroBody,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              key: ValueKey(
-                                'community-hero-dismiss-${community.communityId}',
-                              ),
-                              tooltip: 'Dismiss community information',
-                              onPressed: () => setState(() {
-                                _heroDismissedForCommunity.add(
-                                  community.communityId,
-                                );
-                              }),
-                              icon: const Icon(Icons.close, size: 28),
-                              color: heroHeading,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        _PersonaStatusStrip(
-                          persona: activePersona,
-                          personaCount: personasForExtensionId(
-                            experience.extensionId,
-                            experience: experience,
-                          ).length,
-                          foreground: heroHeading,
-                          modernTheme: heroTheme,
-                        ),
-                        Offstage(
-                          child: Text(
-                            _route,
-                            key: ValueKey(
-                              'opened-base-route-${community.extensionId}',
-                            ),
-                          ),
-                        ),
-                        Offstage(
-                          child: Text(
-                            currentRoute,
-                            key: ValueKey(
-                              'opened-route-${community.extensionId}',
-                            ),
-                          ),
+                    decoration: BoxDecoration(
+                      color: heroFill,
+                      borderRadius: BorderRadius.circular(6),
+                      border: heroBorder != null
+                          ? Border.all(color: heroBorder)
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: heroShadow,
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                  ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                key: ValueKey(
+                                  'opened-community-identity-${community.communityId}',
+                                ),
+                                radius: 32,
+                                backgroundColor: heroAvatarBg,
+                                child: Icon(
+                                  _communityIconFor(experience.extensionId),
+                                  size: 34,
+                                  color: heroHeading,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      community.displayName,
+                                      key: ValueKey(
+                                        'opened-community-${community.communityId}',
+                                      ),
+                                      style: textTheme.headlineSmall?.copyWith(
+                                        color: heroHeading,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      experience.tagline,
+                                      key: ValueKey(
+                                        'experience-tagline-${community.extensionId}',
+                                      ),
+                                      style: textTheme.bodyLarge?.copyWith(
+                                        color: heroBody,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                key: ValueKey(
+                                  'community-hero-dismiss-${community.communityId}',
+                                ),
+                                tooltip: 'Dismiss community information',
+                                onPressed: () => setState(() {
+                                  _heroDismissedForCommunity.add(
+                                    community.communityId,
+                                  );
+                                }),
+                                icon: const Icon(Icons.close, size: 28),
+                                color: heroHeading,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          _PersonaStatusStrip(
+                            persona: activePersona,
+                            personaCount: personasForExtensionId(
+                              experience.extensionId,
+                              experience: experience,
+                            ).length,
+                            foreground: heroHeading,
+                            modernTheme: heroTheme,
+                          ),
+                          Offstage(
+                            child: Text(
+                              _route,
+                              key: ValueKey(
+                                'opened-base-route-${community.extensionId}',
+                              ),
+                            ),
+                          ),
+                          Offstage(
+                            child: Text(
+                              currentRoute,
+                              key: ValueKey(
+                                'opened-route-${community.extensionId}',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),
@@ -1219,32 +1227,34 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               }),
               onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
               completedWorkflowIds: _completedWorkflowIds,
-              onInstanceScopedCreate: ({
-                required action,
-                required instance,
-                required binding,
-              }) async {
-                final workflowType = action.workflowType;
-                if (workflowType == null) return;
-                final machine = experience.workflowDefinitions?[workflowType];
-                if (machine == null) return;
-                await _openCreatableAction(
-                  action: _CreatableWorkflowAction(
-                    workflowType: workflowType,
-                    machine: machine,
-                    label: action.label ?? 'New $workflowType',
-                    cardSurfaceFamily: machine.renderBindings.isEmpty
-                        ? binding.cardSurfaceFamily
-                        : machine.renderBindings.first.cardSurfaceFamily,
-                    resolvedInitialValues: resolveInstanceScopedPrefill(
-                      action.prefill,
-                      instance,
-                    ),
-                  ),
-                  activePersona: activePersona,
-                  presentationStyle: presentationStyle,
-                );
-              },
+              onInstanceScopedCreate:
+                  ({
+                    required action,
+                    required instance,
+                    required binding,
+                  }) async {
+                    final workflowType = action.workflowType;
+                    if (workflowType == null) return;
+                    final machine =
+                        experience.workflowDefinitions?[workflowType];
+                    if (machine == null) return;
+                    await _openCreatableAction(
+                      action: _CreatableWorkflowAction(
+                        workflowType: workflowType,
+                        machine: machine,
+                        label: action.label ?? 'New $workflowType',
+                        cardSurfaceFamily: machine.renderBindings.isEmpty
+                            ? binding.cardSurfaceFamily
+                            : machine.renderBindings.first.cardSurfaceFamily,
+                        resolvedInitialValues: resolveInstanceScopedPrefill(
+                          action.prefill,
+                          instance,
+                        ),
+                      ),
+                      activePersona: activePersona,
+                      presentationStyle: presentationStyle,
+                    );
+                  },
               onFocusedInstanceChanged: (instance) => setState(() {
                 _focusedInstanceForActiveTab = instance;
               }),
