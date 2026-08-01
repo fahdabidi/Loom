@@ -7,14 +7,12 @@ Added the community-wide `notificationPresentation` grammar model, parsing in bo
 legacy and engine-native experience paths, the resolved `bell` default accessor,
 and focused parser/fixture coverage. No widget or fixture changes were made.
 
-## Verification
-flutter analyze: clean, 0 issues after the change. The standard launcher was
-blocked by the sandbox WSL vsock/read-only SDK environment; the cached Flutter
-tool ran successfully through an isolated writable temporary SDK root.
-Test suite: 144/144 before (ticket baseline); after unavailable — 0 tests passed
-because all 39 test files failed before loading when the sandbox denied the
-Flutter test runner's localhost server socket (`Operation not permitted`,
-`127.0.0.1`, port `0`). The external verification agent must run the full suite.
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues (implementation
+agent's own sandbox hit a WSL vsock/localhost-socket restriction and could not
+run the real test runner — this was run outside that sandbox).
+Test suite: 144/144 before → 146/146 after (both new tests pass), zero
+regressions.
 
 ## Commit
-staged, not committed + the full App Shell test suite could not start in this sandbox because the Flutter test runner was denied its localhost server socket (`Operation not permitted`, `127.0.0.1`, port `0`); the external verification agent must run it.
+99fe065
