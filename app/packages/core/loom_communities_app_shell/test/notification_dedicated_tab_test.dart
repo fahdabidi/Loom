@@ -232,9 +232,12 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(
-        find.byKey(const ValueKey('notification-dedicated-row-a-unread-1')),
+      final unreadRow1 = find.byKey(
+        const ValueKey('notification-dedicated-row-a-unread-1'),
       );
+      await tester.ensureVisible(unreadRow1);
+      await tester.pump();
+      await tester.tap(unreadRow1);
       for (var attempt = 0; attempt < 40; attempt += 1) {
         final page = await engine.queryInstances(
           tabId: 'notification-inbox',

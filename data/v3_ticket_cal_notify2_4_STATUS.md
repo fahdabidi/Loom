@@ -3,9 +3,18 @@
 ## Change applied
 Status: done
 
-## Verification
-flutter analyze: not clean — the command exited before Flutter startup with the exact environment error `<3>WSL (169 - ) ERROR: UtilBindVsockAnyPort:307: socket failed 1` and `<3>WSL (174 - ) ERROR: UtilBindVsockAnyPort:307: socket failed 1`; exact analyzer issue count unavailable. Direct Dart analysis completed cleanly with `No issues found!`.
-Test suite: 148/148 before (ticket baseline); after count unavailable because `flutter test packages/core/loom_communities_app_shell` exited before test discovery with the same WSL vsock error. Two dedicated-tab widget tests were added and require independent verification.
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues (implementation
+agent's own sandbox hit a WSL vsock error and could not run the real toolchain).
+Test suite: real `flutter test` run found the new
+`notification_dedicated_tab_test.dart`'s row-tap failing (`tap()` derived an
+offset outside the 800x600 test viewport — the row was off-screen and
+`ensureVisible` was never called before tapping it, unlike the tab-selection
+helper in the same file which does call it). Fixed by adding
+`tester.ensureVisible(...)` + a `pump()` before the tap — test logic only, no
+production code changed. Full suite: 148/148 before → 150/150 after (both new
+tests pass), zero regressions.
 
 ## Commit
-Commit hash pending; the requested commit will include only this ticket's scoped changes.
+92f27c7 (implementation agent) + follow-up fix commit (verification agent, see
+below) for the missing `ensureVisible` call in the test.
