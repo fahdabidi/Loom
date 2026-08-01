@@ -178,7 +178,7 @@ void main() {
 
         expect(find.text('Tournament reminder'), findsOneWidget);
         expect(
-          find.text('The summer tournament ballot opens soon.'),
+          find.textContaining('The summer tournament ballot opens soon.'),
           findsOneWidget,
         );
 

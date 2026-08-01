@@ -10,11 +10,17 @@ installed workflow engine, verifies the parsed `bell` style renders
 `notification-bell-button` with a `1` badge and a sheet row containing the notification, and verifies
 the dedicated-tab, fixed-card, and FAB entry points are absent.
 
-## Verification
-flutter analyze: not run; exact issue count unavailable. The baseline and post-change commands both
-failed before analysis with `WSL (2/3) ERROR: UtilBindVsockAnyPort:307: socket failed 1`.
-Test suite: 157/157 before (ticket baseline); after unavailable because the full suite failed before
-test discovery with the same WSL vsock error.
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues (implementation
+agent's own sandbox hit a WSL vsock error and could not run the real toolchain).
+Test suite: real `flutter test` run found the new test's own assertion failing —
+`find.text('The summer tournament ballot opens soon.')` never matches because
+the bell sheet's row combines body+createdAt into ONE `Text` widget
+(`'$body\nCreated $createdAt'`), not a separate standalone body Text. Fixed by
+switching to `find.textContaining(...)` (substring match) — test logic only, no
+production code changed. Full suite: 157/157 before → 158/158 after, zero
+regressions.
 
 ## Commit
-staged, not committed + Flutter/Dart verification is blocked by the sandbox WSL vsock error above.
+af1e013 (implementation agent) + follow-up fix commit (verification agent, see
+below) for the `find.text` → `find.textContaining` correction.
