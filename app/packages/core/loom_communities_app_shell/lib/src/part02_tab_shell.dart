@@ -4010,6 +4010,13 @@ class _TabNativeRenderer extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
         );
+      case 'NotificationDedicatedTabSurface':
+        return _NotificationDedicatedTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
       case 'ExportWizardTabSurface':
         return _ExportWizardTabSurface(
           experience: experience,

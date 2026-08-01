@@ -685,6 +685,8 @@ IconData _tabIconForKey(String iconKey) {
       return Icons.photo_camera_back_outlined;
     case 'messages':
       return Icons.forum_outlined;
+    case 'notifications':
+      return Icons.notifications_outlined;
     case 'groups':
       return Icons.groups_outlined;
     case 'giving':

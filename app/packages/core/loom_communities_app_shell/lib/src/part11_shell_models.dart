@@ -974,6 +974,18 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Notifications require an inbox list with unread state; a single preview card is not sufficient.',
   ),
+  'notification-inbox-engine-native': LoomTabRendererContract(
+    rendererId: 'NotificationDedicatedTabSurface',
+    label: 'Engine-native notification inbox (dedicatedTab presentation style)',
+    tabIds: ['notification-inbox'],
+    surfaceFamilies: ['notification'],
+    requiredAnatomy: ['notification list', 'unread indicator', 'timestamps'],
+    requiredInteractions: ['listNotifications', 'markNotificationRead'],
+    requiredStates: ['unread', 'read', 'empty'],
+    evidenceRequirements: ['notification dedicated tab screenshot'],
+    fallbackPolicy:
+        'Notifications require a scrollable list with unread state; a single preview card is not sufficient.',
+  ),
   'export-wizard-stepper': LoomTabRendererContract(
     rendererId: 'ExportWizardTabSurface',
     label:
