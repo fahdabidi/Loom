@@ -46,6 +46,7 @@ part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';
 part 'src/notification_inbox_controller.dart';
 part 'src/notification_bell.dart';
+part 'src/notification_fab.dart';
 part 'src/notification_dedicated_tab.dart';
 part 'src/notification_fixed_card.dart';
 part 'src/calendar_month_grid.dart';

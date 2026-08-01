@@ -1317,12 +1317,23 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         }),
       ),
       floatingActionButton:
-          creatableActions.isEmpty && instanceScopedFabActions.isEmpty
+          creatableActions.isEmpty &&
+              instanceScopedFabActions.isEmpty &&
+              experience.resolvedNotificationPresentationStyle != 'fab'
           ? null
           : Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                if (experience.resolvedNotificationPresentationStyle == 'fab')
+                  NotificationFab(
+                    extensionId: community.extensionId,
+                    personaId: activePersona.personaId,
+                  ),
+                if (experience.resolvedNotificationPresentationStyle == 'fab' &&
+                    (creatableActions.isNotEmpty ||
+                        instanceScopedFabActions.isNotEmpty))
+                  const SizedBox(height: 12),
                 for (final action in instanceScopedFabActions) ...[
                   FloatingActionButton.extended(
                     key: ValueKey(
