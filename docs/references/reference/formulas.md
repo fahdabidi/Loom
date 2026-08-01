@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-17
+last_verified: 2026-07-31
 audience: llm-agent
 derived_from: app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart
 ---
@@ -63,11 +63,12 @@ Dotted paths (`item.choice`) are used inside collection functions to select a co
 
 ---
 
-## Functions — complete list (22). No others exist.
+## Functions — complete list (23). No others exist.
 
-⚠️ **`subtractHours` and `mapGet` are PROPOSED, not yet engine-implemented** — written ahead of the
-code that executes them, same convention the frozen Tabletop Club JSON itself uses. The other 20 are
-real today.
+✅ **Correction 2026-07-31: `subtractHours` and `mapGet` are actually IMPLEMENTED** (confirmed directly
+against `formula_evaluator.dart`) — this doc's own "PROPOSED" warning was stale, left over from before
+their implementation shipped. **`combineDateAndTime` is the one genuinely new, PROPOSED function** (see
+its own row below, Notifications Experience phase) — everything else in this list is real today.
 
 ### Aggregates over a list
 
@@ -115,6 +116,7 @@ real today.
 | `isAfter` | `isAfter(a, b)` | bool |
 | `isPast` | `isPast(date)` | bool — *deadline passed* |
 | `subtractHours` | `subtractHours(date, hours)` | `date` minus `hours` — a real new `DateTime`. *Deriving a reminder's `dueAt` from a `deadline`.* |
+| `combineDateAndTime` | `combineDateAndTime(date, time)` | Combines an ISO date field and an optional `HH:mm` time field into one real local `DateTime` (midnight if `time` is absent/null). **PROPOSED 2026-07-31 (Notifications Experience phase, CAL.Notify2.9), not yet engine-implemented** — `guard_evaluator.dart` already has this exact combine logic as a private helper (`cancellationDeadline`/`locationOverlap` guards both use it internally); this exposes the same logic as a public formula function so computed fields can use it too, not just guards. *Combining `event-rsvp`'s separate `eventDate`/`eventTime` fields before computing a real `reminderAt` — the same lesson `cancellationDeadline` already taught: a date field alone parses to midnight, so subtracting hours from just the date makes a reminder inaccurately early for any event with a real time-of-day.* |
 
 Deliberately hour-granularity, not day-granularity — some reminder offsets are sub-day (e.g. "one hour
 before"). Deliberately generic (a raw duration subtraction), not a labeled-offset-aware function — the

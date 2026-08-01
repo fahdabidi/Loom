@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.6.0
+doc_version: 1.7.0
 status: current
-last_verified: 2026-07-23
+last_verified: 2026-07-31
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -334,6 +334,48 @@ tabCreatableActionStyles[tabId]?.presentationStyle ?? creatableAction.presentati
 ```
 A tab overriding only `presentationStyle` still inherits `multiActionStyle` from the community default —
 the two fields are independent, not an all-or-nothing override.
+
+## `notificationPresentation` — which generic style renders per-persona `notification` instances (PROPOSED, Notifications Experience phase, CAL.Notify2.2)
+
+**Not a binding-object key** — lives on the top-level `experience` object, same convention as
+`creatableAction` above (a community-wide default; a future per-tab override map would follow the exact
+same `tabNotificationPresentation`-shaped cascade if a community ever needs one, but isn't part of this
+initial grammar since no real use case has needed it yet). Governs how instances of the `notification`
+workflow type (guards.md's `actorEqualsField`, effects.md's `transitionRelated.onSuccessEffects` — see
+those for how a notification instance gets created in the first place) are actually surfaced to their
+recipient. Deliberately NOT another `renderBindings[].tabId` entry: a `notification` instance has no
+`eventDate`/list-position/etc. of its own, so routing it through any date-grid or position-ordered surface
+(Calendar's own `_CalendarEntry` projection, confirmed directly, unconditionally requires a valid
+`eventDate` on every instance it renders) breaks. `notificationPresentation` instead selects one of four
+purpose-built, generic, archetype-agnostic rendering styles — usable by any community regardless of which
+workflow types actually create notifications.
+
+```jsonc
+"experience": {
+  ...
+  "notificationPresentation": {
+    "style": "bell"   // one of: "bell" | "dedicatedTab" | "fixedCard" | "fab"
+  },
+  ...
+}
+```
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `notificationPresentation` | object | no | Community-wide notification rendering choice. Absent means `"bell"` (the default). |
+| `notificationPresentation.style` | string | no | One of `bell` \| `dedicatedTab` \| `fixedCard` \| `fab`. |
+
+| Style | Where it renders | Shape |
+|---|---|---|
+| `bell` (default) | Shared AppBar, every tab | Icon + unread-count badge, opens a bottom-sheet panel listing notifications (mark-read on tap). Community-wide chrome, not tied to any one tab. |
+| `dedicatedTab` | Its own app-shell tab (`appShellConfiguration['tabs']`, not a `renderBindings[].tabId`) | A bespoke, always-scrollable list — the whole tab IS the notification inbox. |
+| `fixedCard` | Pinned to the top of one specific tab's own content column | A persistent card above that tab's normal (e.g. date-grid) content — the one style that's genuinely tab-scoped rather than global. |
+| `fab` | A FloatingActionButton (own or shared with a tab's existing creatable-action FAB) | Same bottom-sheet panel as `bell`, triggered from a FAB instead of an AppBar icon — for a tab whose AppBar is already crowded. |
+
+All four are real, independently implemented and tested (CAL.Notify2.3-.6) — a community isn't limited to
+whichever one Tabletop Club happens to activate (`bell`, chosen because it needs zero Calendar-specific UI
+and is the most universally-expected pattern). PROPOSED overall until CAL.Notify2.2 ships the parsing side;
+each individual style's own PROPOSED/IMPLEMENTED status is tracked in `spec-version.json`.
 
 **The three `multiActionStyle` values:**
 - `speedDial` — the FAB, when tapped, expands into a small radial/stacked burst of labeled mini-actions,

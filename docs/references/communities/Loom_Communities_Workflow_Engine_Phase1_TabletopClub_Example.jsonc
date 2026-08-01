@@ -100,6 +100,15 @@
       }
     },
 
+    // Notifications Experience, PROPOSED (new phase, 2026-07-31) -- picks which of the four generic
+    // presentation styles (bell/dedicatedTab/fixedCard/fab) this community uses for the real, per-persona
+    // `notification` workflow type instances (see below). Tabletop Club picks "bell": community-wide chrome
+    // in the shared AppBar, visible on every tab including Calendar, needing zero Calendar-specific UI --
+    // the other three styles ship equally real and independently tested, just not activated here.
+    "notificationPresentation": {
+      "style": "bell"
+    },
+
     "personas": [
       {
         "personaId": "tabletop-organizer",
@@ -301,6 +310,22 @@
             "displayIcon": "person_outline", "labelTemplate": "Host: {value}", "displayContexts": ["detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
+
+          // Notifications Experience, PROPOSED (new phase, 2026-07-31). reminderOffsetHours is organizer-
+          // set at creation (defaults to 24 if omitted -- see the "open" state's own default note above);
+          // already-functional today via the generic editor (plain formEntry, no engine dependency).
+          // reminderAt (the actual computed reminder timestamp) is DELIBERATELY NOT added yet: it needs a
+          // new combineDateAndTime formula function (formulas.md, PROPOSED, not yet engine-implemented)
+          // to combine eventDate+eventTime into one real timestamp before subtracting the offset -- the
+          // same lesson CAL.Calendar2.2's cancellationDeadline guard already taught: eventDate alone
+          // parses to midnight, so subtracting hours from JUST the date would make the reminder
+          // inaccurately early for any event with a real time-of-day. Confirmed the real validator
+          // actively rejects an unrecognized formula function name (unlike guard/effect shapes, which
+          // tolerate additive-but-inert keys) -- so unlike most other held-back capabilities this session,
+          // `reminderAt` cannot be authored into the fixture at all until CAL.Notify2.9 implements
+          // combineDateAndTime; it lands atomically with that engine work, not ahead of it.
+          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
 
           // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED). Plain formEntry fields, functional today
           // for storage/editing via the generic editor -- see the "open" state's own comment above for
@@ -542,7 +567,13 @@
           // -- writableBy "effect" for the same reason as dietaryNotes/comments. Every seeded response
           // row below is backfilled with `partySize: 1` so the guard's sum never silently undercounts
           // pre-existing attendees the moment this op lands.
-          "partySize": { "type": "number", "writableBy": "effect", "storage": "inline" }
+          "partySize": { "type": "number", "writableBy": "effect", "storage": "inline" },
+
+          // Notifications Experience, PROPOSED (new phase, 2026-07-31). Idempotency stamp for the new
+          // client-orchestrated reminder check: written once a reminder notification has genuinely been
+          // created for this (event, persona) pair, so a later poll never creates a second one for the
+          // same response row.
+          "reminderSentAt": { "type": "text", "writableBy": "effect", "storage": "inline" }
         }
       },
 
@@ -660,6 +691,12 @@
           "minimumAttendance": { "type": "number", "required": true, "writableBy": "formEntry",
             "storage": "inline", "displayIcon": "groups_outlined",
             "labelTemplate": "Min. attendance: {value}", "displayContexts": ["detail"] },
+
+          // Notifications Experience, PROPOSED (new phase, 2026-07-31) -- see the fuller comment on
+          // event-rsvp's own copy of this field above; identical status here (reminderAt withheld until
+          // CAL.Notify2.9 implements combineDateAndTime).
+          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
+            "displayContexts": [] },
 
           // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED) -- see the fuller comment on event-rsvp's
           // own copy of these same fields above; identical status here.
