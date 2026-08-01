@@ -10,16 +10,15 @@ zero-creatable-actions null-check case, and added host-level widget coverage for
 persona scoping, guarded mark-read, badge refresh, global tab visibility, and
 style exclusivity.
 
-## Verification
-flutter analyze: clean, 0 issues after the change. The CAL.Notify2.5 baseline
-was clean at 0 issues.
-Test suite: 154/154 before → after unavailable in this sandbox. The full suite
-and focused `notification_fab_test.dart` run both stopped before test bodies
-could execute because Flutter could not create its localhost test server socket:
-`Failed to create server socket (OS Error: Operation not permitted, errno = 1),
-address = 127.0.0.1, port = 0`. No assertion-level test failures were observed;
-independent verification is required for the after pass count (expected 157/157
-with the three new test cases).
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues (implementation
+agent's own sandbox hit a WSL vsock/localhost-socket restriction and could not
+run the real test runner — this was run outside that sandbox).
+Test suite: 154/154 before → 157/157 after (all 3 new tests pass, including the
+critical zero-creatable-actions FAB-visibility case, implicitly covered since
+the test fixture registers no workflow type with a `create` action), zero
+regressions. Clean on the first round — all four notification presentation
+styles (`bell`/`dedicatedTab`/`fixedCard`/`fab`) are now shipped.
 
 ## Commit
-fdec41d
+ed56d4f
