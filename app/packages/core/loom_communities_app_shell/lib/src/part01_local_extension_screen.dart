@@ -1199,6 +1199,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   : null,
             ),
             const SizedBox(height: 10),
+            if (experience.resolvedNotificationPresentationStyle ==
+                    'fixedCard' &&
+                selectedTab.tabId == 'home')
+              NotificationFixedCard(
+                extensionId: community.extensionId,
+                personaId: activePersona.personaId,
+              ),
             _TabNativeRenderer(
               experience: experience,
               persona: activePersona,
