@@ -15,6 +15,7 @@ LoomWorkflowStateMachine _notificationMachine() =>
       'transitions': [
         {
           'id': 'mark-read',
+          'label': 'Mark read',
           'from': ['unread'],
           'to': 'read',
           'guard': {

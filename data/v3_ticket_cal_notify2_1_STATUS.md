@@ -9,14 +9,19 @@ notification FSM's reserved `$state` value, post-filters live pages by
 `recipientPersonaId`, and marks rows read only through the guarded
 `mark-read` transition.
 
-## Verification
-flutter analyze: blocked before analyzer startup by `WSL (169 - ) ERROR:
-UtilBindVsockAnyPort:307: socket failed 1` (same before and after). Direct Dart
-analyzer result: 0 issues before and 0 issues after (`No issues found!`).
-Test suite: blocked before test discovery by the same WSL/vsock error; before:
-0 tests executed / 0 passes, after: 0 tests executed / 0 passes. The focused
-test was also not runnable with plain Dart because this Flutter package loads
-`dart:ui`; the Flutter runner was blocked before it could execute the test.
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues, both before and
+after (the implementation agent's own sandbox hit a WSL vsock error and could
+not run the real Flutter toolchain — this was run outside that sandbox).
+
+Test suite: real `flutter test` run found the new
+`notification_inbox_controller_test.dart` failing (`type 'Null' is not a
+subtype of type 'String' in type cast` in `LoomWorkflowTransition.fromJson` —
+the test's inline `mark-read` transition JSON omitted the required `label`
+field). Fixed by adding `'label': 'Mark read'` to the test fixture's
+transition JSON — no production code changed. Full suite: 143/143 before →
+144/144 after, all passing, zero regressions.
 
 ## Commit
-Commit hash pending until the one final commit is created.
+6125aa0 (implementation agent) + follow-up fix commit (verification agent, see
+below) for the missing `label` field in the test's transition JSON.
