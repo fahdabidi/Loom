@@ -10,16 +10,13 @@ renderer only when `notificationPresentation.style` is `fixedCard` and the
 selected tab is `home`. The home-tab pin is deliberate because the current
 grammar has one community-wide style and no per-tab target field.
 
-## Verification
-flutter analyze: clean, exact issue count 0 before / 0 after. The normal Flutter
-launcher hit the sandbox's WSL vsock/read-only SDK startup limits; the cached
-Flutter analyzer ran successfully with `--no-pub` and reported no issues both
-before and after the change.
-Test suite: 150/150 before (ticket baseline); after blocked before test
-execution. The Flutter runner could not create its required localhost server
-socket at `127.0.0.1:0` (`Operation not permitted`), so 0 tests executed and no
-after pass count is claimed. The targeted fixed-card test hit the same blocker.
+## Verification (independent, verification agent)
+flutter analyze on `loom_communities_app_shell`: clean, 0 issues (implementation
+agent's own sandbox hit a WSL vsock/localhost-socket restriction and could not
+run the real test runner — this was run outside that sandbox).
+Test suite: 150/150 before → 154/154 after (all 4 new tests pass — the new test
+already correctly used `ensureVisible` before tapping, learning from
+CAL.Notify2.4's fix), zero regressions. Clean on the first round.
 
 ## Commit
-staged, not committed + full Flutter test execution is blocked by the sandbox
-localhost socket policy; the verification agent must run the full suite.
+13da877
