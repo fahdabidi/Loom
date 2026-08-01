@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
@@ -49,4 +50,5 @@ part 'src/notification_bell.dart';
 part 'src/notification_fab.dart';
 part 'src/notification_dedicated_tab.dart';
 part 'src/notification_fixed_card.dart';
+part 'src/notification_delivery_service.dart';
 part 'src/calendar_month_grid.dart';

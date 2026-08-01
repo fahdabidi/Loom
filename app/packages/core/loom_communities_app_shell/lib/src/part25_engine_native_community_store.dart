@@ -28,6 +28,7 @@ class _EngineNativeCommunityStore {
   late final LocalWorkflowEngineApi engine = LocalWorkflowEngineApi(
     db: _database,
     communityId: extensionId,
+    notificationDeliveryService: LocalNotificationDeliveryService(),
   );
   final LoomExperienceDefinition experience;
   final String extensionId;

@@ -10,6 +10,7 @@ import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
 import '../store/database.dart';
+import 'notification_delivery_service.dart';
 import 'workflow_engine_api.dart';
 
 /// Validation error thrown when instance data fails schema checks.
@@ -70,6 +71,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final WorkflowDatabase _db;
   final String _communityId;
   final DateTime Function() _clock;
+  final NotificationDeliveryService? _notificationDeliveryService;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -89,9 +91,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required WorkflowDatabase db,
     required String communityId,
     DateTime Function()? clock,
+    NotificationDeliveryService? notificationDeliveryService,
   }) : _db = db,
        _communityId = communityId,
-       _clock = clock ?? DateTime.now;
+       _clock = clock ?? DateTime.now,
+       _notificationDeliveryService = notificationDeliveryService;
 
   // ── populate definitions (called before any API use) ──────────────────
 
@@ -665,6 +669,25 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       instanceData: initialInstanceData,
       createdByPersonaId: personaId,
     );
+
+    final deliveryService = _notificationDeliveryService;
+    if (workflowType == 'notification' && deliveryService != null) {
+      final notification = WorkflowInstance(
+        instanceId: instanceId,
+        workflowType: workflowType,
+        currentState: machine.initialState,
+        instanceData: Map<String, dynamic>.from(initialInstanceData),
+        createdByPersonaId: personaId,
+      );
+      unawaited(() async {
+        try {
+          await deliveryService.deliver(notification);
+        } catch (_) {
+          // Delivery is best-effort. A platform/backend failure must not
+          // affect the already-committed workflow instance creation.
+        }
+      }());
+    }
 
     return instanceId;
   }
