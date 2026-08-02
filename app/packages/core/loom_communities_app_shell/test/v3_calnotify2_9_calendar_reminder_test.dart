@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
@@ -26,6 +28,8 @@ Future<_ReminderHarness> _installReminderFixture({
   required String eventDate,
   required String eventTime,
   String responseState = 'pending',
+  int eventCount = 1,
+  bool failAfterNotification = false,
 }) async {
   final extensionId = 'cal-notify2-9-${_extensionSequence++}';
   final eventId = 'event-$extensionId';
@@ -38,6 +42,8 @@ Future<_ReminderHarness> _installReminderFixture({
       eventDate: eventDate,
       eventTime: eventTime,
       responseState: responseState,
+      eventCount: eventCount,
+      failAfterNotification: failAfterNotification,
     ),
   );
   final engine = await workflowEngineForExtensionId(extensionId);
@@ -56,181 +62,374 @@ Map<String, Object?> _configuration({
   required String eventDate,
   required String eventTime,
   required String responseState,
-}) => {
-  'experienceSchemaVersion': 2,
-  'workflowGrammarVersion': 1,
-  'displayName': 'Reminder Test Tabletop Club',
-  'tagline': 'Synthetic calendar reminder coverage.',
-  'accentColor': '#6B4EFF',
-  'personas': [
-    {
-      'personaId': _memberPersonaId,
-      'label': 'Member',
-      'roleLabel': 'Member',
-      'description': 'A synthetic tabletop club member.',
-    },
-  ],
-  'workflowDefinitions': {
-    'event-rsvp': {
-      'initialState': 'open',
-      'states': {
-        'open': {'label': 'RSVP open'},
+  int eventCount = 1,
+  bool failAfterNotification = false,
+}) {
+  final workflowInstances = <Map<String, Object?>>[];
+  for (var index = 0; index < eventCount; index++) {
+    final currentEventId = index == 0 ? eventId : '$eventId-$index';
+    final currentResponseId = index == 0 ? responseId : '$responseId-$index';
+    workflowInstances
+      ..add({
+        'instanceId': currentEventId,
+        'workflowType': 'event-rsvp',
+        'currentState': 'open',
+        'createdByPersonaId': _memberPersonaId,
+        'instanceData': {
+          'title': index == 0
+              ? 'Friday game night'
+              : 'Friday game night #$index',
+          'eventDate': eventDate,
+          'eventTime': eventTime,
+        },
+      })
+      ..add({
+        'instanceId': currentResponseId,
+        'workflowType': 'event-rsvp-response',
+        'currentState': responseState,
+        'createdByPersonaId': _memberPersonaId,
+        'instanceData': {
+          'eventId': currentEventId,
+          'personaId': _memberPersonaId,
+        },
+      });
+  }
+
+  return {
+    'experienceSchemaVersion': 2,
+    'workflowGrammarVersion': 1,
+    'displayName': 'Reminder Test Tabletop Club',
+    'tagline': 'Synthetic calendar reminder coverage.',
+    'accentColor': '#6B4EFF',
+    'personas': [
+      {
+        'personaId': _memberPersonaId,
+        'label': 'Member',
+        'roleLabel': 'Member',
+        'description': 'A synthetic tabletop club member.',
       },
-      'transitions': <Object?>[],
-      'renderBindings': [
-        {
-          'states': ['open'],
-          'role': 'any',
-          'tabId': 'calendar',
-          'cardSurfaceFamily': 'event-rsvp',
-          'bindingKind': 'primary',
-          'responseTable': {
-            'workflowType': 'event-rsvp-response',
-            'eventField': 'eventId',
-            'pendingStates': ['pending'],
+    ],
+    'workflowDefinitions': {
+      'event-rsvp': {
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'RSVP open'},
+        },
+        'transitions': <Object?>[],
+        'renderBindings': [
+          {
+            'states': ['open'],
+            'role': 'any',
+            'tabId': 'calendar',
+            'cardSurfaceFamily': 'event-rsvp',
+            'bindingKind': 'primary',
+            'responseTable': {
+              'workflowType': 'event-rsvp-response',
+              'eventField': 'eventId',
+              'pendingStates': ['pending'],
+            },
+          },
+        ],
+        'instanceDataSchema': {
+          'title': {
+            'type': 'text',
+            'required': true,
+            'storage': 'inline',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'eventDate': {
+            'type': 'date',
+            'required': true,
+            'storage': 'inline',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'eventTime': {
+            'type': 'time',
+            'required': true,
+            'storage': 'inline',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'reminderOffsetHours': {'type': 'number', 'storage': 'inline'},
+          'reminderAt': {
+            'type': 'date',
+            'formula':
+                'subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))',
+          },
+          'responses': {
+            'type': 'list',
+            'source': 'query(event-rsvp-response where eventId == id)',
           },
         },
-      ],
-      'instanceDataSchema': {
-        'title': {
-          'type': 'text',
-          'required': true,
-          'storage': 'inline',
-          'displayContexts': ['tile', 'detail'],
-        },
-        'eventDate': {
-          'type': 'date',
-          'required': true,
-          'storage': 'inline',
-          'displayContexts': ['tile', 'detail'],
-        },
-        'eventTime': {
-          'type': 'time',
-          'required': true,
-          'storage': 'inline',
-          'displayContexts': ['tile', 'detail'],
-        },
-        'reminderOffsetHours': {'type': 'number', 'storage': 'inline'},
-        'reminderAt': {
-          'type': 'date',
-          'formula':
-              'subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))',
-        },
-        'responses': {
-          'type': 'list',
-          'source': 'query(event-rsvp-response where eventId == id)',
-        },
       },
-    },
-    'event-rsvp-response': {
-      'initialState': 'pending',
-      'states': {
-        'pending': {'label': 'No response yet'},
-        'going': {'label': 'Going'},
-        'maybe': {'label': 'Maybe'},
-        'declined': {'label': "Can't go"},
-        'waitlisted': {'label': 'Waitlisted'},
-      },
-      'transitions': [
-        {
-          'id': 'respond-going',
-          'label': 'Going',
-          'from': ['pending'],
-          'to': 'going',
+      'event-rsvp-response': {
+        'initialState': 'pending',
+        'states': {
+          'pending': {'label': 'No response yet'},
+          'going': {'label': 'Going'},
+          'maybe': {'label': 'Maybe'},
+          'declined': {'label': "Can't go"},
+          'waitlisted': {'label': 'Waitlisted'},
         },
-        {
-          'id': 'respond-maybe',
-          'label': 'Maybe',
-          'from': ['pending'],
-          'to': 'maybe',
-        },
-        {
-          'id': 'respond-declined',
-          'label': "Can't go",
-          'from': ['pending'],
-          'to': 'declined',
-        },
-        {
-          'id': 'send-reminder',
-          'label': 'Send reminder',
-          'from': ['pending', 'maybe', 'going', 'waitlisted'],
-          'to': null,
-          'guard': {
-            'actorEqualsField': {'key': 'personaId'},
+        'transitions': [
+          {
+            'id': 'respond-going',
+            'label': 'Going',
+            'from': ['pending'],
+            'to': 'going',
           },
-          'effects': [
-            {'op': 'set', 'key': 'reminderSentAt', 'value': r'$timestamp'},
-          ],
+          {
+            'id': 'respond-maybe',
+            'label': 'Maybe',
+            'from': ['pending'],
+            'to': 'maybe',
+          },
+          {
+            'id': 'respond-declined',
+            'label': "Can't go",
+            'from': ['pending'],
+            'to': 'declined',
+          },
+          {
+            'id': 'send-reminder',
+            'label': 'Send reminder',
+            'from': ['pending', 'maybe', 'going', 'waitlisted'],
+            'to': null,
+            'guard': {
+              'actorEqualsField': {'key': 'personaId'},
+            },
+            'inputs': {
+              'notificationTitle': {'type': 'text', 'required': true},
+              'notificationBody': {'type': 'text', 'required': true},
+              'notificationCreatedAt': {'type': 'text', 'required': true},
+            },
+            'effects': [
+              {
+                'op': 'createInstance',
+                'workflowType': 'notification',
+                'fields': {
+                  'recipientPersonaId': '{personaId}',
+                  'title': '{input.notificationTitle}',
+                  'body': '{input.notificationBody}',
+                  'createdAt': '{input.notificationCreatedAt}',
+                },
+              },
+              if (failAfterNotification)
+                {
+                  'op': 'createInstance',
+                  'workflowType': 'notification',
+                  'fields': {'recipientPersonaId': '{personaId}'},
+                },
+              {'op': 'set', 'key': 'reminderSentAt', 'value': r'$timestamp'},
+            ],
+          },
+        ],
+        'renderBindings': <Object?>[],
+        'instanceDataSchema': {
+          'eventId': {'type': 'text', 'required': true, 'storage': 'inline'},
+          'personaId': {'type': 'text', 'required': true, 'storage': 'inline'},
+          'reminderSentAt': {
+            'type': 'text',
+            'writableBy': 'effect',
+            'storage': 'inline',
+          },
         },
-      ],
-      'renderBindings': <Object?>[],
-      'instanceDataSchema': {
-        'eventId': {'type': 'text', 'required': true, 'storage': 'inline'},
-        'personaId': {'type': 'text', 'required': true, 'storage': 'inline'},
-        'reminderSentAt': {
-          'type': 'text',
-          'writableBy': 'effect',
-          'storage': 'inline',
+      },
+      'notification': {
+        'initialState': 'unread',
+        'states': {
+          'unread': {'label': 'Unread'},
+          'read': {'label': 'Read', 'isTerminal': true},
+        },
+        'transitions': <Object?>[],
+        'renderBindings': <Object?>[],
+        'instanceDataSchema': {
+          'recipientPersonaId': {
+            'type': 'personaId',
+            'required': true,
+            'writableBy': 'effect',
+            'storage': 'inline',
+          },
+          'title': {
+            'type': 'text',
+            'required': true,
+            'writableBy': 'effect',
+            'storage': 'inline',
+          },
+          'body': {
+            'type': 'text',
+            'required': true,
+            'writableBy': 'effect',
+            'storage': 'inline',
+          },
+          'createdAt': {
+            'type': 'text',
+            'required': true,
+            'writableBy': 'effect',
+            'storage': 'inline',
+          },
         },
       },
     },
-    'notification': {
-      'initialState': 'unread',
-      'states': {
-        'unread': {'label': 'Unread'},
-        'read': {'label': 'Read', 'isTerminal': true},
-      },
-      'transitions': <Object?>[],
-      'renderBindings': <Object?>[],
-      'instanceDataSchema': {
-        'recipientPersonaId': {
-          'type': 'personaId',
-          'required': true,
-          'writableBy': 'effect',
-          'storage': 'inline',
-        },
-        'title': {
-          'type': 'text',
-          'required': true,
-          'writableBy': 'effect',
-          'storage': 'inline',
-        },
-        'body': {
-          'type': 'text',
-          'required': true,
-          'writableBy': 'effect',
-          'storage': 'inline',
-        },
-        'createdAt': {
-          'type': 'text',
-          'required': true,
-          'writableBy': 'effect',
-          'storage': 'inline',
-        },
-      },
-    },
-  },
-  'workflowInstances': [
-    {
-      'instanceId': eventId,
-      'workflowType': 'event-rsvp',
-      'currentState': 'open',
-      'createdByPersonaId': _memberPersonaId,
-      'instanceData': {
-        'title': 'Friday game night',
-        'eventDate': eventDate,
-        'eventTime': eventTime,
-      },
-    },
-    {
-      'instanceId': responseId,
-      'workflowType': 'event-rsvp-response',
-      'currentState': responseState,
-      'createdByPersonaId': _memberPersonaId,
-      'instanceData': {'eventId': eventId, 'personaId': _memberPersonaId},
-    },
-  ],
-};
+    'workflowInstances': workflowInstances,
+  };
+}
+
+class _ControlledReminderEngine implements WorkflowEngineApi {
+  _ControlledReminderEngine(this.delegate);
+
+  final WorkflowEngineApi delegate;
+  final Completer<void> foregroundTransitionCompleted = Completer<void>();
+  final List<String> transitionIds = <String>[];
+  final List<String> directCreateWorkflowTypes = <String>[];
+  Completer<InstancePage>? _heldFreshnessRead;
+  int _calendarQueryCount = 0;
+
+  bool get freshnessReadHeld => _heldFreshnessRead != null;
+
+  @override
+  Future<InstancePage> queryInstances({
+    required String tabId,
+    required String personaId,
+    SurfaceQuery query = const SurfaceQuery.empty(),
+    int limit = 25,
+    String? cursor,
+  }) {
+    if (tabId == 'calendar' && _calendarQueryCount++ == 1) {
+      final held = Completer<InstancePage>();
+      _heldFreshnessRead = held;
+      return held.future;
+    }
+    return delegate.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      query: query,
+      limit: limit,
+      cursor: cursor,
+    );
+  }
+
+  Future<void> releaseFreshnessRead() async {
+    final held = _heldFreshnessRead;
+    if (held == null) throw StateError('No freshness read is being held');
+    final page = await delegate.queryInstances(
+      tabId: 'calendar',
+      personaId: _memberPersonaId,
+      limit: 100,
+    );
+    _heldFreshnessRead = null;
+    held.complete(page);
+  }
+
+  @override
+  List<LoomWorkflowTransition> availableTransitions({
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required Map<String, dynamic> instanceData,
+    required String personaId,
+  }) => delegate.availableTransitions(
+    workflowType: workflowType,
+    instanceId: instanceId,
+    currentState: currentState,
+    instanceData: instanceData,
+    personaId: personaId,
+  );
+
+  @override
+  Future<List<LoomWorkflowTransition>> availableTransitionsAsync({
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required Map<String, dynamic> instanceData,
+    required String personaId,
+  }) => delegate.availableTransitionsAsync(
+    workflowType: workflowType,
+    instanceId: instanceId,
+    currentState: currentState,
+    instanceData: instanceData,
+    personaId: personaId,
+  );
+
+  @override
+  Future<WorkflowTransitionResult> applyTransition({
+    required String workflowType,
+    required String instanceId,
+    required String transitionId,
+    required String personaId,
+    Map<String, dynamic>? inputs,
+  }) async {
+    transitionIds.add(transitionId);
+    final isForeground = transitionId != 'send-reminder';
+    final result = await delegate.applyTransition(
+      workflowType: workflowType,
+      instanceId: instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+      inputs: inputs,
+    );
+    if (isForeground && !foregroundTransitionCompleted.isCompleted) {
+      foregroundTransitionCompleted.complete();
+    }
+    return result;
+  }
+
+  @override
+  Future<String> createInstance({
+    required String workflowType,
+    required Map<String, dynamic> initialInstanceData,
+    required String personaId,
+  }) {
+    directCreateWorkflowTypes.add(workflowType);
+    return delegate.createInstance(
+      workflowType: workflowType,
+      initialInstanceData: initialInstanceData,
+      personaId: personaId,
+    );
+  }
+
+  @override
+  Future<List<String>> createInstances({
+    required String workflowType,
+    required List<Map<String, dynamic>> initialInstanceDataList,
+    required String personaId,
+  }) => delegate.createInstances(
+    workflowType: workflowType,
+    initialInstanceDataList: initialInstanceDataList,
+    personaId: personaId,
+  );
+
+  @override
+  Future<void> updateInstanceFields({
+    required String workflowType,
+    required String instanceId,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) => delegate.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: instanceId,
+    fieldUpdates: fieldUpdates,
+    personaId: personaId,
+  );
+
+  @override
+  Future<dynamic> aggregate({
+    required String workflowType,
+    required String column,
+    required String op,
+    Map<String, dynamic>? filter,
+    String? groupBy,
+  }) => delegate.aggregate(
+    workflowType: workflowType,
+    column: column,
+    op: op,
+    filter: filter,
+    groupBy: groupBy,
+  );
+
+  @override
+  Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf}) =>
+      delegate.dueNotifications(asOf: asOf);
+}
 
 Widget _calendar(
   _ReminderHarness harness, {
@@ -286,6 +485,38 @@ Future<void> _waitForReminderStamp(
   }
   fail('Timed out waiting for reminderSentAt on ${harness.responseId}');
 }
+
+Future<void> _pumpUntilFinder(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    if (finder.evaluate().isNotEmpty) return;
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+  }
+  fail('Timed out waiting for $finder');
+}
+
+Future<void> _pumpUntilFreshnessRead(
+  WidgetTester tester,
+  _ControlledReminderEngine engine,
+) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    if (engine.freshnessReadHeld) return;
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+  }
+  fail('Timed out waiting for the controlled reminder freshness read');
+}
+
+_ReminderHarness _withEngine(
+  _ReminderHarness harness,
+  WorkflowEngineApi engine,
+) => _ReminderHarness(
+  extensionId: harness.extensionId,
+  experience: harness.experience,
+  engine: engine,
+  eventId: harness.eventId,
+  responseId: harness.responseId,
+);
 
 void main() {
   testWidgets(
@@ -406,4 +637,106 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'held reminder freshness yields to a foreground RSVP before any reminder write',
+    (tester) async {
+      final installed = await _installReminderFixture(
+        eventDate: '2026-07-10',
+        eventTime: '19:00',
+      );
+      final controlled = _ControlledReminderEngine(installed.engine);
+      final harness = _withEngine(installed, controlled);
+      await tester.pumpWidget(
+        _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+      );
+      await _pumpUntilFreshnessRead(tester, controlled);
+
+      final action = find.byKey(
+        ValueKey('event-rsvp-${harness.eventId}-action-respond-going'),
+      );
+      await _pumpUntilFinder(tester, action);
+      await tester.tap(action);
+      await tester.pump();
+
+      expect(controlled.transitionIds, isEmpty);
+      await tester.runAsync(controlled.releaseFreshnessRead);
+      await tester.runAsync(
+        () => controlled.foregroundTransitionCompleted.future,
+      );
+
+      expect(controlled.transitionIds.first, 'respond-going');
+      expect(controlled.directCreateWorkflowTypes, isEmpty);
+      final response = await _response(harness);
+      expect(response.currentState, 'going');
+      expect(response.instanceData['reminderSentAt'], isNull);
+    },
+  );
+
+  testWidgets('foreground RSVP wins over multiple queued reminder jobs', (
+    tester,
+  ) async {
+    final installed = await _installReminderFixture(
+      eventDate: '2026-07-10',
+      eventTime: '19:00',
+      eventCount: 3,
+    );
+    final controlled = _ControlledReminderEngine(installed.engine);
+    final harness = _withEngine(installed, controlled);
+    await tester.pumpWidget(
+      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+    );
+    await _pumpUntilFreshnessRead(tester, controlled);
+
+    final action = find.byKey(
+      ValueKey('event-rsvp-${harness.eventId}-action-respond-going'),
+    );
+    await _pumpUntilFinder(tester, action);
+    await tester.tap(action);
+    await tester.pump();
+    await tester.runAsync(controlled.releaseFreshnessRead);
+    await tester.runAsync(
+      () => controlled.foregroundTransitionCompleted.future,
+    );
+
+    expect(controlled.transitionIds.first, 'respond-going');
+    expect(controlled.transitionIds, <String>['respond-going']);
+    await _settleCalendar(tester);
+    final foregroundIndex = controlled.transitionIds.indexOf('respond-going');
+    final reminderIndices = <int>[
+      for (var index = 0; index < controlled.transitionIds.length; index++)
+        if (controlled.transitionIds[index] == 'send-reminder') index,
+    ];
+    expect(reminderIndices.length, greaterThanOrEqualTo(2));
+    expect(reminderIndices, everyElement(greaterThan(foregroundIndex)));
+  });
+
+  test(
+    'failed atomic reminder transition rolls back its notification and stamp',
+    () async {
+      final harness = await _installReminderFixture(
+        eventDate: '2026-07-10',
+        eventTime: '19:00',
+        failAfterNotification: true,
+      );
+
+      await expectLater(
+        harness.engine.applyTransition(
+          workflowType: 'event-rsvp-response',
+          instanceId: harness.responseId,
+          transitionId: 'send-reminder',
+          personaId: _memberPersonaId,
+          inputs: {
+            'notificationTitle': 'Reminder: Friday game night',
+            'notificationBody': 'Starts soon — check Calendar for details.',
+            'notificationCreatedAt': '2026-07-10T20:00:00.000',
+          },
+        ),
+        throwsA(anything),
+      );
+
+      expect(await _notificationCount(harness), 0);
+      expect((await _response(harness)).instanceData['reminderSentAt'], isNull);
+    },
+  );
 }

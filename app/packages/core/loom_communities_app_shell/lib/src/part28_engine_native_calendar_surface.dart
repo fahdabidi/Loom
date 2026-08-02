@@ -4,37 +4,77 @@ part of '../loom_communities_app_shell.dart';
 /// engine uses one SQLite connection, so overlapping transactions can fail
 /// even when they target different workflow rows.
 class _EngineNativeMutationQueue {
-  Future<void> _tail = Future<void>.value();
+  final List<Future<void> Function()> _foregroundJobs =
+      <Future<void> Function()>[];
+  final List<Future<void> Function()> _reminderJobs =
+      <Future<void> Function()>[];
+  bool _running = false;
+  int _foregroundDemand = 0;
   final Set<String> _reminderInFlight = <String>{};
   final Set<String> _reminderSent = <String>{};
 
-  Future<T> run<T>(Future<T> Function() operation) async {
-    final predecessor = _tail;
-    final release = Completer<void>();
-    _tail = release.future;
-    await predecessor;
-    try {
-      return await operation();
-    } finally {
-      release.complete();
-    }
+  /// Enqueues a user-visible mutation and registers its demand synchronously.
+  ///
+  /// Registering before [operation] waits is what lets an active reminder
+  /// yield after its freshness read, instead of reserving a FIFO slot that
+  /// blocks the foreground action.
+  Future<T> runForeground<T>(Future<T> Function() operation) {
+    _foregroundDemand++;
+    final result = Completer<T>();
+    _foregroundJobs.add(() async {
+      try {
+        result.complete(await operation());
+      } catch (error, stackTrace) {
+        result.completeError(error, stackTrace);
+      } finally {
+        _foregroundDemand--;
+      }
+    });
+    _drain();
+    return result.future;
   }
 
   Future<bool> runReminder(
     String responseId,
-    Future<bool> Function() operation,
+    Future<bool> Function(bool Function() shouldYieldToForeground) operation,
   ) {
     if (!_reminderInFlight.add(responseId)) return Future<bool>.value(false);
-    return run(() async {
+    final result = Completer<bool>();
+    _reminderJobs.add(() async {
       try {
-        if (_reminderSent.contains(responseId)) return false;
-        final sent = await operation();
+        if (_reminderSent.contains(responseId)) {
+          result.complete(false);
+          return;
+        }
+        final sent = await operation(() => _foregroundDemand > 0);
         if (sent) _reminderSent.add(responseId);
-        return sent;
+        result.complete(sent);
+      } catch (error, stackTrace) {
+        result.completeError(error, stackTrace);
       } finally {
         _reminderInFlight.remove(responseId);
       }
     });
+    _drain();
+    return result.future;
+  }
+
+  void _drain() {
+    if (_running) return;
+    final jobs = _foregroundJobs.isNotEmpty ? _foregroundJobs : _reminderJobs;
+    if (jobs.isEmpty) return;
+    final job = jobs.removeAt(0);
+    _running = true;
+    unawaited(_runJob(job));
+  }
+
+  Future<void> _runJob(Future<void> Function() job) async {
+    try {
+      await job();
+    } finally {
+      _running = false;
+      _drain();
+    }
   }
 }
 
@@ -322,7 +362,11 @@ Color _calendarEntryStyleColor(_CalendarEntry entry, Color accent) {
 }
 
 const _defaultCalendarDateRailEntries = <CalendarDateRailEntry>[
-  CalendarDateRailEntry(kind: 'dateToken', token: 'weekdayAbbrev', style: 'label'),
+  CalendarDateRailEntry(
+    kind: 'dateToken',
+    token: 'weekdayAbbrev',
+    style: 'label',
+  ),
   CalendarDateRailEntry(
     kind: 'dateToken',
     token: 'dayOfMonth',
@@ -516,9 +560,17 @@ class _EngineNativeCalendarContentState
   final Set<String> _reminderCheckInFlight = <String>{};
 
   @override
+  void initState() {
+    super.initState();
+    _scheduleDueReminders();
+  }
+
+  @override
   void didUpdateWidget(covariant _EngineNativeCalendarContent oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final bindingsChanged = !identical(widget.bindings, oldWidget.bindings);
     _reconcileSelection(_tryEntries());
+    if (bindingsChanged) _scheduleDueReminders();
   }
 
   List<_CalendarEntry>? _tryEntries() {
@@ -599,9 +651,11 @@ class _EngineNativeCalendarContentState
       final end = parsedEndDate != null && parsedEndDate.isAfter(start)
           ? DateTime(parsedEndDate.year, parsedEndDate.month, parsedEndDate.day)
           : start;
-      for (var date = start;
+      for (
+        var date = start;
         !date.isAfter(end);
-          date = date.add(const Duration(days: 1))) {
+        date = date.add(const Duration(days: 1))
+      ) {
         value.add(
           _CalendarEntry(
             resolved: resolved,
@@ -679,16 +733,19 @@ class _EngineNativeCalendarContentState
   List<_CalendarFacet> _facetsForEntries(List<_CalendarEntry> entries) {
     final facets = <String, _CalendarFacet>{};
     for (final entry in entries) {
-      for (final facet in entry.resolved.binding.filterableFacets ??
-          const <FilterableFacetSpec>[]) {
+      for (final facet
+          in entry.resolved.binding.filterableFacets ??
+              const <FilterableFacetSpec>[]) {
         facets.putIfAbsent(
           facet.field,
           () => _CalendarFacet(
             field: facet.field,
             label: facet.label,
-            kind: switch (
-              entry.resolved.machine.instanceDataSchema[facet.field]?.type
-            ) {
+            kind: switch (entry
+                .resolved
+                .machine
+                .instanceDataSchema[facet.field]
+                ?.type) {
               'bool' => _CalendarFacetKind.boolean,
               'text' => _CalendarFacetKind.textValue,
               _ => _CalendarFacetKind.numericStat,
@@ -700,32 +757,31 @@ class _EngineNativeCalendarContentState
     return facets.values.toList();
   }
 
-  bool _bindingDeclaresFacet(_CalendarEntry entry, String field) => entry
-      .resolved
-      .binding
-      .filterableFacets
-      ?.any((facet) => facet.field == field) ??
+  bool _bindingDeclaresFacet(_CalendarEntry entry, String field) =>
+      entry.resolved.binding.filterableFacets?.any(
+        (facet) => facet.field == field,
+      ) ??
       false;
 
-  List<_CalendarEntry> _entriesForActiveFacets(
-    List<_CalendarEntry> entries,
-  ) => entries.where((entry) {
-    for (final field in widget.presentation.activeFacets) {
-      if (_bindingDeclaresFacet(entry, field) &&
-          entry.resolved.instance.instanceData[field] != true) {
-        return false;
-      }
-    }
-    for (final selection in widget.presentation.activeTextFacetValues.entries) {
-      if (selection.value != null &&
-          _bindingDeclaresFacet(entry, selection.key) &&
-          entry.resolved.instance.instanceData[selection.key] !=
-              selection.value) {
-        return false;
-      }
-    }
-    return true;
-  }).toList();
+  List<_CalendarEntry> _entriesForActiveFacets(List<_CalendarEntry> entries) =>
+      entries.where((entry) {
+        for (final field in widget.presentation.activeFacets) {
+          if (_bindingDeclaresFacet(entry, field) &&
+              entry.resolved.instance.instanceData[field] != true) {
+            return false;
+          }
+        }
+        for (final selection
+            in widget.presentation.activeTextFacetValues.entries) {
+          if (selection.value != null &&
+              _bindingDeclaresFacet(entry, selection.key) &&
+              entry.resolved.instance.instanceData[selection.key] !=
+                  selection.value) {
+            return false;
+          }
+        }
+        return true;
+      }).toList();
 
   num _facetTotal(List<_CalendarEntry> entries, String field) => entries
       .where((entry) => _bindingDeclaresFacet(entry, field))
@@ -763,9 +819,8 @@ class _EngineNativeCalendarContentState
       }());
       return const _ViewerResponseLookup.invalid();
     }
-    final responses = entry.resolved.instance.instanceData[
-      responseField.first.key
-    ];
+    final responses =
+        entry.resolved.instance.instanceData[responseField.first.key];
     if (responses != null && responses is! List) {
       return const _ViewerResponseLookup.invalid();
     }
@@ -856,8 +911,11 @@ class _EngineNativeCalendarContentState
       }
       _reminderCheckInFlight.add(responseId);
       try {
-        await mutationQueue.runReminder(responseId, () async {
+        await mutationQueue.runReminder(responseId, (
+          shouldYieldToForeground,
+        ) async {
           final freshEntry = await _freshReminderEntry(entry);
+          if (shouldYieldToForeground()) return false;
           if (freshEntry == null) return false;
           final freshResponse = _viewerResponseRowFor(freshEntry);
           if (freshResponse == null ||
@@ -867,21 +925,16 @@ class _EngineNativeCalendarContentState
           }
           final eventTitle =
               freshEntry.resolved.instance.instanceData['title'] ?? 'Event';
-          await widget.engine.createInstance(
-            workflowType: 'notification',
-            initialInstanceData: {
-              'recipientPersonaId': freshResponse['personaId'],
-              'title': 'Reminder: $eventTitle',
-              'body': 'Starts soon — check Calendar for details.',
-              'createdAt': widget.currentDate().toIso8601String(),
-            },
-            personaId: widget.personaId,
-          );
           await widget.engine.applyTransition(
             workflowType: 'event-rsvp-response',
             instanceId: responseId,
             transitionId: 'send-reminder',
             personaId: widget.personaId,
+            inputs: {
+              'notificationTitle': 'Reminder: $eventTitle',
+              'notificationBody': 'Starts soon — check Calendar for details.',
+              'notificationCreatedAt': widget.currentDate().toIso8601String(),
+            },
           );
           return true;
         });
@@ -891,6 +944,15 @@ class _EngineNativeCalendarContentState
         _reminderCheckInFlight.remove(responseId);
       }
     }
+  }
+
+  void _scheduleDueReminders() {
+    final entries = _tryEntries();
+    if (entries == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_checkDueReminders(entries));
+    });
   }
 
   @override
@@ -907,9 +969,6 @@ class _EngineNativeCalendarContentState
       );
     }
     _reconcileSelection(entries);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _checkDueReminders(entries),
-    );
     if (entries.isEmpty) return const _CalendarEmptyState();
 
     final selected = entries.firstWhere(
@@ -1089,9 +1148,9 @@ class _EngineNativeCalendarContentState
                         'calendar-facet-value-${facet.field}-$value',
                       ),
                       label: Text(value),
-                      selected: widget.presentation.activeTextFacetValues[
-                              facet.field
-                            ] ==
+                      selected:
+                          widget.presentation.activeTextFacetValues[facet
+                              .field] ==
                           value,
                       onSelected: (selected) => setState(() {
                         widget.presentation.activeTextFacetValues[facet.field] =
@@ -1127,28 +1186,32 @@ class _EngineNativeCalendarContentState
                   ? widget.calendarDateRailEntries!
                   : _defaultCalendarDateRailEntries;
               return Container(
-            key: ValueKey('engine-native-calendar-agenda-group-$day'),
-            decoration: BoxDecoration(
-              color: theme.resolvedFill,
-              border: Border.all(color: theme.resolvedBorder),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 48,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 10,
-                    ),
-                    child: Column(
-                      key: ValueKey('engine-native-calendar-agenda-date-$day'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (var index = 0;
-                            index < dateRailEntries.length;
-                            index++) ...[
+                key: ValueKey('engine-native-calendar-agenda-group-$day'),
+                decoration: BoxDecoration(
+                  color: theme.resolvedFill,
+                  border: Border.all(color: theme.resolvedBorder),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 10,
+                        ),
+                        child: Column(
+                          key: ValueKey(
+                            'engine-native-calendar-agenda-date-$day',
+                          ),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (
+                              var index = 0;
+                              index < dateRailEntries.length;
+                              index++
+                            ) ...[
                               if (index > 0) const SizedBox(height: 2),
                               _calendarDateRailWidget(
                                 entry: dateRailEntries[index],
@@ -1176,34 +1239,38 @@ class _EngineNativeCalendarContentState
                                       )
                                     : null,
                               ),
-                        ],
-                      ],
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      for (final entry in byDay[day]!) ...[
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(0, 2, 8, 2),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            color: _calendarEntryStyleColor(entry, accent)
-                                .withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: ListTile(
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (final entry in byDay[day]!) ...[
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(0, 2, 8, 2),
+                              clipBehavior: Clip.antiAlias,
+                              decoration: BoxDecoration(
+                                color: _calendarEntryStyleColor(
+                                  entry,
+                                  accent,
+                                ).withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: ListTile(
                                 key: ValueKey(
                                   'engine-native-calendar-agenda-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                                 ),
                                 selected:
                                     entry.identity ==
                                     widget.presentation.selectedIdentity,
-                            title: Text(
-                              entry.title,
-                              style: TextStyle(color: theme.resolvedHeading),
-                            ),
+                                title: Text(
+                                  entry.title,
+                                  style: TextStyle(
+                                    color: theme.resolvedHeading,
+                                  ),
+                                ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -1213,18 +1280,24 @@ class _EngineNativeCalendarContentState
                                         color: theme.resolvedBody,
                                       ),
                                     ),
-                                if (entry.identity !=
-                                        widget.presentation.selectedIdentity &&
+                                    if (entry.identity !=
+                                            widget
+                                                .presentation
+                                                .selectedIdentity &&
                                         _tileFactSchema(entry).isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       KeyedSubtree(
                                         key: ValueKey(
                                           'engine-native-calendar-agenda-facts-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
                                         ),
-                                    child: WorkflowFactPillRow(
-                                      instanceData:
-                                          entry.resolved.instance.instanceData,
-                                      instanceDataSchema: _tileFactSchema(entry),
+                                        child: WorkflowFactPillRow(
+                                          instanceData: entry
+                                              .resolved
+                                              .instance
+                                              .instanceData,
+                                          instanceDataSchema: _tileFactSchema(
+                                            entry,
+                                          ),
                                           displayContext: 'tile',
                                           accent: widget.accent,
                                         ),
@@ -1232,8 +1305,10 @@ class _EngineNativeCalendarContentState
                                     ],
                                   ],
                                 ),
-                            dense: true,
-                            visualDensity: const VisualDensity(vertical: -3),
+                                dense: true,
+                                visualDensity: const VisualDensity(
+                                  vertical: -3,
+                                ),
                                 minVerticalPadding: 2,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -1250,7 +1325,8 @@ class _EngineNativeCalendarContentState
                                 ),
                                 resolved: entry.resolved,
                                 engine: widget.engine,
-                            communityExtensionId: widget.communityExtensionId,
+                                communityExtensionId:
+                                    widget.communityExtensionId,
                                 personaId: widget.personaId,
                                 accent: widget.accent,
                                 onInstanceChanged: widget.onInstanceChanged,
@@ -1471,7 +1547,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     if (expected is Map) {
       if (data is! Map) return false;
       return expected.entries.every(
-        (entry) => data.containsKey(entry.key) &&
+        (entry) =>
+            data.containsKey(entry.key) &&
             _containsData(data[entry.key], entry.value),
       );
     }
@@ -1488,7 +1565,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   List<String> get _editableKeys {
     final state = widget.machine.states[_instance.currentState];
     final guard = state?.editGuard;
-    final canEdit = guard != null &&
+    final canEdit =
+        guard != null &&
         evaluateGuard(guard, widget.personaId, _instance.instanceData);
     return canEdit
         ? [
@@ -1569,7 +1647,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       }
       setState(() {
         _accountNames = {
-          for (final account in accounts) account.accountId: account.displayName,
+          for (final account in accounts)
+            account.accountId: account.displayName,
         };
       });
     } catch (_) {
@@ -1841,7 +1920,10 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 workflowType: 'event-rsvp-response',
                 initialInstanceDataList: [
                   for (final account in accounts)
-                    {'eventId': sibling.instanceId, 'personaId': account.accountId},
+                    {
+                      'eventId': sibling.instanceId,
+                      'personaId': account.accountId,
+                    },
                 ],
                 personaId: personaId,
               );
@@ -1973,7 +2055,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (field.type == 'number' && value is String) {
         final parsed = num.tryParse(value.trim());
         if (parsed == null) {
-          if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+          if (!_isCurrent(generation, instance, machine, engine, personaId))
+            return;
           setState(() {
             _error = 'Enter a valid number.';
             _retry = _save;
@@ -2118,7 +2201,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   }) {
     if (_mutating) return Future<void>.value();
     final mutationQueue = _engineNativeMutationQueueFor(engine);
-    return mutationQueue.run(() async {
+    return mutationQueue.runForeground(() async {
       if (!mounted || _mutating) return;
       setState(() {
         _mutating = true;
@@ -2321,15 +2404,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               lastDate: DateTime(2100),
             );
             if (picked != null &&
-                _isCurrent(
-                  generation,
-                  instance,
-                  machine,
-                  engine,
-                  personaId,
-                )) {
-              setState(() => _edits[key] =
-                  '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}');
+                _isCurrent(generation, instance, machine, engine, personaId)) {
+              setState(
+                () => _edits[key] =
+                    '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}',
+              );
             }
           },
         );
@@ -2354,15 +2433,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               ),
             );
             if (picked != null &&
-                _isCurrent(
-                  generation,
-                  instance,
-                  machine,
-                  engine,
-                  personaId,
-                )) {
-              setState(() => _edits[key] =
-                  '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}');
+                _isCurrent(generation, instance, machine, engine, personaId)) {
+              setState(
+                () => _edits[key] =
+                    '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}',
+              );
             }
           },
         );
@@ -2447,9 +2522,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               Text(
                 title,
                 key: ValueKey('event-rsvp-title-${_instance.instanceId}'),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
             ],
@@ -2654,7 +2729,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                     Expanded(child: Text(_error!)),
                     if (_retry != null)
                       TextButton(
-                        key: ValueKey('event-rsvp-retry-${_instance.instanceId}'),
+                        key: ValueKey(
+                          'event-rsvp-retry-${_instance.instanceId}',
+                        ),
                         onPressed: _mutating ? null : () => _retry?.call(),
                         child: const Text('Retry'),
                       ),
@@ -2712,11 +2789,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                       key: ValueKey(
                         'instance-create-action-${_instance.instanceId}-${action.workflowType}',
                       ),
-                      onPressed: _mutating ||
-                              widget.onInstanceScopedCreate == null
+                      onPressed:
+                          _mutating || widget.onInstanceScopedCreate == null
                           ? null
                           : () => widget.onInstanceScopedCreate!(action),
-                      child: Text(action.label ?? 'Create ${action.workflowType}'),
+                      child: Text(
+                        action.label ?? 'Create ${action.workflowType}',
+                      ),
                     ),
                   ),
               ],
@@ -2913,8 +2992,7 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                             Expanded(
                                               child: Text(
                                                 entry.title,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   color:
                                                       modernTheme.resolvedBody,
@@ -3025,8 +3103,7 @@ class _EngineNativeWeekStrip extends StatelessWidget {
             builder: (context) {
               final date = start.add(Duration(days: weekday));
               final dateKey = _calendarDay(date);
-              final events =
-                  byDay[dateKey] ?? const <_CalendarEntry>[];
+              final events = byDay[dateKey] ?? const <_CalendarEntry>[];
               return Expanded(
                 child: InkWell(
                   onTap: () => onSelectDate(dateKey),
@@ -3063,9 +3140,7 @@ class _EngineNativeWeekStrip extends StatelessWidget {
                                       Container(
                                         width: 5,
                                         height: 5,
-                                        margin: const EdgeInsets.only(
-                                          right: 3,
-                                        ),
+                                        margin: const EdgeInsets.only(right: 3),
                                         decoration: BoxDecoration(
                                           color: _calendarEntryStyleColor(
                                             entry,

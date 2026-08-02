@@ -555,8 +555,9 @@
             // idempotency field via a real engine-enforced effect -- reminderSentAt is writableBy:"effect",
             // so updateInstanceFields refuses it outright; only a transition's own effect can write it.
             // The client-orchestrated "check due, create once" logic (App Shell) calls this on ITS OWN
-            // response row only, immediately after creating the actual notification instance via a direct
-            // createInstance call -- never rendered as a user-facing button (the App Shell explicitly
+            // response row only. This transition creates the actual notification and stamps the
+            // idempotency field in the same engine transaction; the App Shell supplies notification
+            // title/body/createdAt as inputs. It is never rendered as a user-facing button (the App Shell explicitly
             // excludes this id from the automatic action-chip row; see CAL.Notify2.9's own ticket).
             // "declined" is deliberately excluded from "from" -- a member who declined doesn't want a
             // reminder for an event they're not attending.
@@ -565,7 +566,20 @@
             "from": ["pending", "maybe", "going", "waitlisted"],
             "to": null,
             "guard": { "actorEqualsField": { "key": "personaId" } },
+            "inputs": {
+              "notificationTitle": { "type": "text", "required": true },
+              "notificationBody": { "type": "text", "required": true },
+              "notificationCreatedAt": { "type": "text", "required": true }
+            },
             "effects": [
+              { "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "{personaId}",
+                  "title": "{input.notificationTitle}",
+                  "body": "{input.notificationBody}",
+                  "createdAt": "{input.notificationCreatedAt}"
+                } },
               { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
             ]
           }
@@ -949,8 +963,8 @@
 
       // -------------------------------------------------------------------------------------------
       // NOTIFICATION — targeted per-persona notifications (CAL.Notify, PROPOSED). Rows are created
-      // exclusively via other transitions' onSuccessEffects (e.g. respond-maybe/respond-declined's
-      // waitlist-promotion effects above) -- there is no user-facing "create" action for this type.
+      // exclusively via other transitions' effects (e.g. respond-maybe/respond-declined's waitlist-
+      // promotion effects above and send-reminder) -- there is no user-facing "create" action for this type.
       // `mark-read` is gated by `actorEqualsField` (guards.md kind 10, PROPOSED) so only the actual
       // recipient can dismiss their own notification -- neither `instanceDataEquals` (fixed literal)
       // nor `actorInList` (list membership) can express "actor must equal this scalar field's value".
