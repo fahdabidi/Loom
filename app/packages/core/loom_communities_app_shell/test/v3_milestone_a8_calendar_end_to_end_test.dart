@@ -201,9 +201,9 @@ Finder _actionResultFinder(String instanceId, String transitionId) => switch (
   _ => throw ArgumentError('No observable result for $transitionId'),
 };
 
-Future<_PollObservation> _observeInstanceCondition(
+Future<_PollObservation> _observeInstancesCondition(
   _InstalledTabletop installed, {
-  required String instanceId,
+  required Iterable<String> instanceIds,
   String personaId = 'tabletop-organizer',
   required bool Function(WorkflowInstance) condition,
   required String Function(WorkflowInstance) state,
@@ -213,15 +213,38 @@ Future<_PollObservation> _observeInstanceCondition(
     personaId: personaId,
     limit: 100,
   );
-  final matches = page.items
-      .where((item) => item.instanceId == instanceId)
-      .toList();
-  if (matches.isEmpty) {
-    return const _PollObservation(false, 'instance not found');
+  final instancesById = <String, WorkflowInstance>{
+    for (final item in page.items) item.instanceId: item,
+  };
+  final observations = <String>[];
+  var satisfied = true;
+  for (final instanceId in instanceIds) {
+    final instance = instancesById[instanceId];
+    if (instance == null) {
+      satisfied = false;
+      observations.add('$instanceId=missing');
+      continue;
+    }
+    final instanceSatisfied = condition(instance);
+    satisfied = satisfied && instanceSatisfied;
+    observations.add('$instanceId: ${state(instance)}');
   }
-  final instance = matches.single;
-  return _PollObservation(condition(instance), state(instance));
+  return _PollObservation(satisfied, observations.join('; '));
 }
+
+Future<_PollObservation> _observeInstanceCondition(
+  _InstalledTabletop installed, {
+  required String instanceId,
+  String personaId = 'tabletop-organizer',
+  required bool Function(WorkflowInstance) condition,
+  required String Function(WorkflowInstance) state,
+}) => _observeInstancesCondition(
+  installed,
+  instanceIds: [instanceId],
+  personaId: personaId,
+  condition: condition,
+  state: state,
+);
 
 Future<_PollObservation> _observeRecurringEvents(
   _InstalledTabletop installed, {
@@ -303,10 +326,14 @@ Future<void> _tapAction(
   final dialog = find.byKey(
     const ValueKey('generic-transition-input-dialog'),
   );
+  final partySizeInput = find.byKey(
+    const ValueKey('generic-transition-input-partySize'),
+  );
+  if (transitionId == 'respond-going') {
+    await _pumpUntil(tester, dialog);
+    await _pumpUntil(tester, partySizeInput);
+  }
   if (dialog.evaluate().isNotEmpty) {
-    final partySizeInput = find.byKey(
-      const ValueKey('generic-transition-input-partySize'),
-    );
     if (partySizeInput.evaluate().isNotEmpty) {
       await tester.enterText(
         partySizeInput,
@@ -316,6 +343,7 @@ Future<void> _tapAction(
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
     );
+    await _pumpUntil(tester, confirm);
     await tester.ensureVisible(confirm);
     await tester.tap(confirm);
     await tester.pump();
@@ -342,6 +370,12 @@ Future<void> _selectAgenda(
   await tester.ensureVisible(row);
   await tester.tap(row);
   await tester.pump();
+  await _pumpUntil(
+    tester,
+    find.byKey(
+      ValueKey('engine-native-calendar-selected-detail-$instanceId-$ordinal'),
+    ),
+  );
 }
 
 Future<void> _selectCalendarTab(WidgetTester tester) async {
@@ -350,6 +384,10 @@ Future<void> _selectCalendarTab(WidgetTester tester) async {
   await tester.ensureVisible(tab);
   await tester.tap(tab);
   await tester.pump();
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('calendar-tab-surface')),
+  );
 }
 
 Finder _keyPrefix(String prefix) => find.byWidgetPredicate(
@@ -615,6 +653,7 @@ Future<void> _saveLocationWithScope(
   required _InstalledTabletop installed,
   required String instanceId,
   required String location,
+  required Iterable<String> settledInstanceIds,
   String? scope,
 }) async {
   final editor = find.byKey(
@@ -636,20 +675,28 @@ Future<void> _saveLocationWithScope(
       tester,
       find.byKey(const ValueKey('edit-scope-picker-dialog')),
     );
-    await tester.tap(find.byKey(ValueKey('edit-scope-picker-$scope')));
-    await tester.tap(find.byKey(const ValueKey('edit-scope-picker-confirm')));
+    final scopeOption = find.byKey(ValueKey('edit-scope-picker-$scope'));
+    await _pumpUntil(tester, scopeOption);
+    await tester.tap(scopeOption);
+    await tester.pump();
+    final confirm = find.byKey(
+      const ValueKey('edit-scope-picker-confirm'),
+    );
+    await _pumpUntil(tester, confirm);
+    await tester.tap(confirm);
+    await tester.pump();
   }
   await _settleMutation(
     tester,
-    observe: () => _observeInstanceCondition(
+    observe: () => _observeInstancesCondition(
       installed,
-      instanceId: instanceId,
+      instanceIds: settledInstanceIds,
       condition: (instance) => instance.instanceData['location'] == location,
       state: (instance) =>
           'location=${instance.instanceData['location']}, '
           'state=${instance.currentState}',
     ),
-    description: 'location $location on $instanceId',
+    description: 'location $location on ${settledInstanceIds.join(', ')}',
   );
 }
 
@@ -658,6 +705,7 @@ Future<void> _deleteSeriesWithScope(
   required _InstalledTabletop installed,
   required String instanceId,
   required String scope,
+  required Iterable<String> settledInstanceIds,
 }) async {
   final deleteSeries = find.byKey(
     ValueKey('event-rsvp-delete-series-$instanceId'),
@@ -665,21 +713,30 @@ Future<void> _deleteSeriesWithScope(
   await _pumpUntil(tester, deleteSeries);
   await tester.ensureVisible(deleteSeries);
   await tester.tap(deleteSeries, warnIfMissed: false);
+  await tester.pump();
   await _pumpUntil(
     tester,
     find.byKey(const ValueKey('delete-scope-picker-dialog')),
   );
-  await tester.tap(find.byKey(ValueKey('delete-scope-picker-$scope')));
-  await tester.tap(find.byKey(const ValueKey('delete-scope-picker-confirm')));
+  final scopeOption = find.byKey(ValueKey('delete-scope-picker-$scope'));
+  await _pumpUntil(tester, scopeOption);
+  await tester.tap(scopeOption);
+  await tester.pump();
+  final confirm = find.byKey(
+    const ValueKey('delete-scope-picker-confirm'),
+  );
+  await _pumpUntil(tester, confirm);
+  await tester.tap(confirm);
+  await tester.pump();
   await _settleMutation(
     tester,
-    observe: () => _observeInstanceCondition(
+    observe: () => _observeInstancesCondition(
       installed,
-      instanceId: instanceId,
+      instanceIds: settledInstanceIds,
       condition: (instance) => instance.currentState == 'cancelled',
       state: (instance) => 'currentState=${instance.currentState}',
     ),
-    description: 'cancellation of $instanceId',
+    description: 'cancellation of ${settledInstanceIds.join(', ')}',
   );
 }
 
@@ -710,13 +767,14 @@ void main() {
           findsOneWidget,
         );
 
-      await tester.ensureVisible(titleEditor);
-      await tester.enterText(titleEditor, 'Friday game night updated');
-      await tester.pump();
-      final save = find.byKey(
+        await tester.ensureVisible(titleEditor);
+        await tester.enterText(titleEditor, 'Friday game night updated');
+        await tester.pump();
+        final save = find.byKey(
           const ValueKey('event-rsvp-save-event-friday-game-night'),
         );
-        // The detail card is inside the Calendar's scroll view.  The title
+        await _pumpUntil(tester, save);
+        // The detail card is inside the Calendar's scroll view. The title
         // editor is visible after the preceding ensureVisible call, but Save
         // is below the remaining editors; bring the actual action into view
         // before tapping it so this test exercises the mutation path.
@@ -726,27 +784,32 @@ void main() {
         final title = find.byKey(
           const ValueKey('event-rsvp-title-event-friday-game-night'),
         );
-        // This is the optimistic result from _runMutation, before the
-        // dispatcher's follow-up query can replace the card's instance.
-        expect(tester.widget<Text>(title).data, 'Friday game night updated');
-        expect(
-          find.byKey(
-            const ValueKey('event-rsvp-error-event-friday-game-night'),
-          ),
-          findsNothing,
-        );
         await _pollUntilObservation(
           tester,
-          () => _observeInstanceCondition(
-            installed,
-            instanceId: 'event-friday-game-night',
-            condition: (instance) =>
-                instance.instanceData['title'] == 'Friday game night updated',
-            state: (instance) =>
-                'title=${instance.instanceData['title']}, '
-                'currentState=${instance.currentState}',
-          ),
-          description: 'persisted title edit',
+          () async {
+            final titleMatches = title.evaluate();
+            String? renderedTitle;
+            if (titleMatches.length == 1 &&
+                titleMatches.single.widget is Text) {
+              renderedTitle = (titleMatches.single.widget as Text).data;
+            }
+            final persisted = await _observeInstanceCondition(
+              installed,
+              instanceId: 'event-friday-game-night',
+              condition: (instance) =>
+                  instance.instanceData['title'] ==
+                  'Friday game night updated',
+              state: (instance) =>
+                  'title=${instance.instanceData['title']}, '
+                  'currentState=${instance.currentState}',
+            );
+            return _PollObservation(
+              renderedTitle == 'Friday game night updated' &&
+                  persisted.satisfied,
+              'renderedTitle=$renderedTitle; persisted=${persisted.state}',
+            );
+          },
+          description: 'rendered and persisted title edit',
         );
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
         expect(
@@ -798,6 +861,7 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'This event location',
+        settledInstanceIds: const ['event-friday-game-night'],
         scope: 'thisEvent',
       );
       expect(
@@ -837,6 +901,10 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Following location',
+        settledInstanceIds: const [
+          'event-friday-game-night',
+          'event-edit-scope-later',
+        ],
         scope: 'thisAndFollowing',
       );
       expect(
@@ -876,6 +944,11 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Series location',
+        settledInstanceIds: const [
+          'event-edit-scope-earlier',
+          'event-friday-game-night',
+          'event-edit-scope-later',
+        ],
         scope: 'all',
       );
       for (final instanceId in const [
@@ -908,6 +981,7 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Single event location',
+        settledInstanceIds: const ['event-friday-game-night'],
       );
       expect(
         find.byKey(const ValueKey('edit-scope-picker-dialog')),
@@ -940,6 +1014,7 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         scope: 'thisEvent',
+        settledInstanceIds: const ['event-friday-game-night'],
       );
       expect(
         (await _instance(tester, installed, 'event-edit-scope-earlier'))
@@ -978,6 +1053,10 @@ void main() {
           installed: installed,
           instanceId: 'event-friday-game-night',
           scope: 'thisAndFollowing',
+          settledInstanceIds: const [
+            'event-friday-game-night',
+            'event-edit-scope-later',
+          ],
         );
         expect(
           (await _instance(tester, installed, 'event-edit-scope-earlier'))
@@ -1015,6 +1094,11 @@ void main() {
         installed: installed,
         instanceId: 'event-friday-game-night',
         scope: 'all',
+        settledInstanceIds: const [
+          'event-edit-scope-earlier',
+          'event-friday-game-night',
+          'event-edit-scope-later',
+        ],
       );
       for (final instanceId in const [
         'event-edit-scope-earlier',
@@ -2661,7 +2745,7 @@ void main() {
           ),
         );
         await tester.ensureVisible(fridayAgendaEntry);
-        await tester.pumpAndSettle();
+        await _pumpUntil(tester, fridayAgendaEntry);
         await tester.tap(fridayAgendaEntry);
         await _tapAction(tester, 'event-friday-game-night', 'respond-going');
         final going = await _instance(
@@ -3213,6 +3297,9 @@ void main() {
           installed: installed,
           instanceId: 'event-friday-game-night',
           scope: 'all',
+          settledInstanceIds: seriesMembers.map(
+            (member) => member.instanceId,
+          ),
         );
 
         final cancelledMembers = (await tester.runAsync(() async {

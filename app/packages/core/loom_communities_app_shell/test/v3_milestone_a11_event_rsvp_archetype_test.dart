@@ -126,10 +126,14 @@ Widget _app(_InstalledTabletop installed) => MaterialApp(
 
 Future<void> _selectCalendar(WidgetTester tester) async {
   final tab = find.byKey(const ValueKey('community-tab-calendar'));
-  await tester.pumpAndSettle();
+  await _pumpUntil(tester, tab);
   await tester.ensureVisible(tab);
   await tester.tap(tab);
-  await tester.pumpAndSettle();
+  await tester.pump();
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('calendar-tab-surface')),
+  );
 }
 
 Future<void> _pollUntilObservation(
@@ -242,10 +246,14 @@ Future<void> _tapRsvpAction(
   final dialog = find.byKey(
     const ValueKey('generic-transition-input-dialog'),
   );
+  final partySizeInput = find.byKey(
+    const ValueKey('generic-transition-input-partySize'),
+  );
+  if (transitionId == 'respond-going') {
+    await _pumpUntil(tester, dialog);
+    await _pumpUntil(tester, partySizeInput);
+  }
   if (dialog.evaluate().isNotEmpty) {
-    final partySizeInput = find.byKey(
-      const ValueKey('generic-transition-input-partySize'),
-    );
     if (partySizeInput.evaluate().isNotEmpty) {
       await tester.enterText(
         partySizeInput,
@@ -255,6 +263,7 @@ Future<void> _tapRsvpAction(
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
     );
+    await _pumpUntil(tester, confirm);
     await tester.ensureVisible(confirm);
     await tester.tap(confirm);
     await tester.pump();
@@ -281,6 +290,12 @@ Future<void> _selectAgenda(
   await tester.ensureVisible(row);
   await tester.tap(row);
   await tester.pump();
+  await _pumpUntil(
+    tester,
+    find.byKey(
+      ValueKey('engine-native-calendar-selected-detail-$instanceId-$ordinal'),
+    ),
+  );
 }
 
 Future<void> _useFixtureAccounts(_InstalledTabletop installed) async {
@@ -840,18 +855,21 @@ void main() {
         );
         await tester.ensureVisible(eventDate);
         await tester.tap(eventDate);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await _pumpUntil(tester, find.text('15'));
         await tester.tap(find.text('15').last);
+        await _pumpUntil(tester, find.text('OK'));
         await tester.tap(find.text('OK').last);
-        await tester.pumpAndSettle();
+        await tester.pump();
         final eventTime = find.byKey(
           const ValueKey('new-event-editor-eventTime'),
         );
         await tester.ensureVisible(eventTime);
         await tester.tap(eventTime);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await _pumpUntil(tester, find.text('OK'));
         await tester.tap(find.text('OK').last);
-        await tester.pumpAndSettle();
+        await tester.pump();
         final submit = find.byKey(const ValueKey('new-event-submit'));
         await tester.ensureVisible(submit);
         await tester.tap(submit);
@@ -924,12 +942,35 @@ void main() {
       // Switch to the tabletop-member persona so the creatable-action
       // FAB is hidden (the fixture only lists tabletop-organizer
       // in creatable.byPersonaIds).
-      await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('persona-option-tabletop-member')),
+      final personaPicker = find.byKey(
+        const ValueKey('persona-picker-button'),
       );
-      await tester.pumpAndSettle();
+      await _pumpUntil(tester, personaPicker);
+      await tester.tap(personaPicker);
+      await tester.pump();
+      final memberOption = find.byKey(
+        const ValueKey('persona-option-tabletop-member'),
+      );
+      await _pumpUntil(tester, memberOption);
+      await tester.tap(memberOption);
+      await _pollUntilObservation(
+        tester,
+        () async {
+          final eventFabCount = find
+              .byKey(const ValueKey('creatable-fab-event-rsvp'))
+              .evaluate()
+              .length;
+          final speedDialCount = find
+              .byKey(const ValueKey('creatable-fab-speed-dial'))
+              .evaluate()
+              .length;
+          return _PollObservation(
+            eventFabCount == 0 && speedDialCount == 0,
+            'eventFabMatches=$eventFabCount, speedDialMatches=$speedDialCount',
+          );
+        },
+        description: 'member persona hides event creation controls',
+      );
       expect(
         find.byKey(const ValueKey('creatable-fab-event-rsvp')),
         findsNothing,
