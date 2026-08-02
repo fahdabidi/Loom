@@ -729,6 +729,24 @@ wrong in a way that is very hard to see.
   (me) never self-writes implementation code — only tickets, snippets, docs, and JSON. Every dispatch is
   independently re-verified (read the diff, run the suite myself) before a milestone closes; the
   agent's own "done" self-report is never sufficient. It has been wrong before.
+- **Root Cause Agent (added 2026-08-01, `data/call_root_cause_agent.sh`, profile `gpt5_6_sol_xhigh` —
+  model `gpt-5.6-sol`, reasoning effort `xhigh`).** A third role, distinct from both the implementation
+  and verification agents, for bugs that resist the verification agent's own hypothesis-and-test budget —
+  added after CAL.Notify2.9's own regression investigation systematically ruled out five candidate causes
+  (each individually confirmed not responsible via isolated A/B testing) without pinning the actual
+  mechanism. **Never writes or modifies implementation code, never runs `apply_patch` against source
+  files, never commits** — its sandbox is workspace-write only so it can write its own single report
+  file, nothing else; the verification agent must `git status`/`git diff` after every run and treat any
+  other change as a violation to investigate, never to silently accept. Given a brief (the diff under
+  investigation, the full ruled-in/ruled-out matrix so far, any captured trace/log output), it produces
+  exactly one of two outcomes: (1) a confident root-cause diagnosis + a concrete recommended fix in prose
+  (handed to the verification agent to turn into a real implementation ticket), or (2) a precise
+  instrumentation/tracing request — exact file:line locations, exact values to print, exact scenarios to
+  run (handed to the verification agent to turn into an instrumentation ticket for the implementation
+  agent). **The verification agent is the arbiter of when to invoke it** — for a difficult, resistant bug,
+  not as a default first step ahead of the verification agent's own direct investigation. A report that
+  hedges between the two outcomes, or recommends a fix without genuine confidence, is incomplete and
+  should be re-dispatched with that feedback, not accepted as final.
 - **Committed handoff, every time — and commit BEFORE verifying, not after.** In practice the
   implementation agent's own git commit almost never happens: it's either blocked by the WSL vsock error
   before it reaches that step, or deliberately avoids git writes per the repo's own OneDrive
