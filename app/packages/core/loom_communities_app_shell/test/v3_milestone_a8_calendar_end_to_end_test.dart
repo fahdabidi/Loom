@@ -36,6 +36,13 @@ class _InstalledTabletop {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
+class _PollObservation {
+  const _PollObservation(this.satisfied, this.state);
+
+  final bool satisfied;
+  final String state;
+}
+
 /// Real package installation deliberately happens in [tester.runAsync], not in
 /// the widget test's fake-async zone. Every scenario owns its extension ID so
 /// A.5's memoized shared engine cannot leak persisted state between tests.
@@ -126,14 +133,122 @@ Widget _calendar(
 );
 
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  var lastMatchCount = 0;
   for (var attempt = 0; attempt < 40; attempt++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
     await tester.pump(const Duration(milliseconds: 50));
-    if (finder.evaluate().isNotEmpty) return;
+    lastMatchCount = finder.evaluate().length;
+    if (lastMatchCount > 0) return;
   }
-  throw TestFailure('Timed out waiting for $finder');
+  throw TestFailure(
+    'Timed out waiting for $finder; last observed matches=$lastMatchCount',
+  );
+}
+
+Future<void> _pollUntilObservation(
+  WidgetTester tester,
+  Future<_PollObservation> Function() observe, {
+  required String description,
+}) async {
+  _PollObservation? last;
+  for (var attempt = 0; attempt < 120; attempt++) {
+    last = await tester.runAsync(observe);
+    if (last?.satisfied ?? false) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  throw TestFailure(
+    'Timed out waiting for $description; '
+    'last observed state=${last?.state ?? 'no observation'}',
+  );
+}
+
+Future<_PollObservation> _observeFinder(Finder finder, String label) async {
+  final count = finder.evaluate().length;
+  return _PollObservation(count > 0, '$label matches=$count');
+}
+
+Finder _selectedActionFinder(String instanceId, String transitionId) =>
+    find.descendant(
+      of: find.byKey(
+        ValueKey('event-rsvp-$instanceId-action-$transitionId'),
+      ),
+      matching: find.byWidgetPredicate(
+        (widget) => widget is InputChip && widget.selected,
+      ),
+    );
+
+Finder _actionResultFinder(String instanceId, String transitionId) => switch (
+  transitionId
+) {
+  'respond-going' || 'respond-maybe' || 'respond-declined' || 'respond-waitlist'
+      => transitionId == 'respond-waitlist'
+          ? find.byKey(ValueKey('event-rsvp-waitlist-$instanceId'))
+          : _selectedActionFinder(instanceId, transitionId),
+  'rsvp-withdraw' => find.byKey(
+    ValueKey('event-rsvp-$instanceId-action-rsvp-going'),
+  ),
+  'rsvp-going' => find.byKey(
+    ValueKey('event-rsvp-$instanceId-action-rsvp-withdraw'),
+  ),
+  'cancel-event' => find.byKey(
+    ValueKey('engine-native-calendar-selected-detail-$instanceId-1'),
+  ),
+  _ => throw ArgumentError('No observable result for $transitionId'),
+};
+
+Future<_PollObservation> _observeInstanceCondition(
+  _InstalledTabletop installed, {
+  required String instanceId,
+  String personaId = 'tabletop-organizer',
+  required bool Function(WorkflowInstance) condition,
+  required String Function(WorkflowInstance) state,
+}) async {
+  final page = await installed.engine.queryInstances(
+    tabId: 'calendar',
+    personaId: personaId,
+    limit: 100,
+  );
+  final matches = page.items
+      .where((item) => item.instanceId == instanceId)
+      .toList();
+  if (matches.isEmpty) {
+    return const _PollObservation(false, 'instance not found');
+  }
+  final instance = matches.single;
+  return _PollObservation(condition(instance), state(instance));
+}
+
+Future<_PollObservation> _observeRecurringEvents(
+  _InstalledTabletop installed, {
+  required int expectedCount,
+  Set<String>? expectedDates,
+}) async {
+  final page = await installed.engine.queryInstances(
+    tabId: 'calendar',
+    personaId: 'tabletop-organizer',
+    limit: 100,
+  );
+  final events = page.items
+      .where(
+        (item) =>
+            item.workflowType == 'event-rsvp' &&
+            item.instanceData['seriesId'] != null,
+      )
+      .toList();
+  final dates = events
+      .map((event) => event.instanceData['eventDate']?.toString())
+      .whereType<String>()
+      .toSet();
+  final datesMatch = expectedDates == null || dates.containsAll(expectedDates);
+  return _PollObservation(
+    events.length == expectedCount && datesMatch,
+    'seriesCount=${events.length}, dates=$dates',
+  );
 }
 
 Future<void> _expectRefused(
@@ -205,14 +320,14 @@ Future<void> _tapAction(
     await tester.tap(confirm);
     await tester.pump();
   }
-  // The selected A.6 card mutates and then A.7 re-queries the shared engine.
-  // Give both real database operations a bounded real-async/pump handshake.
-  for (var i = 0; i < 5; i++) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
-  }
+  await _pollUntilObservation(
+    tester,
+    () => _observeFinder(
+      _actionResultFinder(instanceId, transitionId),
+      'result for $instanceId/$transitionId',
+    ),
+    description: 'Calendar action $instanceId/$transitionId',
+  );
 }
 
 Future<void> _selectAgenda(
@@ -485,17 +600,19 @@ void _addEditScopeSeriesFixture(Map<String, dynamic> source) {
   }
 }
 
-Future<void> _settleMutation(WidgetTester tester) async {
-  for (var i = 0; i < 24; i++) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
-  }
-}
+Future<void> _settleMutation(
+  WidgetTester tester, {
+  required Future<_PollObservation> Function() observe,
+  required String description,
+}) => _pollUntilObservation(
+  tester,
+  observe,
+  description: description,
+);
 
 Future<void> _saveLocationWithScope(
   WidgetTester tester, {
+  required _InstalledTabletop installed,
   required String instanceId,
   required String location,
   String? scope,
@@ -522,11 +639,23 @@ Future<void> _saveLocationWithScope(
     await tester.tap(find.byKey(ValueKey('edit-scope-picker-$scope')));
     await tester.tap(find.byKey(const ValueKey('edit-scope-picker-confirm')));
   }
-  await _settleMutation(tester);
+  await _settleMutation(
+    tester,
+    observe: () => _observeInstanceCondition(
+      installed,
+      instanceId: instanceId,
+      condition: (instance) => instance.instanceData['location'] == location,
+      state: (instance) =>
+          'location=${instance.instanceData['location']}, '
+          'state=${instance.currentState}',
+    ),
+    description: 'location $location on $instanceId',
+  );
 }
 
 Future<void> _deleteSeriesWithScope(
   WidgetTester tester, {
+  required _InstalledTabletop installed,
   required String instanceId,
   required String scope,
 }) async {
@@ -542,7 +671,16 @@ Future<void> _deleteSeriesWithScope(
   );
   await tester.tap(find.byKey(ValueKey('delete-scope-picker-$scope')));
   await tester.tap(find.byKey(const ValueKey('delete-scope-picker-confirm')));
-  await _settleMutation(tester);
+  await _settleMutation(
+    tester,
+    observe: () => _observeInstanceCondition(
+      installed,
+      instanceId: instanceId,
+      condition: (instance) => instance.currentState == 'cancelled',
+      state: (instance) => 'currentState=${instance.currentState}',
+    ),
+    description: 'cancellation of $instanceId',
+  );
 }
 
 void main() {
@@ -597,12 +735,19 @@ void main() {
           ),
           findsNothing,
         );
-        for (var i = 0; i < 5; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeInstanceCondition(
+            installed,
+            instanceId: 'event-friday-game-night',
+            condition: (instance) =>
+                instance.instanceData['title'] == 'Friday game night updated',
+            state: (instance) =>
+                'title=${instance.instanceData['title']}, '
+                'currentState=${instance.currentState}',
+          ),
+          description: 'persisted title edit',
+        );
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
         expect(
           find.byKey(
@@ -650,6 +795,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _saveLocationWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'This event location',
         scope: 'thisEvent',
@@ -688,6 +834,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _saveLocationWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Following location',
         scope: 'thisAndFollowing',
@@ -726,6 +873,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _saveLocationWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Series location',
         scope: 'all',
@@ -757,6 +905,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _saveLocationWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         location: 'Single event location',
       );
@@ -788,6 +937,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _deleteSeriesWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         scope: 'thisEvent',
       );
@@ -825,6 +975,7 @@ void main() {
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _deleteSeriesWithScope(
           tester,
+          installed: installed,
           instanceId: 'event-friday-game-night',
           scope: 'thisAndFollowing',
         );
@@ -861,6 +1012,7 @@ void main() {
       await _selectAgenda(tester, 'event-friday-game-night', 0);
       await _deleteSeriesWithScope(
         tester,
+        installed: installed,
         instanceId: 'event-friday-game-night',
         scope: 'all',
       );
@@ -918,12 +1070,19 @@ void main() {
         await tester.tap(
           find.byKey(const ValueKey('generic-transition-input-confirm')),
         );
-        for (var i = 0; i < 12; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeRecurringEvents(
+            installed,
+            expectedCount: 3,
+            expectedDates: const {
+              '2026-07-10',
+              '2026-07-17',
+              '2026-07-24',
+            },
+          ),
+          description: 'weekly recurring events',
+        );
 
         final events = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -1055,12 +1214,19 @@ void main() {
         );
         await tester.ensureVisible(confirm);
         await tester.tap(confirm);
-        for (var i = 0; i < 12; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeRecurringEvents(
+            installed,
+            expectedCount: 3,
+            expectedDates: const {
+              '2026-07-10',
+              '2026-08-26',
+              '2026-09-30',
+            },
+          ),
+          description: 'monthly weekday-position recurring events',
+        );
 
         final dates = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -1131,12 +1297,19 @@ void main() {
         await tester.tap(
           find.byKey(const ValueKey('generic-transition-input-confirm')),
         );
-        for (var i = 0; i < 12; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeRecurringEvents(
+            installed,
+            expectedCount: 3,
+            expectedDates: const {
+              '2026-07-10',
+              '2026-08-15',
+              '2026-09-15',
+            },
+          ),
+          description: 'monthly day-of-month recurring events',
+        );
 
         final dates = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -2604,12 +2777,17 @@ void main() {
           await tester.tap(confirm);
           await tester.pump();
         }
-        for (var i = 0; i < 5; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeFinder(
+            _selectedActionFinder(
+              'event-friday-game-night',
+              'respond-going',
+            ),
+            'selected Going action',
+          ),
+          description: 'Going action UI state',
+        );
 
         expect(scrollController.offset, greaterThan(0));
         final going = await _instance(
@@ -2979,12 +3157,19 @@ void main() {
         await tester.tap(
           find.byKey(const ValueKey('generic-transition-input-confirm')),
         );
-        for (var i = 0; i < 12; i++) {
-          await tester.runAsync(
-            () => Future<void>.delayed(const Duration(milliseconds: 20)),
-          );
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+        await _pollUntilObservation(
+          tester,
+          () => _observeRecurringEvents(
+            installed,
+            expectedCount: 3,
+            expectedDates: const {
+              '2026-07-10',
+              '2026-07-17',
+              '2026-07-24',
+            },
+          ),
+          description: 'recurring events before series deletion',
+        );
 
         final seriesMembers = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -3025,6 +3210,7 @@ void main() {
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _deleteSeriesWithScope(
           tester,
+          installed: installed,
           instanceId: 'event-friday-game-night',
           scope: 'all',
         );

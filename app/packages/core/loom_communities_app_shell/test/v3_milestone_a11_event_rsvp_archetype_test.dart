@@ -39,6 +39,13 @@ class _InstalledTabletop {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
+class _PollObservation {
+  const _PollObservation(this.satisfied, this.state);
+
+  final bool satisfied;
+  final String state;
+}
+
 Future<_InstalledTabletop> _install(String extensionId) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
@@ -125,37 +132,76 @@ Future<void> _selectCalendar(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _settleBounded(
-  WidgetTester tester, {
-  int iterations = 10,
+Future<void> _pollUntilObservation(
+  WidgetTester tester,
+  Future<_PollObservation> Function() observe, {
+  required String description,
 }) async {
-  for (var i = 0; i < iterations; i++) {
+  _PollObservation? last;
+  for (var attempt = 0; attempt < 120; attempt++) {
+    last = await tester.runAsync(observe);
+    if (last?.satisfied ?? false) return;
     await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
     await tester.pump(const Duration(milliseconds: 50));
   }
+  throw TestFailure(
+    'Timed out waiting for $description; '
+    'last observed state=${last?.state ?? 'no observation'}',
+  );
 }
+
+Future<_PollObservation> _observeFinder(Finder finder, String label) async {
+  final count = finder.evaluate().length;
+  return _PollObservation(count > 0, '$label matches=$count');
+}
+
+Finder _selectedActionFinder(String instanceId, String transitionId) =>
+    find.descendant(
+      of: find.byKey(
+        ValueKey('event-rsvp-$instanceId-action-$transitionId'),
+      ),
+      matching: find.byWidgetPredicate(
+        (widget) => widget is InputChip && widget.selected,
+      ),
+    );
 
 Future<void> _openEventCreation(WidgetTester tester) async {
   final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
   if (speedDial.evaluate().isNotEmpty) {
+    await tester.ensureVisible(speedDial);
     await tester.tap(speedDial);
-    await _settleBounded(tester);
+    await tester.pump();
+    await _pumpUntil(
+      tester,
+      find.byKey(const ValueKey('creatable-fab-event-rsvp')),
+    );
   }
-  await tester.tap(find.byKey(const ValueKey('creatable-fab-event-rsvp')));
-  await _settleBounded(tester);
+  final createEvent = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
+  await _pumpUntil(tester, createEvent);
+  await tester.ensureVisible(createEvent);
+  await tester.tap(createEvent);
+  await tester.pump();
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('new-event-editor-title')),
+  );
 }
 
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  var lastMatchCount = 0;
   for (var attempt = 0; attempt < 40; attempt++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
     await tester.pump(const Duration(milliseconds: 50));
-    if (finder.evaluate().isNotEmpty) return;
+    lastMatchCount = finder.evaluate().length;
+    if (lastMatchCount > 0) return;
   }
-  throw TestFailure('Timed out waiting for $finder');
+  throw TestFailure(
+    'Timed out waiting for $finder; last observed matches=$lastMatchCount',
+  );
 }
 
 Future<WorkflowInstance> _instance(
@@ -213,12 +259,14 @@ Future<void> _tapRsvpAction(
     await tester.tap(confirm);
     await tester.pump();
   }
-  for (var i = 0; i < 5; i++) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
-  }
+  await _pollUntilObservation(
+    tester,
+    () => _observeFinder(
+      _selectedActionFinder(instanceId, transitionId),
+      'selected $transitionId action',
+    ),
+    description: 'RSVP action $instanceId/$transitionId',
+  );
 }
 
 Future<void> _selectAgenda(
@@ -808,7 +856,28 @@ void main() {
         await tester.ensureVisible(submit);
         await tester.tap(submit);
         await tester.pump();
-        await _settleBounded(tester);
+        await _pollUntilObservation(
+          tester,
+          () async {
+            final page = await installed.engine.queryInstances(
+              tabId: 'calendar',
+              personaId: 'tabletop-organizer',
+              limit: 100,
+            );
+            final events = page.items
+                .where(
+                  (item) =>
+                      item.workflowType == 'event-rsvp' &&
+                      item.instanceData['title'] == 'CALR.3 test event',
+                )
+                .toList();
+            return _PollObservation(
+              events.isNotEmpty,
+              'matching events=${events.length}',
+            );
+          },
+          description: 'created CALR.3 event',
+        );
 
         final result = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(

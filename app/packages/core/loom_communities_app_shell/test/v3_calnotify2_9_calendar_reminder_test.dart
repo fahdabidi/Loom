@@ -282,6 +282,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
   final List<String> transitionIds = <String>[];
   final List<String> directCreateWorkflowTypes = <String>[];
   Completer<InstancePage>? _heldFreshnessRead;
+  InstancePage? _firstCalendarPage;
   int _calendarQueryCount = 0;
 
   bool get freshnessReadHeld => _heldFreshnessRead != null;
@@ -293,31 +294,33 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
-  }) {
-    if (tabId == 'calendar' && _calendarQueryCount++ == 1) {
+  }) async {
+    final calendarOrdinal = tabId == 'calendar' ? _calendarQueryCount++ : null;
+    if (calendarOrdinal == 1) {
       final held = Completer<InstancePage>();
       _heldFreshnessRead = held;
       return held.future;
     }
-    return delegate.queryInstances(
+    final page = await delegate.queryInstances(
       tabId: tabId,
       personaId: personaId,
       query: query,
       limit: limit,
       cursor: cursor,
     );
+    if (calendarOrdinal == 0) _firstCalendarPage = page;
+    return page;
   }
 
-  Future<void> releaseFreshnessRead() async {
+  void releaseFreshnessRead() {
     final held = _heldFreshnessRead;
     if (held == null) throw StateError('No freshness read is being held');
-    final page = await delegate.queryInstances(
-      tabId: 'calendar',
-      personaId: _memberPersonaId,
-      limit: 100,
-    );
-    _heldFreshnessRead = null;
+    final page = _firstCalendarPage;
+    if (page == null) {
+      throw StateError('The first Calendar page was not retained');
+    }
     held.complete(page);
+    _heldFreshnessRead = null;
   }
 
   @override
@@ -495,6 +498,27 @@ Future<void> _pumpUntilFinder(WidgetTester tester, Finder finder) async {
   fail('Timed out waiting for $finder');
 }
 
+Future<void> _pumpUntilForegroundTransitionCompleted(
+  WidgetTester tester,
+  _ControlledReminderEngine engine,
+) async {
+  for (var attempt = 0; attempt < 200; attempt++) {
+    if (engine.foregroundTransitionCompleted.isCompleted) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump();
+  }
+  fail(
+    'Timed out waiting for the foreground transition: '
+    'completed=${engine.foregroundTransitionCompleted.isCompleted}, '
+    'freshnessReadHeld=${engine.freshnessReadHeld}, '
+    'calendarQueryCount=${engine._calendarQueryCount}, '
+    'transitionIds=${engine.transitionIds}, '
+    'directCreateWorkflowTypes=${engine.directCreateWorkflowTypes}',
+  );
+}
+
 Future<void> _pumpUntilFreshnessRead(
   WidgetTester tester,
   _ControlledReminderEngine engine,
@@ -656,14 +680,14 @@ void main() {
         ValueKey('event-rsvp-${harness.eventId}-action-respond-going'),
       );
       await _pumpUntilFinder(tester, action);
+      await tester.ensureVisible(action);
+      await tester.pump();
       await tester.tap(action);
       await tester.pump();
 
       expect(controlled.transitionIds, isEmpty);
-      await tester.runAsync(controlled.releaseFreshnessRead);
-      await tester.runAsync(
-        () => controlled.foregroundTransitionCompleted.future,
-      );
+      controlled.releaseFreshnessRead();
+      await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
       expect(controlled.transitionIds.first, 'respond-going');
       expect(controlled.directCreateWorkflowTypes, isEmpty);
@@ -692,12 +716,12 @@ void main() {
       ValueKey('event-rsvp-${harness.eventId}-action-respond-going'),
     );
     await _pumpUntilFinder(tester, action);
+    await tester.ensureVisible(action);
+    await tester.pump();
     await tester.tap(action);
     await tester.pump();
-    await tester.runAsync(controlled.releaseFreshnessRead);
-    await tester.runAsync(
-      () => controlled.foregroundTransitionCompleted.future,
-    );
+    controlled.releaseFreshnessRead();
+    await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
     expect(controlled.transitionIds.first, 'respond-going');
     expect(controlled.transitionIds, <String>['respond-going']);
