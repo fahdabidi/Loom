@@ -561,12 +561,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       await _db.updateInstanceState(
         instanceId: instanceId,
         newState: newState,
-        newInstanceData: _withComputedFields(
-          data,
-          machine,
-          viewerId: personaId,
-          actorId: personaId,
-        ),
+        newInstanceData: _storageOnly(data, machine),
       );
     }
 
@@ -581,12 +576,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     await _db.updateInstanceState(
       instanceId: instanceId,
       newState: newState,
-      newInstanceData: _withComputedFields(
-        newData,
-        machine,
-        viewerId: personaId,
-        actorId: personaId,
-      ),
+      newInstanceData: _storageOnly(newData, machine),
     );
 
     return WorkflowTransitionResult(
@@ -852,6 +842,21 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /// Storage-only projection of instance data.
+  ///
+  /// Computed fields exist only on the read projection. Their evaluated
+  /// values are re-derived by [_withComputedFields] on every read and must
+  /// never be handed to the database, since some computed types (for example
+  /// [DateTime]) are not JSON-encodable.
+  Map<String, dynamic> _storageOnly(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine machine,
+  ) => {
+    for (final entry in data.entries)
+      if (machine.instanceDataSchema[entry.key]?.formula == null)
+        entry.key: entry.value,
+  };
 
   /// Checks a guard's database-backed conditions before its synchronous ones.
   ///
@@ -1157,12 +1162,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               await _db.updateInstanceState(
                 instanceId: targetId,
                 newState: targetResult.newState,
-                newInstanceData: _withComputedFields(
-                  targetData,
-                  resolved.machine,
-                  viewerId: personaId,
-                  actorId: personaId,
-                ),
+                newInstanceData: _storageOnly(targetData, resolved.machine),
               );
             }
           } on _TransitionGuardFailure {
