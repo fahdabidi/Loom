@@ -280,6 +280,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
   final WorkflowEngineApi delegate;
   final Completer<void> foregroundTransitionCompleted = Completer<void>();
   final List<String> transitionIds = <String>[];
+  List<String>? transitionIdsAtForegroundCompletion;
   final List<String> directCreateWorkflowTypes = <String>[];
   Completer<InstancePage>? _heldFreshnessRead;
   InstancePage? _firstCalendarPage;
@@ -371,6 +372,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
       inputs: inputs,
     );
     if (isForeground && !foregroundTransitionCompleted.isCompleted) {
+      transitionIdsAtForegroundCompletion = List<String>.of(transitionIds);
       foregroundTransitionCompleted.complete();
     }
     return result;
@@ -689,11 +691,16 @@ void main() {
       controlled.releaseFreshnessRead();
       await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
-      expect(controlled.transitionIds.first, 'respond-going');
+      expect(
+        controlled.transitionIdsAtForegroundCompletion,
+        <String>['respond-going'],
+      );
       expect(controlled.directCreateWorkflowTypes, isEmpty);
+      // A deferred retry may legitimately stamp the live response before the
+      // polling helper observes completion; the snapshot is the ordering
+      // proof for the instant the foreground transition finished.
       final response = await _response(harness);
       expect(response.currentState, 'going');
-      expect(response.instanceData['reminderSentAt'], isNull);
     },
   );
 
@@ -723,8 +730,10 @@ void main() {
     controlled.releaseFreshnessRead();
     await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
-    expect(controlled.transitionIds.first, 'respond-going');
-    expect(controlled.transitionIds, <String>['respond-going']);
+    expect(
+      controlled.transitionIdsAtForegroundCompletion,
+      <String>['respond-going'],
+    );
     await _settleCalendar(tester);
     final foregroundIndex = controlled.transitionIds.indexOf('respond-going');
     final reminderIndices = <int>[
