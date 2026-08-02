@@ -546,6 +546,26 @@
             "effects": [
               { "op": "set", "key": "rsvpedAt", "value": "$timestamp" }
             ]
+          },
+          {
+            // Notifications Experience, PROPOSED (CAL.Notify2.9). Orthogonal transition (to: null --
+            // the response's own RSVP state never changes) that exists purely to stamp the reminderSentAt
+            // idempotency field via a real engine-enforced effect -- reminderSentAt is writableBy:"effect",
+            // so updateInstanceFields refuses it outright; only a transition's own effect can write it.
+            // The client-orchestrated "check due, create once" logic (App Shell) calls this on ITS OWN
+            // response row only, immediately after creating the actual notification instance via a direct
+            // createInstance call -- never rendered as a user-facing button (the App Shell explicitly
+            // excludes this id from the automatic action-chip row; see CAL.Notify2.9's own ticket).
+            // "declined" is deliberately excluded from "from" -- a member who declined doesn't want a
+            // reminder for an event they're not attending.
+            "id": "send-reminder",
+            "label": "Send reminder",
+            "from": ["pending", "maybe", "going", "waitlisted"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "personaId" } },
+            "effects": [
+              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
+            ]
           }
         ],
         "renderBindings": [],
