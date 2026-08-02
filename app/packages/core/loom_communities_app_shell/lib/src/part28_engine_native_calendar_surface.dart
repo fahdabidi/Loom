@@ -2142,7 +2142,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           return;
         }
         _instance = next;
-        _lastAuthoredInstance = next;
+        if (optimistic != null) _lastAuthoredInstance = next;
         _edits.clear();
         _resyncControllers();
         widget.onInstanceChanged?.call(next);
