@@ -93,6 +93,57 @@ void main() {
       () => expect(_eval('isAfter("2026-07-12", "2026-07-10")', data), isTrue),
     );
     test('isPast', () => expect(_eval('isPast("2026-07-11")', data), isTrue));
+    test('combineDateAndTime combines a date and valid time', () {
+      expect(
+        _eval('combineDateAndTime(eventDate, eventTime)', {
+          'eventDate': '2026-07-20',
+          'eventTime': '19:30',
+        }),
+        DateTime(2026, 7, 20, 19, 30),
+      );
+    });
+    test('combineDateAndTime defaults an absent time to midnight', () {
+      expect(
+        _eval('combineDateAndTime(eventDate, eventTime)', {
+          'eventDate': '2026-07-20',
+        }),
+        DateTime(2026, 7, 20),
+      );
+      expect(
+        _eval('combineDateAndTime(eventDate)', {'eventDate': '2026-07-20'}),
+        DateTime(2026, 7, 20),
+      );
+    });
+    test('combineDateAndTime fails closed for invalid time values', () {
+      for (final time in const ['7:0', '24:00', '23:60']) {
+        expect(
+          _eval('combineDateAndTime(eventDate, eventTime)', {
+            'eventDate': '2026-07-20',
+            'eventTime': time,
+          }),
+          isNull,
+        );
+      }
+      expect(
+        _eval('combineDateAndTime(eventDate, eventTime)', {
+          'eventDate': 'not-a-date',
+          'eventTime': '19:30',
+        }),
+        isNull,
+      );
+    });
+    test('combineDateAndTime propagates a null or missing date', () {
+      expect(
+        _eval('combineDateAndTime(eventDate, eventTime)', {
+          'eventTime': '19:30',
+        }),
+        isNull,
+      );
+      expect(
+        _eval('combineDateAndTime(null, eventTime)', {'eventTime': '19:30'}),
+        isNull,
+      );
+    });
     test(r'$viewer and $actor resolve as runtime values', () {
       expect(
         _eval(
@@ -136,6 +187,66 @@ void main() {
       );
       expect(changed['tiedCandidates'], ['Catan', 'Azul']);
       expect(changed['isTie'], isTrue);
+    },
+  );
+
+  test(
+    'LocalWorkflowEngine computes reminderAt from combined event date and time',
+    () async {
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <Map<String, dynamic>>[],
+        'renderBindings': [
+          {
+            'states': ['open'],
+            'role': 'any',
+            'tabId': 'calendar',
+            'cardSurfaceFamily': 'event-rsvp',
+            'bindingKind': 'primary',
+          },
+        ],
+        'instanceDataSchema': {
+          'title': {'type': 'text', 'required': true},
+          'eventDate': {'type': 'date', 'required': true},
+          'eventTime': {'type': 'time', 'required': true},
+          'reminderOffsetHours': {'type': 'number'},
+          'reminderAt': {
+            'type': 'date',
+            'formula':
+                'subtractHours(combineDateAndTime(eventDate, eventTime), reminderOffsetHours)',
+          },
+        },
+      }, 'synthetic-event');
+      final database = WorkflowDatabase.memory();
+      final api = LocalWorkflowEngineApi(
+        db: database,
+        communityId: 'combine-date-time-formula',
+      )..registerDefinition(machine);
+
+      await api.createInstance(
+        workflowType: 'synthetic-event',
+        personaId: 'organizer',
+        initialInstanceData: {
+          'title': 'Evening game',
+          'eventDate': '2026-07-20',
+          'eventTime': '19:30',
+          'reminderOffsetHours': 24,
+        },
+      );
+
+      final page = await api.queryInstances(
+        tabId: 'calendar',
+        personaId: 'member',
+        limit: 10,
+      );
+      expect(
+        page.items.single.instanceData['reminderAt'],
+        DateTime(2026, 7, 19, 19, 30),
+      );
+      database.close();
     },
   );
 

@@ -39,6 +39,7 @@ const Set<String> formulaFunctionNames = {
   'isPast',
   'subtractHours',
   'mapGet',
+  'combineDateAndTime',
 };
 
 /// Reduces [values] with the aggregate vocabulary shared by formula fields and
@@ -380,6 +381,16 @@ dynamic _call(String name, List<_Expr> args, _Context context) {
       return date == null
           ? null
           : _date(date).subtract(Duration(hours: _number(arg(1)).toInt()));
+    case 'combineDateAndTime':
+      final date = args.isEmpty ? null : arg(0);
+      if (date == null) return null;
+      final time = args.length > 1 ? arg(1) : null;
+      return combineDateAndTimeValues(
+        date is DateTime ? date.toIso8601String() : '$date',
+        time == null
+            ? null
+            : (time is DateTime ? time.toIso8601String() : '$time'),
+      );
     case 'mapGet':
       final map = arg(0);
       return map is Map ? (map[arg(1)] ?? 0) : 0;
@@ -401,6 +412,26 @@ DateTime _date(dynamic value) {
   if (value is DateTime) return value;
   if (value is String) return DateTime.parse(value);
   throw FormulaEvaluationException('Expected ISO-8601 date, got $value');
+}
+
+/// Combines an ISO date and optional `HH:mm` time into a local timestamp.
+/// Invalid or missing values return null so computed fields fail closed.
+DateTime? combineDateAndTimeValues(String? dateValue, String? timeValue) {
+  if (dateValue == null || dateValue.isEmpty) return null;
+  final date = DateTime.tryParse(dateValue);
+  if (date == null) return null;
+
+  var hour = 0;
+  var minute = 0;
+  if (timeValue != null && timeValue.isNotEmpty) {
+    final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(timeValue);
+    if (match == null) return null;
+    hour = int.parse(match.group(1)!);
+    minute = int.parse(match.group(2)!);
+    if (hour > 23 || minute > 59) return null;
+  }
+
+  return DateTime(date.year, date.month, date.day, hour, minute);
 }
 
 int _compare(dynamic a, dynamic b) {

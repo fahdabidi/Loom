@@ -67,8 +67,8 @@ Dotted paths (`item.choice`) are used inside collection functions to select a co
 
 ✅ **Correction 2026-07-31: `subtractHours` and `mapGet` are actually IMPLEMENTED** (confirmed directly
 against `formula_evaluator.dart`) — this doc's own "PROPOSED" warning was stale, left over from before
-their implementation shipped. **`combineDateAndTime` is the one genuinely new, PROPOSED function** (see
-its own row below, Notifications Experience phase) — everything else in this list is real today.
+their implementation shipped. **`combineDateAndTime` is also IMPLEMENTED** (CAL.Notify2.9, 2026-08-01)
+— everything else in this list is real today.
 
 ### Aggregates over a list
 
@@ -116,7 +116,7 @@ its own row below, Notifications Experience phase) — everything else in this l
 | `isAfter` | `isAfter(a, b)` | bool |
 | `isPast` | `isPast(date)` | bool — *deadline passed* |
 | `subtractHours` | `subtractHours(date, hours)` | `date` minus `hours` — a real new `DateTime`. *Deriving a reminder's `dueAt` from a `deadline`.* |
-| `combineDateAndTime` | `combineDateAndTime(date, time)` | Combines an ISO date field and an optional `HH:mm` time field into one real local `DateTime` (midnight if `time` is absent/null). **PROPOSED 2026-07-31 (Notifications Experience phase, CAL.Notify2.9), not yet engine-implemented** — `guard_evaluator.dart` already has this exact combine logic as a private helper (`cancellationDeadline`/`locationOverlap` guards both use it internally); this exposes the same logic as a public formula function so computed fields can use it too, not just guards. *Combining `event-rsvp`'s separate `eventDate`/`eventTime` fields before computing a real `reminderAt` — the same lesson `cancellationDeadline` already taught: a date field alone parses to midnight, so subtracting hours from just the date makes a reminder inaccurately early for any event with a real time-of-day.* |
+| `combineDateAndTime` | `combineDateAndTime(date, time)` | Combines an ISO date field and an optional `HH:mm` time field into one real local `DateTime` (midnight if `time` is absent/null). **IMPLEMENTED 2026-08-01 (Notifications Experience phase, CAL.Notify2.9)** — the shared value-parsing helper preserves the exact behavior used by `cancellationDeadline`/`locationOverlap` guards and is now available as a public formula function so computed fields can use it too. *Combining `event-rsvp`'s separate `eventDate`/`eventTime` fields before computing a real `reminderAt` — the same lesson `cancellationDeadline` already taught: a date field alone parses to midnight, so subtracting hours from just the date makes a reminder inaccurately early for any event with a real time-of-day.* |
 
 Deliberately hour-granularity, not day-granularity — some reminder offsets are sub-day (e.g. "one hour
 before"). Deliberately generic (a raw duration subtraction), not a labeled-offset-aware function — the

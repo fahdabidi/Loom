@@ -254,6 +254,17 @@ class _CalendarEntry {
   String get time => '${resolved.instance.instanceData['eventTime'] ?? ''}';
 }
 
+const Set<String> _hiddenAutomaticActionIds = {'send-reminder'};
+
+class _ViewerResponseLookup {
+  const _ViewerResponseLookup.invalid() : isValid = false, response = null;
+  const _ViewerResponseLookup.noResponse() : isValid = true, response = null;
+  const _ViewerResponseLookup.found(this.response) : isValid = true;
+
+  final bool isValid;
+  final Map<String, dynamic>? response;
+}
+
 /// Resolves a calendar entry's optional declarative style slot. Bindings that
 /// do not opt in keep their exact flat community accent.
 Color _calendarEntryStyleColor(_CalendarEntry entry, Color accent) {
@@ -457,6 +468,8 @@ class _EngineNativeCalendarContent extends StatefulWidget {
 
 class _EngineNativeCalendarContentState
     extends State<_EngineNativeCalendarContent> {
+  final Set<String> _reminderCheckInFlight = <String>{};
+
   @override
   void didUpdateWidget(covariant _EngineNativeCalendarContent oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -688,9 +701,9 @@ class _EngineNativeCalendarContentState
           .toList()
         ..sort();
 
-  bool _isPendingForViewer(_CalendarEntry entry) {
+  _ViewerResponseLookup _viewerResponseLookupFor(_CalendarEntry entry) {
     final responseTable = entry.resolved.binding.responseTable;
-    if (responseTable == null) return false;
+    if (responseTable == null) return const _ViewerResponseLookup.invalid();
     final expectedSource =
         'query(${responseTable.workflowType} where ${responseTable.eventField} == id)';
     final responseField = entry.resolved.machine.instanceDataSchema.entries
@@ -703,18 +716,80 @@ class _EngineNativeCalendarContentState
         );
         return true;
       }());
-      return false;
+      return const _ViewerResponseLookup.invalid();
     }
     final responses = entry.resolved.instance.instanceData[
       responseField.first.key
     ];
-    if (responses != null && responses is! List) return false;
+    if (responses != null && responses is! List) {
+      return const _ViewerResponseLookup.invalid();
+    }
     for (final response in (responses as List<dynamic>? ?? const <dynamic>[])) {
       if (response is Map && response['personaId'] == widget.personaId) {
-        return responseTable.pendingStates.contains(response['\$state']);
+        return _ViewerResponseLookup.found(Map<String, dynamic>.from(response));
       }
     }
-    return true;
+    return const _ViewerResponseLookup.noResponse();
+  }
+
+  Map<String, dynamic>? _viewerResponseRowFor(_CalendarEntry entry) =>
+      _viewerResponseLookupFor(entry).response;
+
+  bool _isPendingForViewer(_CalendarEntry entry) {
+    final responseTable = entry.resolved.binding.responseTable;
+    final lookup = _viewerResponseLookupFor(entry);
+    if (responseTable == null || !lookup.isValid) return false;
+    final response = lookup.response;
+    if (response == null) return true;
+    return responseTable.pendingStates.contains(response['\$state']);
+  }
+
+  bool _isReminderDueFor(_CalendarEntry entry, Map<String, dynamic> response) {
+    if (response['reminderSentAt'] != null) return false;
+    if (response['\$state'] == 'declined') return false;
+    final reminderAtValue = entry.resolved.instance.instanceData['reminderAt'];
+    if (reminderAtValue is! String) return false;
+    final reminderAt = DateTime.tryParse(reminderAtValue);
+    if (reminderAt == null) return false;
+    return !widget.currentDate().isBefore(reminderAt);
+  }
+
+  Future<void> _checkDueReminders(List<_CalendarEntry> entries) async {
+    if (!mounted) return;
+    for (final entry in entries) {
+      final response = _viewerResponseRowFor(entry);
+      if (response == null || !_isReminderDueFor(entry, response)) continue;
+      final responseId = response['\$id'];
+      if (responseId is! String ||
+          responseId.isEmpty ||
+          _reminderCheckInFlight.contains(responseId)) {
+        continue;
+      }
+      _reminderCheckInFlight.add(responseId);
+      try {
+        final eventTitle =
+            entry.resolved.instance.instanceData['title'] ?? 'Event';
+        await widget.engine.createInstance(
+          workflowType: 'notification',
+          initialInstanceData: {
+            'recipientPersonaId': response['personaId'],
+            'title': 'Reminder: $eventTitle',
+            'body': 'Starts soon — check Calendar for details.',
+            'createdAt': widget.currentDate().toIso8601String(),
+          },
+          personaId: widget.personaId,
+        );
+        await widget.engine.applyTransition(
+          workflowType: 'event-rsvp-response',
+          instanceId: responseId,
+          transitionId: 'send-reminder',
+          personaId: widget.personaId,
+        );
+      } catch (error) {
+        _reminderCheckInFlight.remove(responseId);
+        debugPrint('Calendar reminder check failed for $responseId: $error');
+      }
+    }
   }
 
   @override
@@ -731,6 +806,9 @@ class _EngineNativeCalendarContentState
       );
     }
     _reconcileSelection(entries);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _checkDueReminders(entries),
+    );
     if (entries.isEmpty) return const _CalendarEmptyState();
 
     final selected = entries.firstWhere(
@@ -2007,8 +2085,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   }
 
   List<LoomWorkflowTransition> get _displayActions {
+    final visibleActions = _actions
+        .where((action) => !_hiddenAutomaticActionIds.contains(action.id))
+        .toList(growable: false);
     final response = _viewerResponse;
-    if (response == null) return _actions;
+    if (response == null) return visibleActions;
     final selected = switch (response['\$state']) {
       'going' => const LoomWorkflowTransition(
         id: 'respond-going',
@@ -2042,11 +2123,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     };
     if (selected == null ||
         (selected.id == 'respond-waitlist' &&
-            _actions.any((action) => action.id == 'respond-going')) ||
-        _actions.any((action) => action.id == selected.id)) {
-      return _actions;
+            visibleActions.any((action) => action.id == 'respond-going')) ||
+        visibleActions.any((action) => action.id == selected.id)) {
+      return visibleActions;
     }
-    return <LoomWorkflowTransition>[selected, ..._actions];
+    return <LoomWorkflowTransition>[selected, ...visibleActions];
   }
 
   Map<String, WorkflowFactPillFieldSchema> get _fallbackFactSchema => {

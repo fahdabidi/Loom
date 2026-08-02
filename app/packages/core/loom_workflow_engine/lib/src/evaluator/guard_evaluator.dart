@@ -127,24 +127,11 @@ DateTime? combineDateAndTime(
   required String? timeField,
 }) {
   final rawDate = instanceData[dateField];
-  if (rawDate is! String || rawDate.isEmpty) return null;
-  final date = DateTime.tryParse(rawDate);
-  if (date == null) return null;
-
-  var hour = 0;
-  var minute = 0;
-  if (timeField != null) {
-    final rawTime = instanceData[timeField];
-    if (rawTime is String && rawTime.isNotEmpty) {
-      final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(rawTime);
-      if (match == null) return null;
-      hour = int.parse(match.group(1)!);
-      minute = int.parse(match.group(2)!);
-      if (hour > 23 || minute > 59) return null;
-    }
-  }
-
-  return DateTime(date.year, date.month, date.day, hour, minute);
+  final rawTime = timeField == null ? null : instanceData[timeField];
+  return combineDateAndTimeValues(
+    rawDate is String ? rawDate : null,
+    rawTime is String ? rawTime : null,
+  );
 }
 
 bool _compare(num actual, num expected, String comparator) {

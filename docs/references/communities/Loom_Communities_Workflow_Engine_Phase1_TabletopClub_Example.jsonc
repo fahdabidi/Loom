@@ -326,6 +326,8 @@
           // combineDateAndTime; it lands atomically with that engine work, not ahead of it.
           "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
             "displayContexts": [] },
+          "reminderAt": { "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))" },
 
           // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED). Plain formEntry fields, functional today
           // for storage/editing via the generic editor -- see the "open" state's own comment above for
@@ -717,6 +719,8 @@
           // CAL.Notify2.9 implements combineDateAndTime).
           "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
             "displayContexts": [] },
+          "reminderAt": { "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))" },
 
           // NEW 2026-07-26 (CAL.Calendar2.3/.4/.5, PROPOSED) -- see the fuller comment on event-rsvp's
           // own copy of these same fields above; identical status here.
