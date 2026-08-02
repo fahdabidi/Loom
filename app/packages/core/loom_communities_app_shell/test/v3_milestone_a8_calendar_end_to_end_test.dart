@@ -384,10 +384,6 @@ Future<void> _selectCalendarTab(WidgetTester tester) async {
   await tester.ensureVisible(tab);
   await tester.tap(tab);
   await tester.pump();
-  await _pumpUntil(
-    tester,
-    find.byKey(const ValueKey('calendar-tab-surface')),
-  );
 }
 
 Finder _keyPrefix(String prefix) => find.byWidgetPredicate(

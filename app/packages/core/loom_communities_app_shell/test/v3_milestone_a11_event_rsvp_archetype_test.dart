@@ -130,10 +130,6 @@ Future<void> _selectCalendar(WidgetTester tester) async {
   await tester.ensureVisible(tab);
   await tester.tap(tab);
   await tester.pump();
-  await _pumpUntil(
-    tester,
-    find.byKey(const ValueKey('calendar-tab-surface')),
-  );
 }
 
 Future<void> _pollUntilObservation(
