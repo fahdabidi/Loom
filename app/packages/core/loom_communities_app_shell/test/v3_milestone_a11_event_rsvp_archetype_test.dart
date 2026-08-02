@@ -898,6 +898,7 @@ void main() {
         await tester.pump();
         await _pumpUntil(tester, find.text('15'));
         await tester.tap(find.text('15').last);
+        await tester.pump();
         await _pumpUntil(tester, find.text('OK'));
         await tester.tap(find.text('OK').last);
         await tester.pump();
