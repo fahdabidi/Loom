@@ -168,24 +168,68 @@ Finder _selectedActionFinder(String instanceId, String transitionId) =>
     );
 
 Future<void> _openEventCreation(WidgetTester tester) async {
+  // This test mounts the real App Shell, so the Calendar tab's engine-native
+  // surface is still loading when _selectCalendar returns after its first
+  // frame. The creatable FAB can already be in the tree during that handoff,
+  // but it is not yet a reliable interaction target.
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('engine-native-calendar-root')),
+  );
+
   final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+  final createEvent = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
   if (speedDial.evaluate().isNotEmpty) {
     await tester.ensureVisible(speedDial);
     await tester.tap(speedDial);
     await tester.pump();
-    await _pumpUntil(
-      tester,
-      find.byKey(const ValueKey('creatable-fab-event-rsvp')),
-    );
+    await _pumpUntil(tester, createEvent);
   }
-  final createEvent = find.byKey(const ValueKey('creatable-fab-event-rsvp'));
-  await _pumpUntil(tester, createEvent);
+  await _pumpUntilCreatableFabReady(tester, createEvent);
   await tester.ensureVisible(createEvent);
   await tester.tap(createEvent);
   await tester.pump();
   await _pumpUntil(
     tester,
     find.byKey(const ValueKey('new-event-editor-title')),
+  );
+}
+
+Future<void> _pumpUntilCreatableFabReady(
+  WidgetTester tester,
+  Finder finder,
+) async {
+  var lastMatchCount = 0;
+  var lastIgnored = false;
+  var lastRunningAnimations = false;
+  var lastScheduledFrame = false;
+  for (var attempt = 0; attempt < 40; attempt++) {
+    final matches = finder.evaluate();
+    lastMatchCount = matches.length;
+    final ignorePointers = find
+        .ancestor(of: finder, matching: find.byType(IgnorePointer))
+        .evaluate();
+    lastIgnored = ignorePointers.any(
+      (element) => (element.widget as IgnorePointer).ignoring,
+    );
+    lastRunningAnimations = tester.hasRunningAnimations;
+    lastScheduledFrame = tester.binding.hasScheduledFrame;
+    if (lastMatchCount > 0 &&
+        !lastIgnored &&
+        !lastRunningAnimations &&
+        !lastScheduledFrame) {
+      return;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  throw TestFailure(
+    'Timed out waiting for $finder to become interactive; '
+    'last observed matches=$lastMatchCount, '
+    'ignored=$lastIgnored, runningAnimations=$lastRunningAnimations, '
+    'scheduledFrame=$lastScheduledFrame',
   );
 }
 
