@@ -205,7 +205,8 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   @override
   void didUpdateWidget(_MessagesTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId) {
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.accountId != widget.persona.accountId)) {
       _selectedThread = null;
       unawaited(_load());
     }
@@ -214,7 +215,9 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final threads = await _store.threadsFor(widget.persona.personaId);
+      final threads = await _store.threadsFor(
+        (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (!mounted) return;
       setState(() {
         _visibleThreadCount = threads.length;
@@ -235,7 +238,10 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
       setState(() => _selectedThread = null);
       return;
     }
-    await _store.markRead(thread: thread, personaId: widget.persona.personaId);
+    await _store.markRead(
+      thread: thread,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
+    );
     if (mounted) setState(() => _selectedThread = thread);
   }
 
@@ -246,12 +252,12 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.postMessage(
       thread: thread,
       body: text,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     _composerController.clear();
     final refreshed = await _store.threadById(
       thread.instanceId,
-      widget.persona.personaId,
+      (widget.persona.accountId ?? widget.persona.personaId),
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -261,11 +267,11 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setMuted(
       thread: thread,
       muted: !_store.isMuted(thread),
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final refreshed = await _store.threadById(
       thread.instanceId,
-      widget.persona.personaId,
+      (widget.persona.accountId ?? widget.persona.personaId),
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -275,7 +281,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setArchived(
       thread: thread,
       archived: !_store.isArchived(thread),
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     if (mounted) setState(() => _selectedThread = null);
     await _load();
@@ -303,7 +309,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
         foreground: foreground,
         accent: widget.accent,
         modernTheme: widget.modernTheme,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
         composerController: _composerController,
         muted: _store.isMuted(selectedThread),
         onSend: _sendReply,
@@ -383,12 +389,14 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           ),
         ),
         RepeaterSurface.live(
-          key: ValueKey('messages-repeater-${widget.persona.personaId}'),
+          key: ValueKey(
+            'messages-repeater-${(widget.persona.accountId ?? widget.persona.personaId)}',
+          ),
           refreshInterval: const Duration(milliseconds: 50),
           querySource: RepeaterQuerySource(
             engine: _store.engine,
             workflowType: _MessagesEngineStore.workflowType,
-            personaId: widget.persona.personaId,
+            personaId: (widget.persona.accountId ?? widget.persona.personaId),
             tabId: 'messages',
           ),
           listShrinkWrap: true,
@@ -396,11 +404,17 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           itemBuilder: (context, item) {
             final instance = item as WorkflowInstance;
             final thread = _store.toThread(instance);
-            if (!_store.isVisibleTo(instance, widget.persona.personaId) ||
+            if (!_store.isVisibleTo(
+                  instance,
+                  (widget.persona.accountId ?? widget.persona.personaId),
+                ) ||
                 _store.isArchived(instance)) {
               return const SizedBox.shrink();
             }
-            final unread = _store.isUnread(instance, widget.persona.personaId);
+            final unread = _store.isUnread(
+              instance,
+              (widget.persona.accountId ?? widget.persona.personaId),
+            );
             final preview = _store.lastPreview(instance);
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -682,15 +696,32 @@ class _MessagesEngineStore {
 
   static const workflowType = 'discussion-thread';
   static const messageWorkflowType = 'discussion-message';
+  // Real per-account ids (see part30_local_auth_api.dart's
+  // _seedTabletopAccounts) -- not the two generic persona-type ids. Seed
+  // threads must list actual accounts as participants so an individually
+  // signed-in member's own threadsFor(personaId) query (which checks
+  // participantPersonaIds.contains(personaId) against the real signed-in
+  // account id, not the persona type) actually finds them.
+  static const _allTabletopAccountIds = [
+    'tabletop-organizer',
+    'tabletop-member-03',
+    'tabletop-member-04',
+    'tabletop-member-05',
+    'tabletop-member-06',
+    'tabletop-member-07',
+    'tabletop-member-08',
+    'tabletop-member-09',
+    'tabletop-member-10',
+    'tabletop-member-11',
+    'tabletop-member-12',
+    'tabletop-member-13',
+    'tabletop-member-14',
+  ];
   static final _tabletopSeedThreads = <LoomMessageThread>[
     LoomMessageThread(
       threadId: 'tabletop-campaign-night',
       subject: 'Campaign night: table assignments',
-      participantPersonaIds: [
-        'tabletop-member',
-        'tabletop-member-owner',
-        'tabletop-organizer',
-      ],
+      participantPersonaIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-1',
@@ -703,15 +734,11 @@ class _MessagesEngineStore {
     LoomMessageThread(
       threadId: 'tabletop-library',
       subject: 'Library game suggestions',
-      participantPersonaIds: [
-        'tabletop-member',
-        'tabletop-member-owner',
-        'tabletop-organizer',
-      ],
+      participantPersonaIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-2',
-          senderPersonaId: 'tabletop-member',
+          senderPersonaId: 'tabletop-member-03',
           body: 'I would love to try Cascadia next month.',
           timestamp: DateTime(2026, 7, 9, 16, 30),
         ),
@@ -720,11 +747,7 @@ class _MessagesEngineStore {
     LoomMessageThread(
       threadId: 'tabletop-volunteers',
       subject: 'Teach-a-game volunteer sign-up',
-      participantPersonaIds: [
-        'tabletop-member',
-        'tabletop-member-owner',
-        'tabletop-organizer',
-      ],
+      participantPersonaIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-3',
@@ -1064,7 +1087,8 @@ class _NotificationInboxTabSurfaceState
   @override
   void didUpdateWidget(_NotificationInboxTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId) {
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.accountId != widget.persona.accountId)) {
       unawaited(_load());
     }
   }
@@ -1073,7 +1097,7 @@ class _NotificationInboxTabSurfaceState
     try {
       await _store.ensureReady();
       final notifications = await _store.notificationsFor(
-        widget.persona.personaId,
+        (widget.persona.accountId ?? widget.persona.personaId),
       );
       final unreadCount = await _store.unreadCount();
       if (!mounted) return;
@@ -1096,7 +1120,7 @@ class _NotificationInboxTabSurfaceState
     if (!_store.isUnread(notification)) return;
     await _store.markRead(
       notification: notification,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -1108,7 +1132,7 @@ class _NotificationInboxTabSurfaceState
     await _store.setArchived(
       notification: notification,
       archived: true,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -1172,12 +1196,14 @@ class _NotificationInboxTabSurfaceState
         ),
         const SizedBox(height: 8),
         RepeaterSurface.live(
-          key: ValueKey('notifications-repeater-${widget.persona.personaId}'),
+          key: ValueKey(
+            'notifications-repeater-${(widget.persona.accountId ?? widget.persona.personaId)}',
+          ),
           refreshInterval: const Duration(milliseconds: 50),
           querySource: RepeaterQuerySource(
             engine: _store.engine,
             workflowType: _NotificationInboxEngineStore.workflowType,
-            personaId: widget.persona.personaId,
+            personaId: (widget.persona.accountId ?? widget.persona.personaId),
             tabId: 'notifications',
           ),
           listShrinkWrap: true,
@@ -1186,7 +1212,10 @@ class _NotificationInboxTabSurfaceState
             final instance = item as WorkflowInstance;
             final notificationId =
                 '${instance.instanceData['notificationId'] ?? ''}';
-            if (!_store.isVisibleTo(instance, widget.persona.personaId) ||
+            if (!_store.isVisibleTo(
+                  instance,
+                  (widget.persona.accountId ?? widget.persona.personaId),
+                ) ||
                 _store.isArchived(instance) ||
                 _locallyDismissedIds.contains(notificationId)) {
               return const SizedBox.shrink();
@@ -1529,7 +1558,8 @@ class _ExportWizardTabSurfaceState extends State<_ExportWizardTabSurface> {
   @override
   void didUpdateWidget(_ExportWizardTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId) {
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.accountId != widget.persona.accountId)) {
       unawaited(_load());
     }
   }
@@ -1537,7 +1567,9 @@ class _ExportWizardTabSurfaceState extends State<_ExportWizardTabSurface> {
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final instance = await _store.instanceFor(widget.persona.personaId);
+      final instance = await _store.instanceFor(
+        (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (!mounted) return;
       setState(() {
         _instance = instance;
@@ -1559,7 +1591,7 @@ class _ExportWizardTabSurfaceState extends State<_ExportWizardTabSurface> {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -1923,7 +1955,8 @@ class _VolunteerRosterTabSurfaceState
   @override
   void didUpdateWidget(_VolunteerRosterTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId) {
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.accountId != widget.persona.accountId)) {
       unawaited(_load());
     }
   }
@@ -1953,7 +1986,10 @@ class _VolunteerRosterTabSurfaceState
     }
     setState(() => _signingUpShiftIds.add(shiftId));
     try {
-      await _store.signUp(shift: shift, personaId: widget.persona.personaId);
+      await _store.signUp(
+        shift: shift,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
     } finally {
       if (mounted) setState(() => _signingUpShiftIds.remove(shiftId));
     }
@@ -2011,12 +2047,14 @@ class _VolunteerRosterTabSurfaceState
         ),
         const SizedBox(height: 8),
         RepeaterSurface.live(
-          key: ValueKey('roster-repeater-${widget.persona.personaId}'),
+          key: ValueKey(
+            'roster-repeater-${(widget.persona.accountId ?? widget.persona.personaId)}',
+          ),
           refreshInterval: const Duration(milliseconds: 50),
           querySource: RepeaterQuerySource(
             engine: _store.engine,
             workflowType: _VolunteerRosterEngineStore.workflowType,
-            personaId: widget.persona.personaId,
+            personaId: (widget.persona.accountId ?? widget.persona.personaId),
             tabId: 'roster',
           ),
           listShrinkWrap: true,
@@ -2422,7 +2460,9 @@ class _AudiencePickerTabSurfaceState extends State<_AudiencePickerTabSurface> {
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final audience = await _store.load(personaId: widget.persona.personaId);
+      final audience = await _store.load(
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (!mounted) return;
       setState(() {
         _audience = audience;
@@ -2446,9 +2486,11 @@ class _AudiencePickerTabSurfaceState extends State<_AudiencePickerTabSurface> {
       await _store.setInvitedPersonaIds(
         audience: audience,
         invitedPersonaIds: selectedPersonaIds.toList()..sort(),
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
-      final updated = await _store.load(personaId: widget.persona.personaId);
+      final updated = await _store.load(
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (mounted) setState(() => _audience = updated);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -2651,7 +2693,9 @@ class _SingleItemPreferenceTabSurfaceState
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final preference = await _store.load(personaId: widget.persona.personaId);
+      final preference = await _store.load(
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (!mounted) return;
       setState(() {
         _preference = preference;
@@ -2677,9 +2721,11 @@ class _SingleItemPreferenceTabSurfaceState
       await _store.setPreference(
         preference: preference,
         value: nextValue,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
-      final updated = await _store.load(personaId: widget.persona.personaId);
+      final updated = await _store.load(
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (mounted) setState(() => _preference = updated);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -2923,7 +2969,9 @@ class _StatusTimelineTabSurfaceState extends State<_StatusTimelineTabSurface> {
 
   Future<void> _load() async {
     await _store.ensureReady();
-    final events = await _store.eventsFor(widget.persona.personaId);
+    final events = await _store.eventsFor(
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     if (mounted)
       setState(() {
         _events = events;
@@ -3072,7 +3120,9 @@ class _ProtectedDetailTabSurfaceState
 
   Future<void> _load() async {
     await _store.ensureReady();
-    final detail = await _store.load(widget.persona.personaId);
+    final detail = await _store.load(
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     if (mounted) setState(() => _detail = detail);
   }
 
@@ -3080,7 +3130,10 @@ class _ProtectedDetailTabSurfaceState
   Widget build(BuildContext context) {
     final detail = _detail;
     if (detail == null) return const Center(child: CircularProgressIndicator());
-    final authorized = _store.isAuthorized(detail, widget.persona.personaId);
+    final authorized = _store.isAuthorized(
+      detail,
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     return Column(
       key: const ValueKey('protected-detail-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -3237,14 +3290,20 @@ class _FormEntryTabSurfaceState extends State<_FormEntryTabSurface> {
 
   Future<void> _load() async {
     await _store.ensureReady();
-    final value = await _store.load(widget.persona.personaId);
+    final value = await _store.load(
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     if (mounted) setState(() => _instance = value);
   }
 
   Future<void> _write(Map<String, dynamic> fields) async {
     final instance = _instance;
     if (instance == null) return;
-    await _store.update(instance, fields, widget.persona.personaId);
+    await _store.update(
+      instance,
+      fields,
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     await _load();
   }
 
@@ -3435,7 +3494,7 @@ class _TournamentBallotTabSurfaceState
         instanceId: ballot.instanceId,
         currentState: ballot.currentState,
         instanceData: ballot.instanceData,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
       eligible = actions.any((t) => t.id == 'cast-vote');
       if (ballot.instanceData['notificationsEnabled'] == true) {
@@ -3458,7 +3517,7 @@ class _TournamentBallotTabSurfaceState
     if (ballot == null) return;
     await _store.castVote(
       ballot: ballot,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       candidateId: candidateId,
     );
     await _load();
@@ -3472,7 +3531,9 @@ class _TournamentBallotTabSurfaceState
   }
 
   Future<void> _rsvpGoing() async {
-    await _store.rsvpGoing(widget.persona.personaId);
+    await _store.rsvpGoing(
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     await _load();
   }
 
@@ -4253,7 +4314,7 @@ class _TabNativeRenderer extends StatelessWidget {
             communityId: experience.extensionId,
             workflowId: givingWorkflow.workflowId,
             workflow: givingWorkflow,
-            personaId: persona.personaId,
+            personaId: persona.accountId ?? persona.personaId,
             personaLabel: persona.label,
             allowedPersonaIds:
                 experience
@@ -4894,7 +4955,8 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
   void didUpdateWidget(_CalendarTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.communityId != widget.communityId ||
-        oldWidget.persona.personaId != widget.persona.personaId) {
+        (oldWidget.persona.personaId != widget.persona.personaId ||
+            oldWidget.persona.accountId != widget.persona.accountId)) {
       _instancesByWorkflowId.clear();
       _machinesByWorkflowId.clear();
       _initialLoadComplete = false;
@@ -4921,19 +4983,20 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
       final instanceId = await _engine.createInstance(
         workflowType: machine.workflowType,
         initialInstanceData: initialInstanceData,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
       seededInstances[workflow.workflowId] = WorkflowInstance(
         instanceId: instanceId,
         workflowType: machine.workflowType,
         currentState: machine.initialState,
         instanceData: initialInstanceData,
-        createdByPersonaId: widget.persona.personaId,
+        createdByPersonaId:
+            (widget.persona.accountId ?? widget.persona.personaId),
       );
     }
     final page = await _engine.queryInstances(
       tabId: 'calendar',
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       query: SurfaceQuery(
         sort: const SortSpec(key: 'eventDate'),
         audienceMemberField: _eventRsvpResponseModel['audienceMemberField']!,
@@ -4964,7 +5027,7 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
       workflowType: instance.workflowType,
       instanceId: instance.instanceId,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     if (!mounted) return;
     setState(() {
@@ -5914,7 +5977,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     }
     final page = await _engine.queryInstances(
       tabId: 'giving',
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       limit: 50,
     );
     for (final instance in page.items) {
@@ -5924,12 +5987,12 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
           workflowType: instance.workflowType,
           instanceId: instance.instanceId,
           transitionId: 'pay',
-          personaId: widget.persona.personaId,
+          personaId: (widget.persona.accountId ?? widget.persona.personaId),
         );
       }
     }
     final completed = await _engine.completedWorkflowIdsForPersona(
-      widget.persona.personaId,
+      (widget.persona.accountId ?? widget.persona.personaId),
     );
     if (!mounted) return;
     setState(() => _completedWorkflowIds = completed);
@@ -5944,12 +6007,12 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
       await _engine.createInstance(
         workflowType: machine.workflowType,
         initialInstanceData: _duesInstanceDataFor(duesWorkflow),
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
       if (widget.completedWorkflowIds.contains(duesWorkflow.workflowId)) {
         final page = await _engine.queryInstances(
           tabId: 'giving',
-          personaId: widget.persona.personaId,
+          personaId: (widget.persona.accountId ?? widget.persona.personaId),
           limit: 50,
         );
         final duesInstance = page.items.firstWhere(
@@ -5959,7 +6022,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
           workflowType: duesInstance.workflowType,
           instanceId: duesInstance.instanceId,
           transitionId: 'pay',
-          personaId: widget.persona.personaId,
+          personaId: (widget.persona.accountId ?? widget.persona.personaId),
         );
       }
     }
@@ -5970,11 +6033,11 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
       await _engine.createInstance(
         workflowType: machine.workflowType,
         initialInstanceData: _instanceDataForListing(listing),
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
     }
     _completedWorkflowIds = await _engine.completedWorkflowIdsForPersona(
-      widget.persona.personaId,
+      (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _loadNextPage();
   }
@@ -5984,7 +6047,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     setState(() => _loadingPage = true);
     final page = await _engine.queryInstances(
       tabId: 'marketplace',
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       limit: widget.pageSize,
       cursor: _nextCursor,
     );
@@ -6053,7 +6116,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         () {
           final allowed = evaluateGuard(
             transition.guard,
-            widget.persona.personaId,
+            (widget.persona.accountId ?? widget.persona.personaId),
             listing.instanceData,
             completedWorkflowIds: _completedWorkflowIds,
           );
@@ -6064,10 +6127,11 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
           );
           final waiting =
               !allowed &&
-              (transition.guard.requiresWorkflowsComplete?.isNotEmpty ?? false) &&
+              (transition.guard.requiresWorkflowsComplete?.isNotEmpty ??
+                  false) &&
               evaluateGuard(
                 guardWithoutPrerequisites,
-                widget.persona.personaId,
+                (widget.persona.accountId ?? widget.persona.personaId),
                 listing.instanceData,
               );
           return _MarketplaceTransitionAvailability(
@@ -6092,9 +6156,9 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
   }
 
   List<WorkflowActionButtonTransition> _actionsFor(WorkflowInstance listing) {
-    final presentedSeparately = _transitionActionsFor(listing)
-        .map((action) => action.transitionId!)
-        .toSet();
+    final presentedSeparately = _transitionActionsFor(
+      listing,
+    ).map((action) => action.transitionId!).toSet();
     final actions = <WorkflowActionButtonTransition>[];
     for (final availability in _transitionAvailabilityFor(listing)) {
       final transition = availability.transition;
@@ -6152,7 +6216,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
       workflowType: listing.workflowType,
       instanceId: listing.instanceId,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final removeFromGrid = transition.effects.any(
       (effect) => effect.op == 'removeFromTileGrid',
@@ -6852,7 +6916,8 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
                   if (action.presentation == 'fab')
                     FloatingActionButton.extended(
                       key: ValueKey('marketplace-transition-fab-${action.id}'),
-                      heroTag: 'marketplace-transition-fab-${listingId}-${action.id}',
+                      heroTag:
+                          'marketplace-transition-fab-${listingId}-${action.id}',
                       onPressed: () => onTransitionApplied(action.id),
                       icon: const Icon(Icons.bolt_outlined),
                       label: Text(action.label),
@@ -7475,7 +7540,7 @@ class _DocumentLibraryWorkflowSurfaceState
           'actorLabel': widget.persona.label,
           'auditTrail': <String>[],
         },
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
     }
     await _reloadDocumentInstances();
@@ -7491,7 +7556,7 @@ class _DocumentLibraryWorkflowSurfaceState
       workflowType: widget.workflow.workflowId,
       instanceId: instance.instanceId,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _reloadDocumentInstances();
   }
@@ -7499,7 +7564,7 @@ class _DocumentLibraryWorkflowSurfaceState
   Future<void> _reloadDocumentInstances() async {
     final page = await _engine.queryInstances(
       tabId: 'documents',
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       limit: 100,
       query: const SurfaceQuery(sort: SortSpec(key: 'title')),
     );
@@ -7527,7 +7592,11 @@ class _DocumentLibraryWorkflowSurfaceState
       'acknowledged',
       'access-requested',
     ];
-    final guard = WorkflowGuard(allowedPersonaIds: [widget.persona.personaId]);
+    final guard = WorkflowGuard(
+      allowedPersonaIds: [
+        (widget.persona.accountId ?? widget.persona.personaId),
+      ],
+    );
     return LoomWorkflowStateMachine(
       workflowType: workflowType,
       initialState: 'available',
@@ -7846,7 +7915,9 @@ class _ArchitecturalRequestTabSurfaceState
 
   Future<void> _load() async {
     await _store.ensureReady();
-    final instances = await _store.instancesFor(widget.persona.personaId);
+    final instances = await _store.instancesFor(
+      (widget.persona.accountId ?? widget.persona.personaId),
+    );
     if (!mounted) return;
     setState(() {
       _instances = instances;
@@ -7857,7 +7928,7 @@ class _ArchitecturalRequestTabSurfaceState
 
   Future<void> _submit() async {
     final instance = await _store.submit(
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
       ownerLabel: widget.persona.label,
       projectDescription: _projectController.text,
       propertyAddress: _addressController.text,
@@ -7878,7 +7949,7 @@ class _ArchitecturalRequestTabSurfaceState
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -8030,7 +8101,7 @@ class _ArchitecturalRequestTabSurfaceState
   Widget _buildTimeline(BuildContext context, WorkflowInstance instance) {
     final transitions = _store.availableTransitions(
       instance: instance,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final history = instance.instanceData['history'];
     final historyItems = history is List
@@ -8429,7 +8500,8 @@ class _GardenClubEngineTabSurfaceState
   @override
   void didUpdateWidget(_GardenClubEngineTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId ||
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+            oldWidget.persona.accountId != widget.persona.accountId) ||
         oldWidget.tabId != widget.tabId) {
       unawaited(_load());
     }
@@ -8452,7 +8524,7 @@ class _GardenClubEngineTabSurfaceState
       final instances = await _store
           .instancesFor(
             tabId: widget.tabId,
-            personaId: widget.persona.personaId,
+            personaId: (widget.persona.accountId ?? widget.persona.personaId),
           )
           .timeout(
             const Duration(seconds: 10),
@@ -8483,7 +8555,7 @@ class _GardenClubEngineTabSurfaceState
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -8500,7 +8572,7 @@ class _GardenClubEngineTabSurfaceState
     await _store.updateFields(
       instance: instance,
       fieldUpdates: updates,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -8692,7 +8764,7 @@ class _GardenClubEngineTabSurfaceState
     }
     final transitions = _store.availableTransitions(
       instance: instance,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final machine = _store.machineFor(instance.workflowType);
     final data = instance.instanceData;
@@ -9468,7 +9540,8 @@ class _CameraClubEngineTabSurfaceState
   @override
   void didUpdateWidget(_CameraClubEngineTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId ||
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+            oldWidget.persona.accountId != widget.persona.accountId) ||
         oldWidget.tabId != widget.tabId) {
       unawaited(_load());
     }
@@ -9491,7 +9564,7 @@ class _CameraClubEngineTabSurfaceState
       final instances = await _store
           .instancesFor(
             tabId: widget.tabId,
-            personaId: widget.persona.personaId,
+            personaId: (widget.persona.accountId ?? widget.persona.personaId),
           )
           .timeout(
             const Duration(seconds: 10),
@@ -9522,7 +9595,7 @@ class _CameraClubEngineTabSurfaceState
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -9539,7 +9612,7 @@ class _CameraClubEngineTabSurfaceState
     await _store.updateFields(
       instance: instance,
       fieldUpdates: updates,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -9761,7 +9834,7 @@ class _CameraClubEngineTabSurfaceState
     }
     final transitions = _store.availableTransitions(
       instance: instance,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final machine = _store.machineFor(instance.workflowType);
     final data = instance.instanceData;
@@ -10383,7 +10456,8 @@ class _ChessClubEngineTabSurfaceState
   @override
   void didUpdateWidget(_ChessClubEngineTabSurface old) {
     super.didUpdateWidget(old);
-    if (old.persona.personaId != widget.persona.personaId ||
+    if ((old.persona.personaId != widget.persona.personaId ||
+            old.persona.accountId != widget.persona.accountId) ||
         old.tabId != widget.tabId)
       unawaited(_load());
   }
@@ -10401,7 +10475,7 @@ class _ChessClubEngineTabSurfaceState
       await _store.ensureReady();
       final rows = await _store.instancesFor(
         tabId: widget.tabId,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
       _sync(rows);
       if (!mounted) return;
@@ -10423,7 +10497,7 @@ class _ChessClubEngineTabSurfaceState
     await _store.apply(
       instance: i,
       transitionId: t,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -10441,7 +10515,7 @@ class _ChessClubEngineTabSurfaceState
                     _controller(i.instanceId, f).text)
               : _controller(i.instanceId, f).text,
       },
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -10633,7 +10707,7 @@ class _ChessClubEngineTabSurfaceState
     final machine = _store.machineFor(i.workflowType);
     final transitions = _store.availableTransitions(
       instance: i,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     return DecoratedBox(
       key: ValueKey('chess-card-${i.workflowType}-${i.instanceId}'),
@@ -12354,7 +12428,8 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
   @override
   void didUpdateWidget(_BookClubEngineTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.persona.personaId != widget.persona.personaId ||
+    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+            oldWidget.persona.accountId != widget.persona.accountId) ||
         oldWidget.tabId != widget.tabId) {
       unawaited(_load());
     }
@@ -12373,7 +12448,7 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
       await _store.ensureReady();
       final instances = await _store.instancesFor(
         tabId: widget.tabId,
-        personaId: widget.persona.personaId,
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
       );
       _syncControllers(instances);
       if (!mounted) return;
@@ -12398,7 +12473,7 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -12415,7 +12490,7 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     await _store.updateFields(
       instance: instance,
       fieldUpdates: updates,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     await _load();
   }
@@ -12668,7 +12743,7 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     }
     final transitions = _store.availableTransitions(
       instance: instance,
-      personaId: widget.persona.personaId,
+      personaId: (widget.persona.accountId ?? widget.persona.personaId),
     );
     final machine = _store.machineFor(instance.workflowType);
     final data = instance.instanceData;
