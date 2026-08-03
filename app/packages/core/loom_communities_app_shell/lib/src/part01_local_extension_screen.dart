@@ -234,7 +234,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         (String instanceId) => _seedEventRsvpResponses(
           eventId: instanceId,
           engine: engine,
-          organizerPersonaId: activePersona.personaId,
+          organizerPersonaId:
+              activePersona.accountId ?? activePersona.personaId,
         ),
       ),
       _ => ('new-${action.workflowType}', null),
@@ -244,7 +245,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       workflowType: action.workflowType,
       machine: action.machine,
       engine: engine,
-      personaId: activePersona.personaId,
+      personaId: activePersona.accountId ?? activePersona.personaId,
       keyPrefix: keyPrefix,
       title: action.label,
       onCreated: onCreated,
@@ -452,14 +453,20 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience: experience,
     );
     final typeId = _activePersonaTypeId;
-    if (typeId != null) {
-      for (final persona in personas) {
-        if (persona.personaId == typeId) {
-          return persona;
-        }
-      }
-    }
-    return personas.first;
+    final match = typeId == null
+        ? null
+        : personas.where((persona) => persona.personaId == typeId).firstOrNull;
+    final resolved = match ?? personas.first;
+    // Carry the specific signed-in account id (when signed in as one)
+    // alongside the resolved role, without changing what `.personaId` means
+    // for role/policy-scoped callers -- see LoomPersonaDefinition.accountId.
+    return LoomPersonaDefinition(
+      personaId: resolved.personaId,
+      label: resolved.label,
+      roleLabel: resolved.roleLabel,
+      description: resolved.description,
+      accountId: _authApi.currentSession?.account.accountId,
+    );
   }
 
   /// Resolves the [LoomCardTheme] a workflow's pushed action surface should
@@ -984,7 +991,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           if (experience.resolvedNotificationPresentationStyle == 'bell')
             NotificationBellButton(
               extensionId: community.extensionId,
-              personaId: activePersona.personaId,
+              personaId: activePersona.accountId ?? activePersona.personaId,
             ),
           IconButton(
             key: const ValueKey('messages-button'),
@@ -1204,7 +1211,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 selectedTab.tabId == 'home')
               NotificationFixedCard(
                 extensionId: community.extensionId,
-                personaId: activePersona.personaId,
+                personaId: activePersona.accountId ?? activePersona.personaId,
               ),
             _TabNativeRenderer(
               experience: experience,
@@ -1328,7 +1335,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 if (experience.resolvedNotificationPresentationStyle == 'fab')
                   NotificationFab(
                     extensionId: community.extensionId,
-                    personaId: activePersona.personaId,
+                    personaId:
+                        activePersona.accountId ?? activePersona.personaId,
                   ),
                 if (experience.resolvedNotificationPresentationStyle == 'fab' &&
                     (creatableActions.isNotEmpty ||

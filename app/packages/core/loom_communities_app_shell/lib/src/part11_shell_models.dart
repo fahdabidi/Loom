@@ -1563,12 +1563,26 @@ class LoomPersonaDefinition {
     required this.label,
     required this.roleLabel,
     required this.description,
+    this.accountId,
   });
 
+  /// The persona TYPE id (e.g. `tabletop-member`) -- shared by every account
+  /// playing that role. Use this for role/policy-scoped checks (tab
+  /// visibility, `actorPersonaIds`/`byPersonaIds` matching against
+  /// community-declared role lists).
   final String personaId;
   final String label;
   final String roleLabel;
   final String description;
+
+  /// The specific signed-in individual account's id (e.g.
+  /// `tabletop-member-03`), when signed in as a specific person via "Sign in
+  /// as a specific person...". Null when only a persona TYPE is selected (no
+  /// specific individual signed in) -- callers needing an actor id for
+  /// per-individual engine scoping (queries/transitions/creation, anywhere
+  /// data is genuinely scoped per account rather than per role) should read
+  /// `accountId ?? personaId`, never `personaId` alone.
+  final String? accountId;
 }
 
 enum LoomPersonaWorkflowState { actor, receiver, readOnly, disabled }
