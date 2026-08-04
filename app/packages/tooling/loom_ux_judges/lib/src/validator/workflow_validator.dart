@@ -137,6 +137,8 @@ class WorkflowValidator {
       _checkMissingLabels(machine, findings);
       _checkBindingCap(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
+      _checkEditableFieldsWithoutEditGuard(machine, findings);
+      _checkNoDestructiveExitForManagedType(machine, findings);
       _checkFormulas(machine, findings);
       _checkGuardFormulas(machine, findings);
       _checkUnknownInputTypes(machine, findings);
@@ -178,6 +180,7 @@ class WorkflowValidator {
     }
 
     _checkDependencyCycles(workflows, findings);
+    _checkNoCreationPathForEditableTypes(workflows, findings);
 
     return ValidationReport(findings);
   }
@@ -1216,6 +1219,73 @@ class WorkflowValidator {
   }
 
   // ---------------------------------------------------------------------------
+  // AP-13: a workflow type with real (formEntry) content fields that no
+  // create action (renderBindings[].actions[].kind: "create") and no
+  // creation effect (createInstance / generateRecurringInstances) anywhere
+  // in the loaded package ever targets. Every instance of that type that
+  // will ever exist is whatever was seeded in workflowInstances -- the
+  // "implemented edit, but no create" pattern, package-wide.
+  // ---------------------------------------------------------------------------
+  void _checkNoCreationPathForEditableTypes(
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    final everCreatedTypes = <String>{};
+
+    void collectEffects(List<WorkflowEffect> effects) {
+      for (final effect in effects) {
+        if ((effect.op == 'createInstance' ||
+                effect.op == 'generateRecurringInstances') &&
+            effect.workflowType != null) {
+          everCreatedTypes.add(effect.workflowType!);
+        }
+        collectEffects(effect.thenEffects);
+        collectEffects(effect.elseEffects);
+        final onSuccess = effect.onSuccessEffects;
+        if (onSuccess != null) collectEffects(onSuccess);
+      }
+    }
+
+    for (final machine in workflows.values) {
+      for (final binding in machine.renderBindings) {
+        for (final action in binding.actions.where((a) => a.kind == 'create')) {
+          everCreatedTypes.add(action.workflowType ?? machine.workflowType);
+        }
+      }
+      for (final transition in machine.transitions) {
+        collectEffects(transition.effects);
+      }
+    }
+
+    for (final entry in workflows.entries) {
+      final type = entry.key;
+      final machine = entry.value;
+      if (everCreatedTypes.contains(type)) continue;
+      final hasFormEntryField = machine.instanceDataSchema.values.any(
+        (field) => field.writableBy == 'formEntry',
+      );
+      if (!hasFormEntryField) continue;
+      findings.add(
+        ValidationFinding(
+          type: 'no_creation_path_for_editable_type',
+          message:
+              'Workflow "$type" declares formEntry (user-authored) fields, '
+              'but no create action targets it anywhere in this package '
+              '(renderBindings[].actions[].kind: "create"), and no effect '
+              '(createInstance / generateRecurringInstances) ever creates '
+              'one either. Every instance of "$type" that will ever exist '
+              'is whatever was seeded in workflowInstances -- see '
+              'guide/04-antipatterns.md AP-13. If instances of this type '
+              'are deliberately provisioned only outside this package, this '
+              'warning can be ignored.',
+          location: '$type/renderBindings',
+          isWarning: true,
+        ),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Missing labels (§7c): every transition must have a label
   // ---------------------------------------------------------------------------
   void _checkMissingLabels(
@@ -1373,6 +1443,87 @@ class WorkflowValidator {
         }
       }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // editableFields declared with no editGuard. editGuard's absent-default is
+  // the OPPOSITE of every other guard in this grammar (guards.md/
+  // workflow-grammar.md): with no editGuard, the App Shell never renders any
+  // field editor for that state, for any persona -- the editableFields
+  // declaration is silently inert, not "anyone may edit." This is the
+  // "implemented edit, but nothing can actually save it" pattern.
+  // ---------------------------------------------------------------------------
+  void _checkEditableFieldsWithoutEditGuard(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final entry in machine.states.entries) {
+      final stateName = entry.key;
+      final state = entry.value;
+      if (state.editableFields == null || state.editableFields!.isEmpty) {
+        continue;
+      }
+      if (state.editGuard != null) continue;
+      findings.add(
+        ValidationFinding(
+          type: 'editable_fields_without_edit_guard',
+          message:
+              'State "$stateName" declares editableFields '
+              '(${state.editableFields!.join(', ')}) but no editGuard. An '
+              'absent editGuard means editing is not exposed at all for this '
+              'state, for any persona -- the editableFields declaration has '
+              'no effect. Add an editGuard (e.g. '
+              '{"allowedPersonaIds": [...]}) naming who may edit, or remove '
+              'editableFields if this state was never meant to be editable.',
+          location: '${machine.workflowType}/states/$stateName/editGuard',
+          isWarning: true,
+        ),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // A primary-bound, actively-managed type (declares an editGuard somewhere,
+  // i.e. someone is clearly expected to keep editing its instances over time)
+  // with no destructive-toned transition anywhere -- the "implemented create,
+  // but no cancel/withdraw/delete" pattern. Heuristic, warning-only: plenty
+  // of types legitimately never need one.
+  // ---------------------------------------------------------------------------
+  void _checkNoDestructiveExitForManagedType(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final hasPrimaryBinding = machine.renderBindings.any(
+      (binding) => binding.bindingKind == 'primary',
+    );
+    if (!hasPrimaryBinding) return;
+
+    final isActivelyManaged = machine.states.values.any(
+      (state) => state.editGuard != null,
+    );
+    if (!isActivelyManaged) return;
+
+    final hasDestructiveTransition = machine.transitions.any(
+      (t) => t.tone == 'destructive',
+    );
+    if (hasDestructiveTransition) return;
+
+    findings.add(
+      ValidationFinding(
+        type: 'no_destructive_exit_for_managed_type',
+        message:
+            'Workflow "${machine.workflowType}" is primary-bound and '
+            'declares an editGuard (its instances are clearly meant to be '
+            'actively managed), but no transition anywhere has '
+            '"tone": "destructive". If this community expects a way to '
+            'cancel, withdraw, delete, or otherwise terminate an instance '
+            'once created, no such transition exists. If every instance of '
+            'this type is genuinely meant to be permanent once created, '
+            'this warning can be ignored.',
+        location: '${machine.workflowType}/transitions',
+        isWarning: true,
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------

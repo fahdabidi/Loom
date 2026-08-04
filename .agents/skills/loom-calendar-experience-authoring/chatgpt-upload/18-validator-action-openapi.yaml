@@ -1,0 +1,116 @@
+# OpenAPI schema for a ChatGPT Custom GPT Action, pointed at the local Loom
+# community package validator (app/packages/tooling/loom_ux_judges), exposed
+# publicly through a Cloudflare quick tunnel.
+#
+# This goes in the Custom GPT builder's "Actions" section (Create new action
+# -> paste this schema), NOT the "Knowledge" file upload section where the
+# other numbered files in this folder go.
+#
+# IMPORTANT: the `servers.url` below is a Cloudflare quick tunnel
+# (trycloudflare.com) with NO uptime guarantee -- it is torn down whenever
+# the local `cloudflared` process stops, and a fresh run mints a brand new,
+# different URL. Whoever configures the Action needs the CURRENT tunnel URL
+# printed by `cloudflared tunnel --url http://localhost:8787` at the time
+# they set this up, and needs to update it again if the tunnel is restarted.
+# There is no notification when the old tunnel goes away -- calls will just
+# start failing.
+
+openapi: 3.1.0
+info:
+  title: Loom Community Package Validator
+  description: >-
+    Validates a Loom Communities extension package (the JSON produced from
+    the authoring instructions and reference material in this same upload)
+    against the real engine-native grammar validator -- the same tool the
+    Loom repo's CLI and test suite use. Always call this before presenting
+    a finished community package as done; report every finding (error or
+    warning) back to the user, and fix errors before calling it valid.
+  version: 1.0.0
+servers:
+  - url: https://athletic-galleries-extract-lie.trycloudflare.com
+    description: Local dev machine, via a Cloudflare quick tunnel (ephemeral)
+paths:
+  /health:
+    get:
+      operationId: checkValidatorHealth
+      summary: Liveness check for the validator service.
+      responses:
+        '200':
+          description: The service is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /validate:
+    post:
+      operationId: validateCommunityPackage
+      summary: >-
+        Validate a Loom community package JSON against the real
+        engine-native grammar validator and return every finding.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >-
+                The full community package: schemaVersion, packageId,
+                communityId, communityHandle, displayName, extensionId,
+                seedDataFiles, and an `experience` object containing
+                experienceSchemaVersion, workflowGrammarVersion, personas,
+                workflowDefinitions, and workflowInstances. See this
+                upload's authoring-procedure and workflow-grammar files for
+                the full shape. JSONC (// and /* */ comments) is also
+                accepted.
+              additionalProperties: true
+      responses:
+        '200':
+          description: >-
+            Validation ran (this does not mean the package passed --
+            check `status`/`errorCount`/`warningCount`).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [pass, fail]
+                    description: >-
+                      "pass" means zero errors (warnings are still allowed
+                      through). Always check warningCount too, not just
+                      status.
+                  errorCount:
+                    type: integer
+                  warningCount:
+                    type: integer
+                  findings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: Machine-readable finding code.
+                        message:
+                          type: string
+                        location:
+                          type: string
+                          description: Path into the package pointing at the finding.
+                        isWarning:
+                          type: boolean
+        '400':
+          description: The request body was not valid JSON/JSONC.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string

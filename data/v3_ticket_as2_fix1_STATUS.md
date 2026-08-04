@@ -11,4 +11,4 @@ flutter analyze: not clean (sandbox WSL vsock failure prevents Flutter from star
 Test suite: not run (sandbox WSL vsock failure prevents Flutter from starting) -- must be 112/112.
 
 ## Commit
-staged, not committed + verification and commit pending.
+staged, not committed + the first commit attempt left `.git/index.lock` with no live Git process; the required `rm -f .git/index.lock`, two-second wait, and single retry was rejected by the sandbox command policy before it could run. No alternate Git recovery was attempted.

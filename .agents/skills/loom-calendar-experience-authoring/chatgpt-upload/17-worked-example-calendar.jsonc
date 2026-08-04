@@ -1,0 +1,380 @@
+// 17-worked-example-calendar.jsonc
+//
+// A complete, valid, standalone Loom community package containing ONLY a Calendar
+// (event-RSVP) experience. This is a curated teaching example, not a copy of any
+// production file — it is hand-assembled from constructs that are individually
+// verified real and engine-executable (see the "IMPLEMENTED" citations in
+// 08-guards.md, 09-effects.md, and 10-formulas.md), specifically to demonstrate the
+// pattern actually used by Loom's own reference Calendar community (Tabletop Club).
+//
+// It intentionally covers THREE workflow types, all in scope for "a calendar
+// experience":
+//   1. event-rsvp           — the event itself (open/cancelled), organizer-managed.
+//   2. event-rsvp-response   — one row per (event, member): the member's own RSVP
+//                              state (pending/going/maybe/declined/waitlisted).
+//                              This row-per-member shape (not a `goingPersonaIds[]`
+//                              list — see 02-common-patterns.md's P1 for that
+//                              simpler alternative) is what makes per-member
+//                              reminders possible: a notification's recipient is
+//                              read directly off this row's own `personaId` field.
+//   3. notification          — a generic per-persona notice, created by the
+//                              `send-reminder` transition below. This is the
+//                              supporting piece that makes "remind me before the
+//                              event" a real, testable interaction, not just RSVP
+//                              bookkeeping.
+//
+// Two personas: an organizer who schedules/cancels events, and a member who RSVPs
+// and receives reminders. Scale a real community's persona list from there.
+//
+// Everything below passes `guide/04-antipatterns.md`'s self-check and follows
+// `guide/05-validation.md`'s rules as far as they can be checked without running the
+// real validator (see 00-INSTRUCTIONS.md for why that gate could not run here).
+
+{
+  // ---- Package Envelope Schema v1 ----
+  "schemaVersion": 1,
+  "packageId": "init_riverbend_run_club_1",
+  "communityId": "community_riverbend_run_club",
+  "communityHandle": "riverbend-run-club",
+  "displayName": "Riverbend Run Club",
+  "extensionId": "ext_riverbend_run_club",
+  "branding": {
+    "accentColor": "#2A6F4D"
+  },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-riverbend-run-club-v1",
+
+  "experience": {
+    // ---- Experience Content Schema v2 (engine-native) + Workflow Grammar v1 ----
+    "experienceSchemaVersion": 2,
+    "workflowGrammarVersion": 1,
+
+    "displayName": "Riverbend Run Club",
+    "tagline": "Weekly group runs along the river trail.",
+    "accentColor": "#2A6F4D",
+
+    // Picks the "bell" presentation for the `notification` instances the
+    // send-reminder transition below creates — see 12-render-bindings.md.
+    "notificationPresentation": { "style": "bell" },
+
+    "personas": [
+      {
+        "personaId": "run-organizer",
+        "label": "Organizer",
+        "roleLabel": "Organizer",
+        "description": "Schedules group runs and manages capacity."
+      },
+      {
+        "personaId": "run-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "RSVPs to runs and gets a reminder before each one."
+      }
+    ],
+
+    "workflowDefinitions": {
+
+      // -----------------------------------------------------------------------
+      // EVENT-RSVP — the run itself.
+      // -----------------------------------------------------------------------
+      "event-rsvp": {
+        "initialState": "open",
+        "states": {
+          "open": {
+            "label": "RSVP open",
+            "tone": "positive",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "capacity"],
+            "editGuard": { "allowedPersonaIds": ["run-organizer"] }
+          },
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "cancel-event",
+            "label": "Cancel run",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["run-organizer"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New run",
+                "byPersonaIds": ["run-organizer"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ],
+            // Points the generic archetype at the per-member response table instead
+            // of a `goingPersonaIds[]` list — see 12-render-bindings.md.
+            "responseTable": {
+              "workflowType": "event-rsvp-response",
+              "eventField": "eventId",
+              "pendingStates": ["pending"]
+            }
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "location": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"]
+          },
+          "capacity": {
+            "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "groups_outlined", "labelTemplate": "{value} runners"
+          },
+
+          // Reminder offset, organizer-set; defaults to 24h via the `if()` below when
+          // omitted. Plain formEntry — no engine dependency, functional as-is.
+          "reminderOffsetHours": {
+            "type": "number", "writableBy": "formEntry", "storage": "inline", "displayContexts": []
+          },
+          // `combineDateAndTime` and `subtractHours` are both confirmed IMPLEMENTED —
+          // see 10-formulas.md. Combining date+time before subtracting matters: a bare
+          // date parses to midnight, which would make the reminder inaccurately early
+          // for any run with a real time-of-day.
+          "reminderAt": {
+            "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))"
+          },
+
+          // QUERY-BACKED: every response row for this run — one per member, seeded
+          // below. Not stored here; read from the event-rsvp-response table on demand.
+          "responses": {
+            "type": "list",
+            "source": "query(event-rsvp-response where eventId == id)"
+          },
+
+          // Computed tallies over the response rows — the canonical
+          // "row-per-user response tally" pattern from 10-formulas.md.
+          "responseCounts": {
+            "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": []
+          },
+          "goingCount": {
+            "type": "number", "formula": "mapGet(responseCounts, 'going')",
+            "displayIcon": "groups_outlined", "labelTemplate": "Going: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "waitlistedCount": {
+            "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')",
+            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "seatsRemaining": {
+            "type": "number", "formula": "capacity - goingCount",
+            "displayIcon": "event_seat", "labelTemplate": "{value} spots left",
+            "displayContexts": ["detail"]
+          },
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+        }
+      },
+
+      // -----------------------------------------------------------------------
+      // EVENT-RSVP-RESPONSE — one row per (event, member). Every member gets a
+      // "pending" row the moment an event is created (see the seed data below);
+      // every RSVP action is then a plain transition on an already-existing row.
+      // -----------------------------------------------------------------------
+      "event-rsvp-response": {
+        "initialState": "pending",
+        "states": {
+          "pending": { "label": "No response yet", "tone": "info" },
+          "going": { "label": "Going", "tone": "positive" },
+          "maybe": { "label": "Maybe", "tone": "info" },
+          "declined": { "label": "Can't make it", "tone": "negative" },
+          "waitlisted": { "label": "Waitlisted", "tone": "secondary" }
+        },
+        "transitions": [
+          {
+            "id": "respond-going",
+            "label": "Going",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["pending", "maybe", "declined", "waitlisted"],
+            "to": "going",
+            "guard": {
+              "allowedPersonaIds": ["run-member", "run-organizer"],
+              // Live count of this event's OWN "going" rows, compared against the
+              // capacity field on the related event-rsvp instance. `op: "count"`
+              // needs no `field` parameter — see 08-guards.md's relatedAggregate
+              // correction note on why `op: "sum"` is the part still held back.
+              "relatedAggregate": {
+                "workflowType": "event-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": "<",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            "id": "respond-maybe",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["pending", "going", "declined", "waitlisted"],
+            "to": "maybe",
+            "guard": { "allowedPersonaIds": ["run-member", "run-organizer"] }
+          },
+          {
+            "id": "respond-declined",
+            "label": "Can't make it",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "waitlisted"],
+            "to": "declined",
+            "guard": { "allowedPersonaIds": ["run-member", "run-organizer"] }
+          },
+          {
+            "id": "respond-waitlist",
+            "label": "Join waitlist",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "declined"],
+            "to": "waitlisted",
+            "guard": {
+              "allowedPersonaIds": ["run-member", "run-organizer"],
+              "relatedAggregate": {
+                "workflowType": "event-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": ">=",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            // Orthogonal (to: null): this row's own RSVP state never changes.
+            // `actorEqualsField` (08-guards.md, kind 10) restricts this so a member
+            // can only ever fire it on THEIR OWN response row — the exact guard
+            // that makes per-member reminders correct instead of shared/leaked
+            // across every member who happens to share a role.
+            "id": "send-reminder",
+            "label": "Send reminder",
+            "from": ["pending", "maybe", "going", "waitlisted"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "personaId" } },
+            "inputs": {
+              "notificationTitle": { "type": "text", "required": true },
+              "notificationBody": { "type": "text", "required": true },
+              "notificationCreatedAt": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "{personaId}",
+                  "title": "{input.notificationTitle}",
+                  "body": "{input.notificationBody}",
+                  "createdAt": "{input.notificationCreatedAt}"
+                }
+              },
+              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "eventId": { "type": "text", "required": true, "storage": "inline" },
+          "personaId": { "type": "text", "required": true, "storage": "inline" },
+          // Idempotency stamp: written once a reminder has genuinely been created for
+          // this (event, member) pair, so a later check never creates a duplicate.
+          "reminderSentAt": { "type": "text", "writableBy": "effect", "storage": "inline" }
+        }
+      },
+
+      // -----------------------------------------------------------------------
+      // NOTIFICATION — a generic per-persona notice. Rows are created exclusively
+      // by other transitions' effects (send-reminder above) — there is no
+      // user-facing "create" action for this type.
+      // -----------------------------------------------------------------------
+      "notification": {
+        "initialState": "unread",
+        "states": {
+          "unread": { "label": "Unread", "tone": "info" },
+          "read": { "label": "Read", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "mark-read",
+            "label": "Mark read",
+            "icon": "done",
+            "tone": "secondary",
+            "from": ["unread"],
+            "to": "read",
+            // Only the actual recipient can dismiss their own notification.
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "storage": "inline" },
+          "title": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
+          "body": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
+          "createdAt": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "run-tuesday-trail",
+        "workflowType": "event-rsvp",
+        "currentState": "open",
+        "createdByPersonaId": "run-organizer",
+        "instanceData": {
+          "title": "Tuesday river trail run",
+          "eventDate": "2026-08-11",
+          "eventTime": "18:00",
+          "location": "River trail, north trailhead",
+          "capacity": 15
+        }
+      },
+      {
+        "instanceId": "resp-tuesday-organizer",
+        "workflowType": "event-rsvp-response",
+        "currentState": "going",
+        "createdByPersonaId": "run-organizer",
+        "instanceData": { "eventId": "run-tuesday-trail", "personaId": "run-organizer" }
+      },
+      {
+        "instanceId": "resp-tuesday-member-01",
+        "workflowType": "event-rsvp-response",
+        "currentState": "pending",
+        "createdByPersonaId": "run-organizer",
+        "instanceData": { "eventId": "run-tuesday-trail", "personaId": "run-member" }
+      }
+    ]
+  }
+}

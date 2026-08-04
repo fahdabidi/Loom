@@ -109,6 +109,37 @@ authoritative reference:
 - `wsl_slot.sh` — caps concurrent ad-hoc `wsl.exe` calls.
 - `watch_dispatch_log.sh` — self-terminating Monitor watch for a dispatch's completion line.
 
+## A live device/emulator build can be silently stale — verify it before trusting anything on-device
+
+**Real incident, 2026-08-02/03**: the first live emulator walkthrough after CAL.Notify2.9 closed hit
+`FormulaEvaluationException: Unknown function "combineDateAndTime"` opening the Calendar tab. This looked
+like a real regression, but it wasn't — the source was fully correct (`combineDateAndTime` had been wired
+into `formula_evaluator.dart`'s function allow-list and dispatch switch a week earlier, in the commit that
+started CAL.Notify2.9). `flutter build apk --debug` had reported success but **silently reused a
+9-day-old cached APK** instead of recompiling — confirmed by extracting `assets/flutter_assets/kernel_blob.bin`
+from the installed app and grepping it directly: zero occurrences of `combineDateAndTime`, but the older
+`subtractHours` function was present, proving the running binary predated the feature entirely. Most likely
+cause: this repo lives on a WSL2-mounted Windows path (`/mnt/c/...`, `drvfs`), where file-change signals
+don't always reliably reach Gradle's mtime-based incremental-build staleness checks — a known category of
+WSL2 build-tooling risk, not unique to this project.
+
+**Why none of CAL.Notify2.9's own extensive verification (ten fix rounds, `flutter analyze`, `flutter
+test`, both real JSON validators) ever caught this**: none of those checks build, install, or run a
+compiled APK — they all operate directly against source. A live device/emulator walkthrough is the
+**first and only point** in this project's whole verification stack that exercises an actual compiled
+build, which is exactly why it's a mandatory, distinct closing gate per CAL.*/CALR.* phase rather than a
+formality — and exactly why a stale build reaching that gate undetected is uniquely dangerous: nothing
+upstream of it would ever have flagged the problem.
+
+**Before trusting or installing any live-walkthrough build, run:**
+```bash
+bash data/verify_apk_freshness.sh <path-to-built-apk> <a-string-from-the-most-recent-source-change>
+```
+It extracts the debug APK's compiled kernel and greps it directly for the given string(s), failing loudly
+if absent. Cheap (a few seconds), and would have caught this exact incident before install. If it fails,
+don't debug the "regression" — run a real `flutter clean` in the affected app, then `flutter build apk`
+again, and re-check before proceeding.
+
 ## Closing checklist for any CALR milestone whose ticket cites a visual reference
 
 - [ ] Fixture data genuinely varies along whatever dimension is being visually demonstrated (scope,
@@ -117,3 +148,5 @@ authoritative reference:
       any finding investigated (not dismissed).
 - [ ] Explicit "does this look like the reference" judgment made and stated, separate from the above.
 - [ ] `flutter analyze`/`flutter test` green (this was never the gap — keep doing it).
+- [ ] `data/verify_apk_freshness.sh` run against the actual installed build before trusting any live-device
+      finding (see above — this was the real gap, once).

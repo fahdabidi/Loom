@@ -25,7 +25,10 @@
       "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell screencap -p /sdcard/loom_verify_5.png && adb pull /sdcard/loom_verify_5.png /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/loom_verify_5.png\")",
       "Bash(wmic process *)",
       "Bash(taskkill //PID 31736 //F)",
-      "Bash(wsl bash -lc 'python3 -c \" *)"
+      "Bash(wsl bash -lc 'python3 -c \" *)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/references/spec-version.json'\\)\\); print\\('valid'\\)\")",
+      "Bash(wsl.exe -e bash -lc \"python3 -c \\\\\"import json; json.load\\(open\\('/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/references/spec-version.json'\\)\\); print\\('valid'\\)\\\\\"\")",
+      "Bash(awk 'NR>=455 && NR<=497 {print NR\": \"length\\($0\\)}' \"docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_3.md\")"
     ],
     "additionalDirectories": [
       "\\mnt\\c\\Users\\fahd_\\OneDrive\\Documents\\Loom"
