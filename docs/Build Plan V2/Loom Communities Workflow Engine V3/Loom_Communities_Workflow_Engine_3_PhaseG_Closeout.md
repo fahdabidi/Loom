@@ -9,6 +9,8 @@ Collect the debt the rebuild was designed to pay off, prove nothing regressed, a
 
 ## G.1 — Retire the bespoke engine stores the pipeline replaced
 
+✅ **Closed (2026-08-05) — investigated, nothing left to delete.**
+
 Each earlier phase deletes the store it supersedes (`_TournamentBallotEngineStore` in B,
 `_MessagesEngineStore` in F, …). This milestone is the **sweep**: confirm nothing that the JSON pipeline
 now renders still has a hand-written Dart engine-store, and that no dead code was left behind.
@@ -21,6 +23,26 @@ load a state machine from JSON. Tabletop Club's should now be gone.
 run on their own bespoke stores and the **shallow v1 schema**. They are **out of scope** — do not touch
 them. They migrate in Phase 2 of the master plan, via the Skill. Deleting a store that another community
 still uses is the most likely way to break this phase.
+
+**Investigation findings (2026-08-05):** Tabletop Club never had its own dedicated per-community engine-
+store class — unlike Garden/Camera/Chess/Book Club/Youth Soccer/HOA, which each have a named store
+(`_GardenClubEngineStore`, `_CameraClubEngineStore`, `_ChessClubEngineStore`, `_BookClubEngineStore`,
+`_YouthSoccerEngineStore`, `_ArchitecturalRequestStore`) gated by a community-identity sniff
+(`_isGardenEngineExperience`, etc.) checked *before* the engine-native path — Tabletop Club instead
+borrowed the **generic**, tabId-keyed stores (`_MessagesEngineStore`, `_MarketplaceBrowseSurface`'s v1
+listing path, `_GivingTabSurface`'s v1 workflow-list path). All three are confirmed still genuinely
+load-bearing for other communities (HOA in particular: `hoa-dues-payment`, `hoa-*` notification/messages
+paths). `tournament-ballot`'s own store was already deleted in Phase B.8 — the one case where Tabletop
+Club *did* have a dedicated bespoke class, and it's gone. Cross-referencing every workflow type in the
+frozen JSON against the codebase found no other Tabletop-specific bespoke Dart left unreachable. Also
+confirmed: the other six communities' bundled JSONC fixtures (`assets/Loom_Communities_Workflow_Engine_*_Example.jsonc`)
+do contain populated `workflowDefinitions`, but these are inert string constants consumed only by each
+community's own bespoke fixture loader — never wired to `LoomExperienceDefinition.workflowDefinitions`, so
+`_hasEngineNativeBinding` is always false for them. **Only Tabletop Club is genuinely engine-native today** —
+this session's own six-phase rebuild did not accidentally reach any other community. **Conclusion: nothing
+to delete for G.1** — the closeout's "lines deleted" measure is already satisfied by B.8's ballot-store
+deletion; every other shared/community-named store must stay untouched exactly as this milestone's own
+warning anticipated.
 
 ## G.2 — Global theming fixes (the ones Phase A didn't need)
 
