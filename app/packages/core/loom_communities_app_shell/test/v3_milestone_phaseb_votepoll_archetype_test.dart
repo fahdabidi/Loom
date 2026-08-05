@@ -22,10 +22,9 @@ File _fixtureFile() {
 }
 
 class _InstalledTabletop {
-  const _InstalledTabletop(this.community, this.engine, this.temp);
+  const _InstalledTabletop(this.community, this.temp);
 
   final LocalInstalledCommunity community;
-  final WorkflowEngineApi engine;
   final Directory temp;
 
   Future<void> dispose() => temp.delete(recursive: true);
@@ -57,8 +56,7 @@ Future<_InstalledTabletop> _install(String extensionId) async {
           initializationPackagePath: init.path,
         )
         .community;
-    final engine = await workflowEngineForExtensionId(community.extensionId);
-    return _InstalledTabletop(community, engine, temp);
+    return _InstalledTabletop(community, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -91,7 +89,10 @@ Future<List<WorkflowInstance>> _voteRows(
   _InstalledTabletop installed,
   String personaId,
 ) async {
-  final page = await installed.engine.queryInstances(
+  final engine = await workflowEngineForExtensionId(
+    installed.community.extensionId,
+  );
+  final page = await engine.queryInstances(
     tabId: 'home',
     personaId: personaId,
     limit: 200,
