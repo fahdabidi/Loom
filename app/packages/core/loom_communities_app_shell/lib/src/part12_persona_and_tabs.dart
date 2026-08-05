@@ -1277,23 +1277,29 @@ bool _personaCanAdministerAnyWorkflow(
 ) {
   final engineDefinitions = experience.workflowDefinitions;
   if (engineDefinitions != null && engineDefinitions.isNotEmpty) {
-    final engineAdminDefinition = engineDefinitions.values.where(
+    final engineAdminDefinitions = engineDefinitions.values.where(
       (definition) => definition.renderBindings.any(
         (binding) => binding.tabId == 'admin',
       ),
     );
-    if (engineAdminDefinition.isNotEmpty) {
+    if (engineAdminDefinitions.isNotEmpty) {
       // Engine-native experiences intentionally do not populate the legacy
-      // `experience.workflows` list. Use the declared transition guards to
-      // keep the tab visible to the roles that can actually decide items in
-      // the engine-native queue, while leaving legacy tab gating untouched.
-      return engineAdminDefinition.any(
-        (definition) => definition.transitions.any(
+      // `experience.workflows` list. Use only the transitions reachable from
+      // the states declared by an Admin binding: a member may be allowed to
+      // submit a proposal, but that does not make them an administrator who
+      // can decide the pending queue.
+      return engineAdminDefinitions.any((definition) {
+        final adminStates = definition.renderBindings
+            .where((binding) => binding.tabId == 'admin')
+            .expand((binding) => binding.states)
+            .toSet();
+        return definition.transitions.any(
           (transition) =>
-              transition.guard.allowedPersonaIds?.contains(personaId) ??
-              false,
-        ),
-      );
+              transition.from.any((state) => adminStates.contains(state)) &&
+              (transition.guard.allowedPersonaIds?.contains(personaId) ??
+                  false),
+        );
+      });
     }
   }
   return experience.workflows.any((workflow) {

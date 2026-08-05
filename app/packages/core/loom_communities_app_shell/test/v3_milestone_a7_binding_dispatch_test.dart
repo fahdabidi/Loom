@@ -267,7 +267,7 @@ void main() {
   testWidgets(
     'every disabled tab publishes its keyed empty builder without querying',
     (tester) async {
-      for (final tab in ['admin', 'messages']) {
+      for (final tab in ['messages']) {
         final engine = _CountingEngine(
           ({required tabId, required personaId, required limit, cursor}) =>
               Future.value(const InstancePage(items: [])),
@@ -504,10 +504,10 @@ void main() {
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
       );
-      await tester.pumpWidget(widget(old, 'admin', 'C'));
+      await tester.pumpWidget(widget(old, 'messages', 'C'));
       await tester.pump();
       expect(
-        find.byKey(const Key('engine-native-bindings-empty-admin-C')),
+        find.byKey(const Key('engine-native-bindings-empty-messages-C')),
         findsOneWidget,
       );
       expect(old.queries, 1);
