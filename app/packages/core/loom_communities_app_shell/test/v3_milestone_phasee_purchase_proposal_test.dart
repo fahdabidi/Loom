@@ -388,7 +388,9 @@ void main() {
         );
         expect(
           find.descendant(
-            of: _card(changesId),
+            of: find.byKey(
+              ValueKey('generic-instance-field-$changesId-gameName'),
+            ),
             matching: find.text(changesTitle),
           ),
           findsOneWidget,
