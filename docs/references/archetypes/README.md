@@ -52,7 +52,7 @@ Archetype UI Design gate for what closes each remaining PARTIAL/❌ before Table
 | `equipment-loan` | Browse/borrow/queue/return items | 🟡 PARTIAL | Real search/filter/grid/pagination (`part02_tab_shell.dart:5814-6263`) — but per-item borrow/queue/return actions still render via the generic template (`part02_tab_shell.dart:6601,6693`) |
 | `votePoll` | Ballot: candidates, tally, tie/runoff | ✅ REAL | Per-candidate vote buttons + live tally, candidate detail dialog, deadline/reminder banner (`part02_tab_shell.dart:3387-3600+`, specifically `:3474-3585`) |
 | `paymentCheckout` | Dues/donations + receipt | 🟡 PARTIAL | Real amount/purpose header + payment history (`part02_tab_shell.dart:13316+`) — but the pay action itself is the generic template (`:13641-13659`) |
-| `approvalQueueItem` | A live queue of items awaiting decision | ❌ NOT REAL | Zero implementation exists — no binding or widget named `approvalQueueItem` anywhere in `lib/src`. Approval-shaped states render through the fully generic `_WorkflowTile` path (`part02_tab_shell.dart:13281-13298` → `part01_local_extension_screen.dart:598-661` → `part05_domain_preview.dart:406+`) |
+| `approvalQueueItem` | A live queue of items awaiting decision | ❌ NOT REAL | The engine-native `game-purchase-proposal` binding now reaches the shared `EngineNativeBindingDispatcher`/`GenericWorkflowInstanceCard` queue on Admin, but there is still no bespoke `approvalQueueItem` widget; the family therefore remains generic rather than a distinct archetype. |
 | `formEntry` | Author/edit a record (typed controls) | ✅ REAL (thin) | Bespoke checkbox + reminder-offset dropdown, engine-backed, not the generic pattern (`part02_tab_shell.dart:3206-3385`) — but only 2 field types deep; needs real type-dispatch for the full `field-types.md` vocabulary before it can carry `creatable` forms generally |
 | `discussionThread` | Threads + messages + compose | ✅ REAL | Real inbox list, thread detail, composer, mute/archive, unread tracking (`part02_tab_shell.dart:165-430+`) |
 | `statusTimeline` | Timestamped progression of an item | ✅ REAL (display-only) | Bespoke connected-dot vertical timeline (`part02_tab_shell.dart:2890-3037`, `part23_timeline_and_protected_detail.dart:3-58`) — genuinely distinct, but pure display, no interaction to further verify |
@@ -85,7 +85,7 @@ tests across all three packages, real CLI validator 0/0) **then reopened 2026-07
 architectural redesign (per-row response table, scoped multi-card container, real event creation) — spec
 written, implementation not yet dispatched; see the status table above. **`equipment-loan` is still only PARTIAL** — its
 browse/list shell is real, but the actual per-item interaction (borrow/queue/return) still silently falls
-back to the generic template — and **`approvalQueueItem` has zero implementation at all.**
+back to the generic template — and **`approvalQueueItem` still has no bespoke implementation**, although Phase E now proves its engine-native generic queue wiring end to end.
 
 **Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL) or
 `cardSurfaceFamily: "equipment-loan"` (🟡 PARTIAL) does **not** get you the full interaction its name

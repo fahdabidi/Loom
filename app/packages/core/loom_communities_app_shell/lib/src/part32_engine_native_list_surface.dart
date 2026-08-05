@@ -13,6 +13,7 @@ class EngineNativeListSurface extends StatefulWidget {
     required this.modernTheme,
     this.engine,
     this.onInstanceScopedCreate,
+    this.rolesForInstance,
   });
 
   final LoomExperienceDefinition experience;
@@ -22,6 +23,7 @@ class EngineNativeListSurface extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final WorkflowEngineApi? engine;
   final EngineNativeInstanceScopedCreate? onInstanceScopedCreate;
+  final EngineNativeRolesForInstance? rolesForInstance;
 
   @override
   State<EngineNativeListSurface> createState() =>
@@ -90,10 +92,8 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
           definitions: definitions,
           tabId: widget.tabId,
           personaId: personaId,
-          rolesForInstance: (instance, viewerPersonaId) =>
-              instance.createdByPersonaId == viewerPersonaId
-              ? const <String>['actor']
-              : const <String>[],
+          rolesForInstance:
+              widget.rolesForInstance ?? _engineNativeActorRolesForInstance,
           builder: (context, bindings, changed) {
             if (bindings.isEmpty) {
               return SizedBox(
@@ -139,3 +139,17 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
     );
   }
 }
+
+Iterable<String> _engineNativeActorRolesForInstance(
+  WorkflowInstance instance,
+  String viewerPersonaId,
+) => instance.createdByPersonaId == viewerPersonaId
+    ? const <String>['actor']
+    : const <String>[];
+
+Iterable<String> _engineNativeAdminRolesForInstance(
+  WorkflowInstance instance,
+  String viewerPersonaId,
+) => instance.createdByPersonaId == viewerPersonaId
+    ? const <String>['actor']
+    : const <String>['receiver'];

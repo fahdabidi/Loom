@@ -1275,6 +1275,27 @@ bool _personaCanAdministerAnyWorkflow(
   LoomExperienceDefinition experience,
   String personaId,
 ) {
+  final engineDefinitions = experience.workflowDefinitions;
+  if (engineDefinitions != null && engineDefinitions.isNotEmpty) {
+    final engineAdminDefinition = engineDefinitions.values.where(
+      (definition) => definition.renderBindings.any(
+        (binding) => binding.tabId == 'admin',
+      ),
+    );
+    if (engineAdminDefinition.isNotEmpty) {
+      // Engine-native experiences intentionally do not populate the legacy
+      // `experience.workflows` list. Use the declared transition guards to
+      // keep the tab visible to the roles that can actually decide items in
+      // the engine-native queue, while leaving legacy tab gating untouched.
+      return engineAdminDefinition.any(
+        (definition) => definition.transitions.any(
+          (transition) =>
+              transition.guard.allowedPersonaIds?.contains(personaId) ??
+              false,
+        ),
+      );
+    }
+  }
   return experience.workflows.any((workflow) {
     final state = personaWorkflowStateFor(
       extensionId: experience.extensionId,

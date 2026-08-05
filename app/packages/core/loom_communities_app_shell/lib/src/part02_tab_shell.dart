@@ -4059,6 +4059,17 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_hasEngineNativeBinding(experience, 'admin')) {
+          return EngineNativeListSurface(
+            experience: experience,
+            persona: persona,
+            tabId: 'admin',
+            accent: accent,
+            modernTheme: modernTheme,
+            onInstanceScopedCreate: onInstanceScopedCreate,
+            rolesForInstance: _engineNativeAdminRolesForInstance,
+          );
+        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {

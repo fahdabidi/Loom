@@ -75,6 +75,7 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
 class _EngineNativeBindingDispatcherState
     extends State<EngineNativeBindingDispatcher> {
   static const _enabledTabs = <String>{
+    'admin',
     'calendar',
     'giving',
     'home',
