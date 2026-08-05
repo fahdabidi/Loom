@@ -63,6 +63,9 @@ LocalInstalledCommunity _detailCommunity({required bool authorized}) =>
       heroImageAssetId: null,
       accentColor: '#4a3b2a',
       experienceConfiguration: {
+        // The shell theme resolves the package experience accent, so keep it
+        // aligned with the installed-community branding metadata above.
+        'accentColor': '#4a3b2a',
         'workflows': const [
           {
             'workflowId': 'tabletop-protected-detail-workflow',
