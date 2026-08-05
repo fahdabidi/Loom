@@ -339,6 +339,49 @@ class EngineNativeArchetypeCard extends StatelessWidget {
                   binding: resolved.binding,
                 ),
         );
+      case 'votePoll':
+        // Only the binding that declares a repeater is the real ballot
+        // (candidates plus per-candidate vote buttons). A votePoll-family
+        // summary binding without a repeater remains generic until its own
+        // bespoke attendance treatment is added.
+        if (resolved.binding.repeater != null) {
+          return VotePollArchetypeCard(
+            key: contentKey,
+            resolved: resolved,
+            engine: engine,
+            personaId: personaId,
+            accent: accent,
+            modernTheme: modernTheme,
+            onInstanceChanged: onInstanceChanged,
+          );
+        }
+        return GenericWorkflowInstanceCard(
+          key: contentKey,
+          instance: resolved.instance,
+          machine: resolved.machine,
+          engine: engine,
+          personaId: personaId,
+          displayContext: displayContext,
+          showEditors: showEditors,
+          visibleFieldKeys: visibleFieldKeys,
+          accent: accent,
+          onInstanceChanged: onInstanceChanged,
+          instanceScopedCreateActions: [
+            for (final action in resolved.binding.actions)
+              if (action.kind == 'create' &&
+                  action.scope == 'instance' &&
+                  action.presentation == 'button' &&
+                  action.byPersonaIds?.contains(personaId) == true)
+                action,
+          ],
+          onInstanceScopedCreate: onInstanceScopedCreate == null
+              ? null
+              : (action) => onInstanceScopedCreate!(
+                  action: action,
+                  instance: resolved.instance,
+                  binding: resolved.binding,
+                ),
+        );
       default:
         return GenericWorkflowInstanceCard(
           key: contentKey,
