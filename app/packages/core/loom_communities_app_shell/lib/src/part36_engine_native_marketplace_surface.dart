@@ -514,6 +514,12 @@ class _EquipmentLoanArchetypeCardState
           !widget.visibleFieldKeys!.contains(key)) {
         continue;
       }
+      // Formula-backed fields are derived engine helpers unless the schema
+      // explicitly gives them a user-facing label.
+      final isUnlabeledComputedField =
+          field.formula?.trim().isNotEmpty == true &&
+          !(field.labelTemplate?.trim().isNotEmpty ?? false);
+      if (isUnlabeledComputedField) continue;
       if (field.displayContexts != null &&
           field.displayContexts!.isNotEmpty &&
           !field.displayContexts!.contains(widget.displayContext)) {

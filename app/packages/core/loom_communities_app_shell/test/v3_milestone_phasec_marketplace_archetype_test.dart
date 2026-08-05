@@ -512,6 +512,132 @@ void main() {
         final rootListing = find.byKey(
           const ValueKey('marketplace-listing-listing-root'),
         );
+        final catanListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-catan'),
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('Catan')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('Board Games')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('available')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('0')),
+          findsNothing,
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('true')),
+          findsNothing,
+        );
+
+        await tester.ensureVisible(catanListing);
+        await tester.tap(catanListing);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('marketplace-detail-dialog-listing-catan')),
+        );
+        final catanDetailCard = find.byKey(
+          const ValueKey('marketplace-detail-card-listing-catan'),
+        );
+        expect(
+          find.descendant(of: catanDetailCard, matching: find.text('Catan')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: catanDetailCard,
+            matching: find.text('Board Games'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: catanDetailCard, matching: find.text('Like new')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: catanDetailCard,
+            matching: find.text(
+              'Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: catanDetailCard,
+            matching: find.text('available'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: catanDetailCard, matching: find.text('0')),
+          findsNothing,
+        );
+        expect(
+          find.descendant(of: catanDetailCard, matching: find.text('true')),
+          findsNothing,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('marketplace-detail-close-listing-catan')),
+        );
+        await tester.pump();
+
+        final wingspanListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-wingspan'),
+        );
+        await tester.ensureVisible(wingspanListing);
+        await tester.tap(wingspanListing);
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey('marketplace-detail-dialog-listing-wingspan'),
+          ),
+        );
+        final wingspanDetailCard = find.byKey(
+          const ValueKey('marketplace-detail-card-listing-wingspan'),
+        );
+        expect(
+          find.descendant(
+            of: wingspanDetailCard,
+            matching: find.text('onLoan'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: wingspanDetailCard,
+            matching: find.text('Holder: tabletop-member-03'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: wingspanDetailCard,
+            matching: find.text('Queue: 1'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: wingspanDetailCard,
+            matching: find.text('Due back 2026-07-17'),
+          ),
+          findsOneWidget,
+        );
+        await tester.tap(
+          find.byKey(
+            const ValueKey('marketplace-detail-close-listing-wingspan'),
+          ),
+        );
+        await tester.pump();
+
         final gloomhavenListing = find.byKey(
           const ValueKey('marketplace-listing-share-gloomhaven'),
         );
@@ -543,12 +669,6 @@ void main() {
         }
 
         final search = find.byKey(const ValueKey('marketplace-search-field'));
-        final wingspanListing = find.byKey(
-          const ValueKey('marketplace-listing-listing-wingspan'),
-        );
-        final catanListing = find.byKey(
-          const ValueKey('marketplace-listing-listing-catan'),
-        );
         await tester.enterText(search, 'Wingspan');
         await _pumpUntil(tester, wingspanListing);
         expect(wingspanListing, findsOneWidget);
