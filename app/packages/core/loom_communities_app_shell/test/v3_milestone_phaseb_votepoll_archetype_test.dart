@@ -208,7 +208,14 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(find.byType(VotePollArchetypeCard), findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-list-item-home-ballot-summer-tournament-0',
+            ),
+          ),
+          findsOneWidget,
+        );
 
         // The engine's cross-instance eligibility guard excludes the
         // organizer from voting, while the organizer-only close transition
