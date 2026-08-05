@@ -1,10 +1,19 @@
 # Phase F — Messages tab (threads + the missing "new thread")
 
-Part of [tracker 3](./Loom_Communities_Workflow_Engine_3.md). **Blocked on Phase A** (and best done
-**after Phase E**, which closes the instance-creation grammar gap this phase needs).
+Part of [tracker 3](./Loom_Communities_Workflow_Engine_3.md). Phase A, B, C, D, and E are all closed —
+including Phase E, whose creation-grammar work (GAP-2) this phase needs and which is now proven real and
+tab-agnostic (see Phase E's closure evidence).
 
-> **Scoping note.** Firm on scope, light on snippets — detailed kickoffs are written after Phase A's
-> human gate, against the revised JSON.
+## Process note (2026-08-05, before starting)
+
+Unlike Phase C/D/E, this doc's own scoping held up under investigation — nothing here was already secretly
+done. Confirmed: `'messages'` is genuinely absent from `_enabledTabs`, no test exercises the real frozen
+`discussion-thread` JSON, and the tab today renders entirely through the legacy `_MessagesTabSurface`/
+`_MessagesEngineStore` (the same private-in-widget-engine anti-pattern already retired elsewhere this
+session). F.1-F.7 are all genuinely open — this phase needs the full build, not a "close what's already
+real" pass. Also confirmed: the frozen JSON's `discussion-thread` type declares no `sendInvite`/
+`acceptInvite`/`declineInvite` transitions at all — F.5's "renderer contract lies" framing is exactly right,
+there is nothing to build there, only a contract correction.
 
 ## Goal
 
