@@ -22,9 +22,10 @@ File _fixtureFile() {
 }
 
 class _InstalledTabletop {
-  const _InstalledTabletop(this.community, this.temp);
+  const _InstalledTabletop(this.community, this.engine, this.temp);
 
   final LocalInstalledCommunity community;
+  final WorkflowEngineApi engine;
   final Directory temp;
 
   Future<void> dispose() => temp.delete(recursive: true);
@@ -56,7 +57,17 @@ Future<_InstalledTabletop> _install(String extensionId) async {
           initializationPackagePath: init.path,
         )
         .community;
-    return _InstalledTabletop(community, temp);
+    // Register the engine-native store before the widget is pumped. Keeping
+    // registration and engine creation in this same runAsync call avoids
+    // creating the native sqlite connection in Flutter's fake-async zone and
+    // later accessing it from a real async zone.
+    experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    return _InstalledTabletop(community, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -89,10 +100,7 @@ Future<List<WorkflowInstance>> _voteRows(
   _InstalledTabletop installed,
   String personaId,
 ) async {
-  final engine = await workflowEngineForExtensionId(
-    installed.community.extensionId,
-  );
-  final page = await engine.queryInstances(
+  final page = await installed.engine.queryInstances(
     tabId: 'home',
     personaId: personaId,
     limit: 200,
