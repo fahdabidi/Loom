@@ -95,6 +95,29 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
+Future<void> _selectPersona(WidgetTester tester, String personaId) async {
+  final personaPicker = find.byKey(const ValueKey('persona-picker-button'));
+  await _pumpUntil(tester, personaPicker);
+  await tester.tap(personaPicker);
+  await tester.pump();
+  final option = find.byKey(ValueKey('persona-option-$personaId'));
+  await _pumpUntil(tester, option);
+  await tester.tap(option);
+  await tester.pump();
+}
+
+Future<void> _selectTab(
+  WidgetTester tester, {
+  required String tabId,
+  required String rootKey,
+}) async {
+  final tab = find.byKey(ValueKey('community-tab-$tabId'));
+  await _pumpUntil(tester, tab);
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
+  await _pumpUntil(tester, find.byKey(ValueKey(rootKey)));
+}
+
 void main() {
   testWidgets(
     'Giving projects the frozen dues instance through the generic engine-native list',
@@ -182,6 +205,82 @@ void main() {
         expect(paid.instanceData['receiptStatus'], 'complete');
         expect(paid.instanceData['paidAt'], isNotNull);
         expect('${paid.instanceData['paidAt']}', isNotEmpty);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Giving pay unlocks Marketplace borrow through the shared engine UI',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phase-d4-giving-marketplace'),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: LocalExtensionScreen(
+              community: installed.community,
+              seedDataFiles: const [],
+            ),
+          ),
+        );
+        await _selectPersona(tester, 'tabletop-member');
+
+        await _selectTab(
+          tester,
+          tabId: 'marketplace',
+          rootKey: 'engine-native-marketplace-root',
+        );
+        final catan = find.byKey(
+          const ValueKey('marketplace-listing-listing-catan'),
+        );
+        final catanJoinQueue = find.byKey(
+          const ValueKey(
+            'equipment-loan-listing-catan-action-join-queue',
+          ),
+        );
+        final catanBorrow = find.byKey(
+          const ValueKey('equipment-loan-action-borrow-listing-catan'),
+        );
+        await _pumpUntil(tester, catan);
+        await _pumpUntil(tester, catanJoinQueue);
+        expect(catan, findsOneWidget);
+        expect(catanBorrow, findsNothing);
+        expect(
+          find.descendant(of: catan, matching: find.text('Request loan')),
+          findsNothing,
+        );
+        expect(tester.takeException(), isNull);
+
+        await _selectTab(
+          tester,
+          tabId: 'giving',
+          rootKey: 'engine-native-list-root-giving',
+        );
+        final pay = find.byKey(
+          const ValueKey('generic-instance-dues-2026-q3-member-action-pay'),
+        );
+        await _pumpUntil(tester, pay);
+        expect(find.text('Pay \$15'), findsOneWidget);
+        await tester.ensureVisible(pay);
+        await tester.tap(pay);
+        await _pumpUntilGone(tester, pay);
+        expect(tester.takeException(), isNull);
+
+        await _selectTab(
+          tester,
+          tabId: 'marketplace',
+          rootKey: 'engine-native-marketplace-root',
+        );
+        await _pumpUntil(tester, catanBorrow);
+        expect(catanBorrow, findsOneWidget);
+        expect(
+          find.descendant(of: catan, matching: find.text('Request loan')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
       } finally {
         await tester.runAsync(installed.dispose);
       }
