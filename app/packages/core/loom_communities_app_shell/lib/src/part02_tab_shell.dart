@@ -4569,6 +4569,25 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
     }
+    // Home falls through the switch above (no case matches
+    // 'HomeTabSurfaceStack') to this fallback. Engine-native communities
+    // (declared `workflowDefinitions` with a `home`-tabId renderBinding) get
+    // the same generic pipeline Calendar/Giving already use, so Home renders
+    // only what the JSON actually places there instead of every workflow via
+    // `_communitySectionsFor`'s blanket duplication. Checked first, ahead of
+    // the other example communities' bespoke engine chains below, since none
+    // of those parse `workflowDefinitions` and so never match this gate.
+    if (rendererId == 'HomeTabSurfaceStack' &&
+        _hasEngineNativeBinding(experience, 'home')) {
+      return EngineNativeListSurface(
+        experience: experience,
+        persona: persona,
+        tabId: 'home',
+        accent: accent,
+        modernTheme: modernTheme,
+        onInstanceScopedCreate: onInstanceScopedCreate,
+      );
+    }
     if (_isGardenEngineExperience(experience)) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

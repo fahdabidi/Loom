@@ -268,7 +268,6 @@ void main() {
     'every disabled tab publishes its keyed empty builder without querying',
     (tester) async {
       for (final tab in [
-        'home',
         'marketplace',
         'admin',
         'messages',
@@ -509,10 +508,10 @@ void main() {
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
       );
-      await tester.pumpWidget(widget(old, 'home', 'C'));
+      await tester.pumpWidget(widget(old, 'marketplace', 'C'));
       await tester.pump();
       expect(
-        find.byKey(const Key('engine-native-bindings-empty-home-C')),
+        find.byKey(const Key('engine-native-bindings-empty-marketplace-C')),
         findsOneWidget,
       );
       expect(old.queries, 1);
