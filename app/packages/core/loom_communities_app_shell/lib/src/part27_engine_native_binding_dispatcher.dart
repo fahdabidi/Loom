@@ -372,6 +372,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           showEditors: showEditors,
           visibleFieldKeys: visibleFieldKeys,
           accent: accent,
+          modernTheme: modernTheme,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: [
             for (final action in resolved.binding.actions)
@@ -412,6 +413,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           showEditors: showEditors,
           visibleFieldKeys: visibleFieldKeys,
           accent: accent,
+          modernTheme: modernTheme,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: [
             for (final action in resolved.binding.actions)

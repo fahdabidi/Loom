@@ -16,6 +16,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     this.onInstanceChanged,
     this.accent,
     this.foreground,
+    this.modernTheme,
     this.visibleFieldKeys,
     this.showEditors = true,
     this.instanceScopedCreateActions = const [],
@@ -30,6 +31,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final Color? accent;
   final Color? foreground;
+  final LoomCardTheme? modernTheme;
 
   /// Optional bounded presentation filter. Null preserves the schema-driven
   /// presentation used by existing callers.
@@ -375,8 +377,26 @@ class _GenericWorkflowInstanceCardState
   @override
   Widget build(BuildContext context) {
     final editable = _editableKeys;
+    final modernTheme = widget.modernTheme;
+    final factForeground = modernTheme?.resolvedBody ?? widget.foreground;
+    final actionForeground = modernTheme?.resolvedHeading ?? widget.foreground;
+    final resolvedAccent = modernTheme?.accent ?? widget.accent;
     return Card(
       key: ValueKey('generic-instance-card-${_instance.instanceId}'),
+      color: modernTheme?.resolvedFill,
+      elevation: modernTheme?.elevation,
+      shadowColor: modernTheme?.resolvedShadow,
+      shape: modernTheme == null
+          ? null
+          : RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                modernTheme.cornerRadius ?? 16,
+              ),
+              side: BorderSide(
+                color: modernTheme.resolvedBorder,
+                width: modernTheme.borderWidth ?? 1,
+              ),
+            ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -400,8 +420,8 @@ class _GenericWorkflowInstanceCardState
                         ),
                       },
                       displayContext: widget.displayContext,
-                      foreground: widget.foreground,
-                      accent: widget.accent,
+                      foreground: factForeground,
+                      accent: resolvedAccent,
                     ),
                   ),
               if (widget.showEditors && editable.isNotEmpty) ...[
@@ -458,8 +478,9 @@ class _GenericWorkflowInstanceCardState
                       ),
                   ],
                   onTransitionPressed: _mutating ? null : _applyTransition,
-                  foreground: widget.foreground,
-                  accent: widget.accent,
+                  foreground: actionForeground,
+                  accent: resolvedAccent,
+                  modernTheme: modernTheme,
                 ),
               if (widget.instanceScopedCreateActions.isNotEmpty) ...[
                 const SizedBox(height: 12),

@@ -421,6 +421,7 @@ class WorkflowActionButtonRow extends StatelessWidget {
     this.onTransitionPressed,
     this.foreground,
     this.accent,
+    this.modernTheme,
     this.waitingText = 'Waiting',
   });
 
@@ -429,6 +430,7 @@ class WorkflowActionButtonRow extends StatelessWidget {
   final WorkflowActionPressed? onTransitionPressed;
   final Color? foreground;
   final Color? accent;
+  final LoomCardTheme? modernTheme;
   final String waitingText;
 
   @override
@@ -448,6 +450,7 @@ class WorkflowActionButtonRow extends StatelessWidget {
             transition: transition,
             foreground: resolvedForeground,
             accent: accent,
+            modernTheme: modernTheme,
             waitingText: waitingText,
             onPressed: onTransitionPressed == null
                 ? null
@@ -748,6 +751,7 @@ class _WorkflowActionRowItem extends StatelessWidget {
     required this.foreground,
     required this.onPressed,
     this.accent,
+    this.modernTheme,
     required this.waitingText,
   });
 
@@ -755,6 +759,7 @@ class _WorkflowActionRowItem extends StatelessWidget {
   final WorkflowActionButtonTransition transition;
   final Color foreground;
   final Color? accent;
+  final LoomCardTheme? modernTheme;
   final VoidCallback? onPressed;
   final String waitingText;
 
@@ -777,6 +782,20 @@ class _WorkflowActionRowItem extends StatelessWidget {
     }
     final icon = _iconForName(transition.iconName);
     final toneColor = _toneColor(transition.tone, context);
+    final themedButton = switch (transition.tone) {
+      WorkflowActionTone.primary => _buttonStyleFor(modernTheme?.primaryButton),
+      WorkflowActionTone.secondary => _buttonStyleFor(
+        modernTheme?.secondaryButton,
+      ),
+      WorkflowActionTone.destructive => null,
+    };
+    final themedForeground = switch (transition.tone) {
+      WorkflowActionTone.primary =>
+        modernTheme?.primaryButton?.resolvedForeground,
+      WorkflowActionTone.secondary =>
+        modernTheme?.secondaryButton?.resolvedForeground,
+      WorkflowActionTone.destructive => null,
+    };
     switch (transition.tone) {
       case WorkflowActionTone.secondary:
         return OutlinedButton.icon(
@@ -784,24 +803,28 @@ class _WorkflowActionRowItem extends StatelessWidget {
           onPressed: onPressed,
           icon: Icon(icon),
           label: Text(transition.label),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: foreground,
-            side: BorderSide(color: foreground.withValues(alpha: 0.45)),
-          ),
+          style:
+              themedButton ??
+              OutlinedButton.styleFrom(
+                foregroundColor: foreground,
+                side: BorderSide(color: foreground.withValues(alpha: 0.45)),
+              ),
         );
       case WorkflowActionTone.primary:
         return FilledButton.icon(
           key: controlKey,
           onPressed: onPressed,
-          icon: Icon(icon, color: Colors.white),
+          icon: Icon(icon, color: themedForeground ?? Colors.white),
           label: Text(
             transition.label,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: themedForeground ?? Colors.white),
           ),
-          style: FilledButton.styleFrom(
-            backgroundColor: toneColor,
-            foregroundColor: Colors.white,
-          ),
+          style:
+              themedButton ??
+              FilledButton.styleFrom(
+                backgroundColor: toneColor,
+                foregroundColor: Colors.white,
+              ),
         );
       case WorkflowActionTone.destructive:
         return FilledButton.icon(

@@ -167,6 +167,37 @@ void main() {
         expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
         expect(find.text(r'$15.00'), findsOneWidget);
         expect(find.text('Quarterly club dues'), findsOneWidget);
+
+        // The app bar is community chrome and intentionally stays at the
+        // community accent. Card/header surfaces in the selected tab must use
+        // the resolved community -> tab theme instead.
+        final experience = experienceForExtensionId(
+          installed.community.extensionId,
+          displayName: installed.community.displayName,
+          experienceConfiguration: installed.community.experienceConfiguration,
+        );
+        final givingTheme = LoomCardTheme.merge(
+          LoomCardTheme.merge(
+            LoomCardTheme.deriveFromAccent(
+              const Color(0xffC4703F),
+              lightSurface: true,
+            ),
+            experience.themeOverride,
+          ),
+          experience.tabThemeOverrides['giving'],
+        );
+        expect(givingTheme.accent, const Color(0xff8A5A34));
+        expect(
+          tester.widget<AppBar>(find.byType(AppBar)).backgroundColor,
+          const Color(0xffC4703F),
+        );
+        final selectedGivingHeader = tester.widget<DecoratedBox>(
+          find.byKey(const ValueKey('selected-tab-giving')),
+        );
+        expect(
+          (selectedGivingHeader.decoration as BoxDecoration).color,
+          givingTheme.resolvedFill,
+        );
         final duesCard = find.byKey(
           const ValueKey('generic-instance-card-dues-2026-q3-member'),
         );
@@ -180,6 +211,14 @@ void main() {
         await _pumpUntil(tester, pay);
         expect(pay, findsOneWidget);
         expect(find.text('Pay \$15'), findsOneWidget);
+        expect(
+          tester
+              .widget<FilledButton>(pay)
+              .style
+              ?.backgroundColor
+              ?.resolve(const {}),
+          const Color(0xff8A5A34),
+        );
         await tester.ensureVisible(pay);
         await tester.tap(pay);
         await _pumpUntilGone(tester, pay);
