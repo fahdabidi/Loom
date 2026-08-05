@@ -1019,8 +1019,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     var data = Map<String, dynamic>.from(sourceData);
     Future<void> applyList(List<WorkflowEffect> list) async {
       for (final effect in list) {
+        final hydrated = await _hydrateSourceFields(data, machine, instanceId);
         final computed = _withComputedFields(
-          data,
+          hydrated,
           machine,
           viewerId: personaId,
           actorId: personaId,
