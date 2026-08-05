@@ -87,19 +87,19 @@ not-yet-in-grammar").
 
 | # | Milestone | Notes |
 |---|---|---|
-| E.1 | Turn on `tabId: "admin"` in the binding dispatcher | Home is already on from Phase B. |
-| E.2 | **Live `queryInstances`-bound Repeater** | The second Repeater shape (Phase B built the in-instance-list shape). Bound to a state-filtered query. Test: creating a new pending instance makes a new row appear with no widget rebuild. |
-| E.3 | Proposal decision queue on Admin | Approve / Request changes / Reject as real transitions, organizer-gated. |
-| E.4 | Member's own proposal status on Home | The `role: actor` bindings; the member sees their real instance's real state. |
+| E.1 | ✅ Closed (2026-08-05, commit `55990a87` + fix1 `fea3e095`). Turn on `tabId: "admin"` in the binding dispatcher | Home is already on from Phase B. Took one fix round: the tab-visibility gate initially checked *any* transition's guard in the whole definition (a member-only `submit` transition made the tab wrongly visible to members too); fixed to scope to only transitions reachable from the admin-bound states. |
+| E.2 | ✅ Closed (same commits). **Live `queryInstances`-bound Repeater** | Proven with distinctively-titled proposals submitted mid-test, confirmed to appear in the organizer's live Admin queue — not a coincidence of seed data. |
+| E.3 | ✅ Closed (same commits). Proposal decision queue on Admin | Approve/reject/request-changes proven as real, organizer-gated transitions; confirmed a member has neither the actions nor Admin-tab access. |
+| E.4 | ✅ Closed (same commits). Member's own proposal status on Home | Proven for approved/rejected/changes-requested outcomes via the real widget tree and a fresh engine query, using the proposer's actual submitted title, not a hardcoded string. |
 | E.5 | ✅ Closed (Phase A′ GAP-2, 2026-07-16, commit `cfb98334`; confirmed still real and tab-agnostic this session). **Member-authored creation (grammar addition)** | Close the "create a brand-new instance" gap generically. Serves Phase F too. |
-| E.6 | Revise-and-resubmit loop | `changes-requested` → edit → `submit` → `pending` again. |
+| E.6 | ✅ Closed (2026-08-05, same commits + fix2 `a46e675c`/fix3 `6a351964`). Revise-and-resubmit loop | `changes-requested` → edit → `submit` → `pending` again, proven with a real distinctive revised title reappearing in the Admin queue. Took two follow-up fix rounds — both the same class of finder ambiguity: a `changes-requested`/`draft`-state card is *itself* the live editable form, so its title renders as both a static fact pill and the `EditableText` field's value simultaneously; bare `find.text(...)` assertions against such a card need scoping to the specific fact-pill key. |
 | E.7 | ✅ Closed (confirmed 2026-08-05 — nothing to delete). Delete the old `tabletop-committee-decision` remnants | Confirmed zero production code references `tabletop-committee-decision` anywhere in `lib/src`; it survives only in two tests' self-contained legacy JSON fixtures, an unrelated pre-V3 path. Nothing to delete. |
 | E.8 | Live walk + evidence matrix + random regression re-check | Full-tab audit of **both** Home and Admin. |
 
 ## Definition of done
 
-- [ ] A member can genuinely author, submit, revise, and resubmit a proposal.
-- [ ] The organizer's queue is genuinely live-query-bound — a new submission appears on its own.
-- [ ] The member sees the real decision on their **own** proposal (no hardcoded game name anywhere).
+- [x] A member can genuinely author, submit, revise, and resubmit a proposal (E.1-E.4/E.6).
+- [x] The organizer's queue is genuinely live-query-bound — a new submission appears on its own (E.2).
+- [x] The member sees the real decision on their **own** proposal (no hardcoded game name anywhere) (E.4).
 - [x] The creation affordance is a **generic grammar capability**, not a Tabletop-Club special case (E.5).
 - [ ] One workflow definition drives cards on two different tabs — the `renderBindings` payoff.
