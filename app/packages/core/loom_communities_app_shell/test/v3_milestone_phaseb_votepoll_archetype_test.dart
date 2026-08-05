@@ -270,4 +270,72 @@ void main() {
       }
     },
   );
+
+  testWidgets(
+    'engine refuses an ineligible cast-vote and accepts an eligible one',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phaseb4-eligibility'),
+      ))!;
+      try {
+        final beforeRows = (await tester.runAsync(
+          () => _voteRows(installed, 'tabletop-organizer'),
+        ))!;
+        expect(beforeRows, hasLength(4));
+
+        // The organizer is allowed by cast-vote's persona list but is not in
+        // the related tournament-event goingPersonaIds list. The engine must
+        // reject the transition itself, not merely omit a UI button.
+        await expectLater(
+          tester.runAsync(
+            () => installed.engine.applyTransition(
+              workflowType: 'tournament-ballot',
+              instanceId: 'ballot-summer-tournament',
+              transitionId: 'cast-vote',
+              personaId: 'tabletop-organizer',
+              inputs: {'choice': 'catan'},
+            ),
+          ),
+          throwsA(isA<StateError>()),
+        );
+
+        final afterRefusedRows = (await tester.runAsync(
+          () => _voteRows(installed, 'tabletop-organizer'),
+        ))!;
+        expect(afterRefusedRows, hasLength(4));
+        expect(
+          afterRefusedRows.any(
+            (row) => row.instanceData['voterId'] == 'tabletop-organizer',
+          ),
+          isFalse,
+        );
+
+        // The same engine call succeeds for the seeded eligible member and
+        // creates the real vote row as the contrast case.
+        await tester.runAsync(
+          () => installed.engine.applyTransition(
+            workflowType: 'tournament-ballot',
+            instanceId: 'ballot-summer-tournament',
+            transitionId: 'cast-vote',
+            personaId: 'tabletop-member',
+            inputs: {'choice': 'catan'},
+          ),
+        );
+        final afterEligibleRows = (await tester.runAsync(
+          () => _voteRows(installed, 'tabletop-member'),
+        ))!;
+        expect(afterEligibleRows, hasLength(5));
+        expect(
+          afterEligibleRows.any(
+            (row) =>
+                row.instanceData['voterId'] == 'tabletop-member' &&
+                row.instanceData['choice'] == 'catan',
+          ),
+          isTrue,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 }
