@@ -170,6 +170,57 @@ Future<void> _selectMarketplace(WidgetTester tester) async {
 }
 
 void main() {
+  test(
+    'real equipment-loan dues guard rejects unpaid borrow and permits paid borrow',
+    () async {
+      final installed = await _install('phasec3-marketplace-dues-guard');
+      try {
+        await expectLater(
+          installed.engine.applyTransition(
+            workflowType: 'equipment-loan',
+            instanceId: 'listing-catan',
+            transitionId: 'borrow',
+            personaId: 'tabletop-member',
+          ),
+          throwsStateError,
+        );
+
+        final payment = await installed.engine.applyTransition(
+          workflowType: 'tabletop-club-dues-payment',
+          instanceId: 'dues-2026-q3-member',
+          transitionId: 'pay',
+          personaId: 'tabletop-member',
+        );
+        expect(payment.newState, 'paid');
+        expect(payment.newInstanceData['receiptStatus'], 'complete');
+
+        final borrow = await installed.engine.applyTransition(
+          workflowType: 'equipment-loan',
+          instanceId: 'listing-catan',
+          transitionId: 'borrow',
+          personaId: 'tabletop-member',
+        );
+        expect(borrow.newState, 'published');
+        expect(borrow.newInstanceData['availabilityState'], 'onLoan');
+        expect(borrow.newInstanceData['holderPersonaId'], 'tabletop-member');
+
+        final marketplace = await installed.engine.queryInstances(
+          tabId: 'marketplace',
+          personaId: 'tabletop-member',
+          limit: 100,
+        );
+        final catan = marketplace.items.singleWhere(
+          (instance) => instance.instanceId == 'listing-catan',
+        );
+        expect(catan.currentState, 'published');
+        expect(catan.instanceData['availabilityState'], 'onLoan');
+        expect(catan.instanceData['holderPersonaId'], 'tabletop-member');
+      } finally {
+        await installed.dispose();
+      }
+    },
+  );
+
   testWidgets(
     'real seeded Marketplace listings render through the shared engine grid, search, category filters, and detail',
     (tester) async {
