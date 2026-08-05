@@ -396,6 +396,97 @@ void main() {
     },
   );
 
+  test(
+    'real equipment-giveaway claim mutates the seeded listing',
+    () async {
+      final installed = await _install('phasec5-marketplace-giveaway-engine');
+      try {
+        final before = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-old-catan',
+          personaId: 'tabletop-member',
+        );
+        expect(before.workflowType, 'equipment-giveaway');
+        expect(before.currentState, 'available');
+        expect(before.instanceData['claimedByPersonaId'], isNull);
+
+        final claimed = await installed.engine.applyTransition(
+          workflowType: 'equipment-giveaway',
+          instanceId: 'listing-old-catan',
+          transitionId: 'claim',
+          personaId: 'tabletop-member',
+        );
+        expect(claimed.newState, 'claimed');
+        expect(
+          claimed.newInstanceData['claimedByPersonaId'],
+          'tabletop-member',
+        );
+
+        // removeFromTileGrid is presentation-only. The persisted row remains
+        // queryable, while its available-only render binding no longer
+        // resolves for the Marketplace dispatcher.
+        final after = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-old-catan',
+          personaId: 'tabletop-member',
+        );
+        expect(after.currentState, 'claimed');
+        expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+      } finally {
+        await installed.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'claimed equipment giveaway leaves the real Marketplace grid',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phasec5-marketplace-giveaway-grid'),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(installed));
+        await _selectPersona(tester, 'tabletop-member');
+        await _selectMarketplace(tester);
+
+        final giveaway = find.byKey(
+          const ValueKey('marketplace-listing-listing-old-catan'),
+        );
+        await _pumpUntil(tester, giveaway);
+        expect(giveaway, findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        final claim = find.byKey(
+          const ValueKey(
+            'equipment-loan-listing-old-catan-action-claim',
+          ),
+        );
+        await _pumpUntil(tester, claim);
+        await tester.ensureVisible(claim);
+        expect(
+          find.descendant(of: giveaway, matching: find.text('Claim giveaway')),
+          findsOneWidget,
+        );
+        await tester.tap(claim);
+        await _pumpUntilGone(tester, giveaway);
+
+        expect(giveaway, findsNothing);
+        expect(tester.takeException(), isNull);
+        final after = await tester.runAsync(
+          () => _readMarketplaceInstance(
+            installed.engine,
+            instanceId: 'listing-old-catan',
+            personaId: 'tabletop-member',
+          ),
+        );
+        expect(after!.currentState, 'claimed');
+        expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets(
     'real seeded Marketplace listings render through the shared engine grid, search, category filters, and detail',
     (tester) async {
