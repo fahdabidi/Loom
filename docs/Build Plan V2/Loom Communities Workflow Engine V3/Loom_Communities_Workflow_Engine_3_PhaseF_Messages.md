@@ -59,10 +59,10 @@ but not removable.** That is the existing, correct behavior — this phase does 
 
 | # | Milestone | Notes |
 |---|---|---|
-| F.1 | Turn on `tabId: "messages"` in the binding dispatcher | Same flip as prior phases. |
-| F.2 | Threads render from JSON `discussion-thread` instances | Thread list + per-thread message list, both via the Repeater (the message list is the in-instance-list shape from Phase B). |
-| F.3 | Post message / mark read / archive as real transitions | Effects append to the real `messages` list — no local state. |
-| F.4 | **Start a new thread** | Uses the generic instance-creation affordance built in Phase E. If Phase E hasn't landed, this milestone builds it — but generically, not as a Messages special case. Test: create a thread, it appears in the list, is independently readable and repliable. |
+| F.1 | ✅ Closed (2026-08-05, commit `cadb2af2` + fix1 `c9bd4a66`). Turn on `tabId: "messages"` in the binding dispatcher | Same flip as prior phases. |
+| F.2 | ✅ Closed (same commits). Threads render from JSON `discussion-thread` instances | Reused `EngineNativeListSurface` for the thread list and `GenericWorkflowInstanceCard` for each thread — zero bespoke `discussionThread` widget. The nested `messages` list (a list-of-maps field) needed a new **generic** structured-list renderer added to the shared card (not Messages-specific — detects any list field whose items are maps and renders sender/body/timestamp generically, falling back gracefully for unknown shapes). |
+| F.3 | ✅ Closed (same commits). Post message / mark read / archive as real transitions | Real `applyTransition` calls through the existing generic action row and transition-input dialog (`post-message`'s real `input.body`). One fix round: the test's own timing (querying the engine before an async mutation completed) initially made mark-read look broken; a direct engine probe confirmed the real transition and persistence path were correct all along. |
+| F.4 | ✅ Closed (same commits). **Start a new thread** | Reused Phase E's proven generic creation-FAB grammar unmodified. Needed one real, generic (not Messages-specific) extension: `personaId[]`-typed creation fields now use the existing `AudienceMultiSelectPicker` automatically, closing a gap Phase E's own creation form didn't need (no `personaId[]` field there) but this one does (`participantPersonaIds`). |
 | F.5 | Invites: **decide and record** | `sendInvite`/`acceptInvite`/`declineInvite` + `'invite pending'` are named in the renderer contract but have never existed. Either build them, or **explicitly defer them as a named gap and fix the contract to stop claiming them**. A contract that lies is worse than a missing feature. |
 | F.6 | Retire `_MessagesEngineStore` | Only once the generic pipeline renders threads correctly. |
 | F.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit. |
