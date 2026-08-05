@@ -104,9 +104,19 @@ Future<void> _openCatanAsMember(WidgetTester tester) async {
   await _settle(tester);
   final catan = find.byKey(const ValueKey('marketplace-listing-listing-catan'));
   expect(catan, findsOneWidget);
-  await tester.ensureVisible(catan);
-  await tester.tap(catan);
-  await _settle(tester);
+  final catanFacts = find.byKey(
+    const ValueKey('equipment-loan-facts-listing-catan-tile'),
+  );
+  expect(catanFacts, findsOneWidget);
+  await tester.ensureVisible(catanFacts);
+  // The keyed listing is an actionable card: its centered hit point can land
+  // on a member action instead of bubbling to the tile's detail InkWell. Tap
+  // the non-interactive facts row so this helper proves the dialog path.
+  await tester.tap(catanFacts);
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('marketplace-detail-dialog-listing-catan')),
+  );
   await _pumpUntil(
     tester,
     find.byKey(const ValueKey('marketplace-action-join-queue')),
