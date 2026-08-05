@@ -51,5 +51,4 @@ the same WSL/vsock error, so no post-change pass/fail result is claimed here.
 
 ## Commit
 
-staged, not committed — verification execution is blocked by the sandbox limitations above; the final
-commit hash will be recorded after the controlled commit.
+Commit hash: 656a7949.
