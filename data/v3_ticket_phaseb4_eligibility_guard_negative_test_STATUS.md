@@ -11,4 +11,4 @@ analyze: clean.
 Test suite: pass count unavailable. The focused test selection exited before loading at `00:00 +0 -1` in 2.88 seconds because Flutter could not create its localhost tester server (`Failed to create server socket (OS Error: Operation not permitted, errno = 1), address = 127.0.0.1, port = 0`). The full app-shell suite ended `00:00 +0 -48: Some tests failed` in 17.68 seconds, with all 48 test files blocked at loading by the same socket-permission error. No test assertions ran, and the known pre-existing A.11 date-picker flake was not reached.
 
 ## Commit
-Commit hash: pending until the controlled commit completes.
+Commit hash: 466648f7.
