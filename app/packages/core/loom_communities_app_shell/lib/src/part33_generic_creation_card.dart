@@ -12,6 +12,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
     this.onCreated,
     this.title,
     this.resolvedInitialValues = const {},
+    this.audienceCandidates = const [],
   });
 
   final String workflowType;
@@ -22,6 +23,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
   final Future<void> Function(String instanceId)? onCreated;
   final String? title;
   final Map<String, dynamic> resolvedInitialValues;
+  final List<AudienceMultiSelectCandidate> audienceCandidates;
 
   @override
   State<GenericWorkflowCreationCard> createState() =>
@@ -88,8 +90,12 @@ class _GenericWorkflowCreationCardState
   Future<void> _submit() async {
     if (_saving) return;
     for (final field in _fields) {
-      if (field.value.required &&
-          '${_values[field.key] ?? ''}'.trim().isEmpty) {
+      final value = _values[field.key];
+      final empty =
+          value == null ||
+          (value is String && value.trim().isEmpty) ||
+          (value is Iterable && value.isEmpty);
+      if (field.value.required && empty) {
         setState(
           () => _error = '${_label(field.key, field.value)} is required.',
         );
@@ -106,7 +112,8 @@ class _GenericWorkflowCreationCardState
       final values = <String, dynamic>{
         ..._values,
         for (final field in _fields)
-          if (_values.containsKey(field.key)) field.key: _values[field.key],
+          if (_values.containsKey(field.key))
+            field.key: _normalizedValue(field.key, field.value),
       };
       instanceId = await widget.engine.createInstance(
         workflowType: widget.workflowType,
@@ -124,6 +131,20 @@ class _GenericWorkflowCreationCardState
             : 'The instance was created, but the follow-up step failed. Please retry.';
       });
     }
+  }
+
+  dynamic _normalizedValue(String key, InstanceDataField schema) {
+    final value = _values[key];
+    if (schema.type != 'list' && schema.type != 'personaId[]') return value;
+    if (value is Iterable) return value.toList(growable: false);
+    if (value is String) {
+      return value
+          .split(',')
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false);
+    }
+    return value;
   }
 
   @override
@@ -161,6 +182,24 @@ class _GenericWorkflowCreationCardState
   Widget _editor(String key, InstanceDataField schema) {
     final label = _label(key, schema);
     final editorKey = ValueKey('${widget.keyPrefix}-editor-$key');
+    if (schema.type == 'personaId[]' && widget.audienceCandidates.isNotEmpty) {
+      final selected =
+          (_values[key] is Iterable
+                  ? (_values[key] as Iterable)
+                  : const <dynamic>[])
+              .map((value) => '$value')
+              .toSet();
+      return KeyedSubtree(
+        key: editorKey,
+        child: AudienceMultiSelectPicker(
+          candidates: widget.audienceCandidates,
+          selectedPersonaIds: selected,
+          onChanged: (next) =>
+              setState(() => _values[key] = next.toList()..sort()),
+          label: label,
+        ),
+      );
+    }
     switch (schema.type) {
       case 'bool':
         return SwitchListTile(

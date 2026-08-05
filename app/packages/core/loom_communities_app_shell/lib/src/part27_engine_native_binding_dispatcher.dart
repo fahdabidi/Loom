@@ -80,6 +80,7 @@ class _EngineNativeBindingDispatcherState
     'giving',
     'home',
     'marketplace',
+    'messages',
   };
   int _generation = 0;
   List<EngineNativeResolvedBinding>? _bindings;

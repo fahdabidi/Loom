@@ -3689,6 +3689,16 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_hasEngineNativeBinding(experience, 'messages')) {
+          return EngineNativeListSurface(
+            experience: experience,
+            persona: persona,
+            tabId: 'messages',
+            accent: accent,
+            modernTheme: modernTheme,
+            onInstanceScopedCreate: onInstanceScopedCreate,
+          );
+        }
         return _MessagesTabSurface(
           experience: experience,
           persona: persona,

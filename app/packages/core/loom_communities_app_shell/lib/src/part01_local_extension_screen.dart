@@ -227,6 +227,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required _CreatableWorkflowAction action,
     required LoomPersonaDefinition activePersona,
   }) async {
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
     final engine = await workflowEngineForExtensionId(community.extensionId);
     final (keyPrefix, onCreated) = switch (action.workflowType) {
       'event-rsvp' => (
@@ -250,6 +255,14 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       title: action.label,
       onCreated: onCreated,
       resolvedInitialValues: action.resolvedInitialValues,
+      audienceCandidates: [
+        for (final persona
+            in experience.personas ?? const <LoomPersonaDefinition>[])
+          AudienceMultiSelectCandidate(
+            personaId: persona.personaId,
+            label: persona.label,
+          ),
+      ],
     );
   }
 

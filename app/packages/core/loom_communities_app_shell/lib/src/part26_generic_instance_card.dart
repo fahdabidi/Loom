@@ -221,6 +221,13 @@ class _GenericWorkflowInstanceCardState
           return;
         }
         updates[key] = parsed;
+      } else if ((field.type == 'list' || field.type == 'personaId[]') &&
+          value is String) {
+        updates[key] = value
+            .split(',')
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList(growable: false);
       } else {
         updates[key] = value;
       }
@@ -374,6 +381,37 @@ class _GenericWorkflowInstanceCardState
     return _renderLabel(schema.labelTemplate ?? key, value).trim().isNotEmpty;
   }
 
+  bool _isNestedListField(String key, InstanceDataField schema) {
+    if (schema.type != 'list') return false;
+    final value = _instance.instanceData[key];
+    if (value is! List) return false;
+    // A list of maps has its own row shape and should not be flattened into a
+    // single fact pill. Empty detail-only lists still get a useful empty
+    // state, which is important for a newly-created discussion thread before
+    // its first post.
+    if (value.isEmpty) {
+      return schema.displayContexts?.contains('detail') == true &&
+          schema.labelTemplate == null;
+    }
+    return value.any((item) => item is Map);
+  }
+
+  bool _shouldRenderNestedList(String key, InstanceDataField schema) {
+    if (widget.visibleFieldKeys != null &&
+        !widget.visibleFieldKeys!.contains(key)) {
+      return false;
+    }
+    if (!_isNestedListField(key, schema)) return false;
+    final contexts = schema.displayContexts;
+    if (contexts == null || contexts.isEmpty) return true;
+    // EngineNativeListSurface is intentionally a tile list, but a structured
+    // detail-only field (such as a thread's messages) is still part of that
+    // instance's readable card. Render it as a nested list rather than
+    // flattening it or requiring a second queryInstances repeater.
+    return contexts.contains(widget.displayContext) ||
+        (widget.displayContext == 'tile' && contexts.contains('detail'));
+  }
+
   @override
   Widget build(BuildContext context) {
     final editable = _editableKeys;
@@ -381,6 +419,11 @@ class _GenericWorkflowInstanceCardState
     final factForeground = modernTheme?.resolvedBody ?? widget.foreground;
     final actionForeground = modernTheme?.resolvedHeading ?? widget.foreground;
     final resolvedAccent = modernTheme?.accent ?? widget.accent;
+    final nestedForeground =
+        factForeground ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black87);
     return Card(
       key: ValueKey('generic-instance-card-${_instance.instanceId}'),
       color: modernTheme?.resolvedFill,
@@ -404,7 +447,19 @@ class _GenericWorkflowInstanceCardState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final entry in widget.machine.instanceDataSchema.entries)
-                if (_isVisibleField(entry.key, entry.value))
+                if (_shouldRenderNestedList(entry.key, entry.value))
+                  _GenericInstanceListField(
+                    key: ValueKey(
+                      'generic-instance-list-${_instance.instanceId}-${entry.key}',
+                    ),
+                    instanceId: _instance.instanceId,
+                    field: entry.key,
+                    label: _fieldLabel(entry.key, entry.value),
+                    value: _instance.instanceData[entry.key],
+                    foreground: nestedForeground,
+                    accent: resolvedAccent,
+                  )
+                else if (_isVisibleField(entry.key, entry.value))
                   KeyedSubtree(
                     key: ValueKey(
                       'generic-instance-field-${_instance.instanceId}-${entry.key}',
@@ -634,6 +689,188 @@ class _GenericWorkflowInstanceCardState
     );
     if (spaced.isEmpty) return spaced;
     return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
+}
+
+/// Generic rendering for a list-valued instance field whose items are maps.
+/// The workflow schema owns the field and the engine owns its contents; this
+/// widget only presents the common conversation/history shape without knowing
+/// any workflow type.
+class _GenericInstanceListField extends StatelessWidget {
+  const _GenericInstanceListField({
+    super.key,
+    required this.instanceId,
+    required this.field,
+    required this.label,
+    required this.value,
+    required this.foreground,
+    this.accent,
+  });
+
+  final String instanceId;
+  final String field;
+  final String label;
+  final dynamic value;
+  final Color foreground;
+  final Color? accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = value is Iterable ? value as Iterable : const <dynamic>[];
+    final tint = accent ?? foreground;
+    return Column(
+      key: ValueKey('generic-instance-list-field-$instanceId-$field'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.forum_outlined, size: 18, color: tint),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (items.isEmpty)
+          Text(
+            'No ${label.toLowerCase()} yet',
+            key: ValueKey('generic-instance-list-empty-$instanceId-$field'),
+            style: TextStyle(color: foreground.withValues(alpha: 0.72)),
+          )
+        else
+          for (var index = 0; index < items.length; index++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _item(context, items.elementAt(index), index),
+            ),
+      ],
+    );
+  }
+
+  Widget _item(BuildContext context, dynamic rawItem, int index) {
+    if (rawItem is! Map) {
+      return Text(
+        '$rawItem',
+        key: ValueKey('generic-instance-list-item-$instanceId-$field-$index'),
+        style: TextStyle(color: foreground),
+      );
+    }
+    final item = <String, dynamic>{
+      for (final entry in rawItem.entries)
+        if (entry.key is String) '${entry.key}': entry.value,
+    };
+    final sender = _firstString(item, const [
+      'senderPersonaId',
+      'sender',
+      'authorPersonaId',
+      'author',
+      'personaId',
+    ]);
+    final body = _firstString(item, const [
+      'body',
+      'message',
+      'text',
+      'content',
+      'description',
+    ]);
+    final timestamp = _firstString(item, const [
+      'timestamp',
+      'createdAt',
+      'updatedAt',
+    ]);
+    final consumed = <String>{
+      'senderPersonaId',
+      'sender',
+      'authorPersonaId',
+      'author',
+      'personaId',
+      'body',
+      'message',
+      'text',
+      'content',
+      'description',
+      'timestamp',
+      'createdAt',
+      'updatedAt',
+    };
+    final otherValues = item.entries.where(
+      (entry) => !consumed.contains(entry.key) && entry.value != null,
+    );
+    final fill =
+        accent?.withValues(alpha: 0.08) ?? foreground.withValues(alpha: 0.06);
+    return DecoratedBox(
+      key: ValueKey('generic-instance-list-item-$instanceId-$field-$index'),
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: foreground.withValues(alpha: 0.12)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (sender != null)
+              Text(
+                sender,
+                key: ValueKey(
+                  'generic-instance-list-sender-$instanceId-$field-$index',
+                ),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            if (body != null) ...[
+              if (sender != null) const SizedBox(height: 4),
+              Text(
+                body,
+                key: ValueKey(
+                  'generic-instance-list-body-$instanceId-$field-$index',
+                ),
+                style: TextStyle(color: foreground),
+              ),
+            ],
+            if (timestamp != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                timestamp,
+                key: ValueKey(
+                  'generic-instance-list-timestamp-$instanceId-$field-$index',
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: foreground.withValues(alpha: 0.72),
+                ),
+              ),
+            ],
+            for (final entry in otherValues) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${_humanizeFactField(entry.key)}: ${entry.value}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: foreground.withValues(alpha: 0.78),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? _firstString(Map<String, dynamic> item, List<String> keys) {
+    for (final key in keys) {
+      final value = item[key];
+      if (value == null) continue;
+      final text = '$value'.trim();
+      if (text.isNotEmpty) return text;
+    }
+    return null;
   }
 }
 
