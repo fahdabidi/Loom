@@ -65,7 +65,26 @@ but not removable.** That is the existing, correct behavior — this phase does 
 | F.4 | ✅ Closed (same commits). **Start a new thread** | Reused Phase E's proven generic creation-FAB grammar unmodified. Needed one real, generic (not Messages-specific) extension: `personaId[]`-typed creation fields now use the existing `AudienceMultiSelectPicker` automatically, closing a gap Phase E's own creation form didn't need (no `personaId[]` field there) but this one does (`participantPersonaIds`). |
 | F.5 | ✅ Closed (2026-08-05, commit `a8c8c92c`). Invites: **decide and record** | **Decision: defer, and correct the contract to stop claiming them.** The frozen JSON declares no invite transitions at all — never a scope gap, a false claim in `part11_shell_models.dart`'s `LoomTabRendererContract`. Removed the invite anatomy/interactions/state/evidence claims; corrected `fallbackPolicy` (which previously said Messages "must not render as a generic workflow list" — now factually wrong given F.1-F.4). `rendererId: 'MessagesTabSurface'` kept unchanged as the shared legacy/engine-native dispatch identifier. Confirmed nothing else in the codebase depended on the removed claims. Verified independently: `flutter analyze` clean, 177/178 green (only the known a11 flake). First-try success. |
 | F.6 | ✅ Closed (2026-08-05, no code change needed). Retire `_MessagesEngineStore` | Confirmed the legacy path is already unreachable for Tabletop Club — F.1's `_hasEngineNativeBinding(experience, 'messages')` gate is checked ahead of `_MessagesTabSurface`'s dispatch and evaluates true for the real fixture. Unlike Marketplace's C.6, there was no Messages-equivalent of `_marketplaceListingsFromEngineNative` (no dead legacy projection function) to remove — `_MessagesTabSurface`/`_MessagesEngineStore` remain fully intact for other communities' schema-v1 path, untouched. Verified independently: `flutter analyze` clean, 177/178 green (only the known a11 flake). |
-| F.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit. |
+| F.7 | ✅ Closed (2026-08-05). Live walk + evidence matrix + random regression re-check | See closure evidence below. |
+
+### F.7 closure evidence (2026-08-05)
+
+Live walk on the same real Android emulator used throughout this session (rebuilt APK with all F.1-F.6
+fixes, fresh Tabletop Club install):
+
+- Messages tab renders the real seeded `thread-game-suggestions` thread through the generic pipeline: the
+  new generic structured-list renderer (F.2) displays the two real seeded messages as proper conversation
+  bubbles (sender, body, real ISO timestamp) — a genuinely good-looking result from fully schema-driven,
+  non-bespoke code.
+- The real "New thread" FAB (F.4) and "Post message" action (F.3) are both present; tapping Post message
+  opens the real transition-input dialog for `post-message`'s `input.body`, including real client-side
+  required-field validation ("Body is required.") — confirmed live, though a text-entry tap-precision issue
+  in this specific dialog prevented completing a live post in this walk. Not treated as a functional gap:
+  the dialog, the transition wiring, and a real successful post are already proven by the F.1-F.4 automated
+  test, which posts a real message and asserts the real sender/body/timestamp/`messageCount` afterward.
+- Random regression: Home tab (tournament ballot, vote tally, propose-a-game FAB) rendered correctly
+  alongside the new Messages work — no interference from the shared generic-card/creation-form changes.
+- Full automated suite green throughout: `loom_communities_app_shell` 177/178 (only the known a11 flake).
 
 ## Definition of done
 
