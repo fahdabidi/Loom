@@ -126,6 +126,7 @@ void main() {
         await tester.pumpWidget(_app(installed));
         await _selectPersona(tester, 'tabletop-organizer');
         await _selectMarketplace(tester);
+        expect(tester.takeException(), isNull);
 
         for (final listingId in const [
           'listing-catan',

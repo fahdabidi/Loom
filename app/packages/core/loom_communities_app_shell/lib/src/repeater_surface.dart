@@ -191,7 +191,10 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
       key: ValueKey('repeater-item-$index'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        widget.itemBuilder(context, item),
+        if (widget.layout == RepeaterLayout.grid)
+          Expanded(child: widget.itemBuilder(context, item))
+        else
+          widget.itemBuilder(context, item),
         if (widget.onItemAction != null)
           TextButton(
             key: ValueKey('repeater-custom-action-$index'),
