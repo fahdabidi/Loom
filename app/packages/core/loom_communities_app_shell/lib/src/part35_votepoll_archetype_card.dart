@@ -5,10 +5,9 @@ part of '../loom_communities_app_shell.dart';
 /// the tally comes from the engine-computed `voteCounts` field, and every vote
 /// is sent as the repeater-declared transition input.
 ///
-/// Only a binding with a repeater is a ballot. The `tournament-event` summary
-/// binding also uses the `votePoll` family, but has no repeater and therefore
-/// remains on [GenericWorkflowInstanceCard] until its later attendance
-/// milestone.
+/// A binding with a repeater is a ballot. The `tournament-event` summary
+/// binding also uses the `votePoll` family, but has no repeater and renders
+/// the event's attendance/quorum summary here instead.
 class VotePollArchetypeCard extends StatefulWidget {
   const VotePollArchetypeCard({
     super.key,
@@ -122,6 +121,10 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
     };
   }
 
+  bool get _isTournamentAttendance =>
+      widget.resolved.binding.repeater == null &&
+      widget.resolved.machine.workflowType == 'tournament-event';
+
   Future<void> _runMutation(Future<void> Function() mutate) async {
     if (_mutating) return;
     setState(() => _mutating = true);
@@ -190,8 +193,54 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
     );
   }
 
+  Widget _buildTournamentAttendance() {
+    final instance = widget.resolved.instance;
+    final data = instance.instanceData;
+    final title = data['title']?.toString() ?? 'Tournament';
+    final accepted = data['accepted'];
+    final minimumAttendance = data['minimumAttendance'];
+    final acceptedText = accepted is num
+        ? accepted.toInt().toString()
+        : '${accepted ?? 0}';
+    final minimumText = minimumAttendance is num
+        ? minimumAttendance.toInt().toString()
+        : '${minimumAttendance ?? 0}';
+    final quorumMet = data['quorumMet'] == true;
+
+    return Card(
+      key: ValueKey('votepoll-attendance-card-${instance.instanceId}'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              key: ValueKey('votepoll-attendance-title-${instance.instanceId}'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Accepted: $acceptedText / $minimumText',
+              key: ValueKey('votepoll-attendance-${instance.instanceId}'),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              quorumMet ? 'Quorum met' : 'Quorum not met',
+              key: ValueKey('votepoll-quorum-${instance.instanceId}'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isTournamentAttendance) {
+      return _buildTournamentAttendance();
+    }
+
     final instance = widget.resolved.instance;
     final data = instance.instanceData;
     final foreground =

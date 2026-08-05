@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
@@ -21,9 +22,10 @@ File _fixtureFile() {
 }
 
 class _InstalledTabletop {
-  const _InstalledTabletop(this.community, this.temp);
+  const _InstalledTabletop(this.community, this.engine, this.temp);
 
   final LocalInstalledCommunity community;
+  final WorkflowEngineApi engine;
   final Directory temp;
 
   Future<void> dispose() => temp.delete(recursive: true);
@@ -55,7 +57,16 @@ Future<_InstalledTabletop> _install(String extensionId) async {
           initializationPackagePath: init.path,
         )
         .community;
-    return _InstalledTabletop(community, temp);
+    // Register and fully resolve the engine-native store before the widget
+    // is pumped. This keeps the native sqlite connection in the real async
+    // zone, matching the proven Phase B test-install pattern.
+    experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    return _InstalledTabletop(community, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -134,16 +145,25 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('Summer tournament'), findsWidgets);
+        expect(
+          find.byKey(
+            const ValueKey('votepoll-attendance-event-summer-tournament'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Accepted: 8 / 8'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('votepoll-quorum-event-summer-tournament')),
+          findsOneWidget,
+        );
+        expect(find.text('Quorum met'), findsOneWidget);
 
         // The seeded announcement is still in state "draft" -- its
         // renderBinding only matches state:"published" -- so it must NOT
         // appear. This is the actual regression-proof for retiring the
         // blanket `_communitySectionsFor` dump: the legacy path would have
         // shown every workflow regardless of state.
-        expect(
-          find.text('Game night moves to the larger room'),
-          findsNothing,
-        );
+        expect(find.text('Game night moves to the larger room'), findsNothing);
 
         // Equipment listings (Marketplace-only bindings) must not leak onto
         // Home either.
@@ -160,6 +180,53 @@ void main() {
         );
         expect(find.textContaining('Wingspan'), findsWidgets);
         expect(find.textContaining('Brass: Birmingham'), findsOneWidget);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'publishing the seeded announcement makes its title and body appear on Home',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('b7-announcements'),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: LocalExtensionScreen(
+              community: installed.community,
+              seedDataFiles: const [],
+            ),
+          ),
+        );
+        await _selectPersona(tester, 'tabletop-organizer');
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-list-root-home')),
+        );
+
+        const title = 'Game night moves to the larger room';
+        const body =
+            'Starting next week, Friday game night moves to the larger room to make space for the growing tournament bracket.';
+        expect(find.text(title), findsNothing);
+        expect(find.text(body), findsNothing);
+
+        await tester.runAsync(() async {
+          await installed.engine.applyTransition(
+            workflowType: 'tabletop-meetup-announcement',
+            instanceId: 'announcement-room-change',
+            transitionId: 'publish',
+            personaId: 'tabletop-organizer',
+          );
+        });
+
+        await _selectPersona(tester, 'tabletop-member');
+        await _pumpUntil(tester, find.text(title));
+        await _pumpUntil(tester, find.text(body));
+        expect(find.text(title), findsOneWidget);
+        expect(find.text(body), findsOneWidget);
       } finally {
         await tester.runAsync(installed.dispose);
       }

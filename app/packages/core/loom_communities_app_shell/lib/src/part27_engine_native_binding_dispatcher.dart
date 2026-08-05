@@ -340,11 +340,13 @@ class EngineNativeArchetypeCard extends StatelessWidget {
                 ),
         );
       case 'votePoll':
-        // Only the binding that declares a repeater is the real ballot
-        // (candidates plus per-candidate vote buttons). A votePoll-family
-        // summary binding without a repeater remains generic until its own
-        // bespoke attendance treatment is added.
-        if (resolved.binding.repeater != null) {
+        // The repeater binding is the ballot (candidates plus per-candidate
+        // vote buttons). The tournament-event summary binding has no repeater
+        // but is the one other votePoll-family case with a bespoke surface:
+        // its attendance/quorum summary belongs to VotePollArchetypeCard too.
+        if (resolved.binding.repeater != null ||
+            (resolved.binding.repeater == null &&
+                resolved.machine.workflowType == 'tournament-event')) {
           return VotePollArchetypeCard(
             key: contentKey,
             resolved: resolved,

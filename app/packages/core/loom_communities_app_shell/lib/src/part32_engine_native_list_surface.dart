@@ -119,6 +119,16 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                       onInstanceChanged: changed,
                       onInstanceScopedCreate: widget.onInstanceScopedCreate,
                       modernTheme: widget.modernTheme,
+                      // Notification summaries currently use the generic
+                      // fallback. Render them in detail context so declared
+                      // announcement body content is visible on Home while
+                      // the future notificationInbox archetype remains
+                      // untouched.
+                      displayContext:
+                          resolved.binding.cardSurfaceFamily ==
+                              'notificationInbox'
+                          ? 'detail'
+                          : 'tile',
                     ),
                   ),
               ],
