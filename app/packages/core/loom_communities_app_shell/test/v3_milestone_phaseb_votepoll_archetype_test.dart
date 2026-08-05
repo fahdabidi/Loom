@@ -286,18 +286,21 @@ void main() {
         // The organizer is allowed by cast-vote's persona list but is not in
         // the related tournament-event goingPersonaIds list. The engine must
         // reject the transition itself, not merely omit a UI button.
-        await expectLater(
-          tester.runAsync(
-            () => installed.engine.applyTransition(
+        Object? refusalError;
+        await tester.runAsync(() async {
+          try {
+            await installed.engine.applyTransition(
               workflowType: 'tournament-ballot',
               instanceId: 'ballot-summer-tournament',
               transitionId: 'cast-vote',
               personaId: 'tabletop-organizer',
               inputs: {'choice': 'catan'},
-            ),
-          ),
-          throwsA(isA<StateError>()),
-        );
+            );
+          } catch (error) {
+            refusalError = error;
+          }
+        });
+        expect(refusalError, isA<StateError>());
 
         final afterRefusedRows = (await tester.runAsync(
           () => _voteRows(installed, 'tabletop-organizer'),
