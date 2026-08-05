@@ -46,6 +46,20 @@ warning anticipated.
 
 ## G.2 — Global theming fixes (the ones Phase A didn't need)
 
+✅ **Closed (2026-08-05, commit `5301d0e4` + fix1 `59a5297b`).** All three items were real, and all three are
+now fixed: (1) `_ProtectedDetailTabSurfaceState`'s masked branch now resolves fill/border from
+`modernTheme` instead of hardcoded `Colors.black12`/`black26`. (2) `_WorkflowTile` is confirmed unreachable
+for Tabletop Club (its Home binding is intercepted by the engine-native gate first) but is genuinely still
+reachable for the other seven communities, where the bug was real — now uses the cascade-resolved accent
+instead of `_categoryAccentColor`'s hardcoded per-category palette. (3) Ballot candidate rows had no border
+at all (not already fixed by Phase B as suspected) — `VotePollArchetypeCard` now wraps each candidate in a
+themed `DecoratedBox`, with all existing widget keys preserved unchanged for backward compatibility. One
+fix round: both new theming tests initially failed with a mismatched color, traced to a shared test-fixture
+bug (accent configured in the wrong field, so the real theme resolver correctly fell back to a default
+teal) — not a production bug; the theme cascade itself was resolving correctly all along. Verified
+independently: `flutter analyze` clean, 178/179 green (only the known a11 flake), plus
+`b26_package_driven_experience_test.dart` (different package) unaffected at 3/3.
+
 Phase A fixed the two Calendar-specific bugs. The rest:
 
 - `_ProtectedDetailTabSurfaceState`'s masked branch hardcodes `Colors.black12`/`Colors.black26`
