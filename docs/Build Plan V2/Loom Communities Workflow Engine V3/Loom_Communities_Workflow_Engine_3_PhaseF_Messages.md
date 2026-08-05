@@ -64,12 +64,15 @@ but not removable.** That is the existing, correct behavior — this phase does 
 | F.3 | ✅ Closed (same commits). Post message / mark read / archive as real transitions | Real `applyTransition` calls through the existing generic action row and transition-input dialog (`post-message`'s real `input.body`). One fix round: the test's own timing (querying the engine before an async mutation completed) initially made mark-read look broken; a direct engine probe confirmed the real transition and persistence path were correct all along. |
 | F.4 | ✅ Closed (same commits). **Start a new thread** | Reused Phase E's proven generic creation-FAB grammar unmodified. Needed one real, generic (not Messages-specific) extension: `personaId[]`-typed creation fields now use the existing `AudienceMultiSelectPicker` automatically, closing a gap Phase E's own creation form didn't need (no `personaId[]` field there) but this one does (`participantPersonaIds`). |
 | F.5 | ✅ Closed (2026-08-05, commit `a8c8c92c`). Invites: **decide and record** | **Decision: defer, and correct the contract to stop claiming them.** The frozen JSON declares no invite transitions at all — never a scope gap, a false claim in `part11_shell_models.dart`'s `LoomTabRendererContract`. Removed the invite anatomy/interactions/state/evidence claims; corrected `fallbackPolicy` (which previously said Messages "must not render as a generic workflow list" — now factually wrong given F.1-F.4). `rendererId: 'MessagesTabSurface'` kept unchanged as the shared legacy/engine-native dispatch identifier. Confirmed nothing else in the codebase depended on the removed claims. Verified independently: `flutter analyze` clean, 177/178 green (only the known a11 flake). First-try success. |
-| F.6 | Retire `_MessagesEngineStore` | Only once the generic pipeline renders threads correctly. |
+| F.6 | ✅ Closed (2026-08-05, no code change needed). Retire `_MessagesEngineStore` | Confirmed the legacy path is already unreachable for Tabletop Club — F.1's `_hasEngineNativeBinding(experience, 'messages')` gate is checked ahead of `_MessagesTabSurface`'s dispatch and evaluates true for the real fixture. Unlike Marketplace's C.6, there was no Messages-equivalent of `_marketplaceListingsFromEngineNative` (no dead legacy projection function) to remove — `_MessagesTabSurface`/`_MessagesEngineStore` remain fully intact for other communities' schema-v1 path, untouched. Verified independently: `flutter analyze` clean, 177/178 green (only the known a11 flake). |
 | F.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit. |
 
 ## Definition of done
 
-- [ ] Threads render from JSON; zero bespoke Dart for `discussion-thread`; `_MessagesEngineStore` deleted.
-- [ ] A member can genuinely **start a new thread** — the reported gap is closed.
-- [ ] The renderer contract and the implementation **agree** — either invites exist, or the contract no
-      longer claims they do.
+- [x] Threads render from JSON; zero bespoke Dart for `discussion-thread` (F.1-F.4). `_MessagesEngineStore`
+      is not literally deleted — it's genuinely unreachable for Tabletop Club and stays intentionally intact
+      for other communities' schema-v1 path (F.6), matching this session's established pattern for shared
+      legacy widgets (Marketplace's `_MarketplaceBrowseSurface`).
+- [x] A member can genuinely **start a new thread** — the reported gap is closed (F.4).
+- [x] The renderer contract and the implementation **agree** — invites don't exist in the JSON, and the
+      contract no longer claims they do (F.5).
