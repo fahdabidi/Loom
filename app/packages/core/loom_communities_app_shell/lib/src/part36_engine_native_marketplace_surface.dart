@@ -311,8 +311,11 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
             items: filtered,
             layout: RepeaterLayout.grid,
             gridCrossAxisCountBuilder: (context, constraints) =>
-                constraints.maxWidth > 380 ? 3 : 2,
-            gridChildAspectRatio: 0.66,
+                constraints.maxWidth > 600 ? 3 : 2,
+            // A Marketplace tile contains schema facts plus one or more real
+            // guarded actions. Keep phone-sized tiles at two columns and give
+            // every cell enough height for the widest seeded loan state.
+            gridChildAspectRatio: 0.58,
             gridCrossAxisSpacing: 10,
             gridMainAxisSpacing: 10,
             gridShrinkWrap: true,

@@ -340,12 +340,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final defId = '${_communityId}_$workflowType';
     final machine = _definitions[defId];
     if (machine == null) return const [];
+    // Cross-workflow guards must use the same live completion projection as
+    // applyTransition. Without this read, a just-paid dues instance remains
+    // invisible to the UI action resolver even though the mutation is
+    // already persisted.
+    final completedWorkflowIds = await completedWorkflowIdsForPersona(
+      personaId,
+    );
     final candidates = trans_eval.availableTransitions(
       machine,
       currentState,
       personaId,
       _withComputedFields(instanceData, machine, viewerId: personaId),
       personaTypeId: _personaTypeById[personaId],
+      completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
     );

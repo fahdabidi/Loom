@@ -137,10 +137,27 @@ void main() {
             findsOneWidget,
           );
         }
+        final rootListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-root'),
+        );
+        final gloomhavenListing = find.byKey(
+          const ValueKey('marketplace-listing-share-gloomhaven'),
+        );
+        expect(gloomhavenListing, findsOneWidget);
         expect(find.text('onLoan'), findsOneWidget);
         expect(find.text('Holder: tabletop-member-03'), findsOneWidget);
         expect(find.text('Queue: 1'), findsOneWidget);
-        expect(find.text('Queue: 2'), findsOneWidget);
+        expect(
+          find.descendant(of: rootListing, matching: find.text('Queue: 2')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: gloomhavenListing,
+            matching: find.text('Queue: 2'),
+          ),
+          findsOneWidget,
+        );
         for (final category in const [
           'Board Games',
           'Strategy Games',
@@ -227,14 +244,31 @@ void main() {
       try {
         await tester.pumpWidget(_app(installed));
         await _selectPersona(tester, 'tabletop-member');
-        await tester.runAsync(
-          () => installed.engine.applyTransition(
+        final borrowIsAvailable = await tester.runAsync(() async {
+          await installed.engine.applyTransition(
             workflowType: 'tabletop-club-dues-payment',
             instanceId: 'dues-2026-q3-member',
             transitionId: 'pay',
             personaId: 'tabletop-member',
-          ),
-        );
+          );
+          final page = await installed.engine.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'tabletop-member',
+            limit: 100,
+          );
+          final catan = page.items.singleWhere(
+            (item) => item.instanceId == 'listing-catan',
+          );
+          final actions = await installed.engine.availableTransitionsAsync(
+            workflowType: catan.workflowType,
+            instanceId: catan.instanceId,
+            currentState: catan.currentState,
+            instanceData: catan.instanceData,
+            personaId: 'tabletop-member',
+          );
+          return actions.any((action) => action.id == 'borrow');
+        });
+        expect(borrowIsAvailable, isTrue);
         await _selectMarketplace(tester);
         await _pumpUntil(
           tester,
@@ -248,7 +282,13 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(find.text('Request loan'), findsOneWidget);
+        final catanListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-catan'),
+        );
+        expect(
+          find.descendant(of: catanListing, matching: find.text('Request loan')),
+          findsOneWidget,
+        );
 
         await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
         await tester.pump();

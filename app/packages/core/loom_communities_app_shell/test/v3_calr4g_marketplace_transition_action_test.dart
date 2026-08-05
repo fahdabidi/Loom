@@ -121,27 +121,60 @@ void main() {
       try {
         await tester.pumpWidget(_app(installed!));
         await _openCatanAsMember(tester);
+        final catanDialog = find.byKey(
+          const ValueKey('marketplace-detail-dialog-listing-catan'),
+        );
 
         expect(
-          find.byKey(const ValueKey('marketplace-action-borrow')),
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(const ValueKey('marketplace-action-borrow')),
+          ),
           findsNothing,
         );
         expect(
-          find.byKey(const ValueKey('marketplace-action-join-queue')),
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(
+              const ValueKey('marketplace-action-join-queue'),
+            ),
+          ),
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(
+              const ValueKey('marketplace-transition-fab-borrow'),
+            ),
+          ),
           findsOneWidget,
         );
-        expect(find.text('Request loan'), findsOneWidget);
+        expect(
+          find.descendant(of: catanDialog, matching: find.text('Request loan')),
+          findsOneWidget,
+        );
 
         await tester.tap(
-          find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(
+              const ValueKey('marketplace-transition-fab-borrow'),
+            ),
+          ),
         );
         await _settle(tester);
-        expect(find.text('onLoan'), findsOneWidget);
-        expect(find.text('Holder: tabletop-member'), findsOneWidget);
+        expect(
+          find.descendant(of: catanDialog, matching: find.text('onLoan')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: catanDialog,
+            matching: find.text('Holder: tabletop-member'),
+          ),
+          findsOneWidget,
+        );
       } finally {
         await tester.runAsync(installed!.dispose);
       }
@@ -170,12 +203,23 @@ void main() {
     try {
       await tester.pumpWidget(_app(installed!));
       await _openCatanAsMember(tester);
+      final catanDialog = find.byKey(
+        const ValueKey('marketplace-detail-dialog-listing-catan'),
+      );
       expect(
-        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
+        find.descendant(
+          of: catanDialog,
+          matching: find.byKey(
+            const ValueKey('marketplace-transition-fab-borrow'),
+          ),
+        ),
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        find.descendant(
+          of: catanDialog,
+          matching: find.byKey(const ValueKey('marketplace-action-join-queue')),
+        ),
         findsOneWidget,
       );
     } finally {

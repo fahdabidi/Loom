@@ -504,10 +504,10 @@ void main() {
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
       );
-      await tester.pumpWidget(widget(old, 'marketplace', 'C'));
+      await tester.pumpWidget(widget(old, 'admin', 'C'));
       await tester.pump();
       expect(
-        find.byKey(const Key('engine-native-bindings-empty-marketplace-C')),
+        find.byKey(const Key('engine-native-bindings-empty-admin-C')),
         findsOneWidget,
       );
       expect(old.queries, 1);

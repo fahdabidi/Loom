@@ -59,6 +59,17 @@ void main() {
         isEmpty,
         reason: 'sync availableTransitions cannot query cross-workflow state',
       );
+      final asyncTransitions = await api.availableTransitionsAsync(
+        workflowType: listing.workflowType,
+        instanceId: listing.instanceId,
+        currentState: listing.currentState,
+        instanceData: listing.instanceData,
+        personaId: 'tabletop-member',
+      );
+      expect(
+        asyncTransitions.map((transition) => transition.id),
+        contains('borrow'),
+      );
 
       final result = await api.applyTransition(
         workflowType: listing.workflowType,
