@@ -80,10 +80,23 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    if (finder.evaluate().isNotEmpty) return;
+  }
+  throw TestFailure('Timed out waiting for $finder');
+}
+
 Future<void> _openCatanAsMember(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Member').last);
+  await tester.tap(
+    find.byKey(const ValueKey('persona-option-tabletop-member')),
+  );
   await tester.pumpAndSettle();
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
   await tester.ensureVisible(marketplace);
@@ -94,6 +107,10 @@ Future<void> _openCatanAsMember(WidgetTester tester) async {
   await tester.ensureVisible(catan);
   await tester.tap(catan);
   await _settle(tester);
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('marketplace-action-join-queue')),
+  );
 }
 
 void _allowBorrowWithoutDues(Map<String, dynamic> source) {

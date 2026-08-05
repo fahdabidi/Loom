@@ -172,27 +172,30 @@ void main() {
         }
 
         final search = find.byKey(const ValueKey('marketplace-search-field'));
+        final wingspanListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-wingspan'),
+        );
+        final catanListing = find.byKey(
+          const ValueKey('marketplace-listing-listing-catan'),
+        );
         await tester.enterText(search, 'Wingspan');
-        await tester.pump();
-        expect(
-          find.byKey(const ValueKey('marketplace-listing-listing-wingspan')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey('marketplace-listing-listing-catan')),
-          findsNothing,
-        );
+        await _pumpUntil(tester, wingspanListing);
+        expect(wingspanListing, findsOneWidget);
+        expect(catanListing, findsNothing);
         expect(
           find.byKey(const ValueKey('marketplace-listing-listing-root')),
           findsNothing,
         );
 
         await tester.enterText(search, '');
-        await tester.pump();
+        await _pumpUntil(tester, catanListing);
         await tester.tap(
           find.byKey(const ValueKey('marketplace-filter-Strategy Games')),
         );
-        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('marketplace-listing-listing-root')),
+        );
         expect(
           find.byKey(const ValueKey('marketplace-listing-listing-root')),
           findsOneWidget,
@@ -209,7 +212,7 @@ void main() {
         await tester.tap(
           find.byKey(const ValueKey('marketplace-filter-Strategy Games')),
         );
-        await tester.pump();
+        await _pumpUntil(tester, catanListing);
         final root = find.byKey(
           const ValueKey('marketplace-listing-listing-root'),
         );
