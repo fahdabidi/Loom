@@ -17,15 +17,23 @@ ticket) already did real work on Marketplace that this milestone table predates:
   `borrow` (with the real `requiresWorkflowsComplete: ["tabletop-club-dues-payment"]` cross-workflow
   guard), `join-queue`/`leave-queue` (`actorInList`-guarded), `return`, `delist`, plus a `kind:
   "transition"` FAB action for `borrow` ("Request loan").
-- `_MarketplaceTabSurface`'s `_loadNextPage` (`part02_tab_shell.dart`) already queries the **real engine**
-  directly (`_engine.queryInstances`) and filters to instances whose `renderBindings` declare
-  `tabId == 'marketplace'` — this is genuinely real, not the shallow `experience.marketplaceListings`
-  shape the original milestone text assumed. CALR.4h's live walk directly confirmed the dues guard and
-  the transition-FAB work correctly on-device.
-- **But this is still a bespoke, one-off widget** (`_MarketplaceTabSurface`/`_MarketplaceBrowseSurface`),
-  not routed through the shared `EngineNativeBindingDispatcher`/`_enabledTabs`/`EngineNativeListSurface`/
-  `EngineNativeArchetypeCard` pipeline every other tab (Calendar, Giving, Home) now uses — exactly what
-  C.7 already anticipated retiring.
+- **Correction to an earlier draft of this note**: `_MarketplaceBrowseSurface`'s `_loadNextPage`
+  (`part02_tab_shell.dart:5566`) does call `_engine.queryInstances(...)`, but `_engine` is **not** the
+  real shared community engine — `initState()` (line ~5471) creates its own **private, per-widget-instance
+  `WorkflowDatabase.memory()` + `LocalWorkflowEngineApi`**, and `_seedAndLoad()` (line ~5522) re-creates
+  instances into it from `widget.listings` (a snapshot, via CALR.4g's projection of the real engine-native
+  data into the legacy `LoomMarketplaceListing` shape). This is the **exact same bespoke-per-feature-engine
+  anti-pattern** as the `_TournamentBallotEngineStore` deleted in B.8 — it only *looks* real because it's
+  seeded from a real snapshot at build time. Any borrow/queue/return mutation happens against this private
+  copy and **never reaches the shared engine**. This plausibly explains a gap CALR.4h's own closure notes
+  flagged and left unresolved ("the equipment-loan transition-FAB did not appear even after genuinely
+  paying dues live... `_completedWorkflowIds` appears not to be recomputed against the freshly-paid
+  state") — a real symptom of exactly this disconnection, not a mystery.
+- **Conclusion: treat nothing in `_MarketplaceBrowseSurface` as already real for the purposes of this
+  phase.** The JSON-declared lifecycle (borrow/dues-guard/queue/return/giveaway) is real and correct; the
+  widget that's supposed to drive it against the real shared engine does not yet exist. This phase builds
+  it, the same way B.2/B.3 built `VotePollArchetypeCard` against the real shared engine from the start —
+  not a migration of working code, a genuine build against the already-real JSON.
 - **Automated test coverage for the real lifecycle is thin**: CALR.4g's own test file
   (`v3_calr4g_marketplace_transition_action_test.dart`) only covers FAB visibility (2 tests). The
   well-known `b34_marketplace_browse_test.dart` (16 tests) lives in a **different package**
@@ -39,12 +47,14 @@ ticket) already did real work on Marketplace that this milestone table predates:
   drove the exact scenario) — treat "looks correct in a screenshot" as unproven until an automated test
   says otherwise.
 
-**Conclusion:** follow Phase B's own exact, proven sequence rather than the original C.1-C.6 breakdown's
-implied order (build lifecycle from scratch) — the lifecycle already exists in the JSON and is *probably*
-correct; the actual remaining work is (a) proving it with real automated tests against the real fixture,
-same rigor as B.4-B.6, and (b) migrating it onto the shared generic pipeline the way B.2/B.3 built
-`VotePollArchetypeCard`. Milestones below are re-sequenced accordingly; original C.1-C.8 text kept below
-for reference where still accurate.
+**Conclusion:** follow Phase B's own exact, proven sequence. The JSON already declares a correct, complete
+lifecycle (borrow/dues-guard/queue/return/giveaway) — that part needs no new design. What this phase
+actually builds, from scratch, against the real shared engine, is the widget: a real
+`EquipmentLoanArchetypeCard` on the generic pipeline (mirroring `VotePollArchetypeCard`'s own build),
+proven with real automated tests at B.4-B.6's rigor — not a migration of already-working code, since the
+current bespoke widget's data layer is disconnected from the shared engine and cannot be assumed correct
+just because it renders plausibly. Milestones below are re-sequenced accordingly; original C.1-C.8 text
+kept below for reference where still accurate.
 
 ## Goal
 
