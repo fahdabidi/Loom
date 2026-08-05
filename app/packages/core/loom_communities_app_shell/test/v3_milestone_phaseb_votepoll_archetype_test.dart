@@ -145,15 +145,21 @@ Future<WorkflowInstance> _instanceById(
 }
 
 Future<WorkflowInstance> _waitForState(
+  WidgetTester tester,
   _InstalledTabletop installed,
   String personaId,
   String instanceId,
   String state,
 ) async {
   for (var attempt = 0; attempt < 40; attempt++) {
-    final instance = await _instanceById(installed, personaId, instanceId);
+    final instance = (await tester.runAsync(
+      () => _instanceById(installed, personaId, instanceId),
+    ))!;
     if (instance.currentState == state) return instance;
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
   }
   throw StateError('Timed out waiting for $instanceId to enter $state');
 }
@@ -360,14 +366,13 @@ void main() {
         await tester.tap(closeButton);
         await tester.pump();
 
-        final closedBallot = (await tester.runAsync(
-          () => _waitForState(
-            installed,
-            'tabletop-organizer',
-            'ballot-summer-tournament',
-            'closed',
-          ),
-        ))!;
+        final closedBallot = await _waitForState(
+          tester,
+          installed,
+          'tabletop-organizer',
+          'ballot-summer-tournament',
+          'closed',
+        );
         expect(closedBallot.instanceData['outcome'], 'decided');
 
         final event = (await tester.runAsync(
@@ -404,14 +409,14 @@ void main() {
             workflowType: 'tournament-ballot',
             instanceId: 'ballot-summer-tournament',
             transitionId: 'cast-vote',
-            personaId: 'tabletop-member-07',
+            personaId: 'tabletop-member',
             inputs: {'choice': 'wingspan'},
           );
           await installed.engine.applyTransition(
             workflowType: 'tournament-ballot',
             instanceId: 'ballot-summer-tournament',
             transitionId: 'cast-vote',
-            personaId: 'tabletop-member-08',
+            personaId: 'tabletop-member',
             inputs: {'choice': 'azul'},
           );
         });
@@ -437,14 +442,13 @@ void main() {
         await tester.tap(closeButton);
         await tester.pump();
 
-        final closedBallot = (await tester.runAsync(
-          () => _waitForState(
-            installed,
-            'tabletop-organizer',
-            'ballot-summer-tournament',
-            'closed',
-          ),
-        ))!;
+        final closedBallot = await _waitForState(
+          tester,
+          installed,
+          'tabletop-organizer',
+          'ballot-summer-tournament',
+          'closed',
+        );
         expect(closedBallot.instanceData['outcome'], 'runoff');
 
         final ballots = (await tester.runAsync(
