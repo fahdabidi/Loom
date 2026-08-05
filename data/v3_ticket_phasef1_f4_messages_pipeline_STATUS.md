@@ -36,6 +36,5 @@ at that loader failure; no pass count is available. Independent rerun is
 required outside this sandbox.
 
 ## Commit
-staged, not committed + final commit pending after the protected tracked-file
-count sanity check; runtime Flutter tests are blocked by the server-socket
-restriction above.
+cadb2af2; runtime Flutter tests are blocked by the server-socket restriction
+above.

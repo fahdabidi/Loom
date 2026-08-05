@@ -13,4 +13,4 @@ flutter analyze: clean (`No issues found!`).
 Test suite: 0/50 test files loaded. The full package run was blocked before assertions by the sandbox's Flutter tester socket error: `Failed to create server socket (OS Error: Operation not permitted, errno = 1), address = 127.0.0.1, port = 0`. Therefore the known a11 flake could not be isolated from the sandbox run; external verification is required.
 
 ## Commit
-staged, not committed + the sandbox cannot start Flutter widget-test server sockets; the exact commit hash will be recorded after the required single commit.
+Commit hash: `a8c8c92c2baaed993dd861908852d0bfa753ac64`.

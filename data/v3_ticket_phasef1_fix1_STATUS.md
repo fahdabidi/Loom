@@ -29,5 +29,5 @@ executed, I cannot truthfully confirm that the only full-suite failure is the
 known a11 flake; independent rerun outside this sandbox is required.
 
 ## Commit
-pending final commit; runtime widget tests are blocked by the exact
-server-socket restriction above.
+c9bd4a66b71002e5acfe7d50ba2b69a1edc7019b; runtime widget tests are blocked by
+the exact server-socket restriction above.
