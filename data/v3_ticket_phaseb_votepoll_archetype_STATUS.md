@@ -14,4 +14,4 @@ flutter analyze: clean. The direct Flutter tool invocation completed with `No is
 Test suite: not completed (pass count unavailable). Both the targeted votePoll test and the full package-suite invocation were blocked before test execution when Flutter tried to create its localhost tester server: `Failed to create server socket (OS Error: Operation not permitted, errno = 1), address = 127.0.0.1, port = 0`. The one known pre-existing A.11 date-picker flake could therefore not be re-counted here; no test assertion failure was observed before the harness block.
 
 ## Commit
-Commit hash: pending until the controlled commit completes.
+Commit hash: e3f09665.
