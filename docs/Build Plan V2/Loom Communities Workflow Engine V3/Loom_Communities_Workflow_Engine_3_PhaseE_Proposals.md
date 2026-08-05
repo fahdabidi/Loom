@@ -94,7 +94,27 @@ not-yet-in-grammar").
 | E.5 | ✅ Closed (Phase A′ GAP-2, 2026-07-16, commit `cfb98334`; confirmed still real and tab-agnostic this session). **Member-authored creation (grammar addition)** | Close the "create a brand-new instance" gap generically. Serves Phase F too. |
 | E.6 | ✅ Closed (2026-08-05, same commits + fix2 `a46e675c`/fix3 `6a351964`). Revise-and-resubmit loop | `changes-requested` → edit → `submit` → `pending` again, proven with a real distinctive revised title reappearing in the Admin queue. Took two follow-up fix rounds — both the same class of finder ambiguity: a `changes-requested`/`draft`-state card is *itself* the live editable form, so its title renders as both a static fact pill and the `EditableText` field's value simultaneously; bare `find.text(...)` assertions against such a card need scoping to the specific fact-pill key. |
 | E.7 | ✅ Closed (confirmed 2026-08-05 — nothing to delete). Delete the old `tabletop-committee-decision` remnants | Confirmed zero production code references `tabletop-committee-decision` anywhere in `lib/src`; it survives only in two tests' self-contained legacy JSON fixtures, an unrelated pre-V3 path. Nothing to delete. |
-| E.8 | Live walk + evidence matrix + random regression re-check | Full-tab audit of **both** Home and Admin. |
+| E.8 | ✅ Closed (2026-08-05). Live walk + evidence matrix + random regression re-check | See closure evidence below. |
+
+### E.8 closure evidence (2026-08-05)
+
+Live walk on the same real Android emulator used throughout this session (rebuilt APK with all E.1-E.7
+fixes, fresh Tabletop Club install):
+
+- As Member: the real "Propose a game" FAB opens the real, generic (not Tabletop-special-cased) creation
+  form (`Game Name`/`Reason` fields) — live confirmation of E.5's grammar-based creation infrastructure
+  actually reaching this workflow.
+- Switching to Organizer: the tab bar now shows 5 tabs (Home/Calendar/Marketplace/Giving/Admin, plus a
+  pre-existing Messages tab) — confirmed the Admin tab is visible to the organizer.
+- Admin tab renders the real live pending queue: the seeded "Brass: Birmingham" proposal
+  ("Proposed by tabletop-member") with real Approve / Request changes / Reject buttons, exactly matching
+  E.3's design.
+- Tapped **Approve** for real: the card genuinely disappeared from the pending queue on the next render —
+  live confirmation of E.2's live-query-bound behavior, the actual headline requirement of this phase.
+- Random regression: the Admin tab's *other* workflow (`tabletop-meetup-announcement`'s draft/publish form)
+  rendered correctly alongside the proposal queue in the same scroll view — no interference between the two
+  workflows sharing the tab.
+- Full automated suite green throughout: `loom_communities_app_shell` 175/176 (only the known a11 flake).
 
 ## Definition of done
 
@@ -102,4 +122,5 @@ not-yet-in-grammar").
 - [x] The organizer's queue is genuinely live-query-bound — a new submission appears on its own (E.2).
 - [x] The member sees the real decision on their **own** proposal (no hardcoded game name anywhere) (E.4).
 - [x] The creation affordance is a **generic grammar capability**, not a Tabletop-Club special case (E.5).
-- [ ] One workflow definition drives cards on two different tabs — the `renderBindings` payoff.
+- [x] One workflow definition drives cards on two different tabs — the `renderBindings` payoff (confirmed
+      live: `game-purchase-proposal` renders on Home for the member and Admin for the organizer).
