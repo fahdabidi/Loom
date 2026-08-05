@@ -376,45 +376,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
     tabCreatableActionStyles: tabCreatableActionStyles,
     workflowDefinitions: definitions,
     workflowInstances: instances.isEmpty ? null : instances,
-    marketplaceListings: _marketplaceListingsFromEngineNative(
-      definitions,
-      instances,
-    ),
   );
-}
-
-List<LoomMarketplaceListing>? _marketplaceListingsFromEngineNative(
-  Map<String, LoomWorkflowStateMachine> definitions,
-  List<LoomWorkflowSeedInstance> instances,
-) {
-  final listings = <LoomMarketplaceListing>[];
-  for (final instance in instances) {
-    if (instance.workflowType != 'equipment-loan') continue;
-    final machine = definitions[instance.workflowType];
-    if (machine == null ||
-        !machine.renderBindings.any((binding) => binding.tabId == 'marketplace')) {
-      continue;
-    }
-    final data = instance.instanceData;
-    final title = data['title'];
-    if (title is! String || title.isEmpty) continue;
-    listings.add(
-      LoomMarketplaceListing(
-        listingId: instance.instanceId,
-        title: title,
-        category: data['category'] as String?,
-        condition: data['condition'] as String?,
-        availability: data['availabilityState'] as String? ?? 'available',
-        currentHolderLabel: data['holderPersonaId'] as String?,
-        dueLabel: data['dueDate'] as String?,
-        description: data['description'] as String?,
-        template: instance.workflowType,
-        state: instance.currentState,
-        queuedPersonaIds: _shellStringList(data['queuedPersonaIds']),
-      ),
-    );
-  }
-  return listings.isEmpty ? null : listings;
 }
 
 LoomCreatableActionStyle? _parseCreatableActionStyle(Object? raw) {
