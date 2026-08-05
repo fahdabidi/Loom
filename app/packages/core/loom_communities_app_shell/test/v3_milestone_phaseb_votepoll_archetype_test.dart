@@ -114,6 +114,62 @@ Future<List<WorkflowInstance>> _voteRows(
       .toList();
 }
 
+Future<List<WorkflowInstance>> _instancesOfType(
+  _InstalledTabletop installed,
+  String personaId,
+  String workflowType,
+) async {
+  final page = await installed.engine.queryInstances(
+    tabId: 'home',
+    personaId: personaId,
+    limit: 200,
+  );
+  return page.items
+      .where((instance) => instance.workflowType == workflowType)
+      .toList();
+}
+
+Future<WorkflowInstance> _instanceById(
+  _InstalledTabletop installed,
+  String personaId,
+  String instanceId,
+) async {
+  final page = await installed.engine.queryInstances(
+    tabId: 'home',
+    personaId: personaId,
+    limit: 200,
+  );
+  return page.items.singleWhere(
+    (instance) => instance.instanceId == instanceId,
+  );
+}
+
+Future<WorkflowInstance> _waitForState(
+  _InstalledTabletop installed,
+  String personaId,
+  String instanceId,
+  String state,
+) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    final instance = await _instanceById(installed, personaId, instanceId);
+    if (instance.currentState == state) return instance;
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+  throw StateError('Timed out waiting for $instanceId to enter $state');
+}
+
+Map<String, int> _voteCounts(dynamic rawCounts) => <String, int>{
+  if (rawCounts is Map)
+    for (final entry in rawCounts.entries)
+      '${entry.key}': (entry.value as num).toInt(),
+};
+
+Set<String> _candidateIds(dynamic rawCandidates) => {
+  if (rawCandidates is Iterable)
+    for (final candidate in rawCandidates)
+      candidate is Map ? '${candidate['id']}' : '$candidate',
+};
+
 Widget _app(_InstalledTabletop installed) => MaterialApp(
   home: LocalExtensionScreen(
     community: installed.community,
@@ -265,6 +321,161 @@ void main() {
           isTrue,
         );
         expect(find.text('Catan: 2 votes'), findsNothing);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'real close-vote writes the clear winner to the related tournament event',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phaseb6-clear-winner'),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(installed));
+        await _selectPersona(tester, 'tabletop-organizer');
+
+        final initialBallot = (await tester.runAsync(
+          () => _instanceById(
+            installed,
+            'tabletop-organizer',
+            'ballot-summer-tournament',
+          ),
+        ))!;
+        expect(_voteCounts(initialBallot.instanceData['voteCounts']), {
+          'catan': 2,
+          'wingspan': 1,
+          'azul': 1,
+        });
+        expect(initialBallot.instanceData['winner'], 'catan');
+        expect(initialBallot.instanceData['isTie'], isFalse);
+
+        final closeButton = find.byKey(
+          const ValueKey('votepoll-close-vote-ballot-summer-tournament'),
+        );
+        await _pumpUntil(tester, closeButton);
+        await tester.ensureVisible(closeButton);
+        await tester.tap(closeButton);
+        await tester.pump();
+
+        final closedBallot = (await tester.runAsync(
+          () => _waitForState(
+            installed,
+            'tabletop-organizer',
+            'ballot-summer-tournament',
+            'closed',
+          ),
+        ))!;
+        expect(closedBallot.instanceData['outcome'], 'decided');
+
+        final event = (await tester.runAsync(
+          () => _instanceById(
+            installed,
+            'tabletop-organizer',
+            'event-summer-tournament',
+          ),
+        ))!;
+        expect(event.instanceData['selectedGame'], 'catan');
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'real close-vote creates a runoff ballot for a queried three-way tie',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phaseb6-tie-runoff'),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(installed));
+        await _selectPersona(tester, 'tabletop-organizer');
+
+        final closeButton = find.byKey(
+          const ValueKey('votepoll-close-vote-ballot-summer-tournament'),
+        );
+        await _pumpUntil(tester, closeButton);
+
+        await tester.runAsync(() async {
+          await installed.engine.applyTransition(
+            workflowType: 'tournament-ballot',
+            instanceId: 'ballot-summer-tournament',
+            transitionId: 'cast-vote',
+            personaId: 'tabletop-member-07',
+            inputs: {'choice': 'wingspan'},
+          );
+          await installed.engine.applyTransition(
+            workflowType: 'tournament-ballot',
+            instanceId: 'ballot-summer-tournament',
+            transitionId: 'cast-vote',
+            personaId: 'tabletop-member-08',
+            inputs: {'choice': 'azul'},
+          );
+        });
+
+        final tiedBallotBeforeClose = (await tester.runAsync(
+          () => _instanceById(
+            installed,
+            'tabletop-organizer',
+            'ballot-summer-tournament',
+          ),
+        ))!;
+        final queriedVoteCounts = _voteCounts(
+          tiedBallotBeforeClose.instanceData['voteCounts'],
+        );
+        expect(queriedVoteCounts, {'catan': 2, 'wingspan': 2, 'azul': 2});
+        expect(tiedBallotBeforeClose.instanceData['isTie'], isTrue);
+        final tiedCandidateIds = _candidateIds(
+          tiedBallotBeforeClose.instanceData['tiedCandidates'],
+        );
+        expect(tiedCandidateIds, {'catan', 'wingspan', 'azul'});
+
+        await tester.ensureVisible(closeButton);
+        await tester.tap(closeButton);
+        await tester.pump();
+
+        final closedBallot = (await tester.runAsync(
+          () => _waitForState(
+            installed,
+            'tabletop-organizer',
+            'ballot-summer-tournament',
+            'closed',
+          ),
+        ))!;
+        expect(closedBallot.instanceData['outcome'], 'runoff');
+
+        final ballots = (await tester.runAsync(
+          () => _instancesOfType(
+            installed,
+            'tabletop-organizer',
+            'tournament-ballot',
+          ),
+        ))!;
+        final runoffBallots = ballots
+            .where(
+              (instance) => instance.instanceId != 'ballot-summer-tournament',
+            )
+            .toList();
+        expect(runoffBallots, hasLength(1));
+        final runoff = runoffBallots.single;
+        expect(runoff.instanceData['round'], 'runoff');
+        expect(runoff.instanceData['eventId'], 'event-summer-tournament');
+        expect(
+          _candidateIds(runoff.instanceData['candidates']),
+          tiedCandidateIds,
+        );
+
+        final event = (await tester.runAsync(
+          () => _instanceById(
+            installed,
+            'tabletop-organizer',
+            'event-summer-tournament',
+          ),
+        ))!;
+        expect(event.instanceData['selectedGame'], 'TBD');
       } finally {
         await tester.runAsync(installed.dispose);
       }
