@@ -1,9 +1,37 @@
 # Phase E — Game purchase proposals (Home submit + Admin decide)
 
-Part of [tracker 3](./Loom_Communities_Workflow_Engine_3.md). **Blocked on Phase A.**
+Part of [tracker 3](./Loom_Communities_Workflow_Engine_3.md). Phase A, B, C, and D are all closed.
 
-> **Scoping note.** Firm on scope, light on snippets — detailed kickoffs are written after Phase A's
-> human gate, against the revised JSON.
+## Process note (2026-08-05, before starting)
+
+Investigated current reality before dispatching anything — same discipline as Phase C/D. Unlike those two,
+this doc's own milestone table (E.1-E.8 below) already existed and needed no re-sequencing. But real prior
+work from *other* phases already closes two of these milestones without ever being credited here:
+
+- **E.5 (member-authored creation grammar) is already done.** Phase A′'s GAP-2 closure (2026-07-16,
+  `cfb98334` and preceding commits) built a real, community-agnostic, tab-agnostic creation FAB
+  (`_CreatableWorkflowAction`/`_CreatableActionFab` in `part01_local_extension_screen.dart`,
+  `EngineNativeArchetypeCreationCard`/`GenericWorkflowCreationCard`) that scans *any* tab's
+  `workflowDefinitions` for a creation-shaped `renderBinding` — not a Tabletop-Club special case, and not
+  scoped to `_enabledTabs`. This is exactly the grammar capability E.5 asked for, already serving Calendar
+  (where it was introduced) and, once Home was enabled in Phase B, already available to
+  `game-purchase-proposal` too.
+- **E.7 (delete old committee-decision remnants) is already effectively true.** `tabletop-committee-decision`
+  has **zero production code** anywhere in `lib/src` — it survives only inside a couple of tests'
+  self-contained legacy JSON fixtures (`_legacyExperience()`-style hand-written pre-V3 shapes in
+  `v3_milestone_a4_engine_native_parsing_test.dart` and two `loom_communities_demo` tests), which exercise
+  an unrelated legacy path, not the frozen V3 JSON. Nothing needs deleting from production code; only
+  confirming this stays true.
+- **What's genuinely open**: `'admin'` is **not** in `_enabledTabs`
+  (`part27_engine_native_binding_dispatcher.dart`) — the organizer's decision queue is unreachable (E.1).
+  Home's actor-facing bindings (compose/status) likely already render live today given the generic
+  infrastructure above, but **no test anywhere asserts this** — not even a "Propose a game" text check (E.2,
+  E.4). No test exercises approve/reject/request-changes (E.3) or the revise-resubmit loop (E.6). All of
+  this needs real, first-time proof — not a migration of working code, matching this tracker's own repeated
+  precedent (Phase B.6, Phase C's process note) that "looks like it should work" is not the same as proven.
+
+**Conclusion**: close E.5/E.7 now with the evidence above; build and prove E.1-E.4/E.6 for real; E.8 live
+walk last, same recipe as B.9/C.7/D.7.
 
 ## Goal
 
@@ -63,9 +91,9 @@ not-yet-in-grammar").
 | E.2 | **Live `queryInstances`-bound Repeater** | The second Repeater shape (Phase B built the in-instance-list shape). Bound to a state-filtered query. Test: creating a new pending instance makes a new row appear with no widget rebuild. |
 | E.3 | Proposal decision queue on Admin | Approve / Request changes / Reject as real transitions, organizer-gated. |
 | E.4 | Member's own proposal status on Home | The `role: actor` bindings; the member sees their real instance's real state. |
-| E.5 | **Member-authored creation (grammar addition)** | Close the "create a brand-new instance" gap generically. Serves Phase F too. |
+| E.5 | ✅ Closed (Phase A′ GAP-2, 2026-07-16, commit `cfb98334`; confirmed still real and tab-agnostic this session). **Member-authored creation (grammar addition)** | Close the "create a brand-new instance" gap generically. Serves Phase F too. |
 | E.6 | Revise-and-resubmit loop | `changes-requested` → edit → `submit` → `pending` again. |
-| E.7 | Delete the old `tabletop-committee-decision` remnants | Ensure nothing still renders the scripted card. |
+| E.7 | ✅ Closed (confirmed 2026-08-05 — nothing to delete). Delete the old `tabletop-committee-decision` remnants | Confirmed zero production code references `tabletop-committee-decision` anywhere in `lib/src`; it survives only in two tests' self-contained legacy JSON fixtures, an unrelated pre-V3 path. Nothing to delete. |
 | E.8 | Live walk + evidence matrix + random regression re-check | Full-tab audit of **both** Home and Admin. |
 
 ## Definition of done
@@ -73,5 +101,5 @@ not-yet-in-grammar").
 - [ ] A member can genuinely author, submit, revise, and resubmit a proposal.
 - [ ] The organizer's queue is genuinely live-query-bound — a new submission appears on its own.
 - [ ] The member sees the real decision on their **own** proposal (no hardcoded game name anywhere).
-- [ ] The creation affordance is a **generic grammar capability**, not a Tabletop-Club special case.
+- [x] The creation affordance is a **generic grammar capability**, not a Tabletop-Club special case (E.5).
 - [ ] One workflow definition drives cards on two different tabs — the `renderBindings` payoff.
