@@ -79,7 +79,25 @@ named gap. **Do not** fake it with a hardcoded string.
 | D.4 | ✅ Closed (2026-08-05, commit `4f596188`). **Cross-workflow proof**: paying here satisfies Marketplace's `borrow` guard | New test drives the real UI chain end to end: confirms `Request loan` absent on Catan while unpaid (via the real widget tree, not an engine query), taps the real Giving "Pay $15" button, then confirms `Request loan` appears on Catan afterward — all through real widget assertions. This is the exact manual proof from Phase C's C.7 live walk, now a permanent automated test. Verified independently: `flutter analyze` clean, 175/176 green (only the known a11 flake). First-try success. |
 | D.5 | ✅ Closed (2026-08-05, commit `fce01baf`). Tab theme cascade verified visually | A real bug, found via my own live emulator spot-check (Marketplace vs. Giving looked visually indistinguishable): the JSON-resolved `#8A5A34` accent was already threading correctly to `_SelectedTabHeader`, but `EngineNativeArchetypeCard`'s generic-card dispatch branches dropped the resolved `LoomCardTheme` before reaching `GenericWorkflowInstanceCard` — so Giving's card content (fact pills, Pay button) silently fell back to ambient/community styling. Fixed by threading `modernTheme` through `GenericWorkflowInstanceCard` and `WorkflowActionButtonRow`, fully additive (every new param defaults to null, falling back to prior styling via `??` — confirmed zero risk to other tabs/`EquipmentLoanArchetypeCard`'s existing calls). New widget-level color assertions added rather than relying on a screenshot, per the ticket's own instruction once eyeballing two similar browns turned out to be unreliable. Verified independently: `flutter analyze` clean, 175/176 app-shell green (only the known a11 flake) plus `b26_package_driven_experience_test.dart` (different package) unaffected at 3/3. |
 | D.6 | ✅ Closed (2026-08-05, decision recorded). Receipt-id platform service: implement **or** record as a named gap | **Decision: (b) — ship without a receipt id, recorded as a named gap.** Payment processing and ID generation are opaque platform services (ComputationModel.md §8), not field math — a real implementation would mean standing up new engine-provided, community-agnostic infrastructure (even demo-stubbed) purely to generate a fake-but-real-looking id string for a demo dues payment. That's disproportionate to this milestone's actual goal (proving the workflow renders and transitions correctly from JSON), and the JSON's own comment already argues against faking it: "a hardcoded id masquerading as a generated one is exactly the anti-pattern the audit flagged." `receiptStatus`/`paidAt` (D.3) already give a real, honest confirmation that payment succeeded — the absence of a `receiptId` field is the correct, honest state, not an oversight. Revisit only if a future phase actually needs a real platform-services boundary (e.g. a second payment-driven workflow that would otherwise duplicate this decision). |
-| D.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit. |
+| D.7 | ✅ Closed (2026-08-05). Live walk + evidence matrix + random regression re-check | See closure evidence below. |
+
+### D.7 closure evidence (2026-08-05)
+
+Live walk on the same real Android emulator used for Phase C's C.7 (rebuilt APK with all D.1-D.6 fixes,
+fresh Tabletop Club install, real "Add local community" flow):
+
+- Paid dues for real as Member: the "Pay $15" button now renders in the real, distinctly deeper themed
+  brown (visually confirming D.5's fix on-device, not just via widget-test color assertions) — before the
+  fix it was indistinguishable from the community's default teal/orange styling.
+- The `receiptStatus` raw-field-name pill (D.3's bug) is confirmed gone in this same rebuild.
+- Random regression spot-check: Home (tournament ballot, vote counts, "Propose a game" FAB) and Calendar
+  (Month/Week/Day/Pending scope selector, real July 2026 grid with seeded events) both render correctly —
+  no regressions from any of D.1-D.6's changes, including the shared-file changes in D.5
+  (`part18_marketplace_rendering.dart`, `part26_generic_instance_card.dart`) that touch code paths used by
+  Marketplace and other generic-card tabs too.
+- Full automated suites green throughout: `loom_communities_app_shell` (175/176, only the known a11 flake)
+  and `b26_package_driven_experience_test.dart` (a different package, 3/3, confirming the theme-cascade fix
+  didn't regress its own existing regression guard).
 
 ## Definition of done
 
