@@ -104,7 +104,43 @@ that must be proven by a genuinely refused `applyTransition`, not a hidden butto
 | C.4 | ✅ Closed (2026-08-05, commits `43f1c11f` + `bba2f4de`). Join / Leave queue + Return, proven with real automated tests | New engine-level test proving: join-queue is a real mutation (`queuedPersonaIds`/`queueLength` update), the button swaps join↔leave for real, reserve-ahead works on an available (not just on-loan) listing, and Return clears `availabilityState`/`holderPersonaId`/`dueDate` for real. One fix round: the test's first attempt used a numbered persona (`tabletop-member-03`) for `return`'s `allowedPersonaIds` guard, which does a literal-string match against generic role names only — the same guard pitfall documented in Phase B. Verified independently: `flutter analyze` clean, 172/173 green (only the known a11 flake). |
 | C.5 | ✅ Closed (2026-08-05, commit `fe66da91`). Giveaway claim | New tests prove `claim` on `listing-old-catan`: engine-level (real `newState: claimed`, `claimedByPersonaId` set) and widget-level (the tile genuinely disappears from the grid after tapping claim). Root cause of the disappearance: the `available`-only `renderBindings` state filter excludes it from the next query — `removeFromTileGrid` itself is presentation-only in this codebase and only closes an open detail dialog, it does not remove grid tiles. First-try success, verified independently: `flutter analyze` clean, 174/175 green (only the known a11 flake). |
 | C.6 | ✅ Closed (2026-08-05, commit `e65f46ab`). Retire the now-dead engine-native Marketplace listing projection | Not a full deletion of `_MarketplaceBrowseSurface` — it stays intact for other (non-engine-native) communities, which populate `marketplaceListings` via a *different* raw-JSON path. What was actually dead: `_marketplaceListingsFromEngineNative` (`part15_evidence_catalog.dart`), CALR.4g's projection of engine-native instances into the legacy shape — provably unreachable since `_hasEngineNativeBinding` gates ahead of the `marketplaceListings` fallback unconditionally for any engine-native community. Removed (38 lines). Verified independently: `flutter analyze` clean, 174/175 app-shell green (only the known a11 flake), **and `b34_marketplace_browse_test.dart` 16/16 green, confirmed byte-for-byte unmodified** (SHA-256 checked before/after by the implementation agent, re-run and confirmed passing by the verification agent). First-try success. |
-| C.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit, same recipe as B.9. |
+| C.7 | ✅ Closed (2026-08-05, fix commit `ae3282e2`). Live walk + evidence matrix + random regression re-check | Real Android emulator walk (App-Shell-milestone weight, same recipe as B.9) — see closure evidence below. Found and fixed one real bug: computed helper fields leaking as raw unlabeled pills. |
+
+### C.7 closure evidence (2026-08-05)
+
+Real Android emulator walk (`emulator-5554`, freshly built debug APK, fresh Tabletop Club install via the
+real "Add local community" flow — extension/init packages sideloaded into the app's private storage since
+scoped storage/SELinux block direct file-picker access to `/sdcard`/`/data/local/tmp`, matching this
+tracker's established workaround from earlier sessions).
+
+Confirmed live, screenshot-backed, as both Organizer and Member personas:
+- Marketplace grid renders the real seeded listings (Catan, Wingspan, Root, Gloomhaven, the retired-Catan
+  giveaway, plus real peer-shared `tabletop-game-loan` instances like Azul/Ticket to Ride) through the
+  generic pipeline, with category filter chips.
+- As Member with dues unpaid: "Request loan" correctly absent on Catan, "Join queue" present instead —
+  matches C.3's guard exactly.
+- Paid dues for real via the Giving tab's "Pay $15" action, returned to Marketplace: "Request loan" now
+  appears on Catan — this is the exact dues-guard-recompute scenario CALR.4h's original manual walk (Phase C
+  process note) failed on; confirmed working live end to end.
+- Tapped "Request loan" for real: Catan transitioned to `onLoan`, `Holder: tabletop-member` appeared live.
+- Tapped "Claim giveaway" on the retired Catan for real: it genuinely disappeared from the grid on the next
+  render — live confirmation of C.5's mechanism (state-filtered `renderBindings` exclusion, not
+  `removeFromTileGrid`).
+- Random regression spot-check: Home, Calendar, and Giving tabs all rendered correctly during the same
+  session (dues payment flow itself doubles as a Giving regression check).
+
+**Real bug found by visual inspection** (not caught by any automated test, since none of them asserted
+"no unlabeled raw-value pills exist"): every Marketplace card showed two extra pills reading bare "0" and
+"true"/"false" with no label — a real accessibility issue too (a screen reader would announce these with zero
+context). Root cause: `queueLength`/`isAvailable`, two formula-backed convenience fields in the frozen JSON
+meant only for internal guard/formula use, have no `labelTemplate`, and `_factSchema()`'s fallback
+(`labelTemplate: field.labelTemplate ?? '{value}'`) rendered them anyway. Fixed on the Dart side (the JSON is
+frozen) by excluding any field with a `formula` and no `labelTemplate` from the fact-pill set — a general
+fix, not a hardcoded field-name exclusion. Verified independently (`flutter analyze` clean, 174/175 app-shell
+green, only the known a11 flake) and re-confirmed live on the emulator after rebuilding: the raw pills are
+gone in both tile and detail contexts, real fields (title/category/condition/description/availability)
+still render correctly. The same class of issue was separately spotted in Giving (a `receiptStatus` field
+shown as its literal field name) — out of scope for Phase C, flagged for Phase D.
 
 ### C.1-2 closure evidence (2026-08-05)
 
@@ -170,4 +206,4 @@ re-sequenced table above, which reflects what CALR.4g already proved real:**
 - [x] `b34_marketplace_browse_test.dart` passes **unmodified** (C.6: confirmed byte-for-byte unmodified via
       SHA-256, 16/16 green).
 
-Remaining: C.7 (live walk + evidence matrix + random regression re-check).
+Phase C is fully closed (C.1-2 through C.7, 2026-08-05). Next: Phase D (Giving).
