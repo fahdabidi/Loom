@@ -472,36 +472,6 @@ class LoomFormEntrySeed {
   final String reminderOffset;
 }
 
-class LoomTournamentCandidate {
-  const LoomTournamentCandidate({
-    required this.id,
-    required this.name,
-    this.description,
-  });
-  final String id;
-  final String name;
-  final String? description;
-}
-
-class LoomTournamentBallotSeed {
-  const LoomTournamentBallotSeed({
-    required this.eventId,
-    required this.candidates,
-    required this.goingPersonaIds,
-    this.minimumAttendance = 1,
-    this.deadline,
-    this.notificationsEnabled = false,
-    this.reminderOffset = 'one-day',
-  });
-  final String eventId;
-  final List<LoomTournamentCandidate> candidates;
-  final List<String> goingPersonaIds;
-  final int minimumAttendance;
-  final DateTime? deadline;
-  final bool notificationsEnabled;
-  final String reminderOffset;
-}
-
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -1115,22 +1085,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     evidenceRequirements: ['form control screenshot'],
     fallbackPolicy: 'Form controls must persist typed values.',
   ),
-  'tournament-ballot': LoomTabRendererContract(
-    rendererId: 'TournamentBallotTabSurface',
-    label: 'Tournament ballot with real tally, eligibility, and runoff',
-    tabIds: ['ballot'],
-    surfaceFamilies: ['votePoll'],
-    requiredAnatomy: [
-      'per-candidate vote action',
-      'live tally',
-      'close vote action',
-    ],
-    requiredInteractions: ['castVote', 'closeVote'],
-    requiredStates: ['open', 'closed'],
-    evidenceRequirements: ['ballot screenshot', 'runoff screenshot'],
-    fallbackPolicy:
-        'Voting requires a real per-candidate Repeater and genuine tally, not a fixed button pair.',
-  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1415,7 +1369,6 @@ class LoomExperienceDefinition {
     this.statusTimeline,
     this.protectedDetail,
     this.formEntry,
-    this.tournamentBallot,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1445,7 +1398,6 @@ class LoomExperienceDefinition {
   final LoomStatusTimelineSeed? statusTimeline;
   final LoomProtectedDetailSeed? protectedDetail;
   final LoomFormEntrySeed? formEntry;
-  final LoomTournamentBallotSeed? tournamentBallot;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

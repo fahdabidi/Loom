@@ -463,18 +463,6 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         pinningPolicyRationale: 'Typed controls edit a real form instance.',
         requiredPermission: 'community.surface.workflow.read',
       ),
-    if (experience.tournamentBallot != null)
-      const LoomAppShellTabSpec(
-        tabId: 'ballot',
-        label: 'Ballot',
-        icon: Icons.how_to_vote_outlined,
-        description: 'Vote on tournament candidates.',
-        rendererContractId: 'tournament-ballot',
-        pinningPolicy: 'none-declared-for-ballot',
-        pinningPolicyRationale:
-            'Ballots are read from live engine tally state.',
-        requiredPermission: 'community.surface.workflow.read',
-      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',

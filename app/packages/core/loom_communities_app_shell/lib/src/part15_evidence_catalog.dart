@@ -170,9 +170,6 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     experienceConfiguration['protectedDetail'],
   );
   final formEntry = _parseFormEntrySeed(experienceConfiguration['formEntry']);
-  final tournamentBallot = _parseTournamentBallotSeed(
-    experienceConfiguration['tournamentBallot'],
-  );
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -240,7 +237,6 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     statusTimeline: statusTimeline,
     protectedDetail: protectedDetail,
     formEntry: formEntry,
-    tournamentBallot: tournamentBallot,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -995,45 +991,6 @@ LoomFormEntrySeed? _parseFormEntrySeed(Object? value) {
     referenceTime: time,
     notificationsEnabled: value['notificationsEnabled'] == true,
     reminderOffset: offset,
-  );
-}
-
-LoomTournamentBallotSeed? _parseTournamentBallotSeed(Object? value) {
-  if (value is! Map<String, Object?>) return null;
-  final eventId = value['eventId'];
-  final candidatesRaw = value['candidates'];
-  final goingRaw = value['goingPersonaIds'];
-  if (eventId is! String || eventId.isEmpty || candidatesRaw is! List) {
-    return null;
-  }
-  final candidates = <LoomTournamentCandidate>[
-    for (final entry in candidatesRaw)
-      if (entry is Map<String, Object?> &&
-          entry['id'] is String &&
-          entry['name'] is String)
-        LoomTournamentCandidate(
-          id: entry['id'] as String,
-          name: entry['name'] as String,
-          description: entry['description'] as String?,
-        ),
-  ];
-  if (candidates.isEmpty) return null;
-  final minimumAttendance = value['minimumAttendance'];
-  final deadline = DateTime.tryParse('${value['deadline']}');
-  final reminderOffset = value['reminderOffset'];
-  return LoomTournamentBallotSeed(
-    eventId: eventId,
-    candidates: candidates,
-    goingPersonaIds: [
-      for (final entry in goingRaw is List ? goingRaw : const []) '$entry',
-    ],
-    minimumAttendance: minimumAttendance is int ? minimumAttendance : 1,
-    deadline: deadline,
-    notificationsEnabled: value['notificationsEnabled'] == true,
-    reminderOffset:
-        reminderOffset is String && _reminderOffsets.containsKey(reminderOffset)
-        ? reminderOffset
-        : 'one-day',
   );
 }
 
