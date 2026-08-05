@@ -134,6 +134,28 @@ Future<WorkflowInstance> _threadById(
   );
 }
 
+Future<WorkflowInstance> _pumpUntilThread(
+  WidgetTester tester,
+  WorkflowEngineApi engine,
+  String instanceId,
+  bool Function(WorkflowInstance instance) predicate,
+) async {
+  WorkflowInstance? latest;
+  for (var attempt = 0; attempt < 50; attempt++) {
+    latest = (await tester.runAsync(
+      () => _threadById(engine, instanceId),
+    ))!;
+    if (predicate(latest)) return latest;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  throw TestFailure(
+    'Timed out waiting for persisted state on $instanceId; latest=$latest',
+  );
+}
+
 Future<void> _postMessage(
   WidgetTester tester, {
   required String instanceId,
@@ -248,10 +270,12 @@ void main() {
         await _pumpUntil(tester, markRead);
         await tester.ensureVisible(markRead);
         await tester.tap(markRead);
-        await _pumpUntil(tester, find.text('Game suggestions for next week'));
-        final read = (await tester.runAsync(
-          () => _threadById(installed.engine, 'thread-game-suggestions'),
-        ))!;
+        final read = await _pumpUntilThread(
+          tester,
+          installed.engine,
+          'thread-game-suggestions',
+          (instance) => instance.instanceData['unread'] == false,
+        );
         expect(read.instanceData['unread'], isFalse);
         expect(
           find.byKey(
