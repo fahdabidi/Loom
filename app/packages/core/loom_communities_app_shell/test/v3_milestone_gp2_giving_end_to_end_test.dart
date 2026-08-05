@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
@@ -21,9 +22,10 @@ File _fixtureFile() {
 }
 
 class _InstalledTabletop {
-  const _InstalledTabletop(this.community, this.temp);
+  const _InstalledTabletop(this.community, this.engine, this.temp);
 
   final LocalInstalledCommunity community;
+  final WorkflowEngineApi engine;
   final Directory temp;
 
   Future<void> dispose() => temp.delete(recursive: true);
@@ -55,7 +57,16 @@ Future<_InstalledTabletop> _install(String extensionId) async {
           initializationPackagePath: init.path,
         )
         .community;
-    return _InstalledTabletop(community, temp);
+    // Resolve the shared engine before pumping the widget, matching the
+    // engine-native test-install pattern and allowing the test to query the
+    // persisted result after the UI transition completes.
+    experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    final engine = await workflowEngineForExtensionId(community.extensionId);
+    return _InstalledTabletop(community, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -71,6 +82,17 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
     if (finder.evaluate().isNotEmpty) return;
   }
   throw TestFailure('Timed out waiting for $finder');
+}
+
+Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    if (finder.evaluate().isEmpty) return;
+  }
+  throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
 void main() {
@@ -122,23 +144,44 @@ void main() {
         expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
         expect(find.text(r'$15.00'), findsOneWidget);
         expect(find.text('Quarterly club dues'), findsOneWidget);
-        await _pumpUntil(
-          tester,
-          find.byKey(
-            const ValueKey(
-              'generic-instance-dues-2026-q3-member-action-pay',
-            ),
-          ),
+        final duesCard = find.byKey(
+          const ValueKey('generic-instance-card-dues-2026-q3-member'),
         );
         expect(
-          find.byKey(
-            const ValueKey(
-              'generic-instance-dues-2026-q3-member-action-pay',
-            ),
-          ),
-          findsOneWidget,
+          find.descendant(of: duesCard, matching: find.text('receiptStatus')),
+          findsNothing,
         );
+        final pay = find.byKey(
+          const ValueKey('generic-instance-dues-2026-q3-member-action-pay'),
+        );
+        await _pumpUntil(tester, pay);
+        expect(pay, findsOneWidget);
         expect(find.text('Pay \$15'), findsOneWidget);
+        await tester.ensureVisible(pay);
+        await tester.tap(pay);
+        await _pumpUntilGone(tester, pay);
+
+        // The effect-owned receipt status has no author-facing label in the
+        // frozen schema, so it must not fall back to rendering its key.
+        expect(
+          find.descendant(of: duesCard, matching: find.text('receiptStatus')),
+          findsNothing,
+        );
+
+        final paid = await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'giving',
+            personaId: 'tabletop-member',
+            limit: 100,
+          );
+          return page.items.singleWhere(
+            (item) => item.instanceId == 'dues-2026-q3-member',
+          );
+        });
+        expect(paid!.currentState, 'paid');
+        expect(paid.instanceData['receiptStatus'], 'complete');
+        expect(paid.instanceData['paidAt'], isNotNull);
+        expect('${paid.instanceData['paidAt']}', isNotEmpty);
       } finally {
         await tester.runAsync(installed.dispose);
       }

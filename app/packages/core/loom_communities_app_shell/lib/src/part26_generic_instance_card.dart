@@ -352,6 +352,13 @@ class _GenericWorkflowInstanceCardState
   }
 
   bool _isVisibleField(String key, InstanceDataField schema) {
+    // Effect-owned fields without an explicit label are persistence/status
+    // plumbing, not user-facing facts. Falling back to the field key here
+    // would expose internal names such as `receiptStatus` in the card.
+    if (schema.writableBy == 'effect' &&
+        !(schema.labelTemplate?.trim().isNotEmpty ?? false)) {
+      return false;
+    }
     if (widget.visibleFieldKeys != null &&
         !widget.visibleFieldKeys!.contains(key))
       return false;
