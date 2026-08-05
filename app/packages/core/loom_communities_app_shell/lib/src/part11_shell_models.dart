@@ -880,7 +880,7 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   ),
   'messages-inbox-thread-composer': LoomTabRendererContract(
     rendererId: 'MessagesTabSurface',
-    label: 'Messages inbox, thread, composer, unread, and invites',
+    label: 'Messages inbox, thread, composer, and unread',
     tabIds: ['messages'],
     surfaceFamilies: ['thread', 'social', 'inbox'],
     requiredAnatomy: [
@@ -888,7 +888,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
       'unread badges',
       'thread detail',
       'message composer',
-      'connection invite/accept/decline state',
     ],
     requiredInteractions: [
       'createThread',
@@ -897,10 +896,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
       'listUnread',
       'muteThread',
       'archiveThread',
-      'sendInvite',
-      'acceptInvite',
-      'declineInvite',
-      'connectionStatus',
     ],
     requiredStates: [
       'empty inbox',
@@ -909,16 +904,15 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
       'sending',
       'sent/read',
       'muted/archived',
-      'invite pending',
     ],
     evidenceRequirements: [
       'messages tab inbox screenshot',
       'thread detail screenshot',
       'composer/action screenshot',
-      'connection invite or state screenshot',
+      'thread read/archive state screenshot',
     ],
     fallbackPolicy:
-        'Messages must not render as a generic workflow list; it needs a chat/thread information architecture.',
+        'Messages discussion threads require the generic EngineNativeListSurface/GenericWorkflowInstanceCard pipeline with inbox, thread, composer, unread, and archive/read affordances.',
   ),
   'notification-inbox': LoomTabRendererContract(
     rendererId: 'NotificationInboxTabSurface',
