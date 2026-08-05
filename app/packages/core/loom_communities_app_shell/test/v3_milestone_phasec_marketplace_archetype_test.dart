@@ -169,6 +169,36 @@ Future<void> _selectMarketplace(WidgetTester tester) async {
   );
 }
 
+Future<WorkflowInstance> _readMarketplaceInstance(
+  WorkflowEngineApi engine, {
+  required String instanceId,
+  required String personaId,
+}) async {
+  final page = await engine.queryInstances(
+    tabId: 'marketplace',
+    personaId: personaId,
+    limit: 100,
+  );
+  return page.items.singleWhere(
+    (instance) => instance.instanceId == instanceId,
+  );
+}
+
+Future<Set<String>> _availableMarketplaceTransitionIds(
+  WorkflowEngineApi engine,
+  WorkflowInstance instance,
+  String personaId,
+) async {
+  final transitions = await engine.availableTransitionsAsync(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    currentState: instance.currentState,
+    instanceData: instance.instanceData,
+    personaId: personaId,
+  );
+  return transitions.map((transition) => transition.id).toSet();
+}
+
 void main() {
   test(
     'real equipment-loan dues guard rejects unpaid borrow and permits paid borrow',
@@ -215,6 +245,148 @@ void main() {
         expect(catan.currentState, 'published');
         expect(catan.instanceData['availabilityState'], 'onLoan');
         expect(catan.instanceData['holderPersonaId'], 'tabletop-member');
+      } finally {
+        await installed.dispose();
+      }
+    },
+  );
+
+  test(
+    'real equipment-loan queue and return transitions mutate seeded listings',
+    () async {
+      final installed = await _install('phasec4-marketplace-queue-return');
+      const memberId = 'tabletop-member';
+      try {
+        final catanBefore = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-catan',
+          personaId: memberId,
+        );
+        expect(catanBefore.instanceData['availabilityState'], 'available');
+        expect(catanBefore.instanceData['queuedPersonaIds'], isEmpty);
+        expect(catanBefore.instanceData['queueLength'], 0);
+
+        final joined = await installed.engine.applyTransition(
+          workflowType: 'equipment-loan',
+          instanceId: 'listing-catan',
+          transitionId: 'join-queue',
+          personaId: memberId,
+        );
+        expect(joined.newState, 'published');
+        expect(joined.newInstanceData['queuedPersonaIds'], contains(memberId));
+
+        final catanAfterJoin = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-catan',
+          personaId: memberId,
+        );
+        expect(
+          catanAfterJoin.instanceData['queuedPersonaIds'],
+          contains(memberId),
+        );
+        expect(catanAfterJoin.instanceData['queueLength'], 1);
+        final afterJoinTransitions =
+            await _availableMarketplaceTransitionIds(
+              installed.engine,
+              catanAfterJoin,
+              memberId,
+            );
+        expect(afterJoinTransitions, contains('leave-queue'));
+        expect(afterJoinTransitions, isNot(contains('join-queue')));
+
+        final left = await installed.engine.applyTransition(
+          workflowType: 'equipment-loan',
+          instanceId: 'listing-catan',
+          transitionId: 'leave-queue',
+          personaId: memberId,
+        );
+        expect(left.newState, 'published');
+        expect(left.newInstanceData['queuedPersonaIds'], isEmpty);
+
+        final catanAfterLeave = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-catan',
+          personaId: memberId,
+        );
+        expect(catanAfterLeave.instanceData['queuedPersonaIds'], isEmpty);
+        expect(catanAfterLeave.instanceData['queueLength'], 0);
+        final afterLeaveTransitions =
+            await _availableMarketplaceTransitionIds(
+              installed.engine,
+              catanAfterLeave,
+              memberId,
+            );
+        expect(afterLeaveTransitions, contains('join-queue'));
+        expect(afterLeaveTransitions, isNot(contains('leave-queue')));
+
+        // Root is already available and queued for two different members. A
+        // fresh join here proves reserve-ahead works independently of loan
+        // availability, not only after an item is on loan.
+        final rootBefore = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-root',
+          personaId: memberId,
+        );
+        expect(rootBefore.instanceData['availabilityState'], 'available');
+        expect(rootBefore.instanceData['queuedPersonaIds'], hasLength(2));
+        expect(rootBefore.instanceData['queueLength'], 2);
+        final rootJoined = await installed.engine.applyTransition(
+          workflowType: 'equipment-loan',
+          instanceId: 'listing-root',
+          transitionId: 'join-queue',
+          personaId: memberId,
+        );
+        expect(rootJoined.newState, 'published');
+        expect(rootJoined.newInstanceData['queuedPersonaIds'], contains(memberId));
+        final rootAfter = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-root',
+          personaId: memberId,
+        );
+        expect(rootAfter.instanceData['availabilityState'], 'available');
+        expect(rootAfter.instanceData['queuedPersonaIds'], contains(memberId));
+        expect(rootAfter.instanceData['queueLength'], 3);
+
+        // Wingspan is seeded on loan with a real due date. The seeded holder
+        // returns it as their individual member account, exercising the
+        // persona-type mapping used by allowedPersonaIds guards.
+        const holderId = 'tabletop-member-03';
+        final wingspanBefore = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-wingspan',
+          personaId: holderId,
+        );
+        expect(wingspanBefore.instanceData['availabilityState'], 'onLoan');
+        expect(wingspanBefore.instanceData['holderPersonaId'], holderId);
+        expect(wingspanBefore.instanceData['dueDate'], '2026-07-17');
+        final wingspanTransitions =
+            await _availableMarketplaceTransitionIds(
+              installed.engine,
+              wingspanBefore,
+              holderId,
+            );
+        expect(wingspanTransitions, contains('return'));
+
+        final returned = await installed.engine.applyTransition(
+          workflowType: 'equipment-loan',
+          instanceId: 'listing-wingspan',
+          transitionId: 'return',
+          personaId: holderId,
+        );
+        expect(returned.newState, 'published');
+        expect(returned.newInstanceData['availabilityState'], 'available');
+        expect(returned.newInstanceData['holderPersonaId'], isNull);
+        expect(returned.newInstanceData['dueDate'], isNull);
+
+        final wingspanAfter = await _readMarketplaceInstance(
+          installed.engine,
+          instanceId: 'listing-wingspan',
+          personaId: holderId,
+        );
+        expect(wingspanAfter.currentState, 'published');
+        expect(wingspanAfter.instanceData['availabilityState'], 'available');
+        expect(wingspanAfter.instanceData['holderPersonaId'], isNull);
+        expect(wingspanAfter.instanceData['dueDate'], isNull);
       } finally {
         await installed.dispose();
       }
