@@ -159,7 +159,40 @@ void main() {
       find.byKey(const ValueKey('protected-detail-why-hidden')),
       findsOneWidget,
     );
+    final maskedDecoration = tester
+        .widget<DecoratedBox>(
+          find.byKey(const ValueKey('protected-detail-masked')),
+        )
+        .decoration as BoxDecoration;
+    const accent = Color(0xff4a3b2a);
+    expect(maskedDecoration.color, accent.withValues(alpha: .12));
+    expect(
+      maskedDecoration.border!.top.color,
+      accent.withValues(alpha: .26),
+    );
     expect(find.byKey(const ValueKey('protected-detail-full')), findsNothing);
     expect(find.text('The venue access code is 4829.'), findsNothing);
+  });
+
+  testWidgets('legacy workflow tiles use the cascade-resolved accent', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(_detailCommunity(authorized: false)));
+    await _until(
+      tester,
+      find.byKey(
+        const ValueKey('workflow-tabletop-protected-detail-workflow'),
+      ),
+    );
+
+    final tile = tester.widget<DecoratedBox>(
+      find.byKey(
+        const ValueKey('workflow-tabletop-protected-detail-workflow'),
+      ),
+    );
+    expect(
+      (tile.decoration as BoxDecoration).color,
+      const Color(0xff4a3b2a),
+    );
   });
 }

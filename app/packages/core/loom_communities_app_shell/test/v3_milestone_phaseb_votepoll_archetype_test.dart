@@ -202,6 +202,24 @@ void main() {
 
         expect(find.text('Azul: 1 votes'), findsOneWidget);
         expect(find.text('Wingspan: 1 votes'), findsOneWidget);
+        final candidateTheme = LoomCardTheme.deriveFromAccent(
+          const Color(0xffC4703F),
+          lightSurface: true,
+        );
+        final candidateSurface = tester.widget<DecoratedBox>(
+          find.byKey(
+            const ValueKey(
+              'votepoll-candidate-surface-ballot-summer-tournament-catan',
+            ),
+          ),
+        );
+        final candidateDecoration =
+            candidateSurface.decoration as BoxDecoration;
+        expect(candidateDecoration.color, candidateTheme.resolvedFill);
+        expect(
+          candidateDecoration.border!.top.color,
+          candidateTheme.resolvedBorder,
+        );
         expect(
           find.byKey(
             const ValueKey('votepoll-reminder-ballot-summer-tournament'),

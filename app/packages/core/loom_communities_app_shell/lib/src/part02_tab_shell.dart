@@ -3130,6 +3130,12 @@ class _ProtectedDetailTabSurfaceState
   Widget build(BuildContext context) {
     final detail = _detail;
     if (detail == null) return const Center(child: CircularProgressIndicator());
+    final modernTheme = widget.modernTheme;
+    final resolvedAccent = modernTheme?.accent ?? widget.accent;
+    final maskedFill =
+        modernTheme?.resolvedFill ?? resolvedAccent.withValues(alpha: .12);
+    final maskedBorder =
+        modernTheme?.resolvedBorder ?? resolvedAccent.withValues(alpha: .26);
     final authorized = _store.isAuthorized(
       detail,
       (widget.persona.accountId ?? widget.persona.personaId),
@@ -3162,9 +3168,9 @@ class _ProtectedDetailTabSurfaceState
           DecoratedBox(
             key: const ValueKey('protected-detail-masked'),
             decoration: BoxDecoration(
-              color: Colors.black12,
+              color: maskedFill,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.black26),
+              border: Border.all(color: maskedBorder),
             ),
             child: const Padding(
               padding: EdgeInsets.all(16),

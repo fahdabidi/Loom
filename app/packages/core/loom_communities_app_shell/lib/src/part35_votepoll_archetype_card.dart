@@ -263,6 +263,16 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
     final isExpiringSoon = data['isExpiringSoon'] == true;
     final outcome = data['outcome']?.toString();
     final winner = data['winner']?.toString();
+    final candidateAccent =
+        widget.modernTheme?.accent ??
+        widget.accent ??
+        Theme.of(context).colorScheme.primary;
+    final candidateFill =
+        widget.modernTheme?.resolvedFill ??
+        candidateAccent.withValues(alpha: 0.08);
+    final candidateBorder =
+        widget.modernTheme?.resolvedBorder ??
+        candidateAccent.withValues(alpha: 0.22);
 
     return Card(
       key: ValueKey('votepoll-card-${instance.instanceId}'),
@@ -308,40 +318,59 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
             for (final candidate in candidates)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
+                child: DecoratedBox(
                   key: ValueKey(
-                    'votepoll-candidate-${instance.instanceId}-${candidate['id']}',
+                    'votepoll-candidate-surface-${instance.instanceId}-${candidate['id']}',
                   ),
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        key: ValueKey(
-                          'votepoll-candidate-name-${instance.instanceId}-${candidate['id']}',
-                        ),
-                        onTap: () => _showCandidateDetail(
-                          instance.instanceId,
-                          candidate,
-                        ),
-                        child: Text(
-                          '${candidate['name']}: ${voteCounts['${candidate['id']}'] ?? 0} votes',
-                          key: ValueKey(
-                            'votepoll-candidate-count-${instance.instanceId}-${candidate['id']}',
-                          ),
-                          style: TextStyle(color: foreground),
-                        ),
-                      ),
+                  decoration: BoxDecoration(
+                    color: candidateFill,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: candidateBorder,
+                      width: widget.modernTheme?.borderWidth ?? 1,
                     ),
-                    if (_canVote)
-                      FilledButton(
-                        key: ValueKey(
-                          'votepoll-vote-${instance.instanceId}-${candidate['id']}',
-                        ),
-                        onPressed: _mutating
-                            ? null
-                            : () => unawaited(_vote(candidate)),
-                        child: const Text('Vote'),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      key: ValueKey(
+                        'votepoll-candidate-${instance.instanceId}-${candidate['id']}',
                       ),
-                  ],
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            key: ValueKey(
+                              'votepoll-candidate-name-${instance.instanceId}-${candidate['id']}',
+                            ),
+                            onTap: () => _showCandidateDetail(
+                              instance.instanceId,
+                              candidate,
+                            ),
+                            child: Text(
+                              '${candidate['name']}: ${voteCounts['${candidate['id']}'] ?? 0} votes',
+                              key: ValueKey(
+                                'votepoll-candidate-count-${instance.instanceId}-${candidate['id']}',
+                              ),
+                              style: TextStyle(color: foreground),
+                            ),
+                          ),
+                        ),
+                        if (_canVote)
+                          FilledButton(
+                            key: ValueKey(
+                              'votepoll-vote-${instance.instanceId}-${candidate['id']}',
+                            ),
+                            onPressed: _mutating
+                                ? null
+                                : () => unawaited(_vote(candidate)),
+                            child: const Text('Vote'),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             if (_canClose) ...[

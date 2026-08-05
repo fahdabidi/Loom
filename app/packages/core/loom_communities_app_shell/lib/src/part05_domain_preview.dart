@@ -483,9 +483,10 @@ class _WorkflowTile extends StatelessWidget {
       workflow: workflow,
     );
     final metadata = _domainMetadataFor(contract.category, workflow);
-    final scheme = Theme.of(context).colorScheme;
-    final accent =
-        modernTheme?.accent ?? _categoryAccentColor(contract.category, scheme);
+    // `fallbackAccent` is already resolved through the community -> tab ->
+    // workflow theme cascade. The category palette is only a legacy action
+    // surface fallback; it must not override the cascade on this shared tile.
+    final accent = modernTheme?.accent ?? fallbackAccent;
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     return DecoratedBox(
       key: ValueKey('workflow-${workflow.workflowId}'),
