@@ -33,6 +33,11 @@ class _EngineNativeMarketplaceSurfaceState
   Future<WorkflowEngineApi>? _engineFuture;
   String _searchQuery = '';
   String? _selectedCategory;
+  // Cache the bound method tear-off once. Re-evaluating a bound method can
+  // produce a different Function object, which would look like a changed
+  // query context to EngineNativeBindingDispatcher's identity check.
+  late final EngineNativeRolesForInstance _stableRolesForInstance =
+      _rolesForInstance;
 
   @override
   void initState() {
@@ -61,6 +66,13 @@ class _EngineNativeMarketplaceSurfaceState
           : Future<WorkflowEngineApi>.value(widget.engine);
     });
   }
+
+  Iterable<String> _rolesForInstance(
+    WorkflowInstance instance,
+    String viewerPersonaId,
+  ) => instance.createdByPersonaId == viewerPersonaId
+      ? const <String>['actor']
+      : const <String>[];
 
   @override
   Widget build(BuildContext context) {
@@ -96,10 +108,7 @@ class _EngineNativeMarketplaceSurfaceState
           definitions: definitions,
           tabId: 'marketplace',
           personaId: personaId,
-          rolesForInstance: (instance, viewerPersonaId) =>
-              instance.createdByPersonaId == viewerPersonaId
-              ? const <String>['actor']
-              : const <String>[],
+          rolesForInstance: _stableRolesForInstance,
           builder: (context, bindings, changed) =>
               _EngineNativeMarketplaceContent(
                 bindings: bindings,

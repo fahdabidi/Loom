@@ -31,6 +31,49 @@ class _InstalledTabletop {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
+class _MarketplaceCountingEngine implements WorkflowEngineApi {
+  _MarketplaceCountingEngine(this.delegate);
+
+  final WorkflowEngineApi delegate;
+  int queries = 0;
+
+  @override
+  Future<InstancePage> queryInstances({
+    required String tabId,
+    required String personaId,
+    SurfaceQuery query = const SurfaceQuery.empty(),
+    int limit = 25,
+    String? cursor,
+  }) {
+    queries++;
+    return delegate.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      query: query,
+      limit: limit,
+      cursor: cursor,
+    );
+  }
+
+  @override
+  Future<List<LoomWorkflowTransition>> availableTransitionsAsync({
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required Map<String, dynamic> instanceData,
+    required String personaId,
+  }) => delegate.availableTransitionsAsync(
+    workflowType: workflowType,
+    instanceId: instanceId,
+    currentState: currentState,
+    instanceData: instanceData,
+    personaId: personaId,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 Future<_InstalledTabletop> _install(String extensionId) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
@@ -341,4 +384,73 @@ void main() {
       await tester.runAsync(installed.dispose);
     }
   });
+
+  testWidgets(
+    'Marketplace local filters do not re-query the engine on every change',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('phasec-marketplace-callback-count'),
+      ))!;
+      final experience = experienceForExtensionId(
+        installed.community.extensionId,
+        displayName: installed.community.displayName,
+        experienceConfiguration: installed.community.experienceConfiguration,
+      );
+      final organizer = personasForExtensionId(
+        experience.extensionId,
+        experience: experience,
+      ).singleWhere((persona) => persona.personaId == 'tabletop-organizer');
+      final engine = _MarketplaceCountingEngine(installed.engine);
+      setCurrentActiveAccountId(organizer.personaId);
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: EngineNativeMarketplaceSurface(
+                  experience: experience,
+                  persona: organizer,
+                  accent: Colors.indigo,
+                  engine: engine,
+                ),
+              ),
+            ),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-marketplace-root')),
+        );
+        final search = find.byKey(const ValueKey('marketplace-search-field'));
+        await _pumpUntil(tester, search);
+        final initialQueries = engine.queries;
+        expect(initialQueries, greaterThanOrEqualTo(1));
+
+        for (final value in const ['W', 'Wi', 'Win']) {
+          await tester.enterText(search, value);
+          await tester.pump();
+          expect(
+            engine.queries,
+            initialQueries,
+            reason: 'local search update $value must not reload bindings',
+          );
+        }
+
+        final strategy = find.byKey(
+          const ValueKey('marketplace-filter-Strategy Games'),
+        );
+        await tester.ensureVisible(strategy);
+        await tester.tap(strategy);
+        await tester.pump();
+        expect(
+          engine.queries,
+          initialQueries,
+          reason: 'local category update must not reload bindings',
+        );
+      } finally {
+        setCurrentActiveAccountId(null);
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 }
