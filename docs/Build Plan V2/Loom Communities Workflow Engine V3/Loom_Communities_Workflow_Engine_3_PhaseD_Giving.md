@@ -76,7 +76,7 @@ named gap. **Do not** fake it with a hardcoded string.
 | D.1 | ✅ Closed (GP.2, 2026-07-17, commit `bad6f1bb`; confirmed still green throughout this session). Turn on `tabId: "giving"` in the binding dispatcher | Same flip as B.1/C.1. |
 | D.2 | ✅ Closed (GP.2). `paymentCheckout` rendering through the generic card | Renders via the real `EngineNativeListSurface`/`GenericWorkflowInstanceCard` pipeline, not a bespoke widget. Real fact pills present (amount, purpose, entitlement) — the `receiptStatus` unlabeled-field-name bug found in C.7 is a D.3-adjacent gap (it only appears post-payment), tracked there, not blocking this closure. |
 | D.3 | ✅ Closed (2026-08-05, commit `2c79617b`). Pay transition, real effects, and fix the `receiptStatus` render bug | New test taps the real "Pay $15" button and confirms `currentState: paid`, `receiptStatus: complete`, `paidAt` set for real. The render bug had a different root cause than Marketplace's (Giving uses the shared `GenericWorkflowInstanceCard`, not a bespoke card): `_isVisibleField` fell back to the field *key* as a label for any unlabeled field, so `receiptStatus` literally rendered as "receiptStatus". Fixed by suppressing effect-owned fields with no declared `labelTemplate` (`paidAt`, which has a real label, still renders correctly). Verified independently: `flutter analyze` clean, 174/175 green (only the known a11 flake). First-try success. |
-| D.4 | **Cross-workflow proof**: paying here satisfies Marketplace's `borrow` guard | The same guard C.3 already proved at the engine level — now drive it through the *real Giving UI* pay action, then confirm Marketplace's `borrow` becomes available, end to end in one test. |
+| D.4 | ✅ Closed (2026-08-05, commit `4f596188`). **Cross-workflow proof**: paying here satisfies Marketplace's `borrow` guard | New test drives the real UI chain end to end: confirms `Request loan` absent on Catan while unpaid (via the real widget tree, not an engine query), taps the real Giving "Pay $15" button, then confirms `Request loan` appears on Catan afterward — all through real widget assertions. This is the exact manual proof from Phase C's C.7 live walk, now a permanent automated test. Verified independently: `flutter analyze` clean, 175/176 green (only the known a11 flake). First-try success. |
 | D.5 | Tab theme cascade verified visually | Screenshot showing Giving in `#8A5A34` while Calendar/Home use `#C4703F`. |
 | D.6 | Receipt-id platform service: implement **or** record as a named gap | An explicit decision, written down. No hardcoded receipt ids. |
 | D.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit. |
@@ -84,6 +84,6 @@ named gap. **Do not** fake it with a hardcoded string.
 ## Definition of done
 
 - [x] Giving renders from JSON; zero bespoke Dart for the dues workflow (D.1/D.2, GP.2).
-- [ ] Paying dues genuinely unlocks Marketplace borrowing (cross-workflow guard, end-to-end) (D.4).
+- [x] Paying dues genuinely unlocks Marketplace borrowing (cross-workflow guard, end-to-end) (D.4).
 - [ ] The Giving tab's distinct accent comes from the JSON cascade, verified on-device (D.5).
 - [ ] Receipt id is either really generated or honestly absent — never faked (D.6).
