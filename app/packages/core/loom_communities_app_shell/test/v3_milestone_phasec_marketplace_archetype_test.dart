@@ -347,23 +347,26 @@ void main() {
         expect(rootAfter.instanceData['queuedPersonaIds'], contains(memberId));
         expect(rootAfter.instanceData['queueLength'], 3);
 
-        // Wingspan is seeded on loan with a real due date. The seeded holder
-        // returns it as their individual member account, exercising the
-        // persona-type mapping used by allowedPersonaIds guards.
-        const holderId = 'tabletop-member-03';
+        // Wingspan is seeded on loan with a real due date. The equipment-loan
+        // return guard authorizes the generic member role and does not require
+        // the actor to match holderPersonaId.
+        const returnerId = 'tabletop-member';
         final wingspanBefore = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-wingspan',
-          personaId: holderId,
+          personaId: returnerId,
         );
         expect(wingspanBefore.instanceData['availabilityState'], 'onLoan');
-        expect(wingspanBefore.instanceData['holderPersonaId'], holderId);
+        expect(
+          wingspanBefore.instanceData['holderPersonaId'],
+          'tabletop-member-03',
+        );
         expect(wingspanBefore.instanceData['dueDate'], '2026-07-17');
         final wingspanTransitions =
             await _availableMarketplaceTransitionIds(
               installed.engine,
               wingspanBefore,
-              holderId,
+              returnerId,
             );
         expect(wingspanTransitions, contains('return'));
 
@@ -371,7 +374,7 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-wingspan',
           transitionId: 'return',
-          personaId: holderId,
+          personaId: returnerId,
         );
         expect(returned.newState, 'published');
         expect(returned.newInstanceData['availabilityState'], 'available');
@@ -381,7 +384,7 @@ void main() {
         final wingspanAfter = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-wingspan',
-          personaId: holderId,
+          personaId: returnerId,
         );
         expect(wingspanAfter.currentState, 'published');
         expect(wingspanAfter.instanceData['availabilityState'], 'available');
