@@ -103,7 +103,7 @@ that must be proven by a genuinely refused `applyTransition`, not a hidden butto
 | C.3 | ✅ Closed (2026-08-05, commit `34dbd0ce`). Borrow + dues guard, proven both directions with a real automated test | New engine-level test in `v3_milestone_phasec_marketplace_archetype_test.dart`: an unpaid `tabletop-member` calling `applyTransition('borrow')` on Catan directly genuinely throws `StateError`; after a real `applyTransition('pay', ...)` on `tabletop-club-dues-payment`, the same `borrow` call succeeds and both the transition result and a fresh query show `availabilityState: onLoan`/`holderPersonaId: tabletop-member`. Test-only change (51 lines), verified independently: `flutter analyze` clean, 170/171 green (only the known a11 flake). First-try success, no fix rounds needed. |
 | C.4 | ✅ Closed (2026-08-05, commits `43f1c11f` + `bba2f4de`). Join / Leave queue + Return, proven with real automated tests | New engine-level test proving: join-queue is a real mutation (`queuedPersonaIds`/`queueLength` update), the button swaps join↔leave for real, reserve-ahead works on an available (not just on-loan) listing, and Return clears `availabilityState`/`holderPersonaId`/`dueDate` for real. One fix round: the test's first attempt used a numbered persona (`tabletop-member-03`) for `return`'s `allowedPersonaIds` guard, which does a literal-string match against generic role names only — the same guard pitfall documented in Phase B. Verified independently: `flutter analyze` clean, 172/173 green (only the known a11 flake). |
 | C.5 | ✅ Closed (2026-08-05, commit `fe66da91`). Giveaway claim | New tests prove `claim` on `listing-old-catan`: engine-level (real `newState: claimed`, `claimedByPersonaId` set) and widget-level (the tile genuinely disappears from the grid after tapping claim). Root cause of the disappearance: the `available`-only `renderBindings` state filter excludes it from the next query — `removeFromTileGrid` itself is presentation-only in this codebase and only closes an open detail dialog, it does not remove grid tiles. First-try success, verified independently: `flutter analyze` clean, 174/175 green (only the known a11 flake). |
-| C.6 | Retire `_MarketplaceTabSurface`/`_MarketplaceBrowseSurface` for Tabletop Club | Only once C.2-C.5 prove the generic pipeline fully replaces it. **`b34_marketplace_browse_test.dart` must stay green unmodified** — it tests a *different*, legacy Shape-B fixture other communities still use; confirm this explicitly rather than assuming, since it lives in a different package (`app/apps/loom_communities_demo/test/`) than every other test this tracker has touched so far. |
+| C.6 | ✅ Closed (2026-08-05, commit `e65f46ab`). Retire the now-dead engine-native Marketplace listing projection | Not a full deletion of `_MarketplaceBrowseSurface` — it stays intact for other (non-engine-native) communities, which populate `marketplaceListings` via a *different* raw-JSON path. What was actually dead: `_marketplaceListingsFromEngineNative` (`part15_evidence_catalog.dart`), CALR.4g's projection of engine-native instances into the legacy shape — provably unreachable since `_hasEngineNativeBinding` gates ahead of the `marketplaceListings` fallback unconditionally for any engine-native community. Removed (38 lines). Verified independently: `flutter analyze` clean, 174/175 app-shell green (only the known a11 flake), **and `b34_marketplace_browse_test.dart` 16/16 green, confirmed byte-for-byte unmodified** (SHA-256 checked before/after by the implementation agent, re-run and confirmed passing by the verification agent). First-try success. |
 | C.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit, same recipe as B.9. |
 
 ### C.1-2 closure evidence (2026-08-05)
@@ -159,7 +159,15 @@ re-sequenced table above, which reflects what CALR.4g already proved real:**
 
 ## Definition of done
 
-- [ ] Marketplace renders from JSON `workflowDefinitions`; zero bespoke Dart for the loan/giveaway types.
-- [ ] A queued listing **always** has actions (the original bug is now structurally impossible).
-- [ ] The dues guard is proven by a genuinely refused transition.
-- [ ] `b34_marketplace_browse_test.dart` passes **unmodified**.
+- [x] Marketplace renders from JSON `workflowDefinitions`; zero bespoke Dart for the loan/giveaway types
+      (C.1-2, C.6 — the last remaining bespoke-Dart shim, the dead engine-native listing projection, is
+      removed).
+- [x] A queued listing **always** has actions (the original bug is now structurally impossible — C.1-2/C.4:
+      `join-queue`/`leave-queue` work on both available and on-loan listings, proven by real
+      `applyTransition` calls).
+- [x] The dues guard is proven by a genuinely refused transition (C.3: unpaid `applyTransition('borrow')`
+      genuinely throws; paid succeeds).
+- [x] `b34_marketplace_browse_test.dart` passes **unmodified** (C.6: confirmed byte-for-byte unmodified via
+      SHA-256, 16/16 green).
+
+Remaining: C.7 (live walk + evidence matrix + random regression re-check).
