@@ -99,13 +99,49 @@ that must be proven by a genuinely refused `applyTransition`, not a hidden butto
 
 | # | Milestone | Notes |
 |---|---|---|
-| C.1 | Turn on `tabId: "marketplace"` in `EngineNativeBindingDispatcher._enabledTabs`, gated by `_hasEngineNativeBinding` | Same additive pattern as B.1/GP.2 — checked ahead of `_MarketplaceTabSurface`'s existing dispatch, which stays fully intact and unmodified for every other (non-engine-native) community. No behavior change yet for Tabletop Club — this just opens the pipe. |
-| C.2 | Real `EquipmentLoanArchetypeCard` (browse tile + detail) on the generic pipeline | Mirrors `VotePollArchetypeCard`'s pattern exactly: a new bespoke widget dispatched from `case 'equipment-loan':` in `EngineNativeArchetypeCard`, using `RepeaterSurface`'s grid mode (Milestone 1.6) for the tile layout. Renders title/category/condition/availability/holder/queue fields from real `instanceDataSchema`, not hand-picked. |
+| C.1-2 | ✅ Closed (2026-08-05). Turn on `tabId: "marketplace"` in `EngineNativeBindingDispatcher._enabledTabs`; real `EquipmentLoanArchetypeCard` (browse tile + detail) on the generic pipeline | See closure evidence below — a new `part36_engine_native_marketplace_surface.dart` (`EngineNativeMarketplaceSurface` + `EquipmentLoanArchetypeCard`), mirroring `VotePollArchetypeCard`'s pattern, using `RepeaterSurface`'s grid mode (Milestone 1.6). Took 6 fix rounds after the initial dispatch — all independently found, ticketed, and verified by the verification agent, none self-implemented. |
 | C.3 | Borrow + dues guard, proven both directions with a real automated test | The actual headline requirement CALR.4h only proved manually: an unpaid member's `applyTransition('borrow')` genuinely throws (`requiresWorkflowsComplete` guard); a paid-up member succeeds and `availabilityState`/`holderPersonaId` update for real. Mirrors B.4's negative-proof discipline exactly — do not accept "the button is hidden" as proof. |
 | C.4 | Join / Leave queue + Return, proven with real automated tests | `actorInList`-guarded button swap (Join vs Leave), `queueLength` computed field, Return clearing `availabilityState`/`holderPersonaId`/`dueDate` — all against the real frozen fixture, not assumed correct because CALR.4h's screenshots looked right. |
 | C.5 | Giveaway claim | `equipment-giveaway`'s `claim` transition + `removeFromTileGrid` effect, real test. |
 | C.6 | Retire `_MarketplaceTabSurface`/`_MarketplaceBrowseSurface` for Tabletop Club | Only once C.2-C.5 prove the generic pipeline fully replaces it. **`b34_marketplace_browse_test.dart` must stay green unmodified** — it tests a *different*, legacy Shape-B fixture other communities still use; confirm this explicitly rather than assuming, since it lives in a different package (`app/apps/loom_communities_demo/test/`) than every other test this tracker has touched so far. |
 | C.7 | Live walk + evidence matrix + random regression re-check | Full-tab audit, same recipe as B.9. |
+
+### C.1-2 closure evidence (2026-08-05)
+
+Dispatched as one combined ticket (`data/v3_ticket_phasec1_c2_marketplace_pipeline.md`, commit `20471138`),
+then required six follow-up fix rounds before the suite was genuinely green — every one independently found
+by the verification agent via a real `flutter analyze`/`flutter test` rerun (never by trusting the
+implementation agent's own sandbox-blocked self-report), ticketed precisely, dispatched, and re-verified.
+None of the fixes were self-implemented.
+
+- **fix1** (`5f4a558b`): dues-guard staleness in `LocalWorkflowEngineApi.availableTransitionsAsync` — it
+  didn't recompute `completedWorkflowIds` the way `applyTransition` already did, so a freshly-paid member
+  never saw `borrow` (this is the exact gap CALR.4h's manual walk flagged and left unresolved). Also fixed
+  the `v3_milestone_a7_binding_dispatch_test.dart` regression from widening `_enabledTabs`.
+- **fix2** (`96038a5b`): the real grid-overflow root cause — `RepeaterSurface._buildItem` never wrapped grid
+  items in `Expanded`, so cards got unbounded height regardless of the grid cell's real bound. fix1's own
+  aspect-ratio tuning attempt hadn't fixed this; the structural fix did.
+- **fix3** (`26bd76a6`): correctly fixed one stale test regression, but its "join-queue availability" fix
+  was actually wrong — it patched the test's wait behavior without confirming the button ever rendered.
+- **fix4** (`f6891a8b`): a real production bug — `EngineNativeMarketplaceSurface` passed an inline
+  `rolesForInstance` closure that got a new identity on every rebuild, so
+  `EngineNativeBindingDispatcher.didUpdateWidget`'s `identical()` check reloaded the entire grid from the
+  engine on every keystroke in search. Fixed by giving the callback a stable identity.
+- **fix5** (`5f99b3d1`): found and fixed fix3's actual gap — the pre-existing `v3_calr4g_marketplace_transition_action_test.dart`
+  helper tapped the center of a tile, which could land on an inner action button instead of the outer
+  detail-open `InkWell`. A genuine test hit-testing bug, not a production defect; confirmed by the
+  verification agent independently tracing `availableTransitionsAsync`'s real output for Catan before
+  accepting the diagnosis.
+- **fix6** (`f55f111a`): the category-filter test wait was vacuous (it waited for a listing that would have
+  been visible with or without the filter applied) and the chip tap needed `ensureVisible` first. This
+  dispatch was interrupted before its own commit step (process boundary); the verification agent found the
+  staged, already-correct diff, independently reran the full suite (169/170, only the known a11 flake), and
+  committed it.
+
+Final state: `loom_communities_app_shell` 169/170 green (only the pre-existing, separately-tracked
+`v3_milestone_a11_event_rsvp_archetype_test.dart` date-picker flake fails), `loom_workflow_engine` 195/195
+green, `flutter analyze` clean on both packages. `b34_marketplace_browse_test.dart` (the legacy-fixture
+regression guard, different package) was never touched.
 
 **Original C.1-C.8 text (2026-07, pre-CALR.4g), kept for reference — largely superseded by the
 re-sequenced table above, which reflects what CALR.4g already proved real:**
