@@ -433,7 +433,13 @@ void main() {
         await _pumpUntil(tester, save);
         await tester.ensureVisible(save);
         await tester.tap(save);
-        await _pumpUntil(tester, find.text(revisedTitle));
+        final revisedTitleFact = find.descendant(
+          of: find.byKey(
+            ValueKey('generic-instance-field-$changesId-gameName'),
+          ),
+          matching: find.text(revisedTitle),
+        );
+        await _pumpUntil(tester, revisedTitleFact);
 
         final revisedSubmit = _action(changesId, 'submit');
         await _pumpUntil(tester, revisedSubmit);
