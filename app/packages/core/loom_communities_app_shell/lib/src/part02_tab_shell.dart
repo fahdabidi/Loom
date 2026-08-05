@@ -3750,6 +3750,14 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_hasEngineNativeBinding(experience, 'marketplace')) {
+          return EngineNativeMarketplaceSurface(
+            experience: experience,
+            persona: persona,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         final listings = experience.marketplaceListings;
         if (listings != null && listings.isNotEmpty) {
           return _MarketplaceBrowseSurface(

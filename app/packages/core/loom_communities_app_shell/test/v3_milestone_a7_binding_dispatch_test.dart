@@ -267,11 +267,7 @@ void main() {
   testWidgets(
     'every disabled tab publishes its keyed empty builder without querying',
     (tester) async {
-      for (final tab in [
-        'marketplace',
-        'admin',
-        'messages',
-      ]) {
+      for (final tab in ['admin', 'messages']) {
         final engine = _CountingEngine(
           ({required tabId, required personaId, required limit, cursor}) =>
               Future.value(const InstancePage(items: [])),

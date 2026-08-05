@@ -74,7 +74,12 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
 
 class _EngineNativeBindingDispatcherState
     extends State<EngineNativeBindingDispatcher> {
-  static const _enabledTabs = <String>{'calendar', 'giving', 'home'};
+  static const _enabledTabs = <String>{
+    'calendar',
+    'giving',
+    'home',
+    'marketplace',
+  };
   int _generation = 0;
   List<EngineNativeResolvedBinding>? _bindings;
   Object? _error;
@@ -383,6 +388,18 @@ class EngineNativeArchetypeCard extends StatelessWidget {
                   instance: resolved.instance,
                   binding: resolved.binding,
                 ),
+        );
+      case 'equipment-loan':
+        return EquipmentLoanArchetypeCard(
+          key: contentKey,
+          resolved: resolved,
+          engine: engine,
+          personaId: personaId,
+          accent: accent,
+          modernTheme: modernTheme,
+          displayContext: displayContext,
+          visibleFieldKeys: visibleFieldKeys,
+          onInstanceChanged: onInstanceChanged,
         );
       default:
         return GenericWorkflowInstanceCard(
