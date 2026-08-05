@@ -129,6 +129,17 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
+Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    if (finder.evaluate().isEmpty) return;
+  }
+  throw TestFailure('Timed out waiting for $finder to disappear');
+}
+
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
   final personaPicker = find.byKey(const ValueKey('persona-picker-button'));
   await _pumpUntil(tester, personaPicker);
@@ -232,13 +243,14 @@ void main() {
 
         await tester.enterText(search, '');
         await _pumpUntil(tester, catanListing);
-        await tester.tap(
-          find.byKey(const ValueKey('marketplace-filter-Strategy Games')),
+        final strategy = find.byKey(
+          const ValueKey('marketplace-filter-Strategy Games'),
         );
-        await _pumpUntil(
-          tester,
-          find.byKey(const ValueKey('marketplace-listing-listing-root')),
-        );
+        await tester.ensureVisible(strategy);
+        await tester.tap(strategy);
+        await _pumpUntilGone(tester, catanListing);
+        await _pumpUntilGone(tester, wingspanListing);
+        expect(tester.widget<ChoiceChip>(strategy).selected, isTrue);
         expect(
           find.byKey(const ValueKey('marketplace-listing-listing-root')),
           findsOneWidget,
@@ -252,10 +264,10 @@ void main() {
           findsNothing,
         );
 
-        await tester.tap(
-          find.byKey(const ValueKey('marketplace-filter-Strategy Games')),
-        );
+        await tester.ensureVisible(strategy);
+        await tester.tap(strategy);
         await _pumpUntil(tester, catanListing);
+        expect(tester.widget<ChoiceChip>(strategy).selected, isFalse);
         final root = find.byKey(
           const ValueKey('marketplace-listing-listing-root'),
         );
