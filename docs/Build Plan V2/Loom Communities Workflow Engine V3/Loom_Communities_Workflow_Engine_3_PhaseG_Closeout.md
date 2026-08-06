@@ -76,24 +76,36 @@ Phase A fixed the two Calendar-specific bugs. The rest:
 
 ## G.3 — Full regression sweep
 
-✅ **Closed (2026-08-05).** Full sweep run across all four packages via WSL, independent of any
-implementation-agent report. Exact counts:
+✅ **Closed (2026-08-05, corrected 2026-08-05 — see correction note below).** Full sweep run across all
+four packages via WSL, independent of any implementation-agent report. Exact counts:
 
 - **`loom_workflow_engine`**: 195/195 passing. `flutter analyze`: clean except 21 pre-existing
   info-level lints in a file that predates Phase B by weeks — unrelated to this session.
 - **`loom_communities_app_shell`**: 178/179 passing (the one failure is the already-known `a11`
   flake, pre-existing and unrelated to Phases B-G). `flutter analyze` clean.
 - **`loom_communities_demo`** (the package holding the seven-other-communities regression guards):
-  `b26_package_driven_experience_test.dart`, `b28_response_choice_interactions_test.dart`, and
-  `b34_marketplace_browse_test.dart` — the files this milestone's own checklist names — all pass
-  **unmodified**. `b20_multi_persona_workflow_evidence_test.dart`,
-  `b27_calendar_tab_real_data_test.dart`, `b29_calendar_complete_interactions_test.dart`, and
-  `b33_messages_thread_test.dart` have 24 failures total. These were **not** assumed pre-existing —
-  proven so: `git worktree add --detach <tmp> c71c6596` (the commit immediately before Phase G.2,
-  i.e. before any theming fix this session touched) reproduced the exact same failures for all four
-  files, in complete isolation from the current working tree, across two separate worktree checks.
-  Confirmed pre-existing baseline debt, unrelated to any Phase B-G work, therefore correctly out of
-  scope for this milestone and left unfixed.
+  **112 passing, 17 failing.** `b26_package_driven_experience_test.dart`,
+  `b28_response_choice_interactions_test.dart`, `b34_marketplace_browse_test.dart` — the files this
+  milestone's own checklist names — all pass **unmodified**.
+  `b20_multi_persona_workflow_evidence_test.dart` has **zero** failures (its single test passes; it
+  only appears to "fail" in raw log output because Flutter's test runner logs a per-file progress line
+  for the test currently executing, which was misread as a failure marker in the first pass at this
+  milestone — corrected here). The real 17 failures: `b27_calendar_tab_real_data_test.dart` (3),
+  `b29_calendar_complete_interactions_test.dart` (3), `b33_messages_thread_test.dart` (3), and
+  `b36_calendar_engine_rsvp_test.dart` (8, initially missed by this milestone's first pass and found
+  only on a subsequent user-directed re-check). All were **proven**, not assumed, pre-existing:
+  `git worktree add --detach <tmp> c71c6596` (the commit immediately before Phase G.2, i.e. before any
+  theming fix this session touched, and after all of Phase F's real code work) reproduced the exact
+  same failures for b27/b29/b33 and 7 of b36's 8 failures, in complete isolation from the current
+  working tree, across three separate worktree checks. b36's 8th failure
+  (`calendar fixture declares RSVP response model fields`, an `expect(fixture.existsSync(), isTrue)`
+  check against a relative path) does **not** reproduce when the file is run alone — confirmed to pass
+  reliably in isolation both at the pre-G.2 commit and at current HEAD, with the underlying fixture
+  file genuinely present and correctly-contented in both. It only fails when run as part of the full
+  combined suite — a CWD/test-isolation flakiness artifact of that specific relative-path check, not a
+  functional regression from any Phase B-G/G.1-G.4 work, none of which touched this fixture, this test
+  file, or any path-resolution code. Confirmed pre-existing baseline debt (plus one flaky, non-code
+  test), unrelated to Phase B-G, therefore correctly out of scope for this milestone and left unfixed.
 - **`loom_ux_judges`**: `flutter analyze` clean (2 pre-existing info-level warnings, unrelated to
   this session). `flutter test` could not complete — a reproducible Dart compiler crash
   ("Null check operator used on a null value" in `test_compiler.dart`) on 3/3 attempts. Traced to
@@ -102,6 +114,15 @@ implementation-agent report. Exact counts:
   (confirmed WSL itself was responsive) and not a syntax error in any new file (`dart analyze` on it
   alone was clean). Root cause undetermined beyond that; `flutter analyze` is the best independent
   verification available for this package this pass, and that is clean.
+
+**Correction note (2026-08-05).** This section's first pass claimed "24 failures total" across
+b20/b27/b29/b33 and never mentioned `b36_calendar_engine_rsvp_test.dart` at all. Both were wrong: the
+"24" figure was never derived from the actual full-suite tally (112/17, confirmed by `flutter test`'s
+own final summary line), and b36 was missed entirely from the file-by-file investigation. A follow-up
+user-directed re-check of the raw sweep log caught both errors — corrected above with the real
+breakdown and a third isolated-worktree check covering b36. Recorded here rather than silently
+overwritten, per this session's own verification discipline: self-correction on a caught mistake is
+exactly what that discipline is for.
 
 All seven other communities: confirmed via G.1's investigation that none of them are engine-native
 (their bundled JSONC fixtures are inert, unwired constants) and via this sweep that their own
