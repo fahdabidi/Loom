@@ -1099,7 +1099,9 @@ class _NotificationInboxTabSurfaceState
       final notifications = await _store.notificationsFor(
         (widget.persona.accountId ?? widget.persona.personaId),
       );
-      final unreadCount = await _store.unreadCount();
+      final unreadCount = await _store.unreadCount(
+        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      );
       if (!mounted) return;
       setState(() {
         _visibleCount = notifications.length;
@@ -1397,13 +1399,14 @@ class _NotificationInboxEngineStore {
         .toList(growable: false);
   }
 
-  Future<int> unreadCount() async {
+  Future<int> unreadCount({required String personaId}) async {
     await ensureReady();
     final count = await _engine.aggregate(
       workflowType: workflowType,
       column: 'notificationId',
       op: 'count',
       filter: const {'isUnread': true, 'archived': false},
+      personaId: personaId,
     );
     return (count as num).toInt();
   }

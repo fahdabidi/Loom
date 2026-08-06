@@ -63,6 +63,19 @@ class _ResolvedTransition {
   });
 }
 
+/// A hydrated query row together with the definition used to authorize it.
+class _QueryCandidate {
+  final WorkflowInstanceRow row;
+  final WorkflowInstance instance;
+  final LoomWorkflowStateMachine? machine;
+
+  const _QueryCandidate({
+    required this.row,
+    required this.instance,
+    required this.machine,
+  });
+}
+
 /// SQLite-backed implementation of [WorkflowEngineApi].
 ///
 /// Uses [WorkflowDatabase] (sqlite3, transitively available via drift) so
@@ -72,6 +85,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final String _communityId;
   final DateTime Function() _clock;
   final NotificationDeliveryService? _notificationDeliveryService;
+  final ActiveMembershipLookup? _activeMembershipLookup;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -92,10 +106,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String communityId,
     DateTime Function()? clock,
     NotificationDeliveryService? notificationDeliveryService,
+    ActiveMembershipLookup? activeMembershipLookup,
   }) : _db = db,
        _communityId = communityId,
        _clock = clock ?? DateTime.now,
-       _notificationDeliveryService = notificationDeliveryService;
+       _notificationDeliveryService = notificationDeliveryService,
+       _activeMembershipLookup = activeMembershipLookup;
 
   // ── populate definitions (called before any API use) ──────────────────
 
@@ -146,57 +162,208 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       sortKey: sortKey,
     );
 
-    final hasMore = rows.length > limit;
-    final rawItems = rows
-        .take(limit)
-        .map((r) {
-          final data = jsonDecode(r.instanceData) as Map<String, dynamic>;
-          return WorkflowInstance(
-            instanceId: r.instanceId,
-            workflowType: r.workflowType,
-            currentState: r.currentState,
-            instanceData: data,
-            createdByPersonaId: r.createdByPersonaId,
-          );
-        })
-        .where((instance) {
-          return _matchesAudienceQuery(instance.instanceData, personaId, query);
-        })
-        .toList();
-    final items = await Future.wait(
-      rawItems.map((instance) async {
-        final machine = await _getDefinition(instance.workflowType);
-        final hydrated = machine != null
-            ? await _hydrateSourceFields(
-                instance.instanceData,
-                machine,
-                instance.instanceId,
-              )
-            : instance.instanceData;
-        return WorkflowInstance(
-          instanceId: instance.instanceId,
-          workflowType: instance.workflowType,
-          currentState: instance.currentState,
-          instanceData: _withComputedFields(
-            hydrated,
-            machine,
-            viewerId: personaId,
-          ),
-          createdByPersonaId: instance.createdByPersonaId,
-        );
-      }),
+    // Keep the legacy path byte-for-byte equivalent for communities whose
+    // definitions are all public or omit visibility. When a restricted
+    // definition is present in the over-fetched batch, switch to the
+    // filtered path so hidden rows cannot drive the returned cursor.
+    final hasActiveVisibility = await _containsActiveReadVisibility(
+      rows.take(limit + 1),
     );
+    if (!hasActiveVisibility) {
+      return _legacyQueryPage(
+        rows: rows,
+        sortKey: sortKey,
+        personaId: personaId,
+        query: query,
+        limit: limit,
+      );
+    }
 
+    return _filteredQueryPage(
+      initialRows: rows,
+      sortKey: sortKey,
+      personaId: personaId,
+      query: query,
+      limit: limit,
+    );
+  }
+
+  Future<InstancePage> _legacyQueryPage({
+    required List<WorkflowInstanceRow> rows,
+    required String sortKey,
+    required String personaId,
+    required SurfaceQuery query,
+    required int limit,
+  }) async {
+    final rawRows = rows
+        .take(limit)
+        .where(
+          (row) => _matchesAudienceQuery(
+            _rawInstance(row).instanceData,
+            personaId,
+            query,
+          ),
+        )
+        .toList();
+    final candidates = await Future.wait(
+      rawRows.map((row) => _hydrateQueryRow(row, personaId)),
+    );
+    final items = candidates.map((candidate) => candidate.instance).toList();
+
+    final hasMore = rows.length > limit;
     String? nextCursor;
     if (hasMore && items.isNotEmpty) {
       final lastRow = rows[limit - 1];
-      final lastData = jsonDecode(lastRow.instanceData) as Map<String, dynamic>;
-      final cursorValue = '${lastData[sortKey] ?? ''}';
-      // Encode sortKey into cursor so the DB layer can detect mismatches.
-      nextCursor = '$sortKey\x1f$cursorValue\x1f${lastRow.instanceId}';
+      nextCursor = _cursorForRow(sortKey, lastRow);
     }
 
     return InstancePage(items: items, nextCursor: nextCursor, hasMore: hasMore);
+  }
+
+  Future<InstancePage> _filteredQueryPage({
+    required List<WorkflowInstanceRow> initialRows,
+    required String sortKey,
+    required String personaId,
+    required SurfaceQuery query,
+    required int limit,
+  }) async {
+    final visibleCandidates = <_QueryCandidate>[];
+    var rows = initialRows;
+    WorkflowInstanceRow? lastScannedRow;
+    Future<bool>? activeMembership;
+    Future<bool> lookupActiveMembership() =>
+        activeMembership ??= _isActiveMember(personaId);
+
+    while (rows.isNotEmpty) {
+      var reachedPageBoundary = false;
+      for (final row in rows) {
+        lastScannedRow = row;
+        final rawInstance = _rawInstance(row);
+        if (!_matchesAudienceQuery(
+          rawInstance.instanceData,
+          personaId,
+          query,
+        )) {
+          continue;
+        }
+        final candidate = await _hydrateQueryRow(row, personaId);
+        if (await _isVisibleToPersona(
+          candidate.instance,
+          candidate.machine,
+          personaId,
+          lookupActiveMembership,
+        )) {
+          visibleCandidates.add(candidate);
+          if (visibleCandidates.length > limit) {
+            reachedPageBoundary = true;
+            break;
+          }
+        }
+      }
+
+      if (reachedPageBoundary) break;
+      if (rows.length < limit + 1 || lastScannedRow == null) break;
+
+      rows = await _db.queryInstancesKeyset(
+        communityId: _communityId,
+        cursor: _cursorForRow(sortKey, lastScannedRow),
+        limit: limit,
+        sortKey: sortKey,
+      );
+    }
+
+    final hasMore = visibleCandidates.length > limit;
+    final items = visibleCandidates
+        .take(limit)
+        .map((candidate) => candidate.instance)
+        .toList();
+    String? nextCursor;
+    if (hasMore && items.isNotEmpty) {
+      nextCursor = _cursorForRow(sortKey, visibleCandidates[limit - 1].row);
+    }
+
+    return InstancePage(items: items, nextCursor: nextCursor, hasMore: hasMore);
+  }
+
+  WorkflowInstance _rawInstance(WorkflowInstanceRow row) => WorkflowInstance(
+    instanceId: row.instanceId,
+    workflowType: row.workflowType,
+    currentState: row.currentState,
+    instanceData: jsonDecode(row.instanceData) as Map<String, dynamic>,
+    createdByPersonaId: row.createdByPersonaId,
+  );
+
+  /// Hydrates source fields and computes formulas before any read guard runs.
+  Future<_QueryCandidate> _hydrateQueryRow(
+    WorkflowInstanceRow row,
+    String personaId,
+  ) async {
+    final raw = _rawInstance(row);
+    final machine = await _getDefinition(raw.workflowType);
+    final hydrated = machine != null
+        ? await _hydrateSourceFields(raw.instanceData, machine, raw.instanceId)
+        : raw.instanceData;
+    final instance = WorkflowInstance(
+      instanceId: raw.instanceId,
+      workflowType: raw.workflowType,
+      currentState: raw.currentState,
+      instanceData: _withComputedFields(hydrated, machine, viewerId: personaId),
+      createdByPersonaId: raw.createdByPersonaId,
+    );
+    return _QueryCandidate(row: row, instance: instance, machine: machine);
+  }
+
+  Future<bool> _containsActiveReadVisibility(
+    Iterable<WorkflowInstanceRow> rows,
+  ) async {
+    for (final row in rows) {
+      final machine = await _getDefinition(row.workflowType);
+      if (machine != null &&
+          machine.visibility.defaultValue != WorkflowVisibilityDefault.public) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> _isActiveMember(String personaId) async {
+    final lookup = _activeMembershipLookup;
+    if (lookup == null) return false;
+    return lookup(personaId);
+  }
+
+  Future<bool> _isVisibleToPersona(
+    WorkflowInstance instance,
+    LoomWorkflowStateMachine? machine,
+    String personaId,
+    Future<bool> Function() activeMembership,
+  ) async {
+    if (machine == null) return true;
+    switch (machine.visibility.defaultValue) {
+      case WorkflowVisibilityDefault.public:
+        return true;
+      case WorkflowVisibilityDefault.membersOnly:
+        return activeMembership();
+      case WorkflowVisibilityDefault.guarded:
+        if (instance.createdByPersonaId == personaId) return true;
+        final stateGuard = machine.states[instance.currentState]?.readGuard;
+        final readGuard = stateGuard ?? machine.visibility.readGuard;
+        if (readGuard == null) return false;
+        return evaluateGuard(
+          readGuard,
+          personaId,
+          instance.instanceData,
+          personaTypeId: _personaTypeById[personaId],
+          clock: _clock,
+        );
+    }
+  }
+
+  String _cursorForRow(String sortKey, WorkflowInstanceRow row) {
+    final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+    final cursorValue = '${data[sortKey] ?? ''}';
+    // Encode sortKey into cursor so the DB layer can detect mismatches.
+    return '$sortKey\x1f$cursorValue\x1f${row.instanceId}';
   }
 
   bool _matchesAudienceQuery(
@@ -237,6 +404,47 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }).toList();
   }
 
+  /// Reads and filters rows for a viewer-scoped aggregate. The unscoped
+  /// aggregate path above remains the system-truth path used by guard math.
+  Future<List<Map<String, dynamic>>> _readVisibleInstancesOfType(
+    String workflowType,
+    String personaId,
+  ) async {
+    final rows = await _db.queryInstancesKeyset(
+      communityId: _communityId,
+      limit: 1 << 30,
+      sortKey: 'instanceId',
+    );
+    Future<bool>? activeMembership;
+    Future<bool> lookupActiveMembership() =>
+        activeMembership ??= _isActiveMember(personaId);
+    final visible = <Map<String, dynamic>>[];
+
+    for (final row in rows.where((row) => row.workflowType == workflowType)) {
+      final raw = _rawInstance(row).instanceData;
+      if (raw.containsKey(r'$state') || raw.containsKey(r'$id')) {
+        throw StateError(
+          r'instanceData must not define reserved keys "$state" or "$id"',
+        );
+      }
+      final candidate = await _hydrateQueryRow(row, personaId);
+      if (!await _isVisibleToPersona(
+        candidate.instance,
+        candidate.machine,
+        personaId,
+        lookupActiveMembership,
+      )) {
+        continue;
+      }
+      visible.add({
+        ...candidate.instance.instanceData,
+        r'$state': row.currentState,
+        r'$id': row.instanceId,
+      });
+    }
+    return visible;
+  }
+
   @override
   Future<dynamic> aggregate({
     required String workflowType,
@@ -244,12 +452,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
+    String? personaId,
   }) async {
     const supported = {'count', 'sum', 'avg', 'min', 'max', 'countDistinct'};
     if (!supported.contains(op)) {
       throw ArgumentError.value(op, 'op', 'Unsupported aggregate operation');
     }
-    final allRows = await _readAllInstancesOfType(workflowType);
+    final allRows = personaId == null
+        ? await _readAllInstancesOfType(workflowType)
+        : await _readVisibleInstancesOfType(workflowType, personaId);
     final data = allRows
         .where(
           (row) =>

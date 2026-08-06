@@ -1,4 +1,14 @@
+import 'dart:async';
+
 import '../models/workflow_models.dart';
+
+/// Resolves whether an individual account has active membership in this
+/// engine's community.
+///
+/// The workflow engine deliberately does not depend on the app-shell auth
+/// implementation. Callers that use `membersOnly` visibility can inject the
+/// lookup from their account store instead.
+typedef ActiveMembershipLookup = FutureOr<bool> Function(String personaId);
 
 /// The result of an `applyTransition` call.
 class WorkflowTransitionResult {
@@ -143,12 +153,16 @@ abstract class WorkflowEngineApi {
 
   /// Reads a scalar or grouped aggregate from persisted workflow instances.
   /// With [groupBy], returns rows containing [groupBy] and [op].
+  /// When [personaId] is supplied, workflow visibility and read guards are
+  /// applied before aggregation. Omitting it preserves the unscoped
+  /// system-truth read used by internal guard math.
   Future<dynamic> aggregate({
     required String workflowType,
     required String column,
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
+    String? personaId,
   });
 
   Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf});

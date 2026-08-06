@@ -25,6 +25,7 @@ class NotificationInboxController {
       column: 'recipientPersonaId',
       op: 'count',
       filter: {'recipientPersonaId': personaId, r'$state': 'unread'},
+      personaId: personaId,
     );
     return (count as num).toInt();
   }

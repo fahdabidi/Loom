@@ -326,12 +326,14 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
+    String? personaId,
   }) => delegate.aggregate(
     workflowType: workflowType,
     column: column,
     op: op,
     filter: filter,
     groupBy: groupBy,
+    personaId: personaId,
   );
   @override
   Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf}) =>
