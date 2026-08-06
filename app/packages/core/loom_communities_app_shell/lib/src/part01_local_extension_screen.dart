@@ -188,6 +188,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experience: experience,
       );
     },
+    experienceResolver: (communityExtensionId) => experienceForExtensionId(
+      communityExtensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    ),
   );
 
   /// The individual account id when signed in, otherwise falls back to
