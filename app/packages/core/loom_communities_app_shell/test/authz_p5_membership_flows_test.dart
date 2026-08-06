@@ -321,7 +321,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('issued-invite-code')), findsOneWidget);
-      expect(find.textContaining('LOOM-'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('issued-invite-code')),
+          matching: find.textContaining('LOOM-'),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }
