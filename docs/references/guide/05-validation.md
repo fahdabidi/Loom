@@ -104,6 +104,18 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 
+### Expected affordances (added 2026-08-04)
+
+These three are heuristic, warning-only checks — never hard failures — but each has caught a real,
+otherwise-invisible bug in practice (including in this repo's own legacy example fixtures), so treat them
+seriously rather than dismissing them as noise.
+
+| Code | Meaning | Fix |
+|---|---|---|
+| `editable_fields_without_edit_guard` (warning) | A state declares `editableFields` but no `editGuard`. `editGuard`'s absent-default is the *opposite* of every other guard: with none, the editor never renders for anyone, for any persona — the field list is silently inert. | Add `"editGuard": {"allowedPersonaIds": [...]}` to the state naming who may edit, or remove `editableFields` if editing was never actually meant to be exposed. |
+| `no_creation_path_for_editable_type` (warning) | A workflow type has `formEntry` fields but nothing anywhere in the package (`renderBindings[].actions[].kind: "create"`, `createInstance`, or `generateRecurringInstances`) ever creates an instance of it. Every instance that will ever exist is whatever was seeded (AP-13). | Add a `kind: "create"` action to one of the type's `renderBindings` (see `07-actions-and-fabs.md`), or have another type's effect create it, or explicitly note in your gaps section that instances are deliberately provisioned only outside this package. |
+| `no_destructive_exit_for_managed_type` (warning) | A primary-bound type with an `editGuard` declared somewhere (i.e. clearly meant to be actively managed) has zero `tone: "destructive"` transition anywhere. | Add a cancel/withdraw/delete-shaped transition with `"tone": "destructive"`, or confirm every instance of this type is genuinely meant to be permanent once created. |
+
 ---
 
 ## What the validator does NOT catch

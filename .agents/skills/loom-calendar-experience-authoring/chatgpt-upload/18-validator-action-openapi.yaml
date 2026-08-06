@@ -1,39 +1,40 @@
 # OpenAPI schema for a ChatGPT Custom GPT Action, pointed at the local Loom
 # community package validator (app/packages/tooling/loom_ux_judges), exposed
-# publicly through a Cloudflare quick tunnel.
+# publicly through a NAMED Cloudflare tunnel (cloudflared tunnel "loom-validator",
+# routed to loom-validator.ccselectronics.ai via `cloudflared tunnel route dns`).
 #
 # This goes in the Custom GPT builder's "Actions" section (Create new action
 # -> paste this schema), NOT the "Knowledge" file upload section where the
 # other numbered files in this folder go.
 #
-# IMPORTANT: the `servers.url` below is a Cloudflare quick tunnel
-# (trycloudflare.com) with NO uptime guarantee -- it is torn down whenever
-# the local `cloudflared` process stops, and a fresh run mints a brand new,
-# different URL. Whoever configures the Action needs the CURRENT tunnel URL
-# printed by `cloudflared tunnel --url http://localhost:8787` at the time
-# they set this up, and needs to update it again if the tunnel is restarted.
-# There is no notification when the old tunnel goes away -- calls will just
-# start failing.
+# The hostname below is stable across restarts (unlike the earlier quick-tunnel
+# setup, which minted a brand new random *.trycloudflare.com URL every time the
+# tunnel process restarted -- that caused real, hard-to-diagnose failures where
+# the Action silently called a dead URL with no error). It only changes if the
+# named tunnel is deleted/recreated or DNS is repointed. It still requires the
+# local machine to be on and `cloudflared tunnel run loom-validator` (and the
+# validator server itself) to be running -- there's no notification if either
+# process dies, so a liveness check (GET /health) before relying on it is still
+# worthwhile.
 
 openapi: 3.1.0
 info:
   title: Loom Community Package Validator
   description: >-
-    Validates a Loom Communities extension package (the JSON produced from
-    the authoring instructions and reference material in this same upload)
-    against the real engine-native grammar validator -- the same tool the
-    Loom repo's CLI and test suite use. Always call this before presenting
-    a finished community package as done; report every finding (error or
-    warning) back to the user, and fix errors before calling it valid.
+    Validates and packages a Loom Communities extension (the JSON produced
+    from this upload's authoring instructions) against the real
+    engine-native grammar validator -- the same tool the Loom repo's CLI
+    and tests use. Always call before presenting a package as done.
   version: 1.0.0
 servers:
-  - url: https://athletic-galleries-extract-lie.trycloudflare.com
-    description: Local dev machine, via a Cloudflare quick tunnel (ephemeral)
+  - url: https://loom-validator.ccselectronics.ai
+    description: Local dev machine, via a named Cloudflare tunnel (stable hostname)
 paths:
   /health:
     get:
       operationId: checkValidatorHealth
       summary: Liveness check for the validator service.
+      x-openai-isConsequential: false
       responses:
         '200':
           description: The service is up.
@@ -51,6 +52,7 @@ paths:
       summary: >-
         Validate a Loom community package JSON against the real
         engine-native grammar validator and return every finding.
+      x-openai-isConsequential: false
       requestBody:
         required: true
         content:
@@ -58,15 +60,17 @@ paths:
             schema:
               type: object
               description: >-
-                The full community package: schemaVersion, packageId,
-                communityId, communityHandle, displayName, extensionId,
-                seedDataFiles, and an `experience` object containing
-                experienceSchemaVersion, workflowGrammarVersion, personas,
-                workflowDefinitions, and workflowInstances. See this
-                upload's authoring-procedure and workflow-grammar files for
-                the full shape. JSONC (// and /* */ comments) is also
-                accepted.
-              additionalProperties: true
+                Wrap the ENTIRE community package as one JSON-encoded STRING
+                in packageJson. Do not send the package's own fields directly
+                at the top level. See 17-worked-example-calendar.jsonc and
+                07-workflow-grammar.md for the full shape.
+              properties:
+                packageJson:
+                  type: string
+                  description: >-
+                    The complete community package, JSON-encoded as a string.
+              required:
+                - packageJson
       responses:
         '200':
           description: >-
@@ -114,3 +118,113 @@ paths:
                     type: string
                   message:
                     type: string
+  /package.json:
+    post:
+      operationId: buildExtensionPackage
+      summary: >-
+        Validate a package, then return the extension manifest + init
+        package pair the real Demo App installer requires, inline as JSON.
+      description: >-
+        Builds the installable artifact from a Loom community package: a
+        generated extension manifest plus the initialization package,
+        returned as JSON (not a zip -- binary responses from this API have
+        failed reliably). Call only after validateCommunityPackage reports
+        errorCount: 0 for this exact package.
+      x-openai-isConsequential: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >-
+                Same request shape as /validate: wrap the ENTIRE community
+                package as a single JSON-encoded STRING in packageJson. Do
+                not send the package's fields directly at the top level.
+              properties:
+                packageJson:
+                  type: string
+                  description: >-
+                    The complete community package, JSON-encoded as a string.
+              required:
+                - packageJson
+      responses:
+        '200':
+          description: >-
+            The manifest + init pair as JSON, PLUS downloadUrl: a direct
+            link to a real zip of both files. Present downloadUrl as a
+            plain clickable link -- the primary deliverable. Do not claim
+            anything is already installed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  extensionId:
+                    type: string
+                  downloadUrl:
+                    type: string
+                    description: >-
+                      Direct link to a real zip of both files below,
+                      correctly named inside. Present as a plain markdown
+                      link -- the user's browser fetches it directly,
+                      bypassing this Action's transport (which cannot
+                      return zip bytes reliably). Not durable: if it goes
+                      stale, re-call buildExtensionPackage for a fresh one.
+                  downloadFilename:
+                    type: string
+                    description: >-
+                      The filename downloadUrl serves the zip as, e.g.
+                      "<handle>-loom-package.zip".
+                  extensionManifestFilename:
+                    type: string
+                    description: >-
+                      Save extensionManifest's content under exactly this
+                      filename, e.g. "<handle>.loom-extension.zip" (it is
+                      plain JSON text despite the .zip suffix -- this
+                      matches the real installer's own accepted format).
+                  extensionManifest:
+                    type: object
+                    description: The generated extension manifest, as a JSON object.
+                  initializationPackageFilename:
+                    type: string
+                    description: >-
+                      Save initializationPackage's content under exactly
+                      this filename, e.g. "<handle>.loom-init.zip".
+                  initializationPackage:
+                    type: object
+                    description: >-
+                      The initialization package (your input, re-serialized),
+                      as a JSON object.
+        '400':
+          description: The request body was not valid JSON/JSONC.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '422':
+          description: >-
+            Refused to package. "package_has_errors": still has validator
+            errors -- see "validation" for the report, fix, call /validate
+            again. "package_build_failed": validator-clean but missing
+            extensionId/communityId/displayName as top-level strings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [package_has_errors, package_build_failed]
+                  message:
+                    type: string
+                  validation:
+                    type: object
+                    description: >-
+                      Only present for "package_has_errors" -- the same
+                      shape /validate returns.

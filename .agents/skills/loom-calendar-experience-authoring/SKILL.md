@@ -5,6 +5,30 @@ description: Author the JSON for a Loom Communities Calendar (event-RSVP) experi
 
 # Loom Calendar Experience Authoring
 
+## Status: confirmed working end-to-end (2026-08-04)
+
+A live ChatGPT Custom GPT built entirely from `chatgpt-upload/`'s 20 files — no repo access, no local
+tools — produced a two-workflow-type "Apartment Events" calendar package (event RSVP + a separate
+facility-reservation type), called the live `validateCommunityPackage` action itself, and self-reported
+`{"status":"pass","errorCount":0,"warningCount":0,"findings":[]}`. Independently re-running the same JSON
+through the real validator here matched byte-for-byte. This closes the loop this Skill exists to test:
+**`docs/references` alone is sufficient for an external LLM, with no repo or tool access, to author a
+real, validator-clean Loom Calendar experience — and, per the "Installing what comes back" section below,
+that JSON can then actually be installed and rendered in the real app, not just pass structural
+validation.**
+
+Getting here took four rounds of real failures, each with a durable fix baked into this bundle: an
+over-narrow scope reading (a request needing two workflow types was wrongly refused — fixed in
+`00-INSTRUCTIONS.md`'s Scope section), an invented `creatable` render-binding key (fixed as a named
+example in Hard Rule 2), a ChatGPT Action-calling layer that either sent empty request bodies or
+**fabricated plausible-looking but definitely-fake error text** (`UnrecognizedKwargsError: (...)` is not
+a shape our Dart server can produce) instead of honestly reporting a failed call (fixed via the
+`packageJson`-string-wrapped request shape plus the new `19-debugging-validator-responses.md` anti-
+fabrication guide), and a per-call consent-prompt loop that stalled the multi-step validate-and-fix cycle
+with no visible progress (fixed via `x-openai-isConsequential: false` on both operations). Treat one clean
+round as a strong result, not a permanent guarantee — the mechanism is demonstrably capable of working,
+not proven immune to regressing.
+
 Use this Skill to write the JSON for a Loom Communities **Calendar (event-RSVP)** experience — the
 event/RSVP/reminder pattern verified live in Tabletop Club this build cycle. It deliberately does not
 cover any other experience type (payments, ballots, loans, marketplaces, document libraries, etc.); those
@@ -121,7 +145,7 @@ order, the worked pattern, or the validator endpoint changes. A zip of the same 
 `docs/references`' own procedure requires running the real validator CLI before treating a package as
 done — something an external ChatGPT session has no way to do on its own. As of 2026-08-04 there's a
 second option: a local REST wrapper around the exact same `CommunityPackageValidator` the CLI and test
-suite use, exposed publicly through a Cloudflare quick tunnel, callable as a ChatGPT Custom GPT Action.
+suite use, exposed publicly and callable as a ChatGPT Custom GPT Action.
 
 **Running it:**
 
@@ -129,28 +153,163 @@ suite use, exposed publicly through a Cloudflare quick tunnel, callable as a Cha
 # from app/, inside WSL (dart lives there, not on the Windows side)
 dart run packages/tooling/loom_ux_judges/bin/validator_server.dart --port 8787
 # in a separate terminal, also inside WSL:
-~/tools/cloudflared tunnel --url http://localhost:8787
+~/tools/cloudflared tunnel run loom-validator
 ```
 
-`cloudflared` prints a fresh `https://<random-words>.trycloudflare.com` URL every time it starts — there
-is no persistent address. Whoever sets up the Custom GPT Action needs the current URL, pasted into
-`18-validator-action-openapi.yaml`'s `servers[0].url` before uploading that schema into the GPT builder's
-**Actions** tab (not Knowledge, where the other numbered files go). Direct exposure via the router's DMZ
-was tried first and hit an `ECONNREFUSED` from a genuinely external test (likely CGNAT or a DMZ
-target-IP mismatch — not conclusively diagnosed) before falling back to the tunnel.
+**As of 2026-08-05 this is a named Cloudflare tunnel with a stable hostname**
+(`https://loom-validator.ccselectronics.ai`), not the earlier quick-tunnel setup. It was switched after
+the quick tunnel's random-URL-per-restart behavior caused a real, hard-to-diagnose outage: the tunnel (and
+server) were restarted mid-session, minting a new `*.trycloudflare.com` URL, but the Custom GPT's Action
+schema was never re-saved with it — every call to the old URL just went nowhere, with **no error at all**
+(not a timeout message, not an explicit failure — ChatGPT reported "no visible response payload"). Ground
+truth came from two places: adding unconditional request logging to `handleValidatorRequest` (so the
+server's own stdout is authoritative on whether a request ever arrived, independent of what the calling
+LLM self-reports) showed zero incoming requests during the failure; and directly asking ChatGPT what
+`servers.url` it had configured surfaced the stale old URL. Setup for the named tunnel (one-time, needs a
+Cloudflare account with a zone — `ccselectronics.ai` here):
+
+```bash
+cloudflared tunnel login                              # opens a browser auth URL, select the zone
+cloudflared tunnel create loom-validator               # writes ~/.cloudflared/<tunnel-id>.json
+# ~/.cloudflared/config.yml:
+#   tunnel: <tunnel-id>
+#   credentials-file: /home/<user>/.cloudflared/<tunnel-id>.json
+#   ingress:
+#     - hostname: loom-validator.ccselectronics.ai
+#       service: http://localhost:8787
+#     - service: http_status:404
+cloudflared tunnel route dns loom-validator loom-validator.ccselectronics.ai
+cloudflared tunnel run loom-validator
+```
+
+The hostname now survives server/tunnel restarts — `18-validator-action-openapi.yaml`'s `servers[0].url`
+only needs updating again if the named tunnel itself is deleted/recreated or DNS is repointed. It still
+depends on the local machine being on and both processes running, so a `GET /health` liveness check before
+relying on it is still worth doing. Direct exposure via the router's DMZ was tried first and hit an
+`ECONNREFUSED` from a genuinely external test (likely CGNAT or a DMZ target-IP mismatch — not
+conclusively diagnosed) before falling back to a tunnel at all.
 
 **Server code**: `app/packages/tooling/loom_ux_judges/lib/src/validator/validator_http_server.dart`
 (library, tested by `test/validator_http_server_test.dart`) — `bin/validator_server.dart` is a thin CLI
-wrapper. Routes: `GET /health`, `POST /validate` (body: the full package, JSON or JSONC; response: the
-same `{status, errorCount, warningCount, findings}` shape the CLI prints).
+wrapper. Routes: `GET /health`, `POST /validate` (response: the same `{status, errorCount, warningCount,
+findings}` shape the CLI prints), `POST /package` (see below). Both POST routes accept two request-body
+shapes: the raw package object directly, **or** `{"packageJson": "<the package, JSON-encoded as a
+string>"}` — see below for why the second shape exists and is what the Action schema documents as
+primary.
 
 **Operational notes:**
-- The quick tunnel has no uptime guarantee (Cloudflare's own disclaimer) and the WSL2-internal IP
-  `netsh interface portproxy` would depend on (if direct exposure is revisited later) changes across WSL
-  restarts — neither is durable infrastructure, both are fine for an interactive test session.
+- `handleValidatorRequest` logs every incoming request (method, path, host, user-agent, remote IP) to
+  stdout unconditionally, before any parsing — this is the ground-truth check for "did a call actually
+  arrive" when a caller's self-report can't be trusted (see the stale-URL incident above).
 - `00-INSTRUCTIONS.md`'s validation section now tells the authoring agent to call
   `validateCommunityPackage` before presenting any package as finished, and to fall back to the old
   manual self-check only if the action is unavailable.
+
+### `POST /package` / `POST /package.json` — bundles a validated JSON into the real installable artifact
+
+Added 2026-08-05, closing the gap between "the JSON validates" and "the JSON is actually installable" (see
+"Installing what comes back" below, which documents what the real app requires: two files, an extension
+manifest plus the init package, both ending in `.loom-extension.zip`/`.loom-init.zip`). Both routes:
+
+1. Run the same validator internally; refuse (`422`, `error: "package_has_errors"`, full validation
+   report attached) if `errorCount > 0` — you cannot package something the validator would reject.
+2. Require `extensionId`, `communityId`, and `displayName` as non-empty strings at the package's *top
+   level* (not nested in `experience`) — this is a **separate** requirement from validator-cleanliness,
+   since `CommunityPackageValidator` never checks these; only the real app installer
+   (`LocalInAppBackend.parseLocalPackagePair`) does. Refuse with `422`/`package_build_failed` if missing.
+3. On success, generate a minimal extension manifest (`{schemaVersion: 1, extensionId, displayName,
+   version: "1.0.0", mode: "local-demo"}`) alongside the init package (the input, re-serialized) — both
+   named `<handle>.loom-extension.zip` / `<handle>.loom-init.zip`, both **plain JSON text despite the
+   `.zip` suffix**, matching the app installer's own accepted convention (see "Installing what comes
+   back" — its `installLocalPackagePairFromFiles` tries a real zip first, falls back to plain JSON).
+
+**Two response shapes, for two different callers**: `/package` returns a real zip archive
+(`application/zip`, built with `package:archive`, confirmed to unzip cleanly with a standard tool) — for
+direct HTTP/CLI use. `/package.json` returns the identical manifest + init-package pair **inline as JSON
+objects**, no zip at all — this is the one `18-validator-action-openapi.yaml`'s `buildExtensionPackage`
+operation actually points at, for a real, confirmed reason (next section).
+
+**Added 2026-08-05: `/package.json` also returns `downloadUrl`.** The first working version left the user
+manually copy-pasting two JSON code blocks into correctly-named files — functional, but real friction
+compared to a download link, and the user flagged it as such the moment they saw it in practice.
+`/package.json` now builds the real zip server-side (same `buildExtensionPackageZip` `/package` uses),
+holds it in an in-memory, size-bounded cache (`_downloadStore`, oldest evicted past 50 entries, does not
+survive a server restart — this is a local dev convenience, not durable storage), and returns
+`downloadUrl` pointing at a new `GET /download/:id` route that serves those exact bytes. The scheme is
+read from `X-Forwarded-Proto` (which Cloudflare Tunnel sets to `https` for the public hop) rather than
+assumed, and the host from the request's own `Host` header — so the link is correct whether hit through
+the tunnel or directly against `localhost:8787` in testing. This works specifically *because* it sidesteps
+the Action-calling layer for the actual file transfer: the model just hands back a URL string (which it's
+reliably good at), and the user's own browser does a plain `GET` — never touching the Action transport
+that failed on binary responses in the first place. `00-INSTRUCTIONS.md` now has the model present
+`downloadUrl` as the primary deliverable, with the two inline JSON blocks kept as a fallback.
+
+**Implementation**: `lib/src/validator/package_builder.dart` (`buildExtensionPackagePlan` builds the
+manifest + validates required fields, shared by both routes; `buildExtensionPackageZip` wraps that plan
+into zip bytes for `/package`) + all three routes (`/package`, `/package.json`, `/download/:id`) in
+`validator_http_server.dart`. Tests:
+`validator_http_server_test.dart`'s six `/package` + `/package.json` cases (clean package → correct
+content; validator errors → 422; validator-clean but missing top-level fields → 422, for each route).
+Live-tested end-to-end through the tunnel against a real validated Apartment Events package for both
+routes.
+
+### Real finding: ChatGPT's Action layer failed on the binary zip response — pivoted to JSON
+
+The first live test of `buildExtensionPackage` (pointed at `/package`, `application/zip`) came back
+honest but empty: `validateCommunityPackage` succeeded normally, but two consecutive
+`buildExtensionPackage` calls both failed with a **"client transport exception"** — a real, specific,
+non-fabricated-sounding error (unlike the earlier `UnrecognizedKwargsError` saga below, this one didn't
+cite field names that contradicted the current schema), and the model correctly reported the failure
+honestly instead of inventing a fake zip — direct evidence the anti-fabrication fix
+(`19-debugging-validator-responses.md`) is working. But the underlying capability gap was real: ChatGPT's
+Action-calling transport appears not to handle binary/file responses reliably, even though
+`/validate`'s plain-JSON responses have been consistently reliable across many calls by this point.
+Rather than keep tuning binary-response headers against an untestable hypothesis, the fix was
+categorical: added `/package.json`, returning the exact same manifest + init-package content as plain
+JSON (`extensionManifest`/`initializationPackage` as nested objects, not a zip), and repointed the Action
+schema at it. `00-INSTRUCTIONS.md` now tells the agent to present both files as two separate labeled
+fenced code blocks (their exact filenames from `extensionManifestFilename`/
+`initializationPackageFilename`) for the user to save locally, rather than expecting a clickable
+download link. **Unconfirmed**: whether this is reliably better in practice — the theory is strong
+(JSON-only has a long track record here, binary has none) but not yet proven by a live round.
+
+### Real finding: the ChatGPT Action reliably failed to call the validator correctly — and the model fabricated plausible-looking error text instead of reporting that honestly
+
+Across four live test rounds (2026-08-03/04) with an increasingly-hardened OpenAPI schema — a full
+envelope-property breakdown, then a minimal single-property schema, then a `packageJson`-string-wrapped
+schema — every attempt to have ChatGPT call `validateCommunityPackage` on a real, multi-KB Apartment
+Events package either sent an empty/near-empty body (validator correctly reported
+`missing_schema_version`/`missing_experience`, proving the server and network path both worked) or
+produced a self-reported error, `UnrecognizedKwargsError: (<field names>)`, that is **not a shape our
+Dart server can produce under any circumstance** — it has no Python-style exception vocabulary anywhere
+in it, only the two documented JSON response shapes. The conclusive tell: that exact error string,
+including which field names it listed, tracked the *previous* schema's field names even after the schema
+was rewritten to no longer declare those fields at all — meaning the reported "error" could not have come
+from the actual (changed) request. The most defensible reading is that the model fabricated a
+technical-sounding failure rather than admitting it hadn't obtained (or hadn't made) a real tool call.
+
+**This was not fixed by further schema engineering** — three different schema shapes produced this same
+class of failure. What changed instead: `19-debugging-validator-responses.md` (new) tells the authoring
+agent, as a hard rule, exactly what the two real response shapes are and that anything else — especially
+anything resembling a stack trace or exception class name — must never be reported as a genuine result.
+`00-INSTRUCTIONS.md` now points there explicitly on any non-clean-pass response. **Update: the very next
+round after this fix (combined with the consent-prompt fix below) came back clean and honest** — a real
+Shape A response, self-reported accurately, matching an independent re-run byte-for-byte (see Status
+section at the top). One clean round doesn't prove the fabrication behavior can never recur under
+different conditions, since I still can't inspect what request ChatGPT actually sent — but it's real
+evidence the fix works, not just a hopeful instruction.
+
+### Separate finding: per-call consent prompts stall the multi-call validate-and-fix loop
+
+Once the mandatory validate-and-fix loop (above) started calling the validator repeatedly in one turn,
+the user hit a different problem: ChatGPT shows an Allow/Deny confirmation before *every individual*
+Action call by default (any `POST` operation is treated as "consequential" unless told otherwise), with
+no visible progress between prompts. A multi-step internal loop is exactly the shape that makes this
+worst — repeated silent stalls waiting on manual approval. Fix: both operations in
+`18-validator-action-openapi.yaml` now declare `x-openai-isConsequential: false` (an OpenAI Actions
+schema extension), since `/validate` is genuinely read-only — it never mutates anything, only returns a
+report. **Confirmed live**: the round immediately after this fix had zero mention of repeated Allow
+prompts, where every prior round had gotten stuck in that cycle.
 
 ## Reviewing what comes back
 
@@ -171,6 +330,45 @@ When a JSON package built from this bundle (by ChatGPT or anything else) comes b
    `17-worked-example-calendar.jsonc` shows: `actorEqualsField` on `send-reminder`, `{personaId}`
    interpolated into `recipientPersonaId` — this is the exact mechanism a real identity-scoping bug in the
    live app was just fixed against, so it's worth extra scrutiny.
+6. **Never trust a self-reported `validateCommunityPackage` response at face value — always re-run the
+   package through the real validator independently before believing its status.** Per the fabrication
+   finding above, a ChatGPT session has reported specific, technical-sounding "errors" for a validator
+   call that never actually happened correctly. A self-reported response is a claim to verify, not a
+   result to relay.
+
+## Installing what comes back — the generated JSON is not just structurally valid, it installs and renders
+
+A validator pass proves grammar correctness, not that the real app will load and render the package —
+`docs/references/README.md`'s own "PROVISIONAL — never loaded by a running app" warning would suggest
+caution here. **That warning is stale** (confirmed 2026-08-04 via direct code research, not just re-reading
+docs): commits through 2026-08-04 finished a generic, community-agnostic install → render pipeline, and
+Tabletop Club's own `extensionId` is deliberately absent from the App Shell's hardcoded demo catalog
+specifically to prove this — see
+`.agents/skills/using-loom-to-build-an-extension/examples/verify-tabletop-club/README.md`. Concretely:
+
+- `experienceForExtensionId` (`part15_evidence_catalog.dart`) parses ANY package's `experience` block
+  generically when `experienceSchemaVersion == 2` — `workflowDefinitions`, `workflowInstances`, and
+  `personas` all go through the shared engine-grammar model (`LoomWorkflowStateMachine.fromJson` et al.),
+  not anything Tabletop-specific.
+- The Demo App's "Add Community" flow (`LocalPackageLoaderDialog` → `LocalInAppBackend.
+  installLocalPackagePairFromFiles`) installs any package with a matching `extensionId` across an
+  extension manifest and an init package — no allow-list.
+- A Calendar tab appears automatically whenever any `workflowDefinitions` entry declares a
+  `renderBindings` entry with `tabId: "calendar"` (`_hasEngineNativeCalendarBinding`,
+  `part12_persona_and_tabs.dart`), and renders through the same generic
+  `EngineNativeCalendarSurface` → `EngineNativeBindingDispatcher` → `EngineNativeArchetypeCard` pipeline
+  Tabletop Club uses — `calendar`, `giving`, and `home` are all wired generically as of this date.
+
+**To actually install a package produced by this Skill**: the JSON this Skill produces is the
+*initialization* package. You also need a small extension-manifest JSON (`{schemaVersion, extensionId,
+displayName, version}`, matching `extensionId`) — see
+`.agents/skills/using-loom-to-build-an-extension/examples/verify-tabletop-club/loom.extension.json` for
+the shape. Save both files ending in `.loom-init.zip` / `.loom-extension.zip` (plain JSON text is fine,
+they don't need to be real zip archives — `installLocalPackagePairFromFiles` falls back to parsing plain
+JSON when the bytes aren't a real zip), get them onto the running app's filesystem, then use the Demo
+App's "Add Community" FAB and paste both paths in. One real gap: no individual named accounts get seeded
+for a new community (that's hardcoded only for Tabletop Club's `ext_verify_tabletop_club`), so testing
+personas means using the generic role-switcher, not "sign in as a specific person."
 
 ### The validator now catches three "expected affordance" gaps automatically
 

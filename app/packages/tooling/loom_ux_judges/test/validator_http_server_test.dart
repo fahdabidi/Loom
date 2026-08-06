@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:loom_ux_judges/src/validator/validator_http_server.dart';
 import 'package:test/test.dart';
 
@@ -56,6 +58,25 @@ void main() {
       expect(json['warningCount'], 0);
       expect(json['findings'], isEmpty);
     });
+
+    test(
+      'POST /validate also accepts the package wrapped as '
+      'packageJson: "<string>"',
+      () async {
+        final wrapped = jsonEncode({
+          'packageJson': jsonEncode(_hikeClubPackage),
+        });
+
+        final response = await post('/validate', wrapped);
+
+        expect(response.statusCode, HttpStatus.ok);
+        final json = await readJson(response);
+        expect(json['status'], 'pass');
+        expect(json['errorCount'], 0);
+        expect(json['warningCount'], 0);
+        expect(json['findings'], isEmpty);
+      },
+    );
 
     test(
       'POST /validate surfaces the expected-affordance warnings for a type '
@@ -121,6 +142,210 @@ void main() {
         isTrue,
       );
     });
+
+    test(
+      'POST /package on a clean package returns a downloadable zip '
+      'containing the extension manifest + init package pair',
+      () async {
+        final request = await client.postUrl(base.replace(path: '/package'));
+        request.headers.contentType = ContentType.json;
+        request.write(jsonEncode(_hikeClubPackage));
+        final response = await request.close();
+
+        expect(response.statusCode, HttpStatus.ok);
+        expect(response.headers.contentType?.mimeType, 'application/zip');
+        expect(
+          response.headers.value('content-disposition'),
+          contains('hiking-club-loom-package.zip'),
+        );
+        expect(
+          response.headers.value('x-loom-extension-id'),
+          'ext_hiking_club',
+        );
+
+        final bytes = <int>[];
+        await for (final chunk in response) {
+          bytes.addAll(chunk);
+        }
+        final archive = ZipDecoder().decodeBytes(Uint8List.fromList(bytes));
+        final names = archive.files.map((f) => f.name).toSet();
+        expect(names, {
+          'hiking-club.loom-extension.zip',
+          'hiking-club.loom-init.zip',
+        });
+
+        final manifestFile = archive.findFile(
+          'hiking-club.loom-extension.zip',
+        )!;
+        final manifest =
+            jsonDecode(utf8.decode(manifestFile.content as List<int>))
+                as Map<String, dynamic>;
+        expect(manifest['extensionId'], 'ext_hiking_club');
+        expect(manifest['displayName'], 'Hiking Club');
+        expect(manifest['schemaVersion'], 1);
+        expect(manifest['version'], isA<String>());
+
+        final initFile = archive.findFile('hiking-club.loom-init.zip')!;
+        final initPackage =
+            jsonDecode(utf8.decode(initFile.content as List<int>))
+                as Map<String, dynamic>;
+        expect(initPackage['extensionId'], 'ext_hiking_club');
+        expect(initPackage['communityId'], 'community_hiking_club');
+      },
+    );
+
+    test(
+      'POST /package refuses a package with validator errors (422, no zip)',
+      () async {
+        final broken = Map<String, dynamic>.from(_hikeClubPackage)
+          ..remove('experience');
+
+        final request = await client.postUrl(base.replace(path: '/package'));
+        request.headers.contentType = ContentType.json;
+        request.write(jsonEncode(broken));
+        final response = await request.close();
+
+        expect(response.statusCode, HttpStatus.unprocessableEntity);
+        final json = await readJson(response);
+        expect(json['error'], 'package_has_errors');
+        final validation = json['validation'] as Map<String, dynamic>;
+        expect(validation['errorCount'], greaterThan(0));
+      },
+    );
+
+    test(
+      'POST /package refuses a validator-clean package missing fields the '
+      'real installer requires (422)',
+      () async {
+        final missingExtensionId = Map<String, dynamic>.from(_hikeClubPackage)
+          ..remove('extensionId');
+
+        final request = await client.postUrl(base.replace(path: '/package'));
+        request.headers.contentType = ContentType.json;
+        request.write(jsonEncode(missingExtensionId));
+        final response = await request.close();
+
+        expect(response.statusCode, HttpStatus.unprocessableEntity);
+        final json = await readJson(response);
+        expect(json['error'], 'package_build_failed');
+      },
+    );
+
+    test(
+      'POST /package.json on a clean package returns the manifest + init '
+      'package pair inline as JSON (no binary response)',
+      () async {
+        final response = await post('/package.json', jsonEncode(_hikeClubPackage));
+
+        expect(response.statusCode, HttpStatus.ok);
+        expect(response.headers.contentType?.mimeType, 'application/json');
+        final json = await readJson(response);
+
+        expect(json['extensionId'], 'ext_hiking_club');
+        expect(json['downloadFilename'], 'hiking-club-loom-package.zip');
+        expect(
+          json['extensionManifestFilename'],
+          'hiking-club.loom-extension.zip',
+        );
+        expect(
+          json['initializationPackageFilename'],
+          'hiking-club.loom-init.zip',
+        );
+
+        final manifest = json['extensionManifest'] as Map<String, dynamic>;
+        expect(manifest['extensionId'], 'ext_hiking_club');
+        expect(manifest['displayName'], 'Hiking Club');
+        expect(manifest['schemaVersion'], 1);
+
+        final initPackage =
+            json['initializationPackage'] as Map<String, dynamic>;
+        expect(initPackage['extensionId'], 'ext_hiking_club');
+        expect(initPackage['communityId'], 'community_hiking_club');
+
+        expect(json['downloadUrl'], isA<String>());
+        expect(json['downloadUrl'], contains('/download/'));
+      },
+    );
+
+    test(
+      'downloadUrl from POST /package.json serves a real zip with both '
+      'files',
+      () async {
+        final buildResponse = await post(
+          '/package.json',
+          jsonEncode(_hikeClubPackage),
+        );
+        final buildJson = await readJson(buildResponse);
+        final downloadUrl = buildJson['downloadUrl'] as String;
+        final downloadPath = Uri.parse(downloadUrl).path;
+
+        final request = await client.getUrl(base.replace(path: downloadPath));
+        final response = await request.close();
+
+        expect(response.statusCode, HttpStatus.ok);
+        expect(response.headers.contentType?.mimeType, 'application/zip');
+        expect(
+          response.headers.value('content-disposition'),
+          contains('hiking-club-loom-package.zip'),
+        );
+
+        final bytes = await response.fold<BytesBuilder>(
+          BytesBuilder(),
+          (builder, chunk) => builder..add(chunk),
+        );
+        final archive = ZipDecoder().decodeBytes(bytes.toBytes());
+        final names = archive.files.map((f) => f.name).toSet();
+        expect(
+          names,
+          containsAll(['hiking-club.loom-extension.zip', 'hiking-club.loom-init.zip']),
+        );
+      },
+    );
+
+    test('GET /download/:id returns 404 for an unknown id', () async {
+      final request = await client.getUrl(
+        base.replace(path: '/download/does-not-exist'),
+      );
+      final response = await request.close();
+
+      expect(response.statusCode, HttpStatus.notFound);
+      final json = await readJson(response);
+      expect(json['error'], 'download_not_found');
+    });
+
+    test(
+      'POST /package.json refuses a package with validator errors (422)',
+      () async {
+        final broken = Map<String, dynamic>.from(_hikeClubPackage)
+          ..remove('experience');
+
+        final response = await post('/package.json', jsonEncode(broken));
+
+        expect(response.statusCode, HttpStatus.unprocessableEntity);
+        final json = await readJson(response);
+        expect(json['error'], 'package_has_errors');
+        final validation = json['validation'] as Map<String, dynamic>;
+        expect(validation['errorCount'], greaterThan(0));
+      },
+    );
+
+    test(
+      'POST /package.json refuses a validator-clean package missing fields '
+      'the real installer requires (422)',
+      () async {
+        final missingExtensionId = Map<String, dynamic>.from(_hikeClubPackage)
+          ..remove('extensionId');
+
+        final response = await post(
+          '/package.json',
+          jsonEncode(missingExtensionId),
+        );
+
+        expect(response.statusCode, HttpStatus.unprocessableEntity);
+        final json = await readJson(response);
+        expect(json['error'], 'package_build_failed');
+      },
+    );
 
     test('unknown route returns 404', () async {
       final request = await client.getUrl(base.replace(path: '/nope'));

@@ -8,6 +8,7 @@ environment:
   sdk: ^3.11.5
 
 dependencies:
+  archive: ^4.0.9
   image: ^4.7.2
   loom_workflow_engine:
     path: ../../core/loom_workflow_engine
