@@ -109,7 +109,12 @@ const _tabletopAccounts = <LoomAccount>[
     personaTypeId: 'tabletop-organizer',
   ),
   LoomAccount(
-    accountId: 'tabletop-member-03',
+    // The frozen Tabletop fixture still contains role-level actor seeds for
+    // the shared widget tests. Keep this test account role-level as well so
+    // those tests exercise the real entry gate without changing the fixture's
+    // established actor identity. Individual-account behavior is covered by
+    // the dedicated sign-in tests, which use the production account list.
+    accountId: 'tabletop-member',
     displayName: 'Jordan W.',
     personaTypeId: 'tabletop-member',
   ),
@@ -148,7 +153,7 @@ TestActiveAuthApi activeAuthForCommunity({
           : [
               for (final persona in personas)
                 LoomAccount(
-                  accountId: 'test-${persona.personaId}',
+                  accountId: persona.personaId,
                   displayName: 'Test ${persona.label}',
                   personaTypeId: persona.personaId,
                 ),
@@ -202,6 +207,9 @@ Future<void> selectTestTabletopPersona(
   final picker = find.byKey(const ValueKey('persona-picker-button'));
   for (var attempt = 0; attempt < 40; attempt++) {
     if (picker.evaluate().isNotEmpty) break;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
     await tester.pump(const Duration(milliseconds: 50));
   }
   await tester.tap(picker);
@@ -213,13 +221,18 @@ Future<void> selectTestTabletopPersona(
     if (specificPerson.evaluate().isNotEmpty) break;
     await tester.pump(const Duration(milliseconds: 50));
   }
+  await tester.ensureVisible(specificPerson);
   await tester.tap(specificPerson);
-  await tester.pump();
-  final account = find.text(displayName).first;
+  await tester.pumpAndSettle();
+  final account = find.text(displayName);
   for (var attempt = 0; attempt < 40; attempt++) {
     if (account.evaluate().isNotEmpty) break;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
     await tester.pump(const Duration(milliseconds: 50));
   }
-  await tester.tap(account);
-  await tester.pump();
+  await tester.ensureVisible(account.first);
+  await tester.tap(account.first);
+  await tester.pumpAndSettle();
 }

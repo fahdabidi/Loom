@@ -103,13 +103,9 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _openCatanAsMember(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await tester.pumpAndSettle();
-  await tester.tap(
-    find.byKey(const ValueKey('persona-option-tabletop-member')),
-  );
-  await tester.pumpAndSettle();
+  await selectTestTabletopPersona(tester, 'tabletop-member');
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
+  await _pumpUntil(tester, marketplace);
   await tester.ensureVisible(marketplace);
   await tester.tap(marketplace);
   await _settle(tester);

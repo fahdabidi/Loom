@@ -128,21 +128,25 @@ Widget _calendar(
   ),
 );
 
-Widget _app(_InstalledTabletop installed) => MaterialApp(
-  home: LocalExtensionScreen(
-    community: installed.community,
-    seedDataFiles: const [],
-    authApi: activeAuthForCommunity(
-      community: installed.community,
-      experience: experienceForExtensionId(
-        installed.community.extensionId,
-        displayName: installed.community.displayName,
-        experienceConfiguration: installed.community.experienceConfiguration,
+Widget _app(_InstalledTabletop installed, {LoomAuthApi? authApi}) =>
+    MaterialApp(
+      home: LocalExtensionScreen(
+        community: installed.community,
+        seedDataFiles: const [],
+        authApi:
+            authApi ??
+            activeAuthForCommunity(
+              community: installed.community,
+              experience: experienceForExtensionId(
+                installed.community.extensionId,
+                displayName: installed.community.displayName,
+                experienceConfiguration:
+                    installed.community.experienceConfiguration,
+              ),
+              personaTypeId: 'tabletop-organizer',
+            ),
       ),
-      personaTypeId: 'tabletop-organizer',
-    ),
-  ),
-);
+    );
 
 Future<void> _selectCalendar(WidgetTester tester) async {
   final tab = find.byKey(const ValueKey('community-tab-calendar'));
@@ -896,7 +900,7 @@ void main() {
         () => _install('calr3-create'),
       ))!;
       try {
-        LocalAuthApi().seedAccounts(installed.community.extensionId, const [
+        const testAccounts = <LoomAccount>[
           LoomAccount(
             accountId: 'calr3-organizer',
             displayName: 'Test Organizer',
@@ -912,8 +916,14 @@ void main() {
             displayName: 'Test Member B',
             personaTypeId: 'tabletop-member',
           ),
-        ]);
-        await tester.pumpWidget(_app(installed));
+        ];
+        final auth = activeAuthForCommunity(
+          community: installed.community,
+          experience: installed.experience,
+          personaTypeId: 'tabletop-organizer',
+          accounts: testAccounts,
+        );
+        await tester.pumpWidget(_app(installed, authApi: auth));
         await _selectCalendar(tester);
         await _openEventCreation(tester);
 
@@ -984,7 +994,7 @@ void main() {
                 item.workflowType == 'event-rsvp' &&
                 item.instanceData['title'] == 'CALR.3 test event',
           );
-          final accounts = await LocalAuthApi().listAccounts(
+          final accounts = await auth.listAccounts(
             communityExtensionId: installed.community.extensionId,
           );
           final responses = page.items.where(
@@ -1018,15 +1028,7 @@ void main() {
       // Switch to the tabletop-member persona so the creatable-action
       // FAB is hidden (the fixture only lists tabletop-organizer
       // in creatable.byPersonaIds).
-      final personaPicker = find.byKey(const ValueKey('persona-picker-button'));
-      await _pumpUntil(tester, personaPicker);
-      await tester.tap(personaPicker);
-      await tester.pump();
-      final memberOption = find.byKey(
-        const ValueKey('persona-option-tabletop-member'),
-      );
-      await _pumpUntil(tester, memberOption);
-      await tester.tap(memberOption);
+      await selectTestTabletopPersona(tester, 'tabletop-member');
       await _pollUntilObservation(tester, () async {
         final eventFabCount = find
             .byKey(const ValueKey('creatable-fab-event-rsvp'))

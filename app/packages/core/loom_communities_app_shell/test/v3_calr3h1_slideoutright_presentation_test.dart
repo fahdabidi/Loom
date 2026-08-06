@@ -87,10 +87,24 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
 
 Future<void> _selectCalendar(WidgetTester tester) async {
   final tab = find.byKey(const ValueKey('community-tab-calendar'));
-  await tester.pumpAndSettle();
+  await _pumpUntil(tester, tab);
   await tester.ensureVisible(tab);
   await tester.tap(tab);
-  await tester.pumpAndSettle();
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('engine-native-calendar-root')),
+  );
+}
+
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    if (finder.evaluate().isNotEmpty) return;
+  }
+  throw TestFailure('Timed out waiting for $finder');
 }
 
 void _setPresentationStyle(Map<String, dynamic> source, String style) {

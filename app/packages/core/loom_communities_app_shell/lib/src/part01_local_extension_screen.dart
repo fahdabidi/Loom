@@ -184,6 +184,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   bool? _communityEntryAllowed;
   bool _entryGateHasPendingApproval = false;
   int _entryGateRevision = 0;
+  Future<void>? _engineAuthorizationSync;
 
   /// Auth API — seeded with demo accounts by default.
   late final LoomAuthApi _authApi =
@@ -235,6 +236,29 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experience.workflowDefinitions!.isEmpty;
   }
 
+  /// Serializes the account-to-persona mapping with the entry check.
+  ///
+  /// Engine-native surfaces use the signed-in account id as their actor id,
+  /// while the policy engine needs that id mapped back to its declared
+  /// persona type. Do not publish the content tree until that mapping is
+  /// installed; otherwise the first query can be denied and the surface has
+  /// no event to cause a retry. The future is cleared after each run so a
+  /// newly signed-up account is also registered before its first render.
+  Future<void> _ensureEngineAuthorizationSync() {
+    final inFlight = _engineAuthorizationSync;
+    if (inFlight != null) return inFlight;
+
+    final sync = _syncEnginePersonaTypes();
+    late final Future<void> tracked;
+    tracked = sync.whenComplete(() {
+      if (identical(_engineAuthorizationSync, tracked)) {
+        _engineAuthorizationSync = null;
+      }
+    });
+    _engineAuthorizationSync = tracked;
+    return tracked;
+  }
+
   /// The entry gate is intentionally scoped to the engine-native schema. The
   /// legacy shallow schema has no reliable membership/access declaration, so
   /// it retains its pre-P6 behavior.
@@ -253,6 +277,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         _entryGateRevision += 1;
       });
     }
+
+    await _ensureEngineAuthorizationSync();
+    if (!mounted) return;
 
     final session = _authApi.currentSession;
     final accounts = await _authApi.listAccounts(
@@ -471,7 +498,6 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     _surfaceScrollController = ScrollController()
       ..addListener(_updateFocusedSurfaceFromScroll);
     _refreshCommunityEntryGate();
-    _syncEnginePersonaTypes();
   }
 
   /// Registers every seeded account's individual-id → persona-type mapping

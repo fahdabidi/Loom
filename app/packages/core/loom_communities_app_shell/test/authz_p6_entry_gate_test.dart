@@ -70,6 +70,7 @@ LocalInstalledCommunity _engineCommunity({
           'instanceId': 'entry-content-1',
           'workflowType': 'entry-content',
           'currentState': 'ready',
+          'createdByPersonaId': personas.first['personaId'],
           'instanceData': <String, Object?>{'title': 'Community content'},
         },
       ],
@@ -111,6 +112,17 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 100));
 }
 
+Future<void> _submitSignUp(WidgetTester tester, String displayName) async {
+  final displayNameField = find.byKey(
+    const ValueKey('open-signup-display-name'),
+  );
+  await tester.ensureVisible(displayNameField);
+  await tester.enterText(displayNameField, displayName);
+  final submit = find.byKey(const ValueKey('open-signup-submit'));
+  await tester.ensureVisible(submit);
+  await tester.tap(submit);
+}
+
 void main() {
   testWidgets(
     'open-only community gates entry, then renders content after signup',
@@ -133,11 +145,7 @@ void main() {
       expect(find.byKey(const ValueKey('open-signup-submit')), findsOneWidget);
       expect(find.byKey(const ValueKey('opened-community-open')), findsNothing);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('open-signup-display-name')),
-        'Open User',
-      );
-      await tester.tap(find.byKey(const ValueKey('open-signup-submit')));
+      await _submitSignUp(tester, 'Open User');
       await _settle(tester);
 
       expect(find.byKey(const ValueKey('community-entry-gate')), findsNothing);
@@ -162,11 +170,7 @@ void main() {
       );
       await _settle(tester);
 
-      await tester.enterText(
-        find.byKey(const ValueKey('open-signup-display-name')),
-        'Waiting User',
-      );
-      await tester.tap(find.byKey(const ValueKey('open-signup-submit')));
+      await _submitSignUp(tester, 'Waiting User');
       await _settle(tester);
 
       expect(
