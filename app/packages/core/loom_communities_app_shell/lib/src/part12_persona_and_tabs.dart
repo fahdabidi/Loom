@@ -270,7 +270,13 @@ String? requiredPermissionForTab({
     'requests' => 'community.surface.requests.read',
     'care' || 'roster' => 'community.surface.care.read',
     'admin' => 'community.surface.navigation.configure',
-    'notifications' || 'messages' => 'community.surface.messages.read',
+    // Engine-native notification surfaces use this internal tab ID even when
+    // they are mounted as AppBar/FAB/fixed-card chrome rather than a tab. The
+    // notification controller still applies recipientPersonaId filtering;
+    // this only makes the synthetic inbox surface resolve to the existing
+    // messages permission at the engine boundary.
+    'notifications' || 'notification-inbox' || 'messages' =>
+      'community.surface.messages.read',
     'export' || 'search' => 'community.surface.documents.read',
     'timeline' || 'details' || 'form' => 'community.surface.workflow.read',
     _ => null,
