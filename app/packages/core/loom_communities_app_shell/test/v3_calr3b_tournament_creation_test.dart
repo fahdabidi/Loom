@@ -7,6 +7,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
@@ -50,10 +52,12 @@ Future<_InstalledFixture> _install(String extensionId) async {
       'permissions': <String>[],
     }),
   );
-  final community = LocalInAppBackend().installLocalPackagePairFromFiles(
-    extensionPackagePath: extension.path,
-    initializationPackagePath: init.path,
-  ).community;
+  final community = LocalInAppBackend()
+      .installLocalPackagePairFromFiles(
+        extensionPackagePath: extension.path,
+        initializationPackagePath: init.path,
+      )
+      .community;
   // Pre-warm the engine in the real-async installation zone, so its database
   // connection is not first created by a pumped widget and later used from
   // tester.runAsync. This matches the proven calendar end-to-end test pattern.
@@ -70,6 +74,10 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
   home: LocalExtensionScreen(
     community: installed.community,
     seedDataFiles: const [],
+    authApi: activeAuthForInstalledCommunity(
+      community: installed.community,
+      personaTypeId: 'tabletop-organizer',
+    ),
   ),
 );
 
@@ -93,10 +101,7 @@ Future<void> _openTournamentCreation(WidgetTester tester) async {
   await _settleBounded(tester);
 }
 
-Future<void> _settleBounded(
-  WidgetTester tester, {
-  int iterations = 10,
-}) async {
+Future<void> _settleBounded(WidgetTester tester, {int iterations = 10}) async {
   for (var i = 0; i < iterations; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -135,83 +140,82 @@ Future<void> _submitNewTournament(WidgetTester tester) async {
   await _settleBounded(tester);
   await tester.tap(find.text('OK').last);
   await _settleBounded(tester);
-  final submit = find.byKey(
-    const ValueKey('new-tournament-event-submit'),
-  );
+  final submit = find.byKey(const ValueKey('new-tournament-event-submit'));
   await tester.ensureVisible(submit);
   await tester.tap(submit);
   await _settleBounded(tester);
 }
 
 void main() {
-  testWidgets('Creates a tournament-event via FAB and confirms no event-rsvp-response side effect', (
-    tester,
-  ) async {
-    final installed = (await tester.runAsync(
-      () => _install('calr3b-tournament'),
-    ))!;
-    try {
-      final beforeCount = (await tester.runAsync(() async {
-        final engine = await workflowEngineForExtensionId(
-          installed.community.extensionId,
+  testWidgets(
+    'Creates a tournament-event via FAB and confirms no event-rsvp-response side effect',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('calr3b-tournament'),
+      ))!;
+      try {
+        final beforeCount = (await tester.runAsync(() async {
+          final engine = await workflowEngineForExtensionId(
+            installed.community.extensionId,
+          );
+          final page = await engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          return page.items
+              .where((item) => item.workflowType == 'event-rsvp-response')
+              .length;
+        }))!;
+
+        await tester.pumpWidget(_app(installed));
+        await _selectCalendar(tester);
+        await _openTournamentCreation(tester);
+
+        // The tournament creation dialog should be visible.
+        expect(find.byType(AlertDialog), findsOneWidget);
+
+        await _submitNewTournament(tester);
+
+        // Dialog should be dismissed after successful creation.
+        expect(find.byType(AlertDialog), findsNothing);
+
+        final result = await tester.runAsync(() async {
+          final engine = await workflowEngineForExtensionId(
+            installed.community.extensionId,
+          );
+          final instances = await engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          return instances;
+        });
+
+        // Confirm the tournament-event instance exists.
+        expect(
+          result!.items.any(
+            (item) =>
+                item.workflowType == 'tournament-event' &&
+                item.instanceData['title'] == 'Friday Night Magic Draft',
+          ),
+          isTrue,
         );
-        final page = await engine.queryInstances(
-          tabId: 'calendar',
-          personaId: 'tabletop-organizer',
-          limit: 100,
-        );
-        return page.items
+
+        // Confirm tournament creation does not add event-rsvp-response rows.
+        final afterCount = result.items
             .where((item) => item.workflowType == 'event-rsvp-response')
             .length;
-      }))!;
-
-      await tester.pumpWidget(_app(installed));
-      await _selectCalendar(tester);
-      await _openTournamentCreation(tester);
-
-      // The tournament creation dialog should be visible.
-      expect(find.byType(AlertDialog), findsOneWidget);
-
-      await _submitNewTournament(tester);
-
-      // Dialog should be dismissed after successful creation.
-      expect(find.byType(AlertDialog), findsNothing);
-
-      final result = await tester.runAsync(() async {
-        final engine = await workflowEngineForExtensionId(
-          installed.community.extensionId,
+        expect(
+          afterCount,
+          beforeCount,
+          reason:
+              'tournament creation must not trigger the event-rsvp-specific '
+              'response-row seeding side effect',
         );
-        final instances = await engine.queryInstances(
-          tabId: 'calendar',
-          personaId: 'tabletop-organizer',
-          limit: 100,
-        );
-        return instances;
-      });
-
-      // Confirm the tournament-event instance exists.
-      expect(
-        result!.items.any(
-          (item) =>
-              item.workflowType == 'tournament-event' &&
-              item.instanceData['title'] == 'Friday Night Magic Draft',
-        ),
-        isTrue,
-      );
-
-      // Confirm tournament creation does not add event-rsvp-response rows.
-      final afterCount = result.items
-          .where((item) => item.workflowType == 'event-rsvp-response')
-          .length;
-      expect(
-        afterCount,
-        beforeCount,
-        reason:
-            'tournament creation must not trigger the event-rsvp-specific '
-            'response-row seeding side effect',
-      );
-    } finally {
-      await tester.runAsync(installed.dispose);
-    }
-  });
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 }

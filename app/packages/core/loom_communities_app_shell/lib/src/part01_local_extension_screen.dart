@@ -150,10 +150,17 @@ class LocalExtensionScreen extends StatefulWidget {
   const LocalExtensionScreen({
     required this.community,
     required this.seedDataFiles,
+    this.authApi,
   });
 
   final LocalInstalledCommunity community;
   final List<String> seedDataFiles;
+
+  /// Optional app-scoped auth provider. The Demo App supplies one provider
+  /// per community so an active session survives leaving and reopening the
+  /// community route. Standalone callers keep the existing local provider
+  /// behavior when this is omitted.
+  final LoomAuthApi? authApi;
 
   @override
   State<LocalExtensionScreen> createState() => _LocalExtensionScreenState();
@@ -174,26 +181,23 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   String? _activeSurfaceFocusKey;
   String? _expandedWorkflowId;
   String? _selectedPersonaId;
+  bool? _communityEntryAllowed;
+  bool _entryGateHasPendingApproval = false;
+  int _entryGateRevision = 0;
 
   /// Auth API — seeded with demo accounts by default.
-  late final LoomAuthApi _authApi = LocalAuthApi(
-    personaResolver: (communityExtensionId) {
-      final experience = experienceForExtensionId(
-        communityExtensionId,
-        displayName: community.displayName,
-        experienceConfiguration: community.experienceConfiguration,
+  late final LoomAuthApi _authApi =
+      widget.authApi ??
+      LocalAuthApi(
+        personaResolver: (communityExtensionId) {
+          final experience = _experienceForCommunity();
+          return personasForExtensionId(
+            communityExtensionId,
+            experience: experience,
+          );
+        },
+        experienceResolver: (communityExtensionId) => _experienceForCommunity(),
       );
-      return personasForExtensionId(
-        communityExtensionId,
-        experience: experience,
-      );
-    },
-    experienceResolver: (communityExtensionId) => experienceForExtensionId(
-      communityExtensionId,
-      displayName: community.displayName,
-      experienceConfiguration: community.experienceConfiguration,
-    ),
-  );
 
   /// The individual account id when signed in, otherwise falls back to
   /// [_selectedPersonaId] (the persona type) for backward compatibility.
@@ -217,6 +221,116 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
+
+  LoomExperienceDefinition _experienceForCommunity() {
+    return experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+  }
+
+  bool _isLegacySchema(LoomExperienceDefinition experience) {
+    return experience.workflowDefinitions == null ||
+        experience.workflowDefinitions!.isEmpty;
+  }
+
+  /// The entry gate is intentionally scoped to the engine-native schema. The
+  /// legacy shallow schema has no reliable membership/access declaration, so
+  /// it retains its pre-P6 behavior.
+  Future<void> _refreshCommunityEntryGate({
+    bool rebuildAuthScreen = false,
+  }) async {
+    final experience = _experienceForCommunity();
+    if (_isLegacySchema(experience)) {
+      if (mounted) setState(() => _communityEntryAllowed = true);
+      return;
+    }
+
+    if (rebuildAuthScreen && mounted) {
+      setState(() {
+        _communityEntryAllowed = null;
+        _entryGateRevision += 1;
+      });
+    }
+
+    final session = _authApi.currentSession;
+    final accounts = await _authApi.listAccounts(
+      communityExtensionId: community.extensionId,
+    );
+    final signedInAccountId = session?.account.accountId;
+    final hasActiveAccount =
+        signedInAccountId != null &&
+        accounts.any(
+          (account) =>
+              account.accountId == signedInAccountId &&
+              account.status == MembershipStatus.active,
+        );
+    final hasPendingApproval = accounts.any(
+      (account) => account.status == MembershipStatus.pendingApproval,
+    );
+    if (!mounted) return;
+    setState(() {
+      _communityEntryAllowed = hasActiveAccount;
+      _entryGateHasPendingApproval = hasPendingApproval;
+    });
+  }
+
+  Widget _communityEntryChecking() {
+    return const Scaffold(
+      key: ValueKey('community-entry-checking'),
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Widget _communityEntryGate(LoomExperienceDefinition experience) {
+    return Scaffold(
+      key: const ValueKey('community-entry-gate'),
+      body: Column(
+        children: [
+          Expanded(
+            child: KeyedSubtree(
+              key: ValueKey('community-auth-screen-$_entryGateRevision'),
+              child: LoomAuthScreen(
+                authApi: _authApi,
+                communityExtensionId: community.extensionId,
+                experience: experience,
+                onSignIn: () =>
+                    _refreshCommunityEntryGate(rebuildAuthScreen: true),
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    _entryGateHasPendingApproval
+                        ? 'An account is waiting for community approval. Refresh after an administrator approves it.'
+                        : 'Choose an active account or create one to continue to ${community.displayName}.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    key: const ValueKey('community-entry-refresh-button'),
+                    onPressed: () {
+                      _refreshCommunityEntryGate(rebuildAuthScreen: true);
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Check membership status'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _openCreatableAction({
     required _CreatableWorkflowAction action,
@@ -356,6 +470,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     super.initState();
     _surfaceScrollController = ScrollController()
       ..addListener(_updateFocusedSurfaceFromScroll);
+    _refreshCommunityEntryGate();
     _syncEnginePersonaTypes();
   }
 
@@ -946,7 +1061,23 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         authApi: _authApi,
         personaId: _activePersonaTypeId,
       ),
-      child: Builder(builder: (context) => _buildScreen(context)),
+      child: Builder(
+        builder: (context) {
+          final experience = _experienceForCommunity();
+          if (_isLegacySchema(experience) || _communityEntryAllowed == true) {
+            return _buildScreen(context);
+          }
+          // Never render community content while the community-scoped
+          // account check is unresolved. A previously active session gets a
+          // neutral loading state instead of an auth-screen flash.
+          if (_communityEntryAllowed == null &&
+              _authApi.currentSession?.account.status ==
+                  MembershipStatus.active) {
+            return _communityEntryChecking();
+          }
+          return _communityEntryGate(experience);
+        },
+      ),
     );
   }
 

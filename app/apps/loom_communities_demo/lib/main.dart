@@ -40,6 +40,7 @@ class LoomCommunitiesHome extends StatefulWidget {
 class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
   late final LocalInAppBackend _backend;
   late final Map<String, List<String>> _importedSeedFilesByCommunityId;
+  late final Map<String, LoomAuthApi> _authApisByCommunityId;
   late final ScrollController _communityScrollController;
   String? _lastLocalImportMessage;
   String? _focusedCommunityId;
@@ -57,6 +58,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     _importedSeedFilesByCommunityId = _preloadExampleCommunities
         ? preloadedSeedFilesByCommunityId()
         : {};
+    _authApisByCommunityId = {};
     _lastLocalImportMessage = _preloadExampleCommunities
         ? 'Loaded ${loomEvidenceTargets.length} example communities'
         : null;
@@ -171,7 +173,8 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                       final experience = experienceForExtensionId(
                         community.extensionId,
                         displayName: community.displayName,
-                        experienceConfiguration: community.experienceConfiguration,
+                        experienceConfiguration:
+                            community.experienceConfiguration,
                       );
                       final presentationState =
                           community.communityId == focusedCommunityId
@@ -193,6 +196,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                                     _importedSeedFilesByCommunityId[community
                                         .communityId] ??
                                     const [],
+                                authApi: _authApiForCommunity(community),
                               ),
                             ),
                           );
@@ -210,5 +214,22 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     return created
         ? 'Installed $communityName from local packages'
         : 'Updated $communityName from local packages';
+  }
+
+  LoomAuthApi _authApiForCommunity(LocalInstalledCommunity community) {
+    return _authApisByCommunityId.putIfAbsent(community.communityId, () {
+      final experience = experienceForExtensionId(
+        community.extensionId,
+        displayName: community.displayName,
+        experienceConfiguration: community.experienceConfiguration,
+      );
+      return LocalAuthApi(
+        personaResolver: (_) => personasForExtensionId(
+          community.extensionId,
+          experience: experience,
+        ),
+        experienceResolver: (_) => experience,
+      );
+    });
   }
 }

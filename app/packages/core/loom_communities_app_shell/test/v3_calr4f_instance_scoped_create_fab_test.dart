@@ -7,6 +7,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
@@ -38,7 +40,9 @@ Future<_InstalledFixture> _install(
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
   mutate?.call(source);
-  final temp = await Directory.systemTemp.createTemp('loom-calr4f-$extensionId-');
+  final temp = await Directory.systemTemp.createTemp(
+    'loom-calr4f-$extensionId-',
+  );
   final init = File('${temp.path}/tabletop.loom-init.zip');
   final extension = File('${temp.path}/tabletop.loom-extension.zip');
   await init.writeAsString(jsonEncode(source));
@@ -68,7 +72,14 @@ Future<_InstalledFixture> _install(
 }
 
 Widget _app(_InstalledFixture installed) => MaterialApp(
-  home: LocalExtensionScreen(community: installed.community, seedDataFiles: const []),
+  home: LocalExtensionScreen(
+    community: installed.community,
+    seedDataFiles: const [],
+    authApi: activeAuthForInstalledCommunity(
+      community: installed.community,
+      personaTypeId: 'tabletop-organizer',
+    ),
+  ),
 );
 
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
@@ -100,8 +111,9 @@ Future<void> _selectCalendar(WidgetTester tester) async {
 }
 
 void _addFocusedTournamentFab(Map<String, dynamic> source) {
-  final definitions = (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
-      as Map<String, dynamic>;
+  final definitions =
+      (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
+          as Map<String, dynamic>;
   final tournament = Map<String, dynamic>.from(
     definitions['tournament-event'] as Map,
   );
@@ -130,7 +142,8 @@ void main() {
     'focused instance FAB is additional, excludes instance actions from tab FABs, and resolves its prefill',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _install('calr4f-contextual-fab', mutate: _addFocusedTournamentFab),
+        () =>
+            _install('calr4f-contextual-fab', mutate: _addFocusedTournamentFab),
       ))!;
       try {
         await tester.pumpWidget(_app(installed));
@@ -140,7 +153,10 @@ void main() {
         // The fixture's button action and this synthetic instance FAB both
         // target tournament-ballot, so this also guards against either scope
         // leaking into multiActionStyle resolution.
-        expect(find.byKey(const ValueKey('creatable-fab-event-rsvp')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('creatable-fab-event-rsvp')),
+          findsOneWidget,
+        );
         expect(
           find.byKey(const ValueKey('creatable-fab-tournament-event')),
           findsOneWidget,
@@ -151,14 +167,18 @@ void main() {
         );
 
         final tournamentAgenda = find.byKey(
-          const ValueKey('engine-native-calendar-agenda-event-summer-tournament-0'),
+          const ValueKey(
+            'engine-native-calendar-agenda-event-summer-tournament-0',
+          ),
         );
         await _pumpUntil(tester, tournamentAgenda);
         await tester.ensureVisible(tournamentAgenda);
         await tester.tap(tournamentAgenda);
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('instance-creatable-fab-tournament-ballot')),
+          find.byKey(
+            const ValueKey('instance-creatable-fab-tournament-ballot'),
+          ),
         );
         expect(
           find.byKey(const ValueKey('creatable-fab-event-rsvp')),
@@ -166,7 +186,9 @@ void main() {
         );
 
         await tester.tap(
-          find.byKey(const ValueKey('instance-creatable-fab-tournament-ballot')),
+          find.byKey(
+            const ValueKey('instance-creatable-fab-tournament-ballot'),
+          ),
         );
         await _settle(tester);
         expect(find.byType(AlertDialog), findsOneWidget);
@@ -174,7 +196,9 @@ void main() {
           find.byKey(const ValueKey('new-tournament-ballot-editor-candidates')),
           '[]',
         );
-        await tester.tap(find.byKey(const ValueKey('new-tournament-ballot-submit')));
+        await tester.tap(
+          find.byKey(const ValueKey('new-tournament-ballot-submit')),
+        );
         await _settle(tester);
 
         final eventIds = await tester.runAsync(() async {
@@ -198,54 +222,68 @@ void main() {
     },
   );
 
-  testWidgets('contextual FAB is absent without focus or for a nonmatching focused type', (
-    tester,
-  ) async {
-    final noFocus = (await tester.runAsync(
-      () => _install('calr4f-no-focus', mutate: (source) {
-        _addFocusedTournamentFab(source);
-        final experience = source['experience'] as Map<String, dynamic>;
-        final instances = List<dynamic>.from(
-          experience['workflowInstances'] as List,
+  testWidgets(
+    'contextual FAB is absent without focus or for a nonmatching focused type',
+    (tester) async {
+      final noFocus = (await tester.runAsync(
+        () => _install(
+          'calr4f-no-focus',
+          mutate: (source) {
+            _addFocusedTournamentFab(source);
+            final experience = source['experience'] as Map<String, dynamic>;
+            final instances = List<dynamic>.from(
+              experience['workflowInstances'] as List,
+            );
+            instances.removeWhere((instance) {
+              final workflowType = (instance as Map)['workflowType'];
+              return workflowType == 'event-rsvp' ||
+                  workflowType == 'tournament-event';
+            });
+            experience['workflowInstances'] = instances;
+          },
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(noFocus));
+        await _selectCalendar(tester);
+        await _settle(tester);
+        expect(
+          find.byKey(
+            const ValueKey('instance-creatable-fab-tournament-ballot'),
+          ),
+          findsNothing,
         );
-        instances.removeWhere((instance) {
-          final workflowType = (instance as Map)['workflowType'];
-          return workflowType == 'event-rsvp' || workflowType == 'tournament-event';
-        });
-        experience['workflowInstances'] = instances;
-      }),
-    ))!;
-    try {
-      await tester.pumpWidget(_app(noFocus));
-      await _selectCalendar(tester);
-      await _settle(tester);
-      expect(
-        find.byKey(const ValueKey('instance-creatable-fab-tournament-ballot')),
-        findsNothing,
-      );
-    } finally {
-      await tester.runAsync(noFocus.dispose);
-    }
+      } finally {
+        await tester.runAsync(noFocus.dispose);
+      }
 
-    final nonmatching = (await tester.runAsync(
-      () => _install('calr4f-nonmatching-focus', mutate: _addFocusedTournamentFab),
-    ))!;
-    try {
-      await tester.pumpWidget(_app(nonmatching));
-      await _selectCalendar(tester);
-      final rsvpAgenda = find.byKey(
-        const ValueKey('engine-native-calendar-agenda-event-friday-game-night-0'),
-      );
-      await _pumpUntil(tester, rsvpAgenda);
-      await tester.ensureVisible(rsvpAgenda);
-      await tester.tap(rsvpAgenda);
-      await _settle(tester);
-      expect(
-        find.byKey(const ValueKey('instance-creatable-fab-tournament-ballot')),
-        findsNothing,
-      );
-    } finally {
-      await tester.runAsync(nonmatching.dispose);
-    }
-  });
+      final nonmatching = (await tester.runAsync(
+        () => _install(
+          'calr4f-nonmatching-focus',
+          mutate: _addFocusedTournamentFab,
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_app(nonmatching));
+        await _selectCalendar(tester);
+        final rsvpAgenda = find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-event-friday-game-night-0',
+          ),
+        );
+        await _pumpUntil(tester, rsvpAgenda);
+        await tester.ensureVisible(rsvpAgenda);
+        await tester.tap(rsvpAgenda);
+        await _settle(tester);
+        expect(
+          find.byKey(
+            const ValueKey('instance-creatable-fab-tournament-ballot'),
+          ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(nonmatching.dispose);
+      }
+    },
+  );
 }

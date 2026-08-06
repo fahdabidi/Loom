@@ -8,6 +8,8 @@ import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 // Reuses the same frozen-JSON fixture and installation pattern as
 // v3_milestone_a8_calendar_end_to_end_test.dart.
 
@@ -130,6 +132,15 @@ Widget _app(_InstalledTabletop installed) => MaterialApp(
   home: LocalExtensionScreen(
     community: installed.community,
     seedDataFiles: const [],
+    authApi: activeAuthForCommunity(
+      community: installed.community,
+      experience: experienceForExtensionId(
+        installed.community.extensionId,
+        displayName: installed.community.displayName,
+        experienceConfiguration: installed.community.experienceConfiguration,
+      ),
+      personaTypeId: 'tabletop-organizer',
+    ),
   ),
 );
 

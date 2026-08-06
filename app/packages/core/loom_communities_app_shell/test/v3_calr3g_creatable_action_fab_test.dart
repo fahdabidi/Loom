@@ -7,6 +7,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
@@ -69,6 +71,10 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
   home: LocalExtensionScreen(
     community: installed.community,
     seedDataFiles: const [],
+    authApi: activeAuthForInstalledCommunity(
+      community: installed.community,
+      personaTypeId: 'tabletop-organizer',
+    ),
   ),
 );
 

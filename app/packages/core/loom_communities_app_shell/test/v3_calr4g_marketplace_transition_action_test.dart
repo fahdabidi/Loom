@@ -7,6 +7,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
@@ -38,7 +40,9 @@ Future<_InstalledFixture> _install(
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
   mutate?.call(source);
-  final temp = await Directory.systemTemp.createTemp('loom-calr4g-$extensionId-');
+  final temp = await Directory.systemTemp.createTemp(
+    'loom-calr4g-$extensionId-',
+  );
   final init = File('${temp.path}/tabletop.loom-init.zip');
   final extension = File('${temp.path}/tabletop.loom-extension.zip');
   await init.writeAsString(jsonEncode(source));
@@ -68,7 +72,14 @@ Future<_InstalledFixture> _install(
 }
 
 Widget _app(_InstalledFixture installed) => MaterialApp(
-  home: LocalExtensionScreen(community: installed.community, seedDataFiles: const []),
+  home: LocalExtensionScreen(
+    community: installed.community,
+    seedDataFiles: const [],
+    authApi: activeAuthForInstalledCommunity(
+      community: installed.community,
+      personaTypeId: 'tabletop-member',
+    ),
+  ),
 );
 
 Future<void> _settle(WidgetTester tester) async {
@@ -208,49 +219,58 @@ void main() {
     },
   );
 
-  testWidgets('Marketplace hides the contextual FAB when borrow is disallowed', (
-    tester,
-  ) async {
-    final installed = await tester.runAsync(
-      () => _install('calr4g-borrow-guard', mutate: (source) {
-        _allowBorrowWithoutDues(source);
-        final instances =
-            (source['experience'] as Map<String, dynamic>)['workflowInstances']
-                as List<dynamic>;
-        final catanIndex = instances.indexWhere(
-          (instance) => (instance as Map)['instanceId'] == 'listing-catan',
+  testWidgets(
+    'Marketplace hides the contextual FAB when borrow is disallowed',
+    (tester) async {
+      final installed = await tester.runAsync(
+        () => _install(
+          'calr4g-borrow-guard',
+          mutate: (source) {
+            _allowBorrowWithoutDues(source);
+            final instances =
+                (source['experience']
+                        as Map<String, dynamic>)['workflowInstances']
+                    as List<dynamic>;
+            final catanIndex = instances.indexWhere(
+              (instance) => (instance as Map)['instanceId'] == 'listing-catan',
+            );
+            final catan = Map<String, dynamic>.from(
+              instances[catanIndex] as Map,
+            );
+            final data = Map<String, dynamic>.from(catan['instanceData'] as Map)
+              ..['availabilityState'] = 'onLoan';
+            catan['instanceData'] = data;
+            instances[catanIndex] = catan;
+          },
+        ),
+      );
+      try {
+        await tester.pumpWidget(_app(installed!));
+        await _openCatanAsMember(tester);
+        final catanDialog = find.byKey(
+          const ValueKey('marketplace-detail-dialog-listing-catan'),
         );
-        final catan = Map<String, dynamic>.from(instances[catanIndex] as Map);
-        final data = Map<String, dynamic>.from(catan['instanceData'] as Map)
-          ..['availabilityState'] = 'onLoan';
-        catan['instanceData'] = data;
-        instances[catanIndex] = catan;
-      }),
-    );
-    try {
-      await tester.pumpWidget(_app(installed!));
-      await _openCatanAsMember(tester);
-      final catanDialog = find.byKey(
-        const ValueKey('marketplace-detail-dialog-listing-catan'),
-      );
-      expect(
-        find.descendant(
-          of: catanDialog,
-          matching: find.byKey(
-            const ValueKey('marketplace-transition-fab-borrow'),
+        expect(
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(
+              const ValueKey('marketplace-transition-fab-borrow'),
+            ),
           ),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.descendant(
-          of: catanDialog,
-          matching: find.byKey(const ValueKey('marketplace-action-join-queue')),
-        ),
-        findsOneWidget,
-      );
-    } finally {
-      await tester.runAsync(installed!.dispose);
-    }
-  });
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: catanDialog,
+            matching: find.byKey(
+              const ValueKey('marketplace-action-join-queue'),
+            ),
+          ),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(installed!.dispose);
+      }
+    },
+  );
 }

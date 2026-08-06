@@ -4,6 +4,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _personaA = 'persona-a';
 const _personaB = 'persona-b';
 
@@ -127,7 +129,14 @@ LocalInstalledCommunity _community({
 );
 
 Widget _host(LocalInstalledCommunity community) => MaterialApp(
-  home: LocalExtensionScreen(community: community, seedDataFiles: const []),
+  home: LocalExtensionScreen(
+    community: community,
+    seedDataFiles: const [],
+    authApi: activeAuthForInstalledCommunity(
+      community: community,
+      personaTypeId: _personaA,
+    ),
+  ),
 );
 
 Finder _badgeLabel(String label) => find.descendant(

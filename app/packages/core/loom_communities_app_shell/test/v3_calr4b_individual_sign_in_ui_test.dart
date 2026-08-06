@@ -31,22 +31,25 @@ class _InstalledFixture {
 }
 
 Future<_InstalledFixture> _installFrozenTabletop() async {
-  final source = jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
-      as Map<String, dynamic>;
+  final source =
+      jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
+          as Map<String, dynamic>;
   final extensionId = source['extensionId'] as String;
   final temp = await Directory.systemTemp.createTemp('loom-calr4b-');
   try {
     final init = File('${temp.path}/tabletop.loom-init.zip');
     final extension = File('${temp.path}/tabletop.loom-extension.zip');
     await init.writeAsString(jsonEncode(source));
-    await extension.writeAsString(jsonEncode(<String, Object?>{
-      'schemaVersion': 1,
-      'extensionId': extensionId,
-      'displayName': source['displayName'],
-      'version': '1.0.0',
-      'mode': 'local-demo',
-      'permissions': <String>[],
-    }));
+    await extension.writeAsString(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 1,
+        'extensionId': extensionId,
+        'displayName': source['displayName'],
+        'version': '1.0.0',
+        'mode': 'local-demo',
+        'permissions': <String>[],
+      }),
+    );
     return _InstalledFixture(
       LocalInAppBackend()
           .installLocalPackagePairFromFiles(
@@ -132,6 +135,19 @@ Future<void> _settle(WidgetTester tester) async {
 }
 
 Future<void> _signInAs(WidgetTester tester, String displayName) async {
+  if (find
+      .byKey(const ValueKey('community-entry-gate'))
+      .evaluate()
+      .isNotEmpty) {
+    await _pumpUntil(tester, find.text(displayName));
+    await tester.tap(find.text(displayName).first);
+    await _pumpUntil(
+      tester,
+      find.byKey(const ValueKey('persona-picker-button')),
+    );
+    await _settle(tester);
+    return;
+  }
   await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
   await _pumpUntil(
     tester,

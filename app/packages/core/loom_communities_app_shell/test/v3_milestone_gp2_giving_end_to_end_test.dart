@@ -6,7 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+
+import 'authz_p6_test_helpers.dart';
 
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
@@ -96,14 +99,7 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  final personaPicker = find.byKey(const ValueKey('persona-picker-button'));
-  await _pumpUntil(tester, personaPicker);
-  await tester.tap(personaPicker);
-  await tester.pump();
-  final option = find.byKey(ValueKey('persona-option-$personaId'));
-  await _pumpUntil(tester, option);
-  await tester.tap(option);
-  await tester.pump();
+  await selectTestTabletopPersona(tester, personaId);
 }
 
 Future<void> _selectTab(
@@ -122,15 +118,17 @@ void main() {
   testWidgets(
     'Giving projects the frozen dues instance through the generic engine-native list',
     (tester) async {
-      final installed = (await tester.runAsync(
-        () => _install('gp2-giving'),
-      ))!;
+      final installed = (await tester.runAsync(() => _install('gp2-giving')))!;
       try {
         await tester.pumpWidget(
           MaterialApp(
             home: LocalExtensionScreen(
               community: installed.community,
               seedDataFiles: const [],
+              authApi: activeAuthForInstalledCommunity(
+                community: installed.community,
+                personaTypeId: 'tabletop-member',
+              ),
             ),
           ),
         );
@@ -262,6 +260,10 @@ void main() {
             home: LocalExtensionScreen(
               community: installed.community,
               seedDataFiles: const [],
+              authApi: activeAuthForInstalledCommunity(
+                community: installed.community,
+                personaTypeId: 'tabletop-member',
+              ),
             ),
           ),
         );
@@ -276,9 +278,7 @@ void main() {
           const ValueKey('marketplace-listing-listing-catan'),
         );
         final catanJoinQueue = find.byKey(
-          const ValueKey(
-            'equipment-loan-listing-catan-action-join-queue',
-          ),
+          const ValueKey('equipment-loan-listing-catan-action-join-queue'),
         );
         final catanBorrow = find.byKey(
           const ValueKey('equipment-loan-action-borrow-listing-catan'),
