@@ -1,7 +1,7 @@
 # Ticket status: AuthZ.P2
 
 ## Change applied
-Status: blocked
+Status: done (required one follow-up fix round, AuthZ.P2 fix1, see below)
 
 Added the immutable `ActiveIdentityContext` (`part25_engine_native_community_store.dart:9-34`)
 with `accountId`, `authApi`, and `personaId`, plus the stateful `ActiveIdentityScope`
@@ -49,22 +49,23 @@ changed, and no access/visibility/membership/invite concept was added.
 
 ## Verification
 
-flutter analyze: clean. Using a writable temporary Flutter SDK and the existing package
-configuration, `flutter analyze --no-pub packages/core/loom_communities_app_shell` reported
-`No issues found!`. The normal sandbox Flutter bootstrap cannot write its read-only
-`/home/fahd_/flutter/bin/cache/engine.stamp`; pub-enabled startup was also blocked by the
-sandbox's restricted network, so `--no-pub` was required for the clean analyzer run.
+Sandbox flutter analyze: clean (see original note on the workaround required to get there).
+Sandbox test suite: blocked by the sandbox's denied Flutter tester loopback socket, as originally
+reported.
 
-Test suite: pass count unavailable (0/183 test cases executed). The full app-shell suite reached
-the loader with the writable SDK but every test file failed before discovery because Flutter
-could not bind its tester VM socket: `Failed to create server socket (OS Error: Operation not
-permitted, errno = 1), address = 127.0.0.1, port = 0` (`+0 -50: Some tests failed`). No test body
-ran, so the required 182/183 outcome and the exact single pre-existing
-`organizer creates an event and one pending response per member` A11 failure cannot be confirmed
-in this sandbox. This is an environment block, not a different observed test result;
-independent verification outside the sandbox is required.
+**Independent verification (verification agent, outside the sandbox):** first run found a real
+regression -- 2 new failures beyond the known a11 flake, both attendee-name resolution in
+`v3_milestone_a11_event_rsvp_archetype_test.dart` ("resolve frozen-fixture names by response
+state" and "resolve tournament names and retain unknown ids"), root-caused and fixed in a
+follow-up ticket (AuthZ.P2 fix1, `data/v3_ticket_authz_p2_fix1_STATUS.md`): an inherited-widget
+lookup (`ActiveIdentityScope.of(context)`) was called from `initState()`, which Flutter rejects;
+the resulting error was silently swallowed by existing graceful-degradation handling. Moved to
+`didChangeDependencies()`. After that fix, independently verified: `flutter analyze` clean, full
+`loom_communities_app_shell` suite 182/183 passing (only the known pre-existing a11 flake), both
+previously-failing tests confirmed passing individually.
 
 ## Commit
 
-staged, not committed + required full-suite verification is blocked by the sandbox's denied
-Flutter tester loopback socket (`Operation not permitted` on `127.0.0.1:0`).
+This ticket's own code landed in commit `74715e6e` (bundled together with the fix1
+ticket-authoring commit, since both were already staged at commit time -- see that commit's
+message), and the regression fix landed separately in `eeb95b48`.
