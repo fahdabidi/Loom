@@ -1479,6 +1479,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     super.initState();
     _instance = widget.instance;
     _loadActions();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ActiveIdentityScope is an inherited dependency. Looking it up from
+    // initState is rejected by Flutter before the State has completed its
+    // initialization, and the swallowed lookup error leaves attendee names
+    // permanently rendered as their raw ids. Resolve it after initState and
+    // again whenever the active identity scope changes.
     _loadAccountNames();
   }
 
@@ -1641,9 +1651,10 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final communityExtensionId = widget.communityExtensionId;
     final request = ++_accountRequest;
     try {
-      final accounts = await ActiveIdentityScope.of(
-        context,
-      ).authApi.listAccounts(communityExtensionId: communityExtensionId);
+      final authApi = ActiveIdentityScope.of(context).authApi;
+      final accounts = await authApi.listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
       if (!mounted ||
           request != _accountRequest ||
           widget.communityExtensionId != communityExtensionId) {
