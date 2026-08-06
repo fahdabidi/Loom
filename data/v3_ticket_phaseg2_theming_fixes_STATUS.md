@@ -32,4 +32,4 @@ The known a11 flake could not be isolated; independent runtime verification is r
 The B26 package-driven theme regression test was left unmodified and was not runnable for the same reason.
 
 ## Commit
-staged, not committed — runtime widget tests are blocked by the exact localhost server-socket restriction above.
+5301d0e4; runtime widget tests are blocked by the exact localhost server-socket restriction above.

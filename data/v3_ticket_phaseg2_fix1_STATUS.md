@@ -27,5 +27,5 @@ was observed, so the known a11 flake could not be isolated or confirmed as the
 only runtime failure in this environment.
 
 ## Commit
-staged, not committed; runtime widget tests are blocked by the exact
-localhost server-socket restriction above.
+59a5297b; runtime widget tests are blocked by the exact localhost
+server-socket restriction above.
