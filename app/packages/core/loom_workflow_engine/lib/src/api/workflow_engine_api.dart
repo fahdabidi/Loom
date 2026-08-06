@@ -10,6 +10,20 @@ import '../models/workflow_models.dart';
 /// lookup from their account store instead.
 typedef ActiveMembershipLookup = FutureOr<bool> Function(String personaId);
 
+/// Resolves whether a caller may reach a workflow-backed surface.
+///
+/// The app shell owns the permission taxonomy and supplies this callback to
+/// the domain-agnostic engine. Keeping the callback here avoids a dependency
+/// from the workflow engine back onto app-shell models while still allowing
+/// query and mutation entrypoints to enforce the same policy as the UI.
+typedef WorkflowSurfacePermissionLookup =
+    FutureOr<bool> Function({
+      required String personaId,
+      String? personaTypeId,
+      String? tabId,
+      String? workflowType,
+    });
+
 /// The result of an `applyTransition` call.
 class WorkflowTransitionResult {
   final String newState;

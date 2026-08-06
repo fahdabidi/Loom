@@ -179,6 +179,67 @@ class _EngineNativeCommunityStore {
     }
     await engine.seedInstances(seeds);
   }
+
+  void configureAuthorization({
+    required Map<String, Object?> appShellConfiguration,
+    required ActiveMembershipLookup activeMembershipLookup,
+  }) {
+    engine.setActiveMembershipLookup(activeMembershipLookup);
+    engine.setSurfacePermissionLookup(({
+      required String personaId,
+      String? personaTypeId,
+      String? tabId,
+      String? workflowType,
+    }) async {
+      final effectivePersonaTypeId = personaTypeId ?? personaId;
+      if (tabId != null) {
+        final permission = requiredPermissionForTab(
+          experience: experience,
+          tabId: tabId,
+          personaId: effectivePersonaTypeId,
+          appShellConfiguration: appShellConfiguration,
+        );
+        if (permission == null) return false;
+        return personaHasPermissionAsync(
+          experience,
+          personaId,
+          permission,
+          activeMembershipLookup: activeMembershipLookup,
+          tabId: tabId,
+          personaTypeId: effectivePersonaTypeId,
+        );
+      }
+
+      final machine = workflowType == null
+          ? null
+          : experience.workflowDefinitions?[workflowType];
+      if (machine == null) return true;
+      final permissions = <String>{};
+      for (final binding in machine.renderBindings) {
+        final permission = requiredPermissionForTab(
+          experience: experience,
+          tabId: binding.tabId,
+          personaId: effectivePersonaTypeId,
+          appShellConfiguration: appShellConfiguration,
+        );
+        if (permission != null) permissions.add(permission);
+      }
+      if (permissions.isEmpty) return true;
+      for (final permission in permissions) {
+        if (await personaHasPermissionAsync(
+          experience,
+          personaId,
+          permission,
+          activeMembershipLookup: activeMembershipLookup,
+          workflowType: workflowType,
+          personaTypeId: effectivePersonaTypeId,
+        )) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
 }
 
 void _installEngineNativeExperience(
@@ -202,4 +263,24 @@ Future<WorkflowEngineApi> workflowEngineForExtensionId(
   }
   await store.ensureReady();
   return store.engine;
+}
+
+/// Wires the app-shell account store into the already-installed shared engine.
+///
+/// Engine-native stores are installed while package configuration is parsed,
+/// before the screen's auth API is constructed. This late-binding hook reuses
+/// the same [ActiveMembershipLookup] used by P4a and supplies the
+/// app-shell-owned [personaHasPermission] policy without creating a package
+/// dependency cycle.
+void configureEngineAuthorizationForExtensionId({
+  required String extensionId,
+  required Map<String, Object?> appShellConfiguration,
+  required ActiveMembershipLookup activeMembershipLookup,
+}) {
+  final store = _EngineNativeCommunityStore._stores[extensionId];
+  if (store == null) return;
+  store.configureAuthorization(
+    appShellConfiguration: appShellConfiguration,
+    activeMembershipLookup: activeMembershipLookup,
+  );
 }

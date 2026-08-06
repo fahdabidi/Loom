@@ -85,7 +85,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final String _communityId;
   final DateTime Function() _clock;
   final NotificationDeliveryService? _notificationDeliveryService;
-  final ActiveMembershipLookup? _activeMembershipLookup;
+  ActiveMembershipLookup? _activeMembershipLookup;
+  WorkflowSurfacePermissionLookup? _surfacePermissionLookup;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -107,11 +108,27 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     DateTime Function()? clock,
     NotificationDeliveryService? notificationDeliveryService,
     ActiveMembershipLookup? activeMembershipLookup,
+    WorkflowSurfacePermissionLookup? surfacePermissionLookup,
   }) : _db = db,
        _communityId = communityId,
        _clock = clock ?? DateTime.now,
        _notificationDeliveryService = notificationDeliveryService,
-       _activeMembershipLookup = activeMembershipLookup;
+       _activeMembershipLookup = activeMembershipLookup,
+       _surfacePermissionLookup = surfacePermissionLookup;
+
+  /// Updates the membership lookup after construction when the app-shell auth
+  /// store becomes available. This preserves the injected P4a pattern while
+  /// allowing the shared engine to be installed before a session exists.
+  void setActiveMembershipLookup(ActiveMembershipLookup? lookup) {
+    _activeMembershipLookup = lookup;
+  }
+
+  /// Installs the app-shell-owned surface permission policy used at the
+  /// engine boundary. The workflow engine remains provider-neutral; the
+  /// callback is expected to delegate to the app shell's permission helper.
+  void setSurfacePermissionLookup(WorkflowSurfacePermissionLookup? lookup) {
+    _surfacePermissionLookup = lookup;
+  }
 
   // ── populate definitions (called before any API use) ──────────────────
 
@@ -153,6 +170,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     int limit = 25,
     String? cursor,
   }) async {
+    await _requireSurfacePermission(personaId: personaId, tabId: tabId);
     final sortKey = query.sort?.key ?? 'title';
 
     final rows = await _db.queryInstancesKeyset(
@@ -330,6 +348,27 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final lookup = _activeMembershipLookup;
     if (lookup == null) return false;
     return lookup(personaId);
+  }
+
+  Future<void> _requireSurfacePermission({
+    required String personaId,
+    String? tabId,
+    String? workflowType,
+  }) async {
+    final lookup = _surfacePermissionLookup;
+    if (lookup == null) return;
+    final allowed = await lookup(
+      personaId: personaId,
+      personaTypeId: _personaTypeById[personaId],
+      tabId: tabId,
+      workflowType: workflowType,
+    );
+    if (!allowed) {
+      final surface = tabId ?? workflowType ?? 'unknown';
+      throw StateError(
+        'Permission denied for surface "$surface" for $personaId',
+      );
+    }
   }
 
   Future<bool> _isVisibleToPersona(
@@ -623,6 +662,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     Map<String, dynamic>? inputs,
   }) async {
     try {
+      await _requireSurfacePermission(
+        personaId: personaId,
+        workflowType: workflowType,
+      );
       // Resolve guards and GAP-1 inputs before opening a transaction. Besides
       // preserving the public validation contract, this means an expected
       // StateError never enters the database transaction machinery.

@@ -203,6 +203,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     return session?.account.personaTypeId ?? _selectedPersonaId;
   }
 
+  bool? get _activeAccountHasActiveMembership {
+    final account = _authApi.currentSession?.account;
+    if (account == null) return null;
+    return account.status == MembershipStatus.active;
+  }
+
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
@@ -365,6 +371,20 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experience.workflowDefinitions!.isEmpty) {
       return; // legacy-schema community — nothing to sync
     }
+    configureEngineAuthorizationForExtensionId(
+      extensionId: community.extensionId,
+      appShellConfiguration: community.appShellConfiguration,
+      activeMembershipLookup: (personaId) async {
+        final accounts = await _authApi.listAccounts(
+          communityExtensionId: community.extensionId,
+        );
+        return accounts.any(
+          (account) =>
+              account.accountId == personaId &&
+              account.status == MembershipStatus.active,
+        );
+      },
+    );
     final accounts = await _authApi.listAccounts(
       communityExtensionId: community.extensionId,
     );
@@ -526,6 +546,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience: experience,
       personaId: activePersona.personaId,
       appShellConfiguration: community.appShellConfiguration,
+      hasActiveMembership: _activeAccountHasActiveMembership,
     );
     final owningTab = tabSpecs.firstWhere(
       (tab) =>
@@ -676,6 +697,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience: experience,
       personaId: activePersona.personaId,
       appShellConfiguration: community.appShellConfiguration,
+      hasActiveMembership: _activeAccountHasActiveMembership,
     );
     final targetTab = tabSpecs.firstWhere(
       (tab) =>
@@ -935,6 +957,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience: experience,
       personaId: activePersona.personaId,
       appShellConfiguration: community.appShellConfiguration,
+      hasActiveMembership: _activeAccountHasActiveMembership,
     );
     final selectedTabId = _selectedTabIdFor(
       personaId: activePersona.personaId,

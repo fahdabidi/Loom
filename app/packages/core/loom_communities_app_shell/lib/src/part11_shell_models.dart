@@ -608,8 +608,27 @@ class LoomAppShellTabSpec {
   final List<String> visiblePersonaIds;
   final String requiredPermission;
 
-  bool isVisibleFor(String personaId) {
-    return visiblePersonaIds.isEmpty || visiblePersonaIds.contains(personaId);
+  bool isVisibleFor(
+    String personaId, {
+    LoomExperienceDefinition? experience,
+    bool enforceRequiredPermission = false,
+    bool? hasActiveMembership,
+    String? personaTypeId,
+  }) {
+    if (visiblePersonaIds.isNotEmpty) {
+      return visiblePersonaIds.contains(personaId);
+    }
+    if (!enforceRequiredPermission || experience == null) {
+      return true;
+    }
+    return personaHasPermission(
+      experience,
+      personaId,
+      requiredPermission,
+      tabId: tabId,
+      personaTypeId: personaTypeId,
+      hasActiveMembership: hasActiveMembership,
+    );
   }
 
   bool matchesWorkflow({
