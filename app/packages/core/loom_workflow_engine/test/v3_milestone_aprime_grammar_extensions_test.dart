@@ -575,7 +575,7 @@ void main() {
 
     test('queryInstances hydrates query-backed source fields', () async {
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'event-summer',
           workflowType: 'tournament-event',
           currentState: 'open',
@@ -589,7 +589,7 @@ void main() {
       ]);
 
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
@@ -602,7 +602,7 @@ void main() {
 
       // Seed the 4 real votes from the frozen JSON
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m03-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -613,7 +613,7 @@ void main() {
           },
           createdByPersonaId: 'member-03',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -624,7 +624,7 @@ void main() {
           },
           createdByPersonaId: 'member-04',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m05-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -635,7 +635,7 @@ void main() {
           },
           createdByPersonaId: 'member-05',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m06-azul',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -674,7 +674,7 @@ void main() {
 
     test('formulas compute over hydrated source data', () async {
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'event-summer',
           workflowType: 'tournament-event',
           currentState: 'open',
@@ -688,7 +688,7 @@ void main() {
       ]);
 
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
@@ -697,7 +697,7 @@ void main() {
           },
           createdByPersonaId: 'organizer',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m03-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -708,7 +708,7 @@ void main() {
           },
           createdByPersonaId: 'member-03',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -719,7 +719,7 @@ void main() {
           },
           createdByPersonaId: 'member-04',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m05-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -730,7 +730,7 @@ void main() {
           },
           createdByPersonaId: 'member-05',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m06-azul',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -771,7 +771,7 @@ void main() {
 
     test('availableTransitionsAsync hydrates source fields', () async {
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'event-summer',
           workflowType: 'tournament-event',
           currentState: 'open',
@@ -783,7 +783,7 @@ void main() {
       ]);
 
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
@@ -792,7 +792,7 @@ void main() {
           },
           createdByPersonaId: 'organizer',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m03-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -831,7 +831,7 @@ void main() {
 
     test('applyTransition result hydrates source fields', () async {
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'event-summer',
           workflowType: 'tournament-event',
           currentState: 'open',
@@ -843,7 +843,7 @@ void main() {
       ]);
 
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
@@ -872,7 +872,7 @@ void main() {
 
     test('aggregate API works with source-backed formulas', () async {
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'event-summer',
           workflowType: 'tournament-event',
           currentState: 'open',
@@ -884,7 +884,7 @@ void main() {
       ]);
 
       await api.seedInstances([
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
@@ -893,7 +893,7 @@ void main() {
           },
           createdByPersonaId: 'organizer',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m03-catan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
@@ -904,7 +904,7 @@ void main() {
           },
           createdByPersonaId: 'member-03',
         ),
-        WorkflowInstance(
+        const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
           workflowType: 'tournament-vote',
           currentState: 'cast',
