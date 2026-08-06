@@ -429,6 +429,10 @@ class LoomWorkflowState {
   /// Unlike [editGuard], an absent creation guard deliberately means creation
   /// remains open.
   final WorkflowGuard? creationGuard;
+
+  /// Optional authorization for reading this state. This is data-only for now;
+  /// read-path enforcement is intentionally handled by a later ticket.
+  final WorkflowGuard? readGuard;
   final bool isTerminal;
 
   const LoomWorkflowState({
@@ -437,6 +441,7 @@ class LoomWorkflowState {
     this.editableFields,
     this.editGuard,
     this.creationGuard,
+    this.readGuard,
     this.isTerminal = false,
   });
 
@@ -455,7 +460,82 @@ class LoomWorkflowState {
               json['creationGuard'] as Map<String, dynamic>,
             )
           : null,
+      readGuard: json['readGuard'] != null
+          ? WorkflowGuard.fromJson(json['readGuard'] as Map<String, dynamic>)
+          : null,
       isTerminal: json['isTerminal'] as bool? ?? false,
+    );
+  }
+}
+
+/// The workflow-level default visibility vocabulary.
+enum WorkflowVisibilityDefault { public, membersOnly, guarded }
+
+/// Workflow-level read-visibility declaration.
+///
+/// [isDeclared] keeps the distinction between an omitted visibility block and
+/// an explicitly declared `public` block so validators can warn about legacy
+/// workflows without changing their public default behavior.
+class WorkflowVisibility {
+  final WorkflowVisibilityDefault defaultValue;
+  final WorkflowGuard? readGuard;
+  final bool isDeclared;
+
+  const WorkflowVisibility({
+    this.defaultValue = WorkflowVisibilityDefault.public,
+    this.readGuard,
+    this.isDeclared = true,
+  });
+
+  /// Alias that reads naturally at call sites describing the resolved policy.
+  WorkflowVisibilityDefault get defaultVisibility => defaultValue;
+
+  factory WorkflowVisibility.fromJson(Object? value) {
+    if (value == null) {
+      return const WorkflowVisibility(isDeclared: false);
+    }
+    if (value is! Map) {
+      throw const FormatException(
+        'Workflow visibility must be an object when declared.',
+      );
+    }
+
+    final rawDefault = value['default'];
+    final defaultValue = switch (rawDefault) {
+      null => WorkflowVisibilityDefault.public,
+      'public' => WorkflowVisibilityDefault.public,
+      'membersOnly' => WorkflowVisibilityDefault.membersOnly,
+      'guarded' => WorkflowVisibilityDefault.guarded,
+      _ => throw FormatException(
+          'Invalid workflow visibility.default "$rawDefault". '
+          'Expected one of: public, membersOnly, guarded.',
+        ),
+    };
+
+    final rawReadGuard = value['readGuard'];
+    WorkflowGuard? readGuard;
+    if (rawReadGuard != null) {
+      if (rawReadGuard is! Map) {
+        throw const FormatException(
+          'Workflow visibility.readGuard must be an object when declared.',
+        );
+      }
+      readGuard = WorkflowGuard.fromJson(
+        Map<String, dynamic>.from(rawReadGuard),
+      );
+    }
+
+    if (defaultValue == WorkflowVisibilityDefault.guarded &&
+        readGuard == null) {
+      throw const FormatException(
+        'Workflow visibility.default "guarded" requires a sibling readGuard.',
+      );
+    }
+
+    return WorkflowVisibility(
+      defaultValue: defaultValue,
+      readGuard: readGuard,
+      isDeclared: true,
     );
   }
 }
@@ -706,6 +786,7 @@ class LoomWorkflowStateMachine {
   final List<LoomWorkflowTransition> transitions;
   final List<RenderBinding> renderBindings;
   final Map<String, InstanceDataField> instanceDataSchema;
+  final WorkflowVisibility visibility;
 
   const LoomWorkflowStateMachine({
     required this.workflowType,
@@ -714,6 +795,7 @@ class LoomWorkflowStateMachine {
     required this.transitions,
     this.renderBindings = const [],
     this.instanceDataSchema = const {},
+    this.visibility = const WorkflowVisibility(isDeclared: false),
   });
 
   factory LoomWorkflowStateMachine.fromJson(
@@ -745,6 +827,9 @@ class LoomWorkflowStateMachine {
             ),
           ) ??
           const {},
+      visibility: json.containsKey('visibility')
+          ? WorkflowVisibility.fromJson(json['visibility'])
+          : const WorkflowVisibility(isDeclared: false),
     );
   }
 

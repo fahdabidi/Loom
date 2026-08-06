@@ -1503,6 +1503,25 @@ class LoomEvidenceTarget {
   final List<String> seedDataFiles;
 }
 
+enum LoomPersonaAccessMode {
+  open,
+  requiresApproval,
+  requiresInvite;
+
+  static LoomPersonaAccessMode fromJson(Object? value) {
+    return switch (value) {
+      null => LoomPersonaAccessMode.open,
+      'open' => LoomPersonaAccessMode.open,
+      'requiresApproval' => LoomPersonaAccessMode.requiresApproval,
+      'requiresInvite' => LoomPersonaAccessMode.requiresInvite,
+      _ => throw FormatException(
+        'Invalid persona accessMode "$value". Expected one of: '
+        'open, requiresApproval, requiresInvite.',
+      ),
+    };
+  }
+}
+
 class LoomPersonaDefinition {
   const LoomPersonaDefinition({
     required this.personaId,
@@ -1510,6 +1529,7 @@ class LoomPersonaDefinition {
     required this.roleLabel,
     required this.description,
     this.accountId,
+    this.accessMode = LoomPersonaAccessMode.open,
   });
 
   /// The persona TYPE id (e.g. `tabletop-member`) -- shared by every account
@@ -1520,6 +1540,7 @@ class LoomPersonaDefinition {
   final String label;
   final String roleLabel;
   final String description;
+  final LoomPersonaAccessMode accessMode;
 
   /// The specific signed-in individual account's id (e.g.
   /// `tabletop-member-03`), when signed in as a specific person via "Sign in

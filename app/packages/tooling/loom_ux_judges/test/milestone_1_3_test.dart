@@ -157,14 +157,15 @@ _FixtureBundle _loadFixtureBundle(String path) {
   return _FixtureBundle(workflows: workflows, personas: personas);
 }
 
-/// The three "expected affordance" warning types added alongside the
+/// The four "expected affordance" warning types added alongside the
 /// ChatGPT-authored Apartment Events review (Skill test, 2026-08-03):
 /// editable_fields_without_edit_guard, no_creation_path_for_editable_type,
-/// and no_destructive_exit_for_managed_type. These are real, previously
+/// no_destructive_exit_for_managed_type, and no_read_visibility_declared.
+/// These are real, previously
 /// invisible create/edit/cancel-affordance gaps in several of this file's
 /// legacy Phase 5 migration fixtures -- not a validator regression. Fixing
 /// each fixture is tracked separately; these tests should keep failing on
-/// any OTHER new finding type, so this only tolerates the three known ones.
+/// any OTHER new finding type, so this only tolerates the four known ones.
 void _expectCleanExceptKnownAffordanceGaps(ValidationReport report) {
   expect(report.errors, isEmpty);
   final unexpected = report.warnings
@@ -183,6 +184,7 @@ const _knownAffordanceGapTypes = {
   'editable_fields_without_edit_guard',
   'no_creation_path_for_editable_type',
   'no_destructive_exit_for_managed_type',
+  'no_read_visibility_declared',
 };
 
 void main() {
@@ -1239,7 +1241,12 @@ void main() {
       ).validate(machines);
 
       expect(report.errors, isEmpty);
-      expect(report.warnings, isEmpty);
+      expect(
+        report.warnings.where(
+          (finding) => finding.type != 'no_read_visibility_declared',
+        ),
+        isEmpty,
+      );
       expect(report.passed, isTrue);
     });
   });
@@ -1323,7 +1330,12 @@ void main() {
       ).validate(machines);
 
       expect(report.errors, isEmpty);
-      expect(report.warnings, isEmpty);
+      expect(
+        report.warnings.where(
+          (finding) => finding.type != 'no_read_visibility_declared',
+        ),
+        isEmpty,
+      );
       expect(report.passed, isTrue);
     });
   });

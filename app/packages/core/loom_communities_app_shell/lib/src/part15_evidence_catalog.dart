@@ -318,7 +318,11 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
         Map<String, dynamic>.from(entry.value as Map),
         entry.key.toString(),
       );
-    } catch (_) {}
+    } catch (error) {
+      // Grammar validation errors must be visible to package parsing callers;
+      // only unrelated malformed legacy entries retain the old skip behavior.
+      if (error is FormatException) rethrow;
+    }
   }
   if (definitions.isEmpty) return null;
   final rawInstances = experienceConfiguration['workflowInstances'];
@@ -1070,11 +1074,13 @@ LoomPersonaDefinition? _parsePersonaDefinition(Map<String, Object?> map) {
   }
   final roleLabel = map['roleLabel'];
   final description = map['description'];
+  final accessMode = LoomPersonaAccessMode.fromJson(map['accessMode']);
   return LoomPersonaDefinition(
     personaId: personaId,
     label: label,
     roleLabel: roleLabel is String ? roleLabel : label,
     description: description is String ? description : '',
+    accessMode: accessMode,
   );
 }
 

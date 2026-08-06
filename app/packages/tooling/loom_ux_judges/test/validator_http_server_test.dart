@@ -404,6 +404,7 @@ const _hikeClubPackage = {
     'workflowDefinitions': {
       'hike-rsvp': {
         'initialState': 'open',
+        'visibility': {'default': 'public'},
         'states': {
           'open': {
             'label': 'Signups open',
@@ -514,6 +515,7 @@ const _noEditGuardOrCreatePackage = {
     'workflowDefinitions': {
       'thing': {
         'initialState': 'open',
+        'visibility': {'default': 'public'},
         'states': {
           'open': {
             'label': 'Open',

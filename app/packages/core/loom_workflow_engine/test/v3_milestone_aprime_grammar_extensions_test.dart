@@ -27,6 +27,113 @@ void main() {
       expect(unguarded.editGuard, isNull);
     });
 
+    test('state readGuard mirrors editGuard parsing', () {
+      final state = LoomWorkflowState.fromJson(<String, dynamic>{
+        'label': 'Draft',
+        'readGuard': <String, dynamic>{
+          'allowedPersonaIds': ['reviewer'],
+        },
+      });
+
+      expect(state.readGuard, isNotNull);
+      expect(state.readGuard!.allowedPersonaIds, ['reviewer']);
+    });
+
+    test('workflow visibility parses public, membersOnly, and guarded', () {
+      final cases = <String, WorkflowVisibilityDefault>{
+        'public': WorkflowVisibilityDefault.public,
+        'membersOnly': WorkflowVisibilityDefault.membersOnly,
+        'guarded': WorkflowVisibilityDefault.guarded,
+      };
+
+      for (final entry in cases.entries) {
+        final machine = _machine('visibility-${entry.key}', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+          'visibility': {
+            'default': entry.key,
+            if (entry.key == 'guarded')
+              'readGuard': {
+                'allowedPersonaIds': ['reviewer'],
+              },
+          },
+        });
+
+        expect(machine.visibility.isDeclared, isTrue);
+        expect(machine.visibility.defaultValue, entry.value);
+        if (entry.key == 'guarded') {
+          expect(
+            machine.visibility.readGuard!.allowedPersonaIds,
+            ['reviewer'],
+          );
+        } else {
+          expect(machine.visibility.readGuard, isNull);
+        }
+      }
+    });
+
+    test(
+      'omitted workflow visibility resolves to public and remains undeclared',
+      () {
+        final machine = _machine('legacy-visibility', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+        });
+
+        expect(
+          machine.visibility.defaultValue,
+          WorkflowVisibilityDefault.public,
+        );
+        expect(machine.visibility.isDeclared, isFalse);
+      },
+    );
+
+    test('invalid workflow visibility.default fails with a clear error', () {
+      expect(
+        () => _machine('invalid-visibility', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+          'visibility': {'default': 'private'},
+        }),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('visibility.default'), contains('membersOnly')),
+          ),
+        ),
+      );
+    });
+
+    test('guarded workflow visibility requires a readGuard', () {
+      expect(
+        () => _machine('missing-read-guard', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+          'visibility': {'default': 'guarded'},
+        }),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('requires a sibling readGuard'),
+          ),
+        ),
+      );
+    });
+
     test('render binding fromJson parses optional styleField', () {
       final styled = RenderBinding.fromJson(<String, dynamic>{
         'states': ['open'],

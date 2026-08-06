@@ -184,6 +184,81 @@ void main() {
     expect(absent.resolvedNotificationPresentationStyle, 'bell');
   });
 
+  test('persona accessMode parses all values and defaults to open', () {
+    final config = _v2Experience()
+      ..['personas'] = <Object?>[
+        <String, Object?>{
+          'personaId': 'open-persona',
+          'label': 'Open',
+          'roleLabel': 'Member',
+          'description': 'Open access',
+          'accessMode': 'open',
+        },
+        <String, Object?>{
+          'personaId': 'approval-persona',
+          'label': 'Approval',
+          'roleLabel': 'Member',
+          'description': 'Approval access',
+          'accessMode': 'requiresApproval',
+        },
+        <String, Object?>{
+          'personaId': 'invite-persona',
+          'label': 'Invite',
+          'roleLabel': 'Member',
+          'description': 'Invite access',
+          'accessMode': 'requiresInvite',
+        },
+        <String, Object?>{
+          'personaId': 'default-persona',
+          'label': 'Default',
+          'roleLabel': 'Member',
+          'description': 'Default access',
+        },
+      ];
+
+    final personas = experienceForExtensionId(
+      'a4-persona-access-mode',
+      experienceConfiguration: config,
+    ).personas!;
+
+    expect(
+      personas.map((persona) => persona.accessMode),
+      <LoomPersonaAccessMode>[
+        LoomPersonaAccessMode.open,
+        LoomPersonaAccessMode.requiresApproval,
+        LoomPersonaAccessMode.requiresInvite,
+        LoomPersonaAccessMode.open,
+      ],
+    );
+  });
+
+  test('invalid persona accessMode fails with a clear FormatException', () {
+    final config = _v2Experience()
+      ..['personas'] = <Object?>[
+        <String, Object?>{
+          'personaId': 'invalid-persona',
+          'label': 'Invalid',
+          'roleLabel': 'Member',
+          'description': 'Invalid access',
+          'accessMode': 'approvalRequired',
+        },
+      ];
+
+    expect(
+      () => experienceForExtensionId(
+        'a4-invalid-persona-access-mode',
+        experienceConfiguration: config,
+      ),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          allOf(contains('accessMode'), contains('requiresInvite')),
+        ),
+      ),
+    );
+  });
+
   test('legacy notification presentation parses for both schema paths', () {
     final experience = experienceForExtensionId(
       'a4-legacy-notification-presentation',

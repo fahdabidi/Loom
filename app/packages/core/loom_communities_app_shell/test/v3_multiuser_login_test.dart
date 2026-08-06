@@ -98,6 +98,7 @@ void main() {
           anyOf('tabletop-organizer', 'tabletop-member'),
         );
         expect(account.displayName, isNotEmpty);
+        expect(account.status, MembershipStatus.active);
       }
 
       // Verify specific seeded accounts exist
@@ -131,6 +132,7 @@ void main() {
       expect(authApi.currentSession, same(newSession));
       expect(newSession.account.personaTypeId, 'tabletop-member');
       expect(newSession.account.displayName, 'Test User');
+      expect(newSession.account.status, MembershipStatus.active);
       // New account should not collide with seeded ids
       expect(newSession.account.accountId, isNot('tabletop-member-05'));
 
@@ -301,5 +303,22 @@ void main() {
         expect(ids, contains('decline-request'));
       },
     );
+
+    test('community invite record retains its data-only shape', () {
+      final createdAt = DateTime.utc(2026, 8, 5);
+      final invite = LoomCommunityInvite(
+        inviteId: 'invite-1',
+        communityExtensionId: communityExtensionId,
+        personaTypeId: 'tabletop-member',
+        issuedByAccountId: 'tabletop-organizer',
+        code: 'TABLETOP-1',
+        status: InviteStatus.pending,
+        createdAt: createdAt,
+      );
+
+      expect(invite.status, InviteStatus.pending);
+      expect(invite.createdAt, createdAt);
+      expect(invite.personaTypeId, 'tabletop-member');
+    });
   });
 }

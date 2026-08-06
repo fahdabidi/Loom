@@ -1,5 +1,31 @@
 part of '../loom_communities_app_shell.dart';
 
+enum MembershipStatus { active, pendingApproval, invited }
+
+enum InviteStatus { pending, claimed, revoked }
+
+/// Data shape for a community invitation. Issuing and redeeming invites are
+/// intentionally left to a later auth-flow ticket.
+class LoomCommunityInvite {
+  final String inviteId;
+  final String communityExtensionId;
+  final String personaTypeId;
+  final String issuedByAccountId;
+  final String code;
+  final InviteStatus status;
+  final DateTime createdAt;
+
+  const LoomCommunityInvite({
+    required this.inviteId,
+    required this.communityExtensionId,
+    required this.personaTypeId,
+    required this.issuedByAccountId,
+    required this.code,
+    required this.status,
+    required this.createdAt,
+  });
+}
+
 /// An account represents either a seeded demo individual or a newly
 /// signed-up user.  [accountId] is the stable per-individual id (e.g.
 /// `"tabletop-member-05"`); [personaTypeId] is the *declared persona type*
@@ -9,11 +35,13 @@ class LoomAccount {
   final String accountId;
   final String displayName;
   final String personaTypeId;
+  final MembershipStatus status;
 
   const LoomAccount({
     required this.accountId,
     required this.displayName,
     required this.personaTypeId,
+    this.status = MembershipStatus.active,
   });
 
   @override

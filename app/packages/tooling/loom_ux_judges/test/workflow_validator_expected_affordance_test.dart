@@ -14,12 +14,14 @@ LoomWorkflowStateMachine _machine(
   required List<Map<String, dynamic>> transitions,
   Map<String, dynamic> schema = const {},
   List<Map<String, dynamic>> renderBindings = const [],
+  Map<String, dynamic>? visibility,
 }) => LoomWorkflowStateMachine.fromJson({
   'initialState': 'open',
   'states': states,
   'transitions': transitions,
   'instanceDataSchema': schema,
   if (renderBindings.isNotEmpty) 'renderBindings': renderBindings,
+  if (visibility != null) 'visibility': visibility,
 }, workflowType);
 
 ValidationReport _validate(Map<String, LoomWorkflowStateMachine> workflows) =>
@@ -29,6 +31,59 @@ bool _hasWarning(ValidationReport report, String type) =>
     report.warnings.any((f) => f.type == type);
 
 void main() {
+  group('no_read_visibility_declared', () {
+    test('fires exactly once when a workflow omits visibility', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+          },
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (finding) => finding.type == 'no_read_visibility_declared',
+        ),
+        hasLength(1),
+      );
+      expect(report.warnings, hasLength(1));
+      expect(report.passed, isTrue, reason: 'warnings never block pass');
+    });
+
+    test('does not fire when visibility is declared', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+          },
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+          visibility: {'default': 'public'},
+        ),
+      });
+
+      expect(_hasWarning(report, 'no_read_visibility_declared'), isFalse);
+      expect(report.warnings, isEmpty);
+    });
+  });
+
   group('editable_fields_without_edit_guard', () {
     test('fires when editableFields is set with no editGuard', () {
       final machine = _machine(

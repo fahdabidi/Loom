@@ -136,6 +136,7 @@ class WorkflowValidator {
       _checkRelatedAggregateGuards(machine, workflows, findings);
       _checkMissingLabels(machine, findings);
       _checkBindingCap(machine, findings);
+      _checkNoReadVisibilityDeclared(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
       _checkEditableFieldsWithoutEditGuard(machine, findings);
       _checkNoDestructiveExitForManagedType(machine, findings);
@@ -1480,6 +1481,30 @@ class WorkflowValidator {
         ),
       );
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Workflow-level read visibility omitted. Public remains the compatibility
+  // default, but every workflow should declare its intended read policy.
+  // ---------------------------------------------------------------------------
+  void _checkNoReadVisibilityDeclared(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    if (machine.visibility.isDeclared) return;
+
+    findings.add(
+      ValidationFinding(
+        type: 'no_read_visibility_declared',
+        message:
+            'Workflow "${machine.workflowType}" does not declare a '
+            'visibility policy. Reads continue to default to public, but '
+            'declare "visibility" explicitly so the community\'s intended '
+            'read policy is visible in its JSON.',
+        location: '${machine.workflowType}/visibility',
+        isWarning: true,
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------

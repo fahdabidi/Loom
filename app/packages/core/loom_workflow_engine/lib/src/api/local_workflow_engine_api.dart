@@ -1419,6 +1419,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           if (v.editGuard != null) 'editGuard': _serializeGuard(v.editGuard!),
           if (v.creationGuard != null)
             'creationGuard': _serializeGuard(v.creationGuard!),
+          if (v.readGuard != null)
+            'readGuard': _serializeGuard(v.readGuard!) ?? <String, dynamic>{},
         }),
       ),
       'transitions': machine.transitions
@@ -1508,6 +1510,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             if (v.formula != null) 'formula': v.formula,
           }),
         ),
+      if (machine.visibility.isDeclared)
+        'visibility': {
+          'default': machine.visibility.defaultValue.name,
+          if (machine.visibility.readGuard != null)
+            'readGuard':
+                _serializeGuard(machine.visibility.readGuard!) ??
+                <String, dynamic>{},
+        },
     };
     return map;
   }
