@@ -26,4 +26,14 @@ New tests are in `app/packages/core/loom_workflow_engine/test/authz_p4a_visibili
 
 ## Commit
 
-Commit hash: `b47c3c3b`.
+Commit hash: `b52da1b9` (the implementation agent's initial commit `b47c3c3b` was amended once to
+embed this self-reference, leaving `b47c3c3b` as a dangling, unreachable object with identical
+content except this line).
+
+Independently re-verified by the validation agent (outside the sandbox): `flutter analyze` clean
+on both packages; the security-critical filtering/guard/pagination logic in
+`local_workflow_engine_api.dart` was read directly, not just trusted from this report, and matches
+the description above exactly (including confirming `_passesRelatedAggregateGuard` deliberately
+omits `personaId` when calling `aggregate`); all 6 new tests in
+`authz_p4a_visibility_filtering_test.dart` pass; `loom_workflow_engine` 206/206;
+`loom_communities_app_shell` 185/186 (only the known pre-existing a11 flake).
