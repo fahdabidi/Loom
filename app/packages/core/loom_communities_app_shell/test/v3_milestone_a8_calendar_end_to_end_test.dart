@@ -113,20 +113,28 @@ Widget _calendar(
   _InstalledTabletop installed,
   String personaId, {
   int revision = 0,
+  String? accountId,
   ScrollController? scrollController,
   ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
 }) => MaterialApp(
-  home: Scaffold(
-    body: SingleChildScrollView(
-      controller: scrollController,
-      child: EngineNativeCalendarSurface(
-        key: ValueKey('a8-calendar-$personaId-$revision'),
-        experience: installed.experience,
-        persona: _persona(installed, personaId),
-        accent: Colors.deepPurple,
-        modernTheme: null,
-        engine: installed.engine,
-        onFocusedInstanceChanged: onFocusedInstanceChanged,
+  home: ActiveIdentityScope(
+    identity: ActiveIdentityContext(
+      accountId: accountId,
+      authApi: LocalAuthApi(),
+      personaId: personaId,
+    ),
+    child: Scaffold(
+      body: SingleChildScrollView(
+        controller: scrollController,
+        child: EngineNativeCalendarSurface(
+          key: ValueKey('a8-calendar-$personaId-$revision'),
+          experience: installed.experience,
+          persona: _persona(installed, personaId),
+          accent: Colors.deepPurple,
+          modernTheme: null,
+          engine: installed.engine,
+          onFocusedInstanceChanged: onFocusedInstanceChanged,
+        ),
       ),
     ),
   ),
@@ -174,32 +182,32 @@ Future<_PollObservation> _observeFinder(Finder finder, String label) async {
 
 Finder _selectedActionFinder(String instanceId, String transitionId) =>
     find.descendant(
-      of: find.byKey(
-        ValueKey('event-rsvp-$instanceId-action-$transitionId'),
-      ),
+      of: find.byKey(ValueKey('event-rsvp-$instanceId-action-$transitionId')),
       matching: find.byWidgetPredicate(
         (widget) => widget is InputChip && widget.selected,
       ),
     );
 
-Finder _actionResultFinder(String instanceId, String transitionId) => switch (
-  transitionId
-) {
-  'respond-going' || 'respond-maybe' || 'respond-declined' || 'respond-waitlist'
-      => transitionId == 'respond-waitlist'
-          ? find.byKey(ValueKey('event-rsvp-waitlist-$instanceId'))
-          : _selectedActionFinder(instanceId, transitionId),
-  'rsvp-withdraw' => find.byKey(
-    ValueKey('event-rsvp-$instanceId-action-rsvp-going'),
-  ),
-  'rsvp-going' => find.byKey(
-    ValueKey('event-rsvp-$instanceId-action-rsvp-withdraw'),
-  ),
-  'cancel-event' => find.byKey(
-    ValueKey('engine-native-calendar-selected-detail-$instanceId-1'),
-  ),
-  _ => throw ArgumentError('No observable result for $transitionId'),
-};
+Finder _actionResultFinder(String instanceId, String transitionId) =>
+    switch (transitionId) {
+      'respond-going' ||
+      'respond-maybe' ||
+      'respond-declined' ||
+      'respond-waitlist' =>
+        transitionId == 'respond-waitlist'
+            ? find.byKey(ValueKey('event-rsvp-waitlist-$instanceId'))
+            : _selectedActionFinder(instanceId, transitionId),
+      'rsvp-withdraw' => find.byKey(
+        ValueKey('event-rsvp-$instanceId-action-rsvp-going'),
+      ),
+      'rsvp-going' => find.byKey(
+        ValueKey('event-rsvp-$instanceId-action-rsvp-withdraw'),
+      ),
+      'cancel-event' => find.byKey(
+        ValueKey('engine-native-calendar-selected-detail-$instanceId-1'),
+      ),
+      _ => throw ArgumentError('No observable result for $transitionId'),
+    };
 
 Future<_PollObservation> _observeInstancesCondition(
   _InstalledTabletop installed, {
@@ -323,9 +331,7 @@ Future<void> _tapAction(
   await tester.pump();
   await tester.tap(action);
   await tester.pump();
-  final dialog = find.byKey(
-    const ValueKey('generic-transition-input-dialog'),
-  );
+  final dialog = find.byKey(const ValueKey('generic-transition-input-dialog'));
   final partySizeInput = find.byKey(
     const ValueKey('generic-transition-input-partySize'),
   );
@@ -335,10 +341,7 @@ Future<void> _tapAction(
   }
   if (dialog.evaluate().isNotEmpty) {
     if (partySizeInput.evaluate().isNotEmpty) {
-      await tester.enterText(
-        partySizeInput,
-        (partySize ?? 1).toString(),
-      );
+      await tester.enterText(partySizeInput, (partySize ?? 1).toString());
     }
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
@@ -459,14 +462,8 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
         'source': 'query(attendance-record where gatheringKey == id)',
       },
       'featured': <String, dynamic>{'type': 'bool', 'storage': 'inline'},
-      'neighborhood': <String, dynamic>{
-        'type': 'text',
-        'storage': 'inline',
-      },
-      'attendeeTotal': <String, dynamic>{
-        'type': 'number',
-        'storage': 'inline',
-      },
+      'neighborhood': <String, dynamic>{'type': 'text', 'storage': 'inline'},
+      'attendeeTotal': <String, dynamic>{'type': 'number', 'storage': 'inline'},
     },
   };
   definitions['attendance-record'] = <String, dynamic>{
@@ -568,11 +565,14 @@ void _addAgendaTileFactFixture(Map<String, dynamic> source) {
   final instances =
       (source['experience'] as Map<String, dynamic>)['workflowInstances']
           as List<dynamic>;
-  final friday = (instances.firstWhere(
-        (instance) =>
-            (instance as Map<String, dynamic>)['instanceId'] ==
-            'event-friday-game-night',
-      ) as Map<String, dynamic>)['instanceData'] as Map<String, dynamic>;
+  final friday =
+      (instances.firstWhere(
+                (instance) =>
+                    (instance as Map<String, dynamic>)['instanceId'] ==
+                    'event-friday-game-night',
+              )
+              as Map<String, dynamic>)['instanceData']
+          as Map<String, dynamic>;
   friday['organizerNote'] = 'Keep this off the compact row';
 }
 
@@ -607,11 +607,13 @@ void _addEditScopeSeriesFixture(Map<String, dynamic> source) {
   final instances =
       (source['experience'] as Map<String, dynamic>)['workflowInstances']
           as List<dynamic>;
-  final anchor = instances.firstWhere(
-    (instance) =>
-        (instance as Map<String, dynamic>)['instanceId'] ==
-        'event-friday-game-night',
-  ) as Map<String, dynamic>;
+  final anchor =
+      instances.firstWhere(
+            (instance) =>
+                (instance as Map<String, dynamic>)['instanceId'] ==
+                'event-friday-game-night',
+          )
+          as Map<String, dynamic>;
   final anchorData = anchor['instanceData'] as Map<String, dynamic>;
   anchorData
     ..['seriesId'] = 'edit-scope-series'
@@ -638,11 +640,7 @@ Future<void> _settleMutation(
   WidgetTester tester, {
   required Future<_PollObservation> Function() observe,
   required String description,
-}) => _pollUntilObservation(
-  tester,
-  observe,
-  description: description,
-);
+}) => _pollUntilObservation(tester, observe, description: description);
 
 Future<void> _saveLocationWithScope(
   WidgetTester tester, {
@@ -652,9 +650,7 @@ Future<void> _saveLocationWithScope(
   required Iterable<String> settledInstanceIds,
   String? scope,
 }) async {
-  final editor = find.byKey(
-    ValueKey('event-rsvp-editor-$instanceId-location'),
-  );
+  final editor = find.byKey(ValueKey('event-rsvp-editor-$instanceId-location'));
   await _pumpUntil(tester, editor);
   await tester.ensureVisible(editor);
   await tester.enterText(editor, location);
@@ -675,9 +671,7 @@ Future<void> _saveLocationWithScope(
     await _pumpUntil(tester, scopeOption);
     await tester.tap(scopeOption);
     await tester.pump();
-    final confirm = find.byKey(
-      const ValueKey('edit-scope-picker-confirm'),
-    );
+    final confirm = find.byKey(const ValueKey('edit-scope-picker-confirm'));
     await _pumpUntil(tester, confirm);
     await tester.tap(confirm);
     await tester.pump();
@@ -718,9 +712,7 @@ Future<void> _deleteSeriesWithScope(
   await _pumpUntil(tester, scopeOption);
   await tester.tap(scopeOption);
   await tester.pump();
-  final confirm = find.byKey(
-    const ValueKey('delete-scope-picker-confirm'),
-  );
+  final confirm = find.byKey(const ValueKey('delete-scope-picker-confirm'));
   await _pumpUntil(tester, confirm);
   await tester.tap(confirm);
   await tester.pump();
@@ -752,13 +744,17 @@ void main() {
         await _pumpUntil(tester, titleEditor);
         expect(
           find.byKey(
-            const ValueKey('event-rsvp-editor-event-friday-game-night-eventDate'),
+            const ValueKey(
+              'event-rsvp-editor-event-friday-game-night-eventDate',
+            ),
           ),
           findsOneWidget,
         );
         expect(
           find.byKey(
-            const ValueKey('event-rsvp-editor-event-friday-game-night-capacity'),
+            const ValueKey(
+              'event-rsvp-editor-event-friday-game-night-capacity',
+            ),
           ),
           findsOneWidget,
         );
@@ -780,33 +776,26 @@ void main() {
         final title = find.byKey(
           const ValueKey('event-rsvp-title-event-friday-game-night'),
         );
-        await _pollUntilObservation(
-          tester,
-          () async {
-            final titleMatches = title.evaluate();
-            String? renderedTitle;
-            if (titleMatches.length == 1 &&
-                titleMatches.single.widget is Text) {
-              renderedTitle = (titleMatches.single.widget as Text).data;
-            }
-            final persisted = await _observeInstanceCondition(
-              installed,
-              instanceId: 'event-friday-game-night',
-              condition: (instance) =>
-                  instance.instanceData['title'] ==
-                  'Friday game night updated',
-              state: (instance) =>
-                  'title=${instance.instanceData['title']}, '
-                  'currentState=${instance.currentState}',
-            );
-            return _PollObservation(
-              renderedTitle == 'Friday game night updated' &&
-                  persisted.satisfied,
-              'renderedTitle=$renderedTitle; persisted=${persisted.state}',
-            );
-          },
-          description: 'rendered and persisted title edit',
-        );
+        await _pollUntilObservation(tester, () async {
+          final titleMatches = title.evaluate();
+          String? renderedTitle;
+          if (titleMatches.length == 1 && titleMatches.single.widget is Text) {
+            renderedTitle = (titleMatches.single.widget as Text).data;
+          }
+          final persisted = await _observeInstanceCondition(
+            installed,
+            instanceId: 'event-friday-game-night',
+            condition: (instance) =>
+                instance.instanceData['title'] == 'Friday game night updated',
+            state: (instance) =>
+                'title=${instance.instanceData['title']}, '
+                'currentState=${instance.currentState}',
+          );
+          return _PollObservation(
+            renderedTitle == 'Friday game night updated' && persisted.satisfied,
+            'renderedTitle=$renderedTitle; persisted=${persisted.state}',
+          );
+        }, description: 'rendered and persisted title edit');
         expect(tester.widget<Text>(title).data, 'Friday game night updated');
         expect(
           find.byKey(
@@ -828,26 +817,21 @@ void main() {
           findsNothing,
         );
         expect(
-          find.byKey(
-            const ValueKey('event-rsvp-save-event-friday-game-night'),
-          ),
+          find.byKey(const ValueKey('event-rsvp-save-event-friday-game-night')),
           findsNothing,
         );
-
       } finally {
         await tester.runAsync(installed.dispose);
       }
-  },
+    },
   );
 
   testWidgets('recurring edit scope saves only the selected occurrence', (
     tester,
   ) async {
     final installed = (await tester.runAsync(
-      () => _install(
-        'a8-edit-scope-this',
-        configure: _addEditScopeSeriesFixture,
-      ),
+      () =>
+          _install('a8-edit-scope-this', configure: _addEditScopeSeriesFixture),
     ))!;
     try {
       await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
@@ -861,18 +845,27 @@ void main() {
         scope: 'thisEvent',
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-earlier'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-earlier',
+        )).instanceData['location'],
         'Earlier location',
       );
       expect(
-        (await _instance(tester, installed, 'event-friday-game-night'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        )).instanceData['location'],
         'This event location',
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-later'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-later',
+        )).instanceData['location'],
         'Later location',
       );
     } finally {
@@ -904,18 +897,27 @@ void main() {
         scope: 'thisAndFollowing',
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-earlier'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-earlier',
+        )).instanceData['location'],
         'Earlier location',
       );
       expect(
-        (await _instance(tester, installed, 'event-friday-game-night'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        )).instanceData['location'],
         'Following location',
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-later'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-later',
+        )).instanceData['location'],
         'Following location',
       );
     } finally {
@@ -927,10 +929,8 @@ void main() {
     tester,
   ) async {
     final installed = (await tester.runAsync(
-      () => _install(
-        'a8-edit-scope-all',
-        configure: _addEditScopeSeriesFixture,
-      ),
+      () =>
+          _install('a8-edit-scope-all', configure: _addEditScopeSeriesFixture),
     ))!;
     try {
       await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
@@ -953,8 +953,11 @@ void main() {
         'event-edit-scope-later',
       ]) {
         expect(
-          (await _instance(tester, installed, instanceId))
-              .instanceData['location'],
+          (await _instance(
+            tester,
+            installed,
+            instanceId,
+          )).instanceData['location'],
           'Series location',
         );
       }
@@ -984,8 +987,11 @@ void main() {
         findsNothing,
       );
       expect(
-        (await _instance(tester, installed, 'event-friday-game-night'))
-            .instanceData['location'],
+        (await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        )).instanceData['location'],
         'Single event location',
       );
     } finally {
@@ -1013,18 +1019,27 @@ void main() {
         settledInstanceIds: const ['event-friday-game-night'],
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-earlier'))
-            .currentState,
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-earlier',
+        )).currentState,
         'open',
       );
       expect(
-        (await _instance(tester, installed, 'event-friday-game-night'))
-            .currentState,
+        (await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        )).currentState,
         'cancelled',
       );
       expect(
-        (await _instance(tester, installed, 'event-edit-scope-later'))
-            .currentState,
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-later',
+        )).currentState,
         'open',
       );
     } finally {
@@ -1032,50 +1047,60 @@ void main() {
     }
   });
 
-  testWidgets(
-    'recurring delete scope cancels this and following occurrences',
-    (tester) async {
-      final installed = (await tester.runAsync(
-        () => _install(
-          'a8-delete-scope-following',
-          configure: _addEditScopeSeriesFixture,
-        ),
-      ))!;
-      try {
-        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
-        await _selectAgenda(tester, 'event-friday-game-night', 0);
-        await _deleteSeriesWithScope(
+  testWidgets('recurring delete scope cancels this and following occurrences', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install(
+        'a8-delete-scope-following',
+        configure: _addEditScopeSeriesFixture,
+      ),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _deleteSeriesWithScope(
+        tester,
+        installed: installed,
+        instanceId: 'event-friday-game-night',
+        scope: 'thisAndFollowing',
+        settledInstanceIds: const [
+          'event-friday-game-night',
+          'event-edit-scope-later',
+        ],
+      );
+      expect(
+        (await _instance(
           tester,
-          installed: installed,
-          instanceId: 'event-friday-game-night',
-          scope: 'thisAndFollowing',
-          settledInstanceIds: const [
-            'event-friday-game-night',
-            'event-edit-scope-later',
-          ],
-        );
-        expect(
-          (await _instance(tester, installed, 'event-edit-scope-earlier'))
-              .currentState,
-          'open',
-        );
-        expect(
-          (await _instance(tester, installed, 'event-friday-game-night'))
-              .currentState,
-          'cancelled',
-        );
-        expect(
-          (await _instance(tester, installed, 'event-edit-scope-later'))
-              .currentState,
-          'cancelled',
-        );
-      } finally {
-        await tester.runAsync(installed.dispose);
-      }
-    },
-  );
+          installed,
+          'event-edit-scope-earlier',
+        )).currentState,
+        'open',
+      );
+      expect(
+        (await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        )).currentState,
+        'cancelled',
+      );
+      expect(
+        (await _instance(
+          tester,
+          installed,
+          'event-edit-scope-later',
+        )).currentState,
+        'cancelled',
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 
-  testWidgets('recurring delete scope cancels every occurrence', (tester) async {
+  testWidgets('recurring delete scope cancels every occurrence', (
+    tester,
+  ) async {
     final installed = (await tester.runAsync(
       () => _install(
         'a8-delete-scope-all',
@@ -1155,11 +1180,7 @@ void main() {
           () => _observeRecurringEvents(
             installed,
             expectedCount: 3,
-            expectedDates: const {
-              '2026-07-10',
-              '2026-07-17',
-              '2026-07-24',
-            },
+            expectedDates: const {'2026-07-10', '2026-07-17', '2026-07-24'},
           ),
           description: 'weekly recurring events',
         );
@@ -1177,7 +1198,8 @@ void main() {
               .where(
                 (item) =>
                     item.workflowType == 'event-rsvp' &&
-                    item.instanceData['seriesId'] == anchor.instanceData['seriesId'],
+                    item.instanceData['seriesId'] ==
+                        anchor.instanceData['seriesId'],
               )
               .toList();
         }))!;
@@ -1186,10 +1208,11 @@ void main() {
           events.map((event) => event.instanceData['eventDate']).toSet(),
           containsAll(<String>['2026-07-10', '2026-07-17', '2026-07-24']),
         );
-        final accountIds = (await tester.runAsync(() async =>
-            (await LocalAuthApi().listAccounts(
-              communityExtensionId: installed.community.extensionId,
-            )).map((account) => account.accountId).toSet()))!;
+        final accountIds = (await tester.runAsync(
+          () async => (await LocalAuthApi().listAccounts(
+            communityExtensionId: installed.community.extensionId,
+          )).map((account) => account.accountId).toSet(),
+        ))!;
         for (final event in events.where(
           (event) => event.instanceId != 'event-friday-game-night',
         )) {
@@ -1213,7 +1236,9 @@ void main() {
           }))!;
           expect(responses, hasLength(accountIds.length));
           expect(
-            responses.map((response) => response.instanceData['personaId']).toSet(),
+            responses
+                .map((response) => response.instanceData['personaId'])
+                .toSet(),
             accountIds,
           );
         }
@@ -1299,11 +1324,7 @@ void main() {
           () => _observeRecurringEvents(
             installed,
             expectedCount: 3,
-            expectedDates: const {
-              '2026-07-10',
-              '2026-08-26',
-              '2026-09-30',
-            },
+            expectedDates: const {'2026-07-10', '2026-08-26', '2026-09-30'},
           ),
           description: 'monthly weekday-position recurring events',
         );
@@ -1328,11 +1349,7 @@ void main() {
         expect(dates, hasLength(3));
         expect(
           dates,
-          containsAll(<String>[
-            '2026-07-10',
-            '2026-08-26',
-            '2026-09-30',
-          ]),
+          containsAll(<String>['2026-07-10', '2026-08-26', '2026-09-30']),
         );
       } finally {
         await tester.runAsync(installed.dispose);
@@ -1382,11 +1399,7 @@ void main() {
           () => _observeRecurringEvents(
             installed,
             expectedCount: 3,
-            expectedDates: const {
-              '2026-07-10',
-              '2026-08-15',
-              '2026-09-15',
-            },
+            expectedDates: const {'2026-07-10', '2026-08-15', '2026-09-15'},
           ),
           description: 'monthly day-of-month recurring events',
         );
@@ -1421,14 +1434,19 @@ void main() {
     'Calendar event detail stays closed when editable fields have no editGuard',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _install('calr10a-no-edit-guard', configure: (source) {
-          final definitions =
-              (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
-                  as Map<String, dynamic>;
-          final states = (definitions['event-rsvp'] as Map<String, dynamic>)['states']
-              as Map<String, dynamic>;
-          (states['open'] as Map<String, dynamic>).remove('editGuard');
-        }),
+        () => _install(
+          'calr10a-no-edit-guard',
+          configure: (source) {
+            final definitions =
+                (source['experience']
+                        as Map<String, dynamic>)['workflowDefinitions']
+                    as Map<String, dynamic>;
+            final states =
+                (definitions['event-rsvp'] as Map<String, dynamic>)['states']
+                    as Map<String, dynamic>;
+            (states['open'] as Map<String, dynamic>).remove('editGuard');
+          },
+        ),
       ))!;
       try {
         await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
@@ -1438,9 +1456,7 @@ void main() {
           findsNothing,
         );
         expect(
-          find.byKey(
-            const ValueKey('event-rsvp-save-event-friday-game-night'),
-          ),
+          find.byKey(const ValueKey('event-rsvp-save-event-friday-game-night')),
           findsNothing,
         );
         await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
@@ -1450,9 +1466,7 @@ void main() {
           findsNothing,
         );
         expect(
-          find.byKey(
-            const ValueKey('event-rsvp-save-event-friday-game-night'),
-          ),
+          find.byKey(const ValueKey('event-rsvp-save-event-friday-game-night')),
           findsNothing,
         );
       } finally {
@@ -1771,39 +1785,59 @@ void main() {
     }
   });
 
-  testWidgets(
-    'agenda rows render only explicit tile-context fact pills',
-    (tester) async {
-      final installed = (await tester.runAsync(
-        () => _install('calr9a-tile-facts', configure: _addAgendaTileFactFixture),
-      ))!;
-      try {
-        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
-        final agenda = find.byKey(
-          const ValueKey(
-            'engine-native-calendar-agenda-event-friday-game-night-0',
-          ),
-        );
-        await _pumpUntil(tester, agenda);
+  testWidgets('agenda rows render only explicit tile-context fact pills', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('calr9a-tile-facts', configure: _addAgendaTileFactFixture),
+    ))!;
+    try {
+      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+      final agenda = find.byKey(
+        const ValueKey(
+          'engine-native-calendar-agenda-event-friday-game-night-0',
+        ),
+      );
+      await _pumpUntil(tester, agenda);
 
-        expect(find.descendant(of: agenda, matching: find.text('Friday game night')), findsOneWidget);
-        expect(find.descendant(of: agenda, matching: find.text('19:00')), findsOneWidget);
-        expect(
-          find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-facts-event-friday-game-night-0',
-            ),
+      expect(
+        find.descendant(of: agenda, matching: find.text('Friday game night')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: agenda, matching: find.text('19:00')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'engine-native-calendar-agenda-facts-event-friday-game-night-0',
           ),
-          findsOneWidget,
-        );
-        expect(find.descendant(of: agenda, matching: find.text('Community room')), findsOneWidget);
-        expect(find.descendant(of: agenda, matching: find.text('Host: Alex Chen (Organizer)')), findsNothing);
-        expect(find.descendant(of: agenda, matching: find.text('Keep this off the compact row')), findsNothing);
-      } finally {
-        await tester.runAsync(installed.dispose);
-      }
-    },
-  );
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: agenda, matching: find.text('Community room')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: agenda,
+          matching: find.text('Host: Alex Chen (Organizer)'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: agenda,
+          matching: find.text('Keep this off the compact row'),
+        ),
+        findsNothing,
+      );
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 
   testWidgets(
     'scopes Calendar entries by date range and generic response tables',
@@ -1837,9 +1871,7 @@ void main() {
         await tester.pump();
         expect(
           find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-gathering-tuesday-0',
-            ),
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
           ),
           findsOneWidget,
         );
@@ -1860,7 +1892,9 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-saturday-0',
+            ),
           ),
           findsOneWidget,
         );
@@ -1889,9 +1923,7 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-gathering-tuesday-0',
-            ),
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
           ),
           findsOneWidget,
         );
@@ -1936,9 +1968,7 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey(
-              'engine-native-calendar-agenda-gathering-tuesday-0',
-            ),
+            const ValueKey('engine-native-calendar-agenda-gathering-tuesday-0'),
           ),
           findsOneWidget,
         );
@@ -2056,16 +2086,20 @@ void main() {
     tester,
   ) async {
     final installed = (await tester.runAsync(
-      () => _install('calr24-multi-day', configure: (source) {
-        final instances =
-            (source['experience'] as Map<String, dynamic>)['workflowInstances']
-                as List<dynamic>;
-        final friday = instances.cast<Map<String, dynamic>>().firstWhere(
-          (instance) => instance['instanceId'] == 'event-friday-game-night',
-        );
-        (friday['instanceData'] as Map<String, dynamic>)['eventEndDate'] =
-            '2026-07-12';
-      }),
+      () => _install(
+        'calr24-multi-day',
+        configure: (source) {
+          final instances =
+              (source['experience']
+                      as Map<String, dynamic>)['workflowInstances']
+                  as List<dynamic>;
+          final friday = instances.cast<Map<String, dynamic>>().firstWhere(
+            (instance) => instance['instanceId'] == 'event-friday-game-night',
+          );
+          (friday['instanceData'] as Map<String, dynamic>)['eventEndDate'] =
+              '2026-07-12';
+        },
+      ),
     ))!;
     try {
       await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
@@ -2128,12 +2162,15 @@ void main() {
     'places Calendar scope selector before the active scope container',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _install('calr7b-scope-selector', configure: _addContainerFixture),
+        () =>
+            _install('calr7b-scope-selector', configure: _addContainerFixture),
       ))!;
-      final selectorRow = find.ancestor(
-        of: find.byKey(const ValueKey('calendar-scope-day')),
-        matching: find.byType(Row),
-      ).first;
+      final selectorRow = find
+          .ancestor(
+            of: find.byKey(const ValueKey('calendar-scope-day')),
+            matching: find.byType(Row),
+          )
+          .first;
 
       void expectSelectorBefore(Finder container) {
         expect(
@@ -2184,87 +2221,89 @@ void main() {
     },
   );
 
-  testWidgets('navigates Week by full weeks with native previous and next buttons', (
-    tester,
-  ) async {
-    final installed = (await tester.runAsync(
-      () => _install('calr7a-week-navigation', configure: _addContainerFixture),
-    ))!;
-    try {
-      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
-      await _pumpUntil(
-        tester,
-        find.byKey(const ValueKey('engine-native-calendar-month-grid')),
-      );
+  testWidgets(
+    'navigates Week by full weeks with native previous and next buttons',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () =>
+            _install('calr7a-week-navigation', configure: _addContainerFixture),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
 
-      await tester.tap(
-        find.byKey(
-          const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
-        ),
-      );
-      await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
-      await tester.pump();
+        await tester.tap(
+          find.byKey(
+            const ValueKey('engine-native-calendar-date-strip-2026-07-14'),
+          ),
+        );
+        await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
+        await tester.pump();
 
-      expect(
-        find.byKey(const ValueKey('engine-native-calendar-previous-week')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('engine-native-calendar-next-week')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
-        ),
-        findsOneWidget,
-      );
-
-      await tester.tap(
-        find.byKey(const ValueKey('engine-native-calendar-next-week')),
-      );
-      await tester.pump();
-      expect(
-        find.byKey(
-          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
-        ),
-        findsNothing,
-      );
-      for (final date in <String>[
-        '2026-07-20',
-        '2026-07-21',
-        '2026-07-22',
-        '2026-07-23',
-        '2026-07-24',
-        '2026-07-25',
-        '2026-07-26',
-      ]) {
         expect(
-          find.byKey(ValueKey('engine-native-calendar-week-cell-$date')),
+          find.byKey(const ValueKey('engine-native-calendar-previous-week')),
           findsOneWidget,
         );
-      }
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-next-week')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+          ),
+          findsOneWidget,
+        );
 
-      await tester.tap(
-        find.byKey(const ValueKey('engine-native-calendar-previous-week')),
-      );
-      await tester.pump();
-      expect(
-        find.byKey(
-          const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('engine-native-calendar-week-cell-2026-07-20'),
-        ),
-        findsNothing,
-      );
-    } finally {
-      await tester.runAsync(installed.dispose);
-    }
-  });
+        await tester.tap(
+          find.byKey(const ValueKey('engine-native-calendar-next-week')),
+        );
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+          ),
+          findsNothing,
+        );
+        for (final date in <String>[
+          '2026-07-20',
+          '2026-07-21',
+          '2026-07-22',
+          '2026-07-23',
+          '2026-07-24',
+          '2026-07-25',
+          '2026-07-26',
+        ]) {
+          expect(
+            find.byKey(ValueKey('engine-native-calendar-week-cell-$date')),
+            findsOneWidget,
+          );
+        }
+
+        await tester.tap(
+          find.byKey(const ValueKey('engine-native-calendar-previous-week')),
+        );
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-week-cell-2026-07-13'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey('engine-native-calendar-week-cell-2026-07-20'),
+          ),
+          findsNothing,
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets(
     'opens Day for empty month and week cells while entry titles select details',
@@ -2310,7 +2349,9 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('calendar-scope-week')));
         await tester.pump();
         final tuesdayEntry = find.byKey(
-          const ValueKey('engine-native-calendar-entry-event-container-tuesday-0'),
+          const ValueKey(
+            'engine-native-calendar-entry-event-container-tuesday-0',
+          ),
         );
         await tester.ensureVisible(tuesdayEntry);
         await tester.tap(tuesdayEntry);
@@ -2424,7 +2465,10 @@ void main() {
     'filters text facets by one value at a time and combines them with boolean facets',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _install('cal-category-filter', configure: _addScopedCalendarFixture),
+        () => _install(
+          'cal-category-filter',
+          configure: _addScopedCalendarFixture,
+        ),
       ))!;
       try {
         await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
@@ -2453,7 +2497,9 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-saturday-0',
+            ),
           ),
           findsOneWidget,
         );
@@ -2508,7 +2554,9 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey('engine-native-calendar-agenda-gathering-saturday-0'),
+            const ValueKey(
+              'engine-native-calendar-agenda-gathering-saturday-0',
+            ),
           ),
           findsNothing,
         );
@@ -2640,13 +2688,20 @@ void main() {
     try {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: EngineNativeCalendarSurface(
-              experience: installed.experience,
-              persona: _persona(installed, 'tabletop-member'),
-              accent: Colors.deepPurple,
-              modernTheme: null,
-              engine: engine,
+          home: ActiveIdentityScope(
+            identity: ActiveIdentityContext(
+              accountId: null,
+              authApi: LocalAuthApi(),
+              personaId: 'tabletop-member',
+            ),
+            child: Scaffold(
+              body: EngineNativeCalendarSurface(
+                experience: installed.experience,
+                persona: _persona(installed, 'tabletop-member'),
+                accent: Colors.deepPurple,
+                modernTheme: null,
+                engine: engine,
+              ),
             ),
           ),
         ),
@@ -2860,10 +2915,7 @@ void main() {
         await _pollUntilObservation(
           tester,
           () => _observeFinder(
-            _selectedActionFinder(
-              'event-friday-game-night',
-              'respond-going',
-            ),
+            _selectedActionFinder('event-friday-game-night', 'respond-going'),
             'selected Going action',
           ),
           description: 'Going action UI state',
@@ -2882,177 +2934,182 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Calendar RSVP shows dietary notes below the attendee name',
-    (tester) async {
-      final installed = (await tester.runAsync(
-        () => _install('a8-rsvp-dietary-notes'),
-      ))!;
-      try {
-        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
-        await _selectAgenda(tester, 'event-friday-game-night', 0);
-        final action = find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-going',
-          ),
-        );
-        await _pumpUntil(tester, action);
-        await tester.ensureVisible(action);
-        await tester.tap(action);
-        await tester.pump();
-        await _pumpUntil(
-          tester,
-          find.byKey(const ValueKey('generic-transition-input-dialog')),
-        );
-        await tester.enterText(
-          find.byKey(
-            const ValueKey('generic-transition-input-dietaryNotes'),
-          ),
-          'Vegetarian',
-        );
-        final partySizeInput = find.byKey(
-          const ValueKey('generic-transition-input-partySize'),
-        );
-        if (partySizeInput.evaluate().isNotEmpty) {
-          await tester.enterText(partySizeInput, '1');
-        }
-        final confirm = find.byKey(
-          const ValueKey('generic-transition-input-confirm'),
-        );
-        await tester.ensureVisible(confirm);
-        await tester.tap(confirm);
-        await tester.pump();
-        await _pumpUntil(
-          tester,
-          find.byKey(
-            const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
-          ),
-        );
-
-        final attendees = find.byKey(
-          const ValueKey('event-rsvp-attendees-event-friday-game-night'),
-        );
-        expect(
-          find.descendant(of: attendees, matching: find.text('Vegetarian')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(
-            const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
-          ),
-          findsOneWidget,
-        );
-      } finally {
-        await tester.runAsync(installed.dispose);
-      }
-    },
-  );
-
-  testWidgets(
-    'fullness guard auto-promotes a waitlisted member through Calendar UI',
-    (tester) async {
-    final installed = (await tester.runAsync(() => _install('a8-fullness')))!;
-    setCurrentActiveAccountId('tabletop-member-14');
-    addTearDown(() => setCurrentActiveAccountId(null));
+  testWidgets('Calendar RSVP shows dietary notes below the attendee name', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('a8-rsvp-dietary-notes'),
+    ))!;
     try {
-      await tester.runAsync(() async {
-        await installed.engine.updateInstanceFields(
-          workflowType: 'event-rsvp',
-          instanceId: 'event-friday-game-night',
-          fieldUpdates: const {'capacity': 11},
-          personaId: 'tabletop-organizer',
-        );
-      });
-      await tester.pumpWidget(
-        _calendar(installed, 'tabletop-member', revision: 2),
-      );
+      await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
       await _selectAgenda(tester, 'event-friday-game-night', 0);
+      final action = find.byKey(
+        const ValueKey(
+          'event-rsvp-event-friday-game-night-action-respond-going',
+        ),
+      );
+      await _pumpUntil(tester, action);
+      await tester.ensureVisible(action);
+      await tester.tap(action);
+      await tester.pump();
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('generic-transition-input-dialog')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-dietaryNotes')),
+        'Vegetarian',
+      );
+      final partySizeInput = find.byKey(
+        const ValueKey('generic-transition-input-partySize'),
+      );
+      if (partySizeInput.evaluate().isNotEmpty) {
+        await tester.enterText(partySizeInput, '1');
+      }
+      final confirm = find.byKey(
+        const ValueKey('generic-transition-input-confirm'),
+      );
+      await tester.ensureVisible(confirm);
+      await tester.tap(confirm);
+      await tester.pump();
       await _pumpUntil(
         tester,
         find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-waitlist',
-          ),
+          const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
         ),
+      );
+
+      final attendees = find.byKey(
+        const ValueKey('event-rsvp-attendees-event-friday-game-night'),
       );
       expect(
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-going',
-          ),
-        ),
-        findsNothing,
-      );
-      final full = await _instance(
-        tester,
-        installed,
-        'event-friday-game-night',
-        personaId: 'tabletop-member-14',
-      );
-      expect(full.instanceData['goingCount'], 11);
-      expect(full.instanceData['seatsRemaining'], 0);
-      expect(full.instanceData['isFull'], isTrue);
-      await _tapAction(tester, 'event-friday-game-night', 'respond-waitlist');
-      final waitlisted = await _instance(
-        tester,
-        installed,
-        'event-friday-game-night',
-        personaId: 'tabletop-member-14',
-      );
-      expect(
-        _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
-        'waitlisted',
-      );
-      await tester.runAsync(
-        () => installed.engine.applyTransition(
-          workflowType: 'event-rsvp-response',
-          instanceId: 'resp-friday-member-03',
-          transitionId: 'respond-declined',
-          personaId: 'tabletop-member-03',
-        ),
-      );
-      await tester.pumpWidget(
-        _calendar(installed, 'tabletop-member', revision: 3),
-      );
-      await _selectAgenda(tester, 'event-friday-game-night', 0);
-      await _pumpUntil(
-        tester,
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-maybe',
-          ),
-        ),
-      );
-      expect(
-        find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-declined',
-          ),
-        ),
+        find.descendant(of: attendees, matching: find.text('Vegetarian')),
         findsOneWidget,
       );
       expect(
         find.byKey(
-          const ValueKey(
-            'event-rsvp-event-friday-game-night-action-respond-waitlist',
-          ),
+          const ValueKey('event-rsvp-attendee-dietary-tabletop-organizer'),
         ),
-        findsNothing,
+        findsOneWidget,
       );
-      final open = await _instance(
-        tester,
-        installed,
-        'event-friday-game-night',
-        personaId: 'tabletop-member-14',
-      );
-      expect(_responseFor(open, 'tabletop-member-14')['\$state'], 'going');
-      expect(open.instanceData['goingCount'], 11);
-      expect(open.instanceData['seatsRemaining'], 0);
-      expect(open.instanceData['isFull'], isTrue);
     } finally {
       await tester.runAsync(installed.dispose);
     }
-  },
+  });
+
+  testWidgets(
+    'fullness guard auto-promotes a waitlisted member through Calendar UI',
+    (tester) async {
+      final installed = (await tester.runAsync(() => _install('a8-fullness')))!;
+      try {
+        await tester.runAsync(() async {
+          await installed.engine.updateInstanceFields(
+            workflowType: 'event-rsvp',
+            instanceId: 'event-friday-game-night',
+            fieldUpdates: const {'capacity': 11},
+            personaId: 'tabletop-organizer',
+          );
+        });
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-member',
+            revision: 2,
+            accountId: 'tabletop-member-14',
+          ),
+        );
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-waitlist',
+            ),
+          ),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-going',
+            ),
+          ),
+          findsNothing,
+        );
+        final full = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+          personaId: 'tabletop-member-14',
+        );
+        expect(full.instanceData['goingCount'], 11);
+        expect(full.instanceData['seatsRemaining'], 0);
+        expect(full.instanceData['isFull'], isTrue);
+        await _tapAction(tester, 'event-friday-game-night', 'respond-waitlist');
+        final waitlisted = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+          personaId: 'tabletop-member-14',
+        );
+        expect(
+          _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
+          'waitlisted',
+        );
+        await tester.runAsync(
+          () => installed.engine.applyTransition(
+            workflowType: 'event-rsvp-response',
+            instanceId: 'resp-friday-member-03',
+            transitionId: 'respond-declined',
+            personaId: 'tabletop-member-03',
+          ),
+        );
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-member',
+            revision: 3,
+            accountId: 'tabletop-member-14',
+          ),
+        );
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        await _pumpUntil(
+          tester,
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-maybe',
+            ),
+          ),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-declined',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-event-friday-game-night-action-respond-waitlist',
+            ),
+          ),
+          findsNothing,
+        );
+        final open = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+          personaId: 'tabletop-member-14',
+        );
+        expect(_responseFor(open, 'tabletop-member-14')['\$state'], 'going');
+        expect(open.instanceData['goingCount'], 11);
+        expect(open.instanceData['seatsRemaining'], 0);
+        expect(open.instanceData['isFull'], isTrue);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
   );
 
   testWidgets(
@@ -3200,9 +3257,7 @@ void main() {
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         expect(
           find.byKey(
-            const ValueKey(
-              'event-rsvp-delete-series-event-friday-game-night',
-            ),
+            const ValueKey('event-rsvp-delete-series-event-friday-game-night'),
           ),
           findsNothing,
         );
@@ -3242,11 +3297,7 @@ void main() {
           () => _observeRecurringEvents(
             installed,
             expectedCount: 3,
-            expectedDates: const {
-              '2026-07-10',
-              '2026-07-17',
-              '2026-07-24',
-            },
+            expectedDates: const {'2026-07-10', '2026-07-17', '2026-07-24'},
           ),
           description: 'recurring events before series deletion',
         );
@@ -3279,9 +3330,7 @@ void main() {
         );
         expect(
           find.byKey(
-            const ValueKey(
-              'event-rsvp-delete-series-event-friday-game-night',
-            ),
+            const ValueKey('event-rsvp-delete-series-event-friday-game-night'),
           ),
           findsNothing,
         );
@@ -3293,9 +3342,7 @@ void main() {
           installed: installed,
           instanceId: 'event-friday-game-night',
           scope: 'all',
-          settledInstanceIds: seriesMembers.map(
-            (member) => member.instanceId,
-          ),
+          settledInstanceIds: seriesMembers.map((member) => member.instanceId),
         );
 
         final cancelledMembers = (await tester.runAsync(() async {
@@ -3328,8 +3375,6 @@ void main() {
       final installed = (await tester.runAsync(
         () => _install('a8-cancellation'),
       ))!;
-      setCurrentActiveAccountId('tabletop-member-14');
-      addTearDown(() => setCurrentActiveAccountId(null));
       try {
         await _expectRefused(tester, () async {
           await installed.engine.applyTransition(
@@ -3339,7 +3384,13 @@ void main() {
             personaId: 'tabletop-member',
           );
         });
-        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-member',
+            accountId: 'tabletop-member-14',
+          ),
+        );
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _pumpUntil(
           tester,
@@ -3357,8 +3408,13 @@ void main() {
           ),
           findsNothing,
         );
-        setCurrentActiveAccountId('tabletop-organizer');
-        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-organizer',
+            accountId: 'tabletop-organizer',
+          ),
+        );
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         await _tapAction(tester, 'event-friday-game-night', 'cancel-event');
         final cancelled = await _instance(

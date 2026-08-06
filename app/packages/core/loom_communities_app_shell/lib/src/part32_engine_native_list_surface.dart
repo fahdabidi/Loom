@@ -86,7 +86,9 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
           );
         }
         final engine = snapshot.data!;
-        final personaId = resolveEnginePersonaId(widget.persona.personaId);
+        final personaId = ActiveIdentityScope.of(
+          context,
+        ).resolveEnginePersonaId(widget.persona.personaId);
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,

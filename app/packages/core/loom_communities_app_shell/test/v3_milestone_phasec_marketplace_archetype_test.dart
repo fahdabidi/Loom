@@ -285,12 +285,11 @@ void main() {
           contains(memberId),
         );
         expect(catanAfterJoin.instanceData['queueLength'], 1);
-        final afterJoinTransitions =
-            await _availableMarketplaceTransitionIds(
-              installed.engine,
-              catanAfterJoin,
-              memberId,
-            );
+        final afterJoinTransitions = await _availableMarketplaceTransitionIds(
+          installed.engine,
+          catanAfterJoin,
+          memberId,
+        );
         expect(afterJoinTransitions, contains('leave-queue'));
         expect(afterJoinTransitions, isNot(contains('join-queue')));
 
@@ -310,12 +309,11 @@ void main() {
         );
         expect(catanAfterLeave.instanceData['queuedPersonaIds'], isEmpty);
         expect(catanAfterLeave.instanceData['queueLength'], 0);
-        final afterLeaveTransitions =
-            await _availableMarketplaceTransitionIds(
-              installed.engine,
-              catanAfterLeave,
-              memberId,
-            );
+        final afterLeaveTransitions = await _availableMarketplaceTransitionIds(
+          installed.engine,
+          catanAfterLeave,
+          memberId,
+        );
         expect(afterLeaveTransitions, contains('join-queue'));
         expect(afterLeaveTransitions, isNot(contains('leave-queue')));
 
@@ -337,7 +335,10 @@ void main() {
           personaId: memberId,
         );
         expect(rootJoined.newState, 'published');
-        expect(rootJoined.newInstanceData['queuedPersonaIds'], contains(memberId));
+        expect(
+          rootJoined.newInstanceData['queuedPersonaIds'],
+          contains(memberId),
+        );
         final rootAfter = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-root',
@@ -362,12 +363,11 @@ void main() {
           'tabletop-member-03',
         );
         expect(wingspanBefore.instanceData['dueDate'], '2026-07-17');
-        final wingspanTransitions =
-            await _availableMarketplaceTransitionIds(
-              installed.engine,
-              wingspanBefore,
-              returnerId,
-            );
+        final wingspanTransitions = await _availableMarketplaceTransitionIds(
+          installed.engine,
+          wingspanBefore,
+          returnerId,
+        );
         expect(wingspanTransitions, contains('return'));
 
         final returned = await installed.engine.applyTransition(
@@ -396,96 +396,87 @@ void main() {
     },
   );
 
-  test(
-    'real equipment-giveaway claim mutates the seeded listing',
-    () async {
-      final installed = await _install('phasec5-marketplace-giveaway-engine');
-      try {
-        final before = await _readMarketplaceInstance(
+  test('real equipment-giveaway claim mutates the seeded listing', () async {
+    final installed = await _install('phasec5-marketplace-giveaway-engine');
+    try {
+      final before = await _readMarketplaceInstance(
+        installed.engine,
+        instanceId: 'listing-old-catan',
+        personaId: 'tabletop-member',
+      );
+      expect(before.workflowType, 'equipment-giveaway');
+      expect(before.currentState, 'available');
+      expect(before.instanceData['claimedByPersonaId'], isNull);
+
+      final claimed = await installed.engine.applyTransition(
+        workflowType: 'equipment-giveaway',
+        instanceId: 'listing-old-catan',
+        transitionId: 'claim',
+        personaId: 'tabletop-member',
+      );
+      expect(claimed.newState, 'claimed');
+      expect(claimed.newInstanceData['claimedByPersonaId'], 'tabletop-member');
+
+      // removeFromTileGrid is presentation-only. The persisted row remains
+      // queryable, while its available-only render binding no longer
+      // resolves for the Marketplace dispatcher.
+      final after = await _readMarketplaceInstance(
+        installed.engine,
+        instanceId: 'listing-old-catan',
+        personaId: 'tabletop-member',
+      );
+      expect(after.currentState, 'claimed');
+      expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+    } finally {
+      await installed.dispose();
+    }
+  });
+
+  testWidgets('claimed equipment giveaway leaves the real Marketplace grid', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(
+      () => _install('phasec5-marketplace-giveaway-grid'),
+    ))!;
+    try {
+      await tester.pumpWidget(_app(installed));
+      await _selectPersona(tester, 'tabletop-member');
+      await _selectMarketplace(tester);
+
+      final giveaway = find.byKey(
+        const ValueKey('marketplace-listing-listing-old-catan'),
+      );
+      await _pumpUntil(tester, giveaway);
+      expect(giveaway, findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      final claim = find.byKey(
+        const ValueKey('equipment-loan-listing-old-catan-action-claim'),
+      );
+      await _pumpUntil(tester, claim);
+      await tester.ensureVisible(claim);
+      expect(
+        find.descendant(of: giveaway, matching: find.text('Claim giveaway')),
+        findsOneWidget,
+      );
+      await tester.tap(claim);
+      await _pumpUntilGone(tester, giveaway);
+
+      expect(giveaway, findsNothing);
+      expect(tester.takeException(), isNull);
+      final after = await tester.runAsync(
+        () => _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-old-catan',
           personaId: 'tabletop-member',
-        );
-        expect(before.workflowType, 'equipment-giveaway');
-        expect(before.currentState, 'available');
-        expect(before.instanceData['claimedByPersonaId'], isNull);
-
-        final claimed = await installed.engine.applyTransition(
-          workflowType: 'equipment-giveaway',
-          instanceId: 'listing-old-catan',
-          transitionId: 'claim',
-          personaId: 'tabletop-member',
-        );
-        expect(claimed.newState, 'claimed');
-        expect(
-          claimed.newInstanceData['claimedByPersonaId'],
-          'tabletop-member',
-        );
-
-        // removeFromTileGrid is presentation-only. The persisted row remains
-        // queryable, while its available-only render binding no longer
-        // resolves for the Marketplace dispatcher.
-        final after = await _readMarketplaceInstance(
-          installed.engine,
-          instanceId: 'listing-old-catan',
-          personaId: 'tabletop-member',
-        );
-        expect(after.currentState, 'claimed');
-        expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
-      } finally {
-        await installed.dispose();
-      }
-    },
-  );
-
-  testWidgets(
-    'claimed equipment giveaway leaves the real Marketplace grid',
-    (tester) async {
-      final installed = (await tester.runAsync(
-        () => _install('phasec5-marketplace-giveaway-grid'),
-      ))!;
-      try {
-        await tester.pumpWidget(_app(installed));
-        await _selectPersona(tester, 'tabletop-member');
-        await _selectMarketplace(tester);
-
-        final giveaway = find.byKey(
-          const ValueKey('marketplace-listing-listing-old-catan'),
-        );
-        await _pumpUntil(tester, giveaway);
-        expect(giveaway, findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        final claim = find.byKey(
-          const ValueKey(
-            'equipment-loan-listing-old-catan-action-claim',
-          ),
-        );
-        await _pumpUntil(tester, claim);
-        await tester.ensureVisible(claim);
-        expect(
-          find.descendant(of: giveaway, matching: find.text('Claim giveaway')),
-          findsOneWidget,
-        );
-        await tester.tap(claim);
-        await _pumpUntilGone(tester, giveaway);
-
-        expect(giveaway, findsNothing);
-        expect(tester.takeException(), isNull);
-        final after = await tester.runAsync(
-          () => _readMarketplaceInstance(
-            installed.engine,
-            instanceId: 'listing-old-catan',
-            personaId: 'tabletop-member',
-          ),
-        );
-        expect(after!.currentState, 'claimed');
-        expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
-      } finally {
-        await tester.runAsync(installed.dispose);
-      }
-    },
-  );
+        ),
+      );
+      expect(after!.currentState, 'claimed');
+      expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+  });
 
   testWidgets(
     'real seeded Marketplace listings render through the shared engine grid, search, category filters, and detail',
@@ -782,7 +773,10 @@ void main() {
           const ValueKey('marketplace-listing-listing-catan'),
         );
         expect(
-          find.descendant(of: catanListing, matching: find.text('Request loan')),
+          find.descendant(
+            of: catanListing,
+            matching: find.text('Request loan'),
+          ),
           findsOneWidget,
         );
 
@@ -850,17 +844,23 @@ void main() {
         experience: experience,
       ).singleWhere((persona) => persona.personaId == 'tabletop-organizer');
       final engine = _MarketplaceCountingEngine(installed.engine);
-      setCurrentActiveAccountId(organizer.personaId);
       try {
         await tester.pumpWidget(
           MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: EngineNativeMarketplaceSurface(
-                  experience: experience,
-                  persona: organizer,
-                  accent: Colors.indigo,
-                  engine: engine,
+            home: ActiveIdentityScope(
+              identity: ActiveIdentityContext(
+                accountId: organizer.personaId,
+                authApi: LocalAuthApi(),
+                personaId: organizer.personaId,
+              ),
+              child: Scaffold(
+                body: SingleChildScrollView(
+                  child: EngineNativeMarketplaceSurface(
+                    experience: experience,
+                    persona: organizer,
+                    accent: Colors.indigo,
+                    engine: engine,
+                  ),
                 ),
               ),
             ),
@@ -897,7 +897,6 @@ void main() {
           reason: 'local category update must not reload bindings',
         );
       } finally {
-        setCurrentActiveAccountId(null);
         await tester.runAsync(installed.dispose);
       }
     },

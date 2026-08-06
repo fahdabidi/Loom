@@ -441,16 +441,23 @@ Widget _calendar(
   required DateTime currentDate,
   int revision = 0,
 }) => MaterialApp(
-  home: Scaffold(
-    body: SingleChildScrollView(
-      child: EngineNativeCalendarSurface(
-        key: ValueKey('calendar-${harness.extensionId}-$revision'),
-        experience: harness.experience,
-        persona: harness.experience.personas!.single,
-        accent: Colors.deepPurple,
-        modernTheme: null,
-        engine: harness.engine,
-        currentDate: () => currentDate,
+  home: ActiveIdentityScope(
+    identity: ActiveIdentityContext(
+      accountId: null,
+      authApi: LocalAuthApi(),
+      personaId: harness.experience.personas!.single.personaId,
+    ),
+    child: Scaffold(
+      body: SingleChildScrollView(
+        child: EngineNativeCalendarSurface(
+          key: ValueKey('calendar-${harness.extensionId}-$revision'),
+          experience: harness.experience,
+          persona: harness.experience.personas!.single,
+          accent: Colors.deepPurple,
+          modernTheme: null,
+          engine: harness.engine,
+          currentDate: () => currentDate,
+        ),
       ),
     ),
   ),
@@ -691,10 +698,9 @@ void main() {
       controlled.releaseFreshnessRead();
       await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
-      expect(
-        controlled.transitionIdsAtForegroundCompletion,
-        <String>['respond-going'],
-      );
+      expect(controlled.transitionIdsAtForegroundCompletion, <String>[
+        'respond-going',
+      ]);
       expect(controlled.directCreateWorkflowTypes, isEmpty);
       // A deferred retry may legitimately stamp the live response before the
       // polling helper observes completion; the snapshot is the ordering
@@ -730,10 +736,9 @@ void main() {
     controlled.releaseFreshnessRead();
     await _pumpUntilForegroundTransitionCompleted(tester, controlled);
 
-    expect(
-      controlled.transitionIdsAtForegroundCompletion,
-      <String>['respond-going'],
-    );
+    expect(controlled.transitionIdsAtForegroundCompletion, <String>[
+      'respond-going',
+    ]);
     await _settleCalendar(tester);
     final foregroundIndex = controlled.transitionIds.indexOf('respond-going');
     final reminderIndices = <int>[

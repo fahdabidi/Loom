@@ -187,11 +187,15 @@ class _EngineNativeCalendarSurfaceState
             key: ValueKey('engine-native-calendar-loading'),
           );
         }
+        final identity = ActiveIdentityScope.of(context);
+        final personaId = identity.resolveEnginePersonaId(
+          widget.persona.personaId,
+        );
         return EngineNativeBindingDispatcher(
           engine: snapshot.data!,
           definitions: definitions,
           tabId: 'calendar',
-          personaId: resolveEnginePersonaId(widget.persona.personaId),
+          personaId: personaId,
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
               'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.personaId}',
@@ -200,7 +204,7 @@ class _EngineNativeCalendarSurfaceState
             engine: snapshot.data!,
             communityExtensionId: widget.experience.extensionId,
             viewerPersonaId: widget.persona.personaId,
-            personaId: resolveEnginePersonaId(widget.persona.personaId),
+            personaId: personaId,
             accent: widget.accent,
             calendarDateRailEntries: widget.experience.calendarDateRailEntries,
             currentDate: widget.currentDate,
@@ -1637,9 +1641,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final communityExtensionId = widget.communityExtensionId;
     final request = ++_accountRequest;
     try {
-      final accounts = await (_globalAuthApi ?? LocalAuthApi()).listAccounts(
-        communityExtensionId: communityExtensionId,
-      );
+      final accounts = await ActiveIdentityScope.of(
+        context,
+      ).authApi.listAccounts(communityExtensionId: communityExtensionId);
       if (!mounted ||
           request != _accountRequest ||
           widget.communityExtensionId != communityExtensionId) {
@@ -1911,7 +1915,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             cursor = nextCursor;
           }
           if (siblings.isNotEmpty) {
-            final accounts = await (_globalAuthApi ?? LocalAuthApi())
+            final accounts = await ActiveIdentityScope.of(context).authApi
                 .listAccounts(
                   communityExtensionId: widget.communityExtensionId,
                 );

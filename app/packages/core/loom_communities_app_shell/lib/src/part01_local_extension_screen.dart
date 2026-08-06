@@ -503,7 +503,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   /// the search for every workflow regardless of its real dedicated tab —
   /// unlike [_focusWorkflowAfterAction], which *wants* Home as the landing
   /// tab after any action and so does not exclude it.
-  LoomCardTheme _resolvedCardThemeFor(LoomWorkflowDefinition workflow) {
+  LoomCardTheme _resolvedCardThemeFor(
+    LoomWorkflowDefinition workflow, {
+    required BuildContext identityContext,
+  }) {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
@@ -516,7 +519,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.themeOverride,
     );
     final activePersona = _activePersona(experience);
-    setCurrentActiveAccountId(_activeAccountId);
+    ActiveIdentityScope.of(
+      identityContext,
+    ).setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
@@ -538,12 +543,18 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     return LoomCardTheme.merge(tabCard, workflow.theme);
   }
 
-  Future<void> _confirmWorkflow(LoomWorkflowDefinition workflow) async {
+  Future<void> _confirmWorkflow(
+    LoomWorkflowDefinition workflow, {
+    required BuildContext identityContext,
+  }) async {
     final contract = productionWorkflowContractFor(
       extensionId: community.extensionId,
       workflow: workflow,
     );
-    final resolvedTheme = _resolvedCardThemeFor(workflow);
+    final resolvedTheme = _resolvedCardThemeFor(
+      workflow,
+      identityContext: identityContext,
+    );
     final usesModernCardTheme =
         experienceForExtensionId(
           community.extensionId,
@@ -553,7 +564,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         null;
     String? selectedResponseId;
     final confirmed =
-        await Navigator.of(context).push<bool>(
+        await Navigator.of(identityContext).push<bool>(
           MaterialPageRoute<bool>(
             fullscreenDialog: true,
             builder: (context) => _WorkflowActionSurface(
@@ -578,6 +589,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     }
     _focusWorkflowAfterAction(
       workflow,
+      identityContext: identityContext,
       mutateState: () {
         _completedWorkflowIds.add(workflow.workflowId);
         if (selectedResponseId != null) {
@@ -592,12 +604,16 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required LoomWorkflowDefinition workflow,
     required LoomPersonaDefinition persona,
     required LoomWorkflowPersonaPolicy policy,
+    required BuildContext identityContext,
   }) async {
     final contract = productionWorkflowContractFor(
       extensionId: community.extensionId,
       workflow: workflow,
     );
-    final resolvedTheme = _resolvedCardThemeFor(workflow);
+    final resolvedTheme = _resolvedCardThemeFor(
+      workflow,
+      identityContext: identityContext,
+    );
     final usesModernCardTheme =
         experienceForExtensionId(
           community.extensionId,
@@ -606,7 +622,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         ).themeOverride !=
         null;
     final confirmed =
-        await Navigator.of(context).push<bool>(
+        await Navigator.of(identityContext).push<bool>(
           MaterialPageRoute<bool>(
             fullscreenDialog: true,
             builder: (context) => _WorkflowActionSurface(
@@ -632,6 +648,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     }
     _focusWorkflowAfterAction(
       workflow,
+      identityContext: identityContext,
       mutateState: () => _receivedWorkflowPersonaKeys.add(
         workflowPersonaReceiptKey(
           workflowId: workflow.workflowId,
@@ -643,6 +660,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   void _focusWorkflowAfterAction(
     LoomWorkflowDefinition workflow, {
+    required BuildContext identityContext,
     required VoidCallback mutateState,
   }) {
     final experience = experienceForExtensionId(
@@ -651,7 +669,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
-    setCurrentActiveAccountId(_activeAccountId);
+    ActiveIdentityScope.of(
+      identityContext,
+    ).setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
@@ -828,6 +848,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required SurfacePresentationState state,
     required CommunityAppShellCustomizationSpec shellSpec,
     required String focusKey,
+    required BuildContext identityContext,
   }) {
     final policy = personaPolicyForWorkflow(
       experience.extensionId,
@@ -854,11 +875,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       fallbackAccent: workflowCardTheme.accent!,
       modernTheme: modernTheme,
       selectedResponseId: _selectedResponseByWorkflowId[workflow.workflowId],
-      onPressed: () => _confirmWorkflow(workflow),
+      onPressed: () =>
+          _confirmWorkflow(workflow, identityContext: identityContext),
       onReceivePressed: () => _receiveWorkflow(
         workflow: workflow,
         persona: activePersona,
         policy: policy,
+        identityContext: identityContext,
       ),
     );
     return KeyedSubtree(
@@ -871,11 +894,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         theme: workflowCardTheme,
         modernTheme: modernTheme,
         child: workflowTile,
-        onPressed: () => _confirmWorkflow(workflow),
+        onPressed: () =>
+            _confirmWorkflow(workflow, identityContext: identityContext),
         onReceivePressed: () => _receiveWorkflow(
           workflow: workflow,
           persona: activePersona,
           policy: policy,
+          identityContext: identityContext,
         ),
         onExpand: () => _expandWorkflowSurface(
           workflowId: workflow.workflowId,
@@ -888,13 +913,24 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ActiveIdentityScope(
+      identity: ActiveIdentityContext(
+        accountId: _activeAccountId,
+        authApi: _authApi,
+        personaId: _activePersonaTypeId,
+      ),
+      child: Builder(builder: (context) => _buildScreen(context)),
+    );
+  }
+
+  Widget _buildScreen(BuildContext context) {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
-    setCurrentActiveAccountId(_activeAccountId);
+    ActiveIdentityScope.of(context).setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
@@ -1255,6 +1291,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 state: state,
                 shellSpec: shellSpec,
                 focusKey: focusKey,
+                identityContext: context,
               ),
               reminderEnabledWorkflowIds: _reminderEnabledWorkflowIds,
               onToggleReminder: (workflowId) => setState(() {
@@ -1265,7 +1302,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               onSelectCalendarDate: (workflowId) => setState(() {
                 _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
               }),
-              onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
+              onConfirmWorkflow: (workflow) =>
+                  _confirmWorkflow(workflow, identityContext: context),
               completedWorkflowIds: _completedWorkflowIds,
               onInstanceScopedCreate:
                   ({

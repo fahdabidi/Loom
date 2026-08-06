@@ -93,21 +93,27 @@ Widget _engineCalendar(
   _InstalledTabletop installed,
   LoomCardTheme? theme, {
   DateTime Function()? currentDate,
-}) =>
-    MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: EngineNativeCalendarSurface(
-            experience: installed.experience,
-            persona: _member(installed),
-            accent: Colors.deepPurple,
-            modernTheme: theme,
-            engine: installed.engine,
-            currentDate: currentDate ?? DateTime.now,
-          ),
+}) => MaterialApp(
+  home: ActiveIdentityScope(
+    identity: ActiveIdentityContext(
+      accountId: null,
+      authApi: LocalAuthApi(),
+      personaId: 'tabletop-member',
+    ),
+    child: Scaffold(
+      body: SingleChildScrollView(
+        child: EngineNativeCalendarSurface(
+          experience: installed.experience,
+          persona: _member(installed),
+          accent: Colors.deepPurple,
+          modernTheme: theme,
+          engine: installed.engine,
+          currentDate: currentDate ?? DateTime.now,
         ),
       ),
-    );
+    ),
+  ),
+);
 
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 40; attempt++) {
@@ -147,7 +153,9 @@ void _replaceEventDates(Map<String, dynamic> source, List<String> dates) {
 
   visit(source);
   if (index != dates.length) {
-    throw StateError('Expected ${dates.length} fixture event dates, found $index');
+    throw StateError(
+      'Expected ${dates.length} fixture event dates, found $index',
+    );
   }
 }
 
@@ -289,10 +297,8 @@ void main() {
       final installed = (await tester.runAsync(
         () => _install(
           'a9-agenda-bezel',
-          configure: (source) => _replaceEventDates(source, const [
-            '2026-07-10',
-            '2026-07-11',
-          ]),
+          configure: (source) =>
+              _replaceEventDates(source, const ['2026-07-10', '2026-07-11']),
         ),
       ))!;
       try {
@@ -333,9 +339,7 @@ void main() {
           ),
         );
         final bezel = tester.widget<Container>(
-          find
-              .ancestor(of: row, matching: find.byType(Container))
-              .first,
+          find.ancestor(of: row, matching: find.byType(Container)).first,
         );
         final bezelDecoration = bezel.decoration! as BoxDecoration;
         expect(
@@ -405,8 +409,14 @@ void main() {
         final rail = find.byKey(
           const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
         );
-        expect(find.descendant(of: rail, matching: find.text('FRI')), findsOneWidget);
-        expect(find.descendant(of: rail, matching: find.text('10')), findsOneWidget);
+        expect(
+          find.descendant(of: rail, matching: find.text('FRI')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: rail, matching: find.text('10')),
+          findsOneWidget,
+        );
         expect(
           find.byKey(
             const ValueKey(
@@ -418,7 +428,10 @@ void main() {
         // The frozen fixture has both Friday game night and the summer
         // tournament on this date, so the formula is evaluated over two
         // day-local instances rather than a global or hardcoded count.
-        expect(find.descendant(of: rail, matching: find.text('2')), findsOneWidget);
+        expect(
+          find.descendant(of: rail, matching: find.text('2')),
+          findsOneWidget,
+        );
 
         final group = tester.widget<Container>(
           find.byKey(
@@ -463,11 +476,19 @@ void main() {
         final rail = find.byKey(
           const ValueKey('engine-native-calendar-agenda-date-2026-07-10'),
         );
-        expect(find.descendant(of: rail, matching: find.text('FRI')), findsOneWidget);
-        expect(find.descendant(of: rail, matching: find.text('10')), findsOneWidget);
+        expect(
+          find.descendant(of: rail, matching: find.text('FRI')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: rail, matching: find.text('10')),
+          findsOneWidget,
+        );
         expect(
           find.byKey(
-            const ValueKey('engine-native-calendar-agenda-date-entry-2026-07-10-2'),
+            const ValueKey(
+              'engine-native-calendar-agenda-date-entry-2026-07-10-2',
+            ),
           ),
           findsNothing,
         );

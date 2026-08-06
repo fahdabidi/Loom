@@ -102,16 +102,25 @@ Widget _calendar(
   _InstalledTabletop installed,
   String personaId, {
   int revision = 0,
+  String? accountId,
+  LoomAuthApi? authApi,
 }) => MaterialApp(
-  home: Scaffold(
-    body: SingleChildScrollView(
-      child: EngineNativeCalendarSurface(
-        key: ValueKey('a11-calendar-$personaId-$revision'),
-        experience: installed.experience,
-        persona: _persona(installed, personaId),
-        accent: Colors.deepPurple,
-        modernTheme: null,
-        engine: installed.engine,
+  home: ActiveIdentityScope(
+    identity: ActiveIdentityContext(
+      accountId: accountId,
+      authApi: authApi ?? LocalAuthApi(),
+      personaId: personaId,
+    ),
+    child: Scaffold(
+      body: SingleChildScrollView(
+        child: EngineNativeCalendarSurface(
+          key: ValueKey('a11-calendar-$personaId-$revision'),
+          experience: installed.experience,
+          persona: _persona(installed, personaId),
+          accent: Colors.deepPurple,
+          modernTheme: null,
+          engine: installed.engine,
+        ),
       ),
     ),
   ),
@@ -159,9 +168,7 @@ Future<_PollObservation> _observeFinder(Finder finder, String label) async {
 
 Finder _selectedActionFinder(String instanceId, String transitionId) =>
     find.descendant(
-      of: find.byKey(
-        ValueKey('event-rsvp-$instanceId-action-$transitionId'),
-      ),
+      of: find.byKey(ValueKey('event-rsvp-$instanceId-action-$transitionId')),
       matching: find.byWidgetPredicate(
         (widget) => widget is InputChip && widget.selected,
       ),
@@ -283,9 +290,7 @@ Future<void> _tapRsvpAction(
   await tester.pump();
   await tester.tap(action);
   await tester.pump();
-  final dialog = find.byKey(
-    const ValueKey('generic-transition-input-dialog'),
-  );
+  final dialog = find.byKey(const ValueKey('generic-transition-input-dialog'));
   final partySizeInput = find.byKey(
     const ValueKey('generic-transition-input-partySize'),
   );
@@ -295,10 +300,7 @@ Future<void> _tapRsvpAction(
   }
   if (dialog.evaluate().isNotEmpty) {
     if (partySizeInput.evaluate().isNotEmpty) {
-      await tester.enterText(
-        partySizeInput,
-        (partySize ?? 1).toString(),
-      );
+      await tester.enterText(partySizeInput, (partySize ?? 1).toString());
     }
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
@@ -338,13 +340,13 @@ Future<void> _selectAgenda(
   );
 }
 
-Future<void> _useFixtureAccounts(_InstalledTabletop installed) async {
+Future<LoomAuthApi> _useFixtureAccounts(_InstalledTabletop installed) async {
   final auth = LocalAuthApi();
   auth.seedAccounts(
     installed.community.extensionId,
     await auth.listAccounts(communityExtensionId: 'ext_verify_tabletop_club'),
   );
-  setGlobalAuthApi(auth);
+  return auth;
 }
 
 void main() {
@@ -439,9 +441,7 @@ void main() {
       expect(
         find.descendant(
           of: facts,
-          matching: find.byKey(
-            const ValueKey('workflow-fact-paragraph-host'),
-          ),
+          matching: find.byKey(const ValueKey('workflow-fact-paragraph-host')),
         ),
         findsNothing,
       );
@@ -490,8 +490,12 @@ void main() {
         () => _install('a11-attendee-names'),
       ))!;
       try {
-        await tester.runAsync(() => _useFixtureAccounts(installed));
-        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        final auth = (await tester.runAsync(
+          () => _useFixtureAccounts(installed),
+        ))!;
+        await tester.pumpWidget(
+          _calendar(installed, 'tabletop-member', authApi: auth),
+        );
         await _selectAgenda(tester, 'event-friday-game-night', 0);
 
         final attendees = find.byKey(
@@ -499,7 +503,10 @@ void main() {
         );
         await _pumpUntil(tester, attendees);
         await _pumpUntil(tester, find.text('• Jordan W.'));
-        expect(find.descendant(of: attendees, matching: find.text('Going')), findsOneWidget);
+        expect(
+          find.descendant(of: attendees, matching: find.text('Going')),
+          findsOneWidget,
+        );
         expect(
           find.descendant(of: attendees, matching: find.text('• Jordan W.')),
           findsOneWidget,
@@ -524,8 +531,12 @@ void main() {
         () => _install('a11-tournament-attendees'),
       ))!;
       try {
-        await tester.runAsync(() => _useFixtureAccounts(installed));
-        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        final auth = (await tester.runAsync(
+          () => _useFixtureAccounts(installed),
+        ))!;
+        await tester.pumpWidget(
+          _calendar(installed, 'tabletop-member', authApi: auth),
+        );
         await _selectAgenda(tester, 'event-summer-tournament', 0);
 
         final attendees = find.byKey(
@@ -533,7 +544,10 @@ void main() {
         );
         await _pumpUntil(tester, attendees);
         await _pumpUntil(tester, find.text('• Jordan W.'));
-        expect(find.descendant(of: attendees, matching: find.text('Going')), findsOneWidget);
+        expect(
+          find.descendant(of: attendees, matching: find.text('Going')),
+          findsOneWidget,
+        );
         expect(
           find.descendant(of: attendees, matching: find.text('• Jordan W.')),
           findsOneWidget,
@@ -541,7 +555,10 @@ void main() {
         // The frozen list includes this legacy, unseeded persona id. It must
         // remain visible even when account lookup cannot resolve it.
         expect(
-          find.descendant(of: attendees, matching: find.text('• tabletop-member')),
+          find.descendant(
+            of: attendees,
+            matching: find.text('• tabletop-member'),
+          ),
           findsOneWidget,
         );
       } finally {
@@ -558,10 +575,14 @@ void main() {
     tester,
   ) async {
     final installed = (await tester.runAsync(() => _install('a11-going')))!;
-    setCurrentActiveAccountId('tabletop-member-14');
-    addTearDown(() => setCurrentActiveAccountId(null));
     try {
-      await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+      await tester.pumpWidget(
+        _calendar(
+          installed,
+          'tabletop-member',
+          accountId: 'tabletop-member-14',
+        ),
+      );
       await _selectAgenda(tester, 'event-friday-game-night', 0);
 
       await _pumpUntil(
@@ -632,10 +653,14 @@ void main() {
       final installed = (await tester.runAsync(
         () => _install('a11-member-14'),
       ))!;
-      setCurrentActiveAccountId('tabletop-member-14');
-      addTearDown(() => setCurrentActiveAccountId(null));
       try {
-        await tester.pumpWidget(_calendar(installed, 'tabletop-member'));
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-member',
+            accountId: 'tabletop-member-14',
+          ),
+        );
         await _selectAgenda(tester, 'event-friday-game-night', 0);
         final before = await _instance(
           tester,
@@ -694,8 +719,6 @@ void main() {
     tester,
   ) async {
     final installed = (await tester.runAsync(() => _install('a11-waitlist')))!;
-    setCurrentActiveAccountId('tabletop-member-14');
-    addTearDown(() => setCurrentActiveAccountId(null));
     try {
       // Set up: the seed has 11 going rows; reduce capacity to 11.
       await tester.runAsync(() async {
@@ -709,7 +732,12 @@ void main() {
 
       // Now 11 going, capacity 11 → full. tabletop-member-14 is pending.
       await tester.pumpWidget(
-        _calendar(installed, 'tabletop-member', revision: 2),
+        _calendar(
+          installed,
+          'tabletop-member',
+          revision: 2,
+          accountId: 'tabletop-member-14',
+        ),
       );
       await _selectAgenda(tester, 'event-friday-game-night', 0);
 
@@ -915,28 +943,24 @@ void main() {
         await tester.ensureVisible(submit);
         await tester.tap(submit);
         await tester.pump();
-        await _pollUntilObservation(
-          tester,
-          () async {
-            final page = await installed.engine.queryInstances(
-              tabId: 'calendar',
-              personaId: 'tabletop-organizer',
-              limit: 100,
-            );
-            final events = page.items
-                .where(
-                  (item) =>
-                      item.workflowType == 'event-rsvp' &&
-                      item.instanceData['title'] == 'CALR.3 test event',
-                )
-                .toList();
-            return _PollObservation(
-              events.isNotEmpty,
-              'matching events=${events.length}',
-            );
-          },
-          description: 'created CALR.3 event',
-        );
+        await _pollUntilObservation(tester, () async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          final events = page.items
+              .where(
+                (item) =>
+                    item.workflowType == 'event-rsvp' &&
+                    item.instanceData['title'] == 'CALR.3 test event',
+              )
+              .toList();
+          return _PollObservation(
+            events.isNotEmpty,
+            'matching events=${events.length}',
+          );
+        }, description: 'created CALR.3 event');
 
         final result = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
@@ -983,9 +1007,7 @@ void main() {
       // Switch to the tabletop-member persona so the creatable-action
       // FAB is hidden (the fixture only lists tabletop-organizer
       // in creatable.byPersonaIds).
-      final personaPicker = find.byKey(
-        const ValueKey('persona-picker-button'),
-      );
+      final personaPicker = find.byKey(const ValueKey('persona-picker-button'));
       await _pumpUntil(tester, personaPicker);
       await tester.tap(personaPicker);
       await tester.pump();
@@ -994,24 +1016,20 @@ void main() {
       );
       await _pumpUntil(tester, memberOption);
       await tester.tap(memberOption);
-      await _pollUntilObservation(
-        tester,
-        () async {
-          final eventFabCount = find
-              .byKey(const ValueKey('creatable-fab-event-rsvp'))
-              .evaluate()
-              .length;
-          final speedDialCount = find
-              .byKey(const ValueKey('creatable-fab-speed-dial'))
-              .evaluate()
-              .length;
-          return _PollObservation(
-            eventFabCount == 0 && speedDialCount == 0,
-            'eventFabMatches=$eventFabCount, speedDialMatches=$speedDialCount',
-          );
-        },
-        description: 'member persona hides event creation controls',
-      );
+      await _pollUntilObservation(tester, () async {
+        final eventFabCount = find
+            .byKey(const ValueKey('creatable-fab-event-rsvp'))
+            .evaluate()
+            .length;
+        final speedDialCount = find
+            .byKey(const ValueKey('creatable-fab-speed-dial'))
+            .evaluate()
+            .length;
+        return _PollObservation(
+          eventFabCount == 0 && speedDialCount == 0,
+          'eventFabMatches=$eventFabCount, speedDialMatches=$speedDialCount',
+        );
+      }, description: 'member persona hides event creation controls');
       expect(
         find.byKey(const ValueKey('creatable-fab-event-rsvp')),
         findsNothing,

@@ -65,12 +65,14 @@ void main() {
         experienceConfiguration: community.experienceConfiguration,
       );
 
-      engine = (await workflowEngineForExtensionId(community.extensionId))
-          as LocalWorkflowEngineApi;
+      engine =
+          (await workflowEngineForExtensionId(community.extensionId))
+              as LocalWorkflowEngineApi;
 
       // Register all seeded account persona types with the engine
-      final accounts =
-          await authApi.listAccounts(communityExtensionId: communityExtensionId);
+      final accounts = await authApi.listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
       for (final account in accounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
       }
@@ -80,8 +82,9 @@ void main() {
 
     // ── Test 1 ────────────────────────────────────────────────────────
     test('LocalAuthApi.listAccounts() returns seeded demo accounts', () async {
-      final accounts =
-          await authApi.listAccounts(communityExtensionId: communityExtensionId);
+      final accounts = await authApi.listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
 
       expect(accounts, isNotEmpty);
       // Each account must have a distinct individual personaId
@@ -197,7 +200,6 @@ void main() {
     test('owner-gated guard distinguishes individuals', () async {
       // Sign in as tabletop-member-05 (owner of share-azul)
       await authApi.signIn(accountId: 'tabletop-member-05');
-      setCurrentActiveAccountId('tabletop-member-05');
 
       // Load the share-azul instance
       final page = await engine.queryInstances(
@@ -205,9 +207,7 @@ void main() {
         personaId: 'tabletop-member-05',
         limit: 50,
       );
-      final azul = page.items.firstWhere(
-        (i) => i.instanceId == 'share-azul',
-      );
+      final azul = page.items.firstWhere((i) => i.instanceId == 'share-azul');
 
       // As the owner, approve-request should be available
       final ownerTransitions = await engine.availableTransitionsAsync(
@@ -217,15 +217,13 @@ void main() {
         instanceData: azul.instanceData,
         personaId: 'tabletop-member-05',
       );
-      final ownerTransitionIds =
-          ownerTransitions.map((t) => t.id).toSet();
+      final ownerTransitionIds = ownerTransitions.map((t) => t.id).toSet();
       expect(ownerTransitionIds, contains('approve-request'));
       expect(ownerTransitionIds, contains('decline-request'));
 
       // Sign in as a different member (not the owner)
       await authApi.signOut();
       await authApi.signIn(accountId: 'tabletop-member-06');
-      setCurrentActiveAccountId('tabletop-member-06');
 
       // Re-register type mapping
       engine.setPersonaType('tabletop-member-06', 'tabletop-member');
@@ -238,16 +236,18 @@ void main() {
         instanceData: azul.instanceData,
         personaId: 'tabletop-member-06',
       );
-      final nonOwnerTransitionIds =
-          nonOwnerTransitions.map((t) => t.id).toSet();
+      final nonOwnerTransitionIds = nonOwnerTransitions
+          .map((t) => t.id)
+          .toSet();
       expect(nonOwnerTransitionIds, isNot(contains('approve-request')));
       expect(nonOwnerTransitionIds, isNot(contains('decline-request')));
     });
 
     // ── Test 4: Switch-user picker renders correct list ─────────────
     test('account list groups by persona type', () async {
-      final accounts =
-          await authApi.listAccounts(communityExtensionId: communityExtensionId);
+      final accounts = await authApi.listAccounts(
+        communityExtensionId: communityExtensionId,
+      );
 
       final grouped = <String, List<LoomAccount>>{};
       for (final account in accounts) {
@@ -273,35 +273,33 @@ void main() {
     });
 
     // ── Test 5: Full suite still passes (pre-existing count check) ──
-    test('engine-native store initializes correctly with auth bridge', () async {
-      // Set up the global auth API
-      setGlobalAuthApi(authApi);
+    test(
+      'engine-native store initializes correctly with auth bridge',
+      () async {
+        // Verify engine is functional
+        final page = await engine.queryInstances(
+          tabId: 'home',
+          personaId: 'tabletop-member',
+          limit: 50,
+        );
+        expect(page.items, hasLength(33));
 
-      // Verify engine is functional
-      final page = await engine.queryInstances(
-        tabId: 'home',
-        personaId: 'tabletop-member',
-        limit: 50,
-      );
-      expect(page.items, hasLength(33));
-
-      // Verify that the persona type mapping is in place:
-      // query the real share-azul instance (same pattern as Test 3 above)
-      final azul = page.items.firstWhere(
-        (i) => i.instanceId == 'share-azul',
-      );
-      final ownerTransitions = await engine.availableTransitionsAsync(
-        workflowType: azul.workflowType,
-        instanceId: azul.instanceId,
-        currentState: azul.currentState,
-        instanceData: azul.instanceData,
-        personaId: 'tabletop-member-05',
-      );
-      expect(ownerTransitions, isNotEmpty);
-      // The owner-gated transitions must be present
-      final ids = ownerTransitions.map((t) => t.id).toSet();
-      expect(ids, contains('approve-request'));
-      expect(ids, contains('decline-request'));
-    });
+        // Verify that the persona type mapping is in place:
+        // query the real share-azul instance (same pattern as Test 3 above)
+        final azul = page.items.firstWhere((i) => i.instanceId == 'share-azul');
+        final ownerTransitions = await engine.availableTransitionsAsync(
+          workflowType: azul.workflowType,
+          instanceId: azul.instanceId,
+          currentState: azul.currentState,
+          instanceData: azul.instanceData,
+          personaId: 'tabletop-member-05',
+        );
+        expect(ownerTransitions, isNotEmpty);
+        // The owner-gated transitions must be present
+        final ids = ownerTransitions.map((t) => t.id).toSet();
+        expect(ids, contains('approve-request'));
+        expect(ids, contains('decline-request'));
+      },
+    );
   });
 }
