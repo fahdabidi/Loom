@@ -176,7 +176,19 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   String? _selectedPersonaId;
 
   /// Auth API — seeded with demo accounts by default.
-  late final LoomAuthApi _authApi = LocalAuthApi();
+  late final LoomAuthApi _authApi = LocalAuthApi(
+    personaResolver: (communityExtensionId) {
+      final experience = experienceForExtensionId(
+        communityExtensionId,
+        displayName: community.displayName,
+        experienceConfiguration: community.experienceConfiguration,
+      );
+      return personasForExtensionId(
+        communityExtensionId,
+        experience: experience,
+      );
+    },
+  );
 
   /// The individual account id when signed in, otherwise falls back to
   /// [_selectedPersonaId] (the persona type) for backward compatibility.
@@ -793,6 +805,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           builder: (_) => LoomAuthScreen(
             authApi: _authApi,
             communityExtensionId: community.extensionId,
+            experience: experience,
             onSignIn: () {
               Navigator.of(context).pop();
               if (mounted) setState(() {});

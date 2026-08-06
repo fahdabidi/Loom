@@ -141,6 +141,58 @@ void main() {
       );
     });
 
+    test('persona resolver rejects an undeclared persona type', () async {
+      const communityId = 'authz-p1-apartment-events';
+      final resolver = LocalAuthApi(
+        personaResolver: (communityExtensionId) {
+          expect(communityExtensionId, communityId);
+          return const [
+            LoomPersonaDefinition(
+              personaId: 'apartment-event-manager',
+              label: 'Event manager',
+              roleLabel: 'Manager',
+              description: 'Manages apartment events.',
+            ),
+          ];
+        },
+      );
+
+      await expectLater(
+        resolver.signUp(
+          communityExtensionId: communityId,
+          displayName: 'Wrong Persona',
+          personaTypeId: 'tabletop-member',
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('tabletop-member'), contains(communityId)),
+          ),
+        ),
+      );
+      expect(
+        await resolver.listAccounts(communityExtensionId: communityId),
+        isEmpty,
+      );
+    });
+
+    test(
+      'null persona resolver preserves unchecked sign-up behavior',
+      () async {
+        final api = LocalAuthApi();
+
+        final session = await api.signUp(
+          communityExtensionId: 'community-without-a-resolver',
+          displayName: 'Legacy User',
+          personaTypeId: 'undeclared-legacy-persona',
+        );
+
+        expect(session.account.personaTypeId, 'undeclared-legacy-persona');
+        expect(session.account.displayName, 'Legacy User');
+      },
+    );
+
     // ── Test 3: Owner-gated guard distinguishes individuals ───────────
     test('owner-gated guard distinguishes individuals', () async {
       // Sign in as tabletop-member-05 (owner of share-azul)

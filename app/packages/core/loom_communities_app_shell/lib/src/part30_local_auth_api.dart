@@ -10,8 +10,10 @@ part of '../loom_communities_app_shell.dart';
 class LocalAuthApi implements LoomAuthApi {
   final Map<String, List<LoomAccount>> _accountsByCommunity = {};
   LoomSession? _currentSession;
+  final List<LoomPersonaDefinition> Function(String communityExtensionId)?
+  personaResolver;
 
-  LocalAuthApi() {
+  LocalAuthApi({this.personaResolver}) {
     _seedTabletopAccounts();
   }
 
@@ -123,6 +125,16 @@ class LocalAuthApi implements LoomAuthApi {
     required String displayName,
     required String personaTypeId,
   }) async {
+    final resolver = personaResolver;
+    if (resolver != null) {
+      final personas = resolver(communityExtensionId);
+      if (!personas.any((persona) => persona.personaId == personaTypeId)) {
+        throw ArgumentError(
+          'Persona type "$personaTypeId" is not declared by community '
+          '"$communityExtensionId".',
+        );
+      }
+    }
     final counter = _nextSignUpCounter++;
     final account = LoomAccount(
       accountId: '$personaTypeId-$counter',

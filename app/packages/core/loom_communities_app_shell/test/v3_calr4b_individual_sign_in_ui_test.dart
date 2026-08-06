@@ -69,6 +69,48 @@ Widget _app(_InstalledFixture fixture) => MaterialApp(
   ),
 );
 
+LocalInstalledCommunity _apartmentEventsCommunity() =>
+    const LocalInstalledCommunity(
+      communityId: 'apartment-events',
+      displayName: 'Apartment Events',
+      extensionId: 'authz-p1-apartment-events-ui',
+      logoAssetId: null,
+      cardImageAssetId: null,
+      heroImageAssetId: null,
+      accentColor: '#2f6f67',
+      experienceConfiguration: <String, Object?>{
+        'workflows': <Object?>[
+          <String, Object?>{
+            'workflowId': 'apartment-event-calendar',
+            'title': 'Apartment Events calendar',
+            'entryText': 'See upcoming apartment events.',
+            'actionText': 'Open the events calendar.',
+            'resultText': 'The apartment events calendar is open.',
+          },
+        ],
+        'personas': <Object?>[
+          <String, Object?>{
+            'personaId': 'apartment-event-manager',
+            'label': 'Event manager',
+            'roleLabel': 'Manager',
+            'description': 'Coordinates apartment events.',
+          },
+          <String, Object?>{
+            'personaId': 'apartment-resident',
+            'label': 'Resident',
+            'roleLabel': 'Resident',
+            'description': 'Attends apartment events.',
+          },
+          <String, Object?>{
+            'personaId': 'facility-privileged-resident',
+            'label': 'Facility resident',
+            'roleLabel': 'Privileged resident',
+            'description': 'Uses privileged facility access.',
+          },
+        ],
+      },
+    );
+
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 40; attempt++) {
     await tester.runAsync(
@@ -102,6 +144,18 @@ Future<void> _signInAs(WidgetTester tester, String displayName) async {
   await tester.tap(find.text(displayName).first);
   await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
   await _settle(tester);
+}
+
+Future<void> _openSpecificPersonSignIn(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+  );
+  await tester.tap(
+    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+  );
+  await _pumpUntil(tester, find.text('Create New Account'));
 }
 
 Future<void> _openFridayDetail(WidgetTester tester) async {
@@ -185,6 +239,45 @@ void main() {
       } finally {
         await tester.runAsync(fixture.dispose);
       }
+    },
+  );
+
+  testWidgets(
+    'sign-up persona options come from the open community declaration',
+    (tester) async {
+      final community = _apartmentEventsCommunity();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: LocalExtensionScreen(
+            community: community,
+            seedDataFiles: const [],
+          ),
+        ),
+      );
+
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('persona-picker-button')),
+      );
+      await _openSpecificPersonSignIn(tester);
+
+      final dropdown = tester.widget<DropdownButton<String>>(
+        find.descendant(
+          of: find.byType(DropdownButtonFormField<String>),
+          matching: find.byType(DropdownButton<String>),
+        ),
+      );
+      expect(dropdown.items!.map((item) => item.value).toList(), <String>[
+        'apartment-event-manager',
+        'apartment-resident',
+        'facility-privileged-resident',
+      ]);
+      expect(
+        dropdown.items!.map((item) => (item.child as Text).data).toList(),
+        <String?>['Event manager', 'Resident', 'Facility resident'],
+      );
+      expect(find.text('tabletop-member'), findsNothing);
+      expect(find.text('tabletop-organizer'), findsNothing);
     },
   );
 }

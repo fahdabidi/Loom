@@ -7,11 +7,13 @@ class LoomAuthScreen extends StatefulWidget {
     super.key,
     required this.authApi,
     required this.communityExtensionId,
+    required this.experience,
     required this.onSignIn,
   });
 
   final LoomAuthApi authApi;
   final String communityExtensionId;
+  final LoomExperienceDefinition experience;
   final VoidCallback onSignIn;
 
   @override
@@ -112,6 +114,7 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                 else ...[
                   _AccountList(
                     accounts: _accounts!,
+                    experience: widget.experience,
                     onSignIn: _signIn,
                   ),
                   const SizedBox(height: 24),
@@ -120,6 +123,7 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                   _SignUpForm(
                     authApi: widget.authApi,
                     communityExtensionId: widget.communityExtensionId,
+                    experience: widget.experience,
                     onSignedUp: widget.onSignIn,
                   ),
                 ],
@@ -133,9 +137,14 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
 }
 
 class _AccountList extends StatelessWidget {
-  const _AccountList({required this.accounts, required this.onSignIn});
+  const _AccountList({
+    required this.accounts,
+    required this.experience,
+    required this.onSignIn,
+  });
 
   final List<LoomAccount> accounts;
+  final LoomExperienceDefinition experience;
   final Future<void> Function(String accountId) onSignIn;
 
   @override
@@ -189,14 +198,12 @@ class _AccountList extends StatelessWidget {
   }
 
   String _personaLabelFor(String typeId) {
-    switch (typeId) {
-      case 'tabletop-organizer':
-        return 'Organizers';
-      case 'tabletop-member':
-        return 'Members';
-      default:
-        return typeId;
-    }
+    final persona = personasForExtensionId(
+      experience.extensionId,
+      experience: experience,
+    ).where((candidate) => candidate.personaId == typeId).firstOrNull;
+    if (persona == null) return typeId;
+    return '${persona.label} (${persona.roleLabel})';
   }
 }
 
@@ -204,11 +211,13 @@ class _SignUpForm extends StatefulWidget {
   const _SignUpForm({
     required this.authApi,
     required this.communityExtensionId,
+    required this.experience,
     required this.onSignedUp,
   });
 
   final LoomAuthApi authApi;
   final String communityExtensionId;
+  final LoomExperienceDefinition experience;
   final VoidCallback onSignedUp;
 
   @override
@@ -218,10 +227,21 @@ class _SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<_SignUpForm> {
   final _formKey = GlobalKey<FormState>();
   final _displayNameController = TextEditingController();
-  String _selectedType = 'tabletop-member';
+  late final List<LoomPersonaDefinition> _personas;
+  late final List<String> _availableTypes;
+  late String _selectedType;
   bool _submitting = false;
 
-  final _availableTypes = const ['tabletop-member', 'tabletop-organizer'];
+  @override
+  void initState() {
+    super.initState();
+    _personas = personasForExtensionId(
+      widget.experience.extensionId,
+      experience: widget.experience,
+    );
+    _availableTypes = _personas.map((persona) => persona.personaId).toList();
+    _selectedType = _personas.first.personaId;
+  }
 
   @override
   void dispose() {
@@ -284,7 +304,10 @@ class _SignUpFormState extends State<_SignUpForm> {
               border: OutlineInputBorder(),
             ),
             items: _availableTypes.map((type) {
-              return DropdownMenuItem(value: type, child: Text(type));
+              final persona = _personas.firstWhere(
+                (candidate) => candidate.personaId == type,
+              );
+              return DropdownMenuItem(value: type, child: Text(persona.label));
             }).toList(),
             onChanged: (value) {
               if (value != null) setState(() => _selectedType = value);
