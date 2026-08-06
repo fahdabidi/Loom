@@ -198,47 +198,64 @@
     {
       "path": "archetypes/README.md",
       "title": "Archetype index + status",
-      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 1 },
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
       "status": "current",
       "derivedFrom": [
-        "docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_Archetype_Implementation_Standard.md"
+        "app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart"
       ]
     },
     {
       "path": "archetypes/calendar-agenda.md",
       "title": "calendarAgenda / event-rsvp",
       "status": "planned",
-      "$note": "Written when tracker-3 Phase A verifies it against a running app. Until then, guide/03-common-patterns.md P1 is the canonical RSVP template."
+      "$note": "event-rsvp is now verified REAL (tracker-3 Phase G.4 archetype sweep, 2026-08-05) but this doc is Phase A's own deliverable, still pending its A.10 human review gate. Until then, guide/03-common-patterns.md P1 is the canonical RSVP template."
     },
     {
       "path": "archetypes/vote-poll.md",
       "title": "votePoll",
-      "status": "planned",
-      "$note": "Written when tracker-3 Phase B verifies it."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part35_votepoll_archetype_card.dart",
+        "app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart"
+      ]
     },
     {
       "path": "archetypes/equipment-loan.md",
       "title": "equipment-loan / stateMachineGrid",
-      "status": "planned",
-      "$note": "Written when tracker-3 Phase C verifies it."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part36_engine_native_marketplace_surface.dart"
+      ]
     },
     {
       "path": "archetypes/payment-checkout.md",
       "title": "paymentCheckout",
-      "status": "planned",
-      "$note": "Written when tracker-3 Phase D verifies it."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart"
+      ]
     },
     {
       "path": "archetypes/approval-queue.md",
       "title": "approvalQueue / formEntry + live query list",
-      "status": "planned",
-      "$note": "Written when tracker-3 Phase E verifies it."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart",
+        "app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart"
+      ]
     },
     {
       "path": "archetypes/discussion-thread.md",
       "title": "discussionThread",
-      "status": "planned",
-      "$note": "Written when tracker-3 Phase F verifies it."
+      "syncedTo": { "envelope": 1, "experience": 2, "grammar": 2 },
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart"
+      ]
     },
 
     {

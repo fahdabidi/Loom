@@ -12,6 +12,17 @@ claims done, `[!]` sent back, `[x]` closed (code-verified + screenshot-validated
 to `[x]` once Tabletop Club genuinely exercises that archetype's real interaction model** — not when a
 fixture merely declares the archetype name.
 
+**Reconciliation note (2026-08-05, tracker 3 Phase G.4).** This table's `[x]` rows record whether a
+genuinely rich UI was ever *built* (milestones 1.5-1.19, hand-copied JSON fixtures, one bespoke
+per-community engine store per feature). [Tracker 3](./Loom_Communities_Workflow_Engine_3.md) then
+rebuilt Tabletop Club's UI onto the **real engine-native, JSON-declared pipeline** and added a second,
+stricter axis this table doesn't track: *is the widget reached purely by declaring
+`cardSurfaceFamily` in JSON, with zero hardcoded per-community wiring*. That axis — plus the current,
+re-verified-against-source status of every archetype — now lives in
+[`docs/references/archetypes/README.md`](../../references/archetypes/README.md), which supersedes this
+table for "is it real and reachable today" questions. This table is retained for its historical build
+record; do not update its `[x]` markers going forward — update the README instead.
+
 | Archetype | V2 verdict | Primitive(s) needed | Phase 1 milestone | Status |
 |---|---|---|---|---|
 | `calendarAgenda` | Fake — never a grid | Repeater (day-cells) | 1.5 | `[x]` real month grid, code-verified 11/11 (commit `c860045`); live walk deferred to batch before 1.20 |

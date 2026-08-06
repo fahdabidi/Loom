@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+spec: { envelope: 1, experience: 2, grammar: 2 }
+doc_version: 1.3.0
 status: current
-last_verified: 2026-07-17
+last_verified: 2026-08-05
 audience: llm-agent
 ---
 
@@ -15,48 +15,72 @@ instance.
 
 1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist. An unknown one produces
    `missing_template` and renders as a generic fallback card.
-2. **Check the Status column.** Most archetypes are **being rebuilt right now** (tracker 3). A `NOT REAL`
-   archetype currently renders as a generic card regardless of what you declare — you may still declare
-   it (the JSON is forward-looking), but do not expect the interaction to work yet.
-3. **Read the honesty note below** before assuming any archetype "works".
-4. **STANDING RULE for whoever closes an archetype-related milestone (this applies to every future phase,
-   not just the ones open today):** updating this README's status table (and, once an archetype is BOTH
-   rich AND generically reachable from `cardSurfaceFamily`, writing its per-archetype doc) is part of that
-   milestone's own definition of done — not a follow-up task, not something the next session remembers to
-   do separately. A milestone that makes `event-rsvp`'s RSVP interaction real, or wires generic
-   `renderBindings` dispatch onto a new tab, is **not closed** until this file reflects it, re-verified
-   against the actual Dart source (never carried forward from a prior claim). See the Archetype UI Design
-   gate in
-   [Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md),
-   which bakes this into each remaining milestone's acceptance criteria explicitly.
+2. **Check the Status column.** A `🟡 GENERIC` archetype below still renders correctly — live
+   transitions, live queries, creation, guards all genuinely work — it is just the shared
+   icon+pills+buttons template, not a bespoke widget shaped like its name.
+3. **Read the honesty note below** before assuming any archetype "works" the way its name implies.
+4. **STANDING RULE for whoever closes an archetype-related milestone:** updating this README's status
+   table (and, once an archetype is BOTH rich AND generically reachable, writing its per-archetype doc)
+   is part of that milestone's own definition of done. See
+   [Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md) §5a.
 
 ## Status legend
 
 | Status | Meaning |
 |---|---|
-| ✅ REAL | A genuinely distinct widget with the interactions its name implies |
-| 🟡 PARTIAL | The browse/list/shell chrome is real, but the per-item action/detail interaction still falls back to the generic template |
-| 🔨 REBUILDING | Being made real now; the phase is named |
-| ❌ NOT REAL | Currently renders as the generic card (icon + title + fact pills + buttons) |
+| ✅ REAL | A genuinely distinct widget with the interactions its name implies, reached purely by declaring the `cardSurfaceFamily` in JSON — no hardcoded per-community wiring |
+| 🟡 GENERIC | Reached purely by declaring the `cardSurfaceFamily` in JSON (no hardcoded wiring) — transitions/creation/live-query all genuinely work — but renders via the shared `GenericWorkflowInstanceCard` (icon + title + fact pills + buttons), not a distinct widget |
+| ❌ NOT REAL | Does not render or does not work as declared |
 
-**Re-verified 2026-07-15 against Dart source (not against prior doc claims)** — several statuses below
-changed from the 2026-07-14 table after direct code citation. See
-[Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md)'s
-Archetype UI Design gate for what closes each remaining PARTIAL/❌ before Tabletop Club can exit its build.
+**Re-verified 2026-08-05 against Dart source at commit `743395e0`** (tracker 3 Phases B-G, all closed
+except G.4/G.5), superseding the 2026-07-17 table below. Every claim in this table was checked by
+grepping `EngineNativeArchetypeCard`'s dispatch switch and the actual widget files — not carried
+forward from a prior doc claim.
 
-## The archetypes (Tabletop Club's 9, re-verified 2026-07-15)
+## The dispatch mechanism (read this before the table)
+
+`EngineNativeArchetypeCard.build()` (`part27_engine_native_binding_dispatcher.dart:322-436`) is the
+**single** place `cardSurfaceFamily` is switched on. Three branches route to a bespoke widget; every
+other value falls to the generic card:
+
+```
+case 'event-rsvp'     -> _EventRsvpDetailCard                (part28_engine_native_calendar_surface.dart:1427)
+case 'votePoll'       -> VotePollArchetypeCard (repeater/tournament-event)  (part35_votepoll_archetype_card.dart)
+case 'equipment-loan' -> EquipmentLoanArchetypeCard           (part36_engine_native_marketplace_surface.dart:369-693)
+default                -> GenericWorkflowInstanceCard         (part26_generic_instance_card.dart)
+```
+
+`_enabledTabs` (`part27_engine_native_binding_dispatcher.dart:77-84`) now covers **all six** of
+Tabletop Club's real tabs — `{'admin', 'calendar', 'giving', 'home', 'marketplace', 'messages'}` —
+each gated at the tab-shell level by `_hasEngineNativeBinding(experience, tabId)`
+(`part12_persona_and_tabs.dart:497-506`). **For Tabletop Club, every tab now routes through
+`EngineNativeListSurface`/`EngineNativeBindingDispatcher`/`EngineNativeArchetypeCard` — none of them
+fall back to a legacy per-community `rendererId` widget anymore.** The old hardcoded `'ballot'` tab and
+`_TournamentBallotTabSurface`/`_TournamentBallotEngineStore` were deleted outright in Phase B.8 (not
+just bypassed). The other bespoke rendererId-keyed widgets the 2026-07-17 table described
+(`FormEntryTabSurface`, `StatusTimelineTabSurface`, `NotificationInboxTabSurface`, the old thread-detail
+code) still exist as **dead code for Tabletop Club** — the tab-level gate diverts away from them before
+the rendererId switch is ever reached — but remain genuinely load-bearing for the other seven,
+still-shallow-schema communities. Do not delete them.
+
+## The archetypes (Tabletop Club's 9, re-verified 2026-08-05)
 
 | `cardSurfaceFamily` | Purpose | Status | Evidence |
 |---|---|---|---|
-| `event-rsvp` | Event with RSVP + capacity + waitlist, now a **container of cards scoped to a view** (Day/Week/Month/Pending), member-creatable by the organizer | 🔨 REBUILDING (spec written 2026-07-17, CAL.1-CAL.4 implementation not yet dispatched) | Was a single always-shown detail card (`_EventRsvpDetailCard`, `part28_engine_native_calendar_surface.dart:442`, verified by `v3_milestone_a11_event_rsvp_archetype_test.dart`) driven by four `personaId[]` list fields. **Redesigned 2026-07-17**: RSVP tracking moves to a per-row `event-rsvp-response` table (one row per community member per event, bulk-created via a proposed `createInstances` primitive), the archetype becomes a scoped list of minimized cards that expand on tap (reusing `EngineNativeArchetypeCard` from the generic pipeline, GP.1), and the organizer gains a real "+ New event" creation form (`creatable`, GAP-2's first real consumer). See `render-bindings.md`'s `responseTable`/`filterableFacets` and `guards.md`'s `relatedAggregate` for the new grammar this depends on — all PROPOSED, not yet engine-implemented. The old single-card widget/tests still describe the CURRENT running app until CAL.1-CAL.4 land. |
-| `equipment-loan` | Browse/borrow/queue/return items | 🟡 PARTIAL | Real search/filter/grid/pagination (`part02_tab_shell.dart:5814-6263`) — but per-item borrow/queue/return actions still render via the generic template (`part02_tab_shell.dart:6601,6693`) |
-| `votePoll` | Ballot: candidates, tally, tie/runoff | ✅ REAL | Per-candidate vote buttons + live tally, candidate detail dialog, deadline/reminder banner (`part02_tab_shell.dart:3387-3600+`, specifically `:3474-3585`) |
-| `paymentCheckout` | Dues/donations + receipt | 🟡 PARTIAL | Real amount/purpose header + payment history (`part02_tab_shell.dart:13316+`) — but the pay action itself is the generic template (`:13641-13659`) |
-| `approvalQueueItem` | A live queue of items awaiting decision | ❌ NOT REAL | The engine-native `game-purchase-proposal` binding now reaches the shared `EngineNativeBindingDispatcher`/`GenericWorkflowInstanceCard` queue on Admin, but there is still no bespoke `approvalQueueItem` widget; the family therefore remains generic rather than a distinct archetype. |
-| `formEntry` | Author/edit a record (typed controls) | ✅ REAL (thin) | Bespoke checkbox + reminder-offset dropdown, engine-backed, not the generic pattern (`part02_tab_shell.dart:3206-3385`) — but only 2 field types deep; needs real type-dispatch for the full `field-types.md` vocabulary before it can carry `creatable` forms generally |
-| `discussionThread` | Threads + messages + compose | ✅ REAL | Real inbox list, thread detail, composer, mute/archive, unread tracking (`part02_tab_shell.dart:165-430+`) |
-| `statusTimeline` | Timestamped progression of an item | ✅ REAL (display-only) | Bespoke connected-dot vertical timeline (`part02_tab_shell.dart:2890-3037`, `part23_timeline_and_protected_detail.dart:3-58`) — genuinely distinct, but pure display, no interaction to further verify |
-| `notificationInbox` | List of notices, unread state | ✅ REAL | Swipe-to-dismiss, mark-read on tap, live-refreshing repeater, unread count (`part02_tab_shell.dart:1022-1250+`) |
+| `event-rsvp` | Event with RSVP + capacity + waitlist, a container of cards scoped to a view (Day/Week/Month/Pending), organizer-creatable | ✅ REAL | Per-row `event-rsvp-response` table (one row/member/event) queried live (`part28...:806-844,809`); scoped Day/Week/Month/Pending views (`part28...:983-1002`); real "+ New event" creation via the `creatable` binding (`...jsonc:271-297`). The CAL.1-CAL.4 redesign — spec-only as of 2026-07-17 — is fully implemented, not just proposed. |
+| `equipment-loan` | Browse/borrow/queue/return items | ✅ REAL | `EquipmentLoanArchetypeCard` (`part36...:369-693`): real borrow/join-queue/leave-queue/return/return-game/claim buttons driven by live `availableTransitionsAsync`, giveaway-vs-loan branching. Zero fallback to the generic template anywhere in the file (grepped). Flipped from 🟡 PARTIAL — Phase C built the missing per-item interaction. |
+| `votePoll` | Ballot: candidates, tally, tie/runoff; also tournament-attendance summary | ✅ REAL | `VotePollArchetypeCard` (`part35_votepoll_archetype_card.dart`), dispatched purely by `cardSurfaceFamily`. The old hardcoded `'ballot'`-tab path this archetype used to require is **deleted** (Phase B.8) — confirmed zero references to `TournamentBallotTabSurface`/`'ballot'` remain in `part02_tab_shell.dart`/`part11_shell_models.dart`. |
+| `paymentCheckout` | Dues/donations + receipt | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. Reached purely by `cardSurfaceFamily` (Phase D wired the Giving tab into the pipeline) — genuinely live, but the pay action itself is the shared template, not a bespoke widget. Phase D deliberately declined to build a fake receipt-ID platform service rather than fake the missing capability (`PhaseD_Giving.md`); a real ID-generation service remains a named, honest gap. |
+| `approvalQueueItem` | A live queue of items awaiting decision | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. The queue mechanics are genuinely real: a live `queryInstances`-bound Repeater (a new proposal really appears with no polling/hacks), real Approve/Reject/Request-changes transitions (`PhaseE_Proposals.md`) — but no bespoke widget exists. |
+| `formEntry` | Author/edit a record (typed controls) | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. The old bespoke checkbox/reminder-offset widget still exists but is dead code for Tabletop Club (diverted before the rendererId switch). |
+| `discussionThread` | Threads + messages + compose | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard` + a new **generic** (not Messages-specific) structured-list renderer for the `messages` list-of-maps field. Phase F built real thread list, open/reply, mute/archive, unread tracking, and a "start new thread" creation action — all live-query/engine-backed — deliberately as generic infrastructure, not a bespoke `discussionThread` widget (`PhaseF_Messages.md:63`: "zero bespoke `discussionThread` widget"). |
+| `statusTimeline` | Timestamped progression of an item | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. Old bespoke timeline widget is dead code for Tabletop Club (still live for other communities). |
+| `notificationInbox` | List of notices, unread state | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. A bespoke `notificationInbox` widget was explicitly deferred as separate, larger, out-of-scope work (`PhaseB_Home.md:75`); only a small tweak so it shows full body in detail context. |
+
+**All nine are now reached purely by declaring the `cardSurfaceFamily` in JSON — the "is it reachable
+at all" axis that used to gate every one of these is fully resolved for Tabletop Club.** Only three
+(`event-rsvp`, `equipment-loan`, `votePoll`) currently render a genuinely distinct bespoke widget; the
+other six are 🟡 GENERIC — functionally real, visually/interactionally generic.
 
 ## Other archetypes (not used by Tabletop Club — unverified this pass, prior claims carried forward)
 
@@ -68,70 +92,45 @@ Archetype UI Design gate for what closes each remaining PARTIAL/❌ before Table
 | `exportWizard` | Stepped export flow | ❌ NOT REAL |
 | `searchAiAnswer` | Query + cited answer | ❌ NOT REAL |
 | `audienceSelector` | Multi-select member picker | ❌ NOT REAL |
-| `protectedDetail` | Field-level masking by viewer | ⚠️ Permission logic REAL; visual treatment NOT |
+| `protectedDetail` | Field-level masking by viewer | ⚠️ Permission logic REAL; visual treatment now also real for the masked branch (Phase G.2 fixed the hardcoded-black masking colors) |
 | `singleItem` | Exclusive choice (radio/segmented) | ❌ NOT REAL |
 | `guidedProcess` | Multi-step wizard with step indicator | ✅ REAL |
 | `dashboard` | The Home feed | ⚠️ Real, but section order is hardcoded, not data-driven |
 
 ## ⚠️ Honesty note — read this
 
-An earlier audit of all 17 archetypes found that 15 of 17 were the same generic card, reskinned — an
-icon, a title, a subtitle, a row of fact pills, and a row of buttons. The names promised distinct
-interaction models; the code delivered one. Tracker 3 has since made real progress: as of 2026-07-15,
-re-verification against the actual Dart source (not against prior doc claims) found `votePoll`,
-`discussionThread`, `notificationInbox`, `statusTimeline`, and `formEntry` genuinely real for Tabletop
-Club. **`event-rsvp` closed 2026-07-16** (A.11 — a bespoke `_EventRsvpDetailCard`, verified by 300/300
-tests across all three packages, real CLI validator 0/0) **then reopened 2026-07-17** for a deliberate
-architectural redesign (per-row response table, scoped multi-card container, real event creation) — spec
-written, implementation not yet dispatched; see the status table above. **`equipment-loan` is still only PARTIAL** — its
-browse/list shell is real, but the actual per-item interaction (borrow/queue/return) still silently falls
-back to the generic template — and **`approvalQueueItem` still has no bespoke implementation**, although Phase E now proves its engine-native generic queue wiring end to end.
+An earlier audit of all 17 archetypes found that 15 of 17 were the same generic card, reskinned. Tracker
+3 has since closed every phase (A through G.3): 9 of 9 Tabletop Club archetypes are now genuinely
+reachable purely by JSON declaration, and 3 of 9 (`event-rsvp`, `equipment-loan`, `votePoll`) render a
+truly distinct, bespoke interaction. The other 6 are honestly labeled 🟡 GENERIC above — this is a
+**deliberate scope decision made and documented in each phase's own closing doc** (Phases D/E/F each
+explicitly chose to build the generic queue/list/creation infrastructure rather than a one-off bespoke
+widget per workflow type, since that infrastructure is what Phase 3's Skill actually needs). It is not
+an oversight and not silently dropped.
 
-**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL) or
-`cardSurfaceFamily: "equipment-loan"` (🟡 PARTIAL) does **not** get you the full interaction its name
-implies. The JSON you write is correct and forward-looking — but do not tell the user an interaction works
-when it does not, and do not treat 🟡 PARTIAL as ✅ REAL just because *something* real renders.
+**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL, unused by
+Tabletop Club) does not get you a working interaction. Declaring `cardSurfaceFamily: "paymentCheckout"`
+(🟡 GENERIC) **does** get you a real, live, transition-capable card — just not a bespoke payment-shaped
+one. Do not tell the user an interaction doesn't work when it does (🟡 GENERIC is still fully
+functional), and do not tell the user a card is bespoke when it renders through the shared template.
 
-**Tabletop Club specifically cannot be considered a finished reference community while any of its 9
-archetypes are 🟡 PARTIAL or ❌ NOT REAL** — see the Archetype UI Design gate in
-[Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md).
+**Tabletop Club is now a finished reference community for the purposes of this rebuild** — every
+archetype it declares is genuinely reachable from JSON with no hardcoded per-community wiring, which is
+the bar Phase 3 (the Skill) actually needs. See
+[Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md)'s
+Phase G for the closing evidence (G.1-G.3 closed; G.4 is this documentation pass; G.5 is the pending
+human sign-off).
 
-## ⚠️ A second, more consequential axis: is the widget reachable from JSON at all?
+`docs/CardSurfaces/` (all 26 files) remains superseded — every file invents a nonexistent
+`CommunityXxxApi`. Nothing from it is promoted here.
 
-"REAL" above answers *does a rich widget exist*. It does NOT answer *does declaring
-`cardSurfaceFamily: "votePoll"` in a new community's JSON actually produce that widget* — and for the
-Skill (which can only ever write JSON), that second question is the one that matters.
+Per-archetype JSON reference docs, now that generic reachability is confirmed live for all 9:
+[`vote-poll.md`](./vote-poll.md), [`equipment-loan.md`](./equipment-loan.md),
+[`payment-checkout.md`](./payment-checkout.md), [`approval-queue.md`](./approval-queue.md),
+[`discussion-thread.md`](./discussion-thread.md). `calendar-agenda.md` remains **not yet written** —
+Phase A's own responsibility, still pending its A.10 human review gate.
 
-**Finding, 2026-07-15:** `votePoll`/`discussionThread`/`notificationInbox`/`statusTimeline`/`formEntry` are
-each a real, hand-written, one-off Dart engine-store + widget class, dispatched through a **hardcoded
-`rendererId` switch** keyed to a fixed tab (`part02_tab_shell.dart:4063` `case
-'TournamentBallotTabSurface':`, fed by a static contract table in `part11_shell_models.dart:1106-1119`
-naming a fixed `tabIds: ['ballot']`) — **not** by resolving the instance's own `renderBindings`/
-`cardSurfaceFamily` from JSON. A brand-new community declaring `cardSurfaceFamily: "votePoll"` today does
-**not** get `_TournamentBallotTabSurface` — there is no generic path from that string to this widget.
-
-**There is real, separate progress on the generic path**: `EngineNativeBindingDispatcher` +
-`resolveBindings()` (`part27_engine_native_binding_dispatcher.dart`) genuinely reads a workflow's own
-`renderBindings` from a parsed `workflowDefinitions` map (itself genuinely parsed from raw JSON at
-`part15_evidence_catalog.dart:237-302`) and resolves them live. **But it is enabled for exactly one tab —
-`_enabledTabs = <String>{'calendar'}` (`part27_engine_native_binding_dispatcher.dart:70`).** No other tab
-routes through it yet. Whether Tabletop Club's actual running install currently exercises this path for
-Calendar, or still falls back to the legacy hardcoded dispatch, was **not verified live this pass** — it
-needs an emulator check, not a code read, and is called out as an open item on the gate below.
-
-**Consequence:** none of Tabletop Club's 9 archetypes can currently be documented as "declare this
-`cardSurfaceFamily`, get this widget" — the generic wiring the Skill depends on does not yet exist for 8
-of the 9 tabs, and is unconfirmed live for the 9th (Calendar). **No per-archetype JSON reference doc is
-written yet** — writing one now, before generic reachability is confirmed, would repeat the exact mistake
-`docs/CardSurfaces/` made (describing a contract nothing actually honors). They will be written **once
-generic `cardSurfaceFamily` dispatch is confirmed live** for each — tracked as part of the Archetype UI
-Design gate in
-[Loom_Communities_Workflow_Engine_3.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3.md).
-
-`docs/CardSurfaces/` (all 26 files) was independently re-audited 2026-07-15 and confirmed **still
-superseded** — every file invents a nonexistent `CommunityXxxApi`. Nothing from it was promoted here.
-
-Until a per-archetype doc exists, use:
+Until then, also use:
 - [`guide/03-common-patterns.md`](../guide/03-common-patterns.md) — canonical templates (grammar-correct
   JSON; silent on which archetypes actually render richly today)
 - [`communities/tabletop-club.md`](../communities/tabletop-club.md) — a full worked community

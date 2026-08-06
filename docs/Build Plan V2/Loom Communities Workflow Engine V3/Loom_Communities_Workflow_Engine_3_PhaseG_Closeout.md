@@ -109,15 +109,56 @@ regression-guard tests (`b26`/`b28`/`b34`) pass unmodified — behavior is uncha
 
 ## G.4 — Documentation reconciliation
 
-- [ ] [Archetype Implementation Standard](./Loom_Communities_Workflow_Engine_Archetype_Implementation_Standard.md)
-      updated: each archetype's row now cites the **JSON-declared** implementation, not a bespoke widget.
-- [ ] [JSON_Schema_Versions.md](./Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md) updated with
-      any grammar changes made along the way (e.g. Phase E's instance-creation addition, any string-literal
-      formula finding from A.3). **Bump `workflowGrammarVersion` if any change was breaking.**
-- [ ] The Tabletop Club JSON is the **authoritative, validated** community definition — and the reference
-      the Skill (Phase 3) will be grounded in.
-- [ ] Known gaps recorded honestly, not silently dropped (invites, receipt-id platform service, anything
-      deferred).
+✅ **Closed (2026-08-05).** A full research pass (`Explore` agent, source-verified, not carried forward
+from prior doc claims) found `docs/references/archetypes/README.md` genuinely stale — last edited
+during Phase E, predating all of Phase F and Phase G. Reconciled:
+
+- **[`docs/references/archetypes/README.md`](../../references/archetypes/README.md)** rewritten against
+  current source (`EngineNativeArchetypeCard`'s dispatch switch, `part27_engine_native_binding_dispatcher.dart:322-436`).
+  New finding that changes the honesty story: all 9 of Tabletop Club's archetypes are now reached
+  purely by `cardSurfaceFamily` in JSON with zero hardcoded per-community wiring (the old "second,
+  more consequential axis" section's open question is now fully resolved) — but only 3 of 9
+  (`event-rsvp`, `equipment-loan`, `votePoll`) render a genuinely distinct bespoke widget. The other 6
+  (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`,
+  `notificationInbox`) are honestly relabeled 🟡 GENERIC — functionally real (live queries, real
+  transitions, real creation) but rendered via the shared `GenericWorkflowInstanceCard`, a deliberate
+  scope decision each phase doc (D/E/F) already recorded, not an oversight. `event-rsvp` itself flipped
+  from "🔨 REBUILDING, spec-only" to ✅ REAL — the CAL.1-CAL.4 redesign (per-row response table, scoped
+  Day/Week/Month/Pending views, real event creation) is fully implemented, not just designed.
+- **Five per-archetype reference docs written** (previously all `status: "planned"`, i.e. did not
+  exist): [`vote-poll.md`](../../references/archetypes/vote-poll.md),
+  [`equipment-loan.md`](../../references/archetypes/equipment-loan.md),
+  [`payment-checkout.md`](../../references/archetypes/payment-checkout.md),
+  [`approval-queue.md`](../../references/archetypes/approval-queue.md),
+  [`discussion-thread.md`](../../references/archetypes/discussion-thread.md) — per §5a's phase
+  assignments (B/C/D/E/F respectively). The three 🟡 GENERIC ones state plainly that they document the
+  generic-card pattern, not a bespoke widget, to avoid repeating the exact `docs/CardSurfaces/` mistake
+  this tracker exists to correct. `calendar-agenda.md` deliberately left unwritten — it's Phase A's own
+  deliverable, and Phase A remains genuinely open pending its A.10 human review gate; G.4 does not close
+  on Phase A's behalf.
+- **`docs/references/_meta/doc-manifest.json`** updated: the 5 new docs flipped `planned` → `current`
+  with real `derivedFrom` citations; `archetypes/README.md`'s own `syncedTo.grammar` corrected `1` → `2`
+  (it was already behind current grammar before this pass).
+- **`docs/references/spec-version.json`** updated: `knownGaps.instanceCreation` (GAP-2) noted as now
+  proven across every real archetype — Phases E and F extended the tab-scoped creation pipeline to
+  `game-purchase-proposal` and `discussion-thread` and added `personaId[]` creation-field support, so
+  it's no longer Calendar-only infrastructure. Also fixed two pre-existing JSON syntax errors found
+  while editing (a missing comma before `combineDateAndTimeFormula`, a trailing comma after
+  `notificationDeliveryService`) that made the file invalid JSON — confirmed parseable after the fix
+  (`python3 -c "import json; json.load(...)"`, both `spec-version.json` and `doc-manifest.json` OK).
+  `lastReviewed` bumped to 2026-08-05.
+- **[Archetype Implementation Standard](./Loom_Communities_Workflow_Engine_Archetype_Implementation_Standard.md)**
+  — a 2026-07-XX Phase 1 doc, not tracker 3's own — given a reconciliation note pointing to
+  `archetypes/README.md` as the current source of truth for reachability/status, rather than rewriting
+  its historical `[x]` build-record rows (which track a different, older question: "was a rich UI ever
+  built," not "is it reachable purely from JSON today").
+- **Tabletop Club JSON as authoritative reference**: unchanged and confirmed — the frozen `.jsonc` is
+  still never edited by this agent, and every doc above cites it as the worked example.
+- **Known gaps recorded honestly**: receipt-ID platform service (paymentCheckout, named in
+  `payment-checkout.md` and Phase D's own closure), invites (discussionThread, named in
+  `discussion-thread.md` and Phase F's own closure), `listMinusActor`/GAP-3's degraded per-thread
+  unread bool (named in `discussion-thread.md`), ballot/tournament creation still seed-driven
+  (`vote-poll.md`). None silently dropped.
 
 ## G.5 — Re-present Milestone 1.20 (the human sign-off gate)
 
