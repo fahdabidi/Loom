@@ -311,6 +311,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   Widget _communityEntryGate(LoomExperienceDefinition experience) {
+    final accent = Color(experience.accentColor);
+    final footerSurface = Color.alphaBlend(
+      accent.withValues(alpha: 0.08),
+      Colors.white,
+    );
     return Scaffold(
       key: const ValueKey('community-entry-gate'),
       body: Column(
@@ -330,27 +335,36 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           const Divider(height: 1),
           SafeArea(
             top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    _entryGateHasPendingApproval
-                        ? 'An account is waiting for community approval. Refresh after an administrator approves it.'
-                        : 'Choose an active account or create one to continue to ${community.displayName}.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    key: const ValueKey('community-entry-refresh-button'),
-                    onPressed: () {
-                      _refreshCommunityEntryGate(rebuildAuthScreen: true);
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Check membership status'),
-                  ),
-                ],
+            child: Container(
+              color: footerSurface,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      _entryGateHasPendingApproval
+                          ? 'An account is waiting for community approval. Refresh after an administrator approves it.'
+                          : 'Choose an active account or create one to continue to ${community.displayName}.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      key: const ValueKey('community-entry-refresh-button'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: accent,
+                        side: BorderSide(
+                          color: accent.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      onPressed: () {
+                        _refreshCommunityEntryGate(rebuildAuthScreen: true);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Check membership status'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

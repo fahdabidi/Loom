@@ -66,6 +66,11 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final accent = Color(widget.experience.accentColor);
+    final headerSurface = Color.alphaBlend(
+      accent.withValues(alpha: 0.08),
+      Colors.white,
+    );
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -75,25 +80,39 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.people_alt_outlined,
-                  size: 64,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Welcome to Loom',
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: headerSurface,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Choose an account below or create a new one.',
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_alt_outlined,
+                        size: 56,
+                        color: accent,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Welcome to Loom',
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: accent,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Choose an account below or create a new one.',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 if (_loading)
@@ -104,6 +123,10 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                       Text(_error!, style: TextStyle(color: colorScheme.error)),
                       const SizedBox(height: 12),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accent,
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: () {
                           setState(() {
                             _loading = true;
@@ -170,6 +193,7 @@ class _AccountList extends StatelessWidget {
 
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final accent = Color(experience.accentColor);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -185,7 +209,7 @@ class _AccountList extends StatelessWidget {
             child: Text(
               _personaLabelFor(group.key),
               style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.primary,
+                color: accent,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -608,6 +632,11 @@ class _SignUpFormState extends State<_SignUpForm> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final accent = Color(widget.experience.accentColor);
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: accent,
+      foregroundColor: Colors.white,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -661,6 +690,7 @@ class _SignUpFormState extends State<_SignUpForm> {
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   key: const ValueKey('open-signup-submit'),
+                  style: buttonStyle,
                   onPressed: _submitting ? null : _submit,
                   icon: const Icon(Icons.person_add),
                   label: Text(_submitting ? 'Creating...' : 'Sign Up'),
@@ -681,6 +711,11 @@ class _SignUpFormState extends State<_SignUpForm> {
   }
 
   Widget _buildInviteRedemption(TextTheme textTheme) {
+    final accent = Color(widget.experience.accentColor);
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: accent,
+      foregroundColor: Colors.white,
+    );
     return Form(
       key: _inviteFormKey,
       child: Column(
@@ -751,6 +786,7 @@ class _SignUpFormState extends State<_SignUpForm> {
           const SizedBox(height: 16),
           ElevatedButton.icon(
             key: const ValueKey('redeem-invite-submit'),
+            style: buttonStyle,
             onPressed: _redeeming ? null : _redeemInvite,
             icon: const Icon(Icons.redeem),
             label: Text(_redeeming ? 'Redeeming...' : 'Redeem invite'),
