@@ -140,6 +140,8 @@ Future<void> _signInAs(WidgetTester tester, String displayName) async {
       .evaluate()
       .isNotEmpty) {
     await _pumpUntil(tester, find.text(displayName));
+    await tester.ensureVisible(find.text(displayName).first);
+    await tester.pump();
     await tester.tap(find.text(displayName).first);
     await _pumpUntil(
       tester,
@@ -157,6 +159,8 @@ Future<void> _signInAs(WidgetTester tester, String displayName) async {
     find.byKey(const ValueKey('persona-sign-in-specific-person')),
   );
   await _pumpUntil(tester, find.text(displayName));
+  await tester.ensureVisible(find.text(displayName).first);
+  await tester.pump();
   await tester.tap(find.text(displayName).first);
   await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
   await _settle(tester);
