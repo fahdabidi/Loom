@@ -892,6 +892,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   Future<void> _showPersonaPicker(
+    BuildContext context,
     LoomExperienceDefinition experience,
     LoomPersonaDefinition activePersona,
   ) async {
@@ -899,6 +900,16 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.extensionId,
       experience: experience,
     );
+    final activeIdentity = ActiveIdentityScope.of(context);
+    final activeAccountId = activeIdentity.accountId;
+    final accounts = await activeIdentity.authApi.listAccounts(
+      communityExtensionId: experience.extensionId,
+    );
+    final activeAccount = activeAccountId == null
+        ? null
+        : accounts
+            .where((account) => account.accountId == activeAccountId)
+            .firstOrNull;
     final usesModernCardTheme = experience.themeOverride != null;
     final communityCard = usesModernCardTheme
         ? LoomCardTheme.merge(
@@ -937,6 +948,36 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         ? TextStyle(color: communityCard.resolvedBody)
                         : null,
                   ),
+                  if (activeAccount != null) ...[
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: communityCard?.resolvedHeading
+                            .withValues(alpha: 0.14),
+                        child: Text(
+                          activeAccount.displayName.isEmpty
+                              ? '?'
+                              : activeAccount.displayName[0].toUpperCase(),
+                          style: TextStyle(
+                            color: communityCard?.resolvedHeading,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        'Signed in as ${activeAccount.displayName}',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedHeading)
+                            : null,
+                      ),
+                      subtitle: Text(
+                        'ID: ${activeAccount.accountId}',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedBody)
+                            : null,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   for (final persona in personas)
                     ListTile(
@@ -1002,12 +1043,14 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       return;
     }
     if (selected == '_sign-in-specific-person') {
+      final signedInAccountId = ActiveIdentityScope.of(context).accountId;
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => LoomAuthScreen(
             authApi: _authApi,
             communityExtensionId: community.extensionId,
             experience: experience,
+            signedInAccountId: signedInAccountId,
             onSignIn: () {
               Navigator.of(context).pop();
               if (mounted) setState(() {});
@@ -1128,6 +1171,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
+    final activeIdentity = ActiveIdentityScope.of(context);
+    final activeSession = activeIdentity.authApi.currentSession?.account;
+    final activeAccountDisplayName =
+        activeSession?.accountId == activeIdentity.accountId
+            ? activeSession?.displayName
+            : null;
     ActiveIdentityScope.of(context).setCurrentActiveAccountId(_activeAccountId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
@@ -1265,7 +1314,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           IconButton(
             key: const ValueKey('persona-picker-button'),
             tooltip: 'Switch role',
-            onPressed: () => _showPersonaPicker(experience, activePersona),
+            onPressed: () =>
+                _showPersonaPicker(context, experience, activePersona),
             icon: const Icon(Icons.people_outline),
           ),
         ],
@@ -1432,6 +1482,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                               experience: experience,
                             ).length,
                             foreground: heroHeading,
+                            activeAccountDisplayName: activeAccountDisplayName,
                             modernTheme: heroTheme,
                           ),
                           Offstage(

@@ -30,10 +30,35 @@ class _InstalledFixture {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
-Future<_InstalledFixture> _installFrozenTabletop() async {
+Future<_InstalledFixture> _installFrozenTabletop({
+  String? extensionIdSuffix,
+}) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
           as Map<String, dynamic>;
+  // `_EngineNativeCommunityStore._stores` caches one engine per extensionId
+  // for the lifetime of the isolate -- multiple testWidgets blocks in this
+  // same file otherwise share that cached engine across tests. Reusing a
+  // warm engine across a Flutter *test* zone boundary (as opposed to across
+  // widget rebuilds within one test) leaves a `Future` whose completion
+  // callbacks never fire in the new test's zone -- confirmed directly by
+  // instrumenting `_EngineNativeCommunityStore.ensureReady()`: the exact
+  // same, already-completed `_ready` future is returned, but `.then()`
+  // callbacks registered on it from the second `testWidgets` block never
+  // resolve, hanging `_refreshCommunityEntryGate` on the
+  // `community-entry-checking` spinner forever. This is a `flutter_test`
+  // FakeAsync-zone artifact of the static `_stores` cache surviving across
+  // tests, not a production bug (a direct, non-widget-tree call to
+  // `workflowEngineForExtensionId` after two full mount/unmount cycles
+  // resolves instantly). Giving a test its own suffixed extensionId
+  // isolates it from any engine state left over by an earlier test in this
+  // file, avoiding the zone boundary entirely.
+  if (extensionIdSuffix != null) {
+    source['extensionId'] = '${source['extensionId']}-$extensionIdSuffix';
+    if (source['communityId'] is String) {
+      source['communityId'] = '${source['communityId']}-$extensionIdSuffix';
+    }
+  }
   final extensionId = source['extensionId'] as String;
   final temp = await Directory.systemTemp.createTemp('loom-calr4b-');
   try {
@@ -65,12 +90,27 @@ Future<_InstalledFixture> _installFrozenTabletop() async {
   }
 }
 
-Widget _app(_InstalledFixture fixture) => MaterialApp(
+Widget _app(_InstalledFixture fixture, {LoomAuthApi? authApi}) => MaterialApp(
   home: LocalExtensionScreen(
     community: fixture.community,
     seedDataFiles: const [],
+    authApi: authApi,
   ),
 );
+
+/// Builds an auth provider with the same seeded demo accounts
+/// `LocalAuthApi`'s default constructor seeds under the frozen fixture's
+/// original extension id, but associated with [extensionId] instead. Used
+/// so a suffixed-extensionId fixture (see `_installFrozenTabletop`'s
+/// `extensionIdSuffix`) still has its usual "Priya N." / "Casey M." demo
+/// accounts to sign in as.
+Future<LoomAuthApi> _authApiWithTabletopAccountsFor(String extensionId) async {
+  const originalExtensionId = 'ext_verify_tabletop_club';
+  final defaultAccounts = await LocalAuthApi().listAccounts(
+    communityExtensionId: originalExtensionId,
+  );
+  return LocalAuthApi()..seedAccounts(extensionId, defaultAccounts);
+}
 
 LocalInstalledCommunity _apartmentEventsCommunity() =>
     const LocalInstalledCommunity(
@@ -135,6 +175,19 @@ Future<void> _settle(WidgetTester tester) async {
 }
 
 Future<void> _signInAs(WidgetTester tester, String displayName) async {
+  // The entry gate briefly shows a "checking" spinner (neither the gate nor
+  // signed-in content) while it resolves whether an account is already
+  // active. Branching on the gate's presence before that resolves picks the
+  // wrong branch below -- wait it out first.
+  for (var attempt = 0; attempt < 40; attempt++) {
+    if (find
+        .byKey(const ValueKey('community-entry-checking'))
+        .evaluate()
+        .isEmpty) {
+      break;
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
   if (find
       .byKey(const ValueKey('community-entry-gate'))
       .evaluate()
@@ -155,6 +208,10 @@ Future<void> _signInAs(WidgetTester tester, String displayName) async {
     tester,
     find.byKey(const ValueKey('persona-sign-in-specific-person')),
   );
+  await tester.ensureVisible(
+    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+  );
+  await tester.pump();
   await tester.tap(
     find.byKey(const ValueKey('persona-sign-in-specific-person')),
   );
@@ -172,6 +229,10 @@ Future<void> _openSpecificPersonSignIn(WidgetTester tester) async {
     tester,
     find.byKey(const ValueKey('persona-sign-in-specific-person')),
   );
+  await tester.ensureVisible(
+    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+  );
+  await tester.pump();
   await tester.tap(
     find.byKey(const ValueKey('persona-sign-in-specific-person')),
   );
@@ -298,6 +359,74 @@ void main() {
       );
       expect(find.text('tabletop-member'), findsNothing);
       expect(find.text('tabletop-organizer'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'active identity is visible in role picker, home, and account list',
+    (tester) async {
+      final fixture = (await tester.runAsync(
+        () => _installFrozenTabletop(extensionIdSuffix: 'active-identity'),
+      ))!;
+      final authApi = await _authApiWithTabletopAccountsFor(
+        fixture.community.extensionId,
+      );
+      try {
+        await tester.pumpWidget(_app(fixture, authApi: authApi));
+
+        await _signInAs(tester, 'Priya N.');
+        expect(find.textContaining('Signed in as Priya N.'), findsOneWidget);
+
+        await _openSpecificPersonSignIn(tester);
+
+        final priyaTile = find.ancestor(
+          of: find.text('Priya N.'),
+          matching: find.byType(ListTile),
+        );
+        expect(priyaTile, findsOneWidget);
+        expect(
+          find.descendant(of: priyaTile, matching: find.widgetWithText(Chip, 'Signed in')),
+          findsOneWidget,
+        );
+
+        final caseyTile = find.ancestor(
+          of: find.text('Casey M.'),
+          matching: find.byType(ListTile),
+        );
+        expect(
+          find.descendant(
+            of: caseyTile,
+            matching: find.widgetWithText(Chip, 'Signed in'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(of: caseyTile, matching: find.byIcon(Icons.login)),
+          findsOneWidget,
+        );
+
+        // LoomAuthScreen has no back button (a separate, already-tracked UX
+        // finding) -- pop the pushed route programmatically instead of
+        // tapping a UI affordance that doesn't exist.
+        Navigator.of(tester.element(find.byType(LoomAuthScreen))).pop();
+        await tester.pumpAndSettle();
+        await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+
+        await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('persona-picker-dialog')),
+        );
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('persona-picker-dialog')),
+            matching: find.text('Signed in as Priya N.'),
+          ),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(fixture.dispose);
+      }
     },
   );
 }

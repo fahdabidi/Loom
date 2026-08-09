@@ -9,12 +9,20 @@ class LoomAuthScreen extends StatefulWidget {
     required this.communityExtensionId,
     required this.experience,
     required this.onSignIn,
+    this.signedInAccountId,
   });
 
   final LoomAuthApi authApi;
   final String communityExtensionId;
   final LoomExperienceDefinition experience;
   final VoidCallback onSignIn;
+
+  /// The account already signed in for this community, if any, resolved by
+  /// the caller before this screen was reached (e.g. before pushing this as
+  /// a new route, where an `ActiveIdentityScope` ancestor may not be in
+  /// scope). Used by `_AccountList` to badge that account as "Signed in"
+  /// even when no such ancestor is available.
+  final String? signedInAccountId;
 
   @override
   State<LoomAuthScreen> createState() => _LoomAuthScreenState();
@@ -143,6 +151,7 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                     accounts: _accounts!,
                     experience: widget.experience,
                     onSignIn: _signIn,
+                    signedInAccountId: widget.signedInAccountId,
                   ),
                   _PendingAndInvitesSurface(
                     authApi: widget.authApi,
@@ -176,11 +185,19 @@ class _AccountList extends StatelessWidget {
     required this.accounts,
     required this.experience,
     required this.onSignIn,
+    this.signedInAccountId,
   });
 
   final List<LoomAccount> accounts;
   final LoomExperienceDefinition experience;
   final Future<void> Function(String accountId) onSignIn;
+
+  /// The active account id, if known. Prefer this explicit value (resolved
+  /// by the caller) over an `ActiveIdentityScope` lookup, since this widget
+  /// is sometimes pushed onto a new route (e.g. "sign in as a specific
+  /// person") that isn't a structural descendant of any
+  /// `ActiveIdentityScope` ancestor.
+  final String? signedInAccountId;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +207,11 @@ class _AccountList extends StatelessWidget {
     }
     final sortedGroups = grouped.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
+    final signedInAccountId =
+        this.signedInAccountId ??
+        ActiveIdentityScope.maybeOf(
+          context,
+        )?.authApi.currentSession?.account.accountId;
 
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -244,12 +266,24 @@ class _AccountList extends StatelessWidget {
                       ),
                   ],
                 ),
-                trailing: account.status == MembershipStatus.active
-                    ? const Icon(Icons.login)
-                    : Chip(
-                        label: Text(_membershipStatusLabel(account.status)),
-                        avatar: const Icon(Icons.hourglass_empty, size: 16),
-                      ),
+                trailing: signedInAccountId != null &&
+                        account.accountId == signedInAccountId
+                    ? Chip(
+                        label: const Text('Signed in'),
+                        labelStyle: const TextStyle(fontSize: 13),
+                        visualDensity: VisualDensity.compact,
+                        avatar: Icon(
+                          Icons.check_circle,
+                          size: 15,
+                          color: colorScheme.primary,
+                        ),
+                      )
+                    : account.status == MembershipStatus.active
+                        ? const Icon(Icons.login)
+                        : Chip(
+                            label: Text(_membershipStatusLabel(account.status)),
+                            avatar: const Icon(Icons.hourglass_empty, size: 16),
+                          ),
                 onTap: account.status == MembershipStatus.active
                     ? () => onSignIn(account.accountId)
                     : null,

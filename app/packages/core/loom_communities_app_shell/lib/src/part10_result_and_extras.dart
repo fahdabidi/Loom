@@ -184,12 +184,14 @@ class _PersonaStatusStrip extends StatelessWidget {
     required this.persona,
     required this.personaCount,
     required this.foreground,
+    this.activeAccountDisplayName,
     this.modernTheme,
   });
 
   final LoomPersonaDefinition persona;
   final int personaCount;
   final Color foreground;
+  final String? activeAccountDisplayName;
 
   /// Non-null only for communities that opted into the modern card theme —
   /// switches the strip's fill/border from a foreground-tinted gray wash to
@@ -225,6 +227,15 @@ class _PersonaStatusStrip extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (activeAccountDisplayName != null &&
+                      activeAccountDisplayName!.trim().isNotEmpty)
+                    Text(
+                      'Signed in as $activeAccountDisplayName',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: foreground.withValues(alpha: 0.92),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   Text(
                     persona.label,
                     key: ValueKey('active-persona-${persona.personaId}'),

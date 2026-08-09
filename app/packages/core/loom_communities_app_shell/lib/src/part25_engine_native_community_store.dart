@@ -57,6 +57,16 @@ class ActiveIdentityScope extends StatefulWidget {
     return inherited!.scope;
   }
 
+  /// Finds the nearest active identity scope and registers the caller as a
+  /// dependent so it rebuilds when the identity changes.
+  ///
+  /// Returns `null` when no [ActiveIdentityScope] ancestor exists.
+  static ActiveIdentityScopeState? maybeOf(BuildContext context) {
+    final inherited = context
+        .dependOnInheritedWidgetOfExactType<_ActiveIdentityInherited>();
+    return inherited?.scope;
+  }
+
   @override
   State<ActiveIdentityScope> createState() => ActiveIdentityScopeState();
 }
