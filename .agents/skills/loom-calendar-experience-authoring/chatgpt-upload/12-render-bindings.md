@@ -1,13 +1,16 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.7.0
+doc_version: 1.8.0
 status: current
-last_verified: 2026-07-31
+last_verified: 2026-08-09
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
   - app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
+  - app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart
+  - app/packages/core/loom_communities_app_shell/lib/src/part32_engine_native_list_surface.dart
+  - app/packages/core/loom_communities_app_shell/lib/src/part28_engine_native_calendar_surface.dart
 ---
 
 # Render bindings (normative) — grammar v1
@@ -65,6 +68,43 @@ or distinguished button) is **new grammar, also not yet App-Shell-implemented** 
 code that will consume it, same convention. `responseTable`, `filterableFacets`, and `styleField` are
 **PROPOSED — grammar/validator only, written ahead of the App Shell code that will consume them**, same
 convention this file's earlier additions used before their own consumers existed.
+
+## ⚠️ `role: "actor"`/`"receiver"` resolution — per-tab, creator-only, and NOT symmetric (found 2026-08-09)
+
+**This is not part of the JSON grammar at all — it's decided per-tab by App Shell dispatch code, and its
+real behavior is sharp enough to silently produce dead buttons and invisible cards if you assume
+`"actor"`/`"receiver"` resolve the way their names suggest.** A binding covering a state, passing the
+validator, and even satisfying `no_render_binding_for_reachable_state` does **not** mean a guard-permitted
+persona can actually reach it — role resolution is a separate, undocumented-until-now failure mode
+(confirmed by reading `part27_engine_native_binding_dispatcher.dart`, `part32_engine_native_list_surface.dart`,
+`part28_engine_native_calendar_surface.dart`, `part36_engine_native_marketplace_surface.dart`):
+
+| Tab | Resolution | Practical effect |
+|---|---|---|
+| `admin` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → `"receiver"` | The **only** tab where `role: "receiver"` ever resolves to anything. |
+| `giving`, `home`, `messages`, `marketplace` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → **nothing** | `role: "receiver"` can **never** resolve here — a `"receiver"` binding on these tabs is permanently dead, no matter what the guard allows. |
+| `calendar` | No role callback is passed at all — always resolves to nothing | **Neither** `"actor"` nor `"receiver"` ever resolves — only `role: "any"` (or `"receiver"` + `audienceMemberField` + a dynamic-audience instance, per `binding_resolver.dart`) can render anything on Calendar. |
+
+Two consequences that have each caused real, shipped bugs:
+
+1. **`"actor"` means literal `createdByPersonaId`, not "whoever the transition's guard is really about."** A
+   workflow where persona X *creates* an instance on behalf of persona Y (e.g. the board creates a dues
+   charge that a homeowner must pay, `payerPersonaId` ≠ `createdByPersonaId`) will resolve `"actor"` to the
+   *creator* (board), never the business-relevant persona (the payer) — even though the payer is exactly who
+   the transition's own `guard.actorEqualsField` names. A `role: "actor"` binding in this situation is a dead
+   card for the very persona the transition exists for.
+2. **`role: "receiver"` is a trap outside `admin`.** It reads as "the other participant" and is easy to reach
+   for whenever a workflow has two personas, but on `giving`/`home`/`messages`/`marketplace`/`calendar` it
+   silently never resolves — the binding parses, validates, and produces zero errors or warnings, and the
+   card or button it was meant to expose simply never appears for anyone.
+
+**What to do about it, until this becomes an engine-level fix or a validator rule:** on every tab except
+`admin`, default to `role: "any"` whenever a binding needs to be visible/actionable to a persona that isn't
+guaranteed to be the instance's literal creator — `"any"` is the only selector these tabs can reliably
+resolve for a non-creator. The transition's own `guard` still restricts who can actually press a button;
+widening the binding's `role` to `"any"` only affects who can *see the card*, never who can *act on it*. Only
+reach for `"actor"`/`"receiver"` on non-`admin` tabs when you've confirmed the persona you need really is
+always `createdByPersonaId` for every instance of that type.
 
 ## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
 

@@ -94,6 +94,18 @@ services per `14-platform-services.md`, so a hardcoded-looking hash is a hard an
    cover every state a member could realistically be retrying from — not just the first state you wrote it
    against. The validator has no access to your source prose, so it cannot catch this; treat it as your
    own responsibility, same as rule 7.
+10. **On every tab except `admin`, `role: "receiver"` never resolves to anyone, and `role: "actor"` only
+    ever matches the literal instance creator — never assume otherwise.** Found 2026-08-09: a dues charge
+    the board creates for a homeowner to pay had a `role: "actor"` binding on the `giving` tab, but "actor"
+    there means `createdByPersonaId` (always the board), never the actual payer named in the transition's
+    own guard — the payer could never see the card. See `12-render-bindings.md`'s normative table for the
+    full per-tab mechanism. Before finishing, for every `renderBinding` using `role: "actor"` or `"receiver"`
+    on a tab other than `admin`: confirm the persona the binding needs to reach really is always
+    `createdByPersonaId` for that instance type. If it isn't (the guard names a different field — a payer,
+    a recipient, a reservation owner, anyone who isn't guaranteed to be the creator), use `role: "any"`
+    instead — the transition's own guard still restricts who can act, widening the binding's role only
+    affects who can see the card. This never shows up as a validator finding — the JSON is grammar-valid
+    either way.
 
 ## Read order
 
@@ -150,10 +162,11 @@ read), you have that tool, and this loop is mandatory, not optional:**
 4. Once `errorCount` is 0, read every warning too — several (e.g. `editable_fields_without_edit_guard`,
    `no_creation_path_for_editable_type`) point at real, easy-to-miss gaps (an editor that silently never
    renders, a type nothing can ever create an instance of). Fix what's clearly wrong.
-5. **Run hard rules 8 and 9 explicitly — a clean validator response does NOT cover either of these, by
+5. **Run hard rules 8, 9, and 10 explicitly — a clean validator response does NOT cover any of these, by
    design.** The validator only checks JSON grammar; it cannot see the literal Dart string keys the
-   Calendar UI reads, and it has no access to your source product-doc prose, so neither check below will
-   ever appear as a `validateCommunityPackage` finding:
+   Calendar UI reads, it has no access to your source product-doc prose, and it has no model of which
+   `role` values actually resolve to a real viewer per tab — so none of the checks below will ever appear
+   as a `validateCommunityPackage` finding:
    - **Hard rule 8**: for every `event-rsvp`-bound workflow, grep your own draft for `eventDate`/
      `eventTime` on that type's `instanceDataSchema` (and every guard/effect/formula/renderBinding
      referencing it). If the date/time field exists under any other name, rename it now.
@@ -161,6 +174,9 @@ read), you have that tool, and this loop is mandatory, not optional:**
      ("retry", "resubmit", "try again", "reopen", "undo", "re-request"), and for each one, name the
      transition(s) that satisfy it and confirm their `from` list covers every state a member could
      realistically be retrying from.
+   - **Hard rule 10**: for every `renderBinding` using `role: "actor"` or `"receiver"` on a tab other than
+     `admin`, confirm the persona it needs to reach is always the literal instance creator. If not, switch
+     it to `role: "any"`.
    Fix anything either check surfaces before moving on.
 6. **If step 4 or step 5 changed the JSON, call the validator one more time** so the response you report
    actually describes the JSON you're about to show — never show a JSON and a validator response that came
@@ -214,9 +230,9 @@ that no real validator ran:
    referenced exists, every state is reachable, every non-terminal state has an outgoing transition,
    every `instanceData` key is declared in that type's schema, no computed field is seeded or
    effect-written, etc.).
-3. Run hard rules 8 and 9 by hand exactly as described above (step 5 of the mandatory loop) — these never
-   run through the validator even when it IS available, so a missing/unreachable action changes nothing
-   about whether you need to do them.
+3. Run hard rules 8, 9, and 10 by hand exactly as described above (step 5 of the mandatory loop) — these
+   never run through the validator even when it IS available, so a missing/unreachable action changes
+   nothing about whether you need to do them.
 4. State clearly, in your final answer, that this was a manual self-check, not a real validator run, and
    list anything you were genuinely unsure about.
 

@@ -128,6 +128,21 @@ requires you to never silently drop a stated requirement. Do this check explicit
 (a short list of capability phrases found → transition(s) that satisfy each), before presenting any package
 as finished.
 
+⚠️ **The `role: "actor"`/`"receiver"` per-tab resolution trap** — found 2026-08-09 auditing the merged Cedar
+Commons HOA package. `role` resolution is not part of the JSON grammar; it's decided by App Shell dispatch
+code, per tab, and it is sharply asymmetric — see
+[`render-bindings.md`](../../../docs/references/reference/render-bindings.md)'s normative table for the full
+mechanism. The two traps that actually shipped bugs: **`admin` is the only tab where `role: "receiver"` ever
+resolves to anyone** — on `giving`/`home`/`messages`/`marketplace` it never resolves, and on `calendar`
+neither `"actor"` nor `"receiver"` ever resolves (only `"any"` renders there); and **`"actor"` always means
+the literal instance creator**, never "whoever the transition's guard is really about" — a dues charge the
+board creates for a homeowner to pay resolves `"actor"` to the board, not the payer, even though the payer
+is who the transition's own guard names. **Self-check before finishing**: for every `renderBinding` using
+`role: "actor"` or `"receiver"` on a tab other than `admin`, confirm the persona it needs to reach really is
+always the instance's creator — if not, use `role: "any"` instead (the transition's own guard still
+restricts who can act; widening the binding only affects who can see the card). A validator-clean pass does
+**not** confirm this either — the JSON is grammar-valid regardless of which role you pick.
+
 ## Read order
 
 Same load order as `docs/references/README.md`, plus the pattern for whatever archetype the request needs:
@@ -172,12 +187,12 @@ A provider with no tool access (the `chatgpt-upload/` test case) cannot run this
 self-checked draft only — walk it through the real validator, and the app-shell/emulator gates in
 `using-loom-to-build-an-extension`, before treating it as anything more.
 
-**Before treating a clean (`errorCount: 0`) validator pass as "done," also run the two self-checks from
-the Scope section's warning callouts above (`eventDate`/`eventTime` field naming, and product-doc
-repeat/retry phrase reconciliation) — neither is JSON-grammar-shaped, so neither will ever appear as a
-validator finding no matter how clean the pass is.** These are the two most recently confirmed gaps between
-"validator-clean" and "actually implements the intended experience"; a validator pass alone is necessary,
-not sufficient.
+**Before treating a clean (`errorCount: 0`) validator pass as "done," also run the three self-checks from
+the Scope section's warning callouts above (`eventDate`/`eventTime` field naming, product-doc repeat/retry
+phrase reconciliation, and `role: "actor"`/`"receiver"` per-tab resolution) — none of these is
+JSON-grammar-shaped, so none will ever appear as a validator finding no matter how clean the pass is.**
+These are the three most recently confirmed gaps between "validator-clean" and "actually implements the
+intended experience"; a validator pass alone is necessary, not sufficient.
 
 ## `chatgpt-upload/` — the portable export
 
