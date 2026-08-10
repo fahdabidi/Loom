@@ -158,6 +158,7 @@ class WorkflowFactPillFieldSchema {
     this.labelTemplate,
     this.hideWhenEmpty = false,
     this.displayContexts,
+    this.openMode,
   });
 
   final String type;
@@ -166,6 +167,7 @@ class WorkflowFactPillFieldSchema {
   final String? labelTemplate;
   final bool hideWhenEmpty;
   final List<String>? displayContexts;
+  final String? openMode;
 
   bool shouldDisplayInContext(String context) {
     if (displayContexts == null || displayContexts!.isEmpty) return true;
@@ -531,10 +533,11 @@ class WorkflowFactPillRow extends StatelessWidget {
   static bool _rendersAsParagraph(
     WorkflowFactPillFieldSchema schema,
     dynamic value,
-  ) =>
-      schema.type.toLowerCase() == 'text' &&
-      '$value'.length >
-          (schema.maxLength ?? _paragraphValueLengthThreshold);
+  ) {
+    final type = schema.type.toLowerCase();
+    return (type == 'text' || type == 'textarea') &&
+        '$value'.length > (schema.maxLength ?? _paragraphValueLengthThreshold);
+  }
 
   Widget _factWidget({
     required String field,
@@ -559,6 +562,33 @@ class WorkflowFactPillRow extends StatelessWidget {
         label: label,
         isCollection: type == 'personaid[]',
         foreground: foreground,
+        accent: accent,
+      );
+    }
+    if (type == 'url') {
+      if (schema.openMode == 'external') {
+        return InkWell(
+          key: ValueKey('workflow-fact-url-$field'),
+          onTap: value == null
+              ? null
+              : () async {
+                  await launchUrl(
+                    Uri.parse(value.toString()),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+          child: _SurfaceFactPill(
+            icon: _iconForName(schema.displayIcon),
+            label: label,
+            foreground: foreground,
+            accent: accent,
+          ),
+        );
+      }
+      return _SurfaceFactPill(
+        icon: Icons.link_off,
+        label: '${schema.openMode ?? 'unsupported'}: $label',
+        foreground: foreground.withValues(alpha: 0.45),
         accent: accent,
       );
     }

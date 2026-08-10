@@ -468,6 +468,8 @@ class _GenericWorkflowInstanceCardState
                       instanceData: _instance.instanceData,
                       instanceDataSchema: {
                         entry.key: WorkflowFactPillFieldSchema(
+                          type: entry.value.type,
+                          openMode: entry.value.openMode,
                           displayIcon: entry.value.displayIcon,
                           labelTemplate: entry.value.labelTemplate,
                           hideWhenEmpty: entry.value.hideWhenEmpty,

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'src/part31_auth_screens.dart';
 part 'src/part29_auth_api.dart';

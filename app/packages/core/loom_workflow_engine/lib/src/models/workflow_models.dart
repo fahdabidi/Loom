@@ -737,6 +737,10 @@ class InstanceDataField {
   /// schema-driven creation or editing surface.
   final String? visibleWhenEditing;
 
+  /// Controls how a `type: "url"` field is opened.
+  /// Valid values are handled by the app-shell renderer.
+  final String? openMode;
+
   const InstanceDataField({
     required this.type,
     this.required = false,
@@ -753,6 +757,7 @@ class InstanceDataField {
     this.source,
     this.formula,
     this.visibleWhenEditing,
+    this.openMode,
   });
 
   factory InstanceDataField.fromJson(Map<String, dynamic> json) {
@@ -774,6 +779,7 @@ class InstanceDataField {
       source: json['source'] as String?,
       formula: json['formula'] as String?,
       visibleWhenEditing: json['visibleWhenEditing'] as String?,
+      openMode: json['openMode'] as String?,
     );
   }
 }

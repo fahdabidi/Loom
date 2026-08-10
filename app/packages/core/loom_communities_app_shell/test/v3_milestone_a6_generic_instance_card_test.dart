@@ -736,6 +736,60 @@ void main() {
   );
 
   testWidgets(
+    'generic card renders external url field as tappable url fact',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'url-test',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <dynamic>[],
+        'instanceDataSchema': {
+          'docsUrl': {
+            'type': 'url',
+            'openMode': 'external',
+            'displayIcon': 'open_in_new',
+            'labelTemplate': 'Project docs',
+            'displayContexts': ['tile'],
+          },
+        },
+      }, 'url-link');
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'url-link',
+        personaId: 'person',
+        initialInstanceData: {'docsUrl': 'https://example.org/project'},
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowInstanceCard(
+            instance: instance,
+            machine: machine,
+            engine: api,
+            personaId: 'person',
+            displayContext: 'tile',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final urlFact = find.byKey(const ValueKey('workflow-fact-url-docsUrl'));
+      expect(urlFact, findsOneWidget);
+      expect(tester.widget<InkWell>(urlFact).onTap, isNotNull);
+      expect(find.text('Project docs'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'text-only edits enable Save immediately and transition resyncs editors',
     (tester) async {
       final (api, instance) = await _seed();
