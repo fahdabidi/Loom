@@ -416,6 +416,32 @@ non-`url` members as text and its `url`-typed member as a tappable link per that
 **Depends on:** CJM.2 landing first (reuses its tap-to-open primitive). **Unblocks:** Neighborhood Book
 Club (`book-search-ai-digest`), Masjid Nur (`mosque-search-ai-citation`).
 
+### Ticket CJM.4 — validator rule: `no_render_binding_for_reachable_state` (done, 2026-08-09)
+
+Real Dart validator gap, not a docs fix — the D3 finding from judging the skill-authored Cedar Commons HOA
+package (3 reachable terminal states with no `renderBinding` coverage, invisible in the UI despite being
+grammar-valid). Added `WorkflowValidator._checkNoRenderBindingForReachableState` (warning-only, same
+"expected affordance" heuristic family as `no_read_visibility_declared` et al.), documented in
+`guide/05-validation.md`'s "Expected affordances" table, mirrored into `chatgpt-upload/04-validation.md`.
+Dispatched via Codex CLI (`data/v3_ticket_cjm4_validator_render_binding_coverage.md`); the dispatch's own
+`flutter analyze`/test verification was blocked by a WSL vsock failure, so it landed marked "blocked" —
+independent verification (me) found and fixed 3 real regressions the blocked dispatch never caught: a new
+test misclassified `unreachable_state` as a warning (it's an error), and 2 existing tests / 2 HTTP-server
+fixtures lacked renderBinding coverage the new check now correctly (and harmlessly) flags. Full suite: 155
+pass, 0 fail. Cedar Commons HOA re-validated clean (0 errors, 0 warnings) — the new rule does not fire
+against the already-D3-fixed shipped package. Commits `d0936638` (validator) / `fdf8a181` (skill self-check
+docs, D1/D4 — see below), pushed.
+
+**Also landed in the same cycle (not itself a CJM ticket — skill-instruction changes, not app code):** the
+`loom-calendar-experience-authoring` Skill's `SKILL.md`/`chatgpt-upload/00-INSTRUCTIONS.md` gained Hard
+Rules 8-9, making the Skill self-check two more defect classes a validator pass can never catch: D1
+(`event-rsvp` date/time fields must be named literally `eventDate`/`eventTime` — a hardcoded Dart-string
+read, not a grammar rule) and D4 (product-doc retry/resubmit language must be cross-referenced against the
+transition graph's `from` lists). Both are now mandatory steps in the validate-and-fix loop and its
+no-validator-access fallback. **Next step**: re-dispatch the Skill a third time against Cedar Commons HOA
+to test whether it now avoids D1/D4 on its own (D3 is now also caught automatically by the validator
+itself, regardless of the Skill's own behavior).
+
 ## 3. Product-doc expansion tasks (locked: expand only, never remove)
 
 Each is a real doc edit, not just a decision — the doc file itself must gain the sections below before that
@@ -445,7 +471,7 @@ reasoning, kept as durable doc, not just chat explanation).
 
 | # | Community | Doc reconciliation | JSON authoring | Known code gaps | UX Judge walkthrough |
 |---|---|---|---|---|---|
-| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 3 new defects the judge found (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard) fixed before merge. | CJM.2 (done, see §1a); §1a #4 `role:"actor"`-vs-payer design question resurfaces if a board-created dues/decision workflow needs a non-creator actor — not hit by this file's own transitions, still worth resolving before Garden Club (near-identical shape) | **Must re-run** — §6's live UX Judge walkthrough was only ever run against the pre-merge hand-authored version (2026-08-09 smoke test). Required before this row can close. |
+| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 3 new defects the judge found (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard) fixed before merge; D3 is now also caught automatically by CJM.4's new validator rule; D1/D4 taught to the Skill itself (Hard Rules 8-9, see §1c/CJM.4) — **pending: 3rd skill re-dispatch against this community to confirm it now avoids D1/D4 unassisted.** | CJM.2 (done, see §1a); CJM.4 (done, 2026-08-09 — see §2); §1a #4 `role:"actor"`-vs-payer design question resurfaces if a board-created dues/decision workflow needs a non-creator actor — not hit by this file's own transitions, still worth resolving before Garden Club (near-identical shape) | **Must re-run** — §6's live UX Judge walkthrough was only ever run against the pre-merge hand-authored version (2026-08-09 smoke test). Required before this row can close. |
 | 2 | Garden Club | Locked per §3 (keep tool-loan + volunteer-shift) | Not started | CJM.1 (tool-loan reuse of `equipment-loan`); volunteer-shift archetype fit not yet deep-dived | Not run |
 | 3 | Neighborhood Book Club | Locked per §3 (reconcile `book-library-item`/`book-shared-library`) | Not started | CJM.3 (citation list on `book-search-ai-digest`) | Not run |
 | 4 | Riverside Youth Soccer | Locked per §3 (add `soccer-team-discussion` to doc) | Not started | CJM.2 (`soccer-waiver-document`) | Not run |
