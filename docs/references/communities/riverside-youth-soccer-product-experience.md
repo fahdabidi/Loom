@@ -131,3 +131,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes | None. | `soccer-export-metadata`'s `completed` state incorrectly declared `isTerminal: true` while still having a real `rollback-export` transition leaving it — fixed by removing the flag. Judge also found a shared App Shell bug (hardcoded `event-rsvp`/`event-rsvp-response` workflow-type literals in the calendar detail card) affecting every event-rsvp-family community, not specific to this doc — tracked as CJM.5. | fixed |
