@@ -741,6 +741,9 @@ class InstanceDataField {
   /// Valid values are handled by the app-shell renderer.
   final String? openMode;
 
+  /// Optional schema describing members for a list field.
+  final Map<String, InstanceDataField>? itemSchema;
+
   const InstanceDataField({
     required this.type,
     this.required = false,
@@ -758,6 +761,7 @@ class InstanceDataField {
     this.formula,
     this.visibleWhenEditing,
     this.openMode,
+    this.itemSchema,
   });
 
   factory InstanceDataField.fromJson(Map<String, dynamic> json) {
@@ -780,6 +784,12 @@ class InstanceDataField {
       formula: json['formula'] as String?,
       visibleWhenEditing: json['visibleWhenEditing'] as String?,
       openMode: json['openMode'] as String?,
+      itemSchema: (json['itemSchema'] as Map<String, dynamic>?)?.map(
+        (itemKey, itemSchema) => MapEntry(
+          itemKey,
+          InstanceDataField.fromJson(itemSchema as Map<String, dynamic>),
+        ),
+      ),
     );
   }
 }

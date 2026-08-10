@@ -159,6 +159,7 @@ class WorkflowFactPillFieldSchema {
     this.hideWhenEmpty = false,
     this.displayContexts,
     this.openMode,
+    this.itemSchema,
   });
 
   final String type;
@@ -168,6 +169,7 @@ class WorkflowFactPillFieldSchema {
   final bool hideWhenEmpty;
   final List<String>? displayContexts;
   final String? openMode;
+  final Map<String, WorkflowFactPillFieldSchema>? itemSchema;
 
   bool shouldDisplayInContext(String context) {
     if (displayContexts == null || displayContexts!.isEmpty) return true;
@@ -506,6 +508,7 @@ class WorkflowFactPillRow extends StatelessWidget {
       hasParagraph = hasParagraph || _rendersAsParagraph(schema, value);
       rows.add(
         _factWidget(
+          context: context,
           field: field,
           schema: schema,
           value: value,
@@ -540,6 +543,7 @@ class WorkflowFactPillRow extends StatelessWidget {
   }
 
   Widget _factWidget({
+    required BuildContext context,
     required String field,
     required WorkflowFactPillFieldSchema schema,
     required dynamic value,
@@ -591,6 +595,103 @@ class WorkflowFactPillRow extends StatelessWidget {
         foreground: foreground.withValues(alpha: 0.45),
         accent: accent,
       );
+    }
+    if (type == 'list' &&
+        schema.itemSchema != null &&
+        value is List) {
+      final itemRows = <Widget>[];
+      for (var index = 0; index < value.length; index++) {
+        final item = value[index];
+        if (item is! Map) {
+          continue;
+        }
+        final memberWidgets = <Widget>[];
+        for (final member in schema.itemSchema!.entries) {
+          final memberValue = item[member.key];
+          if (member.value.hideWhenEmpty && _isEmpty(memberValue)) {
+            continue;
+          }
+          final memberLabel = _renderLabel(
+            member.value.labelTemplate ?? member.key,
+            memberValue,
+          );
+          if (memberLabel.trim().isEmpty) {
+            continue;
+          }
+
+          final memberType = member.value.type.toLowerCase();
+          if (memberType == 'url') {
+            if (member.value.openMode == 'external') {
+              memberWidgets.add(
+                InkWell(
+                  key: ValueKey(
+                    'workflow-fact-list-url-$field-$index-${member.key}',
+                  ),
+                  onTap: memberValue == null
+                      ? null
+                      : () async {
+                          await launchUrl(
+                            Uri.parse(memberValue.toString()),
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                  child: _SurfaceFactPill(
+                    icon: _iconForName(member.value.displayIcon),
+                    label: memberLabel,
+                    foreground: foreground,
+                    accent: accent,
+                  ),
+                ),
+              );
+            } else {
+              memberWidgets.add(
+                _SurfaceFactPill(
+                  icon: Icons.link_off,
+                  label:
+                      '${member.value.openMode ?? 'unsupported'}: $memberLabel',
+                  foreground: foreground.withValues(alpha: 0.45),
+                  accent: accent,
+                ),
+              );
+            }
+          } else {
+            memberWidgets.add(
+              Text(
+                memberLabel,
+                key: ValueKey(
+                  'workflow-fact-list-text-$field-$index-${member.key}',
+                ),
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }
+        }
+        if (memberWidgets.isNotEmpty) {
+          itemRows.add(
+            Wrap(
+              key: ValueKey('workflow-fact-list-item-$field-$index'),
+              spacing: 8,
+              runSpacing: 8,
+              children: memberWidgets,
+            ),
+          );
+        }
+      }
+      if (itemRows.isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final item in itemRows) ...[
+              item,
+              const SizedBox(height: 8),
+            ],
+          ],
+        );
+      }
     }
     return _SurfaceFactPill(
       icon: _iconForName(schema.displayIcon),

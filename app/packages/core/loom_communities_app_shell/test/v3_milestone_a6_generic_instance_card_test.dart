@@ -790,6 +790,94 @@ void main() {
   );
 
   testWidgets(
+    'generic card renders citation list with text labels and tappable source urls',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'list-url-test',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <dynamic>[],
+        'instanceDataSchema': {
+          'citations': {
+            'type': 'list',
+            'labelTemplate': 'Citations: {value.length}',
+            'itemSchema': {
+              'label': {'type': 'text', 'labelTemplate': '{value}'},
+              'source': {
+                'type': 'url',
+                'openMode': 'external',
+                'displayIcon': 'open_in_new',
+                'labelTemplate': '{value}',
+              },
+            },
+          },
+        },
+      }, 'list-url-link');
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'list-url-link',
+        personaId: 'person',
+        initialInstanceData: {
+          'citations': [
+            {
+              'label': 'Doc A',
+              'source': 'https://example.org/a',
+            },
+            {
+              'label': 'Doc B',
+              'source': 'https://example.org/b',
+            },
+          ],
+        },
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowInstanceCard(
+            instance: instance,
+            machine: machine,
+            engine: api,
+            personaId: 'person',
+            displayContext: 'tile',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Doc A'), findsOneWidget);
+      expect(find.text('Doc B'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('workflow-fact-list-item-citations-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('workflow-fact-list-item-citations-1')),
+        findsOneWidget,
+      );
+
+      final firstSource = find.byKey(
+        const ValueKey('workflow-fact-list-url-citations-0-source'),
+      );
+      final secondSource = find.byKey(
+        const ValueKey('workflow-fact-list-url-citations-1-source'),
+      );
+      expect(firstSource, findsOneWidget);
+      expect(secondSource, findsOneWidget);
+      expect(tester.widget<InkWell>(firstSource).onTap, isNotNull);
+      expect(tester.widget<InkWell>(secondSource).onTap, isNotNull);
+    },
+  );
+
+  testWidgets(
     'text-only edits enable Save immediately and transition resyncs editors',
     (tester) async {
       final (api, instance) = await _seed();

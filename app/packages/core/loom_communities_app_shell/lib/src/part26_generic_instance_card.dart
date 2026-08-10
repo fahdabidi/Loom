@@ -383,6 +383,11 @@ class _GenericWorkflowInstanceCardState
 
   bool _isNestedListField(String key, InstanceDataField schema) {
     if (schema.type != 'list') return false;
+    // A declared itemSchema is an explicit request for typed per-member
+    // rendering (text + tappable url links, CJM.3) — it takes precedence
+    // over the generic sender/body/timestamp-inference list renderer below,
+    // which only applies when no itemSchema is given.
+    if (schema.itemSchema != null) return false;
     final value = _instance.instanceData[key];
     if (value is! List) return false;
     // A list of maps has its own row shape and should not be flattened into a
@@ -460,7 +465,7 @@ class _GenericWorkflowInstanceCardState
                     accent: resolvedAccent,
                   )
                 else if (_isVisibleField(entry.key, entry.value))
-                  KeyedSubtree(
+                      KeyedSubtree(
                     key: ValueKey(
                       'generic-instance-field-${_instance.instanceId}-${entry.key}',
                     ),
@@ -470,6 +475,20 @@ class _GenericWorkflowInstanceCardState
                         entry.key: WorkflowFactPillFieldSchema(
                           type: entry.value.type,
                           openMode: entry.value.openMode,
+                          itemSchema: entry.value.itemSchema?.map(
+                            (itemFieldName, itemFieldSchema) => MapEntry(
+                              itemFieldName,
+                              WorkflowFactPillFieldSchema(
+                                type: itemFieldSchema.type,
+                                maxLength: itemFieldSchema.maxLength,
+                                displayIcon: itemFieldSchema.displayIcon,
+                                labelTemplate: itemFieldSchema.labelTemplate,
+                                hideWhenEmpty: itemFieldSchema.hideWhenEmpty,
+                                displayContexts: itemFieldSchema.displayContexts,
+                                openMode: itemFieldSchema.openMode,
+                              ),
+                            ),
+                          ),
                           displayIcon: entry.value.displayIcon,
                           labelTemplate: entry.value.labelTemplate,
                           hideWhenEmpty: entry.value.hideWhenEmpty,
