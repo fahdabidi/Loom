@@ -535,12 +535,16 @@ community's JSON is treated as locked, since the JSON should implement the doc's
 | Garden Club | `docs/references/communities/garden-club-product-experience.md` | Doc wants a combined `garden-tool-loan-giveaway`; implementation has separate `garden-tool-loan` + undocumented `garden-volunteer-shift`. Keep both tool-loan and volunteer-shift (nothing removed); expand doc to document volunteer-shift. `garden-tool-loan`'s borrow flow depends on CJM.1's generalization fix to reuse `equipment-loan` cleanly. |
 | Camera Club | `docs/references/communities/camera-club-product-experience.md` | `camera-validation-report` is implemented but not in the doc, and was independently confirmed by an earlier B25 judge finding to be pure scaffolding with zero real content. **Decision (made under the never-remove rule, not before it):** this is dropping an undocumented, contentless placeholder, not removing a real interaction — the never-remove rule protects real workflows/interactions, not empty scaffolding. Proceeding to drop it; flagged here for visibility rather than silently carried forward. |
 
-No doc-mismatch found (so far) for Member Social Space, Ad-Free Community, Data Portability Community, or
-Cedar Commons HOA — Cedar Commons HOA's JSON is already authored 1:1 against its doc. **Caveat:** Member
-Social Space / Ad-Free Community / Data Portability Community have not yet had the same close doc-vs-
-implementation reconciliation pass the other 6 got — do not treat "no mismatch found" as "confirmed no
-mismatch" until that pass actually runs (§4 row status reflects this honestly as "needs reconciliation
-pass", not "clean").
+No doc-mismatch found for Cedar Commons HOA — its JSON is already authored 1:1 against its doc. **Member
+Social Space / Ad-Free Community / Data Portability Community are "pure legacy" (§0) — no JSON exists at
+all for any of them, only hand-authored Dart, so there is no doc-vs-implementation mismatch to reconcile in
+the first place** (unlike the 6 hybrid communities above, which each have a real, divergent JSON to
+reconcile against). Their reconciliation pass, done 2026-08-10, instead: moved each doc to
+`docs/references/communities/` (the only location the Skill reads from — they were not there before),
+added a missing persona row each doc's own §7 rows already implied but never gave its own row (Blocked
+Member / Ad-Free Viewer / Receiving Provider), and flagged two structural gaps every one of these 3 docs
+shares with several already-reconciled docs: required custom tabs that don't exist in the real closed
+`tabId` enum, and the superseded CardSurfaces-registry vocabulary trap. See §4 rows 8-10.
 
 ## 4. Per-community status
 
@@ -557,9 +561,9 @@ reasoning, kept as durable doc, not just chat explanation).
 | 5 | Chess Club | Locked per §3 (drop `chess-local-install-open`/`chess-route-home`, expand doc to all 8 real workflows) — done, doc expansion complete 2026-08-10 | Not started | None identified (2 AP-6 fabrication bugs and fictional tabId/archetype names flagged for the authoring Skill, not shared-code gaps) | Not run |
 | 6 | Camera Club | **Done, 2026-08-10.** Skill-authored, independently judged (FAIL, 5 findings), all 5 fixed and re-validated (0 errors, 5 expected `no_render_binding_for_reachable_state` warnings). The original §3 "drop `camera-validation-report`" framing turned out too narrow — the doc's §3/§5 rows ask for real, honestly-derivable content (requested-workflow list + implemented status), not just the "package paths" scaffolding that was the actual AP-6 concern; restored as `camera-validation-report` carrying only the real part. Also fixed: dead `send-reminder` transition (hits App Shell's `_hiddenAutomaticActionIds`) replaced with a member-owned `set-reminder` action on `photo-walk-response`; `delist` guard gap that could strand a borrower's gear; Critique-tab-folded-into-Home now documented. JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc`. Doc: see `camera-club-product-experience.md` §10 for full notes. Row closed pending §6 live UX walkthrough. | Not started | None identified | Not run |
 | 7 | Masjid Nur | Locked per §3 (build both document-resource and discussion-thread, 10 workflows; drop the 3 wf_* test-name rows) — doc reconciliation done 2026-08-10 | Not started | CJM.3 (landed, ready to use) | Not run |
-| 8 | Member Social Space | **Needs reconciliation pass** (not yet done — see §3 caveat). Ad-slot workflows (`platform-in-stream-ad`, `platform-top-banner-no-fill`, `platform-sensitive-no-fill`) confirmed to need no special gap — no live ad-decisioning backend exists anywhere in this local app, so filled/no-fill is ordinary seeded instance data, fits `formEntry`/generic pattern | Not started | None identified | Not run |
-| 9 | Ad-Free Community | **Needs reconciliation pass** (not yet done) | Not started | Not yet assessed | Not run |
-| 10 | Data Portability Community | **Needs reconciliation pass** (not yet done) | Not started | Not yet assessed | Not run |
+| 8 | Member Social Space | **Reconciliation done, 2026-08-10** — doc moved to `docs/references/communities/member-social-space-product-experience.md`, added Blocked Member persona row, flagged fictional `Connections`/`Invites` tabs and the CardSurfaces vocabulary trap. Ad-slot workflows (`platform-in-stream-ad`, `platform-top-banner-no-fill`, `platform-sensitive-no-fill`) confirmed to need no special gap — no live ad-decisioning backend exists anywhere in this local app, so filled/no-fill is ordinary seeded instance data, fits `formEntry`/generic pattern | Not started | None identified | Not run |
+| 9 | Ad-Free Community | **Reconciliation done, 2026-08-10** — doc moved to `docs/references/communities/ad-free-community-product-experience.md`, added Ad-Free Viewer persona row, flagged fictional `Settlement` tab, the CardSurfaces vocabulary trap, and the AP-6 fabrication risk on receipt/settlement IDs | Not started | None identified | Not run |
+| 10 | Data Portability Community | **Reconciliation done, 2026-08-10** — doc moved to `docs/references/communities/data-portability-community-product-experience.md`, added Receiving Provider persona row, flagged fictional `Export`/`Transfer`/`Documents`/`Audit` tabs, the CardSurfaces vocabulary trap, and the AP-6 fabrication risk on checksum/transfer-ID fields | Not started | None identified | Not run |
 
 ## 5. Dispatch mechanics — emulate exactly, do not improvise a shortcut
 
