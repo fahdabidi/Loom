@@ -15,6 +15,16 @@ audience: llm-agent
 > (identity, personas, workflow types, surfaces, seed data), read
 > [`06-product-doc-to-json.md`](./06-product-doc-to-json.md) **first** — it maps each of that template's
 > 11 sections to the JSON below, then hands you back here at Step 4 to emit and validate.
+>
+> **This applies to any product doc with the same shape, not only the literal named Template file.**
+> Found 2026-08-10 (Skill Retrospective, Chess Club): a doc gated on exact template identity got skipped
+> for a doc that was clearly the same family (identity/personas/surfaces/workflow-mapping/persona-state-
+> matrix tables, including a "Persona Tabs, Pins, And Customization" §3.1-style table) but wasn't the
+> literally-named file — and `06-product-doc-to-json.md` is exactly where the fact that would have
+> prevented a real defect lives ("per-persona different tab sets are NOT in grammar v1 at all"). **If the
+> product doc in front of you has a "Persona Tabs"/"Required tabs" table for any persona, read
+> `06-product-doc-to-json.md` unconditionally** — do not gate this read on matching the Template file by
+> name.
 
 ## Mental model (one paragraph)
 
@@ -81,6 +91,22 @@ Apply this decision rule to every candidate condition:
 item can be on loan *and* queued simultaneously, `queued` had no coherent transitions — it was declared
 with **zero**, and queued listings rendered **no buttons at all**. The validator now catches this
 (`stuck_state`), but the correct fix is to model it as data in the first place.
+
+**A second, related failure mode — check this explicitly whenever a doc uses the words "position,"
+"queue," "waiting list," or "ranking"/"leaderboard":** the states-vs-data decision above is not the only
+structural choice this kind of requirement forces. If members waiting for something need to see their
+**position**, that position is normally a formula (`indexOf(list, $viewer)`, `formulas.md`'s canonical
+Queue Position pattern) run against a **list on one shared instance** — which only works if the modeling
+choice one step earlier put waiting members on a shared list at all, not as their own separate per-member
+instances. Found 2026-08-10 (Skill Retrospective, Chess Club `chess-pairing-queue`): an authoring pass
+picked a row-per-waiting-member shape (driven by which archetype's Card Surface Registry Mapping entry
+looked like the best fit for the *primary* action) without cross-checking that shape against the doc's
+*other* stated requirements for the same surface, including "queue position" — by the time the mismatch
+was noticed, the archetype/structural choice was already locked in, and the requirement got dropped instead
+of the shape being reconsidered. **Do this cross-check here, in Step 3, before the archetype choice locks
+anything in** — see `docs/references/reference/solved-patterns.md` pattern 2 for the verified-correct
+shared-container shape, and reconsider the states-vs-data/archetype decision together if a position-like
+requirement doesn't fit the shape you were about to pick.
 
 ---
 

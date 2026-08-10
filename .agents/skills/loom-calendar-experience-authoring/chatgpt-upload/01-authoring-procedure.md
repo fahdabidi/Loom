@@ -10,11 +10,18 @@ audience: llm-agent
 
 **The algorithm.** Follow these steps in order. Do not skip steps 6-8.
 
-> **Starting from a filled-in product doc?** If your input is a
-> [Community Product Experience Template](../../Build%20Plan%20V2/Skill/references/community-product-experience-template.md)
-> (identity, personas, workflow types, surfaces, seed data), read
-> [`06-product-doc-to-json.md`](./06-product-doc-to-json.md) **first** — it maps each of that template's
-> 11 sections to the JSON below, then hands you back here at Step 4 to emit and validate.
+> **Starting from a filled-in product doc?** (identity, personas, workflow types, surfaces, seed data —
+> this shape, not only a doc named exactly "Community Product Experience Template.") **One fact from that
+> conversion process is important enough to state directly here, not just in a file you might not have in
+> this bundle:** a product doc's "Persona Tabs, Pins, And Customization" table (listing which tabs each
+> persona is described as using) is **descriptive UX copy, not an access-control mechanism.** Per-persona
+> different tab sets are not real grammar in this schema version — every tab a workflow binds to is visible
+> to whichever persona a `role`/guard combination actually resolves for, regardless of what that table
+> says. Found 2026-08-10 (Skill Retrospective): an authoring pass read a persona's "required tabs" list,
+> concluded that persona could never see a card bound to a tab not on that list, and used that false belief
+> to justify dropping a real product-doc requirement — while the very same JSON it had just written already
+> used `role: "any"` on that exact tab, which the real grammar renders to everyone. Do not make this
+> inference; check the actual `tabId`/`role` resolution rules in `12-render-bindings.md` instead.
 
 ## Mental model (one paragraph)
 
@@ -81,6 +88,20 @@ Apply this decision rule to every candidate condition:
 item can be on loan *and* queued simultaneously, `queued` had no coherent transitions — it was declared
 with **zero**, and queued listings rendered **no buttons at all**. The validator now catches this
 (`stuck_state`), but the correct fix is to model it as data in the first place.
+
+**A second, related failure mode — check this explicitly whenever a doc uses the words "position,"
+"queue," "waiting list," or "ranking"/"leaderboard":** if members waiting for something need to see their
+**position**, that position is normally a formula (`indexOf(list, $viewer)`, `10-formulas.md`'s canonical
+Queue Position pattern) run against a **list on one shared instance** — which only works if the modeling
+choice one step earlier put waiting members on a shared list at all, not as their own separate per-member
+instances. Found 2026-08-10 (Skill Retrospective): an authoring pass picked a row-per-waiting-member shape
+(driven by which archetype looked like the best fit for the *primary* action) without cross-checking that
+shape against the doc's *other* stated requirements for the same surface, including "queue position" — by
+the time the mismatch was noticed, the structural choice was already locked in, and the requirement got
+dropped instead of the shape being reconsidered. **Do this cross-check here, in Step 3, before the
+archetype choice locks anything in** — see `20-solved-patterns.md` pattern 2 for the verified-correct
+shared-container shape, and reconsider the states-vs-data/archetype decision together if a position-like
+requirement doesn't fit the shape you were about to pick.
 
 ---
 

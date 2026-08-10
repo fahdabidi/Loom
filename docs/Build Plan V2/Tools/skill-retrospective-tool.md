@@ -52,8 +52,35 @@ only speculate: it never had the original context. The original agent can actual
 
 ## What this looked like for the two retrospectives run so far
 
-(Fill in per-retrospective as they're conducted — this section is a running log, not a template to leave
-blank.)
+### Chess Club — `chess-pairing-queue` silently dropped "queue position"
+
+**Verified cause, in the agent's own words:** the agent *had already read* the fix (`formulas.md`'s
+canonical Queue Position pattern, `indexOf(list, $viewer)`) and the fact that would have falsified its
+reasoning (its own binding already used `role: "any"` on the `admin` tab it claimed Player couldn't reach)
+— it had the correct information in context and still produced the wrong output. Two distinct causes, not
+one: (1) a genuine read-order gap — `guide/06-product-doc-to-json.md` (which states outright that
+per-persona tab sets aren't real grammar) is only read when the input doc literally matches the named
+Template file; Chess Club's doc was the same shape but not that literal file, so it was never read; (2) a
+cross-checking failure independent of missing information — the agent picked a row-per-waiting-player
+archetype shape driven by the *primary* action alone, never went back to check that shape against the
+doc's *other* stated requirements (queue position) before locking it in, then rationalized the resulting
+gap with a false constraint instead of reconsidering the shape.
+
+**Applied fixes** (commit series starting `0ae76df7`+):
+- `01-authoring-procedure.md`'s product-doc-conversion callout now triggers on **doc shape** ("has a
+  Persona Tabs table"), not literal Template-file identity — mirrored to `chatgpt-upload/`, inlining the
+  key fact directly there since that bundle doesn't carry `06-product-doc-to-json.md` at all (a pre-existing
+  gap, noted but not otherwise addressed by this fix).
+- Step 3 (states-vs-data) gained an explicit cross-check: any doc using "position"/"queue"/"waiting
+  list"/"ranking" must be checked against `formulas.md`'s Queue Position pattern and
+  `solved-patterns.md` pattern 2 **before** the archetype/structural shape locks in, not after.
+- (Step 9.5's traceability table, added the same session as this retrospective, independently also covers
+  this class of gap for future authoring passes — the two fixes reinforce each other at different points
+  in the process: Step 3 prevents the structural mistake, Step 9.5 catches it if Step 3 still misses it.)
+
+### Ad-Free Community — unresolved `$actor` in `prefill` shipped despite the agent flagging its own uncertainty
+
+(Retrospective dispatched; findings pending.)
 
 ## When NOT to run this
 
