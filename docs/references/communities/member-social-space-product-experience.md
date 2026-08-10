@@ -137,3 +137,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes | None. | Fixed CJM.6 (both create actions relied on unresolved `$actor`-in-`prefill` with no fallback — added a draft pre-stamp state to each type per solved-patterns.md pattern 7) and a privacy leak (`blockedByPersonaId` was rendered directly to the blocked member, contradicting this doc's own correction note — set `displayContexts: []` on both occurrences). | fixed |

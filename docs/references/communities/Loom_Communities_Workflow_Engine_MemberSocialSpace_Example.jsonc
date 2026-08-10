@@ -1,0 +1,691 @@
+// Member Social Space — canonical JSON, authored 2026-08-10.
+//
+// Engine-native Loom community package for "Member Social Space" (product doc:
+// docs/references/communities/member-social-space-product-experience.md). Built strictly from
+// docs/references per the loom-calendar-experience-authoring Skill; no legacy JSON/Dart for this
+// community existed to copy from. 6 workflow types cover the doc's 8 §6 rows (messages-entry +
+// message-stream merged into platform-message-thread; connections-entry + connection-invite merged
+// into platform-connection; the 3 ad-slot rows kept as 3 separate single-state types after an
+// initial single-shared-type attempt hit a real unreachable_state error with no ad-decisioning
+// backend to legitimately drive transitions between them).
+//
+// Independently judged after authoring and found to have 2 real issues, fixed here before merge:
+//   1. CJM.6 (see docs/Build Plan V2/Community JSON Migration Tracker.md §2): both
+//      platform-message-thread's and platform-connection's tab-scoped create actions used
+//      `"$actor"` in `prefill` to stamp participantAPersonaId/inviterPersonaId, with NO fallback
+//      transition to stamp it otherwise -- both types landed directly in a live state at creation
+//      with full guard/readGuard enforcement already active, so every subsequent action was
+//      permanently broken. Fixed per docs/references/reference/solved-patterns.md pattern 7: added
+//      a "draft" pre-stamp state to each type, with a first transition (start-thread /
+//      send-invite) that stamps the actor-identity field via a normal effect instead.
+//   2. The doc's own correction note requires a blocked member see only that contact is
+//      unavailable, never the blocker's identity -- `blockedByPersonaId` was rendered directly
+//      (`displayContexts: ["tile","detail"]`) on both platform-message-thread and
+//      platform-connection, readable by both participants including the blocked one. Fixed by
+//      setting `displayContexts: []` on both fields -- the value stays readable to the engine (the
+//      unblock transition's own guard) but is never rendered on any card.
+//
+// See docs/references/communities/member-social-space-product-experience.md §10 for the full review
+// log.
+
+{
+  "schemaVersion": 1,
+  "packageId": "init_member_social_space_1",
+  "communityId": "community_member_social_space",
+  "communityHandle": "member-social-space",
+  "displayName": "Member Social Space",
+  "extensionId": "ext_member_social_space",
+  "branding": { "accentColor": "#3D5AFE" },
+  "seedDataFiles": [],
+
+  "experience": {
+    "experienceSchemaVersion": 2,
+    "workflowGrammarVersion": 1,
+
+    "displayName": "Member Social Space",
+    "tagline": "Message, connect, and stay in control of your community relationships.",
+    "accentColor": "#3D5AFE",
+
+    "personas": [
+      { "personaId": "platform-member-alex", "label": "Alex Rivera", "roleLabel": "Member",
+        "description": "An active community member who messages, connects with, and sometimes blocks other members." },
+      { "personaId": "platform-member-bailey", "label": "Bailey Chen", "roleLabel": "Member",
+        "description": "A community member who sends and receives connection invites and messages." },
+      { "personaId": "platform-member-casey", "label": "Casey Nguyen", "roleLabel": "Member",
+        "description": "A community member; used to demonstrate the Blocked Member experience after another member blocks them." },
+      { "personaId": "platform-moderator-dakota", "label": "Dakota Reyes", "roleLabel": "Moderator",
+        "description": "Observes that messaging, connection, and sponsored-content surfaces stay available and safe; does not read private message content." }
+    ],
+
+    "workflowDefinitions": {
+
+      "platform-message-thread": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "formula": "$viewer == participantAPersonaId || $viewer == participantBPersonaId" }
+        },
+        "states": {
+          "draft": { "label": "Draft", "tone": "info",
+                    "editableFields": ["participantBPersonaId"],
+                    "editGuard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] },
+                    // CJM.6 fix: participantAPersonaId is not yet stamped while an instance sits in
+                    // "draft" (see start-thread's effects below) -- an actorEqualsField editGuard has
+                    // nothing real to check yet. allowedPersonaIds alone is a safe fallback -- the same
+                    // tradeoff already accepted in Ad-Free Community's shipped fix for this pattern.
+                    "readGuard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] } },
+          "open": { "label": "Open", "tone": "positive",
+                    "editableFields": ["participantBPersonaId"],
+                    "editGuard": { "actorEqualsField": { "key": "participantAPersonaId" } } },
+          "archived": { "label": "Archived", "tone": "info" }
+        },
+        "transitions": [
+          {
+            // CJM.6 fix: this is the FIRST transition an instance ever fires, so it is the one place
+            // that STAMPS participantAPersonaId via a normal transition effect -- $actor inside
+            // `effects` has dense, worked-example-confirmed precedent, unlike $actor inside `prefill`
+            // (confirmed broken by direct source read -- the real App Shell never reads `prefill` for
+            // scope:"tab" creates at all).
+            "id": "start-thread", "label": "Start conversation", "icon": "send", "tone": "primary",
+            "from": ["draft"], "to": "open",
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] },
+            "effects": [ { "op": "set", "key": "participantAPersonaId", "value": "$actor" } ]
+          },
+          {
+            "id": "post-message", "label": "Send", "icon": "send", "tone": "primary",
+            "from": ["open"], "to": null,
+            "inputs": { "body": { "type": "text", "required": true } },
+            "guard": {
+              "formula": "($actor == participantAPersonaId || $actor == participantBPersonaId) && !blockedActive"
+            },
+            "effects": [
+              { "op": "append", "key": "messages",
+                "value": { "senderPersonaId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } },
+              { "op": "branch", "if": "$actor == participantAPersonaId",
+                "then": [
+                  { "op": "set", "key": "unreadForB", "value": true },
+                  { "op": "set", "key": "unreadForA", "value": false }
+                ],
+                "else": [
+                  { "op": "set", "key": "unreadForA", "value": true },
+                  { "op": "set", "key": "unreadForB", "value": false }
+                ] }
+            ]
+          },
+          {
+            "id": "mark-read", "label": "Mark read", "icon": "mark_email_read", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "formula": "$actor == participantAPersonaId || $actor == participantBPersonaId" },
+            "effects": [
+              { "op": "branch", "if": "$actor == participantAPersonaId",
+                "then": [ { "op": "set", "key": "unreadForA", "value": false } ],
+                "else": [ { "op": "set", "key": "unreadForB", "value": false } ] }
+            ]
+          },
+          {
+            "id": "mute", "label": "Mute", "icon": "notifications_off", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": {
+              "formula": "$actor == participantAPersonaId || $actor == participantBPersonaId",
+              "actorInList": { "key": "mutedByPersonaIds", "present": false }
+            },
+            "effects": [ { "op": "appendUnique", "key": "mutedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "unmute", "label": "Unmute", "icon": "notifications_active", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": {
+              "formula": "$actor == participantAPersonaId || $actor == participantBPersonaId",
+              "actorInList": { "key": "mutedByPersonaIds", "present": true }
+            },
+            "effects": [ { "op": "removeValue", "key": "mutedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "archive", "label": "Archive", "icon": "archive", "tone": "destructive",
+            "from": ["open"], "to": "archived",
+            "guard": { "formula": "$actor == participantAPersonaId || $actor == participantBPersonaId" }
+          },
+          {
+            "id": "unarchive", "label": "Unarchive", "icon": "unarchive", "tone": "secondary",
+            "from": ["archived"], "to": "open",
+            "guard": { "formula": "$actor == participantAPersonaId || $actor == participantBPersonaId" }
+          }
+        ],
+        "renderBindings": [
+          { "states": ["draft"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
+            "actions": [
+              { "kind": "create", "label": "New message",
+                "byPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+                "scope": "tab", "presentation": "fab" }
+            ] },
+          { "states": ["open"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" },
+          { "states": ["archived"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          // CJM.6 fix: no longer `required` -- a freshly created instance in "draft" legitimately
+          // lacks this until start-thread's own effect stamps it.
+          "participantAPersonaId": { "type": "personaId?", "writableBy": "effect",
+                                      "displayIcon": "person_outline", "labelTemplate": "{value}",
+                                      "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "participantBPersonaId": { "type": "personaId", "required": true, "writableBy": "formEntry",
+                                      "displayIcon": "person_add_outlined", "labelTemplate": "With {value}",
+                                      "displayContexts": ["tile", "detail"] },
+          "messages": { "type": "list", "writableBy": "effect",
+                        "displayIcon": "forum", "labelTemplate": "{value.length} messages",
+                        "displayContexts": ["tile", "detail"] },
+          "unreadForA": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
+          "unreadForB": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
+          "isUnreadForViewer": { "type": "bool",
+                                  "formula": "if($viewer == participantAPersonaId, unreadForA, unreadForB)",
+                                  "displayIcon": "mark_email_unread_outlined",
+                                  "labelTemplate": "Unread: {value}", "displayContexts": ["tile", "detail"] },
+          "mutedByPersonaIds": { "type": "personaId[]", "writableBy": "effect",
+                                  "displayIcon": "notifications_off_outlined",
+                                  "labelTemplate": "Muted by {value.length}", "hideWhenEmpty": true,
+                                  "displayContexts": ["detail"] },
+          "blockedActive": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
+          // Privacy fix: never rendered directly (displayContexts: []) -- the doc explicitly requires
+          // a blocked member see only that contact is unavailable (blockedActive), never the blocker's
+          // identity. This field stays readable to the engine (the unblock transition's own guard),
+          // just never surfaced on any card.
+          "blockedByPersonaId": { "type": "personaId?", "writableBy": "effect",
+                                   "displayContexts": [] },
+          "messageCount": { "type": "number", "formula": "size(messages)",
+                             "displayIcon": "chat_bubble_outline", "labelTemplate": "{value} messages",
+                             "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "platform-connection": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "formula": "$viewer == inviterPersonaId || $viewer == inviteePersonaId || $viewer == 'platform-moderator-dakota'"
+          }
+        },
+        "states": {
+          "draft": { "label": "Draft", "tone": "info",
+                     "editableFields": ["reason", "inviteePersonaId"],
+                     "editGuard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] },
+                     // CJM.6 fix: inviterPersonaId is not yet stamped while an instance sits in
+                     // "draft" -- see the note on platform-message-thread's identical fix above.
+                     "readGuard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] } },
+          "invited": { "label": "Invite sent", "tone": "info" },
+          "connected": { "label": "Connected", "tone": "positive" },
+          "declined": { "label": "Declined", "tone": "negative", "isTerminal": true },
+          "blocked": { "label": "Blocked", "tone": "negative" }
+        },
+        "transitions": [
+          {
+            // CJM.6 fix: first transition -- stamps inviterPersonaId via a normal effect instead of
+            // the confirmed-broken $actor-in-prefill construct.
+            "id": "send-invite", "label": "Send invite", "icon": "send", "tone": "primary",
+            "from": ["draft"], "to": "invited",
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"] },
+            "effects": [ { "op": "set", "key": "inviterPersonaId", "value": "$actor" } ]
+          },
+          {
+            "id": "accept-invite", "label": "Accept", "icon": "check_circle", "tone": "primary",
+            "from": ["invited"], "to": "connected",
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "inviteePersonaId" }
+            },
+            "effects": [ { "op": "set", "key": "respondedAt", "value": "$timestamp" } ]
+          },
+          {
+            "id": "decline-invite", "label": "Decline", "icon": "cancel", "tone": "secondary",
+            "from": ["invited"], "to": "declined",
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "inviteePersonaId" }
+            },
+            "effects": [ { "op": "set", "key": "respondedAt", "value": "$timestamp" } ]
+          },
+          {
+            "id": "cancel-invite", "label": "Cancel invite", "icon": "undo", "tone": "destructive",
+            "from": ["invited"], "to": "declined",
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "inviterPersonaId" }
+            },
+            "effects": [ { "op": "set", "key": "respondedAt", "value": "$timestamp" } ]
+          },
+          {
+            "id": "block", "label": "Block", "icon": "block", "tone": "destructive",
+            "from": ["invited", "connected"], "to": "blocked",
+            "inputs": { "reason": { "type": "text", "required": true } },
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "formula": "$actor == inviterPersonaId || $actor == inviteePersonaId"
+            },
+            "effects": [
+              { "op": "set", "key": "blockedByPersonaId", "value": "$actor" },
+              { "op": "branch", "if": "$actor == inviterPersonaId",
+                "then": [
+                  { "op": "createInstance", "workflowType": "platform-blocked-target",
+                    "fields": { "connectionId": "{id}", "blockerPersonaId": "$actor",
+                                "targetPersonaId": "{inviteePersonaId}", "blockReason": "{input.reason}" } }
+                ],
+                "else": [
+                  { "op": "createInstance", "workflowType": "platform-blocked-target",
+                    "fields": { "connectionId": "{id}", "blockerPersonaId": "$actor",
+                                "targetPersonaId": "{inviterPersonaId}", "blockReason": "{input.reason}" } }
+                ] },
+              { "op": "set", "key": "blockedActive", "value": true, "relatedInstance": "messageThreadId" },
+              { "op": "set", "key": "blockedByPersonaId", "value": "$actor", "relatedInstance": "messageThreadId" }
+            ]
+          },
+          {
+            "id": "unblock", "label": "Unblock", "icon": "lock_open", "tone": "primary",
+            "from": ["blocked"], "to": "connected",
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "blockedByPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "blockedByPersonaId", "value": null },
+              { "op": "set", "key": "blockedActive", "value": false, "relatedInstance": "messageThreadId" },
+              { "op": "set", "key": "blockedByPersonaId", "value": null, "relatedInstance": "messageThreadId" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["draft"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary",
+            "actions": [
+              { "kind": "create", "label": "Send connection invite",
+                "byPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+                "scope": "tab", "presentation": "fab" }
+            ] },
+          { "states": ["invited"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
+          { "states": ["invited"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" },
+          { "states": ["connected", "declined", "blocked"], "role": "any", "tabId": "messages",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
+          { "states": ["invited", "connected", "declined", "blocked"], "role": "any", "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          // CJM.6 fix: no longer `required` -- unset until send-invite's own effect stamps it.
+          "inviterPersonaId": { "type": "personaId?", "writableBy": "effect",
+                                 "displayIcon": "person_outline", "labelTemplate": "Invited by {value}",
+                                 "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "inviteePersonaId": { "type": "personaId", "required": true, "writableBy": "formEntry",
+                                 "displayIcon": "person_add_outlined", "labelTemplate": "Invitee: {value}",
+                                 "displayContexts": ["tile", "detail"] },
+          "reason": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 300,
+                      "displayIcon": "chat_bubble_outline", "labelTemplate": "{value}",
+                      "displayContexts": ["detail"] },
+          "messageThreadId": { "type": "text?", "writableBy": "effect", "displayContexts": [] },
+          // Privacy fix: never rendered directly -- the doc requires a blocked member see only that
+          // contact is unavailable, never the blocker's identity. Stays readable to the engine (the
+          // unblock transition's own guard).
+          "blockedByPersonaId": { "type": "personaId?", "writableBy": "effect",
+                                   "displayContexts": [] },
+          "respondedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true,
+                            "displayIcon": "schedule", "labelTemplate": "Responded {value}",
+                            "displayContexts": ["detail"] }
+        }
+      },
+
+      "platform-blocked-target": {
+        "initialState": "active",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "blockerPersonaId" } }
+        },
+        "states": {
+          "active": { "label": "Block active", "tone": "negative" },
+          "closed": { "label": "Reviewed", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "confirm-block", "label": "Confirm block", "icon": "fact_check", "tone": "primary",
+            "from": ["active"], "to": null,
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "blockerPersonaId" }
+            },
+            "effects": [ { "op": "set", "key": "confirmedAt", "value": "$timestamp" } ]
+          },
+          {
+            "id": "close-review", "label": "Mark reviewed", "icon": "task_alt", "tone": "secondary",
+            "from": ["active"], "to": "closed",
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "actorEqualsField": { "key": "blockerPersonaId" }
+            },
+            "effects": [ { "op": "set", "key": "reviewedAt", "value": "$timestamp" } ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["active"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
+          { "states": ["closed"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "connectionId": { "type": "text", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "blockerPersonaId": { "type": "personaId", "required": true, "writableBy": "effect",
+                                 "displayIcon": "person_outline", "labelTemplate": "{value}",
+                                 "displayContexts": ["detail"] },
+          "targetPersonaId": { "type": "personaId", "required": true, "writableBy": "effect",
+                                "displayIcon": "block", "labelTemplate": "Target: {value}",
+                                "displayContexts": ["tile", "detail"] },
+          "blockReason": { "type": "textarea", "required": true, "writableBy": "effect", "maxLength": 500,
+                            "displayIcon": "report_outlined", "labelTemplate": "Reason: {value}",
+                            "displayContexts": ["detail"] },
+          "confirmedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true,
+                            "displayIcon": "check_circle_outline", "labelTemplate": "Confirmed {value}",
+                            "displayContexts": ["detail"] },
+          "reviewedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true,
+                           "displayIcon": "fact_check_outlined", "labelTemplate": "Reviewed {value}",
+                           "displayContexts": ["detail"] }
+        }
+      },
+
+      "platform-in-stream-ad": {
+        "initialState": "filled",
+        "visibility": { "default": "public" },
+        "states": {
+          "filled": { "label": "Filled", "tone": "positive" }
+        },
+        "transitions": [
+          {
+            "id": "record-impression", "label": "View", "icon": "visibility", "tone": "secondary",
+            "from": ["filled"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "impressionedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "open-sponsor-link", "label": "Open sponsor", "icon": "open_in_new", "tone": "primary",
+            "from": ["filled"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "clickedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "dismiss-ad", "label": "Dismiss", "icon": "close", "tone": "secondary",
+            "from": ["filled"], "to": null,
+            "guard": {
+              "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey", "platform-member-casey"],
+              "instanceDataEquals": { "key": "dismissible", "value": true }
+            },
+            "effects": [ { "op": "appendUnique", "key": "dismissedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "report-sponsor", "label": "Report sponsor", "icon": "flag", "tone": "destructive",
+            "from": ["filled"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "reportedByPersonaIds", "value": "$actor" } ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["filled"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }
+        ],
+        "instanceDataSchema": {
+          "sponsorName": { "type": "text", "required": true, "writableBy": "effect",
+                            "displayIcon": "storefront_outlined", "labelTemplate": "Sponsor: {value}",
+                            "displayContexts": ["tile", "detail"] },
+          "disclosureText": { "type": "text", "required": true, "writableBy": "effect",
+                               "displayIcon": "info_outlined", "labelTemplate": "{value}",
+                               "displayContexts": ["tile", "detail"] },
+          "bodyText": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
+                        "displayContexts": ["detail"] },
+          "dismissible": { "type": "bool", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "impressionedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] },
+          "clickedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] },
+          "dismissedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] },
+          "reportedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] },
+          "impressionCount": { "type": "number", "formula": "size(impressionedByPersonaIds)",
+                                "displayIcon": "visibility_outlined", "labelTemplate": "{value} views",
+                                "displayContexts": ["tile", "detail"] },
+          "clickCount": { "type": "number", "formula": "size(clickedByPersonaIds)",
+                           "displayIcon": "touch_app_outlined", "labelTemplate": "{value} clicks",
+                           "displayContexts": ["detail"] }
+        }
+      },
+
+      "platform-top-banner-no-fill": {
+        "initialState": "no-fill",
+        "visibility": { "default": "public" },
+        "states": {
+          "no-fill": { "label": "No fill", "tone": "warning" }
+        },
+        "transitions": [
+          {
+            "id": "refresh-slot", "label": "Refresh slot", "icon": "refresh", "tone": "secondary",
+            "from": ["no-fill"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "set", "key": "lastRefreshedAt", "value": "$timestamp" } ]
+          },
+          {
+            "id": "inspect-reason", "label": "Inspect no-fill reason", "icon": "manage_search", "tone": "secondary",
+            "from": ["no-fill"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "reasonInspectedByPersonaIds", "value": "$actor" } ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["no-fill"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }
+        ],
+        "instanceDataSchema": {
+          "disclosureText": { "type": "text", "required": true, "writableBy": "effect",
+                               "displayIcon": "info_outlined", "labelTemplate": "{value}",
+                               "displayContexts": ["tile", "detail"] },
+          "noFillReason": { "type": "text", "required": true, "writableBy": "effect",
+                             "displayIcon": "report_gmailerrorred_outlined", "labelTemplate": "{value}",
+                             "displayContexts": ["tile", "detail"] },
+          "lastRefreshedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true,
+                                "displayIcon": "refresh", "labelTemplate": "Refreshed {value}",
+                                "displayContexts": ["detail"] },
+          "reasonInspectedByPersonaIds": { "type": "personaId[]", "writableBy": "effect",
+                                            "displayContexts": [] }
+        }
+      },
+
+      "platform-sensitive-no-fill": {
+        "initialState": "suppressed",
+        "visibility": { "default": "public" },
+        "states": {
+          "suppressed": { "label": "Suppressed", "tone": "info" }
+        },
+        "transitions": [
+          {
+            "id": "acknowledge-suppression", "label": "Continue", "icon": "check", "tone": "primary",
+            "from": ["suppressed"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "acknowledgedByPersonaIds", "value": "$actor" } ]
+          },
+          {
+            "id": "review-policy", "label": "Review policy", "icon": "policy", "tone": "secondary",
+            "from": ["suppressed"], "to": null,
+            "guard": { "allowedPersonaIds": ["platform-member-alex", "platform-member-bailey",
+                                              "platform-member-casey", "platform-moderator-dakota"] },
+            "effects": [ { "op": "appendUnique", "key": "policyReviewedByPersonaIds", "value": "$actor" } ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["suppressed"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }
+        ],
+        "instanceDataSchema": {
+          "disclosureText": { "type": "text", "required": true, "writableBy": "effect",
+                               "displayIcon": "info_outlined", "labelTemplate": "{value}",
+                               "displayContexts": ["tile", "detail"] },
+          "noFillReason": { "type": "text", "required": true, "writableBy": "effect",
+                             "displayIcon": "shield_outlined", "labelTemplate": "{value}",
+                             "displayContexts": ["tile", "detail"] },
+          "acknowledgedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] },
+          "policyReviewedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayContexts": [] }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "thread-alex-bailey",
+        "workflowType": "platform-message-thread",
+        "currentState": "open",
+        "createdByPersonaId": "platform-member-alex",
+        "instanceData": {
+          "participantAPersonaId": "platform-member-alex",
+          "participantBPersonaId": "platform-member-bailey",
+          "messages": [
+            { "senderPersonaId": "platform-member-alex", "body": "Hey! Did you get the book club list?",
+              "timestamp": "2026-08-05T14:02:00Z" },
+            { "senderPersonaId": "platform-member-bailey", "body": "Just saw it, adding two more titles now.",
+              "timestamp": "2026-08-05T14:10:00Z" }
+          ],
+          "unreadForA": false,
+          "unreadForB": true,
+          "mutedByPersonaIds": [],
+          "blockedActive": false
+        }
+      },
+      {
+        "instanceId": "thread-alex-casey",
+        "workflowType": "platform-message-thread",
+        "currentState": "open",
+        "createdByPersonaId": "platform-member-alex",
+        "instanceData": {
+          "participantAPersonaId": "platform-member-alex",
+          "participantBPersonaId": "platform-member-casey",
+          "messages": [
+            { "senderPersonaId": "platform-member-alex", "body": "Hey, are you still coming to the meetup?",
+              "timestamp": "2026-08-01T10:15:00Z" },
+            { "senderPersonaId": "platform-member-casey", "body": "Yeah I'll be there.",
+              "timestamp": "2026-08-01T10:20:00Z" }
+          ],
+          "unreadForA": false,
+          "unreadForB": true,
+          "mutedByPersonaIds": [],
+          "blockedActive": true,
+          "blockedByPersonaId": "platform-member-alex"
+        }
+      },
+      {
+        "instanceId": "thread-bailey-casey",
+        "workflowType": "platform-message-thread",
+        "currentState": "archived",
+        "createdByPersonaId": "platform-member-bailey",
+        "instanceData": {
+          "participantAPersonaId": "platform-member-bailey",
+          "participantBPersonaId": "platform-member-casey",
+          "messages": [
+            { "senderPersonaId": "platform-member-bailey", "body": "Thanks for the trivia night recap!",
+              "timestamp": "2026-07-22T18:30:00Z" },
+            { "senderPersonaId": "platform-member-casey", "body": "Anytime, same time next month?",
+              "timestamp": "2026-07-22T18:45:00Z" }
+          ],
+          "unreadForA": false,
+          "unreadForB": false,
+          "mutedByPersonaIds": [],
+          "blockedActive": false
+        }
+      },
+      {
+        "instanceId": "conn-alex-bailey",
+        "workflowType": "platform-connection",
+        "currentState": "connected",
+        "createdByPersonaId": "platform-member-alex",
+        "instanceData": {
+          "inviterPersonaId": "platform-member-alex",
+          "inviteePersonaId": "platform-member-bailey",
+          "reason": "Would love to swap book recommendations regularly.",
+          "messageThreadId": "thread-alex-bailey",
+          "respondedAt": "2026-07-20T12:00:00Z"
+        }
+      },
+      {
+        "instanceId": "conn-bailey-casey",
+        "workflowType": "platform-connection",
+        "currentState": "invited",
+        "createdByPersonaId": "platform-member-bailey",
+        "instanceData": {
+          "inviterPersonaId": "platform-member-bailey",
+          "inviteePersonaId": "platform-member-casey",
+          "reason": "Saw you at trivia night, let's connect!"
+        }
+      },
+      {
+        "instanceId": "conn-alex-casey",
+        "workflowType": "platform-connection",
+        "currentState": "blocked",
+        "createdByPersonaId": "platform-member-casey",
+        "instanceData": {
+          "inviterPersonaId": "platform-member-casey",
+          "inviteePersonaId": "platform-member-alex",
+          "reason": "Excited to connect before the meetup!",
+          "messageThreadId": "thread-alex-casey",
+          "respondedAt": "2026-08-01T09:00:00Z",
+          "blockedByPersonaId": "platform-member-alex"
+        }
+      },
+      {
+        "instanceId": "blocked-record-alex-casey",
+        "workflowType": "platform-blocked-target",
+        "currentState": "active",
+        "createdByPersonaId": "platform-member-alex",
+        "instanceData": {
+          "connectionId": "conn-alex-casey",
+          "blockerPersonaId": "platform-member-alex",
+          "targetPersonaId": "platform-member-casey",
+          "blockReason": "Repeated unwanted messages after being asked to stop."
+        }
+      },
+      {
+        "instanceId": "ad-in-stream-01",
+        "workflowType": "platform-in-stream-ad",
+        "currentState": "filled",
+        "createdByPersonaId": "platform-moderator-dakota",
+        "instanceData": {
+          "sponsorName": "Riverside Outdoors Co.",
+          "disclosureText": "Sponsored",
+          "bodyText": "Gear up for your next trail day — 15% off backpacks this week.",
+          "dismissible": true,
+          "impressionedByPersonaIds": [],
+          "clickedByPersonaIds": [],
+          "dismissedByPersonaIds": [],
+          "reportedByPersonaIds": []
+        }
+      },
+      {
+        "instanceId": "ad-top-banner-01",
+        "workflowType": "platform-top-banner-no-fill",
+        "currentState": "no-fill",
+        "createdByPersonaId": "platform-moderator-dakota",
+        "instanceData": {
+          "disclosureText": "Ad space reserved",
+          "noFillReason": "No eligible sponsor available for this slot right now.",
+          "reasonInspectedByPersonaIds": []
+        }
+      },
+      {
+        "instanceId": "ad-sensitive-01",
+        "workflowType": "platform-sensitive-no-fill",
+        "currentState": "suppressed",
+        "createdByPersonaId": "platform-moderator-dakota",
+        "instanceData": {
+          "disclosureText": "Ad suppressed in this context",
+          "noFillReason": "Ads are not shown alongside sensitive or protected content.",
+          "acknowledgedByPersonaIds": [],
+          "policyReviewedByPersonaIds": []
+        }
+      }
+    ]
+  }
+}
