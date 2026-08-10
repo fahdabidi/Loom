@@ -222,6 +222,96 @@ Full detail: [`reference/render-bindings.md`](../reference/render-bindings.md).
 
 ---
 
+## Step 9.5 — Build the requirement traceability table (MANDATORY OUTPUT, not just an internal check)
+
+**Why this step exists:** every real defect found in a skill-authored package's independent judge review so
+far has been the same shape — a real, explicit product-doc requirement, quietly unimplemented, discovered
+only because a *second*, independent pass re-read the doc and checked. One case (Chess Club's
+`chess-pairing-queue`) went further: the authoring pass didn't just miss the requirement, it **justified**
+dropping it with a claim that a `grep` of the doc's own persona/tab table directly contradicted. Passing the
+validator and doing the Step 10 anti-pattern check do not catch this class of error — both check the JSON's
+internal consistency, never JSON-against-doc coverage. This step makes that coverage check an explicit,
+citable **output artifact** instead of an implicit judgment call, so both you and whoever reviews your
+output can mechanically verify nothing was silently dropped.
+
+**Procedure — do this for every workflow, before Step 10:**
+
+1. **Collect every doc row that mentions this workflow.** Search the product doc's §3/§3.1, §5, §6, §7, and
+   §9 (B25 Semantic Interaction Models) tables for every row naming this workflow (by its doc-side id or its
+   product-surface name).
+2. **Split each row into atomic requirements.** A cell like "queue position and assignment result" is
+   **two** requirements, not one — split on commas, "and", and slashes. A cell like "browse, list item,
+   request loan, join waitlist, claim giveaway, return item" is six. Under-splitting is how a real
+   requirement (like "queue position") gets silently absorbed into a broader claim of "yeah I covered
+   that row" without ever being checked individually.
+3. **For each atomic requirement, find and cite the exact JSON construct that satisfies it** — a field
+   name, a transition id, a `renderBinding`, a `visibility`/`readGuard` clause. "Satisfies it" means: point
+   at the literal JSON, not a description of intent. If you cannot point at real JSON, it is not satisfied.
+4. **If nothing satisfies it, do one of exactly two things — never a third:**
+   - **Add the missing construct now**, then cite it (this is the common case — most gaps found this way
+     are just an omission, fixable in the same pass).
+   - **Mark it `not_implemented`, with `reasoning` that cites a real, checked constraint** — a specific
+     validator rule, a specific closed enum (`render-bindings.md`'s `tabId` list, `archetypes.md`'s 9 real
+     families), a specific missing `formulas.md` function, or a specific `platform-services.md` ❌
+     Not-implemented row. **Reasoning that isn't grounded in one of those citations is not a valid
+     `not_implemented` reason — re-read `render-bindings.md` before asserting a persona/tab/grammar
+     restriction exists.** This is exactly the check that would have caught Chess Club's false claim:
+     "Player has no admin-tab access" is not a real grammar restriction (per-persona tab sets are
+     explicitly not in grammar v1, and the workflow's own binding already used `role: "any"` on that tab) —
+     a `reasoning` field forced to cite where that constraint supposedly lives would have failed to find a
+     citation and forced the real fix instead.
+5. **Also check `solved-patterns.md`** (fetch it the same way you fetched this file, if it's part of your
+   read set — check `00-INSTRUCTIONS.md`'s current file list) for each requirement — if its shape matches a
+   named pattern there, use that pattern's verified-correct shape directly instead of re-deriving one from
+   scratch (and instead of reinventing the "looks plausible, is wrong" shape that pattern exists to warn
+   against).
+
+**Output format** — emit this as a real JSON artifact in your response (not prose describing that you did
+this check), one object per workflow:
+
+```jsonc
+{
+  "workflow": "chess-pairing-queue",
+  "docRows": [
+    "§7 Persona And State Matrix: Receiver state column",
+    "§9 B25 Semantic Interaction Models: Result and receiver state column"
+  ],
+  "requirements": [
+    {
+      "requirement": "waiting players see queue position",
+      "docCitation": "§7 Receiver-state column: 'waiting players see queue position and assignment result'",
+      "status": "implemented",
+      "satisfiedBy": { "field": "waitingPlayerNames",
+        "mechanism": "ordered list; each player's list index is their real, visible position" }
+    },
+    {
+      "requirement": "assignment result",
+      "docCitation": "§7 Receiver-state column (same cell, second clause)",
+      "status": "implemented",
+      "satisfiedBy": { "field": "assignments",
+        "mechanism": "append-only list of {playerName, opponent, board, assignedAt} set by assign-pairing" }
+    },
+    {
+      "requirement": "real-time push notification to waiting players when a pairing is assigned",
+      "docCitation": "§9 B25 (if the doc had required this — illustrative only, this example package does not)",
+      "status": "not_implemented",
+      "reasoning": "No push-notification platform service exists (platform-services.md: 'Push notifications' — ❌ Not implemented). An in-app notificationInbox row could substitute but was out of this pass's scope; not silently dropped, named here."
+    }
+  ]
+}
+```
+
+`status` is one of exactly three values: `"implemented"`, `"not_implemented"` (with required `reasoning`),
+or `"partial"` (implemented for some but not all of the requirement's stated cases — also requires
+`reasoning` explaining the uncovered part). There is no fourth option and no way to omit a row you found in
+Step 1 of this procedure.
+
+**This table is a required part of your final response**, not an internal scratchpad — list every
+`not_implemented`/`partial` row again in your Step 12 gap report, cross-referenced by workflow and
+requirement so the two don't drift apart.
+
+---
+
 ## Step 10 — Self-check against anti-patterns
 
 Load [`guide/04-antipatterns.md`](./04-antipatterns.md) and check the emitted JSON against every

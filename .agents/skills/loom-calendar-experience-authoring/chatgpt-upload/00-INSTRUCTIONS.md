@@ -106,6 +106,18 @@ services per `14-platform-services.md`, so a hardcoded-looking hash is a hard an
     instead — the transition's own guard still restricts who can act, widening the binding's role only
     affects who can see the card. This never shows up as a validator finding — the JSON is grammar-valid
     either way.
+11. **Build the requirement traceability table (`01-authoring-procedure.md` Step 9.5) and include it in
+    your final answer as a real artifact, not a claim that you checked.** For every workflow, every atomic
+    requirement from the product doc's tables gets a row: cite the exact JSON construct that satisfies it,
+    or mark `not_implemented` with `reasoning` that cites a real, checked constraint (a validator rule, a
+    closed enum, a missing `10-formulas.md` function, a `14-platform-services.md` ❌ Not-implemented row) —
+    never a guessed persona/tab restriction. Found 2026-08-10: a package silently dropped an explicit
+    "waiting players see queue position" requirement and justified the drop with a claim ("Player has no
+    admin-tab access") that contradicted both the grammar (per-persona tab sets aren't real in grammar v1)
+    and the package's own `role: "any"` binding on that exact tab. This rule exists because that kind of
+    self-contradiction survives every other check in this file — a clean validator response, and hard
+    rules 8-10, all check the JSON's internal consistency or specific known traps, never full doc-to-JSON
+    coverage.
 
 ## Read order
 
@@ -125,6 +137,7 @@ services per `14-platform-services.md`, so a hardcoded-looking hash is a hard an
 | 12 | `16-spec-version.json` | Machine-readable version numbers, for reference only. |
 | 13 | `18-validator-action-openapi.yaml` | Not a reading reference — this is the schema for the live `validateCommunityPackage`/`buildExtensionPackage`/`checkValidatorHealth` action. If it's configured as an action for you, use it per "On validation" below rather than reading it as prose. |
 | 14 | `19-debugging-validator-responses.md` | Read this **every time** `validateCommunityPackage` returns anything other than a clean pass, before deciding what to do about it. It defines the only two shapes a real response can have, and what to do if what you're looking at doesn't match either. |
+| 15 | `20-solved-patterns.md` | Always, before Step 9.5's traceability table — recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list; several of these shapes were independently reinvented as bugs more than once before being named here. |
 
 ## Two valid RSVP shapes — pick deliberately
 
@@ -162,8 +175,8 @@ read), you have that tool, and this loop is mandatory, not optional:**
 4. Once `errorCount` is 0, read every warning too — several (e.g. `editable_fields_without_edit_guard`,
    `no_creation_path_for_editable_type`) point at real, easy-to-miss gaps (an editor that silently never
    renders, a type nothing can ever create an instance of). Fix what's clearly wrong.
-5. **Run hard rules 8, 9, and 10 explicitly — a clean validator response does NOT cover any of these, by
-   design.** The validator only checks JSON grammar; it cannot see the literal Dart string keys the
+5. **Run hard rules 8, 9, 10, and 11 explicitly — a clean validator response does NOT cover any of these,
+   by design.** The validator only checks JSON grammar; it cannot see the literal Dart string keys the
    Calendar UI reads, it has no access to your source product-doc prose, and it has no model of which
    `role` values actually resolve to a real viewer per tab — so none of the checks below will ever appear
    as a `validateCommunityPackage` finding:
@@ -177,7 +190,12 @@ read), you have that tool, and this loop is mandatory, not optional:**
    - **Hard rule 10**: for every `renderBinding` using `role: "actor"` or `"receiver"` on a tab other than
      `admin`, confirm the persona it needs to reach is always the literal instance creator. If not, switch
      it to `role: "any"`.
-   Fix anything either check surfaces before moving on.
+   - **Hard rule 11**: build the requirement traceability table — every atomic requirement from the
+     product doc, every workflow, cited against real JSON or marked `not_implemented` with grounded
+     reasoning. This is the one check that catches a *silently dropped* requirement, not a *wrongly
+     rendered* one — the other three checks above all assume the requirement was attempted; this one
+     verifies it was attempted at all.
+   Fix anything any of these four checks surfaces before moving on.
 6. **If step 4 or step 5 changed the JSON, call the validator one more time** so the response you report
    actually describes the JSON you're about to show — never show a JSON and a validator response that came
    from two different drafts.
@@ -230,9 +248,9 @@ that no real validator ran:
    referenced exists, every state is reachable, every non-terminal state has an outgoing transition,
    every `instanceData` key is declared in that type's schema, no computed field is seeded or
    effect-written, etc.).
-3. Run hard rules 8, 9, and 10 by hand exactly as described above (step 5 of the mandatory loop) — these
-   never run through the validator even when it IS available, so a missing/unreachable action changes
-   nothing about whether you need to do them.
+3. Run hard rules 8, 9, 10, and 11 by hand exactly as described above (step 5 of the mandatory loop) —
+   these never run through the validator even when it IS available, so a missing/unreachable action
+   changes nothing about whether you need to do them.
 4. State clearly, in your final answer, that this was a manual self-check, not a real validator run, and
    list anything you were genuinely unsure about.
 
@@ -243,9 +261,12 @@ that no real validator ran:
    `branding`, `seedDataFiles`, `idempotencyKey`, then the `experience` block). Give the community its own
    identity (name, tagline, accent color, personas) appropriate to whatever was actually requested — reuse
    the workflow-definition *shapes*, not the literal Riverbend Run Club content.
-2. A short **"Gaps / assumptions"** section after the JSON: anything the grammar couldn't express, anything
-   you weren't sure about, and any place you made a judgment call the requester should double-check.
-3. `buildExtensionPackage`'s `downloadUrl` (see "On validation" step 6) as a plain clickable link, plus
+2. The **requirement traceability table** (hard rule 11 / `01-authoring-procedure.md` Step 9.5) — the real
+   JSON artifact, one object per workflow, not a prose claim that you checked coverage.
+3. A short **"Gaps / assumptions"** section after the JSON: anything the grammar couldn't express, anything
+   you weren't sure about, and any place you made a judgment call the requester should double-check — this
+   should list every `not_implemented`/`partial` row from the traceability table again, cross-referenced.
+4. `buildExtensionPackage`'s `downloadUrl` (see "On validation" step 6) as a plain clickable link, plus
    both files inline as a fallback, each in its own labeled fenced code block with its exact filename —
    the real installable pair, produced only after the JSON is validator-clean. Do not claim anything is
    already installed, and do not skip this step just because the JSON alone already looks done.

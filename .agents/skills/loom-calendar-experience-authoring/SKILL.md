@@ -156,6 +156,7 @@ Same load order as `docs/references/README.md`, plus the pattern for whatever ar
 7. [`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — the source of truth for which `cardSurfaceFamily` fits a given workflow, and which values are real vs. not, for **every** workflow in scope, not just to confirm one.
 8. [`docs/references/guide/04-antipatterns.md`](../../../docs/references/guide/04-antipatterns.md) and [`guide/05-validation.md`](../../../docs/references/guide/05-validation.md) — self-check before emitting.
 9. [`docs/references/reference/theming.md`](../../../docs/references/reference/theming.md), [`platform-services.md`](../../../docs/references/reference/platform-services.md) — always check `platform-services.md`'s ❌ Not implemented table before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer — those must never be fabricated (AP-6).
+10. [`docs/references/reference/solved-patterns.md`](../../../docs/references/reference/solved-patterns.md) — recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list during Step 9.5 (below) before treating a shape as novel — several of these were independently reinvented as bugs more than once before being named here.
 
 When run inside this repo (Claude Code, Codex), read these files live from `docs/references` — they are
 kept current there. Do not read the copies under `chatgpt-upload/` for anything **except**
@@ -187,12 +188,21 @@ A provider with no tool access (the `chatgpt-upload/` test case) cannot run this
 self-checked draft only — walk it through the real validator, and the app-shell/emulator gates in
 `using-loom-to-build-an-extension`, before treating it as anything more.
 
-**Before treating a clean (`errorCount: 0`) validator pass as "done," also run the three self-checks from
-the Scope section's warning callouts above (`eventDate`/`eventTime` field naming, product-doc repeat/retry
-phrase reconciliation, and `role: "actor"`/`"receiver"` per-tab resolution) — none of these is
-JSON-grammar-shaped, so none will ever appear as a validator finding no matter how clean the pass is.**
-These are the three most recently confirmed gaps between "validator-clean" and "actually implements the
-intended experience"; a validator pass alone is necessary, not sufficient.
+**Before treating a clean (`errorCount: 0`) validator pass as "done," also run the four self-checks below —
+none of these is JSON-grammar-shaped, so none will ever appear as a validator finding no matter how clean
+the pass is. A validator pass alone is necessary, not sufficient:**
+
+1. `eventDate`/`eventTime` literal field naming (Scope section warning callout).
+2. Product-doc repeat/retry phrase reconciliation against transition `from` lists (Scope section warning
+   callout).
+3. `role: "actor"`/`"receiver"` per-tab resolution (Scope section warning callout).
+4. **The Step 9.5 requirement traceability table** (`guide/01-authoring-procedure.md`) — a mandatory output
+   artifact, not an internal check: every atomic requirement from the product doc's §3/§3.1/§5/§6/§7/§9
+   tables, for every workflow, cited against the exact JSON construct that satisfies it, or marked
+   `not_implemented` with `reasoning` grounded in a real, citable grammar/validator/platform-services
+   constraint — never a guessed persona/tab restriction. This is the check that would have caught a real
+   defect (Chess Club's `chess-pairing-queue` silently dropping "queue position" with a false justification)
+   that neither the validator nor checks 1-3 above ever would have.
 
 ## `chatgpt-upload/` — the portable export
 
