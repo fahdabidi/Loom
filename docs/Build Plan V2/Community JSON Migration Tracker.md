@@ -442,6 +442,50 @@ no-validator-access fallback. **Next step**: re-dispatch the Skill a third time 
 to test whether it now avoids D1/D4 on its own (D3 is now also caught automatically by the validator
 itself, regardless of the Skill's own behavior).
 
+**Outcome (2026-08-09) — the re-run happened, and found a NEW defect class (D5).** A third, blind
+skill-authoring dispatch against Cedar Commons HOA (sandboxed away from all 3 prior JSON artifacts and every
+judge report) was run, followed by an independent judge pass. Result: **D1 and D4 were both caught
+unassisted** — the judge independently verified every `event-rsvp` date/time field used the literal
+`eventDate`/`eventTime` names, and all 3 retry-shaped transitions (`pay`, `request-export`, `reopen`)
+correctly covered every state a real retry could come from (the Skill's own output even widened `reopen` to
+cover both `approved` and `denied`, better than the original hand-applied D4 fix which only touched one
+transition). D3 fired automatically via CJM.4's validator rule against a deliberately-unbound notification
+type, and was correctly recognized as an intentional, documented pattern rather than blindly "fixed."
+
+The judge also found a genuinely new bug class it wasn't asked to look for: **D5 — a transition can be
+guard-correct and pass CJM.4's `no_render_binding_for_reachable_state` check, and still be a dead button**,
+because a `renderBinding`'s `role` (`actor`/`receiver`) is not part of the JSON grammar at all — it's
+resolved per-tab by App Shell dispatch code, confirmed by direct source read to be sharply asymmetric:
+`admin` is the only tab where `role: "receiver"` ever resolves to anyone; `giving`/`home`/`messages`/
+`marketplace` only ever grant `"actor"` to the literal `createdByPersonaId` (never "whoever the guard is
+really about"); `calendar` grants neither role at all (only `role: "any"` renders there). The already-shipped
+canonical Cedar Commons HOA file had several real instances (e.g. a homeowner could never withdraw their own
+architectural request once submitted — the button silently disappeared; the board could never record a
+failed dues payment). Full remediation cycle, same pattern as D1/D3/D4:
+
+- **Fixed the canonical file** additively (role widened to `"any"`, a `states` list expanded, or one binding
+  split into two — no guard/transition/persona-list logic touched). Re-validated clean throughout. Commit
+  `8cf2b971`.
+- **Documented the mechanism** in `render-bindings.md`'s new "⚠️ `role: "actor"`/`"receiver"` resolution"
+  normative table, and added it to the Skill as Hard Rule 10 (mandatory self-check step, since — like D1/D4
+  — it can never appear as a validator finding). Commit `fcbcf235`.
+- **Ticket CJM.5** (`data/v3_ticket_cjm5_validator_dead_role_binding.md`) — a new validator rule,
+  `dead_role_binding`, catching the two *purely structural* (no guard analysis needed, zero false positives
+  given current dispatch wiring) shapes of this bug: `role: "receiver"` on any non-`admin` tab without
+  `audienceMemberField`, and any non-`"any"` role on `calendar`. (The third, harder pattern — `"actor"`
+  resolving to the wrong persona when the guard targets a non-creator field — isn't statically decidable from
+  the binding alone and is Skill-self-check-only, not a validator rule.) Same vsock-blocked-dispatch pattern
+  as CJM.4: the Codex dispatch landed real code but its own verification was blocked; independent
+  verification found the new rule correctly firing as *real, previously-invisible* bugs in 6 legacy Phase 5
+  fixtures (Garden Club, Camera Club, Book Club, Youth Soccer, Mosque, HOA-dues) — extended
+  `_knownAffordanceGapTypes`/inline tolerances the same way CJM.4 required, fixing each fixture individually
+  deferred (tracked here, not in this ticket). Full suite: 160 pass, 0 fail. Commits `8e5c7feb` (rule) /
+  `69d8a09a` (test tolerance), pushed.
+
+**This closes the D1-D5 loop for Cedar Commons HOA specifically as far as this session's remediation cycle
+goes.** Remaining before the community row in §4 can close: the §6 live UX Judge walkthrough (never run
+against the merged/fixed file, only the original pre-merge hand-authored version).
+
 ## 3. Product-doc expansion tasks (locked: expand only, never remove)
 
 Each is a real doc edit, not just a decision — the doc file itself must gain the sections below before that
@@ -471,7 +515,7 @@ reasoning, kept as durable doc, not just chat explanation).
 
 | # | Community | Doc reconciliation | JSON authoring | Known code gaps | UX Judge walkthrough |
 |---|---|---|---|---|---|
-| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 3 new defects the judge found (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard) fixed before merge; D3 is now also caught automatically by CJM.4's new validator rule; D1/D4 taught to the Skill itself (Hard Rules 8-9, see §1c/CJM.4) — **pending: 3rd skill re-dispatch against this community to confirm it now avoids D1/D4 unassisted.** | CJM.2 (done, see §1a); CJM.4 (done, 2026-08-09 — see §2); §1a #4 `role:"actor"`-vs-payer design question resurfaces if a board-created dues/decision workflow needs a non-creator actor — not hit by this file's own transitions, still worth resolving before Garden Club (near-identical shape) | **Must re-run** — §6's live UX Judge walkthrough was only ever run against the pre-merge hand-authored version (2026-08-09 smoke test). Required before this row can close. |
+| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 5 defects found across two judge passes (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard, D5 dead role/tab bindings) all fixed; D3 and D5's purely-structural shapes now caught automatically by validator rules (CJM.4, CJM.5); D1/D4/D5 all taught to the Skill itself (Hard Rules 8-10) — **confirmed 2026-08-09**: a 3rd, blind skill re-dispatch avoided D1 and D4 completely unassisted (independently judged). | CJM.2 (done, see §1a); CJM.4 (done); CJM.5 (done, 2026-08-09 — see §2); the `role:"actor"`-vs-payer design question flagged in §1a #4 was exactly D5 — now resolved (fix + validator rule + Skill self-check), same shape worth re-checking on Garden Club given the near-identical dues-payment pattern | **Must re-run** — §6's live UX Judge walkthrough was only ever run against the pre-merge hand-authored version (2026-08-09 smoke test), before ANY of D1-D5's fixes landed in the canonical file. Required before this row can close. |
 | 2 | Garden Club | Locked per §3 (keep tool-loan + volunteer-shift) | Not started | CJM.1 (tool-loan reuse of `equipment-loan`); volunteer-shift archetype fit not yet deep-dived | Not run |
 | 3 | Neighborhood Book Club | Locked per §3 (reconcile `book-library-item`/`book-shared-library`) | Not started | CJM.3 (citation list on `book-search-ai-digest`) | Not run |
 | 4 | Riverside Youth Soccer | Locked per §3 (add `soccer-team-discussion` to doc) | Not started | CJM.2 (`soccer-waiver-document`) | Not run |
