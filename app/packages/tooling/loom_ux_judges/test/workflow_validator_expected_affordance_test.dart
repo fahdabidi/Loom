@@ -528,4 +528,183 @@ void main() {
       expect(_hasWarning(report, 'no_destructive_exit_for_managed_type'), isFalse);
     });
   });
+
+  group('dead_role_binding', () {
+    test(
+      'fires for receiver role on non-admin tab without audienceMemberField',
+      () {
+        final report = _validate({
+          'event': _machine(
+            'event',
+            states: {'open': {'label': 'Open'}},
+            transitions: [
+              {
+                'id': 'noop',
+                'label': 'Noop',
+                'from': ['open'],
+                'to': null,
+              },
+            ],
+            visibility: {'default': 'public'},
+            renderBindings: [
+              {
+                'states': ['open'],
+                'role': 'receiver',
+                'tabId': 'messages',
+                'cardSurfaceFamily': 'event-rsvp',
+                'bindingKind': 'summary',
+              },
+            ],
+          ),
+        });
+
+        expect(
+          report.warnings.where(
+            (finding) => finding.type == 'dead_role_binding',
+          ),
+          hasLength(1),
+        );
+      },
+    );
+
+    test(
+      'does not fire for receiver role on non-admin tab with audienceMemberField',
+      () {
+        final report = _validate({
+          'event': _machine(
+            'event',
+            states: {'open': {'label': 'Open'}},
+            transitions: [
+              {
+                'id': 'noop',
+                'label': 'Noop',
+                'from': ['open'],
+                'to': null,
+              },
+            ],
+            visibility: {'default': 'public'},
+            renderBindings: [
+              {
+                'states': ['open'],
+                'role': 'receiver',
+                'tabId': 'messages',
+                'cardSurfaceFamily': 'event-rsvp',
+                'bindingKind': 'summary',
+                'audienceMemberField': 'recipientPersonaId',
+              },
+            ],
+          ),
+        });
+
+        expect(
+          report.warnings.where(
+            (finding) => finding.type == 'dead_role_binding',
+          ),
+          isEmpty,
+        );
+      },
+    );
+
+    test('does not fire for receiver role on admin tab', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {'open': {'label': 'Open'}},
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+          visibility: {'default': 'public'},
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'receiver',
+              'tabId': 'admin',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+            },
+          ],
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (finding) => finding.type == 'dead_role_binding',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('fires for actor role on calendar tab', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {'open': {'label': 'Open'}},
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+          visibility: {'default': 'public'},
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'actor',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+            },
+          ],
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (finding) => finding.type == 'dead_role_binding',
+        ),
+        hasLength(1),
+      );
+    });
+
+    test('does not fire for any role on calendar tab', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {'open': {'label': 'Open'}},
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+          visibility: {'default': 'public'},
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+            },
+          ],
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (finding) => finding.type == 'dead_role_binding',
+        ),
+        isEmpty,
+      );
+    });
+  });
 }

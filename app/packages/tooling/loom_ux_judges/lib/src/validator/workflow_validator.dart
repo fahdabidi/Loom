@@ -138,6 +138,7 @@ class WorkflowValidator {
       _checkBindingCap(machine, findings);
       _checkNoReadVisibilityDeclared(machine, findings);
       _checkNoRenderBindingForReachableState(machine, findings);
+      _checkDeadRoleBinding(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
       _checkEditableFieldsWithoutEditGuard(machine, findings);
       _checkNoDestructiveExitForManagedType(machine, findings);
@@ -531,6 +532,57 @@ class WorkflowValidator {
           isWarning: true,
         ),
       );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Role resolution shape checks: some role/tab combinations can never render.
+  // ---------------------------------------------------------------------------
+  void _checkDeadRoleBinding(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      final location =
+          '${machine.workflowType}/renderBindings/${binding.states.join(",")}';
+
+      if (binding.role == 'receiver' &&
+          binding.tabId != 'admin' &&
+          binding.audienceMemberField == null) {
+        findings.add(
+          ValidationFinding(
+            type: 'dead_role_binding',
+            message:
+                'role: "receiver" never resolves on tab "${binding.tabId}" '
+                '(only "admin" ever grants the receiver role, per '
+                'render-bindings.md), so this binding can never render for '
+                'anyone; use role: "any" instead, or move it to admin, or '
+                'add audienceMemberField if this is meant to be a '
+                'dynamic-audience notification.',
+            location: '$location/role',
+            isWarning: true,
+          ),
+        );
+        continue;
+      }
+
+      if (binding.tabId == 'calendar' &&
+          binding.role != 'any' &&
+          !(binding.role == 'receiver' &&
+            binding.audienceMemberField != null)) {
+        findings.add(
+          ValidationFinding(
+            type: 'dead_role_binding',
+            message:
+                'the `calendar` tab passes no role-resolution callback, so only '
+                'role: "any" (or role: "receiver" with a working '
+                'audienceMemberField) can ever render there; role: "${binding.role}" '
+                'will never resolve for anyone on this tab.',
+            location: '$location/role',
+            isWarning: true,
+          ),
+        );
+      }
     }
   }
 
