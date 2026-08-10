@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
 last_verified: 2026-08-09
 audience: llm-agent
@@ -116,6 +116,7 @@ seriously rather than dismissing them as noise.
 | `no_creation_path_for_editable_type` (warning) | A workflow type has `formEntry` fields but nothing anywhere in the package (`renderBindings[].actions[].kind: "create"`, `createInstance`, or `generateRecurringInstances`) ever creates an instance of it. Every instance that will ever exist is whatever was seeded (AP-13). | Add a `kind: "create"` action to one of the type's `renderBindings` (see `07-actions-and-fabs.md`), or have another type's effect create it, or explicitly note in your gaps section that instances are deliberately provisioned only outside this package. |
 | `no_destructive_exit_for_managed_type` (warning) | A primary-bound type with an `editGuard` declared somewhere (i.e. clearly meant to be actively managed) has zero `tone: "destructive"` transition anywhere. | Add a cancel/withdraw/delete-shaped transition with `"tone": "destructive"`, or confirm every instance of this type is genuinely meant to be permanent once created. |
 | `no_read_visibility_declared` (warning) | A workflow type omits the workflow-level `visibility` block, so its read policy is implicit even though the compatibility default remains `public`. | Add `"visibility": {"default": "public"}` (or `"default": "membersOnly"` / `"default": "guarded"` with a sibling `"readGuard"`) to make the community's intended read policy explicit. |
+| `no_render_binding_for_reachable_state` (warning) | A state is reachable via a transition path but no `renderBinding`'s `states` list covers it, so an instance sitting there renders on no tab. | Add a `renderBinding` (often `"bindingKind": "summary"`) whose `"states"` includes it, or confirm the state is intentionally never surfaced. |
 
 ---
 

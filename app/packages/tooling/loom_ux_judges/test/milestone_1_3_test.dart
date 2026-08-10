@@ -157,15 +157,16 @@ _FixtureBundle _loadFixtureBundle(String path) {
   return _FixtureBundle(workflows: workflows, personas: personas);
 }
 
-/// The four "expected affordance" warning types added alongside the
-/// ChatGPT-authored Apartment Events review (Skill test, 2026-08-03):
-/// editable_fields_without_edit_guard, no_creation_path_for_editable_type,
-/// no_destructive_exit_for_managed_type, and no_read_visibility_declared.
+/// The five "expected affordance" warning types added alongside the
+/// ChatGPT-authored Apartment Events review (Skill test, 2026-08-03) and the
+/// CJM.4 render-binding-coverage check (2026-08-09): editable_fields_without_edit_guard,
+/// no_creation_path_for_editable_type, no_destructive_exit_for_managed_type,
+/// no_read_visibility_declared, and no_render_binding_for_reachable_state.
 /// These are real, previously
 /// invisible create/edit/cancel-affordance gaps in several of this file's
 /// legacy Phase 5 migration fixtures -- not a validator regression. Fixing
 /// each fixture is tracked separately; these tests should keep failing on
-/// any OTHER new finding type, so this only tolerates the four known ones.
+/// any OTHER new finding type, so this only tolerates the five known ones.
 void _expectCleanExceptKnownAffordanceGaps(ValidationReport report) {
   expect(report.errors, isEmpty);
   final unexpected = report.warnings
@@ -185,6 +186,7 @@ const _knownAffordanceGapTypes = {
   'no_creation_path_for_editable_type',
   'no_destructive_exit_for_managed_type',
   'no_read_visibility_declared',
+  'no_render_binding_for_reachable_state',
 };
 
 void main() {

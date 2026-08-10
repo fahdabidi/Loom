@@ -464,6 +464,13 @@ const _hikeClubPackage = {
               },
             ],
           },
+          {
+            'states': ['cancelled'],
+            'role': 'any',
+            'tabId': 'calendar',
+            'cardSurfaceFamily': 'event-rsvp',
+            'bindingKind': 'summary',
+          },
         ],
         'instanceDataSchema': {
           'title': {
@@ -528,6 +535,15 @@ const _noEditGuardOrCreatePackage = {
             'label': 'Noop',
             'from': ['open'],
             'to': null,
+          },
+        ],
+        'renderBindings': [
+          {
+            'states': ['open'],
+            'role': 'any',
+            'tabId': 'home',
+            'cardSurfaceFamily': 'formEntry',
+            'bindingKind': 'primary',
           },
         ],
         'instanceDataSchema': {

@@ -137,6 +137,7 @@ class WorkflowValidator {
       _checkMissingLabels(machine, findings);
       _checkBindingCap(machine, findings);
       _checkNoReadVisibilityDeclared(machine, findings);
+      _checkNoRenderBindingForReachableState(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
       _checkEditableFieldsWithoutEditGuard(machine, findings);
       _checkNoDestructiveExitForManagedType(machine, findings);
@@ -483,6 +484,53 @@ class WorkflowValidator {
           ),
         );
       }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reachability + render coverage (§7c heuristic): every state reachable via
+  // transitions should be listed in at least one renderBinding's `states`.
+  // ---------------------------------------------------------------------------
+  void _checkNoRenderBindingForReachableState(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final reachable = <String>{};
+    final queue = Queue<String>.from([machine.initialState]);
+
+    while (queue.isNotEmpty) {
+      final current = queue.removeFirst();
+      if (!reachable.add(current)) continue; // already visited
+
+      for (final t in machine.transitionsFrom(current)) {
+        if (t.to != null && !reachable.contains(t.to)) {
+          queue.add(t.to!);
+        }
+      }
+    }
+
+    final boundStates = <String>{};
+    for (final binding in machine.renderBindings) {
+      boundStates.addAll(binding.states);
+    }
+
+    for (final stateName in machine.states.keys) {
+      if (!reachable.contains(stateName)) continue;
+      if (boundStates.contains(stateName)) continue;
+      findings.add(
+        ValidationFinding(
+          type: 'no_render_binding_for_reachable_state',
+          message:
+              'State "$stateName" (${machine.states[stateName]!.label}) is '
+              'reachable via a transition path but no renderBinding\'s "states" '
+              'list includes it, so an instance sitting in this state renders '
+              'on no tab and is invisible in the UI. Add a renderBinding '
+              '(often "bindingKind": "summary") whose "states" list includes '
+              'it, or confirm this state is intentionally never surfaced.',
+          location: '${machine.workflowType}/states/$stateName',
+          isWarning: true,
+        ),
+      );
     }
   }
 

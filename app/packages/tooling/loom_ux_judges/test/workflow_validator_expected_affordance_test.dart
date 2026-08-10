@@ -31,6 +31,99 @@ bool _hasWarning(ValidationReport report, String type) =>
     report.warnings.any((f) => f.type == type);
 
 void main() {
+  group('no_render_binding_for_reachable_state', () {
+    test('fires for a reachable state not covered by renderBinding states', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+            'pending-review': {'label': 'Pending Review'},
+          },
+          transitions: [
+            {
+              'id': 'submit',
+              'label': 'Submit',
+              'from': ['open'],
+              'to': 'pending-review',
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+            },
+          ],
+          visibility: {'default': 'public'},
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (finding) =>
+              finding.type == 'no_render_binding_for_reachable_state',
+        ),
+        hasLength(1),
+      );
+      expect(
+        report.warnings.any(
+          (finding) =>
+              finding.type == 'no_render_binding_for_reachable_state' &&
+              finding.location == 'event/states/pending-review',
+        ),
+        isTrue,
+      );
+    });
+
+    test('does not fire for an unreachable state lacking renderBinding coverage', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+            'under-review': {'label': 'Under Review'},
+            'orphan': {'label': 'Orphan', 'isTerminal': true},
+          },
+          transitions: [
+            {
+              'id': 'submit',
+              'label': 'Submit',
+              'from': ['open'],
+              'to': 'under-review',
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['open', 'under-review'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+            },
+          ],
+          visibility: {'default': 'public'},
+        ),
+      });
+
+      expect(report.errors, isNotEmpty, reason: 'unreachable_state should remain');
+      expect(
+        report.errors.any(
+          (finding) => finding.type == 'unreachable_state',
+        ),
+        isTrue,
+      );
+      expect(
+        report.warnings.any(
+          (finding) => finding.type == 'no_render_binding_for_reachable_state',
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('no_read_visibility_declared', () {
     test('fires exactly once when a workflow omits visibility', () {
       final report = _validate({
@@ -45,6 +138,15 @@ void main() {
               'label': 'Noop',
               'from': ['open'],
               'to': null,
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
             },
           ],
         ),
@@ -73,6 +175,15 @@ void main() {
               'label': 'Noop',
               'from': ['open'],
               'to': null,
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
             },
           ],
           visibility: {'default': 'public'},
