@@ -471,7 +471,8 @@ class _EquipmentLoanArchetypeCardState
     return null;
   }
 
-  bool get _isGiveaway => _instance.workflowType == 'equipment-giveaway';
+  bool get _isGiveaway =>
+      widget.resolved.machine.transitions.any((transition) => transition.id == 'claim');
 
   LoomWorkflowTransition? get _contextualBorrow =>
       _isGiveaway ? null : _action('borrow');
