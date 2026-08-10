@@ -99,3 +99,31 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | partially | yes | See notes below. | `camera-validation-report` workflow added (admin review + home summary); `send-reminder`/`notification` dead-code path removed and replaced with a member-owned `set-reminder` action on `photo-walk-response`; `delist` guard now requires `availabilityState == "available"`. | fixed |
+
+> **Note on the Validation/Completion report rows (§3, §5) — 2026-08-10:** implemented as
+> `camera-validation-report` (organizer-facing primary binding on `admin`, member-visible summary binding
+> on `home`), carrying `requestedWorkflows`/`implementedWorkflows` (both real, static lists of this
+> package's own three workflow type ids — honestly derivable at authoring time, not fabricated) plus an
+> organizer `review-completion` action. Deliberately does **not** carry "package paths" — that field would
+> require a real build/artifact-generation backend service to compute (AP-6: never fabricate a value a real
+> backend should compute), which doesn't exist in this engine. This is a scoped omission, not a silent one.
+
+> **Note on the Critique tab (§3.1) — 2026-08-10:** the real `tabId` enum
+> (`docs/references/reference/render-bindings.md`) has no `Critique` value — only
+> `admin`/`calendar`/`giving`/`home`/`marketplace`/`messages` exist. `critique-submission` is bound to
+> `home` for both personas (actor primary + summary; receiver queue on `admin`) rather than a dedicated
+> tab. This is a structural engine constraint shared by every community that wants a custom-named tab, not
+> a Camera Club-specific gap.
+
+> **Note on "add reminder" (§3, §5, §6, B25 Semantic Interaction Models) — 2026-08-10:** formulas can only
+> reference fields on their own workflow's `instanceDataSchema` (`docs/references/reference/formulas.md`) —
+> there is no cross-instance field lookup. Because `photo-walk-rsvp` (the shared event) and
+> `photo-walk-response` (the per-member RSVP row) are separate instances, a per-member reminder cannot
+> compute an absolute `reminderAt` from the event's `eventDate`/`eventTime` the way the single-instance
+> Cedar Commons HOA reservation pattern does. Implemented instead as a member-owned `set-reminder` action
+> on their own `photo-walk-response` row, storing `reminderOffsetHours`/`reminderSetAt` honestly as a
+> stated preference (no fabricated absolute time). The previous `send-reminder` transition on
+> `photo-walk-response` is removed — it was unconditionally hidden by the App Shell's
+> `_hiddenAutomaticActionIds` set (`part28_engine_native_calendar_surface.dart:346`, matches any
+> transition literally named `send-reminder`), so it was permanently dead code even before this fix.
