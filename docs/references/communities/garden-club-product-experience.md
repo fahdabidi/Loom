@@ -89,6 +89,13 @@ values, tool/item names, pickup windows, loan/giveaway mode, and before/after RS
 Use garden-specific hierarchy, seasonal accents, readable event/detail surfaces, and form sections with
 clear labels. Avoid repeated same-shape cards as the whole experience.
 
+> **Correction, 2026-08-10** (skill-authoring judge pass 1): the `plant-exchange-submission` row directly
+> below previously required `claim plant`/`reserve plant`/`mark claimed` actions — copy-pasted marketplace
+> claim/reserve language that contradicted §3/§5/§6/§7's own, more detailed draft→submitted→reviewed
+> submission-for-review shape (this workflow has never had a claim/counterparty-response concept anywhere
+> else in this doc). Corrected below to match the rest of the doc; no claim/reserve mechanic needs to exist
+> in the engine-native JSON for this workflow.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
@@ -96,7 +103,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
 | --- | --- | --- | --- | --- | --- |
 | garden-event-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| plant-exchange-submission | member | Member evaluates a concrete plant exchange item with owner, pickup details, availability, and claim/cancel paths. | claim plant, request plant, offer plant, reserve plant | cancel claim, edit offer, mark claimed, mark unavailable | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| plant-exchange-submission | member | Member submits a concrete plant offer or request with variety, notes, and pickup window, then a coordinator reviews it for handoff. | submit exchange, offer plant, request plant | edit draft, withdraw submission | Fresh screenshots must show the submitted item, review/handoff state, coordinator receiver state, and the submitter's own status after review. |
 | garden-tool-loan-giveaway | member | Member browses available garden tools/items, chooses loan or giveaway, sees current holder/queue, reviews owner/pickup/return or transfer terms, and can list/edit/delist their own item. | browse items, list item, request loan, join waitlist, claim giveaway, schedule pickup | leave queue, cancel loan, edit listing, pause/delist listing, mark damaged/lost, return item | Fresh screenshots must show browse/list views, loan/giveaway mode, owner/current-holder privacy, queue position, custody/condition state, borrower/claim state, pickup/return or ownership-transfer result. |
 | garden-export-custom-schemas | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
@@ -118,3 +125,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
 | B25 pass 17 | yes | yes | Tightened Garden export from generic evidence to a package-review surface with scope, redaction, checksum, destination, rollback/change-scope, and download status. | Render export review tile/action surface and recapture full B25 evidence. | in progress |
+| Skill-authoring judge pass 1 (2026-08-10) | yes | yes | Corrected `plant-exchange-submission`'s B25 semantic-model row (see note above §9). | `garden-tool-loan`/`garden-tool-giveaway` `delist` guards now require owner + `availabilityState == "available"` (was reachable while on loan/claimed, stranding custody); `request-loan`/`claim`/`sign-up` now create a real `garden-notification` instance (doc's §6 "notifications" requirement was previously unwired for these 3 workflows). | fixed |
