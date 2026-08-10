@@ -178,4 +178,5 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes | None. | `mosque-donor-visibility` had no creation path at all — fixed by wiring `mosque-donation-payment`'s `pay` transition to create a real donor-visibility row per donation, rather than relying on seed data standing in for a missing create affordance. | fixed |
 | B25 pass 17 | yes | yes | Tightened Masjid announcement, iftar RSVP, and volunteer signup surfaces with message body, sender, audience, delivery time, event details, shift role, protected contact, and receiver state. | Render Masjid-specific tiles/action surfaces and recapture full B25 evidence. | in progress |
