@@ -63,6 +63,13 @@ guardian or coach needs to take.
 | soccer-waiver-document | guardian | Waiver document detail | waiver title/version, embedded/external open, acknowledgement, access state | Documents/external documents/audit | B14/B25 |
 | soccer-reminder-notification | guardian | Reminder center | audience/channel/sent state | Notifications/events | B14/B25 |
 | soccer-export-metadata | owner | Export status | redaction/checksum/scope | Export/documents | B14/B25 |
+| soccer-team-discussion | guardian/coach | Team messages thread | thread title, last message, reply/archive state | Discussion/messages | B14/B25 |
+
+> **Added 2026-08-10** (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3): `soccer-team-discussion` is real and implemented (`open → replied → archived`, guardian/
+> coach can reply, coach-only archive, `part19_youth_soccer_engine.dart:2617-2711`, `discussionThread`
+> archetype on the `messages` tab) but was missing from this doc entirely — this row and the matching §7 row
+> below close that gap, per the tracker's standing expand-only rule.
 
 ## 7. Persona And State Matrix
 
@@ -76,6 +83,7 @@ guardian or coach needs to take.
 | soccer-waiver-document | guardian opens and acknowledges a waiver/policy | coach sees acknowledgement status without protected details | waiver version and acknowledgement history readable | acknowledge disabled after latest version accepted | unauthorized role cannot open protected player documents |
 | soccer-reminder-notification | coach/admin sends reminder | guardian receives reminder in inbox | reminder history readable | send disabled without audience/body | non-coach cannot send team reminder |
 | soccer-export-metadata | owner exports team metadata | receiving provider sees transfer status | export summary readable | export disabled without scope/redaction preview | protected youth fields remain redacted |
+| soccer-team-discussion | guardian/coach replies to a thread | guardian/coach see reply/archive state | thread and reply history readable by any team member | reply disabled once archived | non-team member cannot view or post to team threads |
 
 ## 8. Content And Seed Data Requirements
 

@@ -1,5 +1,34 @@
 # Chess Club Product Experience
 
+> **Correction, 2026-08-10 (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3):** every row below naming `chess-local-install-open` or `chess-route-home` describes a
+> generic "package installed / home route opened" concept that was **never actually implemented as a real
+> workflow** — confirmed by direct source read: no `LoomWorkflowDefinition` anywhere in the codebase (not
+> Chess Club's own JSON, not any other community's) is ever constructed with either id; the two `case`
+> branches referencing them (`_displayTitleFor` in `part08_garden_and_helpers.dart:582`, `_chessPolicy` in
+> `part15_evidence_catalog.dart:1658-1659`) are unreachable dead code. **Do not author engine-native JSON for
+> either of these** — there is no behavior to migrate. Left in place below per this tracker's standing
+> "expand-only, never remove" rule, but should be read as historical/aspirational, not a real workflow
+> requirement. Chess Club's real, implemented workflow count is **8**: the 2 this doc already covers below
+> (`chess-match-meetup`, `chess-match-result`) plus 6 more this doc never documented at all
+> (`chess-club-night`, `chess-discussion-thread`, `chess-export-package`, `chess-pairing-queue`,
+> `chess-rankings-table`, `chess-rules-documents` — all confirmed real, with real `states`/`transitions`, in
+> `part02_tab_shell.dart:10840-11823`). Add these 6 as real workflow rows to every table below before this
+> doc is used as an authoring source, following the existing row format exactly.
+>
+> **Two real bugs found in the current implementation, confirmed by direct source read — do not carry
+> either forward when authoring JSON (do not fix the Dart source as part of this note, just don't repeat the
+> mistake in the new JSON):**
+> - `chess-export-package`'s `generate-export` effect hardcodes `"checksum": "sha256-chess-2026"`
+>   (`part02_tab_shell.dart:11547-11550`) — a fabricated, non-computed value. Checksum/hash generation is a
+>   `❌ Not implemented` platform service per `docs/references/reference/platform-services.md` — this is the
+>   same AP-6 violation already found and fixed in Cedar Commons HOA's `hoa-export-evidence` workflow. Do not
+>   fabricate a checksum field in the new JSON.
+> - `chess-match-result`'s `submit-result`/`correct-result` transitions (`part02_tab_shell.dart:11130-11168`)
+>   set a `rankingRows` field to a hardcoded literal string (`"Maya Patel:1496:+16"`), disconnected from the
+>   actually-submitted score and never actually written to `chess-rankings-table`. Do not carry this fake
+>   ranking-delta value forward.
+
 ## 1. Community Identity And Promise
 
 | Field | Value |
