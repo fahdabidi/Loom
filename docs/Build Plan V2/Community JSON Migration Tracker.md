@@ -32,6 +32,31 @@ check existing archetype capability first, every time (`docs/references/archetyp
 🟡 GENERIC via `GenericWorkflowInstanceCard`: `paymentCheckout`, `approvalQueueItem`, `formEntry`,
 `discussionThread`, `statusTimeline`, `notificationInbox`; the rest are ❌ NOT REAL — do not target them).
 
+### 0.1 Two cross-cutting structural findings (confirmed across nearly every community doc)
+
+Found while reconciling individual communities' docs this migration effort, recorded here once instead of
+per-community since both recur so consistently:
+
+1. **The closed `tabId` enum blocks part of almost every community's documented tab architecture.** The
+   real, engine-recognized `tabId` values are exactly 6: `admin`, `calendar`, `giving`, `home`,
+   `marketplace`, `messages` (confirmed `docs/references/reference/render-bindings.md:261`). Every
+   community doc reconciled so far that requests a custom-named tab has had to be flagged and remapped:
+   Cedar Commons HOA, Member Social Space (`Connections`/`Invites`), Ad-Free Community (`Settlement`),
+   Data Portability Community (`Export`/`Transfer`/`Documents`/`Audit`), Chess Club (its legacy
+   implementation literally used `matches`/`rankings`/`documents` as `tabId` values — none real), and
+   Neighborhood Book Club (`library`). Whoever authors each community's JSON must remap onto the real 6,
+   generally `home`/`admin`/`messages` as the catch-alls. Not tracked as a spec gap to fix — this is a
+   deliberate constraint of the current tab model — but real enough, and recurring enough, to record here so
+   it stops being independently rediscovered per community.
+2. **The B25 Card Surface Registry Mapping table present in every community doc links to a superseded
+   vocabulary.** Its `Card surface family` column links to `docs/CardSurfaces/*.md` files describing
+   non-real family names (`portability`, `ad`, `social`, `documentLibrary`, etc.) that do not correspond to
+   the 9 real archetypes (`docs/references/archetypes/README.md`). Confirmed present in every community doc
+   reconciled so far: Cedar Commons HOA, Camera Club, Garden Club, Chess Club, Neighborhood Book Club,
+   Riverside Youth Soccer, Masjid Nur, Member Social Space, Ad-Free Community, Data Portability Community —
+   i.e. all 10. Treat that table's `Card surface family` column as historical/aspirational context only when
+   authoring JSON; the real archetype choice always comes from the 9-item list in `archetypes/README.md`.
+
 **Process change, locked 2026-08-09 (see §1b): "author JSON" no longer means hand-authoring it directly in
 this session.** It means dispatching the `loom-calendar-experience-authoring` Skill (sandboxed, spec-only)
 against the community's product doc, then judging its output — both for the JSON's own quality and for
@@ -414,13 +439,19 @@ than crash, OR reject at validator level if `openMode` isn't `"external"` — Im
 state which one in STATUS). **Unblocks:** Cedar Commons HOA (`hoa-member-document`), Riverside Youth Soccer
 (`soccer-waiver-document`).
 
-### Ticket CJM.3 — citation-list rendering (`itemSchema` on `type: "list"`)
+### Ticket CJM.3 — citation-list rendering (`itemSchema` on `type: "list"`) (done, 2026-08-10)
 
-**Files:** same shared field renderer as CJM.2 (dispatch together or immediately sequential — CJM.3 extends
-the exact code CJM.2 adds). **Scope:** render per the locked contract in §1.2 — each list item renders its
-non-`url` members as text and its `url`-typed member as a tappable link per that member's own `openMode`.
-**Depends on:** CJM.2 landing first (reuses its tap-to-open primitive). **Unblocks:** Neighborhood Book
-Club (`book-search-ai-digest`), Masjid Nur (`mosque-search-ai-citation`).
+**Files:** `workflow_models.dart` (`InstanceDataField.itemSchema`, recursive reuse of the same model),
+`part18_marketplace_rendering.dart` (`WorkflowFactPillFieldSchema.itemSchema`, new `type == 'list'` render
+branch reusing CJM.2's `url_launcher` tap-to-open primitive), `part26_generic_instance_card.dart` (bridge
+wiring). Independent verification found and fixed 3 real bugs the vsock-blocked dispatch's own verification
+never caught: a missing `context` parameter on `_factWidget` (compile error), a missing
+`api.registerDefinition` call in the dispatch's own new test, and — the significant one — a genuine design
+conflict where the pre-existing generic list-of-maps inference (`_isNestedListField`) unconditionally
+intercepted every `type:"list"` field before the new `itemSchema`-aware path could ever run, making the
+whole feature dead code for its intended shape; fixed with a one-line precedence rule
+(`itemSchema` present → skip the generic inference). Full suite green. **Unblocks:** Neighborhood Book Club
+(`book-search-ai-digest`), Masjid Nur (`mosque-search-ai-citation`).
 
 ### Ticket CJM.5 — `event-rsvp` detail card hardcodes `'event-rsvp'`/`'event-rsvp-response'` instead of reading `responseTable` (found 2026-08-10, under investigation)
 
