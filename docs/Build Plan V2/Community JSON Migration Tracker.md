@@ -384,7 +384,13 @@ All three approved by the user 2026-08-09 ("Approving all the others (1,2,4)"). 
 `## Do not do`, `## Required verification`, `## Git safety reminder`, `## Commit`, `## Required response
 format`) — see §5 for the exact dispatch mechanics.
 
-### Ticket CJM.1 — `equipment-loan` giveaway generalization
+### Ticket CJM.1 — `equipment-loan` giveaway generalization (done, 2026-08-10)
+
+`_isGiveaway` now derives from whether the workflow declares a `claim` transition
+(`widget.resolved.machine.transitions.any((t) => t.id == 'claim')`) instead of matching the literal string
+`'equipment-giveaway'`. Verified zero behavior change against the real Tabletop Club fixture (its
+`equipment-giveaway` type has a `claim` transition, its `equipment-loan` type doesn't). Unblocks Garden
+Club's `garden-tool-loan-giveaway`. Commit `b34211e8`, pushed.
 
 **File:** `app/packages/core/loom_communities_app_shell/lib/src/part36_engine_native_marketplace_surface.dart:369-696`.
 **Gap:** `EquipmentLoanArchetypeCard` is otherwise fully generic (fact-pills + button row driven by
