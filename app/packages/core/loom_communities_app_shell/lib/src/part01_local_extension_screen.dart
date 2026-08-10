@@ -1052,8 +1052,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             experience: experience,
             signedInAccountId: signedInAccountId,
             onSignIn: () {
-              Navigator.of(context).pop();
-              if (mounted) setState(() {});
+              unawaited(
+                () async {
+                  await _refreshCommunityEntryGate(rebuildAuthScreen: true);
+                  if (!mounted || !context.mounted) return;
+                  Navigator.of(context).pop();
+                }(),
+              );
             },
           ),
         ),

@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+
+const _communityId = 'authz-p8-community';
+const _extensionId = 'authz-p8-extension';
+const _openPersonaId = 'open-member';
+const _boardPersonaId = 'hoa-board';
+const _adminWorkflowInstanceId = 'authz-p8-admin-instance';
+const _openAccountId = 'open-member-01';
+const _openAccountDisplayName = 'Open User';
+const _freshBoardAccountDisplayName = 'Board Created In-Flow';
+const _existingBoardAccountDisplayName = 'Board Existing';
+
+LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
+  communityId: _communityId,
+  displayName: 'AuthZ.P8 regression community',
+  extensionId: _extensionId,
+  logoAssetId: null,
+  cardImageAssetId: null,
+  heroImageAssetId: null,
+  accentColor: '#246B62',
+  experienceConfiguration: <String, Object?>{
+    'experienceSchemaVersion': 2,
+    'workflowGrammarVersion': 1,
+    'tagline': 'AuthZ.P8 second-account sync regression',
+    'personas': <Object?>[
+      <String, Object?>{
+        'personaId': _openPersonaId,
+        'label': 'Member',
+        'roleLabel': 'Member',
+        'description': 'Open member.',
+        'accessMode': 'open',
+      },
+      <String, Object?>{
+        'personaId': _boardPersonaId,
+        'label': 'Board',
+        'roleLabel': 'Board',
+        'description': 'Board-level manager.',
+        'accessMode': 'open',
+      },
+    ],
+    'workflowDefinitions': <String, Object?>{
+      'admin-review': <String, Object?>{
+        'initialState': 'pending',
+        'states': <String, Object?>{
+          'pending': <String, Object?>{'label': 'Pending'},
+          'approved': <String, Object?>{'label': 'Approved'},
+        },
+        'transitions': <Object?>[
+          <String, Object?>{
+            'id': 'approve',
+            'label': 'Approve',
+            'from': <String>['pending'],
+            'to': 'approved',
+            'guard': <String, Object?>{
+              'allowedPersonaIds': <String>[_boardPersonaId],
+            },
+          },
+        ],
+        'renderBindings': <Object?>[
+          <String, Object?>{
+            'states': <String>['pending'],
+            'role': 'receiver',
+            'tabId': 'admin',
+            'cardSurfaceFamily': 'approvalQueueItem',
+            'bindingKind': 'primary',
+          },
+        ],
+        'instanceDataSchema': <String, Object?>{
+          'title': <String, Object?>{'type': 'text', 'label': 'Title'},
+        },
+      },
+    },
+    'workflowInstances': <Object?>[
+      <String, Object?>{
+        'instanceId': _adminWorkflowInstanceId,
+        'workflowType': 'admin-review',
+        'currentState': 'pending',
+        'createdByPersonaId': _boardPersonaId,
+        'instanceData': <String, Object?>{'title': 'Board-only instance'},
+      },
+    ],
+  },
+);
+
+Widget _host(LocalAuthApi authApi) => MaterialApp(
+  home: LocalExtensionScreen(
+    community: _communityFixture(),
+    seedDataFiles: const [],
+    authApi: authApi,
+  ),
+);
+
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.pump(const Duration(milliseconds: 25));
+    if (finder.evaluate().isNotEmpty) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+  }
+  throw TestFailure('Timed out waiting for $finder');
+}
+
+Future<void> _openSpecificPersonSignIn(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+  );
+  final specificPerson = find.byKey(
+    const ValueKey('persona-sign-in-specific-person'),
+  );
+  await tester.ensureVisible(specificPerson);
+  await tester.tap(specificPerson);
+  await _pumpUntil(tester, find.text('Create New Account'));
+}
+
+Future<void> _signInFromEntryGate(
+  WidgetTester tester,
+  String displayName,
+) async {
+  final accountRow = find.ancestor(
+    of: find.text(displayName),
+    matching: find.byType(ListTile),
+  );
+  await _pumpUntil(tester, accountRow);
+  await tester.ensureVisible(accountRow.first);
+  await tester.tap(accountRow.first);
+  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+}
+
+Future<void> _selectAccountFromSpecificPersonDialog(
+  WidgetTester tester,
+  String displayName,
+) async {
+  // The "Sign in as a specific person…" route pushes the same LoomAuthScreen
+  // used by the entry gate (not the persona-picker popup itself), so this
+  // matches _signInFromEntryGate's plain ListTile lookup rather than
+  // constraining to a "persona-picker-dialog" ancestor that doesn't exist
+  // on this route.
+  final row = find.ancestor(
+    of: find.text(displayName),
+    matching: find.byType(ListTile),
+  );
+  await _pumpUntil(tester, row);
+  await tester.ensureVisible(row.first);
+  await tester.pumpAndSettle();
+  await tester.tap(row.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+}
+
+Future<void> _setSignupPersona(WidgetTester tester, String personaId) async {
+  final personaDropdown = find.byKey(const ValueKey('open-signup-persona-dropdown'));
+  await tester.ensureVisible(personaDropdown);
+  await tester.tap(personaDropdown);
+  await tester.pumpAndSettle();
+  final target = find.byKey(ValueKey('open-signup-persona-$personaId'));
+  await _pumpUntil(tester, target);
+  // DropdownMenuItem entries render inside a modal route overlay; the
+  // strict hit-test check can flag a false negative here even though the
+  // tap correctly lands on the item's InkWell, so it's disabled for this
+  // one tap (matching the widget's real, working behavior at runtime).
+  await tester.tap(target, warnIfMissed: false);
+  await tester.pumpAndSettle();
+}
+
+Future<String> _createBoardAccountFromPushedAuth(
+  WidgetTester tester,
+  LocalAuthApi authApi,
+) async {
+  await _setSignupPersona(tester, _boardPersonaId);
+  final displayNameField = find.byKey(const ValueKey('open-signup-display-name'));
+  await tester.ensureVisible(displayNameField);
+  await tester.enterText(displayNameField, _freshBoardAccountDisplayName);
+  await tester.tap(find.byKey(const ValueKey('open-signup-submit')));
+  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+  final accountId = authApi.currentSession?.account.accountId;
+  expect(accountId, isNotNull);
+  return accountId!;
+}
+
+Future<void> _openAdminTab(WidgetTester tester) async {
+  final adminTab = find.byKey(const ValueKey('community-tab-admin'));
+  await _pumpUntil(tester, adminTab);
+  await tester.ensureVisible(adminTab);
+  await tester.pumpAndSettle();
+  await tester.tap(adminTab, warnIfMissed: false);
+  await tester.pumpAndSettle();
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('engine-native-list-root-admin')),
+  );
+}
+
+void _assertAdminQuerySuccess(WidgetTester tester, String accountId) {
+  expect(
+    find.byKey(Key('engine-native-bindings-error-admin-$accountId')),
+    findsNothing,
+  );
+  expect(
+    find.textContaining('Permission denied for surface admin'),
+    findsNothing,
+  );
+  expect(
+    find.byKey(const ValueKey('generic-instance-card-$_adminWorkflowInstanceId')),
+    findsOneWidget,
+  );
+}
+
+void main() {
+  testWidgets(
+    'sign-in as specific person refreshes persona-type sync before release '
+    'for created and pre-existing board accounts',
+    (tester) async {
+      final authApi = LocalAuthApi();
+      authApi.seedAccounts(_extensionId, const [
+        LoomAccount(
+          accountId: _openAccountId,
+          displayName: _openAccountDisplayName,
+          personaTypeId: _openPersonaId,
+        ),
+      ]);
+
+      await tester.pumpWidget(_host(authApi));
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('community-entry-gate')),
+      );
+      await _signInFromEntryGate(tester, _openAccountDisplayName);
+
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+
+      await _openSpecificPersonSignIn(tester);
+      final freshBoardAccountId = await _createBoardAccountFromPushedAuth(
+        tester,
+        authApi,
+      );
+      await _openAdminTab(tester);
+      _assertAdminQuerySuccess(tester, freshBoardAccountId);
+
+      await _openSpecificPersonSignIn(tester);
+      await _selectAccountFromSpecificPersonDialog(tester, _openAccountDisplayName);
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+
+      final existingBoardResult = await authApi.signUp(
+        communityExtensionId: _extensionId,
+        displayName: _existingBoardAccountDisplayName,
+        personaTypeId: _boardPersonaId,
+      );
+      final existingBoardAccountId = existingBoardResult.account.accountId;
+
+      await _openSpecificPersonSignIn(tester);
+      await _selectAccountFromSpecificPersonDialog(
+        tester,
+        _existingBoardAccountDisplayName,
+      );
+      await _openAdminTab(tester);
+      _assertAdminQuerySuccess(tester, existingBoardAccountId);
+    },
+  );
+}
