@@ -496,6 +496,39 @@ consumer by name (Camera Club, Garden Club, Riverside Youth Soccer already merge
 Masjid Nur pending at time of writing) before this ticket is marked done — this is the first ticket in this
 section required to go through that step from the start, not retrofitted after the fact.
 
+### Ticket CJM.6 — `create` action `prefill` never resolves `$actor` (either scope), `scope: "tab"` drops `prefill` entirely (found 2026-08-10, highest blast radius so far)
+
+**Found while judging Ad-Free Community's skill-authored output, independently confirmed by direct source
+read (not just trusting the judge).** `render-bindings.md` documents `prefill` values as using "the effect
+interpolation grammar plus `{context.*}` (instance scope only)" — i.e. `$actor`/`$timestamp` are meant to
+work in `prefill`, same as in transition effects. Confirmed broken in two compounding ways:
+1. `scope: "tab"` creates never resolve `prefill` at all —
+   `part01_local_extension_screen.dart:1230-1246` builds `_CreatableWorkflowAction`s with
+   `resolvedInitialValues` left at its `const {}` default; `action.prefill` is never read.
+2. Even where prefill IS resolved (`scope: "instance"`, via `resolveInstanceScopedPrefill`,
+   `instance_scoped_action_context.dart:8-24`), only `{context.id}`/`{context.<field>}` are substituted — a
+   literal `"$actor"` value passes through **unchanged as the 4-character string**, not the real acting
+   persona id.
+
+**Blast radius — higher than CJM.5.** `"prefill": {"<ownerField>": "$actor"}` on a `scope: "tab"` create
+action is the standard, near-universal pattern for stamping an effect-only ownership field at creation
+time. Already-merged Camera Club (`gear-loan-request`, `critique-submission`) and Garden Club
+(`plant-exchange-submission`, `garden-tool-loan`, `garden-tool-giveaway`) both use it; so do Chess Club,
+Riverside Youth Soccer, Neighborhood Book Club, Masjid Nur, and the in-progress legacy communities. If
+uncorrected, every affected create flow produces an instance whose owner/actor field is absent or a literal
+`"$actor"` string — permanently un-actionable (guards keyed on that field can never match a real persona)
+and, where `visibility.readGuard` also keys on it, unreadable even by its own creator.
+
+**Full ticket:** `data/v3_ticket_cjm6_create_action_prefill_actor_resolution.md`. **Fix (already diagnosed,
+no Root Cause Agent needed — confirmed via direct source read):** thread `action.prefill` through for
+`scope: "tab"` creates (mirroring the `scope: "instance"` branch immediately below it in the same
+function), and extend the prefill value-resolver to substitute `$actor`/`$timestamp` the same two tokens
+`effects.md` already defines for transition effects. **Status:** ticket written, not yet dispatched.
+**Before this ticket is marked done:** a dedicated Regression Impact Judge dispatch
+(`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) covering every community using `$actor` in a
+create-action `prefill` — at minimum Camera Club and Garden Club (already merged) — confirming their real
+create flows produce working, readable, actionable instances, not just this ticket's own new test.
+
 ### Ticket CJM.4 — validator rule: `no_render_binding_for_reachable_state` (done, 2026-08-09)
 
 Real Dart validator gap, not a docs fix — the D3 finding from judging the skill-authored Cedar Commons HOA
