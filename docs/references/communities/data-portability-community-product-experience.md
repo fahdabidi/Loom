@@ -148,3 +148,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes | None. | `export-package` used `membersOnly` visibility, leaking every instance to the Receiving Provider persona this doc's §2 explicitly requires excluded except for their own transfer's scope. Fixed to `guarded` + a `readGuard.allowedPersonaIds` excluding that persona, matching the pattern the package's own `export-transfer`/`export-transfer-rollback` already used correctly. | fixed |

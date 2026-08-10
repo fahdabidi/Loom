@@ -213,6 +213,50 @@ used `guarded` + a `readGuard` excluding that exact persona — the tighter patt
 
 ---
 
+## 7. Stamp actor-identity fields via an effect on the workflow's own first transition, not via create-action `prefill` — a real, working alternative to the CJM.6-blocked pattern
+
+**Requirement shape:** a self-created instance needs its owner/actor field
+(`ownerPersonaId`/`memberPersonaId`/`authorPersonaId`) populated with the real creating persona, for later
+`actorEqualsField` guards/`readGuard`s to work.
+
+**Looks plausible, currently broken (see CJM.6 below):**
+```jsonc
+"actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerPersonaId": "$actor" } }]
+```
+Confirmed by direct source read: `$actor` is never substituted in `prefill` for either creation scope
+today, and `scope: "tab"` creates don't even read `prefill` at all.
+
+**Verified-correct, works today regardless of CJM.6's landing status:** stamp the field via a normal
+transition effect instead — `$actor` inside `effects` is the single most common, worked-example-confirmed
+construct in this entire grammar, used in nearly every community's transitions already.
+```jsonc
+"states": {
+  "offer": { "label": "Offer", "editableFields": ["priceLabel"],
+             "editGuard": { "allowedPersonaIds": ["ad-off-member"] } }
+},
+"transitions": [
+  { "id": "start-checkout", "from": ["offer"], "to": "reviewing",
+    "guard": { "allowedPersonaIds": ["ad-off-member"] },
+    "effects": [
+      { "op": "set", "key": "memberPersonaId", "value": "$actor" },
+      { "op": "set", "key": "priceLabel", "value": "{priceLabel}" }
+    ] }
+]
+```
+Two consequences to design around: (1) the un-stamped field must not be `required: true` (it's genuinely
+absent for the brief window between creation and the first transition firing), and (2) any guard/`readGuard`
+that would check the field on the pre-stamp state must fall back to `allowedPersonaIds` only (there's
+nothing to check `actorEqualsField` against yet) — a state-level `readGuard` override on that one state
+(`workflow-grammar.md`'s per-state `readGuard`, IMPLEMENTED) keeps the creator able to see their own
+just-created, not-yet-stamped instance if the workflow-level `visibility` is `guarded`.
+
+**Found in:** Ad-Free Community's `ad-off-member-checkout`/`ad-off-community-checkout` — discovered via a
+Skill Retrospective after the CJM.6 defect above was found in the same package; the same authoring agent
+worked out this fix itself when asked what it could have done differently, and it's now the recommended
+default for this shape regardless of whether CJM.6 ever lands (it has no dependency on that fix at all).
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring
@@ -233,4 +277,7 @@ mistakes — no JSON-level fix exists for either until the underlying engine tic
   every `actorEqualsField` guard/readGuard keyed on it. Status: fix ticket written, not yet landed. Until
   this lands, any workflow relying on this pattern is at risk — this is the highest-blast-radius gap found
   in this migration effort, since the pattern is used by nearly every "member creates their own X" workflow
-  across most communities authored so far.
+  across most communities authored so far. **A real, working alternative exists and needs no engine fix —
+  see pattern 7 above (stamp via an effect on the first transition instead).** Prefer pattern 7 for every
+  new workflow needing this shape until CJM.6 is confirmed landed; it costs a small amount of guard/schema
+  restructuring but has zero dependency on the engine fix's timeline.

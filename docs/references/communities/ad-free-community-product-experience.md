@@ -138,3 +138,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes (engine bug, CJM.6) | None. | `ad-off-member-checkout`/`ad-off-community-checkout` used `$actor` inside a `scope:"tab"` create action's `prefill`, which the real App Shell never resolves for tab-scoped creates — both checkout entry points were permanently broken (unreadable and/or un-actionable). Fixed by moving the actor-identity stamp into each type's own first transition's `effects` instead (a confirmed-working mechanism), independent of whether CJM.6 itself ever lands. | fixed |

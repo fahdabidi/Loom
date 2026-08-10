@@ -1,0 +1,1001 @@
+// Ad-Free Community — canonical JSON, authored 2026-08-10.
+//
+// Engine-native Loom community package for "Ad-Free Community" (product doc:
+// docs/references/communities/ad-free-community-product-experience.md).
+//
+// Built strictly from docs/references (workflow-grammar.md, guards.md, effects.md,
+// formulas.md, field-types.md, render-bindings.md, archetypes/README.md,
+// guide/03-common-patterns.md, guide/04-antipatterns.md, guide/05-validation.md,
+// guide/07-actions-and-fabs.md, reference/platform-services.md, reference/theming.md)
+// per the loom-calendar-experience-authoring Skill. No legacy JSON/Dart for this
+// community existed to copy from.
+//
+// Six workflow types, one per doc §6 row:
+//   1. ad-off-member-checkout     — a member's personal ad-off purchase.
+//   2. ad-off-community-checkout  — an owner funding community-wide ad-off.
+//   3. ad-off-entitlement-status  — the resulting per-member entitlement record
+//                                   (spawned by #1's confirm-payment).
+//   4. ad-off-receipt-evidence    — the resulting per-member receipt record
+//                                   (spawned by #1's confirm-payment).
+//   5. ad-off-ad-suppression      — the resulting per-member ad-suppression proof
+//                                   record (spawned by #1's confirm-payment),
+//                                   whose "is suppression really active" fact is a
+//                                   LIVE formula over the linked entitlement's own
+//                                   current FSM state (source query + groupCount on
+//                                   '$state') -- not a stored/cosmetic label.
+//   6. ad-off-settlement-utility  — the owner-facing audit record for a community
+//                                   funding event (spawned by #2's confirm-funding).
+//
+// Design decisions (see final report's Gaps/assumptions section for the full
+// reasoning): only two PERSONA TYPES are declared (ad-off-member, ad-off-owner).
+// The doc's "Ad-Free Viewer" (2026-08-10 correction, S2) is modeled as a REAL DATA
+// CONDITION on a member (an active ad-off-entitlement-status row for that
+// individual), never as a third persona type -- declaring it as a persona type
+// would violate AP-1 (a condition that can start/stop over time, and that many
+// members differ on simultaneously, is data, not a type) and there is no grammar
+// mechanism to reassign an account's persona type at purchase time anyway.
+// Per-individual privacy (S2's "personal, not shared with other members") is
+// enforced with the real, engine-implemented `visibility.guarded` +
+// `readGuard.actorEqualsField` mechanism, not by convention.
+//
+// No receipt ID, settlement ID, or renewal/expiry date is ever fabricated --
+// ID generation and payment processing are platform-services.md's ❌ Not
+// implemented services (AP-6). See inline "NEEDS IMPLEMENTATION" comments.
+//
+// CJM.6 CORRECTION (2026-08-10): the first authored version of this package
+// stamped memberPersonaId/ownerPersonaId (and priceLabel/coverageLabel) via
+// `$actor` inside the two tab-scoped create actions' `prefill`. An independent
+// judge confirmed by direct source read (part01_local_extension_screen.dart)
+// that the real App Shell never reads `action.prefill` for scope:"tab" creates
+// at all -- both entry points' privacy guards (readGuard.actorEqualsField) and
+// per-actor transition guards were consequently permanently broken. Fixed by
+// moving all four stamps into each type's own FIRST transition's `effects`
+// ($actor inside `effects` has dense, repeated, worked-example-confirmed
+// precedent -- unlike `$actor` inside `prefill`, which had none). See
+// "CJM.6 fix" comments at each changed site below.
+
+{
+  "schemaVersion": 1,
+  "packageId": "init_ad_free_community_1",
+  "communityId": "community_ad_free_community",
+  "communityHandle": "ad-free-community",
+  "displayName": "Ad-Free Community",
+  "extensionId": "ext_ad_free_community",
+  "branding": { "accentColor": "#2A6F86" },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-ad-free-community-v1",
+
+  "experience": {
+    "experienceSchemaVersion": 2,
+    "workflowGrammarVersion": 1,
+
+    "displayName": "Ad-Free Community",
+    "tagline": "Understand your ad-off purchase, entitlement, and receipts at a glance.",
+    "accentColor": "#2A6F86",
+
+    "personas": [
+      {
+        "personaId": "ad-off-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "Buys personal ad-off, views entitlement/receipt/suppression state."
+      },
+      {
+        "personaId": "ad-off-owner",
+        "label": "Owner",
+        "roleLabel": "Owner",
+        "description": "Funds community-wide ad-off and reviews settlement/utility allocation."
+      }
+    ],
+
+    "workflowDefinitions": {
+
+      // =====================================================================
+      // 1. AD-OFF-MEMBER-CHECKOUT — a member's personal ad-off purchase.
+      // cardSurfaceFamily: paymentCheckout (real archetype fit for a checkout flow).
+      // =====================================================================
+      "ad-off-member-checkout": {
+        "initialState": "offer",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "memberPersonaId" } }
+        },
+        "states": {
+          "offer": {
+            "label": "Ad-off offer",
+            "tone": "info",
+            "editableFields": ["paymentMethodLabel"],
+            // CJM.6 fix: `memberPersonaId` is not yet stamped while an instance
+            // sits in "offer" (see start-checkout's effects below) -- an
+            // actorEqualsField guard against it here would fail for everyone,
+            // including the true owner. Any ad-off-member may edit their own
+            // still-unstamped draft; once stamped (from "reviewing" onward) the
+            // stricter actorEqualsField guard applies everywhere else in this
+            // type. This state-level readGuard override mirrors the editGuard.
+            "editGuard": { "allowedPersonaIds": ["ad-off-member"] },
+            "readGuard": { "allowedPersonaIds": ["ad-off-member"] }
+          },
+          "reviewing": { "label": "Reviewing payment", "tone": "info" },
+          "payment-failed": { "label": "Payment failed", "tone": "negative" },
+          "active": { "label": "Ad-off active", "tone": "positive" },
+          "cancelled": { "label": "Subscription cancelled", "tone": "negative" }
+        },
+        "transitions": [
+          {
+            // CJM.6 fix: this is the FIRST transition an instance ever fires,
+            // so it is the one place that STAMPS memberPersonaId/priceLabel/
+            // coverageLabel -- it cannot itself be guarded by actorEqualsField
+            // against a field it hasn't set yet. $actor inside `effects` is the
+            // confirmed-real mechanism (effects.md, used throughout every P1-P6
+            // pattern and the worked-example calendar) -- unlike $actor inside
+            // a scope:"tab" action's `prefill`, which the real App Shell never
+            // reads at all (CJM.6 finding). allowedPersonaIds alone is a safe
+            // guard here: at this point nothing individually-identifying has
+            // been recorded yet, so there is nothing narrower to check against.
+            "id": "start-checkout",
+            "label": "Turn off ads",
+            "icon": "block",
+            "tone": "primary",
+            "from": ["offer"],
+            "to": "reviewing",
+            "guard": { "allowedPersonaIds": ["ad-off-member"] },
+            "effects": [
+              { "op": "set", "key": "memberPersonaId", "value": "$actor" },
+              { "op": "set", "key": "priceLabel", "value": "$4.99/month" },
+              {
+                "op": "set", "key": "coverageLabel",
+                "value": "Removes ads community-wide for this member"
+              }
+            ]
+          },
+          {
+            "id": "back-to-offer",
+            "label": "Edit payment method",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "offer",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            }
+          },
+          {
+            "id": "confirm-payment",
+            "label": "Confirm payment",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["reviewing"],
+            "to": "active",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "purchasedAt", "value": "$timestamp" },
+              // NEEDS IMPLEMENTATION (platform service): real payment-gateway
+              // processing. This transition only records that the member
+              // confirmed their intent to pay under the reviewed price/method --
+              // it never calls a real gateway (payment processing is a ❌ Not
+              // implemented platform service, platform-services.md). No receipt
+              // ID or payment-confirmation value is fabricated anywhere below.
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-entitlement-status",
+                "fields": {
+                  "memberPersonaId": "{memberPersonaId}",
+                  "checkoutInstanceId": "{id}",
+                  "purchasedAt": "$timestamp",
+                  "coveragePeriodDays": 30
+                }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-receipt-evidence",
+                "fields": {
+                  "memberPersonaId": "{memberPersonaId}",
+                  "checkoutInstanceId": "{id}",
+                  "amountLabel": "{priceLabel}",
+                  "issuedAt": "$timestamp",
+                  "refundWindowDays": 14
+                }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-ad-suppression",
+                "fields": {
+                  "memberPersonaId": "{memberPersonaId}",
+                  "checkoutInstanceId": "{id}",
+                  "noFillReasonLabel": "Ads suppressed: active ad-off entitlement"
+                }
+              }
+            ]
+          },
+          {
+            // Models the shape a real payment-gateway failure callback would
+            // drive (platform-services.md: payment processing is ❌ Not
+            // implemented). Reachable today as a self-report so the retry loop
+            // below is real and testable; a real gateway integration would fire
+            // this same transition instead of a member tap.
+            "id": "report-payment-failure",
+            "label": "Report payment problem",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "payment-failed",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            }
+          },
+          {
+            "id": "retry-payment",
+            "label": "Retry payment",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["payment-failed"],
+            "to": "reviewing",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            }
+          },
+          {
+            "id": "cancel-checkout-attempt",
+            "label": "Cancel",
+            "icon": "close",
+            "tone": "secondary",
+            "from": ["payment-failed"],
+            "to": "offer",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            }
+          },
+          {
+            "id": "cancel-subscription",
+            "label": "Cancel subscription",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["active"],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              // Drives the linked entitlement's own "deactivate" transition, so
+              // ad-suppression's live isEntitlementActive formula (see that type
+              // below) genuinely flips -- not a cosmetic label on this instance.
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": { "checkoutInstanceId": "{id}", "$state": "active" },
+                  "sortKey": "purchasedAt",
+                  "limit": 1
+                },
+                "transitionId": "deactivate"
+              }
+            ]
+          },
+          {
+            "id": "restart-checkout",
+            "label": "Turn ads off again",
+            "icon": "replay",
+            "tone": "primary",
+            "from": ["cancelled"],
+            "to": "offer",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["offer", "reviewing", "payment-failed", "active", "cancelled"],
+            "role": "actor",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
+            "actions": [
+              // CJM.6 fix: no `prefill` -- confirmed (direct source read of
+              // part01_local_extension_screen.dart) that the real App Shell
+              // never reads action.prefill for scope:"tab" creates at all, and
+              // even where prefill IS read (instance-scoped creates), "$actor"
+              // passes through as the literal 4-character string, never
+              // substituted. memberPersonaId/priceLabel/coverageLabel are
+              // instead stamped by start-checkout's own effects (above), the
+              // one construct with dense, repeated, worked-example precedent
+              // for $actor resolution.
+              {
+                "kind": "create",
+                "label": "Buy ad-off",
+                "byPersonaIds": ["ad-off-member"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          }
+        ],
+        "instanceDataSchema": {
+          // CJM.6 fix: no longer `required` -- a freshly created instance in
+          // "offer" legitimately lacks these until start-checkout's own
+          // effects stamp them (see that transition above); required:true
+          // would misdocument the shape of a real just-created instance, the
+          // same reasoning purchasedAt/cancelledAt below already used.
+          "memberPersonaId": {
+            "type": "personaId?", "writableBy": "effect",
+            "displayContexts": []
+          },
+          "priceLabel": {
+            "type": "text", "writableBy": "effect",
+            "displayIcon": "payments_outlined", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "coverageLabel": {
+            "type": "text", "writableBy": "effect",
+            "displayIcon": "shield_outlined", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "paymentMethodLabel": {
+            "type": "text", "required": true, "writableBy": "formEntry",
+            "displayIcon": "credit_card", "labelTemplate": "Paying with {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "purchasedAt": {
+            "type": "date?", "writableBy": "effect", "sortable": true,
+            "displayIcon": "calendar_today", "labelTemplate": "Purchased {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "cancelledAt": {
+            "type": "date?", "writableBy": "effect",
+            "displayIcon": "event_busy", "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      // =====================================================================
+      // 2. AD-OFF-COMMUNITY-CHECKOUT — an owner funds community-wide ad-off.
+      // cardSurfaceFamily: paymentCheckout.
+      // =====================================================================
+      "ad-off-community-checkout": {
+        "initialState": "unfunded",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "unfunded": {
+            "label": "Not yet funded",
+            "tone": "info",
+            "editableFields": ["fundedAmountLabel"],
+            // CJM.6 fix: ownerPersonaId isn't stamped until start-funding's own
+            // effects fire (see below) -- same reasoning as member-checkout's
+            // "offer" state above.
+            "editGuard": { "allowedPersonaIds": ["ad-off-owner"] }
+          },
+          "reviewing": { "label": "Reviewing funding", "tone": "info" },
+          "funding-failed": { "label": "Funding failed", "tone": "negative" },
+          "funded": { "label": "Community ad-off funded", "tone": "positive", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            // CJM.6 fix: first transition -- stamps ownerPersonaId/
+            // coverageLabel via `effects` ($actor confirmed-real there),
+            // instead of the create action's (never-read for scope:"tab")
+            // `prefill`. Cannot itself require actorEqualsField against a
+            // field it hasn't set yet.
+            "id": "start-funding",
+            "label": "Fund community ad-off",
+            "icon": "volunteer_activism",
+            "tone": "primary",
+            "from": ["unfunded"],
+            "to": "reviewing",
+            "guard": { "allowedPersonaIds": ["ad-off-owner"] },
+            "effects": [
+              { "op": "set", "key": "ownerPersonaId", "value": "$actor" },
+              {
+                "op": "set", "key": "coverageLabel",
+                "value": "Removes ads for every member for the funded period"
+              }
+            ]
+          },
+          {
+            "id": "edit-funding",
+            "label": "Change amount",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "unfunded",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          },
+          {
+            "id": "confirm-funding",
+            "label": "Confirm funding",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["reviewing"],
+            "to": "funded",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "fundedAt", "value": "$timestamp" },
+              // NEEDS IMPLEMENTATION (platform service): real payment-gateway
+              // processing (❌ Not implemented, platform-services.md). No
+              // settlement ID is fabricated -- see ad-off-settlement-utility.
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-settlement-utility",
+                "fields": {
+                  "fundingCheckoutId": "{id}",
+                  "ownerPersonaId": "{ownerPersonaId}",
+                  "fundedAmountLabel": "{fundedAmountLabel}",
+                  "fundedAt": "$timestamp",
+                  "utilityImpactLabel": "Community-wide ad suppression funding"
+                }
+              }
+            ]
+          },
+          {
+            "id": "report-funding-failure",
+            "label": "Report payment problem",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "funding-failed",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          },
+          {
+            "id": "retry-funding",
+            "label": "Retry payment",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["funding-failed"],
+            "to": "reviewing",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          },
+          {
+            "id": "cancel-funding-attempt",
+            "label": "Cancel",
+            "icon": "close",
+            "tone": "destructive",
+            "from": ["funding-failed"],
+            "to": "unfunded",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unfunded", "reviewing", "funding-failed"],
+            "role": "actor",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
+            "actions": [
+              // CJM.6 fix: no `prefill` (never read for scope:"tab" creates) --
+              // ownerPersonaId/coverageLabel are stamped by start-funding's own
+              // effects instead (above).
+              {
+                "kind": "create",
+                "label": "Fund community ad-off",
+                "byPersonaIds": ["ad-off-owner"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            // Result is visible community-wide -- members need to see the
+            // resulting suppressed-ad state even though only the owner acted.
+            "states": ["funded"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          // CJM.6 fix: no longer `required` -- unset until start-funding's own
+          // effects stamp them (see above).
+          "ownerPersonaId": {
+            "type": "personaId?", "writableBy": "effect",
+            "displayContexts": []
+          },
+          "fundedAmountLabel": {
+            "type": "text", "required": true, "writableBy": "formEntry",
+            "displayIcon": "payments_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coverageLabel": {
+            "type": "text", "writableBy": "effect",
+            "displayIcon": "shield_outlined", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "fundedAt": {
+            "type": "date?", "writableBy": "effect", "sortable": true,
+            "displayIcon": "calendar_today", "labelTemplate": "Funded {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      // =====================================================================
+      // 3. AD-OFF-ENTITLEMENT-STATUS — the ongoing per-member entitlement
+      // record. Spawned only via #1's confirm-payment effect (never
+      // member-created directly). cardSurfaceFamily: statusTimeline -- the
+      // closest honest fit; no ad-decisioning archetype exists in
+      // archetypes/README.md.
+      // =====================================================================
+      "ad-off-entitlement-status": {
+        "initialState": "active",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "memberPersonaId" } }
+        },
+        "states": {
+          "active": { "label": "Active", "tone": "positive" },
+          "inactive": { "label": "Inactive", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "deactivate",
+            "label": "Cancel subscription",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["active"],
+            "to": "inactive",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "deactivatedAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["active"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["inactive"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "checkoutInstanceId": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "purchasedAt": {
+            "type": "date", "required": true, "writableBy": "effect", "sortable": true,
+            "displayIcon": "calendar_today", "labelTemplate": "Active since {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          // NEEDS IMPLEMENTATION: a real forward-projected "renewal date"
+          // (purchasedAt + coveragePeriodDays) cannot be derived -- the formula
+          // vocabulary (formulas.md) has no date-addition function (only
+          // subtractHours moves a date BACKWARD; there is no addDays/addHours).
+          // Reporting elapsed-vs-coverage honestly instead via daysBetween/isPast
+          // below, rather than fabricating a projected calendar date.
+          "coveragePeriodDays": {
+            "type": "number", "required": true, "writableBy": "effect",
+            "displayIcon": "schedule", "labelTemplate": "{value}-day coverage",
+            "displayContexts": ["tile", "detail"]
+          },
+          "deactivatedAt": {
+            "type": "date?", "writableBy": "effect",
+            "displayIcon": "event_busy", "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "daysSincePurchase": {
+            "type": "number", "formula": "daysBetween(purchasedAt, now())",
+            "displayContexts": []
+          },
+          "isExpired": {
+            "type": "bool", "formula": "daysSincePurchase >= coveragePeriodDays",
+            "displayIcon": "verified_outlined", "labelTemplate": "Coverage lapsed: {value}",
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      // =====================================================================
+      // 4. AD-OFF-RECEIPT-EVIDENCE — the per-member receipt record. Spawned
+      // only via #1's confirm-payment effect. cardSurfaceFamily:
+      // paymentCheckout (checkout/receipt family, per archetype guidance).
+      // =====================================================================
+      "ad-off-receipt-evidence": {
+        "initialState": "issued",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "memberPersonaId" } }
+        },
+        "states": {
+          "issued": { "label": "Issued", "tone": "positive" },
+          "refunded": { "label": "Refunded", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "request-refund",
+            "label": "Request refund",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["issued"],
+            "to": "refunded",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" },
+              // "refund/manage disabled unless eligible" (doc §7) -- only within
+              // the refund window, evaluated live, not a stale stored flag.
+              "formula": "refundEligible"
+            },
+            "effects": [
+              // NEEDS IMPLEMENTATION (platform service): real refund execution
+              // (money movement) is payment processing, ❌ Not implemented
+              // (platform-services.md). This only records the refund decision.
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["issued"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["refunded"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "checkoutInstanceId": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          // NEEDS IMPLEMENTATION (platform service): a real opaque receipt ID
+          // is ID generation, ❌ Not implemented (platform-services.md, AP-6).
+          // Deliberately no `receiptId` field is declared here -- see the
+          // report's Gaps/assumptions section.
+          "amountLabel": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayIcon": "payments_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "issuedAt": {
+            "type": "date", "required": true, "writableBy": "effect", "sortable": true,
+            "displayIcon": "calendar_today", "labelTemplate": "Issued {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundedAt": {
+            "type": "date?", "writableBy": "effect",
+            "displayIcon": "event_busy", "labelTemplate": "Refunded {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "refundWindowDays": {
+            "type": "number", "required": true, "writableBy": "effect",
+            "displayIcon": "schedule", "labelTemplate": "Refundable for {value} days",
+            "displayContexts": ["detail"]
+          },
+          "daysSinceIssued": {
+            "type": "number", "formula": "daysBetween(issuedAt, now())",
+            "displayContexts": []
+          },
+          "refundEligible": {
+            "type": "bool", "formula": "daysSinceIssued <= refundWindowDays",
+            "displayIcon": "receipt_long", "labelTemplate": "Refund eligible: {value}",
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      // =====================================================================
+      // 5. AD-OFF-AD-SUPPRESSION — the per-member ad-suppression proof.
+      // Spawned only via #1's confirm-payment effect. cardSurfaceFamily:
+      // statusTimeline -- closest honest fit; no ad-decisioning archetype
+      // exists. isEntitlementActive is a LIVE cross-instance formula over the
+      // linked entitlement's own current FSM state -- this is what makes the
+      // Ad-Free Viewer's experience genuinely different, not a cosmetic label.
+      // =====================================================================
+      "ad-off-ad-suppression": {
+        "initialState": "unacknowledged",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "memberPersonaId" } }
+        },
+        "states": {
+          "unacknowledged": { "label": "New suppression proof", "tone": "info" },
+          "acknowledged": { "label": "Reviewed", "tone": "positive", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "acknowledge",
+            "label": "Mark reviewed",
+            "icon": "done",
+            "tone": "secondary",
+            "from": ["unacknowledged"],
+            "to": "acknowledged",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "acknowledgedAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unacknowledged"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["acknowledged"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "checkoutInstanceId": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "noFillReasonLabel": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayIcon": "block", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "acknowledgedAt": {
+            "type": "date?", "writableBy": "effect",
+            "displayIcon": "done", "labelTemplate": "Reviewed {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          // Query-backed: the linked entitlement row(s) sharing this same
+          // checkout. Not stored -- read live from ad-off-entitlement-status.
+          "linkedEntitlement": {
+            "type": "list",
+            "source": "query(ad-off-entitlement-status where checkoutInstanceId == checkoutInstanceId)",
+            "displayContexts": []
+          },
+          "entitlementStateCounts": {
+            "type": "map", "formula": "groupCount(linkedEntitlement, '$state')",
+            "displayContexts": []
+          },
+          // THE genuinely-different-experience signal: true only while the
+          // linked entitlement instance's real, live FSM state is "active" --
+          // flips the moment #1's cancel-subscription/transitionRelated (or a
+          // direct deactivate on the entitlement itself) fires. Not a cosmetic
+          // label; a live read of another instance's own current state.
+          "isEntitlementActive": {
+            "type": "bool", "formula": "mapGet(entitlementStateCounts, 'active') > 0",
+            "displayIcon": "verified_outlined", "labelTemplate": "Ads suppressed now: {value}",
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      // =====================================================================
+      // 6. AD-OFF-SETTLEMENT-UTILITY — the owner-facing audit record for a
+      // community funding event. Spawned only via #2's confirm-funding effect.
+      // cardSurfaceFamily: statusTimeline (an audit progression, allocated ->
+      // audited; not an active "pay" verb, distinguishing it from the
+      // payment-action-shaped checkout/receipt types).
+      // =====================================================================
+      "ad-off-settlement-utility": {
+        "initialState": "allocated",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["ad-off-owner"] }
+        },
+        "states": {
+          "allocated": { "label": "Allocated", "tone": "info" },
+          "audited": { "label": "Audited", "tone": "positive", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "mark-audited",
+            "label": "Mark audited",
+            "icon": "fact_check",
+            "tone": "primary",
+            "from": ["allocated"],
+            "to": "audited",
+            "guard": {
+              "allowedPersonaIds": ["ad-off-owner"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "auditedAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["allocated"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["audited"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "fundingCheckoutId": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          "ownerPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "effect",
+            "displayContexts": []
+          },
+          // NEEDS IMPLEMENTATION (platform service): a real opaque settlement
+          // ID is ID generation, ❌ Not implemented (platform-services.md,
+          // AP-6). Deliberately no `settlementId` field is declared here.
+          "fundedAmountLabel": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayIcon": "payments_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "fundedAt": {
+            "type": "date", "required": true, "writableBy": "effect", "sortable": true,
+            "displayIcon": "calendar_today", "labelTemplate": "Funded {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "auditedAt": {
+            "type": "date?", "writableBy": "effect",
+            "displayIcon": "fact_check", "labelTemplate": "Audited {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "utilityImpactLabel": {
+            "type": "text", "required": true, "writableBy": "effect",
+            "displayIcon": "groups_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "checkout-member-alex",
+        "workflowType": "ad-off-member-checkout",
+        "currentState": "active",
+        "createdByPersonaId": "ad-off-member",
+        "instanceData": {
+          "memberPersonaId": "ad-off-member",
+          "priceLabel": "$4.99/month",
+          "coverageLabel": "Removes ads community-wide for this member",
+          "paymentMethodLabel": "Card ending 4242",
+          "purchasedAt": "2026-07-15"
+        }
+      },
+      {
+        "instanceId": "entitlement-alex",
+        "workflowType": "ad-off-entitlement-status",
+        "currentState": "active",
+        "createdByPersonaId": "ad-off-member",
+        "instanceData": {
+          "memberPersonaId": "ad-off-member",
+          "checkoutInstanceId": "checkout-member-alex",
+          "purchasedAt": "2026-07-15",
+          "coveragePeriodDays": 30
+        }
+      },
+      {
+        "instanceId": "receipt-alex",
+        "workflowType": "ad-off-receipt-evidence",
+        "currentState": "issued",
+        "createdByPersonaId": "ad-off-member",
+        "instanceData": {
+          "memberPersonaId": "ad-off-member",
+          "checkoutInstanceId": "checkout-member-alex",
+          "amountLabel": "$4.99/month",
+          "issuedAt": "2026-07-15",
+          "refundWindowDays": 14
+        }
+      },
+      {
+        "instanceId": "suppression-alex",
+        "workflowType": "ad-off-ad-suppression",
+        "currentState": "unacknowledged",
+        "createdByPersonaId": "ad-off-member",
+        "instanceData": {
+          "memberPersonaId": "ad-off-member",
+          "checkoutInstanceId": "checkout-member-alex",
+          "noFillReasonLabel": "Ads suppressed: active ad-off entitlement"
+        }
+      },
+      {
+        // A second member who has NOT purchased -- the baseline (still sees
+        // ads) experience, shown by the deliberate ABSENCE of any entitlement/
+        // receipt/suppression rows for this checkout, not a flag.
+        "instanceId": "checkout-member-jordan",
+        "workflowType": "ad-off-member-checkout",
+        "currentState": "offer",
+        "createdByPersonaId": "ad-off-member",
+        "instanceData": {
+          "memberPersonaId": "ad-off-member",
+          "priceLabel": "$4.99/month",
+          "coverageLabel": "Removes ads community-wide for this member",
+          "paymentMethodLabel": "Card ending 1123"
+        }
+      },
+      {
+        "instanceId": "community-checkout-fall",
+        "workflowType": "ad-off-community-checkout",
+        "currentState": "funded",
+        "createdByPersonaId": "ad-off-owner",
+        "instanceData": {
+          "ownerPersonaId": "ad-off-owner",
+          "fundedAmountLabel": "$250.00 one-time",
+          "coverageLabel": "Removes ads for every member for the funded period",
+          "fundedAt": "2026-06-01"
+        }
+      },
+      {
+        "instanceId": "settlement-fall",
+        "workflowType": "ad-off-settlement-utility",
+        "currentState": "allocated",
+        "createdByPersonaId": "ad-off-owner",
+        "instanceData": {
+          "fundingCheckoutId": "community-checkout-fall",
+          "ownerPersonaId": "ad-off-owner",
+          "fundedAmountLabel": "$250.00 one-time",
+          "fundedAt": "2026-06-01",
+          "utilityImpactLabel": "Community-wide ad suppression funding"
+        }
+      }
+    ]
+  }
+}

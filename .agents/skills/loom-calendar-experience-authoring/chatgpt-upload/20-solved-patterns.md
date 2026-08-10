@@ -202,6 +202,46 @@ available and unused.
 
 ---
 
+## 7. Stamp actor-identity fields via an effect on the workflow's own first transition, not via create-action `prefill` — a real, working alternative to the create-prefill gap below
+
+**Requirement shape:** a self-created instance needs its owner/actor field
+(`ownerPersonaId`/`memberPersonaId`/`authorPersonaId`) populated with the real creating persona, for later
+`actorEqualsField` guards/`readGuard`s to work.
+
+**Looks plausible, currently unreliable (see the last "known limitation" below):**
+```jsonc
+"actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerPersonaId": "$actor" } }]
+```
+
+**Verified-correct, works regardless of whether that gap is fixed:** stamp the field via a normal
+transition effect instead — `$actor` inside `effects` is the single most common, worked-example-confirmed
+construct in this grammar.
+```jsonc
+"states": {
+  "offer": { "label": "Offer", "editableFields": ["priceLabel"],
+             "editGuard": { "allowedPersonaIds": ["community-member"] } }
+},
+"transitions": [
+  { "id": "start-checkout", "from": ["offer"], "to": "reviewing",
+    "guard": { "allowedPersonaIds": ["community-member"] },
+    "effects": [
+      { "op": "set", "key": "memberPersonaId", "value": "$actor" },
+      { "op": "set", "key": "priceLabel", "value": "{priceLabel}" }
+    ] }
+]
+```
+Two consequences to design around: (1) the un-stamped field must not be `required: true` (it's genuinely
+absent for the brief window between creation and the first transition firing), and (2) any guard/`readGuard`
+that would check the field on the pre-stamp state must fall back to `allowedPersonaIds` only — a state-level
+`readGuard` override on that one state keeps the creator able to see their own just-created, not-yet-stamped
+instance if the workflow-level `visibility` is `guarded`.
+
+**Found in:** a real community's checkout workflow — the fix was worked out by the same authoring agent that
+hit the underlying gap, once asked what it could have done differently. Recommended as the default for this
+shape regardless of the underlying gap's fix status.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — check current status before relying on either)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring

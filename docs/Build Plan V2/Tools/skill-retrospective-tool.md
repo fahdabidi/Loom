@@ -80,7 +80,34 @@ gap with a false constraint instead of reconsidering the shape.
 
 ### Ad-Free Community — unresolved `$actor` in `prefill` shipped despite the agent flagging its own uncertainty
 
-(Retrospective dispatched; findings pending.)
+**Verified cause, in the agent's own (compressed) words:** it treated validator silence as runtime
+confirmation for a construct the validator structurally cannot check — despite having in-hand evidence in
+the same reference file (`render-bindings.md`) that this exact class of gap (documented grammar the
+validator can't verify) already exists for other constructs (the eventDate/eventTime trap, the retry-phrase
+trap, the actor/receiver trap — all explicitly called out as "will never appear as a validator finding").
+The agent generalized correctly for the *named* traps and failed to generalize the same skepticism to a
+novel, unnamed one.
+
+**What made this retrospective different from Chess Club's:** the agent didn't just diagnose the cause, it
+fixed the package itself, unprompted — realizing mid-retrospective that `$actor` inside a transition's
+`effects` (not `prefill`) is the confirmed-working mechanism, and restructuring both checkout workflows to
+stamp actor-identity there instead. Independently re-validated (0 errors, 0 warnings) and merged the same
+session.
+
+**Applied fixes:**
+- `docs/references/reference/solved-patterns.md` pattern 7 (+ chatgpt-upload mirror): the effect-based
+  actor-stamp workaround, generalized beyond this one community — recommended as the **default** for this
+  shape going forward, not just an emergency workaround, since it has zero dependency on CJM.6's fix
+  timeline.
+- CJM.6's tracker entry updated to point at pattern 7 as a real mitigation, while making explicit that this
+  does **not** reduce the underlying ticket's priority (Camera Club/Garden Club are already merged using the
+  broken pattern and still need a real fix or retrofit).
+- Did not add a new SKILL.md rule for "don't trust validator silence on unverified constructs" as its own
+  named check — the existing "4 self-checks" framing (Validation section) already carries this principle for
+  the known cases; a broader, ever-growing enumeration of *every possible* unverified construct isn't
+  tractable the same way a name-and-shape pattern is. `solved-patterns.md`'s own "Known current engine
+  limitations" section is the current mechanism for flagging *newly discovered* instances of this class as
+  they're found — this retrospective didn't surface a reason to change that.
 
 ## When NOT to run this
 
