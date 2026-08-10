@@ -51,6 +51,38 @@
 //     so the document/architectural-request workflows share `home` instead of a dedicated Documents tab.
 //
 // Validator status at merge time: {"status":"pass","errorCount":0,"warningCount":0,"findings":[]}
+//
+// Fix 2026-08-09 — role-resolution reachability audit (dead-button bug class): the validator's
+// `no_render_binding_for_reachable_state` check confirms every state has *some* renderBinding, but
+// cannot tell whether that binding's `role` can ever actually resolve for the persona a transition's
+// own guard allows on that tab — because role resolution isn't in the grammar at all, it's decided
+// per-tab by App Shell code (`part32_engine_native_list_surface.dart` /
+// `part27_engine_native_binding_dispatcher.dart` / `part28_engine_native_calendar_surface.dart`).
+// Confirmed mechanism: `admin` is the only tab that ever computes "receiver" (creator gets "actor",
+// everyone else gets "receiver"); `giving`/`messages`/`home`/`marketplace` grant "actor" to the
+// creator only and NOTHING otherwise (never "receiver"); `calendar` grants neither role, ever — only
+// `role: "any"` bindings can render there. Five renderBindings in this file assumed "actor"/"receiver"
+// would resolve for a business-logic role (the payer, the recipient, the case owner) that didn't match
+// `createdByPersonaId`, making the state genuinely unreachable (dead button) or, in one case,
+// permanently invisible (dead summary card) for the persona the transition/notice was written for.
+// Fixed additively — no existing binding removed, no guard/transition/persona-list logic changed,
+// each site commented inline with the specific reachability gap and why the given fix is correct:
+//   - `hoa-dues-payment`: Giving tab's "actor" binding (due/failed) only ever matched hoa-board (the
+//     charge's creator), never the paying hoa-member — `pay-dues` was a dead button. Widened to "any".
+//   - `hoa-architectural-request`: Admin's receiver binding didn't cover approved/denied, so
+//     `reopen-case` (board-only) was a dead button — expanded its `states`. Home's actor binding was
+//     summary-only across 6 states, making `withdraw-request`/`attach-document` dead buttons for the
+//     homeowner in submitted/under-review/reopened — split into a primary binding for those 3 states
+//     (states with a real hoa-member-guarded transition) and left approved/denied/withdrawn summary
+//     (no hoa-member transition ever targets them — correctly read-only per render-bindings.md).
+//   - `hoa-committee-decision`: Home's "receiver" binding for `recorded` could never resolve for
+//     either persona under the confirmed mechanism, so the homeowner's decision notice was permanently
+//     invisible — widened to "any".
+//   - `hoa-owner-notification`: Messages tab's "receiver" binding could never resolve (every notice is
+//     board-created), so `mark-notice-read`/`mark-notice-unread` were dead buttons for the actual
+//     recipient — widened to "any".
+// Re-validated after these fixes: {"status":"pass","errorCount":0,"warningCount":0,"findings":[]}
+// (unchanged from merge time — see the real run below for confirmation this stayed true).
 
 {
   "schemaVersion": 1,
@@ -145,9 +177,19 @@
           }
         ],
         "renderBindings": [
+          // Fix 2026-08-09 (role-resolution reachability audit): was "role": "actor". The Giving
+          // tab's actor/receiver resolution (part32_engine_native_list_surface.dart's
+          // `_engineNativeActorRolesForInstance`, the App Shell default when a tab surface doesn't
+          // pass its own `rolesForInstance`) grants "actor" only to `createdByPersonaId` — and every
+          // dues charge is created by hoa-board (the tab's create-action is board-only), never by the
+          // paying hoa-member. Under "role": "actor" the payer could never see this card at all, so
+          // "pay-dues" (guard: hoa-member matching `payerPersonaId`) was a dead button for the one
+          // persona actually meant to fire it. "any" is the only selector this tab's mechanism can
+          // ever resolve for a non-creator; the transition's own guard still restricts who can
+          // actually press Pay (board sees the card too, as before, but never the button).
           {
             "states": ["due", "failed"],
-            "role": "actor",
+            "role": "any",
             "tabId": "giving",
             "cardSurfaceFamily": "paymentCheckout",
             "bindingKind": "primary",
@@ -855,15 +897,42 @@
               }
             ]
           },
+          // Fix 2026-08-09 (role-resolution reachability audit): this single 6-state binding was
+          // "bindingKind": "summary" (no action row) for all of them. Split into two, additively —
+          // no existing states removed, only re-partitioned by whether hoa-member (always this
+          // type's creator, so always "actor" on Home — home_tab role resolution is creator-match
+          // only, see part32_engine_native_list_surface.dart's `_engineNativeActorRolesForInstance`)
+          // has a real transition to fire from that state:
+          //   - "withdraw-request" (guard: hoa-member/requestedByPersonaId) fires `from` including
+          //     "submitted"/"under-review" — summary-only made it a dead button there.
+          //   - "attach-document" (guard: hoa-member OR hoa-board) fires `from` including
+          //     "submitted"/"under-review"/"reopened" — same dead-button problem for hoa-member.
+          // "approved"/"denied"/"withdrawn" have no hoa-member-guarded transition at all (the
+          // homeowner only ever observes a final decision), so they correctly stay "summary" per
+          // render-bindings.md's own guidance ("primary for the state where the user acts; summary
+          // for states where they only observe").
           {
-            "states": ["submitted", "under-review", "reopened", "approved", "denied", "withdrawn"],
+            "states": ["submitted", "under-review", "reopened"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["approved", "denied", "withdrawn"],
             "role": "actor",
             "tabId": "home",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
           },
+          // Fix 2026-08-09 (role-resolution reachability audit): "states" was
+          // ["submitted", "under-review", "reopened"] only. "reopen-case" (guard: hoa-board only)
+          // fires `from: ["approved", "denied"]`, but neither state was covered by any admin-tab
+          // binding, so it was a dead button for the board — expanded (additive) to include them.
+          // The Home actor-summary binding below already covers approved/denied for the homeowner's
+          // own read-only view; this is the board's corresponding queue view.
           {
-            "states": ["submitted", "under-review", "reopened"],
+            "states": ["submitted", "under-review", "reopened", "approved", "denied"],
             "role": "receiver",
             "tabId": "admin",
             "cardSurfaceFamily": "approvalQueueItem",
@@ -1092,9 +1161,19 @@
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "primary"
           },
+          // Fix 2026-08-09 (role-resolution reachability audit): was "role": "receiver". Home tab's
+          // resolution (same `_engineNativeActorRolesForInstance` creator-match-only mechanism as
+          // Giving/Messages — see part32_engine_native_list_surface.dart) never grants "receiver" to
+          // anyone; it only ever grants "actor" to `createdByPersonaId`, always hoa-board for this
+          // type. So this binding could never resolve for either persona — hoa-board gets "actor"
+          // (no binding declares that role on Home for this state), hoa-member gets nothing (never
+          // the creator). The requesting homeowner would never see their own decision notice.
+          // Widened to "any" (no other Home binding covers "recorded" for this type, so no duplicate
+          // card risk); the guard on this type's transitions is unaffected — hoa-member has no
+          // guarded transition here anyway, this is a read-only notice.
           {
             "states": ["recorded"],
-            "role": "receiver",
+            "role": "any",
             "tabId": "home",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
@@ -1233,9 +1312,21 @@
               }
             ]
           },
+          // Fix 2026-08-09 (role-resolution reachability audit): was "role": "receiver". Messages
+          // tab's resolution is the same creator-match-only mechanism as Giving/Home (see
+          // part32_engine_native_list_surface.dart's `_engineNativeActorRolesForInstance`) and never
+          // grants "receiver" to anyone; every hoa-owner-notification instance is created by
+          // hoa-board (the only persona allowed to send-notice / the only actor of the
+          // `record-decision`-triggered createInstance effect), so the actual recipient
+          // (`recipientPersonaId`, always hoa-member) could never see this binding at all — making
+          // "mark-notice-read"/"mark-notice-unread" (guard: `actorEqualsField: recipientPersonaId`,
+          // open to any persona) permanently dead buttons for the one persona meant to fire them.
+          // Widened to "any" (no other Messages-tab binding exists for this type, so no duplicate
+          // card risk); board now also sees their own sent notices on Messages, but the guard still
+          // restricts the read/unread buttons to the actual recipient.
           {
             "states": ["sent", "read"],
-            "role": "receiver",
+            "role": "any",
             "tabId": "messages",
             "cardSurfaceFamily": "notificationInbox",
             "bindingKind": "primary"
