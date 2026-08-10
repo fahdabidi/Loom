@@ -26,7 +26,7 @@ the same workflow type:
 // Home tab — the member who submitted it, while it's editable
 { "states": ["draft", "changes-requested"], "role": "actor", "tabId": "home",
   "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
-  "creatable": [
+  "actions": [
     { "kind": "create", "label": "Propose a game",
       "byPersonaIds": ["tabletop-member"], "...": "..." }
   ] },

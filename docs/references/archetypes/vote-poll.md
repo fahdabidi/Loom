@@ -36,7 +36,7 @@ Two shapes, both driven by the same widget:
 {
   "states": ["open"], "role": "any", "tabId": "home",
   "cardSurfaceFamily": "votePoll", "bindingKind": "primary",
-  "creatable": [
+  "actions": [
     { "kind": "create", "label": "New tournament",
       "byPersonaIds": ["tabletop-organizer"], "scope": "tab", "presentation": "fab" },
     { "kind": "create", "workflowType": "tournament-ballot", "...": "..." }
@@ -70,7 +70,7 @@ engine at transition time, not assumed by the UI.
 
 Ballot/tournament **creation** is still seed-driven in Tabletop Club's
 frozen JSON, not a real organizer-facing creation form beyond the
-`creatable` binding shown above. Tracked open in
+`actions[]` create entry shown above. Tracked open in
 [Phase1_TabletopClub.md](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_Phase1_TabletopClub.md),
 judged lower priority than the capability gaps this archetype was built to
 close.

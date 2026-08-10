@@ -411,11 +411,11 @@ spec teach the wrong thing.
 
 | Product-doc phrasing that triggers it | Gap | Forward-looking shape | Status |
 |---|---|---|---|
-| "**any member can list / create a new** X" (list your own game, start a thread, submit a proposal) | **GAP-2** `instanceCreation` | `renderBindings[].creatable: { byPersonaIds, label }` on the initial-state binding | BLOCKING (Phases E/F) |
+| "**any member can list / create a new** X" (list your own game, start a thread, submit a proposal) | **GAP-2** `instanceCreation` | ⚠️ Shipped as `renderBindings[].actions: [{"kind":"create", "label", "byPersonaIds", "scope", "presentation"}]`, **not** the `creatable: {...}` shape this row originally proposed — `creatable` is dead grammar-1 vocabulary, silently dropped if used. See `render-bindings.md` for the real `actions[]` shape. | SHIPPED (Phases E/F) |
 | "a **per-item button that carries which item**" (vote for THIS candidate; borrow THIS one with a note) | **GAP-1** `transitionInputs` | `transitions[].inputs` + `{input.x}` interpolation + `renderBindings[].repeater.itemActions` | BLOCKING (Phase B) |
 | "a parent shows a **live tally/list of child rows**" as a field a formula reads (ballot reads its votes) | **GAP-4** `queryBackedSources` | `instanceDataSchema[].source: "query(childType where fk == id)"` | BLOCKING (Phase B) |
 | "notify / mark unread for **everyone except me**" | **GAP-3** `listMinusActor` | `setFromFormula` effect op + `removeAll(list, value)` formula fn | non-blocking |
-| "pre-fill the create form with **the context I tapped from**" (the tapped calendar date) | GAP-2 addition `prefill` | `creatable.prefill: { field: "{context.date}" }` + `{context.x}` | proposed |
+| "pre-fill the create form with **the context I tapped from**" (the tapped calendar date) | GAP-2 addition `prefill` | ⚠️ Shipped as `actions[].prefill: { field: "{context.date}" }` + `{context.x}` (on the `actions[]` entry, not a `creatable` key — see above) | SHIPPED |
 
 The full designed shapes and validator additions for all of these live in
 [`Loom_Communities_Workflow_Engine_3_GrammarExtensions.md`](../../Build%20Plan%20V2/Loom%20Communities%20Workflow%20Engine%20V3/Loom_Communities_Workflow_Engine_3_GrammarExtensions.md)

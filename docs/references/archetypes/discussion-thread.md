@@ -23,7 +23,7 @@ can use.
 {
   "states": ["open"], "role": "any", "tabId": "messages",
   "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
-  "creatable": [
+  "actions": [
     { "kind": "create", "label": "New thread", "...": "..." }
   ]
 }
@@ -44,7 +44,7 @@ this rendering for free — it is not scoped to `discussionThread`.
 
 Live thread list (query-bound, new threads appear without polling), open
 thread → send reply, mute/archive toggle, unread tracking, and a real
-"start a new thread" creation action (`creatable`, above) — all engine-
+"start a new thread" creation action (`actions[]`, above) — all engine-
 backed. What's explicitly **not** built: invites. The renderer contract this
 family used to claim (`'messages-inbox-thread-composer'` in
 `part11_shell_models.dart`) previously asserted invite support that does not

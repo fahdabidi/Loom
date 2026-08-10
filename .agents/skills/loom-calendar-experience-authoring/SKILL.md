@@ -20,7 +20,7 @@ validation.**
 Getting here took four rounds of real failures, each with a durable fix baked into this bundle: an
 over-narrow scope reading (a request needing two workflow types was wrongly refused — fixed in
 `00-INSTRUCTIONS.md`'s Scope section), an invented `creatable` render-binding key (fixed as a named
-example in Hard Rule 2), a ChatGPT Action-calling layer that either sent empty request bodies or
+example in Hard Rule 3), a ChatGPT Action-calling layer that either sent empty request bodies or
 **fabricated plausible-looking but definitely-fake error text** (`UnrecognizedKwargsError: (...)` is not
 a shape our Dart server can produce) instead of honestly reporting a failed call (fixed via the
 `packageJson`-string-wrapped request shape plus the new `19-debugging-validator-responses.md` anti-
@@ -29,11 +29,15 @@ with no visible progress (fixed via `x-openai-isConsequential: false` on both op
 round as a strong result, not a permanent guarantee — the mechanism is demonstrably capable of working,
 not proven immune to regressing.
 
-Use this Skill to write the JSON for a Loom Communities **Calendar (event-RSVP)** experience — the
-event/RSVP/reminder pattern verified live in Tabletop Club this build cycle. It deliberately does not
-cover any other experience type (payments, ballots, loans, marketplaces, document libraries, etc.); those
-belong to the full [`using-loom-to-build-an-extension`](../using-loom-to-build-an-extension/SKILL.md)
-skill, which also owns the build/validate/sideload/certify pipeline this Skill does not attempt.
+**Broadened 2026-08-09 — read the Scope section below, not this paragraph, for current coverage.** This
+Skill no longer covers Calendar/event-RSVP only. It covers every archetype confirmed real in
+`docs/references/archetypes/README.md` (`event-rsvp`, `votePoll`, `equipment-loan`, `paymentCheckout`,
+`approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`, `notificationInbox`) — see the
+"Scope" section for the current, authoritative list and the archetypes it still doesn't cover. It still
+does not own the build/validate/sideload/certify pipeline; that remains
+[`using-loom-to-build-an-extension`](../using-loom-to-build-an-extension/SKILL.md)'s job. This Skill also
+deliberately never reads that sibling Skill's `components/card-surfaces/*` material — see the "CardSurfaces
+vocabulary trap" warning in Scope for why.
 
 **This Skill only ever refers to [`docs/references`](../../../docs/references).** No `components/`,
 `workflows/`, `setup/`, or dart-tooling references — those are the internal repo's build/validate/certify

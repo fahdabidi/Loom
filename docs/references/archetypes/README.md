@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
-last_verified: 2026-08-05
+last_verified: 2026-08-09
 audience: llm-agent
 ---
 
@@ -13,8 +13,13 @@ instance.
 
 ## AGENT: hard rules
 
-1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist. An unknown one produces
-   `missing_template` and renders as a generic fallback card.
+1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist. ⚠️ **Not currently enforced by
+   the real validator** — confirmed 2026-08-09 by direct test: a package with an invalid
+   `cardSurfaceFamily` (e.g. `documentLibrary`) passed `community_package_validator.dart` with
+   `warningCount: 0`, no `missing_template` finding. `render-bindings.md` and `guide/05-validation.md`
+   both document `missing_template` as a real warning; neither is currently accurate. Until the validator
+   check is implemented (`workflow_validator.dart`), this hard rule has no automated safety net — the only
+   thing enforcing it is the author actually cross-checking this table.
 2. **Check the Status column.** A `🟡 GENERIC` archetype below still renders correctly — live
    transitions, live queries, creation, guards all genuinely work — it is just the shared
    icon+pills+buttons template, not a bespoke widget shaped like its name.
@@ -67,7 +72,7 @@ still-shallow-schema communities. Do not delete them.
 
 | `cardSurfaceFamily` | Purpose | Status | Evidence |
 |---|---|---|---|
-| `event-rsvp` | Event with RSVP + capacity + waitlist, a container of cards scoped to a view (Day/Week/Month/Pending), organizer-creatable | ✅ REAL | Per-row `event-rsvp-response` table (one row/member/event) queried live (`part28...:806-844,809`); scoped Day/Week/Month/Pending views (`part28...:983-1002`); real "+ New event" creation via the `creatable` binding (`...jsonc:271-297`). The CAL.1-CAL.4 redesign — spec-only as of 2026-07-17 — is fully implemented, not just proposed. |
+| `event-rsvp` | Event with RSVP + capacity + waitlist, a container of cards scoped to a view (Day/Week/Month/Pending), organizer-creatable | ✅ REAL | Per-row `event-rsvp-response` table (one row/member/event) queried live (`part28...:806-844,809`); scoped Day/Week/Month/Pending views (`part28...:983-1002`); real "+ New event" creation via an `actions: [{"kind":"create", ...}]` entry on the renderBinding (`...jsonc:271-297`) — ⚠️ **not** a binding-level `creatable` key, which is dead grammar-1 vocabulary removed by grammar 2 (`CHANGELOG.md:17-21`) and silently dropped if used; see `workflow-grammar.md`'s render-binding shape and `render-bindings.md` for the real `actions[]` shape. The CAL.1-CAL.4 redesign — spec-only as of 2026-07-17 — is fully implemented, not just proposed. |
 | `equipment-loan` | Browse/borrow/queue/return items | ✅ REAL | `EquipmentLoanArchetypeCard` (`part36...:369-693`): real borrow/join-queue/leave-queue/return/return-game/claim buttons driven by live `availableTransitionsAsync`, giveaway-vs-loan branching. Zero fallback to the generic template anywhere in the file (grepped). Flipped from 🟡 PARTIAL — Phase C built the missing per-item interaction. |
 | `votePoll` | Ballot: candidates, tally, tie/runoff; also tournament-attendance summary | ✅ REAL | `VotePollArchetypeCard` (`part35_votepoll_archetype_card.dart`), dispatched purely by `cardSurfaceFamily`. The old hardcoded `'ballot'`-tab path this archetype used to require is **deleted** (Phase B.8) — confirmed zero references to `TournamentBallotTabSurface`/`'ballot'` remain in `part02_tab_shell.dart`/`part11_shell_models.dart`. |
 | `paymentCheckout` | Dues/donations + receipt | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. Reached purely by `cardSurfaceFamily` (Phase D wired the Giving tab into the pipeline) — genuinely live, but the pay action itself is the shared template, not a bespoke widget. Phase D deliberately declined to build a fake receipt-ID platform service rather than fake the missing capability (`PhaseD_Giving.md`); a real ID-generation service remains a named, honest gap. |
@@ -76,6 +81,18 @@ still-shallow-schema communities. Do not delete them.
 | `discussionThread` | Threads + messages + compose | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard` + a new **generic** (not Messages-specific) structured-list renderer for the `messages` list-of-maps field. Phase F built real thread list, open/reply, mute/archive, unread tracking, and a "start new thread" creation action — all live-query/engine-backed — deliberately as generic infrastructure, not a bespoke `discussionThread` widget (`PhaseF_Messages.md:63`: "zero bespoke `discussionThread` widget"). |
 | `statusTimeline` | Timestamped progression of an item | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. Old bespoke timeline widget is dead code for Tabletop Club (still live for other communities). |
 | `notificationInbox` | List of notices, unread state | 🟡 GENERIC | No dispatcher case → `GenericWorkflowInstanceCard`. A bespoke `notificationInbox` widget was explicitly deferred as separate, larger, out-of-scope work (`PhaseB_Home.md:75`); only a small tweak so it shows full body in detail context. |
+
+⚠️ **`event-rsvp` requires `instanceData` fields literally named `eventDate` and `eventTime` — not
+illustrative names, hardcoded ones.** Found 2026-08-09: `EngineNativeCalendarSurface`
+(`part28_engine_native_calendar_surface.dart:343,635,642`) reads `instanceData['eventDate']` and
+`instanceData['eventTime']` by literal string key for the tile's displayed time label and its
+day-position sort — not by any field marked `type: "date"`/`type: "time"` in `instanceDataSchema`, and not
+configurable. A workflow bound to `tabId: "calendar"` with a differently-named time field (e.g.
+`startTime`) validates cleanly and installs, but silently renders no time label and sorts to midnight
+within its day. This is invisible in the validator and easy to miss when a workflow's own domain
+vocabulary suggests a better field name — confirm the exact names `eventDate`/`eventTime` before shipping
+any `event-rsvp`-bound workflow, regardless of what the data conceptually represents (a reservation start
+time, a meeting time, etc.).
 
 **All nine are now reached purely by declaring the `cardSurfaceFamily` in JSON — the "is it reachable
 at all" axis that used to gate every one of these is fully resolved for Tabletop Club.** Only three

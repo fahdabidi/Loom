@@ -1,417 +1,1681 @@
-// Cedar Commons HOA — engine-native community definition (v2 generic-archetype migration)
+// Cedar Commons HOA — canonical JSON, replaced 2026-08-09.
 //
-// Rebuilt from scratch against docs/references/communities/cedar-commons-hoa-product-experience.md.
-// No legacy Dart catalog content, no per-community bespoke widgets. Every workflow renders through
-// the shared generic tab vocabulary (home/calendar/marketplace/giving/admin/messages).
+// Authored by the broadened `.agents/skills/loom-calendar-experience-authoring` Skill (sandboxed to
+// docs/references + this community's product doc only, no access to any prior hand-authored version),
+// then independently judged (Community JSON Migration Tracker §1c) and found to beat the earlier
+// hand-authored fixture on every one of the 3 overlapping workflows — most importantly, the earlier
+// version had TWO real, confirmed bugs this file does not have:
+//   1. `locationOverlap` was placed inside `creationGuard` on the facility reservation, which never runs
+//      (`creationGuard` is PROPOSED, not implemented — `_createInstanceValidated` runs zero guard checks).
+//      Double-booking protection was silently a no-op. This file places it on the `confirm-reservation`
+//      transition guard instead — the real, working placement (see guards.md §9, fixed 2026-08-09 to say
+//      so inline after this exact mistake was found).
+//   2. `hoa-export-evidence` fabricated `"checksum": "SHA-{id}"` and `hoa-dues-payment` fabricated a
+//      `receiptId` — both AP-6 violations (checksum/integrity-hash generation and payment-receipt ID
+//      generation are both ❌ Not implemented platform services, per platform-services.md). This file has
+//      neither: `hoa-export-evidence` has no checksum field at all, and dues payment uses a plain
+//      `receiptStatus` enum instead of a fabricated ID.
+// The earlier hand-authored version is preserved for reference at
+// Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.HAND-AUTHORED-BACKUP.jsonc.
 //
-// Archetype reuse checked against actual widget capability, not assumed: 6 of 7 workflows use
-// EXISTING archetypes as-is (paymentCheckout, equipment-loan for reservations, approvalQueueItem,
-// discussionThread, notificationInbox, formEntry for export — see inline notes). Only ONE real gap
-// remains: embedded-vs-external document open, needed by hoa-member-document AND Youth Soccer's
-// soccer-waiver-document — a shared, narrowly-scoped addition, not a new bespoke "document library".
+// 3 real, independently-verified defects found during the judge pass were fixed before this file was
+// written (not present in the Skill's raw output):
+//   - The facility reservation declared a time field named `startTime`. The Calendar surface
+//     (`part28_engine_native_calendar_surface.dart`) reads `instanceData['eventTime']` by hardcoded
+//     literal name for both the displayed time label and day-position sorting — `startTime` would have
+//     parsed and validated fine but silently rendered no time and sorted every reservation to midnight.
+//     Renamed to `eventTime` throughout (schema, guards, formula, seed data).
+//   - Three terminal states had no `renderBinding` at all, so instances in them would vanish from every
+//     tab once reached: `hoa-member-document.archived`, `hoa-committee-decision.closed`,
+//     `hoa-owner-notification.withdrawn`. Added a `summary` binding for each.
+//   - `hoa-dues-payment`'s `record-payment-failure` transition only fired `from: ["due"]`, so a second
+//     failed payment attempt (a real product-doc requirement) couldn't be recorded once already in
+//     `failed`. Added `"failed"` to its `from` list.
 //
-// DRAFT — for review before implementation. Grammar verified against:
-//   docs/references/reference/workflow-grammar.md (v1.5.0)
-//   docs/references/reference/guards.md (v1.8.0)
-//   docs/references/reference/effects.md (v1.7.0)
-//   docs/references/reference/field-types.md (v1.1.0)
+// Archetype choice for `hoa-facility-reservation` — settled here, not left ambiguous: `event-rsvp`, not
+// `equipment-loan` (the hand-authored version's choice). Verified this degrades safely with none of
+// event-rsvp's RSVP-specific fields declared (no broken capacity meter, no empty attendee roster, no dead
+// RSVP button — all three are conditionally rendered only when their backing fields/rows exist), and it
+// gains the real Day/Week/Month Calendar views the product doc's "HOA calendar" surface actually asks for.
+// `equipment-loan` has no calendar-tab integration. If this decision needs revisiting, do it once, here —
+// two authoritative fixtures previously disagreed on this and that cost real re-litigation.
+//
+// Known, deliberate gaps (not fixed — the grammar genuinely cannot express these yet):
+//   - `hoa-member-document.documentUrl` is `type:"url"`, `openMode:"choice"` — PROPOSED, not yet rendered
+//     as tappable (CJM.2 implemented `openMode:"external"` only; `choice`/`embedded` need
+//     `webview_flutter`, not yet a dependency). Parses and validates; will render as a plain fact pill
+//     until that lands.
+//   - `hoa-export-evidence` has no checksum/transfer/rollback (payment processing, ID generation, and
+//     checksum/integrity-hash generation are all ❌ Not implemented platform services) and no `documents`
+//     tab exists (the `tabId` enum is closed to `{admin, calendar, giving, home, marketplace, messages}`),
+//     so the document/architectural-request workflows share `home` instead of a dedicated Documents tab.
+//
+// Validator status at merge time: {"status":"pass","errorCount":0,"warningCount":0,"findings":[]}
+
 {
   "schemaVersion": 1,
-  "packageId": "init_cedar_commons_hoa_v1",
+  "packageId": "init_cedar_commons_hoa_1",
   "communityId": "community_cedar_commons_hoa",
   "communityHandle": "cedar-commons-hoa",
   "displayName": "Cedar Commons HOA",
   "extensionId": "ext_cedar_commons_hoa",
-  "branding": {
-    "accentColor": "#2f5fa8",
-    "altText": "Cedar Commons HOA — civic blue, document and facility cues"
-  },
+  "branding": { "accentColor": "#1F4E79" },
   "seedDataFiles": [],
   "idempotencyKey": "init-cedar-commons-hoa-v1",
 
   "experience": {
     "experienceSchemaVersion": 2,
     "workflowGrammarVersion": 1,
+
     "displayName": "Cedar Commons HOA",
-    "tagline": "Pay dues, read documents, reserve facilities, and submit requests.",
-    "accentColor": "#2f5fa8",
-    "theme": { "accent": "#2f5fa8" },
+    "tagline": "Dues, documents, facilities, and board decisions for Cedar Commons homeowners.",
+    "accentColor": "#1F4E79",
+
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
 
     "personas": [
       {
-        "personaId": "hoa-homeowner",
+        "personaId": "hoa-member",
         "label": "Homeowner",
         "roleLabel": "Homeowner",
-        "description": "Pays dues, reserves facilities, reads governing documents, and submits requests."
+        "description": "Pays dues, reads governing documents, reserves facilities, and submits architectural requests."
       },
       {
         "personaId": "hoa-board",
-        "label": "Board Reviewer",
-        "roleLabel": "Board",
-        "description": "Reviews requests, manages documents, sends notices, and exports HOA records."
+        "label": "Board",
+        "roleLabel": "Board reviewer",
+        "description": "Reviews architectural requests, records committee decisions, publishes documents and notices, and manages HOA record exports."
       }
     ],
 
     "workflowDefinitions": {
 
-      // ---------------------------------------------------------------------------------------
-      // 1. hoa-dues-payment — paymentCheckout (generic-functional archetype, existing)
-      // ---------------------------------------------------------------------------------------
+      // 1. hoa-dues-payment — paymentCheckout (🟡 GENERIC, real). due/failed/paid states match the
+      // product doc exactly. receiptStatus is a plain enum, never a fabricated receipt id (AP-6).
       "hoa-dues-payment": {
         "initialState": "due",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "due":  { "label": "Dues due", "tone": "warning",
-                    "editableFields": ["amount", "dueDate"],
-                    "editGuard": { "allowedPersonaIds": ["hoa-board"] } },
+          "due": {
+            "label": "Dues due",
+            "tone": "warning",
+            "editableFields": ["purpose", "amountDue", "dueDate", "payerPersonaId"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "failed": { "label": "Payment failed", "tone": "negative" },
           "paid": { "label": "Paid", "tone": "positive", "isTerminal": true }
         },
         "transitions": [
           {
-            "id": "pay", "label": "Pay dues", "icon": "payments", "tone": "primary",
-            "from": ["due"], "to": "paid",
-            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
-            "inputs": { "method": { "type": "text", "required": true,
-                                     "options": ["Card", "Bank transfer", "Check"] } },
+            "id": "pay-dues",
+            "label": "Pay dues",
+            "icon": "payments_outlined",
+            "tone": "primary",
+            "from": ["due", "failed"],
+            "to": "paid",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorEqualsField": { "key": "payerPersonaId" }
+            },
             "effects": [
-              { "op": "set", "key": "paymentMethod", "value": "{input.method}" },
               { "op": "set", "key": "paidAt", "value": "$timestamp" },
-              { "op": "set", "key": "receiptId", "value": "RCPT-{id}" },
-              { "op": "set", "key": "lastAttemptStatus", "value": "none" }
+              { "op": "set", "key": "paidByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "receiptStatus", "value": "complete" }
             ]
           },
           {
-            // Demo-only stand-in for a real payment processor's decline callback — there is no
-            // processor in this local engine. Board-gated so it's a deliberate test hook, not a
-            // homeowner-facing control.
-            "id": "record-decline", "label": "Record failed attempt", "tone": "destructive",
-            "from": ["due"], "to": null,
+            "id": "record-payment-failure",
+            "label": "Record failed payment",
+            "icon": "error_outline",
+            "tone": "destructive",
+            "from": ["due", "failed"],
+            "to": "failed",
             "guard": { "allowedPersonaIds": ["hoa-board"] },
-            "effects": [ { "op": "set", "key": "lastAttemptStatus", "value": "failed" } ]
+            "inputs": {
+              "failureReason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "receiptStatus", "value": "failed" },
+              { "op": "set", "key": "failedAt", "value": "$timestamp" },
+              { "op": "set", "key": "failureReason", "value": "{input.failureReason}" }
+            ]
           }
         ],
         "renderBindings": [
-          { "states": ["due"],  "role": "actor", "tabId": "giving",
-            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" },
-          { "states": ["paid"], "role": "actor", "tabId": "giving",
-            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "summary" }
+          {
+            "states": ["due", "failed"],
+            "role": "actor",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New dues charge",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["paid"],
+            "role": "actor",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["due", "failed", "paid"],
+            "role": "receiver",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "payerPersonaId":    { "type": "personaId", "required": true },
-          "amount":            { "type": "number", "required": true, "writableBy": "formEntry",
-                                  "displayIcon": "attach_money", "labelTemplate": "${value}" },
-          "dueDate":           { "type": "date", "required": true, "writableBy": "formEntry",
-                                  "displayIcon": "event", "labelTemplate": "Due {value}" },
-          "paymentMethod":     { "type": "text?", "writableBy": "effect" },
-          "paidAt":            { "type": "date?", "writableBy": "effect",
-                                  "displayIcon": "check_circle_outline", "hideWhenEmpty": true },
-          "receiptId":         { "type": "text?", "writableBy": "effect",
-                                  "displayIcon": "receipt_long", "hideWhenEmpty": true },
-          "lastAttemptStatus": { "type": "text", "writableBy": "effect" }
+          "purpose": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "amountDue": {
+            "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "payments_outlined", "labelTemplate": "{value} USD",
+            "displayContexts": ["tile", "detail"]
+          },
+          "dueDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "event", "labelTemplate": "Due {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "payerPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Payer: {value}",
+            "displayContexts": ["detail"]
+          },
+
+          "paidAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "verified_outlined", "labelTemplate": "Paid {value}", "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "paidByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "receiptStatus": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "failedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "error_outline", "labelTemplate": "Failed {value}", "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "failureReason": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "report_gmailerrorred", "labelTemplate": "Reason: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "daysUntilDue": { "type": "number", "formula": "daysUntil(dueDate)", "displayContexts": [] },
+          "isOverdue": { "type": "bool", "formula": "isPast(dueDate)", "displayContexts": [] }
         }
       },
 
-      // ---------------------------------------------------------------------------------------
-      // 2. hoa-facility-reservation — reuses the existing "equipment-loan" archetype. That widget
-      // is generic (fact pills from instanceDataSchema + whatever transitions are available as
-      // buttons); "reserve"/"cancel" aren't among its specially-styled action ids (borrow/queue/
-      // return/claim) so they render via its generic button row, not the highlighted slot — a
-      // real but minor polish gap, not a blocker. No calendar-aware date/time visualization here
-      // yet either. Double-booking correctness is enforced by the engine's own locationOverlap
-      // creationGuard regardless of which archetype renders it — this is the actual fix for the
-      // earlier RSVP-model-on-a-reservation bug; event-rsvp is not reused.
-      // ---------------------------------------------------------------------------------------
-      "hoa-facility-reservation": {
-        "initialState": "reserved",
+      // 2. hoa-member-document — formEntry + type:"url" (documentUrl, openMode:"choice"), NOT
+      // documentLibrary (❌ NOT REAL). Separate read/acknowledged/access-requested/granted-access
+      // personaId[] lists, since these are per-member conditions (data), not per-instance states (AP-1).
+      "hoa-member-document": {
+        "initialState": "published",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "reserved": {
-            "label": "Reserved", "tone": "positive",
-            "editableFields": ["reminderOptIn"],
-            "editGuard": { "actorEqualsField": { "key": "reservedByPersonaId" } },
-            "creationGuard": {
-              "locationOverlap": {
-                "locationField": "facility", "dateField": "reservationDate",
-                "timeField": "reservationTime", "durationMinutes": 120
-              }
-            }
+          "published": {
+            "label": "Available",
+            "tone": "positive",
+            "editableFields": ["title", "version", "effectiveDate", "summary", "sourceLabel", "documentUrl"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
           },
+          "archived": { "label": "Superseded", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "mark-read",
+            "label": "Mark as read",
+            "icon": "visibility",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["hoa-member", "hoa-board"],
+              "actorInList": { "key": "readPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "readPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "mark-unread",
+            "label": "Mark unread",
+            "icon": "visibility_off",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["hoa-member", "hoa-board"],
+              "actorInList": { "key": "readPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "removeValue", "key": "readPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "acknowledge-document",
+            "label": "Acknowledge",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["hoa-member", "hoa-board"],
+              "actorInList": { "key": "acknowledgedPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "acknowledgedPersonaIds", "value": "$actor" },
+              { "op": "appendUnique", "key": "readPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "request-access",
+            "label": "Request access",
+            "icon": "lock_open",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorInList": { "key": "accessRequestedPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "accessRequestedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "grant-access",
+            "label": "Grant access",
+            "icon": "verified_user",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "granteePersonaId": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "grantedAccessPersonaIds", "value": "{input.granteePersonaId}" },
+              { "op": "removeValue", "key": "accessRequestedPersonaIds", "value": "{input.granteePersonaId}" }
+            ]
+          },
+          {
+            "id": "archive-document",
+            "label": "Supersede document",
+            "icon": "inventory",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "archived",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "archivedAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["published"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "Publish document",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["archived"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "sortable": true, "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "version": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "bookmark_border", "labelTemplate": "Version {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "effectiveDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "event_note", "labelTemplate": "Effective {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "summary": {
+            "type": "textarea", "writableBy": "formEntry", "storage": "inline", "maxLength": 500,
+            "displayContexts": ["detail"]
+          },
+          "sourceLabel": {
+            "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "corporate_fare", "labelTemplate": "Source: {value}",
+            "displayContexts": ["detail"]
+          },
+          "documentUrl": {
+            "type": "url", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "openMode": "choice", "displayIcon": "description", "labelTemplate": "Open {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+
+          "readPersonaIds": {
+            "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "visibility", "labelTemplate": "Read by {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "acknowledgedPersonaIds": {
+            "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "task_alt", "labelTemplate": "Acknowledged: {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "accessRequestedPersonaIds": {
+            "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "pending_actions", "labelTemplate": "Access requests: {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "grantedAccessPersonaIds": {
+            "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "verified_user", "labelTemplate": "Download access: {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "archivedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+
+          "acknowledgementCount": {
+            "type": "number", "formula": "size(acknowledgedPersonaIds)", "displayContexts": []
+          },
+          "isAcknowledgedByViewer": {
+            "type": "bool", "formula": "contains(acknowledgedPersonaIds, $viewer)", "displayContexts": []
+          },
+          "viewerMayDownload": {
+            "type": "bool", "formula": "contains(grantedAccessPersonaIds, $viewer)", "displayContexts": []
+          }
+        }
+      },
+
+      // 3. hoa-facility-reservation — event-rsvp (see file-header note on why, not equipment-loan).
+      // eventTime (NOT startTime — Calendar reads this literal field name) drives the tile time label
+      // and day-position sort. locationOverlap lives on confirm-reservation's transition guard, the real
+      // working placement (never creationGuard — see guards.md §9's now-inline caveat).
+      "hoa-facility-reservation": {
+        "initialState": "requested",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "requested": {
+            "label": "Requested",
+            "tone": "info",
+            "editableFields": ["title", "facility", "eventDate", "eventTime", "endTime", "purpose", "reservedByPersonaId"],
+            "editGuard": { "allowedPersonaIds": ["hoa-member", "hoa-board"] }
+          },
+          "reserved": { "label": "Reserved", "tone": "positive" },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "cancel", "label": "Cancel reservation", "tone": "destructive",
-            "from": ["reserved"], "to": "cancelled",
-            "guard": { "actorEqualsField": { "key": "reservedByPersonaId" } } },
-          { "id": "board-cancel", "label": "Cancel (board)", "tone": "destructive",
-            "from": ["reserved"], "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["hoa-board"] } }
-        ],
-        "renderBindings": [
-          { "states": ["reserved"],   "role": "actor", "tabId": "calendar",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" },
-          { "states": ["reserved"],   "role": "any",   "tabId": "calendar",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" },
-          { "states": ["cancelled"],  "role": "actor", "tabId": "calendar",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
-        ],
-        "instanceDataSchema": {
-          "reservedByPersonaId": { "type": "personaId", "required": true },
-          "facility":            { "type": "text", "required": true,
-                                    "displayIcon": "meeting_room", "labelTemplate": "{value}" },
-          "reservationDate":     { "type": "date", "required": true, "displayIcon": "event" },
-          "reservationTime":     { "type": "time", "required": true, "displayIcon": "schedule" },
-          "durationMinutes":     { "type": "number", "required": true },
-          "reminderOptIn":       { "type": "bool", "writableBy": "formEntry" }
-        }
-      },
-
-      // ---------------------------------------------------------------------------------------
-      // 3. hoa-member-document — the real gap is the "documentUrl" field's type below (url,
-      // openMode: choice — see field-types.md's PROPOSED type: "url" section), not the archetype.
-      // "documentLibrary" is ❌ NOT REAL in archetypes/README.md and would risk missing_template
-      // like exportWizard did — bound to "formEntry" instead, same as every other simple
-      // field+button shape. Confirmed shared pattern, not HOA-specific: Youth Soccer's
-      // soccer-waiver-document needs the identical shape (see
-      // riverside-youth-soccer-product-experience.md's Workflow-To-Surface-Mapping).
-      // ---------------------------------------------------------------------------------------
-      "hoa-member-document": {
-        "initialState": "available",
-        "states": {
-          "available": {
-            "label": "Available", "tone": "info",
-            "editableFields": ["title", "version", "documentUrl", "accessLevel"],
-            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
-          }
-        },
-        "transitions": [
-          { "id": "acknowledge", "label": "Acknowledge", "from": ["available"], "to": null,
-            "effects": [ { "op": "appendUnique", "key": "acknowledgedByPersonaIds", "value": "$actor" } ] },
-          { "id": "download", "label": "Download", "from": ["available"], "to": null,
-            "guard": { "instanceDataEquals": { "key": "accessLevel", "value": "open" } },
-            "effects": [ { "op": "appendUnique", "key": "downloadedByPersonaIds", "value": "$actor" } ] },
-          { "id": "request-access", "label": "Request access", "from": ["available"], "to": null,
-            "guard": { "instanceDataEquals": { "key": "accessLevel", "value": "restricted" } },
-            "effects": [ { "op": "appendUnique", "key": "accessRequestedByPersonaIds", "value": "$actor" } ] }
-        ],
-        "renderBindings": [
-          { "states": ["available"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }
-        ],
-        "instanceDataSchema": {
-          "title":                     { "type": "text", "required": true, "writableBy": "formEntry",
-                                          "displayIcon": "description", "labelTemplate": "{value}" },
-          "version":                   { "type": "text", "required": true, "writableBy": "formEntry" },
-          "documentUrl":               { "type": "url", "required": true, "writableBy": "formEntry",
-                                          "openMode": "choice", "displayIcon": "open_in_new",
-                                          "labelTemplate": "Open {value}" },
-          "accessLevel":               { "type": "text", "required": true, "writableBy": "formEntry" },
-          "acknowledgedByPersonaIds":  { "type": "personaId[]", "writableBy": "effect" },
-          "downloadedByPersonaIds":    { "type": "personaId[]", "writableBy": "effect" },
-          "accessRequestedByPersonaIds": { "type": "personaId[]", "writableBy": "effect" }
-        }
-      },
-
-      // ---------------------------------------------------------------------------------------
-      // 4. hoa-architectural-request — approvalQueueItem (generic-functional, existing).
-      // Owns the actual decision lifecycle. hoa-committee-decision (below) is a linked discussion
-      // log, not a second source of truth for state.
-      // ---------------------------------------------------------------------------------------
-      "hoa-architectural-request": {
-        "initialState": "submitted",
-        "states": {
-          "submitted":      { "label": "Submitted", "tone": "info",
-                               "editableFields": ["changeDescription", "attachmentRefs"],
-                               "editGuard": { "actorEqualsField": { "key": "requesterPersonaId" } } },
-          "under-review":   { "label": "Under review", "tone": "warning" },
-          "changes-needed": { "label": "Changes needed", "tone": "warning",
-                               "editableFields": ["changeDescription", "attachmentRefs"],
-                               "editGuard": { "actorEqualsField": { "key": "requesterPersonaId" } } },
-          "approved":       { "label": "Approved", "tone": "positive", "isTerminal": true },
-          "denied":         { "label": "Denied", "tone": "negative", "isTerminal": true }
-        },
-        "transitions": [
-          { "id": "start-review", "label": "Start review", "from": ["submitted"], "to": "under-review",
-            "guard": { "allowedPersonaIds": ["hoa-board"] } },
-          { "id": "approve", "label": "Approve request", "tone": "primary",
-            "from": ["under-review"], "to": "approved",
-            "guard": { "allowedPersonaIds": ["hoa-board"] },
-            "effects": [ { "op": "set", "key": "decisionAt", "value": "$timestamp" } ] },
-          { "id": "deny", "label": "Deny request", "tone": "destructive",
-            "from": ["under-review"], "to": "denied",
-            "guard": { "allowedPersonaIds": ["hoa-board"] },
-            "effects": [ { "op": "set", "key": "decisionAt", "value": "$timestamp" } ] },
-          { "id": "request-changes", "label": "Request changes",
-            "from": ["under-review"], "to": "changes-needed",
-            "guard": { "allowedPersonaIds": ["hoa-board"] },
-            "inputs": { "note": { "type": "text", "required": true } },
-            "effects": [ { "op": "set", "key": "boardComment", "value": "{input.note}" } ] },
-          { "id": "resubmit", "label": "Resubmit", "from": ["changes-needed"], "to": "submitted",
-            "guard": { "actorEqualsField": { "key": "requesterPersonaId" } } },
-          { "id": "reopen", "label": "Reopen", "from": ["approved", "denied"], "to": "under-review",
-            "guard": { "allowedPersonaIds": ["hoa-board"] } }
-        ],
-        "renderBindings": [
-          { "states": ["submitted", "under-review", "changes-needed"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
-          { "states": ["submitted", "under-review", "changes-needed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
-          { "states": ["approved", "denied"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "summary" }
-        ],
-        "instanceDataSchema": {
-          "requesterPersonaId": { "type": "personaId", "required": true },
-          "changeDescription":  { "type": "textarea", "required": true, "writableBy": "formEntry",
-                                   "displayIcon": "edit_note", "labelTemplate": "{value}" },
-          "attachmentRefs":     { "type": "list", "writableBy": "formEntry" },
-          "boardComment":       { "type": "text?", "writableBy": "effect" },
-          "decisionAt":         { "type": "date?", "writableBy": "effect" }
-        }
-      },
-
-      // ---------------------------------------------------------------------------------------
-      // 5. hoa-committee-decision — approvalQueueItem-family discussion log, linked to a request
-      // via requestId. Multiple board members may each log a position; the request's own board-
-      // gated transitions (above) remain the sole source of truth for the request's real state.
-      // ---------------------------------------------------------------------------------------
-      "hoa-committee-decision": {
-        "initialState": "open",
-        "states": {
-          "open":   { "label": "Open for comment", "tone": "info" },
-          "closed": { "label": "Closed", "tone": "neutral", "isTerminal": true }
-        },
-        "transitions": [
-          { "id": "add-comment", "label": "Add comment", "from": ["open"], "to": null,
+          {
+            "id": "confirm-reservation",
+            "label": "Reserve facility",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["requested"],
+            "to": "reserved",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member", "hoa-board"],
+              "locationOverlap": {
+                "locationField": "facility",
+                "dateField": "eventDate",
+                "timeField": "eventTime",
+                "durationMinutes": 120
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "confirmedAt", "value": "$timestamp" },
+              { "op": "set", "key": "confirmedByPersonaId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "request-change",
+            "label": "Change reservation",
+            "icon": "edit_calendar",
+            "tone": "secondary",
+            "from": ["reserved"],
+            "to": "requested",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorEqualsField": { "key": "reservedByPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "confirmedAt", "value": null },
+              { "op": "set", "key": "confirmedByPersonaId", "value": null }
+            ]
+          },
+          {
+            "id": "set-reminder",
+            "label": "Add reminder",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["requested", "reserved"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["hoa-member", "hoa-board"],
+              "actorEqualsField": { "key": "reservedByPersonaId" }
+            },
+            "inputs": {
+              "offsetHours": { "type": "number", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "reminderOffsetHours", "value": "{input.offsetHours}" },
+              { "op": "set", "key": "reminderSetAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-reservation",
+            "label": "Cancel reservation",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["requested", "reserved"],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorEqualsField": { "key": "reservedByPersonaId" },
+              "cancellationDeadline": {
+                "dateField": "eventDate",
+                "timeField": "eventTime",
+                "hoursBefore": 24
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "board-cancel-reservation",
+            "label": "Cancel (board)",
+            "icon": "block",
+            "tone": "destructive",
+            "from": ["requested", "reserved"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["hoa-board"] },
             "inputs": {
-              "position": { "type": "text", "required": true,
-                             "options": ["Lean approve", "Lean deny", "Need more info"] },
-              "comment":  { "type": "text", "required": true }
+              "cancellationNote": { "type": "text", "required": true }
             },
-            "effects": [ { "op": "append", "key": "comments",
-                           "value": { "personaId": "$actor", "position": "{input.position}",
-                                      "comment": "{input.comment}", "at": "$timestamp" } } ] },
-          { "id": "close", "label": "Close discussion", "from": ["open"], "to": "closed",
-            "guard": { "allowedPersonaIds": ["hoa-board"] } }
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "cancellationNote", "value": "{input.cancellationNote}" }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["open", "closed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }
+          {
+            "states": ["requested"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New reservation",
+                "byPersonaIds": ["hoa-member", "hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["reserved"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["requested", "reserved"],
+            "role": "receiver",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "requestId": { "type": "text", "required": true },
-          "comments":  { "type": "list", "writableBy": "effect" }
+          "title": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "facility": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "meeting_room", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "schedule", "labelTemplate": "From {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "endTime": {
+            "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "timelapse", "labelTemplate": "Until {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "purpose": {
+            "type": "textarea", "writableBy": "formEntry", "storage": "inline", "maxLength": 300,
+            "displayContexts": ["detail"]
+          },
+          "reservedByPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Reserved by {value}",
+            "displayContexts": ["detail"]
+          },
+
+          "confirmedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "check_circle_outline", "labelTemplate": "Confirmed {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "confirmedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "cancelledAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "event_busy", "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "cancellationNote": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "sticky_note_2", "labelTemplate": "Note: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "reminderOffsetHours": {
+            "type": "number", "writableBy": "effect", "storage": "inline", "displayContexts": []
+          },
+          "reminderSetAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "notifications_active", "labelTemplate": "Reminder set {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "reminderAt": {
+            "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))",
+            "displayIcon": "alarm", "labelTemplate": "Reminder {value}",
+            "displayContexts": ["detail"]
+          },
+          "daysUntilReservation": {
+            "type": "number", "formula": "daysUntil(eventDate)", "displayContexts": []
+          },
+          "hasStarted": { "type": "bool", "formula": "isPast(eventDate)", "displayContexts": [] }
         }
       },
 
-      // ---------------------------------------------------------------------------------------
-      // 6. hoa-owner-notification — notificationInbox (generic-functional, existing)
-      // ---------------------------------------------------------------------------------------
+      // 4. hoa-architectural-request — formEntry (author) / statusTimeline (actor summary) /
+      // approvalQueueItem (board receiver). Payment checkpoint is a real, engine-enforced
+      // requiresWorkflowsComplete guard on submit-request, not a display-only claim. Creates a
+      // hoa-committee-decision instance via an instance-scoped create action on the board's queue row.
+      "hoa-architectural-request": {
+        "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "draft": {
+            "label": "Draft",
+            "tone": "info",
+            "editableFields": ["title", "changeDescription", "propertyAddress", "requestedByPersonaId", "estimatedStartDate"],
+            "editGuard": { "allowedPersonaIds": ["hoa-member"] }
+          },
+          "submitted": { "label": "Submitted", "tone": "info" },
+          "under-review": { "label": "Under review", "tone": "info" },
+          "changes-needed": {
+            "label": "Changes requested",
+            "tone": "warning",
+            "editableFields": ["title", "changeDescription", "propertyAddress", "estimatedStartDate"],
+            "editGuard": { "allowedPersonaIds": ["hoa-member"] }
+          },
+          "reopened": { "label": "Reopened", "tone": "warning" },
+          "approved": { "label": "Approved", "tone": "positive" },
+          "denied": { "label": "Denied", "tone": "negative" },
+          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "submit-request",
+            "label": "Submit request",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["draft", "changes-needed"],
+            "to": "submitted",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorEqualsField": { "key": "requestedByPersonaId" },
+              "requiresWorkflowsComplete": ["hoa-dues-payment"]
+            },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "begin-review",
+            "label": "Start review",
+            "icon": "rate_review",
+            "tone": "primary",
+            "from": ["submitted"],
+            "to": "under-review",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "reviewerPersonaId", "value": "$actor" },
+              { "op": "set", "key": "reviewStartedAt", "value": "$timestamp" },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "request-changes",
+            "label": "Request changes",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["submitted", "under-review"],
+            "to": "changes-needed",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "note": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append", "key": "reviewNotes",
+                "value": { "author": "$actor", "note": "{input.note}", "timestamp": "$timestamp" }
+              },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "approve-request",
+            "label": "Approve request",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["under-review", "reopened"],
+            "to": "approved",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "decidedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "decidedAt", "value": "$timestamp" },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "deny-request",
+            "label": "Deny request",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["under-review", "reopened"],
+            "to": "denied",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "note": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "decidedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "decidedAt", "value": "$timestamp" },
+              {
+                "op": "append", "key": "reviewNotes",
+                "value": { "author": "$actor", "note": "{input.note}", "timestamp": "$timestamp" }
+              },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "reopen-case",
+            "label": "Reopen case",
+            "icon": "restart_alt",
+            "tone": "secondary",
+            "from": ["approved", "denied"],
+            "to": "reopened",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "note": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append", "key": "reviewNotes",
+                "value": { "author": "$actor", "note": "{input.note}", "timestamp": "$timestamp" }
+              },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "resume-review",
+            "label": "Resume review",
+            "icon": "play_arrow",
+            "tone": "primary",
+            "from": ["reopened"],
+            "to": "under-review",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "reviewerPersonaId", "value": "$actor" },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "attach-document",
+            "label": "Attach document",
+            "icon": "attach_file",
+            "tone": "secondary",
+            "from": ["draft", "submitted", "under-review", "changes-needed", "reopened"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["hoa-member", "hoa-board"] },
+            "inputs": {
+              "documentLabel": { "type": "text", "required": true },
+              "documentUrl": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append", "key": "supportingDocuments",
+                "value": {
+                  "label": "{input.documentLabel}",
+                  "source": "{input.documentUrl}",
+                  "addedBy": "$actor",
+                  "addedAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "withdraw-request",
+            "label": "Withdraw request",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["draft", "submitted", "under-review", "changes-needed"],
+            "to": "withdrawn",
+            "guard": {
+              "allowedPersonaIds": ["hoa-member"],
+              "actorEqualsField": { "key": "requestedByPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "lastActivityAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft", "changes-needed"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New architectural request",
+                "byPersonaIds": ["hoa-member"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["submitted", "under-review", "reopened", "approved", "denied", "withdrawn"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["submitted", "under-review", "reopened"],
+            "role": "receiver",
+            "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "workflowType": "hoa-committee-decision",
+                "label": "Open committee deliberation",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "instance",
+                "presentation": "button",
+                "prefill": { "requestId": "{context.id}", "subject": "{context.title}" }
+              }
+            ]
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "changeDescription": {
+            "type": "textarea", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "maxLength": 800, "displayContexts": ["detail"]
+          },
+          "propertyAddress": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "home_work", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "requestedByPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Requester: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "estimatedStartDate": {
+            "type": "date", "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "event", "labelTemplate": "Planned start {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "submittedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "displayIcon": "send", "labelTemplate": "Submitted {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "reviewerPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "gavel", "labelTemplate": "Reviewer: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "reviewStartedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "decidedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "how_to_reg", "labelTemplate": "Decided by {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "decidedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "event_available", "labelTemplate": "Decided {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "reviewNotes": {
+            "type": "list", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "comment", "labelTemplate": "{value.length} review notes",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "supportingDocuments": {
+            "type": "list", "writableBy": "effect", "storage": "inline",
+            "itemSchema": {
+              "label": { "type": "text" },
+              "source": { "type": "url", "openMode": "external" },
+              "addedBy": { "type": "text" },
+              "addedAt": { "type": "text" }
+            },
+            "displayIcon": "attach_file", "labelTemplate": "{value.length} attachments",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "committeeNotes": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "fact_check", "labelTemplate": "Committee minutes: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "committeeDecisionRecordedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "lastActivityAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+
+          "noteCount": { "type": "number", "formula": "size(reviewNotes)", "displayContexts": [] },
+          "attachmentCount": { "type": "number", "formula": "size(supportingDocuments)", "displayContexts": [] },
+          "hasCommitteeMinutes": {
+            "type": "bool", "formula": "if(committeeNotes == null, false, true)", "displayContexts": []
+          }
+        }
+      },
+
+      // 5. hoa-committee-decision — discussionThread (open) / statusTimeline (recorded/closed). A
+      // separate type from hoa-architectural-request, not duplication (AP-7): the request is the case
+      // lifecycle, this is the committee's deliberation record. record-decision writes back onto the
+      // linked request via relatedInstance + spawns a draft hoa-owner-notification. Board-only visibility
+      // (guarded readGuard) except a per-state readGuard override on `recorded` that opens it to the
+      // homeowner once minuted — the documented mechanism for "board-only while deliberating, visible once
+      // decided" (workflow-grammar.md's visibility/readGuard section).
+      "hoa-committee-decision": {
+        "initialState": "open",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["hoa-board"] }
+        },
+        "states": {
+          "open": {
+            "label": "In deliberation",
+            "tone": "info",
+            "editableFields": ["subject"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "recorded": {
+            "label": "Decision recorded",
+            "tone": "positive",
+            "readGuard": { "allowedPersonaIds": ["hoa-board", "hoa-member"] }
+          },
+          "closed": { "label": "Closed", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "post-comment",
+            "label": "Add comment",
+            "icon": "add_comment",
+            "tone": "primary",
+            "from": ["open"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "comment": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append", "key": "comments",
+                "value": { "author": "$actor", "body": "{input.comment}", "timestamp": "$timestamp" }
+              },
+              { "op": "set", "key": "lastCommentAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "record-decision",
+            "label": "Record decision",
+            "icon": "gavel",
+            "tone": "primary",
+            "from": ["open"],
+            "to": "recorded",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "inputs": {
+              "outcome": {
+                "type": "text",
+                "required": true,
+                "options": ["approved", "denied", "changes-requested"]
+              },
+              "minutes": { "type": "text", "required": true },
+              "ownerPersonaId": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "decisionOutcome", "value": "{input.outcome}" },
+              { "op": "set", "key": "minutes", "value": "{input.minutes}" },
+              { "op": "set", "key": "recordedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "recordedAt", "value": "$timestamp" },
+              {
+                "op": "set", "key": "committeeNotes", "value": "{input.minutes}",
+                "relatedInstance": "requestId"
+              },
+              {
+                "op": "set", "key": "committeeDecisionRecordedAt", "value": "$timestamp",
+                "relatedInstance": "requestId"
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "hoa-owner-notification",
+                "fields": {
+                  "subject": "Committee decision recorded",
+                  "body": "{input.minutes}",
+                  "recipientPersonaId": "{input.ownerPersonaId}",
+                  "audienceLabel": "Requesting homeowner",
+                  "relatedRequestId": "{requestId}"
+                }
+              }
+            ]
+          },
+          {
+            "id": "reopen-deliberation",
+            "label": "Reopen deliberation",
+            "icon": "restart_alt",
+            "tone": "secondary",
+            "from": ["recorded"],
+            "to": "open",
+            "guard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          {
+            "id": "close-deliberation",
+            "label": "Close deliberation",
+            "icon": "archive",
+            "tone": "destructive",
+            "from": ["open", "recorded"],
+            "to": "closed",
+            "guard": { "allowedPersonaIds": ["hoa-board"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["open"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "discussionThread",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["recorded"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["recorded"],
+            "role": "receiver",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["closed"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "requestId": {
+            "type": "text", "required": true, "storage": "inline", "displayContexts": []
+          },
+          "subject": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+
+          "comments": {
+            "type": "list", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "forum", "labelTemplate": "{value.length} comments",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "lastCommentAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "decisionOutcome": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "gavel", "labelTemplate": "Decision: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "minutes": {
+            "type": "textarea", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "description", "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "recordedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Recorded by {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "recordedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "event_available", "labelTemplate": "Recorded {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "commentCount": { "type": "number", "formula": "size(comments)", "displayContexts": [] },
+          "isDecided": {
+            "type": "bool", "formula": "if(decisionOutcome == null, false, true)", "displayContexts": []
+          }
+        }
+      },
+
+      // 6. hoa-owner-notification — notificationInbox (real, sent/read receiver states) + formEntry for
+      // the board's draft compose surface.
       "hoa-owner-notification": {
         "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "draft": { "label": "Draft", "tone": "neutral",
-                     "editableFields": ["audienceDescription"],
-                     "editGuard": { "allowedPersonaIds": ["hoa-board"] } },
-          "sent":  { "label": "Sent", "tone": "positive", "isTerminal": true }
+          "draft": {
+            "label": "Draft notice",
+            "tone": "info",
+            "editableFields": ["subject", "body", "recipientPersonaId", "audienceLabel"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "sent": { "label": "Sent", "tone": "positive" },
+          "read": { "label": "Read", "tone": "info" },
+          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "send", "label": "Send notice", "tone": "primary", "from": ["draft"], "to": "sent",
+          {
+            "id": "send-notice",
+            "label": "Send notice",
+            "icon": "campaign",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "sent",
             "guard": { "allowedPersonaIds": ["hoa-board"] },
-            "inputs": { "body": { "type": "text", "required": true } },
             "effects": [
-              { "op": "set", "key": "body", "value": "{input.body}" },
+              { "op": "set", "key": "senderPersonaId", "value": "$actor" },
               { "op": "set", "key": "sentAt", "value": "$timestamp" }
-            ] },
-          { "id": "mark-read", "label": "Mark read", "from": ["sent"], "to": null,
-            "guard": { "actorInList": { "key": "readByPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "readByPersonaIds", "value": "$actor" } ] }
+            ]
+          },
+          {
+            "id": "mark-notice-read",
+            "label": "Mark read",
+            "icon": "done",
+            "tone": "primary",
+            "from": ["sent"],
+            "to": "read",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "mark-notice-unread",
+            "label": "Mark unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["read"],
+            "to": "sent",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": null }
+            ]
+          },
+          {
+            "id": "withdraw-notice",
+            "label": "Withdraw notice",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "withdrawn",
+            "guard": { "allowedPersonaIds": ["hoa-board"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["draft"], "role": "actor", "tabId": "messages",
-            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" },
-          { "states": ["sent"],  "role": "receiver", "tabId": "messages",
-            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }
+          {
+            "states": ["draft"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "Compose owner notice",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["sent", "read"],
+            "role": "receiver",
+            "tabId": "messages",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["sent", "read"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["withdrawn"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "senderPersonaId":      { "type": "personaId", "required": true },
-          "audienceDescription":  { "type": "text", "writableBy": "formEntry" },
-          "body":                 { "type": "text?", "writableBy": "effect" },
-          "sentAt":               { "type": "date?", "writableBy": "effect" },
-          "readByPersonaIds":     { "type": "personaId[]", "writableBy": "effect" }
+          "subject": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "body": {
+            "type": "textarea", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "maxLength": 1000, "displayContexts": ["detail"]
+          },
+          "recipientPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "To: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "audienceLabel": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "groups_outlined", "labelTemplate": "Audience: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+
+          "senderPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "campaign", "labelTemplate": "From: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "sentAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "displayIcon": "schedule", "labelTemplate": "Sent {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "readAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "mark_email_read", "labelTemplate": "Read {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "relatedRequestId": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+
+          "isSent": { "type": "bool", "formula": "if(sentAt == null, false, true)", "displayContexts": [] }
         }
       },
 
-      // ---------------------------------------------------------------------------------------
-      // 7. hoa-export-evidence — NOT a new archetype. Structurally identical to paymentCheckout/
-      // notificationInbox (both generic-functional, no bespoke widget): a field, a button, a
-      // result record. Uses "formEntry" like any other simple field+action workflow. SHARED shape
-      // with Data Portability Community's export workflows — same binding choice applies there.
-      // ---------------------------------------------------------------------------------------
+      // 7. hoa-export-evidence — formEntry, NOT exportWizard (❌ NOT REAL). Deliberately has no checksum,
+      // export-id, or transfer/rollback field or effect anywhere — checksum/integrity-hash generation and
+      // ID generation are both ❌ Not implemented platform services (platform-services.md); fabricating a
+      // plausible-looking value for either is AP-6. change-scope (clear the generation stamps, return to
+      // scoping) is the honest subset of "rollback" that's actually expressible.
       "hoa-export-evidence": {
-        "initialState": "idle",
+        "initialState": "scoping",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["hoa-board"] }
+        },
         "states": {
-          "idle":  { "label": "Ready to export", "tone": "info",
-                     "editableFields": ["scope", "redactionApplied"],
-                     "editGuard": { "allowedPersonaIds": ["hoa-board"] } },
-          "ready": { "label": "Export ready", "tone": "positive", "isTerminal": true }
+          "scoping": {
+            "label": "Scope selected",
+            "tone": "info",
+            "editableFields": ["scopeLabel", "recordTypes", "rangeStart", "rangeEnd", "redactionProfile", "requestedByPersonaId"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "redaction-preview": { "label": "Redaction reviewed", "tone": "warning" },
+          "generated": { "label": "Export generated", "tone": "positive" },
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "generate-export", "label": "Generate export", "tone": "primary",
-            "from": ["idle"], "to": "ready",
+          {
+            "id": "preview-redaction",
+            "label": "Preview redaction",
+            "icon": "preview",
+            "tone": "primary",
+            "from": ["scoping"],
+            "to": "redaction-preview",
             "guard": { "allowedPersonaIds": ["hoa-board"] },
             "effects": [
-              { "op": "set", "key": "checksum", "value": "SHA-{id}" },
-              { "op": "set", "key": "generatedAt", "value": "$timestamp" }
-            ] }
+              { "op": "set", "key": "redactionPreviewedAt", "value": "$timestamp" },
+              { "op": "set", "key": "redactionPreviewedByPersonaId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "generate-export",
+            "label": "Generate export",
+            "icon": "download_for_offline",
+            "tone": "primary",
+            "from": ["redaction-preview"],
+            "to": "generated",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "generatedAt", "value": "$timestamp" },
+              { "op": "set", "key": "generatedByPersonaId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "change-scope",
+            "label": "Change scope",
+            "icon": "tune",
+            "tone": "secondary",
+            "from": ["redaction-preview", "generated"],
+            "to": "scoping",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "redactionPreviewedAt", "value": null },
+              { "op": "set", "key": "redactionPreviewedByPersonaId", "value": null },
+              { "op": "set", "key": "generatedAt", "value": null },
+              { "op": "set", "key": "generatedByPersonaId", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-export",
+            "label": "Cancel export",
+            "icon": "block",
+            "tone": "destructive",
+            "from": ["scoping", "redaction-preview", "generated"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["idle", "ready"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }
+          {
+            "states": ["scoping", "redaction-preview", "generated"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New record export",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["cancelled"],
+            "role": "actor",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "scope":            { "type": "text", "required": true, "writableBy": "formEntry" },
-          "redactionApplied": { "type": "bool", "writableBy": "formEntry" },
-          "checksum":         { "type": "text?", "writableBy": "effect" },
-          "generatedAt":      { "type": "date?", "writableBy": "effect" }
+          "scopeLabel": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "recordTypes": {
+            "type": "text", "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "category", "labelTemplate": "Records: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "rangeStart": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "date_range", "labelTemplate": "From {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "rangeEnd": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "event_repeat", "labelTemplate": "To {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "redactionProfile": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "visibility_off", "labelTemplate": "Redaction: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "requestedByPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Requested by {value}",
+            "displayContexts": ["detail"]
+          },
+
+          "redactionPreviewedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "preview", "labelTemplate": "Redaction reviewed {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "redactionPreviewedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "generatedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
+            "displayIcon": "download_done", "labelTemplate": "Generated {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "generatedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "hideWhenEmpty": true, "displayContexts": []
+          },
+          "cancelledAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "block", "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "coversDays": {
+            "type": "number", "formula": "daysBetween(rangeStart, rangeEnd)",
+            "displayIcon": "timeline", "labelTemplate": "{value} days covered",
+            "displayContexts": ["detail"]
+          },
+          "isRedactionReviewed": {
+            "type": "bool", "formula": "if(redactionPreviewedAt == null, false, true)",
+            "displayContexts": []
+          }
         }
       }
     },
 
     "workflowInstances": [
-      { "instanceId": "hoa-dues-priya", "workflowType": "hoa-dues-payment", "currentState": "due",
+      {
+        "instanceId": "dues-2026-q3-lot-14",
+        "workflowType": "hoa-dues-payment",
+        "currentState": "due",
         "createdByPersonaId": "hoa-board",
-        "instanceData": { "payerPersonaId": "hoa-homeowner", "amount": 450, "dueDate": "2026-09-01",
-                           "lastAttemptStatus": "none" } },
-
-      { "instanceId": "hoa-res-room-a", "workflowType": "hoa-facility-reservation", "currentState": "reserved",
-        "createdByPersonaId": "hoa-homeowner",
-        "instanceData": { "reservedByPersonaId": "hoa-homeowner", "facility": "Clubhouse Room A",
-                           "reservationDate": "2026-08-15", "reservationTime": "18:00",
-                           "durationMinutes": 120, "reminderOptIn": true } },
-
-      { "instanceId": "hoa-doc-rules", "workflowType": "hoa-member-document", "currentState": "available",
+        "instanceData": {
+          "purpose": "Q3 2026 quarterly assessment - Lot 14",
+          "amountDue": 425,
+          "dueDate": "2026-09-01",
+          "payerPersonaId": "hoa-member"
+        }
+      },
+      {
+        "instanceId": "dues-2026-q2-lot-14",
+        "workflowType": "hoa-dues-payment",
+        "currentState": "paid",
         "createdByPersonaId": "hoa-board",
-        "instanceData": { "title": "Governing Rules v3", "version": "3.0",
-                           "documentUrl": "https://cedar-commons-hoa.example/docs/governing-rules-v3.pdf",
-                           "accessLevel": "open", "acknowledgedByPersonaIds": [],
-                           "downloadedByPersonaIds": [], "accessRequestedByPersonaIds": [] } },
-
-      { "instanceId": "hoa-arch-fence", "workflowType": "hoa-architectural-request", "currentState": "submitted",
-        "createdByPersonaId": "hoa-homeowner",
-        "instanceData": { "requesterPersonaId": "hoa-homeowner",
-                           "changeDescription": "Repaint fence slate gray, trim stays cedar.",
-                           "attachmentRefs": [] } },
-
-      { "instanceId": "hoa-decision-fence", "workflowType": "hoa-committee-decision", "currentState": "open",
+        "instanceData": {
+          "purpose": "Q2 2026 quarterly assessment - Lot 14",
+          "amountDue": 425,
+          "dueDate": "2026-06-01",
+          "payerPersonaId": "hoa-member",
+          "paidAt": "2026-05-28T10:12:00",
+          "paidByPersonaId": "hoa-member",
+          "receiptStatus": "complete"
+        }
+      },
+      {
+        "instanceId": "doc-ccrs-amended-2024",
+        "workflowType": "hoa-member-document",
+        "currentState": "published",
         "createdByPersonaId": "hoa-board",
-        "instanceData": { "requestId": "hoa-arch-fence", "comments": [] } },
-
-      { "instanceId": "hoa-notice-pool", "workflowType": "hoa-owner-notification", "currentState": "draft",
+        "instanceData": {
+          "title": "Declaration of Covenants, Conditions & Restrictions (Amended 2024)",
+          "version": "4.2",
+          "effectiveDate": "2024-11-01",
+          "summary": "Recorded CC&Rs governing exterior modifications, setbacks, fencing, and assessment obligations for all Cedar Commons lots.",
+          "sourceLabel": "County Clerk & Recorder - recorded instrument 2024-0041887",
+          "documentUrl": "https://records.cedarcommonshoa.example/ccrs-amended-2024.pdf",
+          "readPersonaIds": ["hoa-board"],
+          "acknowledgedPersonaIds": ["hoa-board"],
+          "accessRequestedPersonaIds": [],
+          "grantedAccessPersonaIds": ["hoa-board"]
+        }
+      },
+      {
+        "instanceId": "doc-architectural-guidelines-2025",
+        "workflowType": "hoa-member-document",
+        "currentState": "published",
         "createdByPersonaId": "hoa-board",
-        "instanceData": { "senderPersonaId": "hoa-board", "audienceDescription": "All homeowners",
-                           "readByPersonaIds": [] } },
-
-      { "instanceId": "hoa-export-q3", "workflowType": "hoa-export-evidence", "currentState": "idle",
+        "instanceData": {
+          "title": "Architectural Review Guidelines",
+          "version": "2.0",
+          "effectiveDate": "2025-03-15",
+          "summary": "Approved materials, colour palette, fence heights, and the submission checklist the Architectural Review Committee applies to every exterior change request.",
+          "sourceLabel": "Cedar Commons Architectural Review Committee",
+          "documentUrl": "https://records.cedarcommonshoa.example/architectural-guidelines-v2.pdf",
+          "readPersonaIds": ["hoa-board", "hoa-member"],
+          "acknowledgedPersonaIds": [],
+          "accessRequestedPersonaIds": [],
+          "grantedAccessPersonaIds": ["hoa-board", "hoa-member"]
+        }
+      },
+      {
+        "instanceId": "reservation-clubhouse-2026-08-22",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "reserved",
+        "createdByPersonaId": "hoa-member",
+        "instanceData": {
+          "title": "Lot 14 family gathering",
+          "facility": "Clubhouse Main Room",
+          "eventDate": "2026-08-22",
+          "eventTime": "17:00",
+          "endTime": "20:00",
+          "purpose": "Private family birthday gathering; standard clubhouse setup, no catering vendor.",
+          "reservedByPersonaId": "hoa-member",
+          "confirmedAt": "2026-08-05T09:04:00",
+          "confirmedByPersonaId": "hoa-member",
+          "reminderOffsetHours": 48,
+          "reminderSetAt": "2026-08-05T09:05:00"
+        }
+      },
+      {
+        "instanceId": "reservation-pool-cabana-2026-09-05",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "requested",
+        "createdByPersonaId": "hoa-member",
+        "instanceData": {
+          "title": "End-of-summer neighbourhood swim",
+          "facility": "Pool Cabana",
+          "eventDate": "2026-09-05",
+          "eventTime": "10:00",
+          "endTime": "13:00",
+          "purpose": "Open swim for all lots; requesting the cabana and two shade tables.",
+          "reservedByPersonaId": "hoa-member"
+        }
+      },
+      {
+        "instanceId": "arch-request-lot-14-fence",
+        "workflowType": "hoa-architectural-request",
+        "currentState": "under-review",
+        "createdByPersonaId": "hoa-member",
+        "instanceData": {
+          "title": "Replace rear chain-link with cedar privacy fence",
+          "changeDescription": "Remove 82 linear feet of existing 4ft chain-link along the rear lot line and install 6ft dog-ear cedar privacy fencing, stained Cedar Natural per guideline 4.3. Posts set in concrete; no grade change; existing drainage swale untouched.",
+          "propertyAddress": "1428 Cedar Commons Way, Lot 14",
+          "requestedByPersonaId": "hoa-member",
+          "estimatedStartDate": "2026-09-15",
+          "submittedAt": "2026-08-01T14:20:00",
+          "reviewerPersonaId": "hoa-board",
+          "reviewStartedAt": "2026-08-03T09:00:00",
+          "reviewNotes": [
+            {
+              "author": "hoa-board",
+              "note": "Received and logged. Confirming fence height against guideline 4.3 before committee review.",
+              "timestamp": "2026-08-03T09:02:00"
+            }
+          ],
+          "supportingDocuments": [
+            {
+              "label": "Rear elevation drawing (PDF)",
+              "source": "https://records.cedarcommonshoa.example/arch/lot-14-fence-elevation.pdf",
+              "addedBy": "hoa-member",
+              "addedAt": "2026-08-01T14:22:00"
+            }
+          ],
+          "lastActivityAt": "2026-08-03T09:02:00"
+        }
+      },
+      {
+        "instanceId": "arch-request-lot-22-solar",
+        "workflowType": "hoa-architectural-request",
+        "currentState": "draft",
+        "createdByPersonaId": "hoa-member",
+        "instanceData": {
+          "title": "Roof-mounted solar array (south slope)",
+          "changeDescription": "Draft: 14-panel roof-mounted array on the south-facing slope, flush-mount, black frames. Still collecting the installer's wind-load letter before submitting.",
+          "propertyAddress": "1503 Juniper Court, Lot 22",
+          "requestedByPersonaId": "hoa-member",
+          "estimatedStartDate": "2026-10-05"
+        }
+      },
+      {
+        "instanceId": "decision-lot-14-fence",
+        "workflowType": "hoa-committee-decision",
+        "currentState": "open",
         "createdByPersonaId": "hoa-board",
-        "instanceData": { "scope": "Q3 dues and requests", "redactionApplied": true } }
+        "instanceData": {
+          "requestId": "arch-request-lot-14-fence",
+          "subject": "Replace rear chain-link with cedar privacy fence",
+          "comments": [
+            {
+              "author": "hoa-board",
+              "body": "Height is 6ft, which guideline 4.3 permits on rear lot lines only. Confirmed the run is entirely rear-facing.",
+              "timestamp": "2026-08-04T18:30:00"
+            },
+            {
+              "author": "hoa-board",
+              "body": "Asking the owner to confirm the stain colour matches the approved Cedar Natural sample before we minute a decision.",
+              "timestamp": "2026-08-05T08:15:00"
+            }
+          ],
+          "lastCommentAt": "2026-08-05T08:15:00"
+        }
+      },
+      {
+        "instanceId": "notice-pool-hours-2026-08",
+        "workflowType": "hoa-owner-notification",
+        "currentState": "sent",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "subject": "Pool hours change for the last two weeks of August",
+          "body": "Effective 17 August the pool closes at 8:00pm on weekdays while the filtration pump is replaced. Weekend hours are unchanged. The cabana remains available for reserved bookings.",
+          "recipientPersonaId": "hoa-member",
+          "audienceLabel": "All homeowners",
+          "senderPersonaId": "hoa-board",
+          "sentAt": "2026-08-06T07:45:00"
+        }
+      },
+      {
+        "instanceId": "notice-fence-decision-draft",
+        "workflowType": "hoa-owner-notification",
+        "currentState": "draft",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "subject": "Committee decision pending - rear fence request",
+          "body": "Draft notice held until the Architectural Review Committee minutes its decision on the Lot 14 rear fence request.",
+          "recipientPersonaId": "hoa-member",
+          "audienceLabel": "Requesting homeowner",
+          "relatedRequestId": "arch-request-lot-14-fence"
+        }
+      },
+      {
+        "instanceId": "export-2026-annual-records",
+        "workflowType": "hoa-export-evidence",
+        "currentState": "scoping",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "scopeLabel": "2026 annual HOA record export",
+          "recordTypes": "Dues ledger, architectural cases, committee minutes, owner notices",
+          "rangeStart": "2026-01-01",
+          "rangeEnd": "2026-12-31",
+          "redactionProfile": "Owner contact details redacted; lot numbers retained",
+          "requestedByPersonaId": "hoa-board"
+        }
+      }
     ]
   }
 }

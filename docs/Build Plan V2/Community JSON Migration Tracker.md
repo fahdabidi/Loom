@@ -324,6 +324,59 @@ per the tracker's own approval-scope rule):
     the result into the canonical `Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc`, re-run
     the §6 live UX Judge walkthrough fresh, and move to the next community.
 
+### Outcome (2026-08-09) — one loop, judge passed, merged
+
+Steps 1-9 above ran exactly once (no Skill-content iteration needed — the first broadened dispatch already
+passed). **Judge verdict: PASS** — a genuinely separate `Agent`-tool dispatch (not self-judged this time),
+which independently re-ran the real validator, independently re-verified the candidate's own claimed
+`creatable`/`missing_template` findings against source, and found 4 additional real defects of its own:
+
+- **D1 (most serious, new discovery):** the candidate named its facility-reservation time field
+  `startTime`; the Calendar surface reads `instanceData['eventTime']` by hardcoded literal name
+  (`part28_engine_native_calendar_surface.dart:343,635,642`) — parses/validates fine, silently renders no
+  time label and sorts every entry to midnight. This is now documented in `archetypes/README.md` (a note
+  right after the archetype table) so it stops being a silent trap.
+- **D3:** 3 terminal states had no `renderBinding` at all (`hoa-member-document.archived`,
+  `hoa-committee-decision.closed`, `hoa-owner-notification.withdrawn`) — instances in them would vanish
+  from every tab. Fixed with a `summary` binding each.
+- **D4 (minor):** `record-payment-failure` only fired `from: ["due"]`, so a second failed attempt (a real
+  product-doc requirement) couldn't be recorded. Added `"failed"` to its `from` list.
+- **D2 (reviewed, not applied):** the judge flagged `set-reminder`'s `allowedPersonaIds` including
+  `hoa-board` as unsatisfiable alongside its `actorEqualsField: reservedByPersonaId` guard. On direct
+  re-check: `confirm-reservation`'s own guard allows `hoa-board` to be the reserver too, so
+  `reservedByPersonaId` can legitimately be `hoa-board` and the guard is satisfiable in that case — not
+  applied as a fix, kept as an example of verifying a judge finding rather than applying it blindly.
+
+All 3 applied fixes (D1, D3, D4) re-validated clean (`0 errors, 0 warnings`) before merge. The merged file
+now also fixes both bugs the judge confirmed in the *prior* hand-authored version (the inert
+`creationGuard`/`locationOverlap` placement, and the fabricated `checksum`/`receiptId` AP-6 violations) —
+neither exists in the merged file. Comments explaining every archetype choice (including the
+event-rsvp-vs-`equipment-loan` decision for facility reservations, settled in the file's own header
+comment) were added back in, addressing the judge's one real complaint about the candidate (no review
+context, unlike the hand-authored version).
+
+**Merged into the canonical `Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc`** — the prior
+hand-authored version remains at `...HAND-AUTHORED-BACKUP.jsonc` for reference; the partial 2-workflow
+first-pass output remains at `...SKILL-AUTHORED-CALENDAR-SLICE.jsonc`.
+
+**Spec-doc fixes applied from the judge's 9 itemized recommendations** (all mechanical, evidence-backed —
+applied directly per this tracker's approval-scope rule, same as §1c's earlier 3 fixes):
+`archetypes/README.md` (the `creatable`→`actions[]` fix on the `event-rsvp` row, the new
+`eventDate`/`eventTime` hardcoded-name warning, and the `missing_template`-not-enforced caveat on Hard
+Rule 1); the same `creatable`→`actions[]` fix in 4 more archetype docs
+(`approval-queue.md`, `vote-poll.md`, `equipment-loan.md`, `discussion-thread.md`) whose copyable JSON
+snippets all had it — the actual highest-blast-radius finding, since these are reachable from this Skill's
+own read order; `guide/06-product-doc-to-json.md`'s two stale rows describing the same dead key as the
+BLOCKING-phase design (now marked SHIPPED with the real shape); `render-bindings.md` and
+`guide/05-validation.md`'s `missing_template` rows (marked NOT ENFORCED, confirmed by the judge's own
+negative-control test); `SKILL.md`'s stale "Calendar (event-RSVP) only" paragraph (contradicted its own,
+already-broadened Scope section below it) and its "Hard Rule 2" → "Hard Rule 3" citation. `chatgpt-upload/`
+mirror regenerated again to match.
+
+**§4 status**: Cedar Commons HOA's JSON is now authored, judged, and merged — but not yet marked complete.
+Per this tracker's own §6 gate, a fresh live UX Judge walkthrough against this merged file (not the
+smoke-test's earlier hand-authored version) is still required before this community closes out.
+
 ## 2. Approved shared code gaps — 3 tickets, dispatch first (they unblock every community's JSON)
 
 All three approved by the user 2026-08-09 ("Approving all the others (1,2,4)"). Each becomes its own
@@ -392,7 +445,7 @@ reasoning, kept as durable doc, not just chat explanation).
 
 | # | Community | Doc reconciliation | JSON authoring | Known code gaps | UX Judge walkthrough |
 |---|---|---|---|---|---|
-| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc) | **Mid-merge, see §1c** — canonical `.jsonc` is still the pre-skill hand-authored version (validator-clean, 1 bug found+fixed via live walkthrough per §1a #1, but confirmed via §1c to have a 2nd, real latent bug: `locationOverlap` on `creationGuard`, which never runs). Skill-authored calendar slice (2 of 7 workflows, `hoa-meeting`+`hoa-facility-reservation`, correctly avoids that bug) saved separately as `...SKILL-AUTHORED-CALENDAR-SLICE.jsonc`, not yet merged in. | CJM.2 (done, see §1a); §1a #2 `eventDate` gap and §1a #4 `role:"actor"`-vs-payer design question still open; §1c's creationGuard bug needs its own fix | **Smoke-tested 2026-08-09** (pre-§1c merge) — real install, real sign-in, Home/Calendar/Marketplace/Giving all exercised; not a full pass. Must re-run after the §1c merge lands. |
+| 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 3 new defects the judge found (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard) fixed before merge. | CJM.2 (done, see §1a); §1a #4 `role:"actor"`-vs-payer design question resurfaces if a board-created dues/decision workflow needs a non-creator actor — not hit by this file's own transitions, still worth resolving before Garden Club (near-identical shape) | **Must re-run** — §6's live UX Judge walkthrough was only ever run against the pre-merge hand-authored version (2026-08-09 smoke test). Required before this row can close. |
 | 2 | Garden Club | Locked per §3 (keep tool-loan + volunteer-shift) | Not started | CJM.1 (tool-loan reuse of `equipment-loan`); volunteer-shift archetype fit not yet deep-dived | Not run |
 | 3 | Neighborhood Book Club | Locked per §3 (reconcile `book-library-item`/`book-shared-library`) | Not started | CJM.3 (citation list on `book-search-ai-digest`) | Not run |
 | 4 | Riverside Youth Soccer | Locked per §3 (add `soccer-team-discussion` to doc) | Not started | CJM.2 (`soccer-waiver-document`) | Not run |

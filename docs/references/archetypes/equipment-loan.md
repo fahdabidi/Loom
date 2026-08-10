@@ -23,7 +23,7 @@ internally rather than needing a second family name.
 {
   "states": ["published"], "role": "any", "tabId": "marketplace",
   "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
-  "creatable": [
+  "actions": [
     { "kind": "create", "label": "Share a game", "...": "..." }
   ]
 }

@@ -100,7 +100,7 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 
 | Code | Meaning | Fix |
 |---|---|---|
-| `missing_template` (warning) | Unknown `cardSurfaceFamily` | Use one from [`archetypes/README.md`](../archetypes/README.md) |
+| `missing_template` (warning, ⚠️ **NOT ENFORCED** as of 2026-08-09 — see `archetypes/README.md` hard rule 1) | Unknown `cardSurfaceFamily` | Use one from [`archetypes/README.md`](../archetypes/README.md) — check by hand, the validator does not currently catch this |
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 

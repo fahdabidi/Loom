@@ -505,7 +505,7 @@ is expressed by *omission*, not by a permission flag.
 | Rule | Severity |
 |---|---|
 | Every `states` entry must be a declared state | error |
-| `cardSurfaceFamily` must be a registered archetype | warning (`missing_template`) |
+| `cardSurfaceFamily` must be a registered archetype | ⚠️ **NOT ENFORCED** as of 2026-08-09 — documented as `missing_template` (warning) but confirmed by direct test that the real validator emits nothing for an invalid value. Cross-check `archetypes/README.md`'s table by hand until this lands in `workflow_validator.dart`. |
 | A `primary` binding's surface must include an action-button row | error (`missing_action_button_row`) |
 | >32 bindings on one workflow | warning — a smell; likely two workflows |
 | >16 distinct roles | warning — same |
