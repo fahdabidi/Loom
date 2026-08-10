@@ -56,6 +56,18 @@ this week, what help or exchange is needed, and what records are available.
 | plant-exchange-submission | member | Plant exchange form | labeled details, privacy, reviewer state | Forms, vault/consent, events | B13/B25 |
 | garden-tool-loan-giveaway | member | Tool and giveaway marketplace | browse available tools/items, list/edit/delist a tool, choose loan or giveaway, queue/current-holder state, pickup/return or ownership transfer state | Shared item marketplace/loan/giveaway, notifications, audit | B25 |
 | garden-export-custom-schemas | owner | Export package review | selected garden_event and plant_exchange schemas, redaction preview, checksum, destination, change-scope path, download/export status | Export, documents, audit | B13/B25 |
+| garden-volunteer-shift | member/coordinator | Volunteer shift roster | shift title, open spot count, member sign-up/cancel state, coordinator close-shift state | Roster/sign-up, notifications | B25 |
+
+> **Added 2026-08-10** (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3): `garden-volunteer-shift` is real and implemented (`open ⇄ signed-up`, member sign-up/
+> cancel, coordinator-only close, `part02_tab_shell.dart:9007-9025`) but was missing from this doc entirely
+> — this row and the matching §7 row below close that gap. Keep it as its own separate workflow from
+> `garden-tool-loan-giveaway`, not merged in — they are unrelated (shift sign-up vs. item lending). Note for
+> whoever authors the engine-native JSON: the current implementation's `cardSurfaceFamily` for this workflow
+> (`volunteerRoster`) is **not** one of the real v2 archetypes (`docs/references/archetypes/README.md`) —
+> pick a real fit (closest candidates: `approvalQueueItem` for the coordinator's roster-management view, or
+> `formEntry`/`statusTimeline` for the simple open/signed-up shape) rather than carrying the unreal family
+> name forward.
 
 ## 7. Persona And State Matrix
 
@@ -65,6 +77,7 @@ this week, what help or exchange is needed, and what records are available.
 | plant-exchange-submission | member submits plant offer/request with variety and pickup window | coordinator reviews public summary and protected contact handoff | other members see availability and safe pickup details | submit disabled if labeled fields or privacy check are missing | private contact details hidden until approved handoff |
 | garden-tool-loan-giveaway | member lists, edits, delists, loans, queues for, borrows, or gives away a garden tool/item | owner/coordinator sees borrower, queue, current-holder/custody, claimant, pickup/return, condition, and due state | members can browse availability, queue position, current-holder privacy-safe state, and item condition | loan disabled when unavailable; queue shown when waitlisted; giveaway claim disabled after transfer | private owner/current-holder contact remains protected until approved handoff |
 | garden-export-custom-schemas | owner selects garden_event and plant_exchange schemas for export | provider/import reviewer sees checksum and redaction status | members see export status without protected fields | export disabled until redaction preview and checksum pass | non-owners cannot generate or transfer the export |
+| garden-volunteer-shift | member signs up for or cancels an open volunteer shift | coordinator sees open spot count and signed-up members | other members can see shift title and remaining open spots | sign-up disabled once no spots remain; cancel only available while signed up | non-members cannot sign up for club volunteer shifts |
 
 ## 8. Content And Seed Data Requirements
 
