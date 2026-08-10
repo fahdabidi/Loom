@@ -127,7 +127,10 @@ void _addFocusedTournamentFab(Map<String, dynamic> source) {
     'byPersonaIds': <String>['tabletop-organizer'],
     'scope': 'instance',
     'presentation': 'fab',
-    'prefill': <String, dynamic>{'eventId': '{context.id}'},
+    'prefill': <String, dynamic>{
+      'eventId': '{context.id}',
+      'ownerPersonaId': '\$actor',
+    },
   });
   calendarBinding['actions'] = actions;
   bindings[0] = calendarBinding;
@@ -216,6 +219,21 @@ void main() {
               .toSet();
         });
         expect(eventIds, contains('event-summer-tournament'));
+        final actorIds = await tester.runAsync(() async {
+          final engine = await workflowEngineForExtensionId(
+            installed.community.extensionId,
+          );
+          final home = await engine.queryInstances(
+            tabId: 'home',
+            personaId: 'tabletop-organizer',
+            limit: 100,
+          );
+          return home.items
+              .where((item) => item.instanceData['eventId'] == 'event-summer-tournament')
+              .map((item) => item.instanceData['ownerPersonaId'])
+              .toSet();
+        });
+        expect(actorIds, contains('tabletop-organizer'));
       } finally {
         await tester.runAsync(installed.dispose);
       }

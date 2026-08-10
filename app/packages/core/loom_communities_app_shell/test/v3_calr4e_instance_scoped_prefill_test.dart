@@ -35,4 +35,42 @@ void main() {
     expect(resolvedA['eventTitle'], instanceA.instanceData['title']);
     expect(resolvedB['eventTitle'], instanceB.instanceData['title']);
   });
+
+  test(r'instance-scoped prefill resolves "$actor" and "$timestamp"', () {
+    final instance = _instance('tournament-summer', const {
+      'title': 'Summer tournament',
+    });
+    const prefill = {
+      'ownerPersonaId': '\$actor',
+      'createdAt': '\$timestamp',
+    };
+
+    final resolved = resolveInstanceScopedPrefill(
+      prefill,
+      instance,
+      actorId: 'tabletop-organizer',
+    );
+
+    expect(resolved['ownerPersonaId'], 'tabletop-organizer');
+    expect(
+      DateTime.tryParse(resolved['createdAt'] as String),
+      isNotNull,
+    );
+  });
+
+  test(
+    r'tab-scoped prefill resolves "$actor" and "$timestamp" without context tokens',
+    () {
+    const prefill = {
+      'ownerPersonaId': '\$actor',
+      'createdAt': '\$timestamp',
+      'message': '\$actor is active at \$timestamp',
+    };
+
+    final resolved = resolveTabScopedPrefill(prefill, 'tabletop-member');
+
+    expect(resolved['ownerPersonaId'], 'tabletop-member');
+    expect(DateTime.tryParse(resolved['createdAt'] as String), isNotNull);
+    expect(resolved['message'], contains('tabletop-member'));
+  });
 }

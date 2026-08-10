@@ -145,6 +145,35 @@ void _allowBorrowWithoutDues(Map<String, dynamic> source) {
   definitions['equipment-loan'] = loan;
 }
 
+void _addShareGameActorPrefill(Map<String, dynamic> source) {
+  final definitions =
+      (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
+          as Map<String, dynamic>;
+  final loan = Map<String, dynamic>.from(definitions['equipment-loan'] as Map);
+  final bindings = List<dynamic>.from(loan['renderBindings'] as List);
+  final marketplaceIndex = bindings.indexWhere(
+    (binding) => (binding as Map)['tabId'] == 'marketplace',
+  );
+  final marketplaceBinding = Map<String, dynamic>.from(
+    bindings[marketplaceIndex] as Map,
+  );
+  final actions = List<dynamic>.from(
+    marketplaceBinding['actions'] as List<dynamic>,
+  );
+  final shareIndex = actions.indexWhere(
+    (action) =>
+        (action as Map)['kind'] == 'create' &&
+        (action['label'] == 'Share a game'),
+  );
+  final share = Map<String, dynamic>.from(actions[shareIndex] as Map)
+    ..['prefill'] = <String, dynamic>{'ownerPersonaId': '\$actor'};
+  actions[shareIndex] = share;
+  marketplaceBinding['actions'] = actions;
+  bindings[marketplaceIndex] = marketplaceBinding;
+  loan['renderBindings'] = bindings;
+  definitions['equipment-loan'] = loan;
+}
+
 void main() {
   testWidgets(
     'Marketplace presents borrow as a guarded FAB and keeps other transitions in the automatic row',
@@ -264,6 +293,60 @@ void main() {
           ),
           findsOneWidget,
         );
+      } finally {
+        await tester.runAsync(installed!.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Tab-scoped create prefill resolves "\$actor" and creates a readable instance',
+    (tester) async {
+      final installed = await tester.runAsync(
+        () => _install(
+          'calr4g-share-game-prefill',
+          mutate: (source) {
+            _allowBorrowWithoutDues(source);
+            _addShareGameActorPrefill(source);
+          },
+        ),
+      );
+      try {
+        await tester.pumpWidget(_app(installed!));
+        await _openCatanAsMember(tester);
+        await tester.tap(
+          find.byKey(const ValueKey('creatable-fab-game-listing')),
+        );
+        await _settle(tester);
+        expect(find.byType(AlertDialog), findsOneWidget);
+        await tester.enterText(
+          find.byKey(const ValueKey('new-game-listing-editor-title')),
+          'Owner field smoke test',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('new-game-listing-editor-category')),
+          'Strategy',
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('new-game-listing-submit')),
+        );
+        await _settle(tester);
+
+        final ownerIds = await tester.runAsync(() async {
+          final engine = await workflowEngineForExtensionId(
+            installed.community.extensionId,
+          );
+          final home = await engine.queryInstances(
+            tabId: 'marketplace',
+            personaId: 'tabletop-member',
+            limit: 100,
+          );
+          return home.items
+              .where((item) => item.instanceData['title'] == 'Owner field smoke test')
+              .map((item) => item.instanceData['ownerPersonaId'])
+              .toSet();
+        });
+        expect(ownerIds, contains('tabletop-member'));
       } finally {
         await tester.runAsync(installed!.dispose);
       }

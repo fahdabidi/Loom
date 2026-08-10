@@ -1243,6 +1243,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   machine: definition.value,
                   label: action.label!,
                   cardSurfaceFamily: binding.cardSurfaceFamily,
+                  resolvedInitialValues: resolveTabScopedPrefill(
+                    action.prefill,
+                    activePersona.personaId,
+                  ),
                 ),
     ];
     final instanceScopedFabActions = <_CreatableWorkflowAction>[
@@ -1276,6 +1280,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           resolvedInitialValues: resolveInstanceScopedPrefill(
                             action.prefill,
                             focusedInstance,
+                            actorId: activePersona.personaId,
                           ),
                         ),
     ];
@@ -1582,6 +1587,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         resolvedInitialValues: resolveInstanceScopedPrefill(
                           action.prefill,
                           instance,
+                          actorId: activePersona.personaId,
                         ),
                       ),
                       activePersona: activePersona,
