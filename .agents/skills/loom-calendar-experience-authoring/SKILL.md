@@ -103,6 +103,31 @@ This Skill deliberately never reads `using-loom-to-build-an-extension`'s
 `components/card-surfaces/*` material — that sibling Skill's own Operating Rule 15 points at the same
 superseded vocabulary this warning exists to avoid. This Skill only ever refers to `docs/references`.
 
+⚠️ **The `eventDate`/`eventTime` hardcoded-field-name trap** — found 2026-08-09 in a judged
+Cedar Commons HOA output. Any `event-rsvp`-bound workflow's date/time fields **must** be named literally
+`eventDate` and `eventTime`, not a synonym like `startDate`/`startTime`/`date`/`time`. This is not a style
+preference: `EngineNativeCalendarSurface` (`part28_engine_native_calendar_surface.dart:343,635,642`) reads
+`instanceData['eventDate']`/`instanceData['eventTime']` by literal Dart string key — for the tile's day
+position and its time label — not by declared `instanceDataSchema` type. A correctly-typed field named
+anything else validates cleanly (the JSON-grammar validator has no way to know these two keys are special)
+but silently renders no time label and sorts to midnight. **Self-check before emitting any `event-rsvp`
+workflow**: grep your own draft JSON for `eventDate`/`eventTime` on that workflow type's
+`instanceDataSchema` — if a date/time field exists under any other name, rename it (and every guard/effect/
+formula/renderBinding reference to it) before finishing. A validator-clean pass does **not** confirm this;
+it is a rendering-layer requirement the grammar checker cannot see.
+
+⚠️ **Reconcile every product-doc capability phrase against your transition graph before finishing** —
+found 2026-08-09 in the same review (a "record payment failure" transition only fired from one state, when
+the product doc described retrying after a failed attempt). If the source material (a product doc, or the
+request itself) uses repeat/retry/multi-attempt language — "retry", "resubmit", "try again", "reopen",
+"undo", "re-request" — walk every transition that phrase implies and confirm its `from` list actually
+covers every state a member could realistically be retrying from, not just the state you first wrote it
+against. This is a semantic completeness check the validator cannot perform (it has no access to your
+source prose, only your JSON) — treat it as your own responsibility, the same way Hard Rule 7 already
+requires you to never silently drop a stated requirement. Do this check explicitly, in writing if useful
+(a short list of capability phrases found → transition(s) that satisfy each), before presenting any package
+as finished.
+
 ## Read order
 
 Same load order as `docs/references/README.md`, plus the pattern for whatever archetype the request needs:
@@ -146,6 +171,13 @@ dart run loom_ux_judges:community_package_validator --package <your-file>.jsonc
 A provider with no tool access (the `chatgpt-upload/` test case) cannot run this. Its output is a
 self-checked draft only — walk it through the real validator, and the app-shell/emulator gates in
 `using-loom-to-build-an-extension`, before treating it as anything more.
+
+**Before treating a clean (`errorCount: 0`) validator pass as "done," also run the two self-checks from
+the Scope section's warning callouts above (`eventDate`/`eventTime` field naming, and product-doc
+repeat/retry phrase reconciliation) — neither is JSON-grammar-shaped, so neither will ever appear as a
+validator finding no matter how clean the pass is.** These are the two most recently confirmed gaps between
+"validator-clean" and "actually implements the intended experience"; a validator pass alone is necessary,
+not sufficient.
 
 ## `chatgpt-upload/` — the portable export
 

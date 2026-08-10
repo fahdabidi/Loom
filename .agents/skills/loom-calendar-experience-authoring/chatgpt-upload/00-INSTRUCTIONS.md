@@ -80,6 +80,20 @@ services per `14-platform-services.md`, so a hardcoded-looking hash is a hard an
    trap in the Scope section above; those names are a different, incompatible vocabulary.
 7. **When the grammar genuinely cannot express something, say so.** Never approximate, never silently
    drop a stated requirement, never substitute a hardcoded value for one that should be computed.
+8. **Name event date/time fields literally `eventDate`/`eventTime` on any `event-rsvp`-bound workflow —
+   never a synonym.** Found 2026-08-09: the real Calendar surface reads `instanceData['eventDate']`/
+   `instanceData['eventTime']` by hardcoded string key (for tile day-position and time-label display), not
+   by declared type. A field named e.g. `startDate`/`startTime` validates cleanly — the JSON-grammar
+   validator cannot see this rule — but silently renders no time and sorts to midnight. Before finishing
+   any `event-rsvp` workflow, grep your own draft for `eventDate`/`eventTime` on that type's
+   `instanceDataSchema` and every guard/effect/formula/renderBinding that references it.
+9. **Cross-reference repeat/retry language in the source material against your transition graph.** Found
+   2026-08-09: a "record payment failure" transition only fired from one state when the product doc
+   described retrying after failure. If the request or product doc uses words like "retry", "resubmit",
+   "try again", "reopen", "undo", or "re-request", confirm the transition(s) that phrase implies actually
+   cover every state a member could realistically be retrying from — not just the first state you wrote it
+   against. The validator has no access to your source prose, so it cannot catch this; treat it as your
+   own responsibility, same as rule 7.
 
 ## Read order
 
@@ -136,10 +150,22 @@ read), you have that tool, and this loop is mandatory, not optional:**
 4. Once `errorCount` is 0, read every warning too — several (e.g. `editable_fields_without_edit_guard`,
    `no_creation_path_for_editable_type`) point at real, easy-to-miss gaps (an editor that silently never
    renders, a type nothing can ever create an instance of). Fix what's clearly wrong.
-5. **If step 4 changed the JSON, call the validator one more time** so the response you report actually
-   describes the JSON you're about to show — never show a JSON and a validator response that came from
-   two different drafts.
-6. Once you have a real, clean (`errorCount: 0`) validator response for the exact final JSON, call
+5. **Run hard rules 8 and 9 explicitly — a clean validator response does NOT cover either of these, by
+   design.** The validator only checks JSON grammar; it cannot see the literal Dart string keys the
+   Calendar UI reads, and it has no access to your source product-doc prose, so neither check below will
+   ever appear as a `validateCommunityPackage` finding:
+   - **Hard rule 8**: for every `event-rsvp`-bound workflow, grep your own draft for `eventDate`/
+     `eventTime` on that type's `instanceDataSchema` (and every guard/effect/formula/renderBinding
+     referencing it). If the date/time field exists under any other name, rename it now.
+   - **Hard rule 9**: list every repeat/retry/multi-attempt phrase in the request or product doc
+     ("retry", "resubmit", "try again", "reopen", "undo", "re-request"), and for each one, name the
+     transition(s) that satisfy it and confirm their `from` list covers every state a member could
+     realistically be retrying from.
+   Fix anything either check surfaces before moving on.
+6. **If step 4 or step 5 changed the JSON, call the validator one more time** so the response you report
+   actually describes the JSON you're about to show — never show a JSON and a validator response that came
+   from two different drafts.
+7. Once you have a real, clean (`errorCount: 0`) validator response for the exact final JSON, call
    `buildExtensionPackage` (route `/package.json`) with that **same, exact** package (same request shape:
    `{"packageJson": "<string>"}`). This validates again internally and, if still clean, returns a **JSON
    object** with `downloadUrl` — a direct link to a real zip of the installable pair, generated
@@ -150,7 +176,7 @@ read), you have that tool, and this loop is mandatory, not optional:**
    inside `experience`) — fix that and retry both calls. This is a separate requirement from
    validator-cleanliness; `validateCommunityPackage` does not check these fields, only
    `buildExtensionPackage` does, because only the real app installer needs them.
-7. Only now, in one final message, show: the finished JSON, a short "Gaps / assumptions" section (for
+8. Only now, in one final message, show: the finished JSON, a short "Gaps / assumptions" section (for
    anything you deliberately left as a warning rather than fixing), the **exact, final** validator
    response (status/errorCount/warningCount/findings) — not a paraphrase — and `downloadUrl` presented as
    a **plain clickable link**, described as "download this to get both installable files as a zip." Below
@@ -188,7 +214,10 @@ that no real validator ran:
    referenced exists, every state is reachable, every non-terminal state has an outgoing transition,
    every `instanceData` key is declared in that type's schema, no computed field is seeded or
    effect-written, etc.).
-3. State clearly, in your final answer, that this was a manual self-check, not a real validator run, and
+3. Run hard rules 8 and 9 by hand exactly as described above (step 5 of the mandatory loop) — these never
+   run through the validator even when it IS available, so a missing/unreachable action changes nothing
+   about whether you need to do them.
+4. State clearly, in your final answer, that this was a manual self-check, not a real validator run, and
    list anything you were genuinely unsure about.
 
 ## What to deliver
