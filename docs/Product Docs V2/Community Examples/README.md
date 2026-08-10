@@ -3,10 +3,15 @@
 **The seven legacy-community product-experience docs (Garden Club, Camera Club, Chess Club, Book Club,
 Youth Soccer, Mosque, HOA) have moved to
 [`docs/references/communities/`](../../references/communities/README.md)** (2026-07-15), so every
-community's product doc lives in one place alongside the new engine-native Tabletop Club reference. This
-folder still holds the non-community product docs (ad-off, export/migration, the shell itself, the
-persona/role inventory, platform-social) and remains the home for any *new* community example doc until
-it is likewise relocated.
+community's product doc lives in one place alongside the new engine-native Tabletop Club reference.
+**`ad-off-product-experience.md`, `export-and-migration-product-experience.md`, and
+`platform-social-product-experience.md` likewise moved there (2026-08-10)** — despite their generic-sounding
+filenames, these are the product docs for the 3 remaining pure-legacy communities (Ad-Free Community, Data
+Portability Community, Member Social Space respectively; see each doc's own "Evidence community name" row),
+renamed to `ad-free-community-product-experience.md`, `data-portability-community-product-experience.md`,
+and `member-social-space-product-experience.md` at their new location. This folder still holds the
+non-community product docs (the shell itself, the persona/role inventory) and remains the home for any *new*
+community example doc until it is likewise relocated.
 
 This folder holds native Loom repo product experience specs for example communities reviewed by B25.
 

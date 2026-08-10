@@ -1,5 +1,32 @@
 # Ad-Off Product Experience
 
+> **Correction, 2026-08-10 (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3):** three gaps found during this doc's reconciliation pass, to resolve at JSON-authoring
+> time:
+> - §2 is missing an **Ad-Free Viewer** persona row — every workflow's §7 row describes a materially
+>   different experience once entitlement is active ("shell/ad slots honor active state", ads suppressed)
+>   than a Member who hasn't purchased ad-off and still sees ads. Added below as its own row rather than
+>   folded silently into the general Member persona.
+> - §3.1 requires a `Settlement` tab (and reuses `Ad-Free`/`Receipts`/`Documents`), none of which exist in
+>   the real, closed `tabId` enum (`docs/references/reference/render-bindings.md`: only
+>   admin/calendar/giving/home/marketplace/messages are real). The engine-native JSON must remap this doc's
+>   purchase/entitlement/receipt/settlement surfaces onto real tabs — `giving` is the natural fit for
+>   purchase/receipt (it already exists for exactly this kind of payment surface), `admin`/`home` for
+>   settlement/entitlement-management — the same structural constraint already resolved this migration
+>   effort for Cedar Commons HOA, Camera Club, and others.
+> - The B25 Card Surface Registry Mapping table below links to `../../CardSurfaces/*` files — confirmed
+>   (same as every other community doc this migration effort has touched) to be a superseded vocabulary that
+>   doesn't correspond to the 9 real archetypes (`docs/references/archetypes/README.md`; `paymentCheckout`
+>   is the real generic fit for every workflow in this doc). Treat the `Card surface family` column as
+>   historical context only.
+>
+> **AP-6 reminder for whoever authors the JSON:** none of `ad-off-receipt-evidence`'s receipt ID,
+> `ad-off-settlement-utility`'s settlement ID, or any payment-confirmation value may be fabricated — payment
+> processing and receipt/ID generation are `❌ Not implemented` platform services
+> (`docs/references/reference/platform-services.md`). Model the state/status honestly; leave any
+> would-be-backend-computed value unset or explicitly marked as a gap, the same pattern already used for
+> every other community's export-checksum fields this migration effort has touched.
+
 ## 1. Community Identity And Promise
 
 | Field | Value |
@@ -17,6 +44,7 @@
 | --- | --- | --- | --- | --- |
 | Member | Buy/view ad-off | Remove ads and see receipt/entitlement state. | Payment and receipt must be explicit. | Ads are suppressed according to entitlement and receipt is visible. |
 | Owner | Fund/sponsor community ad-off | Understand cost, settlement, and utility allocation. | Settlement/utility records need audit clarity. | Community ad-off state and funding record are clear. |
+| Ad-Free Viewer | A member with active ad-off entitlement | Experience the community with ads suppressed and confirm entitlement/receipt state. | Entitlement/receipt details are personal, not shared with other members. | Ads stay suppressed while entitlement is active; receipt/renewal state is visible only to this member. |
 
 ## 3. Information Architecture
 

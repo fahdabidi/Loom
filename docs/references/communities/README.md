@@ -51,6 +51,20 @@ architecture (`CommunityEventRsvpApi`-style API contracts), not `workflowDefinit
 state machine, a guard, or a formula — copying their shape would produce a v1 community. They are
 scheduled for migration to v2 via the Skill.
 
+## Three more legacy communities (no JSON at all — pure hardcoded Dart)
+
+| Community | Product experience doc |
+|---|---|
+| Member Social Space | [member-social-space-product-experience.md](./member-social-space-product-experience.md) |
+| Ad-Free Community | [ad-free-community-product-experience.md](./ad-free-community-product-experience.md) |
+| Data Portability Community | [data-portability-community-product-experience.md](./data-portability-community-product-experience.md) |
+
+Moved here 2026-08-10 from `docs/Product Docs V2/Community Examples/` (filenames there were generic —
+`ad-off-product-experience.md`, `export-and-migration-product-experience.md`,
+`platform-social-product-experience.md` — see each doc's own "Evidence community name" row). Unlike the
+seven above, these have **no JSON at all**, hardcoded/hand-authored in Dart with no `workflowDefinitions`.
+Same warning applies: do not use them as v2 authoring references; scheduled for migration via the Skill.
+
 ## Why Tabletop Club is the reference
 
 It was deliberately built to exercise **every** capability in the grammar, including the ones nothing

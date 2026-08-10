@@ -1,5 +1,23 @@
 # Platform Social Product Experience
 
+> **Correction, 2026-08-10 (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3):** three gaps found during this doc's reconciliation pass, to resolve at JSON-authoring
+> time:
+> - §2 is missing a **Blocked Member** persona row — `platform-blocked-target`'s own §7 row ("target cannot
+>   message while blocked") describes a materially different experience (message action disabled, safety
+>   state visible) than an ordinary Member, and deserves its own row rather than being folded silently into
+>   the general Member persona. Added below.
+> - §3.1 requires `Connections`/`Invites` tabs, neither of which exists in the real, closed `tabId` enum
+>   (`docs/references/reference/render-bindings.md`: only admin/calendar/giving/home/marketplace/messages
+>   are real). The engine-native JSON must remap this doc's connections/invites surfaces onto `home` (or
+>   `messages`, since connections are inherently a messaging-adjacent concept) — the exact same structural
+>   constraint already found and resolved this migration effort for Cedar Commons HOA, Camera Club, and
+>   Neighborhood Book Club's shared-library surface.
+> - The B25 Card Surface Registry Mapping table below links to `../../CardSurfaces/*` files — confirmed
+>   (same as every other community doc this migration effort has touched) to be a superseded vocabulary
+>   that doesn't correspond to the 9 real archetypes (`docs/references/archetypes/README.md`). Treat the
+>   `Card surface family` column as historical context only; pick a real archetype at authoring time.
+
 ## 1. Community Identity And Promise
 
 | Field | Value |
@@ -17,6 +35,7 @@
 | --- | --- | --- | --- | --- |
 | Member | Message, connect, invite/block | Manage community relationships and messages. | Block/invite states must be clear and privacy-safe. | Message/connection state is visible and reversible where appropriate. |
 | Moderator | Observe safety/social invariant behavior | Ensure required surfaces cannot be suppressed. | Sponsored/ad labels must be clear. | Social and ad surfaces remain accessible. |
+| Blocked Member | A member on the receiving end of another member's block | Understand why messaging/invites are unavailable without exposing the blocker's identity or reason. | Block reason/identity must stay private to the blocker; the blocked member sees only that contact is unavailable. | Blocked member cannot message/invite the blocker; no protected block-reason detail leaks to them. |
 
 ## 3. Information Architecture
 

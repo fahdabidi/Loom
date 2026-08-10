@@ -1,5 +1,30 @@
 # Export And Migration Product Experience
 
+> **Correction, 2026-08-10 (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3):** three gaps found during this doc's reconciliation pass, to resolve at JSON-authoring
+> time:
+> - §2 is missing a **Receiving Provider** persona row — every workflow's §7 "Receiver state" column already
+>   describes this role informally ("destination provider", "affected members see migration notice") but it
+>   was never given its own persona row alongside Owner/admin and Member. Added below.
+> - §3.1 requires `Export`/`Transfer`/`Documents`/`Audit` tabs, none of which exist in the real, closed
+>   `tabId` enum (`docs/references/reference/render-bindings.md`: only
+>   admin/calendar/giving/home/marketplace/messages are real). The engine-native JSON must remap this doc's
+>   export/verification/rollback surfaces onto `admin` (owner-facing review/action surfaces) and `home`
+>   (member-facing read-only notices) — the same structural constraint already resolved this migration
+>   effort for Cedar Commons HOA, Camera Club, and others.
+> - The B25 Card Surface Registry Mapping table below links to `../../CardSurfaces/export-import-transfer.md`
+>   for every workflow — confirmed (same as every other community doc this migration effort has touched) to
+>   be a superseded vocabulary that doesn't correspond to the 9 real archetypes
+>   (`docs/references/archetypes/README.md`). None of the 9 natively models an export/portability wizard;
+>   `formEntry`/`statusTimeline` are the closest honest approximations, the same conclusion already reached
+>   for Garden Club's/Chess Club's export workflows this migration effort.
+>
+> **AP-6 reminder for whoever authors the JSON:** none of `export-checksum-evidence`'s checksum,
+> `export-full-bundle`/`export-redacted-bundle`'s checksum, or `export-transfer-verification`'s transfer ID
+> may be fabricated — checksum/hash generation is a `❌ Not implemented` platform service
+> (`docs/references/reference/platform-services.md`), the exact same bug already found and fixed in Cedar
+> Commons HOA and Chess Club this migration effort. Leave these values unset or explicitly marked as a gap.
+
 ## 1. Community Identity And Promise
 
 | Field | Value |
@@ -17,6 +42,7 @@
 | --- | --- | --- | --- | --- |
 | Owner/admin | Export, verify, transfer, rollback | Move or back up community data safely. | Redaction and protected data must be explicit. | Export has scope, checksum, verification, and rollback status. |
 | Member | Understand data portability where relevant | Know what is exported/redacted. | Member-sensitive data must not leak. | Member sees appropriate notices or read-only export status. |
+| Receiving Provider | Destination system for a provider transfer | Verify and accept (or reject) an incoming transfer with a clear audit trail. | Only sees the transfer's own scope/checksum, never the source community's unrelated internal data. | Transfer verification result and rollback availability are clear to the receiving side. |
 
 ## 3. Information Architecture
 
