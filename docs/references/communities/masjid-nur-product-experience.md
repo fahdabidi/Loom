@@ -1,5 +1,32 @@
 # Masjid Nur Product Experience
 
+> **Correction, 2026-08-10 (Community JSON Migration effort, `docs/Build Plan V2/Community JSON Migration
+> Tracker.md` §3):** two bidirectional reconciliation gaps, confirmed by direct source read of the real
+> implementation (`app/packages/core/loom_communities_app_shell/assets/
+> Loom_Communities_Workflow_Engine_Mosque_Example.jsonc`, the actual JSON this community currently loads):
+> - `mosque-document-resource` (documented below in §3/§5/§6/§7/card-surface-registry) **does not exist**
+>   in the real implementation — none of its 9 real `workflowDefinitions` keys is `mosque-document-resource`.
+>   This is a genuine product-spec gap, not an implementation bug: build it fresh from this doc's own
+>   requirements when authoring the engine-native JSON (there is no legacy Dart/JSON version to reconcile
+>   against for this one).
+> - `mosque-discussion-thread` **is real and implemented** (`open ⇄ replied` reply cycle, admin-only
+>   `archive-thread`, `tabId: "messages"`, `cardSurfaceFamily: "discussionThread"` — both already real) but
+>   was never documented anywhere in this doc. Added as real rows to every table below.
+>
+> Total real, documented workflow count after this correction: **10** (8 already covered +
+> `mosque-document-resource` as new product-spec work + `mosque-discussion-thread` newly documented).
+>
+> **Separately confirmed:** `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, and
+> `wf_multi-persona-workflow-evidence` (5 row instances across §6/§7/§9/card-surface-registry below) are
+> **not real workflows at all** — they are literal Dart `testWidgets` names for this repo's B18/B19/B20
+> integration tests (`app/apps/loom_communities_demo/test/b18_persona_picker_test.dart`,
+> `b19_persona_aware_ux_test.dart`, `b20_multi_persona_workflow_evidence_test.dart`), which happen to use
+> Masjid Nur (`ext_mosque`) as their test-subject community. No `LoomWorkflowDefinition` with any of these
+> ids exists anywhere in the codebase. **Do not author engine-native JSON for any of these three** — the
+> same category of mistake already found and corrected in Chess Club's doc (`chess-local-install-open`/
+> `chess-route-home`). Left in place below per this tracker's standing "expand-only, never remove" rule, but
+> should be read as test-infrastructure labels, not real workflow requirements.
+
 ## 1. Community Identity And Promise
 
 | Field | Value |
@@ -65,6 +92,7 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | mosque-care-request | member | Protected care form/review | private/public split, recipient state, status history | Vault/cases/audit | B14/B25 |
 | mosque-neutral-notification | member | Notification inbox/detail | sender, audience, message body, timestamp, read/received state | Notifications/events | B14/B25 |
 | mosque-search-ai-citation | member | Search/AI answer | query, answer, citation/source visibility, follow-up action | Search/AI/digest | B14/B25 |
+| mosque-discussion-thread | member | Community discussion thread | thread title, latest message, reply/archive state | Messaging/events | B25 |
 | wf_demo-app-persona-picker | member | Persona switch support surface | available personas, current role, capability preview, disabled/hidden implications | App Shell/persona test harness | B18/B25 |
 | wf_community-persona-aware-ux | admin | Persona-aware admin view | admin-capable workflow list, disabled/read-only member rows, role explanation | App Shell/role policy | B19/B25 |
 | wf_community-persona-aware-ux | member | Persona-aware member view | member-capable workflow list, read-only/hidden admin rows, role explanation | App Shell/role policy | B19/B25 |
@@ -84,6 +112,7 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | mosque-care-request | member requests | care team receives neutral protected state | requester sees status | private fields hidden from general members | unauthorized denied |
 | mosque-neutral-notification | member receives neutral notice | sender sees delivery status | notice readable | action disabled after read if no reply allowed | non-recipient hidden |
 | mosque-search-ai-citation | member asks/searches | cited source visibility obeys permission | digest readable | citation hidden when source unauthorized | unauthorized source redacted |
+| mosque-discussion-thread | member posts/replies in community discussion | members see reply and thread state | non-actor members can read open/replied thread | reply disabled once archived | non-members cannot post or read private discussion |
 | wf_demo-app-persona-picker | member chooses role | selected persona drives visible capabilities | role inventory readable | unavailable roles disabled | non-test builds hide test picker |
 | wf_community-persona-aware-ux | admin sees owner/admin actions | member receives only permitted outputs | role policy readable | member-only rows hidden where required | unauthorized role cannot act |
 | wf_community-persona-aware-ux | member sees member actions | admin receives submitted state where applicable | read-only admin rows explained | admin actions disabled/hidden | unauthorized role cannot act |
@@ -116,6 +145,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | mosque-care-request | member | Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths. | submit request, approve request, send request, review request | reject, request changes, revise, withdraw, edit request | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | mosque-neutral-notification | member | Member reviews a privacy-safe care notification with sender, message body, timestamp, read state, and no protected details leaked. | receive notification, mark read, open inbox notice | archive notice, request follow-up, keep unread | Fresh screenshots must show sender, audience, timestamp, message body, read/received state, and protected-detail absence. |
 | mosque-search-ai-citation | member | Member asks a question and verifies the answer against visible public citation/source context without seeing unauthorized protected data. | search, ask question, open citation, save answer | refine query, hide source, report stale citation | Fresh screenshots must show query, answer, citation/source visibility, follow-up action, and permission guard. |
+| mosque-discussion-thread | member | Member evaluates a concrete discussion thread with sender/message context and reply/archive paths. | reply, send message | archive, mute | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | wf_demo-app-persona-picker | member | Tester selects the correct Masjid persona and sees how role selection changes available workflows before reviewing the community. | choose persona, switch role, inspect capabilities | change persona, cancel picker, return to default | Fresh screenshots must show selected persona, role capability explanation, and the resulting available/disabled workflow state. |
 | wf_community-persona-aware-ux | member | Member confirms their view contains member-safe workflows and hides/disables admin-only actions with a clear reason. | view member workflow, receive update, inspect read-only state | change persona, request access, leave unchanged | Fresh screenshots must show member role, allowed workflows, disabled/hidden admin rows, and explanation. |
 | wf_community-persona-aware-ux | admin | Admin confirms their view contains publishing/coordination workflows and shows how member receiver state will be created. | open admin workflow, publish/update, inspect receiver target | preview, save draft, switch persona | Fresh screenshots must show admin role, admin-capable workflows, preview/receiver state, and switch path. |
@@ -138,6 +168,7 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `mosque-care-request` | [protected-request](../../CardSurfaces/care-protected-request.md) | `CommunityProtectedRequestApi` | submit/update/withdraw, protected/public split, admin review, neutral notification | Demo renderer must show private/public split, recipient state, status history, and protected audit treatment. |
 | `mosque-neutral-notification` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | sender, audience, timestamp, message body, receiver read state | Demo renderer must show sender, audience, body, timestamp, and read/received state. |
 | `mosque-search-ai-citation` | [search-ai](../../CardSurfaces/search-ai-digest.md) | `CommunitySearchAiSurfaceApi` | query/history, answer, citation detail, source visibility, save/share | Demo renderer must show query, answer, citation/source visibility, and follow-up action. |
+| `mosque-discussion-thread` | [thread](../../CardSurfaces/discussion-message.md) *(stale registry — real fit is `discussionThread`, one of the 9 real archetypes, already correctly used)* | `CommunityThreadApi` | reply, archive, read/unread | `discussionThread` is real and already correctly used by the implementation's `tabId: "messages"` binding — keep using it. |
 | `wf_demo-app-persona-picker` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | persona switch, active role, capability preview, hidden/disabled state | Demo renderer must show persona options, selected role, capability impact, and current community state. |
 | `wf_community-persona-aware-ux` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | actor/receiver/read-only/disabled/hidden role rendering | Demo renderer must show admin/member differences, disabled/hidden explanations, and role-driven workflow availability. |
 | `wf_multi-persona-workflow-evidence` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | actor-created announcement, persona switch, receiver inbox/read state | Demo renderer must show admin-created sender/body/audience/timestamp and member receiver/read continuation. |
