@@ -1,0 +1,793 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-legacy-cedar-commons-hoa-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-member-document-start", "cedar-commons-hoa-hoa-member-document-action", "cedar-commons-hoa-hoa-member-document-complete", "cedar-commons-hoa-hoa-owner-notification-start", "cedar-commons-hoa-hoa-owner-notification-action", "cedar-commons-hoa-hoa-owner-notification-complete"],
+  "reviewedScreenshotHashes": ["088fb2e3a20a72bd5721cddb038159fcce30148a61bf6b92dd5ce631cdffa892", "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0", "399d4aafe604d869c6fc6348adde9dfacce39d1ed303252b32f618abf7767e47", "9e679f131ce4ea32a2fd0614fd65d8339191ac098c98c35c3a42d1d4cbaaa6b6", "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c", "6e48b551899c349f1b98b6f6a717bffe64eacf72c7e503b60c6be06cd81bdc6b", "79a991a7a3bd2ff0c70ec48da78f3f2e0710d7fc63453ef271a3c83c4f99d5c0", "a2217a62325ba9cad3310513c5886ce8fb374ab3b0ba43b90e291a8a191d8567", "fbe29ccd828f78f81ede75531b7c18f39006720bcf76b43ecae650b27fd6856d", "24563d2478fecd9f8d5df5eef27d96586254012cfed734e38a90dbf67f9af359", "3b2cfd9beb4239c7d31c829d96a754c3d31515167434ce3d89b897fd3c659a99", "0fe7e049bd0a9244c172e4cc5b580fa712351fe3efd25a9c9bc0b7e4ba2b26b0", "7c038e402c35beb6df13e932f98a4d7e3a587a6c3a1c3bbdeb0e58d166164d71", "606d1ecfdc1e974b7a970dea341412e3e6ba708c00ef9bc0b93fb3e2a40edfb3", "56c9b6e38708c5b901c1e0bb32b3b9d26dba89c269c16fb073d9c408859b81fa", "764ed22d9ca72e1e29dda0d56250df2e39aa2433b81c4b7f2da213c957f0a9d3", "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a", "96122afad79139800a010643e46da34385b9194a496377f6daecec0ececea1aa", "4cee1d240e8ab206cd7d74c19b4719e4408a07b635c680c4dbb35d8fcff98c17", "4778b54477859cea6c865d619133d1d08761b47fcb4fb42f4f3dfa0b61dbcbfc", "eebb0542e89f5f5f053fd8a284697832a10140009fd2667c0ab0f075192cd052"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "Across 21 Cedar Commons HOA screens, the same five-row block — Property / Record / History / Owner inbox / Change option — is rendered verbatim on at least 12 screens, and its body text is disjunctive placeholder copy rather than the record actually on screen (e.g. 'Community Rules, Room A reservation, dues receipt, or architectural case' appears on the dues payment, fence request, committee decision, and room reservation screens alike). Most descriptive text is written as capability spec rather than product copy — sentences ending in 'are visible', 'remain visible', 'match the state' — so a homeowner reading these screens learns what the app can display, not what their own reservation, dues bill, or fence request says. Several screens also show cross-workflow bleed: the facility-reservation action sheet asks the user to 'Choose attendance … Going, Maybe, or Not going' for a clubhouse room booking, the dues-payment start screen surfaces a 'Facility reservation a…' card, and the member-document start screen surfaces an 'HOA export' card. Only the owner-notification trio carries genuinely specific copy ('Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days', 'Send today at 4:15 PM'), which proves the bar the other five workflows fall short of; the review fails.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "Partially. The action and complete states are usually legible — action sheets carry a specific modal title ('Clubhouse Room A reservation', 'Fence color request', 'Quarterly HOA dues', 'HOA records export', 'Community Rules document', 'Send owner notice'), and complete screens carry an explicit terminal banner ('HOA record saved', 'Request outcome saved', 'Owner notified', 'Member result'). The start states are much weaker: five of seven open mid-scroll under the generic 'Cedar Commons HOA' app bar with no workflow title in view, so the facility-reservation start screen leads with a clipped 'Cedar Commons / Receipt/audit' chip row and a 'Response choices' card, and the architectural-request start screen leads with a half-cut line reading 'Commons HOA; sender is the HOA board.' Worse, the workflow identity on several start screens contradicts the row: the dues-payment start screen's only titled card is 'Facility reservation a…', and the member-document start screen's only titled card is 'HOA export'. A 'Waiting' pill appears on the export, architectural-request, and member-document starts without saying what is being waited on.",
+      "score": 48,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "On cedar-commons-hoa-hoa-dues-payment-start the only card title visible is 'Facility reservation a…' with a 'Reserve and pay' button, not a dues-payment surface",
+        "On cedar-commons-hoa-hoa-member-document-start the foreground card reads 'HOA export' / 'You can read the current details without changing …' rather than a Community Rules document",
+        "On cedar-commons-hoa-hoa-architectural-request-start the topmost visible text is the clipped fragment 'Commons HOA; sender is the HOA board.' with no workflow heading on screen",
+        "On cedar-commons-hoa-hoa-export-evidence-start a bare 'Waiting' pill sits at the right edge with no adjacent text explaining what is pending"
+      ],
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-member-document-start", "cedar-commons-hoa-hoa-owner-notification-start"]
+    },
+    {
+      "questionId": "copy-accuracy",
+      "question": "Does the displayed text read as real product copy describing actual Cedar Commons HOA content, or as generic template/spec filler?",
+      "answer": "Mostly spec filler. The recurring 'Record' row lists four unrelated record types joined by 'or' — 'Community Rules, Room A reservation, dues receipt, or architectural case' — on screens where exactly one of those is the subject, which is template text that was never resolved to the instance. The same is true of 'Change option: Cancel reservation, request changes, retry payment, or reopen where policy allows', shown identically on a document view and a payment. Section bodies are written from the capability spec's point of view: 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible', 'Labeled fields, privacy indicators, attachments, assignee, and status are visible', 'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible'. These describe the UI instead of showing the data — the dues screens never show a dollar amount, the export screens never show a file size or checksum value, and the reservation screens never show a date or time slot. The owner-notification and architectural-request screens are the exceptions with real specifics: 'Lot 42 fence repaint, slate gray, decision due Friday' and 'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days.'",
+      "score": 30,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "'Community Rules, Room A reservation, dues receipt, or architectural case.' renders under 'Record' on the dues, fence-request, committee-decision and room-reservation screens alike",
+        "'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' is shown in place of an actual dues amount on the dues-payment action sheet",
+        "'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible.' appears under 'Export workspace' with no scope, checksum or destination value rendered",
+        "By contrast the owner-notification screens show 'Send today at 4:15 PM to owner inbox and email receipt.' — a concrete, instance-level fact"
+      ],
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete"]
+    },
+    {
+      "questionId": "visual-repetition",
+      "question": "Do the screens avoid repeated generic card shells and thin/empty content where real content is expected?",
+      "answer": "No. The identical five-row icon list (house/Property, page/Record, clock/History, tray/Owner inbox, undo/Change option) is the dominant visual unit on at least twelve of the twenty-one screens, appearing as 'Event details', 'Export steps', 'Decision queue', 'Payment summary', 'Submitted details', and 'Submitted request' — six different headings over one identical body. Two screens duplicate the block within a single scroll: the facility-reservation action sheet shows 'Event details / Property / Lot 42, homeowner Avery Brooks…' at the top and again inside 'Choose attendance' at the bottom, and the owner-notification action sheet shows 'Sender and recipient / Message body' twice, once under 'Notice preview' and again under 'Delivery actions'. The export-evidence and member-document start screens both end in roughly 500px of empty dark canvas below a collapsed 'Local package details' row. Chip rows ('Cedar Commons', 'Receipt/audit', 'Documents', 'Availability', 'Outcome history') repeat verbatim across workflows and are visually indistinguishable from each other.",
+      "score": 27,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "The same Property/Record/History/Owner inbox/Change option list appears under 'Event details', 'Export steps', 'Decision queue', 'Payment summary' and 'Submitted details' headings",
+        "On cedar-commons-hoa-hoa-facility-reservation-action the row 'Property — Lot 42, homeowner Avery Brooks, Cedar Commons' renders twice in one scroll view",
+        "On cedar-commons-hoa-hoa-owner-notification-action 'Sender and recipient' + 'Message body' repeat verbatim under both 'Notice preview' and 'Delivery actions'",
+        "cedar-commons-hoa-hoa-export-evidence-start and -member-document-start both leave a large blank region under the collapsed 'Local package details' disclosure"
+      ],
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-member-document-start", "cedar-commons-hoa-hoa-owner-notification-action"]
+    },
+    {
+      "questionId": "actionability",
+      "question": "Are the available actions clear, and is it clear why disabled or minimized affordances are in that state?",
+      "answer": "Uneven. Primary verbs are strong where present — 'Reserve and pay', 'Pay and save receipt', 'Approve request', 'Generate export', 'Open document', 'Submit request' all say what will happen. But the recurring dark card carries a 'Minimized' chip with a target-reticle icon alongside both 'Tap for expanded view' and 'Expand' — three affordances that appear to do the same thing, and 'Minimized' is a state label styled as a button with no explanation of why the card is minimized. The 'Waiting' pill on three start screens names no blocking condition. On the member-document start screen the action slot reads 'Read only' with an eye icon — presented as a button but actually a permission state, with nothing saying why editing is unavailable. The 'Change details' and 'Request changes' buttons are rendered in a low-contrast translucent style over the blue card that reads closer to disabled than enabled.",
+      "score": 45,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "'Minimized' chip sits next to both 'Tap for expanded view' and 'Expand' on the facility-reservation, export, dues, committee and member-document start screens",
+        "'Read only' with an eye icon occupies the primary action slot on cedar-commons-hoa-hoa-member-document-start with no reason given",
+        "A 'Waiting' pill appears with no accompanying 'waiting for…' text on the export-evidence and architectural-request start screens",
+        "'Change details' renders as pale translucent-on-blue on cedar-commons-hoa-hoa-dues-payment-start, reading as inactive"
+      ],
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-member-document-start"]
+    },
+    {
+      "questionId": "workflow-scoping-correctness",
+      "question": "Does the content shown on each screen make sense for the workflow being demonstrated?",
+      "answer": "Not consistently. The clearest defect is the facility-reservation action sheet titled 'Clubhouse Room A reservation' whose main interactive card is 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going', with an 'Attendance options: Going, Maybe, Not going, and Change response remain available while the event is open' row. That is an RSVP-to-an-event model applied to booking a room; a homeowner reserving Room A does not RSVP to their own booking. Beyond that, the dues-payment start screen's foreground card is a facility-reservation card, the member-document start screen's foreground card is an HOA export card, the facility-reservation start screen's foreground card is 'Architectural request' with a 'Submit request' button, and the committee-decision start screen's foreground card is 'Member-visible docu…' with 'Waiting for the member form to be submitted.' In each case the state being demonstrated belongs to a different workflow than the row claims.",
+      "score": 33,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "'Choose attendance … before choosing Going, Maybe, or Not going' appears under the title 'Clubhouse Room A reservation'",
+        "cedar-commons-hoa-hoa-facility-reservation-start foregrounds an 'Architectural request' card with a 'Submit request' button",
+        "cedar-commons-hoa-hoa-committee-decision-start foregrounds 'Member-visible docu…' / 'Waiting for the member form to be submitted.'",
+        "cedar-commons-hoa-hoa-dues-payment-start foregrounds 'Facility reservation a…' with 'Payment details' and 'Reserve and pay'"
+      ],
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-member-document-start"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-facility-reservation-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start"],
+      "critique": "This is supposed to be the start of a clubhouse facility reservation, but the screen opens mid-scroll with the chip row 'Cedar Commons / Receipt/audit' clipped by the app bar, and the single most prominent card below the fold is 'Architectural request — Submitted details are ready for a decision and …' with a 'Submit request' button. The reservation affordance that does exist, 'Reserve and pay', sits inside a pale translucent card headed 'Response choices' whose body — 'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export progress visible.' — is capability prose, not a description of any room, date, or fee. Nothing on screen names the facility being reserved.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A reservation entry point that names the facility (Clubhouse Room A), shows the requested date/time slot, current availability, and the reservation fee, with 'Reserve and pay' as the single obvious primary action and no unrelated architectural-request card competing for the foreground.",
+      "visibleObservations": ["App bar 'Cedar Commons HOA' with bell, chat, and people icons", "Clipped chip row 'Cedar Commons' / 'Receipt/audit' cut by the app bar", "'Response choices' card: 'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export progress visible.'", "Translucent 'Change details' button and a 'Reserve and pay' pill", "Dark card titled 'Architectural request' with 'Minimized', 'Tap for expanded view', 'Member form', 'Expand', 'Submit request'", "Bottom nav: Home (selected), Documents, Payments, Messages — 'Messages' clipped at the right edge"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear this is the start of a facility reservation?",
+          "visibleEvidence": "Top card reads 'Response choices'; the largest card reads 'Architectural request'",
+          "why": "Neither heading names a facility or reservation; the word 'reservation' appears only inside the button label 'Reserve and pay', so the workflow identity is inferred rather than stated."
+        },
+        {
+          "question": "Does the copy describe actual Cedar Commons content?",
+          "visibleEvidence": "'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export progress visible.'",
+          "why": "'the amount or scope' and 'receipt or export progress' are disjunctive template stubs covering multiple workflows rather than this reservation's fee and status."
+        },
+        {
+          "question": "Is the state of the 'Minimized' card explained?",
+          "visibleEvidence": "'Minimized' chip beside 'Tap for expanded view' and a separate 'Expand' button",
+          "why": "Three overlapping expand affordances and a state chip styled as a button give no signal about which one to use or why the card is collapsed."
+        }
+      ],
+      "screenshotHash": "088fb2e3a20a72bd5721cddb038159fcce30148a61bf6b92dd5ce631cdffa892"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-facility-reservation-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-action"],
+      "critique": "The modal title 'Clubhouse Room A reservation' is good, but the body is the wrong workflow: the main card is 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going', with 'Attendance options: Going, Maybe, Not going, and Change response remain available while the event is open.' A homeowner booking Room A is not RSVPing to an event. Above it, 'Event details' renders the generic five-row block whose 'Record' value is the un-resolved list 'Community Rules, Room A reservation, dues receipt, or architectural case.' The Property row 'Lot 42, homeowner Avery Brooks, Cedar Commons HOA' then repeats verbatim at the bottom of the same scroll view.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A reservation booking sheet showing the requested date and time block for Clubhouse Room A, capacity, any conflicting bookings, the deposit/fee, and Confirm/Change-slot/Cancel actions — not event RSVP controls.",
+      "visibleObservations": ["Modal header 'Clubhouse Room A reservation' with an X close", "'Event details' card with Property / Record / History rows", "'Record: Community Rules, Room A reservation, dues receipt, or architectural case.'", "Chips 'Cedar Commons', 'Receipt/audit', 'Documents'", "'Choose attendance' card with 'Going, Maybe, or Not going' language", "'Member reminder — The saved response keeps calendar, reminder, and capacity status visible.'", "'Property — Lot 42, homeowner Avery Brooks, Cedar Commons' repeated at the bottom"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the shown content make sense for a facility reservation?",
+          "visibleEvidence": "'Choose attendance' / 'Going, Maybe, Not going, and Change response remain available while the event is open.'",
+          "why": "RSVP semantics belong to an events workflow; applying them to a room booking means the demonstrated interaction is not the reservation action at all."
+        },
+        {
+          "question": "Is the record identified specifically?",
+          "visibleEvidence": "'Community Rules, Room A reservation, dues receipt, or architectural case.'",
+          "why": "A four-way 'or' list shows the template was never bound to this instance; the user cannot tell which record they are acting on."
+        },
+        {
+          "question": "Is content repeated within one view?",
+          "visibleEvidence": "'Property — Lot 42, homeowner Avery Brooks, Cedar Commons' appears at both the top and bottom",
+          "why": "The same identity row is rendered twice in one scroll, padding the screen without adding information."
+        }
+      ],
+      "screenshotHash": "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-facility-reservation-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-complete"],
+      "critique": "The completion state is legible — a receipt icon, the heading 'Clubhouse Room A reservation', and a confirming banner 'HOA record saved' — but the confirmation says nothing about the reservation that was just made. The subhead and the banner body are the identical sentence, 'The homeowner record now shows owner, amount or decision, status history, and member next steps.', printed twice on one screen, and 'amount or decision' is a template disjunction rather than a booked slot or a fee. Below it the same 'Event details' block reappears with 'Record: Community Rules, Room A reservation, dues receipt, or architectural case.' A real confirmation would state the date, time, room, and confirmation number.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A booking confirmation showing 'Clubhouse Room A, Sat Aug 15, 2–5 PM, confirmation #, $75 deposit paid', with Add to calendar / Cancel reservation / View receipt actions.",
+      "visibleObservations": ["Heading 'Clubhouse Room A reservation' with a receipt icon", "Subhead 'The homeowner record now shows owner, amount or decision, status history, and member next steps.'", "'Event details' card repeating Property / Record / History", "Chips 'Cedar Commons', 'Receipt/audit', 'Documents'", "Banner 'HOA record saved' whose body duplicates the subhead word for word"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the completion state clear?",
+          "visibleEvidence": "'HOA record saved' banner with a receipt icon",
+          "why": "The terminal state reads clearly, which is the screen's one strength."
+        },
+        {
+          "question": "Does the confirmation describe what was reserved?",
+          "visibleEvidence": "'now shows owner, amount or decision, status history, and member next steps.'",
+          "why": "No date, time, room capacity, or amount appears anywhere; the copy describes the record's schema instead of the booking."
+        },
+        {
+          "question": "Is text duplicated?",
+          "visibleEvidence": "The identical sentence appears as the page subhead and again inside the 'HOA record saved' card",
+          "why": "Printing the same sentence twice within one viewport is visible filler rather than a summary plus detail."
+        }
+      ],
+      "screenshotHash": "399d4aafe604d869c6fc6348adde9dfacce39d1ed303252b32f618abf7767e47"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-export-evidence-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-export-evidence-start"],
+      "critique": "The 'HOA export' card with a download icon and a clear 'Generate export' button correctly signals the workflow, but the card is truncated at 'Data package includes scope, protected fields, a…' so the user cannot read what the package contains, and the scope is never shown elsewhere on the screen. A 'Waiting' pill floats at the right edge of the blue card above with no adjacent text saying what is being waited for. Below the card, the collapsed 'Local package details' disclosure is followed by roughly a third of a screen of empty dark canvas where the record list or size estimate should be. The chip row 'Cedar Commons / Receipt/audit / Documents / Availability / Outcome history' is the same chip row shown on the dues and member-document screens.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An export start screen naming what will be exported (e.g. '4 records: Community Rules v2026.3, Lot 42 dues ledger, Room A bookings, fence case file'), the estimated file size, redaction setting, and destination, with 'Generate export' as primary.",
+      "visibleObservations": ["Chips 'Cedar Commons', 'Receipt/audit', 'Documents', 'Availability', 'Outcome history'", "'Waiting' pill with a clock icon at the right edge", "Dark card 'HOA export' with truncated body 'Data package includes scope, protected fields, a…'", "Buttons 'Tap for expanded view', 'Data package', 'Expand', 'Generate export'", "Collapsed row 'Local package details' with a chevron", "Large empty dark region below the disclosure", "Bottom nav Home / Board / Documents / Payments"],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user tell what will be exported?",
+          "visibleEvidence": "'Data package includes scope, protected fields, a…' truncated mid-word",
+          "why": "The one sentence describing package contents is cut off and no record list, count, or size appears anywhere on screen."
+        },
+        {
+          "question": "Is the 'Waiting' state explained?",
+          "visibleEvidence": "A 'Waiting' pill with a clock icon and no adjacent label",
+          "why": "A pending indicator with no subject leaves the user unable to tell whether anything is blocking the export."
+        },
+        {
+          "question": "Is there thin or empty content?",
+          "visibleEvidence": "Roughly 500px of blank canvas below 'Local package details'",
+          "why": "The lower third of the screen renders nothing where package contents would be expected."
+        }
+      ],
+      "screenshotHash": "9e679f131ce4ea32a2fd0614fd65d8339191ac098c98c35c3a42d1d4cbaaa6b6"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-export-evidence-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-export-evidence-action"],
+      "critique": "Titled 'HOA records export' and presenting a numbered 1–5 'Export steps' list, this screen looks structured but the five steps are not export steps — they are the same Property / Record / History / Owner inbox / Change option block used on the reservation, dues, and committee screens, now numbered. Step 5 reads 'Change option — Cancel reservation, request changes, retry payment, or reopen where policy allows', which has nothing to do with exporting records. The 'Export workspace' card that follows promises 'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible' but renders no scope, no checksum value, and no destination — the sentence asserts visibility of data the screen does not display.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A real export configuration sheet: selected record list with checkboxes, redaction toggle, destination picker, computed file size and checksum, and a Start export button with progress.",
+      "visibleObservations": ["Modal header 'HOA records export' with X close", "Numbered 'Export steps' 1–5: Property, Record, History, Owner inbox, Change option", "Step 5 body 'Cancel reservation, request changes, retry payment, or reopen where policy allows.'", "'Export workspace' card: 'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible.'", "'Export scope' row: 'Selected records, redaction choices, destination, file size, and checksum are shown as export steps.'", "'Verification and recovery' row with a badge-check icon"],
+      "directQuestionAnswers": [
+        {
+          "question": "Do the numbered 'Export steps' describe exporting?",
+          "visibleEvidence": "Step 5 'Change option — Cancel reservation, request changes, retry payment, or reopen where policy allows.'",
+          "why": "Cancelling a reservation and retrying a payment are not steps in an export; the shared block was numbered and relabelled without being rewritten."
+        },
+        {
+          "question": "Are the promised export values actually shown?",
+          "visibleEvidence": "'Scope, redaction, checksum, destination … are visible.'",
+          "why": "The sentence claims these are visible while no scope, checksum, or destination value appears anywhere on the screen — the copy describes the spec, not the state."
+        },
+        {
+          "question": "Is the record being exported identified?",
+          "visibleEvidence": "'Record — Community Rules, Room A reservation, dues receipt, or architectural case.'",
+          "why": "An 'or' list of four record types leaves the export scope genuinely ambiguous at the moment of committing to it."
+        }
+      ],
+      "screenshotHash": "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-export-evidence-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-export-evidence-complete"],
+      "critique": "The completion banner reads 'HOA record saved' with a folder-archive icon — the wrong verb for an export, which should confirm a file was generated and where it went. Its body, 'The homeowner record now shows owner, amount or decision, status history, and member next steps', is the same sentence used on the reservation and dues completions and never mentions an export. Below it 'After export' says 'The saved result keeps status, history, and change actions visible for this community task' — 'this community task' is a generic stand-in where the export's name belongs. The screen also still shows steps 3–5 of the un-rewritten numbered list, including 'Cancel reservation, request changes, retry payment', and the 'Change option' heading at the bottom is clipped mid-glyph by the nav bar.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An export completion state naming the generated file, its size and checksum, the destination it went to, and Download / Share / Delete actions plus an audit entry timestamp.",
+      "visibleObservations": ["Numbered steps 3 'History', 4 'Owner inbox', 5 'Change option' carried over from the action state", "Banner 'HOA record saved' with folder-archive icon", "'After export' card: 'The saved result keeps status, history, and change actions visible for this community task.'", "Dimmed repeat of 'Owner inbox' under 'After export'", "Bottom text 'Change option' clipped mid-glyph by the bottom nav"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion confirm an export happened?",
+          "visibleEvidence": "'HOA record saved' — 'The homeowner record now shows owner, amount or decision, status history…'",
+          "why": "The banner confirms a record save, not a file export; no filename, size, checksum, or destination is stated."
+        },
+        {
+          "question": "Is the copy specific to this workflow?",
+          "visibleEvidence": "'…visible for this community task.'",
+          "why": "'this community task' is a placeholder phrase where 'this export' or the record name should appear."
+        },
+        {
+          "question": "Is there layout clipping?",
+          "visibleEvidence": "'Change option' at the bottom is cut horizontally by the Home/Board/Documents/Payments bar",
+          "why": "Content runs under the persistent bottom nav rather than being padded above it."
+        }
+      ],
+      "screenshotHash": "6e48b551899c349f1b98b6f6a717bffe64eacf72c7e503b60c6be06cd81bdc6b"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-architectural-request-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-architectural-request-start"],
+      "critique": "The screen opens scrolled past its own heading — the topmost line is the horizontally clipped fragment 'Commons HOA; sender is the HOA board.' — so there is no title telling the user this is an architectural request. The visible content is the shared Record/History/Owner inbox/Change option block plus a 'Request queue' card reading 'Approve, reject, request changes, comment, or reopen with a visible owner notification state', which enumerates every possible reviewer verb rather than describing the fence case at hand. Only one button, 'Request changes', is offered; the approve and reject verbs named in the prose have no corresponding control. A 'Waiting' pill sits alone at the right with no explanation, and the 'Documents and data' card below is cut off mid-sentence at 'Documents, exports, imports, and transfer'.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An architectural-request start screen headed with the case name (Fence color request, Lot 42), showing submitted date, requested change, attached photos, current review status, and the decision actions available to this viewer.",
+      "visibleObservations": ["Clipped top line 'Commons HOA; sender is the HOA board.'", "Record / History / Owner inbox / Change option rows", "'Request queue' card: 'Approve, reject, request changes, comment, or reopen with a visible owner notification state.'", "Single 'Request changes' button", "'Waiting' pill with clock icon, right-aligned", "'Documents and data' card truncated at 'Documents, exports, imports, and transfer'"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the workflow identified on screen?",
+          "visibleEvidence": "Topmost visible text is the fragment 'Commons HOA; sender is the HOA board.'",
+          "why": "No title, case name, or request subject is in view; the workflow is unidentifiable from the pixels alone."
+        },
+        {
+          "question": "Are the described actions actually available?",
+          "visibleEvidence": "Prose lists 'Approve, reject, request changes, comment, or reopen' but only a 'Request changes' button renders",
+          "why": "Four of the five named verbs have no control and no explanation for their absence, so the user cannot tell if they are unavailable or just elsewhere."
+        },
+        {
+          "question": "Is any content clipped?",
+          "visibleEvidence": "'Documents, exports, imports, and transfer' cut by the bottom nav",
+          "why": "The card's descriptive line is severed mid-sentence at the viewport edge."
+        }
+      ],
+      "screenshotHash": "79a991a7a3bd2ff0c70ec48da78f3f2e0710d7fc63453ef271a3c83c4f99d5c0"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-architectural-request-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-architectural-request-action"],
+      "critique": "The modal title 'Fence color request' is genuinely specific, which makes the body's genericness more conspicuous: the card under it is headed 'Decision queue' and contains the identical numbered 1–5 Property/Record/History/Owner inbox/Change option list used on the export and committee screens, including 'Record — Community Rules, Room A reservation, dues receipt, or architectural case' on a screen where the record is unambiguously the fence case. The 'Submitted request' card beneath describes the UI rather than the submission: 'Labeled fields, privacy indicators, attachments, assignee, and status are visible' — yet no field, no attachment thumbnail, no assignee name and no status chip is rendered. This is the action state of the workflow and it contains no editable field or submit control in view.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The actual request form or review sheet: requested change (slate gray fence repaint), attached photos, submitted date, assignee, current status chip, and Submit/Edit/Withdraw controls.",
+      "visibleObservations": ["Modal header 'Fence color request' with X close", "'Decision queue' with numbered rows 1–5", "'Record — Community Rules, Room A reservation, dues receipt, or architectural case.'", "'Submitted request' card: 'Labeled fields, privacy handling, assignee, and status are visible before submitting or editing.'", "'Submitted fields' row: 'Labeled fields, privacy indicators, attachments, assignee, and status are visible.'", "'Review path' row: 'Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state.'"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the screen show the submitted request content?",
+          "visibleEvidence": "'Labeled fields, privacy indicators, attachments, assignee, and status are visible.'",
+          "why": "The sentence asserts visibility while zero fields, attachments, or assignee values are actually rendered — the description substitutes for the data."
+        },
+        {
+          "question": "Is the record correctly scoped to the fence case?",
+          "visibleEvidence": "'Community Rules, Room A reservation, dues receipt, or architectural case.'",
+          "why": "The title already establishes this is the fence request, so the four-way disjunction directly contradicts the known context."
+        },
+        {
+          "question": "Is the available action clear?",
+          "visibleEvidence": "'Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state.'",
+          "why": "Seven verbs are listed as prose with no button among them; the user cannot tell which apply now."
+        }
+      ],
+      "screenshotHash": "a2217a62325ba9cad3310513c5886ce8fb374ab3b0ba43b90e291a8a191d8567"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-architectural-request-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-architectural-request-complete"],
+      "critique": "This is the strongest of the non-notification screens: the heading 'Fence color request' with the subhead 'Lot 42 fence repaint, slate gray, decision due Friday.' is real, specific product copy naming the property, the change, the color, and the deadline. It still fails on the body, where 'Submitted details' is the same five-row generic block, and 'Record — Community Rules, Room A reservation, dues receipt, or architectural case' contradicts the specific subhead directly above it. The terminal banner 'Request outcome saved' is clipped by the bottom nav mid-sentence at 'owner, amount or decision, status history,' and the phrase 'amount or decision' is template disjunction on a screen where the outcome is unambiguously a decision. The actual decision — approved, rejected, conditional — is never stated.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A decided-case view stating the outcome plainly ('Approved with conditions — trim must remain cedar'), the deciding body, the decision date, and appeal/next-step actions.",
+      "visibleObservations": ["Heading 'Fence color request' with a checklist icon", "Subhead 'Lot 42 fence repaint, slate gray, decision due Friday.'", "'Submitted details' card with Property / Record / History / Owner inbox / Change option", "Banner 'Request outcome saved' clipped at 'owner, amount or decision, status history,'", "Bottom nav Home / Documents / Payments / Messages with 'Messages' cut at the right edge"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does any copy on this screen sound like real product content?",
+          "visibleEvidence": "'Lot 42 fence repaint, slate gray, decision due Friday.'",
+          "why": "This line names the lot, the work, the color, and the deadline — it is the standard the rest of the community's screens should meet."
+        },
+        {
+          "question": "Is the decision outcome stated?",
+          "visibleEvidence": "'Request outcome saved — The homeowner record now shows owner, amount or decision, status history,'",
+          "why": "On a completion screen the outcome itself is never printed; only that a record containing it was saved."
+        },
+        {
+          "question": "Is the completion banner fully readable?",
+          "visibleEvidence": "The banner text is severed after 'status history,' by the bottom nav",
+          "why": "The most important sentence on the terminal screen is cut off mid-clause."
+        }
+      ],
+      "screenshotHash": "fbe29ccd828f78f81ede75531b7c18f39006720bcf76b43ecae650b27fd6856d"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-dues-payment-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-dues-payment-start"],
+      "critique": "For a dues-payment start state, no dues amount, billing period, or due date appears anywhere. The screen opens on a clipped 'Change option' row, then 'Receipt and next steps' whose body is the same 'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export progress visible' string used on the reservation start. The primary pill reads 'Pay and save receipt' with nothing next to it saying what is owed. Below, the dark foreground card is titled 'Facility reservation a…' — truncated — with 'Payment details' and a 'Reserve and pay' button, so the most prominent interactive element on the dues screen belongs to the reservation workflow. A further card at the bottom is clipped to an illegible 'D…… d……' fragment.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A dues screen leading with the balance ('Q3 2026 dues — $340 due Sept 1, Lot 42'), payment method, any late fee, and 'Pay $340' as primary, with no reservation card in the foreground.",
+      "visibleObservations": ["Clipped 'Change option' row at the top", "'Receipt and next steps': 'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export progress visible.'", "'Change details' button in low-contrast translucent style", "'Pay and save receipt' pill with no amount", "Dark card 'Facility reservation a…' with 'Member form captures labeled details, privacy c…'", "'Payment details', 'Expand', 'Reserve and pay' buttons", "Illegible clipped card heading at the very bottom"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the amount owed visible?",
+          "visibleEvidence": "'Pay and save receipt' button with the description 'Confirm the amount or scope'",
+          "why": "The screen asks the user to pay without ever printing a figure, period, or due date — unusable as a payment start state."
+        },
+        {
+          "question": "Does the foregrounded card match the dues workflow?",
+          "visibleEvidence": "Card titled 'Facility reservation a…' with a 'Reserve and pay' button",
+          "why": "The most visually prominent card is a facility-reservation surface, so the demonstrated state belongs to a different workflow than the row."
+        },
+        {
+          "question": "Are labels truncated?",
+          "visibleEvidence": "'Facility reservation a…' and 'Member form captures labeled details, privacy c…'",
+          "why": "The card title itself is ellipsised, so the user cannot read what the card even is."
+        }
+      ],
+      "screenshotHash": "24563d2478fecd9f8d5df5eef27d96586254012cfed734e38a90dbf67f9af359"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-dues-payment-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-dues-payment-action"],
+      "critique": "The title 'Quarterly HOA dues' correctly names the workflow, but the card headed 'Payment summary' contains no payment summary — it opens with the chip row 'Cedar Commons / Receipt/audit / Documents / Availability' and then the shared Property/Record/Owner inbox/Change option rows, with no amount, no quarter, no due date, and no payment method. The 'Checkout and receipt' card below states 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible', which is false as rendered: none of those six values appear. 'Change option — Cancel reservation, request changes, retry payment, or reopen where policy allows' leads with cancelling a reservation on a dues checkout. There is no visible pay button in this view.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A dues checkout sheet: line item and amount, payer, saved card or ACH selection, receipt destination, and a Pay button with the figure on it.",
+      "visibleObservations": ["Modal header 'Quarterly HOA dues' with X close", "'Payment summary' card whose first content is a chip row, not a summary", "Chips 'Cedar Commons', 'Receipt/audit', 'Documents', 'Availability'", "Property / Record / Owner inbox / Change option rows", "'Checkout and receipt': 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.'", "'Payment context' and 'Receipt' rows, both describing visibility rather than values", "'Property — Lot 42, homeowner Avery Brooks, Cedar Commons' repeated at the bottom, clipped"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does 'Payment summary' summarise a payment?",
+          "visibleEvidence": "The card contains chips and Property/Record/Owner inbox rows, no amount",
+          "why": "A heading promising a payment summary over content containing no monetary value is a direct label/content mismatch at the moment of paying."
+        },
+        {
+          "question": "Is the copy product copy or spec text?",
+          "visibleEvidence": "'Amount, payer, recipient, method, visibility, and retry/refund path are visible before checkout.'",
+          "why": "This is an acceptance-criteria sentence rendered as UI text; it tells the user what the screen is supposed to contain instead of containing it."
+        },
+        {
+          "question": "Is the change option scoped correctly?",
+          "visibleEvidence": "'Cancel reservation, request changes, retry payment, or reopen where policy allows.'",
+          "why": "On a dues checkout the first offered escape hatch is cancelling a reservation, which does not exist in this workflow."
+        }
+      ],
+      "screenshotHash": "3b2cfd9beb4239c7d31c829d96a754c3d31515167434ce3d89b897fd3c659a99"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-dues-payment-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-dues-payment-complete"],
+      "critique": "The large 'Quarterly HOA dues' heading and the 'HOA record saved' banner make the terminal state legible, but this is a payment confirmation with no amount, no payment method, no confirmation number, and no timestamp. The subhead 'Amount, owner, reservation or dues item, receipt destination, retry option, and status are visible' claims six values are visible while displaying none of them, and 'reservation or dues item' is an unresolved disjunction on a screen whose own heading says dues. The 'Payment summary' card repeats the identical chip row and five-row block seen on the action state, so the completion adds no new information beyond the banner, and the banner body is the same 'The homeowner record now shows owner, amount or decision, status history' sentence used on three other completions.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A paid receipt: '$340 paid Aug 9, 2026 · Visa ending 4412 · Q3 dues, Lot 42 · receipt emailed to Avery Brooks', with Download receipt and Refund/dispute actions.",
+      "visibleObservations": ["Large heading 'Quarterly HOA dues'", "Subhead 'Amount, owner, reservation or dues item, receipt destination, retry option, and status are visible.'", "'Payment summary' card with chips 'Cedar Commons', 'Receipt/audit', 'Documents', 'Availability'", "Property / Record / Owner inbox / Change option rows repeated from the action state", "Banner 'HOA record saved' clipped at 'owner, amount or decision, status'"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the receipt show what was paid?",
+          "visibleEvidence": "'Amount, owner, reservation or dues item, receipt destination, retry option, and status are visible.'",
+          "why": "The sentence lists the fields a receipt should have in place of the receipt itself; no dollar figure appears on a payment completion screen."
+        },
+        {
+          "question": "Is the completion distinguishable from the action state?",
+          "visibleEvidence": "The same chip row and Property/Record/Owner inbox/Change option block reappear verbatim",
+          "why": "Aside from the banner, the completion screen re-renders the action screen's content, so 'paid' carries almost no new information."
+        },
+        {
+          "question": "Is the copy scoped to dues?",
+          "visibleEvidence": "'reservation or dues item' in the subhead",
+          "why": "The heading already says Quarterly HOA dues, so the 'or' branch is leftover template text."
+        }
+      ],
+      "screenshotHash": "0fe7e049bd0a9244c172e4cc5b580fa712351fe3efd25a9c9bc0b7e4ba2b26b0"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-committee-decision-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-committee-decision-start"],
+      "critique": "This start state does offer a clear primary verb — a full-width 'Approve request' pill alongside 'Request changes' — which is the right shape for a committee decision. Everything around it is wrong: the screen opens on a clipped 'Homeowner sees receipt, decision, document,' fragment, the 'Request queue' body again enumerates 'Approve, reject, request changes, comment, or reopen', and crucially nothing on screen says what is being approved. There is no case name, no requester, no requested change, and no deadline in view, so the user is asked to approve an unnamed item. The dark card at the bottom, 'Member-visible docu…' with 'Waiting for the member form to be submitted', belongs to the member-document workflow and states a blocking condition that contradicts the decision-ready state implied by the Approve button.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A committee decision queue item naming the case (Fence color request, Lot 42, Avery Brooks), the requested change, attachments, applicable rule, and Approve / Approve with conditions / Reject / Request changes actions.",
+      "visibleObservations": ["Clipped top fragment 'Homeowner sees receipt, decision, document,'", "'Change option' row with the reservation/payment disjunction", "'Request queue': 'Approve, reject, request changes, comment, or reopen with a visible owner notification state.'", "'Request changes' button and a full-width 'Approve request' pill", "'Documents and data' card: 'Documents, exports, imports, and transfer records.'", "Dark card 'Member-visible docu…' — 'Waiting for the member form to be submitted.'", "Bottom nav Home / Board / Documents / Payments"],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user tell what they are approving?",
+          "visibleEvidence": "A full-width 'Approve request' button with no case name, requester, or requested change anywhere on screen",
+          "why": "Offering an irreversible approval action with no subject identified is the most serious defect in this set."
+        },
+        {
+          "question": "Does the foregrounded card belong to this workflow?",
+          "visibleEvidence": "'Member-visible docu…' / 'Waiting for the member form to be submitted.'",
+          "why": "A member-document waiting state is surfaced on a committee-decision screen and its 'waiting' status conflicts with an actionable Approve button."
+        },
+        {
+          "question": "Is the state legible?",
+          "visibleEvidence": "Top of screen begins mid-sentence at 'Homeowner sees receipt, decision, document,'",
+          "why": "The screen opens scrolled past its own header so no title anchors the state."
+        }
+      ],
+      "screenshotHash": "7c038e402c35beb6df13e932f98a4d7e3a587a6c3a1c3bbdeb0e58d166164d71"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-committee-decision-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-architectural-request-action"],
+      "critique": "This screen is pixel-for-pixel the architectural-request action sheet below the header — identical 'Decision queue' numbered list 1–5, identical 'Submitted request' card, identical 'Submitted fields' and 'Review path' rows — with only the modal title differing ('Architectural committee decision' vs 'Fence color request'). Two distinct workflows rendering the same body means the committee-decision action state demonstrates nothing specific to committee review: no vote tally, no committee members, no conditions field, no approve/reject controls. 'Review path — Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state' lists seven verbs while the screen exposes none of them as controls, and the two-line title wraps around the X icon awkwardly, leaving the close affordance vertically centred against the second line.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A committee decision sheet: the case under review, each committee member's vote, a conditions/comment field, the governing rule cited, and Approve / Approve with conditions / Reject buttons.",
+      "visibleObservations": ["Modal header 'Architectural committee decision' wrapping to two lines beside the X", "'Decision queue' numbered 1–5, identical to the fence-request action sheet", "'Record — Community Rules, Room A reservation, dues receipt, or architectural case.'", "'Submitted request': 'Labeled fields, privacy handling, assignee, and status are visible before submitting or editing.'", "'Submitted fields' and 'Review path' rows verbatim from the architectural-request screen"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is this screen distinguishable from the architectural-request action screen?",
+          "visibleEvidence": "Both show 'Decision queue' 1–5 and 'Submitted request' with the same 'Submitted fields' / 'Review path' text; only the header differs",
+          "why": "Two workflows sharing one body means neither is actually demonstrated — the committee-specific interaction is absent."
+        },
+        {
+          "question": "Are decision controls present?",
+          "visibleEvidence": "'Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state.'",
+          "why": "The decision verbs exist only as prose; no approve, reject, or conditions control renders on the decision action screen."
+        },
+        {
+          "question": "Is the header laid out cleanly?",
+          "visibleEvidence": "'Architectural committee decision' wraps to two lines with the X vertically offset against the wrap",
+          "why": "The close control sits misaligned relative to the two-line title, a visible layout crowding issue in the app bar."
+        }
+      ],
+      "screenshotHash": "606d1ecfdc1e974b7a970dea341412e3e6ba708c00ef9bc0b93fb3e2a40edfb3"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-committee-decision-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-committee-decision-complete"],
+      "critique": "The heading 'Architectural committee decision' with the subhead 'Board decision, conditions, comments, and owner follow-up.' reads like a section descriptor rather than an outcome — it names the categories of information instead of the decision reached. Nothing on the screen states whether the request was approved, rejected, or conditioned, who voted, or when. The body is once again the 'Submitted details' five-row block with 'Community Rules, Room A reservation, dues receipt, or architectural case' as the record. The terminal banner 'Request outcome saved' is clipped by the bottom nav to just its title plus a sliver of a cut-off second line, so even the generic confirmation text is unreadable.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A decided view stating the outcome and conditions in plain words ('Approved with conditions — cedar trim retained; work to begin within 30 days'), the deciding members, decision date, and the owner-notification status.",
+      "visibleObservations": ["Heading 'Architectural committee decision' with checklist icon", "Subhead 'Board decision, conditions, comments, and owner follow-up.'", "'Submitted details' card with Property / Record / History / Owner inbox / Change option", "'Record — Community Rules, Room A reservation, dues receipt, or architectural case.'", "Banner 'Request outcome saved' with its body line cut off by the bottom nav"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the decision outcome stated?",
+          "visibleEvidence": "Subhead reads 'Board decision, conditions, comments, and owner follow-up.'",
+          "why": "This names four categories without filling any of them; on a completion screen the decision itself is the one thing that must appear."
+        },
+        {
+          "question": "Does the record row match the case?",
+          "visibleEvidence": "'Community Rules, Room A reservation, dues receipt, or architectural case.'",
+          "why": "A committee decision is unambiguously about the architectural case, so the three-way alternative is unresolved template text."
+        },
+        {
+          "question": "Is the confirmation readable?",
+          "visibleEvidence": "'Request outcome saved' with only a partial glyph row of body text before the nav bar",
+          "why": "The banner is truncated to its heading, so the confirmation detail is entirely lost."
+        }
+      ],
+      "screenshotHash": "56c9b6e38708c5b901c1e0bb32b3b9d26dba89c269c16fb073d9c408859b81fa"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-member-document-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-member-document-start"],
+      "critique": "The 'Open document' pill is the correct primary action for this workflow, but no document is named anywhere on the screen — no title, no version, no last-updated date. The dominant dark card is titled 'HOA export' with a download icon and the truncated body 'You can read the current details without changing …', which is the export workflow surfacing on a document-viewing screen. Its action slot reads 'Read only' with an eye icon, styled as a button but functioning as a permission state, with no explanation of why. Below the collapsed 'Local package details' disclosure the screen renders roughly a third of a page of empty dark canvas, and the chip row is the same 'Cedar Commons / Receipt/audit / Documents / Availability / Outcome history' set used on the export and dues screens.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A document entry point naming the document (Community Rules v2026.3), its updated date, size, acknowledgement status, and Open / Download / Acknowledge actions — with no export card in the foreground.",
+      "visibleObservations": ["Chips 'Cedar Commons', 'Receipt/audit', 'Documents', 'Availability', 'Outcome history'", "'Open document' pill in low-contrast translucent style", "Dark card 'HOA export' with 'You can read the current details without changing …' truncated", "'Data package', 'Tap for expanded view', 'Expand' buttons", "'Read only' shown with an eye icon in the action row", "Collapsed 'Local package details' row followed by a large empty region"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the document identified?",
+          "visibleEvidence": "'Open document' button with no document title or version on screen",
+          "why": "The user is invited to open something unnamed; the Community Rules title only appears in the later action state."
+        },
+        {
+          "question": "Does the foreground card match the workflow?",
+          "visibleEvidence": "Card titled 'HOA export' with a download icon",
+          "why": "An export card is the visual focus of a member-document screen, so the demonstrated state belongs to a different workflow."
+        },
+        {
+          "question": "Is the 'Read only' state explained?",
+          "visibleEvidence": "'Read only' with an eye icon occupying the primary action position",
+          "why": "A permission state rendered as a button, with no reason given, leaves the user unable to tell whether editing is possible for someone else or nobody."
+        }
+      ],
+      "screenshotHash": "764ed22d9ca72e1e29dda0d56250df2e39aa2433b81c4b7f2da213c957f0a9d3"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-member-document-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-member-document-action"],
+      "critique": "This is the best-composed screen in the set: 'Community Rules document' with the concrete subhead 'Version 2026.3, members can open and acknowledge.' and a strong green 'Open document' button that stands out clearly from the surrounding blue. Two defects remain. First, the green 'Open document' primary and the muted 'Save document' button appear in unrelated cards with the descriptive line 'Document access, version, download, save, share, and access-request options are visible' floating above 'Save document' with no card heading at all — an unlabeled shell. Second, the 'Download PDF' control at the bottom renders in dark teal on the dark navy panel at very low contrast and is clipped by the viewport edge, making the secondary action nearly invisible. The chip row is again the generic five-chip set rather than document-specific navigation.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "A document detail sheet with title, version, effective date, page count, acknowledgement status, and clearly ranked Open / Download PDF / Acknowledge actions at accessible contrast.",
+      "visibleObservations": ["Modal header 'Community Rules document' with X close", "Hero card with document icon, title, and 'Version 2026.3, members can open and acknowledge.'", "'Open the governing document with version, access state, acknowledgement, and download history.'", "Unheaded card containing 'Document access, version, download, save, share, and access-request options are visible.' plus a 'Save document' button", "'Document access' card: 'Open, download, acknowledge, request access, or view version history.'", "Green full-width 'Open document' button", "'Download PDF' in dark teal on dark navy, clipped at the bottom edge"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the document content specific and real?",
+          "visibleEvidence": "'Version 2026.3, members can open and acknowledge.'",
+          "why": "A concrete version number tied to a named governing document is genuine product content, unlike the placeholder copy elsewhere in this community."
+        },
+        {
+          "question": "Are secondary actions legible?",
+          "visibleEvidence": "'Download PDF' rendered in dark teal against the dark navy panel, cut by the viewport edge",
+          "why": "The contrast is low enough that the control reads as decorative text rather than a tappable action."
+        },
+        {
+          "question": "Is any card shell unlabeled?",
+          "visibleEvidence": "The 'Save document' card carries only the sentence 'Document access, version, download, save, share, and access-request options are visible.' with no heading",
+          "why": "A bordered card with no title and a spec sentence as its only content is a generic shell rather than a designed section."
+        }
+      ],
+      "screenshotHash": "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-member-document-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-member-document-complete"],
+      "critique": "The completion carries the document title and 'Version 2026.3, members can open and acknowledge.', which is specific, but the confirming text and the summary text are the same sentence printed twice on one screen: the hero subhead reads 'The document is viewed and acknowledged with access state, version history, and member download option visible', and the 'Member result' card below repeats it verbatim. That sentence is also passive spec phrasing — it asserts what is visible rather than confirming 'You acknowledged this on Aug 9, 2026'. No acknowledgement timestamp, acknowledging member, or acknowledgement count appears. The 'Save document' button reappears in an unheaded card as on the action state, and 'Download PDF' is clipped by the bottom nav.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An acknowledged-document state confirming who acknowledged it and when ('Acknowledged by Avery Brooks, Aug 9 2026'), with the version pinned and Download PDF / View history as clean secondary actions.",
+      "visibleObservations": ["Heading 'Community Rules document' with document icon", "'Version 2026.3, members can open and acknowledge.'", "Subhead 'The document is viewed and acknowledged with access state, version history, and member download option visible.'", "Chips 'Cedar Commons', 'Receipt/audit', 'Documents', 'Availability', 'Outcome history'", "Unheaded card with 'Save document' button", "'Member result' card repeating the subhead sentence word for word", "'Download PDF' button clipped by the bottom nav"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the acknowledgement confirmed with real detail?",
+          "visibleEvidence": "'The document is viewed and acknowledged with access state, version history, and member download option visible.'",
+          "why": "Passive spec phrasing with no acknowledger name or timestamp; the user cannot confirm their own acknowledgement was recorded."
+        },
+        {
+          "question": "Is text duplicated on the screen?",
+          "visibleEvidence": "The identical acknowledgement sentence appears as the hero subhead and inside 'Member result'",
+          "why": "The completion card adds no information over the header it repeats."
+        },
+        {
+          "question": "Is the layout clean at the bottom?",
+          "visibleEvidence": "The 'Download PDF' pill is cut off by the Home/Documents/Payments/Messages bar",
+          "why": "The final action is clipped rather than padded above the persistent nav."
+        }
+      ],
+      "screenshotHash": "96122afad79139800a010643e46da34385b9194a496377f6daecec0ececea1aa"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-owner-notification-start",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-start"],
+      "critique": "This is the strongest start state in the community. 'Notice preview' shows genuinely specific content — 'From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42', the message body 'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days', and 'Send today at 4:15 PM to owner inbox and email receipt' — real recipients, real decision terms, real delivery time. Two problems keep it from passing. The heading 'Owner decision notice' appears below the preview card rather than above it, so the screen opens with an unlabeled preview and the title arrives mid-scroll. And the 'Edit notice' button at the bottom is severed horizontally by the bottom nav, rendering as 'Edit notice' with its lower half cut, leaving the only edit affordance partially unreachable. A debug-looking chrome strip reading 'In-focus product surface / Expand' sits directly under the app bar.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "The same notice preview with the 'Owner decision notice' title above the preview, a fully visible Edit notice / Send now action pair clear of the nav bar, and no in-focus debug chrome.",
+      "visibleObservations": ["Strip reading 'In-focus product surface' with an 'Expand' link under the app bar", "'Notice preview' card with 'Sender and recipient', 'Message body', 'Delivery', 'Owner inbox' rows", "'From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42.'", "'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days.'", "'Send today at 4:15 PM to owner inbox and email receipt.'", "Heading 'Owner decision notice' below the preview card", "'Delivery details' card", "'Edit notice' button clipped in half by the bottom nav"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the copy sound like real Cedar Commons content?",
+          "visibleEvidence": "'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days.'",
+          "why": "This is an actual decision with actual conditions addressed to a named homeowner — exactly what the other five workflows lack."
+        },
+        {
+          "question": "Is the primary action fully usable?",
+          "visibleEvidence": "'Edit notice' rendered with its bottom half cut by the Home/Board/Documents/Payments bar",
+          "why": "The only control in view is clipped, which is a layout defect on the action the screen invites."
+        },
+        {
+          "question": "Is there non-product chrome on screen?",
+          "visibleEvidence": "'In-focus product surface' strip with an 'Expand' affordance directly under the app bar",
+          "why": "This reads as harness/debug framing rather than product UI a homeowner would ever see."
+        }
+      ],
+      "screenshotHash": "4cee1d240e8ab206cd7d74c19b4719e4408a07b635c680c4dbb35d8fcff98c17"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-owner-notification-action",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-action"],
+      "critique": "Titled 'Send owner notice', this sheet carries the same strong, specific preview content as the start state. Its defect is duplication: 'Sender and recipient — From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42' and 'Message body — Your slate gray fence repaint is approved…' render in full under 'Notice preview' and then again, verbatim, under 'Delivery actions', with a third 'Delivery' row beginning below the fold. Between the two copies sit 'Sender and receiver — Sender, recipient or audience, timestamp, body, and delivery channel are visible' and 'Conversation state — Reply, read/unread, archive, mute, block, draft, or resend actions match the message state', both spec sentences listing capabilities rather than showing this notice's channel or state. No send button is visible on the send sheet.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A send sheet showing the notice once, the delivery channel and scheduled time as editable values, and a clearly visible Send now / Schedule / Save draft control set.",
+      "visibleObservations": ["Modal header 'Send owner notice' with X close", "'Notice preview' with Sender and recipient / Message body / Delivery / Owner inbox rows", "'Delivery actions' card: 'Review audience, sender, message body, timing, and receiver state before sending.'", "'Sender and receiver — Sender, recipient or audience, timestamp, body, and delivery channel are visible.'", "'Conversation state — Reply, read/unread, archive, mute, block, draft, or resend actions match the message state.'", "'Sender and recipient' and 'Message body' rows repeated verbatim lower in the same scroll", "No send control visible in the viewport"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is content duplicated within the sheet?",
+          "visibleEvidence": "'From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42.' appears twice, as does the slate gray fence sentence",
+          "why": "The full notice is rendered twice in one scroll view, so half the sheet's height is redundant."
+        },
+        {
+          "question": "Is the send action available?",
+          "visibleEvidence": "Header 'Send owner notice' with no send button anywhere in the viewport",
+          "why": "The action state of a send workflow does not expose the send control, so the demonstrated interaction is incomplete."
+        },
+        {
+          "question": "Is the delivery channel shown as a value?",
+          "visibleEvidence": "'Sender, recipient or audience, timestamp, body, and delivery channel are visible.'",
+          "why": "The channel is described as visible rather than displayed; 'recipient or audience' is also an unresolved disjunction on a single-owner notice."
+        }
+      ],
+      "screenshotHash": "4778b54477859cea6c865d619133d1d08761b47fcb4fb42f4f3dfa0b61dbcbfc"
+    },
+    {
+      "screenRowId": "cedar-commons-hoa-hoa-owner-notification-complete",
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-complete"],
+      "critique": "The clearest completion in the set: a filled 'Owner notified' banner with a mail-check icon, sitting under the retained notice preview containing the real message body and the 4:15 PM delivery line, so the user can see exactly what was sent and to whom. It still falls short on two counts. The banner body — 'Owner notice shows sender, recipient, body, timestamp, decision condition, inbox receipt, and follow-up option' — is a seven-item capability list rather than a confirmation of delivery; it never says 'Sent' or gives the actual send timestamp even though the preview above says 4:15 PM. And the 'After delivery' card at the bottom is truncated to its heading plus one row of half-cut glyphs by the bottom nav, so whatever follow-up action it offers is unreadable and unreachable.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "A sent-confirmation stating 'Sent 4:15 PM to Avery Brooks — delivered to owner inbox and email', with read receipt status and Resend / View in thread actions fully visible above the nav bar.",
+      "visibleObservations": ["'Notice preview' card retained with all four rows", "'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days.'", "'Send today at 4:15 PM to owner inbox and email receipt.'", "Heading 'Owner decision notice' below the preview", "Filled blue banner 'Owner notified' with mail-check icon", "Banner body listing 'sender, recipient, body, timestamp, decision condition, inbox receipt, and follow-up option'", "'After delivery' card truncated to its heading and a row of clipped glyphs"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the terminal state unmistakable?",
+          "visibleEvidence": "Filled banner 'Owner notified' with a mail-check icon in a high-contrast blue card",
+          "why": "The visual treatment and verb make the completed state immediately legible — the best completion signal in this community."
+        },
+        {
+          "question": "Does the confirmation state when it was sent?",
+          "visibleEvidence": "'Owner notice shows sender, recipient, body, timestamp, decision condition, inbox receipt, and follow-up option.'",
+          "why": "It lists 'timestamp' as a field rather than printing the send time, even though 4:15 PM is available directly above."
+        },
+        {
+          "question": "Is any content unreachable?",
+          "visibleEvidence": "'After delivery' shows only its heading and one row of glyphs cut horizontally by the bottom nav",
+          "why": "The follow-up section is clipped to illegibility at the viewport bottom."
+        }
+      ],
+      "screenshotHash": "eebb0542e89f5f5f053fd8a284697832a10140009fd2667c0ab0f075192cd052"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "unresolved-record-disjunction",
+      "title": "'Community Rules, Room A reservation, dues receipt, or architectural case' renders as the record identity on every workflow",
+      "description": "The 'Record' row prints a four-way 'or' list of every record type in the community rather than the record actually in context. It appears verbatim on the facility-reservation action and complete screens, the export action screen, the architectural-request start/action/complete screens, the dues-payment action and complete screens, and the committee-decision action and complete screens. On screens whose own title already names the record ('Fence color request', 'Quarterly HOA dues', 'Clubhouse Room A reservation'), the disjunction directly contradicts the header. The same pattern appears in 'Change option — Cancel reservation, request changes, retry payment, or reopen where policy allows', shown identically on a document view, a payment, and a decision queue.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete"],
+      "requiredFix": "Bind the Record and Change-option rows to the instance in context so each screen names one record ('Clubhouse Room A booking, Sat Aug 15') and offers only the change actions that apply to that record's current state."
+    },
+    {
+      "findingId": "rsvp-model-on-room-reservation",
+      "title": "Facility reservation action sheet asks the user to RSVP Going/Maybe/Not going to their own room booking",
+      "description": "The sheet titled 'Clubhouse Room A reservation' contains 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going', with a supporting row 'Attendance options: Going, Maybe, Not going, and Change response remain available while the event is open' and 'Member reminder — The saved response keeps calendar, reminder, and capacity status visible.' This is an events/RSVP interaction model rendered on a facility-booking workflow. A homeowner reserving a room selects a time slot and pays a fee; they do not respond to an invitation. The action state of this workflow therefore demonstrates the wrong interaction entirely.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-action"],
+      "requiredFix": "Replace the attendance card with reservation controls: date and time-slot selection, capacity/conflict check against existing bookings, deposit amount, and Confirm reservation / Change slot / Cancel actions."
+    },
+    {
+      "findingId": "cross-workflow-card-bleed",
+      "title": "Start screens foreground a card from a different workflow than the row under test",
+      "description": "Four of seven start states put a card belonging to another workflow in the visual foreground: the dues-payment start screen's dominant card is 'Facility reservation a…' with a 'Reserve and pay' button; the member-document start screen's dominant card is 'HOA export' with a download icon and 'Read only'; the facility-reservation start screen's dominant card is 'Architectural request' with 'Submit request'; and the committee-decision start screen's dominant card is 'Member-visible docu…' reading 'Waiting for the member form to be submitted.' In the last case the borrowed card's waiting state also contradicts the actionable 'Approve request' button above it. A reviewer or homeowner landing on these screens would identify the wrong workflow.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-member-document-start"],
+      "requiredFix": "Scope each start screen's foreground card to its own workflow, and open the screen at the top so the workflow title is the first thing rendered rather than a mid-scroll fragment."
+    },
+    {
+      "findingId": "approve-without-subject",
+      "title": "Committee decision start offers 'Approve request' with no case, requester, or requested change on screen",
+      "description": "The committee-decision start screen presents a full-width 'Approve request' pill and a 'Request changes' button, but nothing in the viewport identifies what is being approved — no case title, no homeowner name, no requested change, no attachments, no deadline. The visible text is a clipped 'Homeowner sees receipt, decision, document,' fragment, the generic 'Change option' row, and 'Request queue — Approve, reject, request changes, comment, or reopen with a visible owner notification state.' Offering a consequential, owner-notifying approval action against an unnamed subject is the most serious actionability defect in this set.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-committee-decision-start"],
+      "requiredFix": "Render the case under review above the decision controls — case title, homeowner, lot, requested change, attachments, and applicable rule — and disable the approve action until a case is in context."
+    },
+    {
+      "findingId": "spec-prose-instead-of-values",
+      "title": "Descriptive copy asserts that values 'are visible' while none are rendered",
+      "description": "Section bodies across the community are written as acceptance criteria rather than product copy, and in several cases the assertion is false as rendered. 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible' appears on a dues checkout showing no amount. 'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible' appears on an export sheet showing no scope, checksum, or destination. 'Labeled fields, privacy indicators, attachments, assignee, and status are visible' appears on a request sheet with no fields, attachments, or assignee. The result is that the dues workflow never shows a dollar figure, the export workflow never shows a file, and the reservation workflow never shows a date or time.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-facility-reservation-complete"],
+      "requiredFix": "Replace every '… are visible' / '… remain visible' / '… match the state' sentence with the actual values: amounts, dates, file sizes, checksums, assignee names, and status chips rendered as data."
+    },
+    {
+      "findingId": "identical-five-row-block-reused",
+      "title": "One five-row block is reused under six different headings across twelve screens",
+      "description": "The Property / Record / History / Owner inbox / Change option list with identical icons and identical body text is rendered under the headings 'Event details', 'Export steps', 'Decision queue', 'Payment summary', 'Submitted details', and 'Submitted request'. Numbering it 1–5 on the export screen turns unrelated content into fake 'Export steps' whose step 5 reads 'Cancel reservation, request changes, retry payment, or reopen where policy allows.' The committee-decision action sheet is pixel-identical to the architectural-request action sheet below the header. Two screens duplicate the block within one scroll view (facility-reservation action, owner-notification action). The effect is that six workflows look like one workflow with six titles.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-owner-notification-action"],
+      "requiredFix": "Give each workflow a purpose-built body — booking slots for reservations, line items for dues, a record picker for exports, vote and conditions for committee decisions — and remove the duplicate render of the identity block within a single scroll view."
+    },
+    {
+      "findingId": "completion-banners-do-not-state-outcome",
+      "title": "Completion screens confirm that a record was saved without stating what happened",
+      "description": "Four completions share the banner body 'The homeowner record now shows owner, amount or decision, status history, and member next steps.' The reservation completion never states the booked date or fee; the dues completion never states the amount paid or the method; the export completion says 'HOA record saved' rather than confirming a file was produced, and never names a filename, size, or destination; the committee-decision completion never says whether the request was approved, rejected, or conditioned. 'amount or decision' is itself an unresolved disjunction. Several of these banners are additionally clipped by the bottom nav mid-sentence.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-architectural-request-complete"],
+      "requiredFix": "Write outcome-specific confirmations that lead with the result and its key facts — amount paid and method, room/date booked with confirmation number, file generated with size and destination, decision reached with conditions — rather than a shared 'record saved' sentence."
+    },
+    {
+      "findingId": "bottom-nav-clipping",
+      "title": "Content and primary controls are severed horizontally by the persistent bottom nav",
+      "description": "Multiple screens render content under the Home/Board/Documents/Payments bar instead of padding above it: 'Edit notice' on the owner-notification start is cut in half; 'Download PDF' on the member-document complete is clipped; 'Change option' on the export complete is cut mid-glyph; the 'Request outcome saved' banners on both the architectural-request and committee-decision completions lose their body text; the 'After delivery' card on the owner-notification complete is truncated to its heading; and the dues-payment start ends in an illegible partial card heading. The bottom nav's rightmost item ('Messages') is also cut off at the right screen edge on several screens.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-start", "cedar-commons-hoa-hoa-owner-notification-complete", "cedar-commons-hoa-hoa-member-document-complete", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-dues-payment-start"],
+      "requiredFix": "Add bottom-inset padding equal to the nav bar height to all scroll containers so no content or control renders beneath it, and make the nav bar's item set fit the viewport width."
+    },
+    {
+      "findingId": "unexplained-state-chips",
+      "title": "'Minimized', 'Waiting', and 'Read only' render as buttons without explaining the state",
+      "description": "The recurring dark card shows a 'Minimized' chip with a target-reticle icon next to both 'Tap for expanded view' and a separate 'Expand' button — three overlapping affordances plus a state label styled identically to them. A 'Waiting' pill with a clock icon appears on the export-evidence, architectural-request, and member-document start screens with no adjacent text naming what is pending. On the member-document start screen 'Read only' with an eye icon occupies the primary action slot with no reason given for why the document cannot be edited or acknowledged there. Low-contrast translucent buttons ('Change details', 'Request changes', 'Open document' on blue cards) further blur the enabled/disabled distinction.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-member-document-start"],
+      "requiredFix": "Style state indicators distinctly from controls, give each pending state a subject ('Waiting on board review since Aug 4'), state why an item is read-only, collapse the three expand affordances to one, and raise disabled/enabled contrast so the two are distinguishable."
+    },
+    {
+      "findingId": "empty-canvas-on-start-screens",
+      "title": "Export and member-document start screens end in a large empty region",
+      "description": "Both the export-evidence start and member-document start screens place a collapsed 'Local package details' disclosure row roughly two-thirds down the screen and render nothing below it — approximately a third of a page of blank dark canvas above the bottom nav. This is exactly where the export's record list, file size, and destination, or the document's version history and acknowledgement status, would be expected. Combined with the truncated card bodies above ('Data package includes scope, protected fields, a…', 'You can read the current details without changing …'), these screens present less readable content than empty space.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-member-document-start"],
+      "requiredFix": "Fill the lower region with the substantive content these workflows own — record list with sizes for the export, version history and acknowledgement state for the document — and expand the truncated card bodies rather than ellipsising them."
+    },
+    {
+      "findingId": "notice-content-duplicated-in-send-sheet",
+      "title": "Owner-notice send sheet renders the full notice twice and exposes no send control",
+      "description": "On the 'Send owner notice' sheet, 'Sender and recipient — From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42' and 'Message body — Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days' appear in full under 'Notice preview' and again verbatim under 'Delivery actions', with a third 'Delivery' row starting below the fold. Between the copies sit two spec sentences ('Sender, recipient or audience, timestamp, body, and delivery channel are visible', 'Reply, read/unread, archive, mute, block, draft, or resend actions match the message state'). No Send button appears anywhere in the viewport on the sheet whose title is 'Send owner notice'.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-action"],
+      "requiredFix": "Show the notice once, replace the capability sentences with the notice's actual channel and scheduled time as editable values, and surface Send now / Schedule / Save draft controls in the sheet."
+    },
+    {
+      "findingId": "debug-chrome-on-notification-start",
+      "title": "'In-focus product surface' harness strip renders above product content",
+      "description": "The owner-notification start screen shows a dark strip directly beneath the app bar reading 'In-focus product surface' with a target-reticle icon and an 'Expand' link on the right. This is framing language about the capture itself rather than product UI; a homeowner would never see a label describing a surface as 'in-focus'. It occupies the position where the workflow title 'Owner decision notice' should sit — that heading instead appears well below the preview card, mid-scroll.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-owner-notification-start"],
+      "requiredFix": "Remove the in-focus/minimized harness chrome from the product surface and place the 'Owner decision notice' heading above the notice preview card."
+    },
+    {
+      "findingId": "low-contrast-secondary-actions",
+      "title": "Secondary actions render at very low contrast against their backgrounds",
+      "description": "'Download PDF' on the member-document action sheet is drawn in a dark teal on the dark navy panel, at a contrast level where it reads as decorative text rather than a control, and it sits at the clipped viewport edge. The same low-contrast treatment affects translucent white-on-blue buttons throughout: 'Change details' on the dues and facility-reservation starts, 'Reserve and pay' and 'Pay and save receipt' pills, 'Open document' on the member-document start, and 'Save document' on the document screens all render as pale outlines over the blue card, visually closer to disabled than to available.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-member-document-action", "cedar-commons-hoa-hoa-member-document-complete", "cedar-commons-hoa-hoa-member-document-start", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-facility-reservation-start"],
+      "requiredFix": "Raise secondary-action contrast to meet accessible minimums against both the navy and blue card backgrounds, and reserve the translucent style exclusively for genuinely disabled controls."
+    },
+    {
+      "findingId": "unlabeled-card-shell",
+      "title": "A bordered card containing only a spec sentence and 'Save document' has no heading",
+      "description": "On both member-document screens, a bordered card renders with no title at all — its entire content is the sentence 'Document access, version, download, save, share, and access-request options are visible.' followed by a 'Save document' button. Without a heading the card reads as an empty shell wrapped around a caption, and it sits directly above a separate card that is titled 'Document access' and covers overlapping ground ('Open, download, acknowledge, request access, or view version history'), so two adjacent cards describe the same capability set with only one of them labeled.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["cedar-commons-hoa-hoa-member-document-action", "cedar-commons-hoa-hoa-member-document-complete"],
+      "requiredFix": "Merge the unlabeled card into the titled 'Document access' section so save, download, share, and access-request controls appear once under one heading."
+    }
+  ]
+}

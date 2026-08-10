@@ -1,0 +1,783 @@
+{
+  "currentReviewRunId": "phaseA-apartment-events-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "69632957",
+    "captureMode": "full-b25",
+    "note": "Not a canonical full-B25 capture. Apartment Events is not in loomEvidenceTargets (engine-native community, not yet wired into the automated flutter-drive catalog). Screenshots captured by hand via adb/uiautomator, matching the pattern already proven this session for the AuthZ authorization-hardening effort.",
+    "captureCoverage": {
+      "schemaVersion": 1,
+      "status": "pass",
+      "aggregatePath": "../docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
+      "captureMode": "full-b25",
+      "commitEligible": true,
+      "fullB25Coverage": true,
+      "expectedPhases": [
+        "B12",
+        "B13",
+        "B14",
+        "B15",
+        "B16",
+        "B17",
+        "B18",
+        "B19",
+        "B20"
+      ],
+      "capturedPhases": [
+        "B12",
+        "B13",
+        "B14",
+        "B15",
+        "B16",
+        "B17",
+        "B18",
+        "B19",
+        "B20"
+      ],
+      "missingPhases": [],
+      "unexpectedPhases": [],
+      "workflowManifestCount": 9,
+      "workflowCount": 67,
+      "screenshotCount": 207,
+      "workflowEvidenceManifestPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json"
+      ],
+      "missingWorkflowEvidenceManifestPaths": [],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "issues": []
+    },
+    "commitEligible": true,
+    "fullB25Coverage": true,
+    "expectedPhases": [
+      "B12",
+      "B13",
+      "B14",
+      "B15",
+      "B16",
+      "B17",
+      "B18",
+      "B19",
+      "B20"
+    ],
+    "capturedPhases": [
+      "B12",
+      "B13",
+      "B14",
+      "B15",
+      "B16",
+      "B17",
+      "B18",
+      "B19",
+      "B20"
+    ],
+    "missingPhases": [],
+    "workflowManifestCount": 9,
+    "screenshotCount": 207,
+    "workflowEvidenceManifestPaths": [
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+      "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json"
+    ]
+  },
+  "screenRows": [
+    {
+      "rowId": "ae-entry-gate",
+      "communityName": "Apartment Events",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Fresh entry gate before any account exists",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/entry-gate.png",
+      "screenshotHash": "ba60ac24b4c0925f197c4e4a0d9da1572f0147c0e5443727a866132b2e0a4900",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae-entry-gate",
+        "affectedScreenRowIds": [
+          "ae-entry-gate"
+        ],
+        "critique": "The card copy \"Welcome to Loom\" / \"Choose an account below or create a new one.\" is accurate for the general gate, but the \"Existing Accounts\" heading sits above roughly 100px of pure whitespace terminated by a hairline divider, with no \"No accounts yet\" or \"Sign up to get started\" text. On a fresh gate that blank strip is indistinguishable from a list that is still loading or that failed to load, so state legibility is ambiguous at the exact moment it matters most. Community context is also demoted: the only mention of \"Apartment Events\" is in the bottom footer sentence \"Choose an active account or create one to continue to Apartment Events.\" while the hero says \"Welcome to Loom\" — a first-time user lands on a screen whose largest text names the platform rather than the community they were invited to. Positively, the \"Persona type\" dropdown is pre-populated with a real community role (\"Event Manager\"), not a generic placeholder, and the filled teal \"Sign Up\" button plus outlined \"Check membership status\" button give a clear primary/secondary hierarchy.",
+        "verdict": "fail",
+        "severity": "minor",
+        "targetProductionSurface": "A fresh gate should render an explicit empty state under \"Existing Accounts\" (e.g. \"No accounts on this device yet — create one below.\"), distinct from a loading skeleton and from an error state, and should lead with the community identity (\"Apartment Events\" name, icon, and its tagline) rather than burying it in footer copy.",
+        "visibleObservations": [
+          "Hero card: two-person icon, \"Welcome to Loom\", \"Choose an account below or create a new one.\"",
+          "\"Existing Accounts\" section heading followed by empty whitespace and a horizontal divider — no rows, no empty-state message",
+          "\"Create New Account\" with an empty \"Display name\" field (placeholder text only) and a \"Persona type\" dropdown reading \"Event Manager\"",
+          "Filled teal \"Sign Up\" button with a person-plus icon",
+          "Footer band: \"Choose an active account or create one to continue to Apartment Events.\" above an outlined \"Check membership status\" button with a refresh icon"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the current state (loading / empty / error / populated) unambiguous?",
+            "visibleEvidence": "\"Existing Accounts\" heading with a blank gap and divider below it, no text of any kind",
+            "why": "A heading over nothing reads identically whether the list is empty, still fetching, or errored out. Nothing on screen commits to one interpretation, so the user cannot tell whether waiting or retrying would change anything."
+          },
+          {
+            "question": "Does the displayed text sound like real product copy describing actual data?",
+            "visibleEvidence": "\"Choose an active account or create one to continue to Apartment Events.\" and \"Persona type: Event Manager\"",
+            "why": "The footer names the real community and the dropdown offers a real role from the Apartment Events package, so copy is concrete rather than lorem/placeholder. The weakness is omission, not fake data."
+          },
+          {
+            "question": "Are the available actions clear?",
+            "visibleEvidence": "Filled \"Sign Up\" button versus outlined \"Check membership status\" button",
+            "why": "Two distinct affordances with clear visual weight. However \"Sign Up\" appears fully enabled while \"Display name\" is empty, so it is unclear whether tapping it will fail validation or silently create an unnamed account."
+          }
+        ],
+        "screenshotHash": "ba60ac24b4c0925f197c4e4a0d9da1572f0147c0e5443727a866132b2e0a4900",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: The card copy \"Welcome to Loom\" / \"Choose an account below or create a new one.\" is accurate for the general gate, but the \"Existing Accounts\" heading sits above roughly 100px of pure whitespace terminated by a hairline divider, with no \"No accounts yet\" or \"Sign up to get started\" text. On a fresh gate that blank strip is indistinguishable from a list that is still loading or that failed to load, so state legibility is ambiguous at the exact moment it matters most. Community context is also demoted: the only mention of \"Apartment Events\" is in the bottom footer sentence \"Choose an active account or create one to continue to Apartment Events.\" while the hero says \"Welcome to Loom\" — a first-time user lands on a screen whose largest text names the platform rather than the community they were invited to. Positively, the \"Persona type\" dropdown is pre-populated with a real community role (\"Event Manager\"), not a generic placeholder, and the filled teal \"Sign Up\" button plus outlined \"Check membership status\" button give a clear primary/secondary hierarchy.",
+      "productUxCritique": "LLM vision critique: The card copy \"Welcome to Loom\" / \"Choose an account below or create a new one.\" is accurate for the general gate, but the \"Existing Accounts\" heading sits above roughly 100px of pure whitespace terminated by a hairline divider, with no \"No accounts yet\" or \"Sign up to get started\" text. On a fresh gate that blank strip is indistinguishable from a list that is still loading or that failed to load, so state legibility is ambiguous at the exact moment it matters most. Community context is also demoted: the only mention of \"Apartment Events\" is in the bottom footer sentence \"Choose an active account or create one to continue to Apartment Events.\" while the hero says \"Welcome to Loom\" — a first-time user lands on a screen whose largest text names the platform rather than the community they were invited to. Positively, the \"Persona type\" dropdown is pre-populated with a real community role (\"Event Manager\"), not a generic placeholder, and the filled teal \"Sign Up\" button plus outlined \"Check membership status\" button give a clear primary/secondary hierarchy.",
+      "verdict": "fail",
+      "severity": "minor",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A fresh gate should render an explicit empty state under \"Existing Accounts\" (e.g. \"No accounts on this device yet — create one below.\"), distinct from a loading skeleton and from an error state, and should lead with the community identity (\"Apartment Events\" name, icon, and its tagline) rather than burying it in footer copy."
+    },
+    {
+      "rowId": "ae-home-role-summary",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie_Lee)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Event Manager",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/home-role-summary.png",
+      "screenshotHash": "0127138161cc5954ae6570162ecef23a07cfc1ec8338ca7fc58afa7a379dcd5d",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae-home-role-summary",
+        "affectedScreenRowIds": [
+          "ae-home-role-summary"
+        ],
+        "critique": "Immediately after signing up as Jamie_Lee, the Home tab shows no trace of Jamie_Lee. The app bar carries only \"Apartment Events\" and three icons (bell, speech bubble, people); there is no avatar, initial, or name anywhere on the screen. The teal welcome card correctly states the community identity and tagline (\"Classes, gatherings, and amenity reservations for neighbors.\") and the nested role tile is accurate product copy (\"Event Manager / Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"), but the pill to its right reads only \"3 roles\" with no indication of what those three are, whether the user holds all three, or that the pill is even tappable — it is styled as a flat translucent chip, not a button. Two copy problems: \"No sponsored message right now.\" is a system-status sentence exposed to end users where a real product would simply render nothing, and \"Home — Pinned and unassigned community surfaces.\" is internal architecture vocabulary (\"unassigned surfaces\") leaking into user-facing copy. The empty state below (\"Nothing is pinned yet\" / \"Apartment Events does not have Home…\") is the right idea but is sliced off mid-sentence by the bottom nav bar, so its explanation is unreadable at rest. Contrast is otherwise sound: white text on dark teal, and the selected \"Home\" nav pill is clearly distinguished from \"Calendar\" and \"Messages\".",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "The signed-in Home should identify the account holder — an avatar or \"Jamie_Lee\" in the app bar or in the role card header — alongside the active role, replace \"3 roles\" with either an enumerated, obviously-tappable control or the actual role names, drop the \"No sponsored message right now.\" status line when there is nothing to show, rewrite \"Pinned and unassigned community surfaces.\" in resident-facing language, and ensure the empty-state body is not clipped by the bottom navigation.",
+        "visibleObservations": [
+          "App bar: back arrow, title \"Apartment Events\", bell icon, speech-bubble icon, people icon — no account name or avatar",
+          "Dark chip near the top: megaphone icon and \"No sponsored message right now.\"",
+          "Teal welcome card: \"Apartment Events\" heading, tagline \"Classes, gatherings, and amenity reservations for neighbors.\", and a dismiss \"×\"",
+          "Role tile inside the card: \"Event Manager\", \"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\", plus a \"3 roles\" chip",
+          "\"Home — Pinned and unassigned community surfaces.\" section row",
+          "\"Nothing is pinned yet\" / \"Apartment Events does not have Home\" — sentence cut off by the bottom nav",
+          "Bottom nav: filled \"Home\" pill, outlined \"Calendar\" and \"Messages\" pills"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are (actual account/display name) and what role they are acting as?",
+            "visibleEvidence": "Role tile shows \"Event Manager\" and \"Apartment Event Manager - Creates, edits, and cancels resident events…\"; nothing on the screen reads \"Jamie_Lee\"",
+            "why": "Role is legible and well described; the person is entirely absent. On a device where multiple accounts can exist (screen 4 confirms an account list), acting as the wrong account with the right role is a real and undetectable error from this screen."
+          },
+          {
+            "question": "Are available actions clear, and is it clear why any are disabled or hidden?",
+            "visibleEvidence": "\"3 roles\" chip rendered as a flat translucent rectangle with no chevron, and three unlabeled app-bar icons",
+            "why": "\"3 roles\" states a count without naming the roles or signalling tappability, and the people icon that opens the role dialog carries no label or badge, so the path to switching roles is discoverable only by trial."
+          },
+          {
+            "question": "Does displayed text sound like real product copy describing actual data?",
+            "visibleEvidence": "\"No sponsored message right now.\" and \"Pinned and unassigned community surfaces.\"",
+            "why": "Both read as developer/system phrasing rather than product voice — the first narrates the absence of an ad slot, the second exposes the internal \"surface\" model. The community tagline and role description, by contrast, are genuine package data."
+          },
+          {
+            "question": "Does what's shown match what an Event Manager should see?",
+            "visibleEvidence": "\"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"",
+            "why": "The described capabilities are manager-scoped and match the persona, and no resident-only or admin-only surface is exposed. Persona scoping is correct on this screen."
+          }
+        ],
+        "screenshotHash": "0127138161cc5954ae6570162ecef23a07cfc1ec8338ca7fc58afa7a379dcd5d",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Immediately after signing up as Jamie_Lee, the Home tab shows no trace of Jamie_Lee. The app bar carries only \"Apartment Events\" and three icons (bell, speech bubble, people); there is no avatar, initial, or name anywhere on the screen. The teal welcome card correctly states the community identity and tagline (\"Classes, gatherings, and amenity reservations for neighbors.\") and the nested role tile is accurate product copy (\"Event Manager / Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"), but the pill to its right reads only \"3 roles\" with no indication of what those three are, whether the user holds all three, or that the pill is even tappable — it is styled as a flat translucent chip, not a button. Two copy problems: \"No sponsored message right now.\" is a system-status sentence exposed to end users where a real product would simply render nothing, and \"Home — Pinned and unassigned community surfaces.\" is internal architecture vocabulary (\"unassigned surfaces\") leaking into user-facing copy. The empty state below (\"Nothing is pinned yet\" / \"Apartment Events does not have Home…\") is the right idea but is sliced off mid-sentence by the bottom nav bar, so its explanation is unreadable at rest. Contrast is otherwise sound: white text on dark teal, and the selected \"Home\" nav pill is clearly distinguished from \"Calendar\" and \"Messages\".",
+      "productUxCritique": "LLM vision critique: Immediately after signing up as Jamie_Lee, the Home tab shows no trace of Jamie_Lee. The app bar carries only \"Apartment Events\" and three icons (bell, speech bubble, people); there is no avatar, initial, or name anywhere on the screen. The teal welcome card correctly states the community identity and tagline (\"Classes, gatherings, and amenity reservations for neighbors.\") and the nested role tile is accurate product copy (\"Event Manager / Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"), but the pill to its right reads only \"3 roles\" with no indication of what those three are, whether the user holds all three, or that the pill is even tappable — it is styled as a flat translucent chip, not a button. Two copy problems: \"No sponsored message right now.\" is a system-status sentence exposed to end users where a real product would simply render nothing, and \"Home — Pinned and unassigned community surfaces.\" is internal architecture vocabulary (\"unassigned surfaces\") leaking into user-facing copy. The empty state below (\"Nothing is pinned yet\" / \"Apartment Events does not have Home…\") is the right idea but is sliced off mid-sentence by the bottom nav bar, so its explanation is unreadable at rest. Contrast is otherwise sound: white text on dark teal, and the selected \"Home\" nav pill is clearly distinguished from \"Calendar\" and \"Messages\".",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "The signed-in Home should identify the account holder — an avatar or \"Jamie_Lee\" in the app bar or in the role card header — alongside the active role, replace \"3 roles\" with either an enumerated, obviously-tappable control or the actual role names, drop the \"No sponsored message right now.\" status line when there is nothing to show, rewrite \"Pinned and unassigned community surfaces.\" in resident-facing language, and ensure the empty-state body is not clipped by the bottom navigation."
+    },
+    {
+      "rowId": "ae-persona-picker-dialog",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie_Lee)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/persona-picker-dialog.png",
+      "screenshotHash": "9407cc2b8a1b2589843e46d3c48797c14c55fcd2fc79041a278d42d3cc1d65ab",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae-sign-in-specific-person",
+          "ae-persona-picker-dialog"
+        ],
+        "critique": "This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "Entered from \"Sign in as a specific person\", this surface should be titled for that action, retain the \"Apartment Events\" community context, mark the currently active account (Jamie_Lee) with an explicit \"Signed in\" badge or checkmark so switching versus staying is distinguishable, and provide a visible back/cancel control to return to the role dialog.",
+        "visibleObservations": [
+          "Hero card: two-person icon, \"Welcome to Loom\", \"Choose an account below or create a new one.\"",
+          "\"Existing Accounts\" heading, then teal group header \"Event Manager (Apartment Event Manager)\"",
+          "Account row: mint circular avatar with \"J\", \"Jamie_Lee\", \"ID: apartment-event-manager-20\", right-aligned arrow-into-bracket sign-in icon",
+          "No badge, checkmark, or highlight indicating this is the currently signed-in account",
+          "\"Create New Account\" section with empty \"Display name\", \"Persona type: Event Manager\", and a filled teal \"Sign Up\" button",
+          "No \"Apartment Events\" text anywhere on the screen; no back arrow, close, or cancel control visible"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are by name?",
+            "visibleEvidence": "\"Jamie_Lee\" with \"ID: apartment-event-manager-20\" under the header \"Event Manager (Apartment Event Manager)\"",
+            "why": "Name, stable ID, and persona are all present and legible — this screen answers the identity question that screens 2 and 3 leave open, which is precisely what makes their omission a defect rather than a platform limitation."
+          },
+          {
+            "question": "Is the current state unambiguous — is this account active or a switch target?",
+            "visibleEvidence": "The Jamie_Lee row uses the same neutral grey card and sign-in arrow it would use for any other account; no \"Signed in\" label appears",
+            "why": "The arrow icon reads as \"sign in as this person\", implying an action still to take, even though Jamie_Lee is already the active session. The user cannot distinguish current state from available action."
+          },
+          {
+            "question": "Does displayed text sound like real product copy for this specific action?",
+            "visibleEvidence": "\"Welcome to Loom\" and \"Choose an account below or create a new one.\" heading a screen entered via \"Sign in as a specific person\"",
+            "why": "The copy is the generic first-run gate reused unchanged. It is real product copy, but it does not describe the action the user just took and it silently drops the Apartment Events context that screen 1 did surface in its footer."
+          },
+          {
+            "question": "Are available actions clear, including how to back out?",
+            "visibleEvidence": "A sign-in arrow on the Jamie_Lee row and a filled \"Sign Up\" button; no back arrow, \"×\", or \"Cancel\" anywhere in frame",
+            "why": "Forward actions are clear, but there is no visible way to return to the \"Account role and permissions\" dialog the user came from, leaving the flow one-directional as captured."
+          }
+        ],
+        "screenshotHash": "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+      "productUxCritique": "LLM vision critique: This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "Entered from \"Sign in as a specific person\", this surface should be titled for that action, retain the \"Apartment Events\" community context, mark the currently active account (Jamie_Lee) with an explicit \"Signed in\" badge or checkmark so switching versus staying is distinguishable, and provide a visible back/cancel control to return to the role dialog."
+    },
+    {
+      "rowId": "ae-sign-in-specific-person",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie_Lee)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/sign-in-specific-person.png",
+      "screenshotHash": "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae-sign-in-specific-person",
+          "ae-persona-picker-dialog"
+        ],
+        "critique": "This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "Entered from \"Sign in as a specific person\", this surface should be titled for that action, retain the \"Apartment Events\" community context, mark the currently active account (Jamie_Lee) with an explicit \"Signed in\" badge or checkmark so switching versus staying is distinguishable, and provide a visible back/cancel control to return to the role dialog.",
+        "visibleObservations": [
+          "Hero card: two-person icon, \"Welcome to Loom\", \"Choose an account below or create a new one.\"",
+          "\"Existing Accounts\" heading, then teal group header \"Event Manager (Apartment Event Manager)\"",
+          "Account row: mint circular avatar with \"J\", \"Jamie_Lee\", \"ID: apartment-event-manager-20\", right-aligned arrow-into-bracket sign-in icon",
+          "No badge, checkmark, or highlight indicating this is the currently signed-in account",
+          "\"Create New Account\" section with empty \"Display name\", \"Persona type: Event Manager\", and a filled teal \"Sign Up\" button",
+          "No \"Apartment Events\" text anywhere on the screen; no back arrow, close, or cancel control visible"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are by name?",
+            "visibleEvidence": "\"Jamie_Lee\" with \"ID: apartment-event-manager-20\" under the header \"Event Manager (Apartment Event Manager)\"",
+            "why": "Name, stable ID, and persona are all present and legible — this screen answers the identity question that screens 2 and 3 leave open, which is precisely what makes their omission a defect rather than a platform limitation."
+          },
+          {
+            "question": "Is the current state unambiguous — is this account active or a switch target?",
+            "visibleEvidence": "The Jamie_Lee row uses the same neutral grey card and sign-in arrow it would use for any other account; no \"Signed in\" label appears",
+            "why": "The arrow icon reads as \"sign in as this person\", implying an action still to take, even though Jamie_Lee is already the active session. The user cannot distinguish current state from available action."
+          },
+          {
+            "question": "Does displayed text sound like real product copy for this specific action?",
+            "visibleEvidence": "\"Welcome to Loom\" and \"Choose an account below or create a new one.\" heading a screen entered via \"Sign in as a specific person\"",
+            "why": "The copy is the generic first-run gate reused unchanged. It is real product copy, but it does not describe the action the user just took and it silently drops the Apartment Events context that screen 1 did surface in its footer."
+          },
+          {
+            "question": "Are available actions clear, including how to back out?",
+            "visibleEvidence": "A sign-in arrow on the Jamie_Lee row and a filled \"Sign Up\" button; no back arrow, \"×\", or \"Cancel\" anywhere in frame",
+            "why": "Forward actions are clear, but there is no visible way to return to the \"Account role and permissions\" dialog the user came from, leaving the flow one-directional as captured."
+          }
+        ],
+        "screenshotHash": "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+      "productUxCritique": "LLM vision critique: This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "Entered from \"Sign in as a specific person\", this surface should be titled for that action, retain the \"Apartment Events\" community context, mark the currently active account (Jamie_Lee) with an explicit \"Signed in\" badge or checkmark so switching versus staying is distinguishable, and provide a visible back/cancel control to return to the role dialog."
+    }
+  ],
+  "status": "llm-vision-review-fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "generatedAt": "2026-08-09T05:53:11.759973Z",
+  "llmVisionReview": {
+    "schemaVersion": 1,
+    "status": "fail",
+    "freshReview": true,
+    "freshnessProblems": [],
+    "currentReviewRunId": "phaseA-apartment-events-1",
+    "expectedReviewRunId": "phaseA-apartment-events-1",
+    "sourceReviewRunId": "",
+    "carriedForward": false,
+    "reusedPriorReview": false,
+    "appCommitSha": "69632957",
+    "reviewedScreenRowIds": [
+      "ae-entry-gate",
+      "ae-home-role-summary",
+      "ae-persona-picker-dialog",
+      "ae-sign-in-specific-person"
+    ],
+    "reviewedScreenshotHashes": [
+      "ba60ac24b4c0925f197c4e4a0d9da1572f0147c0e5443727a866132b2e0a4900",
+      "0127138161cc5954ae6570162ecef23a07cfc1ec8338ca7fc58afa7a379dcd5d",
+      "9407cc2b8a1b2589843e46d3c48797c14c55fcd2fc79041a278d42d3cc1d65ab",
+      "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609"
+    ],
+    "reviewerType": "llm-vision-headless-cli",
+    "sourcePath": "../docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/llm-vision-ux-review-phaseA-apartment-events-1.json",
+    "importedAt": "2026-08-09T05:53:11.761332Z",
+    "summary": "Across the four screens the community identity (\"Apartment Events\", \"Classes, gatherings, and amenity reservations for neighbors.\") and the role taxonomy (Event Manager / Resident / Facility Resident, with accurate per-role descriptions) are legible and correctly persona-scoped, and the accent theming is consistent. The flow fails on personal identity: the account name \"Jamie_Lee\" appears on exactly one of the three signed-in screens (the account list, screen 4); neither the Home tab nor the \"Account role and permissions\" dialog — which is one tap upstream of that list and is the screen where you commit to acting as a role — names the account at all, so the user is asked to choose permissions without being told whose permissions they are. Secondary problems: the fresh entry gate renders an \"Existing Accounts\" heading over a blank strip with no empty-state text, so empty vs. still-loading is indistinguishable; the role dialog clips the \"Sign in as a specific person\" row mid-word at the scroll boundary with a half-rendered leading control; and Home leaks internal vocabulary (\"Pinned and unassigned community surfaces.\") plus an unexplained \"3 roles\" badge. Screen 4 also gives no signal that Jamie_Lee is the currently active account rather than just one of several sign-in targets.",
+    "holisticQuestionAnswers": [
+      {
+        "questionId": "identity-legibility",
+        "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+        "answer": "No. \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" are visible only on screen 4, the \"Sign in as a specific person\" account list. On screen 2 (Home) the app bar shows only \"Apartment Events\" plus bell/chat/people icons — no avatar, no name — and the summary card names the persona type (\"Event Manager\") but no person. On screen 3 the dialog says \"Your memberships determine which community actions are available\" and \"Choose the role you want to use in this community\" while never stating whose memberships they are. Screens 3 and 4 are one tap apart from the same people icon, yet only the deeper one exposes the account identity, which makes the gap on screen 3 a concrete inconsistency rather than an inference. Role identity is legible everywhere; personal identity is legible in exactly one of three signed-in surfaces.",
+        "score": 34,
+        "blocksPass": true,
+        "visibleEvidence": [
+          "Screen 3 (ae-persona-picker-dialog): dialog title reads \"Account role and permissions\" and body reads \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" — the word \"Jamie_Lee\" appears nowhere in the dialog, nor any avatar or account ID.",
+          "Screen 4 (ae-sign-in-specific-person): a teal \"J\" avatar chip with \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" under the group header \"Event Manager (Apartment Event Manager)\" — proving the identity string is available to the UI but is only surfaced one level deeper.",
+          "Screen 2 (ae-home-role-summary): the top app bar contains only a back arrow, the title \"Apartment Events\", and bell / speech-bubble / people icons; the role card reads \"Event Manager — Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\" with no account name anywhere on the screen."
+        ],
+        "affectedScreenRowIds": [
+          "ae-home-role-summary",
+          "ae-persona-picker-dialog",
+          "ae-sign-in-specific-person"
+        ],
+        "scope": "holistic",
+        "verdict": "fail",
+        "evidenceUsed": [
+          "ae-home-role-summary",
+          "ae-persona-picker-dialog",
+          "ae-sign-in-specific-person"
+        ]
+      }
+    ],
+    "screenReviews": [
+      {
+        "screenRowId": "ae-entry-gate",
+        "affectedScreenRowIds": [
+          "ae-entry-gate"
+        ],
+        "critique": "The card copy \"Welcome to Loom\" / \"Choose an account below or create a new one.\" is accurate for the general gate, but the \"Existing Accounts\" heading sits above roughly 100px of pure whitespace terminated by a hairline divider, with no \"No accounts yet\" or \"Sign up to get started\" text. On a fresh gate that blank strip is indistinguishable from a list that is still loading or that failed to load, so state legibility is ambiguous at the exact moment it matters most. Community context is also demoted: the only mention of \"Apartment Events\" is in the bottom footer sentence \"Choose an active account or create one to continue to Apartment Events.\" while the hero says \"Welcome to Loom\" — a first-time user lands on a screen whose largest text names the platform rather than the community they were invited to. Positively, the \"Persona type\" dropdown is pre-populated with a real community role (\"Event Manager\"), not a generic placeholder, and the filled teal \"Sign Up\" button plus outlined \"Check membership status\" button give a clear primary/secondary hierarchy.",
+        "verdict": "fail",
+        "severity": "minor",
+        "targetProductionSurface": "A fresh gate should render an explicit empty state under \"Existing Accounts\" (e.g. \"No accounts on this device yet — create one below.\"), distinct from a loading skeleton and from an error state, and should lead with the community identity (\"Apartment Events\" name, icon, and its tagline) rather than burying it in footer copy.",
+        "visibleObservations": [
+          "Hero card: two-person icon, \"Welcome to Loom\", \"Choose an account below or create a new one.\"",
+          "\"Existing Accounts\" section heading followed by empty whitespace and a horizontal divider — no rows, no empty-state message",
+          "\"Create New Account\" with an empty \"Display name\" field (placeholder text only) and a \"Persona type\" dropdown reading \"Event Manager\"",
+          "Filled teal \"Sign Up\" button with a person-plus icon",
+          "Footer band: \"Choose an active account or create one to continue to Apartment Events.\" above an outlined \"Check membership status\" button with a refresh icon"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the current state (loading / empty / error / populated) unambiguous?",
+            "visibleEvidence": "\"Existing Accounts\" heading with a blank gap and divider below it, no text of any kind",
+            "why": "A heading over nothing reads identically whether the list is empty, still fetching, or errored out. Nothing on screen commits to one interpretation, so the user cannot tell whether waiting or retrying would change anything."
+          },
+          {
+            "question": "Does the displayed text sound like real product copy describing actual data?",
+            "visibleEvidence": "\"Choose an active account or create one to continue to Apartment Events.\" and \"Persona type: Event Manager\"",
+            "why": "The footer names the real community and the dropdown offers a real role from the Apartment Events package, so copy is concrete rather than lorem/placeholder. The weakness is omission, not fake data."
+          },
+          {
+            "question": "Are the available actions clear?",
+            "visibleEvidence": "Filled \"Sign Up\" button versus outlined \"Check membership status\" button",
+            "why": "Two distinct affordances with clear visual weight. However \"Sign Up\" appears fully enabled while \"Display name\" is empty, so it is unclear whether tapping it will fail validation or silently create an unnamed account."
+          }
+        ],
+        "screenshotHash": "ba60ac24b4c0925f197c4e4a0d9da1572f0147c0e5443727a866132b2e0a4900",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "ae-home-role-summary",
+        "affectedScreenRowIds": [
+          "ae-home-role-summary"
+        ],
+        "critique": "Immediately after signing up as Jamie_Lee, the Home tab shows no trace of Jamie_Lee. The app bar carries only \"Apartment Events\" and three icons (bell, speech bubble, people); there is no avatar, initial, or name anywhere on the screen. The teal welcome card correctly states the community identity and tagline (\"Classes, gatherings, and amenity reservations for neighbors.\") and the nested role tile is accurate product copy (\"Event Manager / Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"), but the pill to its right reads only \"3 roles\" with no indication of what those three are, whether the user holds all three, or that the pill is even tappable — it is styled as a flat translucent chip, not a button. Two copy problems: \"No sponsored message right now.\" is a system-status sentence exposed to end users where a real product would simply render nothing, and \"Home — Pinned and unassigned community surfaces.\" is internal architecture vocabulary (\"unassigned surfaces\") leaking into user-facing copy. The empty state below (\"Nothing is pinned yet\" / \"Apartment Events does not have Home…\") is the right idea but is sliced off mid-sentence by the bottom nav bar, so its explanation is unreadable at rest. Contrast is otherwise sound: white text on dark teal, and the selected \"Home\" nav pill is clearly distinguished from \"Calendar\" and \"Messages\".",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "The signed-in Home should identify the account holder — an avatar or \"Jamie_Lee\" in the app bar or in the role card header — alongside the active role, replace \"3 roles\" with either an enumerated, obviously-tappable control or the actual role names, drop the \"No sponsored message right now.\" status line when there is nothing to show, rewrite \"Pinned and unassigned community surfaces.\" in resident-facing language, and ensure the empty-state body is not clipped by the bottom navigation.",
+        "visibleObservations": [
+          "App bar: back arrow, title \"Apartment Events\", bell icon, speech-bubble icon, people icon — no account name or avatar",
+          "Dark chip near the top: megaphone icon and \"No sponsored message right now.\"",
+          "Teal welcome card: \"Apartment Events\" heading, tagline \"Classes, gatherings, and amenity reservations for neighbors.\", and a dismiss \"×\"",
+          "Role tile inside the card: \"Event Manager\", \"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\", plus a \"3 roles\" chip",
+          "\"Home — Pinned and unassigned community surfaces.\" section row",
+          "\"Nothing is pinned yet\" / \"Apartment Events does not have Home\" — sentence cut off by the bottom nav",
+          "Bottom nav: filled \"Home\" pill, outlined \"Calendar\" and \"Messages\" pills"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are (actual account/display name) and what role they are acting as?",
+            "visibleEvidence": "Role tile shows \"Event Manager\" and \"Apartment Event Manager - Creates, edits, and cancels resident events…\"; nothing on the screen reads \"Jamie_Lee\"",
+            "why": "Role is legible and well described; the person is entirely absent. On a device where multiple accounts can exist (screen 4 confirms an account list), acting as the wrong account with the right role is a real and undetectable error from this screen."
+          },
+          {
+            "question": "Are available actions clear, and is it clear why any are disabled or hidden?",
+            "visibleEvidence": "\"3 roles\" chip rendered as a flat translucent rectangle with no chevron, and three unlabeled app-bar icons",
+            "why": "\"3 roles\" states a count without naming the roles or signalling tappability, and the people icon that opens the role dialog carries no label or badge, so the path to switching roles is discoverable only by trial."
+          },
+          {
+            "question": "Does displayed text sound like real product copy describing actual data?",
+            "visibleEvidence": "\"No sponsored message right now.\" and \"Pinned and unassigned community surfaces.\"",
+            "why": "Both read as developer/system phrasing rather than product voice — the first narrates the absence of an ad slot, the second exposes the internal \"surface\" model. The community tagline and role description, by contrast, are genuine package data."
+          },
+          {
+            "question": "Does what's shown match what an Event Manager should see?",
+            "visibleEvidence": "\"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"",
+            "why": "The described capabilities are manager-scoped and match the persona, and no resident-only or admin-only surface is exposed. Persona scoping is correct on this screen."
+          }
+        ],
+        "screenshotHash": "0127138161cc5954ae6570162ecef23a07cfc1ec8338ca7fc58afa7a379dcd5d",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "ae-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "ae-persona-picker-dialog",
+          "ae-sign-in-specific-person"
+        ],
+        "critique": "This is the weakest screen. The dialog is titled \"Account role and permissions\" and its body says \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" — it speaks about \"your\" account four times without ever naming it. There is no avatar, no \"Jamie_Lee\", no account ID, and no community name inside the dialog chrome; the scrim hides the app bar behind it, so once the dialog is open the user has lost even the \"Apartment Events\" title. That is a direct contradiction with the very next screen in the same flow, one tap away, which does render \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" — the data is clearly available and simply is not shown at the point of decision. Layout is also broken at the bottom: the \"Sign in as a specific person\" row is clipped mid-word, with \"person\" sheared in half by the scroll container and its leading radio/icon rendered as a stray horizontal dash, sitting directly above a \"Cancel\" text button. The three role options themselves are good: the selected \"Event Manager\" radio and its text are rendered in teal with a filled radio while \"Resident\" and \"Facility Resident\" are neutral grey with hollow radios, so current selection is unambiguous, and each has real differentiating copy (\"Browses the calendar and manages event RSVPs.\" vs \"Has resident access plus permission to reserve designated apartment facilities.\"). The dialog offers \"Cancel\" but no visible confirm/apply action, leaving it unclear whether tapping a radio switches roles immediately or requires a commit step that is scrolled out of view.",
+        "verdict": "fail",
+        "severity": "critical-blocker",
+        "targetProductionSurface": "The role dialog should open with an identity header — avatar, \"Jamie_Lee\", and \"apartment-event-manager-20\" (or at least the display name) plus the community name — so the user knows whose permissions they are changing, should render the \"Sign in as a specific person\" row fully rather than clipped mid-word with a half-drawn control, and should make the commit semantics explicit (either an \"Apply\"/\"Switch role\" action next to \"Cancel\", or copy stating the selection takes effect immediately).",
+        "visibleObservations": [
+          "Title \"Account role and permissions\" over body text \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\"",
+          "Three radio options: \"Event Manager\" (selected, teal filled radio, teal text), \"Resident\" (hollow radio, grey), \"Facility Resident\" (hollow radio, grey)",
+          "Role descriptions: \"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\", \"Resident - Browses the calendar and manages event RSVPs.\", \"Facility-Reservation Resident - Has resident access plus permission to reserve designated apartment facilities.\"",
+          "Divider, then \"Sign in as a specific person\" with the word \"person\" clipped horizontally at the container edge and a partial dash where its leading control should be",
+          "A single \"Cancel\" text button at bottom right; no confirm action visible",
+          "No account name, avatar, ID, or community name anywhere inside the dialog"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell which account these role changes apply to?",
+            "visibleEvidence": "\"Your memberships determine which community actions are available.\" — the pronoun \"Your\" is the only identity reference in the entire dialog",
+            "why": "A permissions dialog that never names its subject is unsafe on a multi-account device. The adjacent screen proves the name and ID are available to render, so this is an omission at the highest-stakes moment in the flow, not a data limitation."
+          },
+          {
+            "question": "Is the current state unambiguous — which role is active right now?",
+            "visibleEvidence": "Teal filled radio next to \"Event Manager\" with its label and description also in teal, versus hollow grey radios for \"Resident\" and \"Facility Resident\"",
+            "why": "Selection state is carried redundantly by both the radio fill and the text color, so the active role is unmistakable. This part of state legibility passes."
+          },
+          {
+            "question": "Are available actions clear, and is the clipped row usable?",
+            "visibleEvidence": "\"Sign in as a specific\" / \"person\" with the second line sliced through the glyph height, and a dash-shaped partial control to its left",
+            "why": "A half-rendered row reads as a rendering defect rather than an affordance; users may not realize it is tappable, and the missing confirm button leaves the commit model for the radios unstated."
+          },
+          {
+            "question": "Does what's shown match what this persona should see?",
+            "visibleEvidence": "Exactly three roles listed — Event Manager, Resident, Facility Resident — matching the \"3 roles\" chip on Home",
+            "why": "The role set is internally consistent with the Home summary and all three descriptions are Apartment-Events-specific, so persona scoping and copy accuracy are correct here."
+          }
+        ],
+        "screenshotHash": "9407cc2b8a1b2589843e46d3c48797c14c55fcd2fc79041a278d42d3cc1d65ab",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "ae-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae-sign-in-specific-person",
+          "ae-persona-picker-dialog"
+        ],
+        "critique": "This is the only screen in the flow that establishes identity properly: a teal circular \"J\" avatar, \"Jamie_Lee\", \"ID: apartment-event-manager-20\", grouped under the teal header \"Event Manager (Apartment Event Manager)\" with a sign-in arrow affordance on the right. The grouping-by-persona pattern is genuinely good and the ID line disambiguates same-named accounts. The problems are framing and state. Although this screen is reached from \"Sign in as a specific person\" inside the role dialog, it renders the generic entry-gate hero — \"Welcome to Loom\" / \"Choose an account below or create a new one.\" — rather than a title matching the action taken, and it drops all community context: \"Apartment Events\" appears nowhere, and unlike the entry gate (screen 1) there is no footer band saying which community you are continuing to. Critically, the Jamie_Lee row carries no \"currently signed in\" / \"active\" marker, no checkmark, and no visual distinction, so the user cannot tell from pixels that this is the session they are already in versus a different account they would be switching to — the row looks purely like a sign-in target. The full \"Create New Account\" form (empty \"Display name\", \"Persona type: Event Manager\", filled \"Sign Up\") is also carried over verbatim, which is odd for a screen entered from a role dialog to pick a person. There is no visible back arrow, close control, or cancel affordance to return to the dialog.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "Entered from \"Sign in as a specific person\", this surface should be titled for that action, retain the \"Apartment Events\" community context, mark the currently active account (Jamie_Lee) with an explicit \"Signed in\" badge or checkmark so switching versus staying is distinguishable, and provide a visible back/cancel control to return to the role dialog.",
+        "visibleObservations": [
+          "Hero card: two-person icon, \"Welcome to Loom\", \"Choose an account below or create a new one.\"",
+          "\"Existing Accounts\" heading, then teal group header \"Event Manager (Apartment Event Manager)\"",
+          "Account row: mint circular avatar with \"J\", \"Jamie_Lee\", \"ID: apartment-event-manager-20\", right-aligned arrow-into-bracket sign-in icon",
+          "No badge, checkmark, or highlight indicating this is the currently signed-in account",
+          "\"Create New Account\" section with empty \"Display name\", \"Persona type: Event Manager\", and a filled teal \"Sign Up\" button",
+          "No \"Apartment Events\" text anywhere on the screen; no back arrow, close, or cancel control visible"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are by name?",
+            "visibleEvidence": "\"Jamie_Lee\" with \"ID: apartment-event-manager-20\" under the header \"Event Manager (Apartment Event Manager)\"",
+            "why": "Name, stable ID, and persona are all present and legible — this screen answers the identity question that screens 2 and 3 leave open, which is precisely what makes their omission a defect rather than a platform limitation."
+          },
+          {
+            "question": "Is the current state unambiguous — is this account active or a switch target?",
+            "visibleEvidence": "The Jamie_Lee row uses the same neutral grey card and sign-in arrow it would use for any other account; no \"Signed in\" label appears",
+            "why": "The arrow icon reads as \"sign in as this person\", implying an action still to take, even though Jamie_Lee is already the active session. The user cannot distinguish current state from available action."
+          },
+          {
+            "question": "Does displayed text sound like real product copy for this specific action?",
+            "visibleEvidence": "\"Welcome to Loom\" and \"Choose an account below or create a new one.\" heading a screen entered via \"Sign in as a specific person\"",
+            "why": "The copy is the generic first-run gate reused unchanged. It is real product copy, but it does not describe the action the user just took and it silently drops the Apartment Events context that screen 1 did surface in its footer."
+          },
+          {
+            "question": "Are available actions clear, including how to back out?",
+            "visibleEvidence": "A sign-in arrow on the Jamie_Lee row and a filled \"Sign Up\" button; no back arrow, \"×\", or \"Cancel\" anywhere in frame",
+            "why": "Forward actions are clear, but there is no visible way to return to the \"Account role and permissions\" dialog the user came from, leaving the flow one-directional as captured."
+          }
+        ],
+        "screenshotHash": "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609",
+        "blocksPass": true
+      }
+    ],
+    "findings": [
+      {
+        "findingId": "role-dialog-omits-account-identity",
+        "title": "Role/permissions dialog never names the account it applies to",
+        "description": "The \"Account role and permissions\" dialog asks the user to \"Choose the role you want to use in this community\" and states \"Your memberships determine which community actions are available\", but contains no account name, avatar, or ID, and its scrim covers the \"Apartment Events\" app-bar title. One tap deeper, the \"Sign in as a specific person\" list renders \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" in full, proving the identity data is available at this point in the flow. The user is therefore asked to commit to a permission set without being shown whose permissions are changing — on a device that explicitly supports multiple accounts.",
+        "severity": "critical-blocker",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-persona-picker-dialog",
+          "ae-sign-in-specific-person"
+        ],
+        "requiredFix": "Add an identity header to the role dialog showing the active account's avatar, display name (\"Jamie_Lee\"), account ID, and the community name, rendered above the role radio list.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "home-shows-no-signed-in-account",
+        "title": "Home tab shows the role but not the signed-in person",
+        "description": "Immediately after signing up as Jamie_Lee, the Home tab's app bar contains only \"Apartment Events\" plus bell, message, and people icons, and the welcome card's role tile names only the persona (\"Event Manager\" / \"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"). No avatar, initial, or display name appears anywhere, so the primary signed-in surface cannot confirm which account the session belongs to.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-home-role-summary"
+        ],
+        "requiredFix": "Surface the signed-in account on Home — an avatar or \"Jamie_Lee\" label in the app bar, or an identity line in the role summary card alongside the active role.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "clipped-sign-in-as-person-row",
+        "title": "\"Sign in as a specific person\" row is clipped mid-word with a half-rendered control",
+        "description": "At the bottom of the role dialog, the \"Sign in as a specific person\" entry is sheared horizontally by the scroll container: the second line \"person\" is cut through the middle of the glyphs and its leading radio/icon renders as a stray dash. It sits directly above the \"Cancel\" button, so the dialog's terminal region reads as a rendering defect rather than a usable navigation affordance — and this is the only route to the one screen in the flow that shows the account name.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-persona-picker-dialog"
+        ],
+        "requiredFix": "Size the dialog content area so the \"Sign in as a specific person\" row renders complete with its leading icon, or pin it as a non-scrolling footer action above the button bar.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "active-account-not-marked-in-list",
+        "title": "Account list does not mark Jamie_Lee as the currently signed-in account",
+        "description": "On the \"Sign in as a specific person\" list the Jamie_Lee row is styled identically to any other sign-in target — neutral card, right-aligned arrow-into-bracket icon — with no \"Signed in\", checkmark, or highlight, even though Jamie_Lee is the active session. The screen also reuses the generic entry-gate hero (\"Welcome to Loom\" / \"Choose an account below or create a new one.\") instead of copy matching the action taken, drops the \"Apartment Events\" context entirely, and shows no back or cancel control to return to the role dialog.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-sign-in-specific-person"
+        ],
+        "requiredFix": "Badge the active account row as signed in, title the screen for the action that opened it, retain the community context, and add a visible back/cancel affordance.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "entry-gate-empty-accounts-no-state",
+        "title": "Fresh entry gate renders an \"Existing Accounts\" heading over blank space with no empty state",
+        "description": "On the fresh gate, \"Existing Accounts\" is followed by empty whitespace and a divider — no rows and no explanatory text. Empty, loading, and failed-to-load are visually identical, so the user cannot tell whether to wait, retry, or proceed to \"Create New Account\". The community identity is also demoted: the hero reads \"Welcome to Loom\" and \"Apartment Events\" appears only in the footer sentence \"Choose an active account or create one to continue to Apartment Events.\"",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-entry-gate"
+        ],
+        "requiredFix": "Render an explicit empty state under \"Existing Accounts\" (distinct from loading and error states) and lead with the Apartment Events name, icon, and tagline instead of relying on footer copy.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "home-internal-vocabulary-and-unexplained-roles-chip",
+        "title": "Home leaks internal vocabulary and shows an unexplained \"3 roles\" chip",
+        "description": "Home displays \"No sponsored message right now.\" — a system-status line narrating an empty ad slot — and describes its own section as \"Pinned and unassigned community surfaces.\", exposing the internal \"surface\" model to residents. The \"3 roles\" chip beside the Event Manager tile states a count without naming the roles or signalling that it is tappable (flat translucent rectangle, no chevron). The \"Nothing is pinned yet\" empty state is additionally clipped mid-sentence (\"Apartment Events does not have Home…\") by the bottom navigation bar.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae-home-role-summary"
+        ],
+        "requiredFix": "Hide the sponsored-message row when empty, rewrite \"Pinned and unassigned community surfaces.\" in resident-facing language, make \"3 roles\" an obviously tappable control or list the role names, and add bottom padding so the empty-state body clears the nav bar.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      }
+    ],
+    "blockingFindingIds": [
+      "role-dialog-omits-account-identity",
+      "home-shows-no-signed-in-account",
+      "clipped-sign-in-as-person-row",
+      "active-account-not-marked-in-list"
+    ],
+    "blockingQuestionIds": [
+      "identity-legibility"
+    ],
+    "blockingScreenRowIds": [
+      "ae-entry-gate",
+      "ae-home-role-summary",
+      "ae-persona-picker-dialog",
+      "ae-sign-in-specific-person"
+    ]
+  },
+  "deterministicScaffoldHolisticQuestionAnswers": [],
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "No. \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" are visible only on screen 4, the \"Sign in as a specific person\" account list. On screen 2 (Home) the app bar shows only \"Apartment Events\" plus bell/chat/people icons — no avatar, no name — and the summary card names the persona type (\"Event Manager\") but no person. On screen 3 the dialog says \"Your memberships determine which community actions are available\" and \"Choose the role you want to use in this community\" while never stating whose memberships they are. Screens 3 and 4 are one tap apart from the same people icon, yet only the deeper one exposes the account identity, which makes the gap on screen 3 a concrete inconsistency rather than an inference. Role identity is legible everywhere; personal identity is legible in exactly one of three signed-in surfaces.",
+      "score": 34,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Screen 3 (ae-persona-picker-dialog): dialog title reads \"Account role and permissions\" and body reads \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" — the word \"Jamie_Lee\" appears nowhere in the dialog, nor any avatar or account ID.",
+        "Screen 4 (ae-sign-in-specific-person): a teal \"J\" avatar chip with \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" under the group header \"Event Manager (Apartment Event Manager)\" — proving the identity string is available to the UI but is only surfaced one level deeper.",
+        "Screen 2 (ae-home-role-summary): the top app bar contains only a back arrow, the title \"Apartment Events\", and bell / speech-bubble / people icons; the role card reads \"Event Manager — Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\" with no account name anywhere on the screen."
+      ],
+      "affectedScreenRowIds": [
+        "ae-home-role-summary",
+        "ae-persona-picker-dialog",
+        "ae-sign-in-specific-person"
+      ],
+      "scope": "holistic",
+      "verdict": "fail",
+      "evidenceUsed": [
+        "ae-home-role-summary",
+        "ae-persona-picker-dialog",
+        "ae-sign-in-specific-person"
+      ]
+    }
+  ],
+  "deterministicScaffoldWorkflowPersonaScorecards": [],
+  "workflowPersonaScorecards": [],
+  "findings": [
+    {
+      "findingId": "role-dialog-omits-account-identity",
+      "title": "Role/permissions dialog never names the account it applies to",
+      "description": "The \"Account role and permissions\" dialog asks the user to \"Choose the role you want to use in this community\" and states \"Your memberships determine which community actions are available\", but contains no account name, avatar, or ID, and its scrim covers the \"Apartment Events\" app-bar title. One tap deeper, the \"Sign in as a specific person\" list renders \"Jamie_Lee\" and \"ID: apartment-event-manager-20\" in full, proving the identity data is available at this point in the flow. The user is therefore asked to commit to a permission set without being shown whose permissions are changing — on a device that explicitly supports multiple accounts.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-persona-picker-dialog",
+        "ae-sign-in-specific-person"
+      ],
+      "requiredFix": "Add an identity header to the role dialog showing the active account's avatar, display name (\"Jamie_Lee\"), account ID, and the community name, rendered above the role radio list.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "home-shows-no-signed-in-account",
+      "title": "Home tab shows the role but not the signed-in person",
+      "description": "Immediately after signing up as Jamie_Lee, the Home tab's app bar contains only \"Apartment Events\" plus bell, message, and people icons, and the welcome card's role tile names only the persona (\"Event Manager\" / \"Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.\"). No avatar, initial, or display name appears anywhere, so the primary signed-in surface cannot confirm which account the session belongs to.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-home-role-summary"
+      ],
+      "requiredFix": "Surface the signed-in account on Home — an avatar or \"Jamie_Lee\" label in the app bar, or an identity line in the role summary card alongside the active role.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "clipped-sign-in-as-person-row",
+      "title": "\"Sign in as a specific person\" row is clipped mid-word with a half-rendered control",
+      "description": "At the bottom of the role dialog, the \"Sign in as a specific person\" entry is sheared horizontally by the scroll container: the second line \"person\" is cut through the middle of the glyphs and its leading radio/icon renders as a stray dash. It sits directly above the \"Cancel\" button, so the dialog's terminal region reads as a rendering defect rather than a usable navigation affordance — and this is the only route to the one screen in the flow that shows the account name.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-persona-picker-dialog"
+      ],
+      "requiredFix": "Size the dialog content area so the \"Sign in as a specific person\" row renders complete with its leading icon, or pin it as a non-scrolling footer action above the button bar.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "active-account-not-marked-in-list",
+      "title": "Account list does not mark Jamie_Lee as the currently signed-in account",
+      "description": "On the \"Sign in as a specific person\" list the Jamie_Lee row is styled identically to any other sign-in target — neutral card, right-aligned arrow-into-bracket icon — with no \"Signed in\", checkmark, or highlight, even though Jamie_Lee is the active session. The screen also reuses the generic entry-gate hero (\"Welcome to Loom\" / \"Choose an account below or create a new one.\") instead of copy matching the action taken, drops the \"Apartment Events\" context entirely, and shows no back or cancel control to return to the role dialog.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-sign-in-specific-person"
+      ],
+      "requiredFix": "Badge the active account row as signed in, title the screen for the action that opened it, retain the community context, and add a visible back/cancel affordance.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "entry-gate-empty-accounts-no-state",
+      "title": "Fresh entry gate renders an \"Existing Accounts\" heading over blank space with no empty state",
+      "description": "On the fresh gate, \"Existing Accounts\" is followed by empty whitespace and a divider — no rows and no explanatory text. Empty, loading, and failed-to-load are visually identical, so the user cannot tell whether to wait, retry, or proceed to \"Create New Account\". The community identity is also demoted: the hero reads \"Welcome to Loom\" and \"Apartment Events\" appears only in the footer sentence \"Choose an active account or create one to continue to Apartment Events.\"",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-entry-gate"
+      ],
+      "requiredFix": "Render an explicit empty state under \"Existing Accounts\" (distinct from loading and error states) and lead with the Apartment Events name, icon, and tagline instead of relying on footer copy.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "home-internal-vocabulary-and-unexplained-roles-chip",
+      "title": "Home leaks internal vocabulary and shows an unexplained \"3 roles\" chip",
+      "description": "Home displays \"No sponsored message right now.\" — a system-status line narrating an empty ad slot — and describes its own section as \"Pinned and unassigned community surfaces.\", exposing the internal \"surface\" model to residents. The \"3 roles\" chip beside the Event Manager tile states a count without naming the roles or signalling that it is tappable (flat translucent rectangle, no chevron). The \"Nothing is pinned yet\" empty state is additionally clipped mid-sentence (\"Apartment Events does not have Home…\") by the bottom navigation bar.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae-home-role-summary"
+      ],
+      "requiredFix": "Hide the sponsored-message row when empty, rewrite \"Pinned and unassigned community surfaces.\" in resident-facing language, make \"3 roles\" an obviously tappable control or list the role names, and add bottom padding so the empty-state body clears the nav bar.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    }
+  ],
+  "unresolvedBlockerFindings": [
+    "role-dialog-omits-account-identity"
+  ],
+  "unresolvedMajorFindings": [
+    "home-shows-no-signed-in-account",
+    "clipped-sign-in-as-person-row",
+    "active-account-not-marked-in-list"
+  ]
+}

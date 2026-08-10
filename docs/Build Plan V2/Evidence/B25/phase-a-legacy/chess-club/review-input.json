@@ -1,0 +1,228 @@
+{
+  "currentReviewRunId": "phaseA-legacy-chess-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B15",
+    "appId": "ext_chess_club",
+    "note": "Chess Club, part of the Phase A legacy-community sweep (loomEvidenceTargets, B15). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "chess-club-chess-match-meetup-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-meetup",
+      "screenOrState": "chess-match-meetup workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-meetup_start.png",
+      "screenshotHash": "313df049da1c7c914068b29bed416b462a1aa5168a64d1c06cf057082d05634e"
+    },
+    {
+      "rowId": "chess-club-chess-match-meetup-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-meetup",
+      "screenOrState": "chess-match-meetup workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-meetup_action.png",
+      "screenshotHash": "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e"
+    },
+    {
+      "rowId": "chess-club-chess-match-meetup-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-meetup",
+      "screenOrState": "chess-match-meetup workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-meetup_complete.png",
+      "screenshotHash": "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7"
+    },
+    {
+      "rowId": "chess-club-chess-match-result-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-result",
+      "screenOrState": "chess-match-result workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_start.png",
+      "screenshotHash": "86488271cbec3759d962bf82b8973beeaa6895e1f07345e78835af5d3fc914ae"
+    },
+    {
+      "rowId": "chess-club-chess-match-result-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-result",
+      "screenOrState": "chess-match-result workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_action.png",
+      "screenshotHash": "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e"
+    },
+    {
+      "rowId": "chess-club-chess-match-result-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-match-result",
+      "screenOrState": "chess-match-result workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_complete.png",
+      "screenshotHash": "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7"
+    },
+    {
+      "rowId": "chess-club-chess-rankings-table-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rankings-table",
+      "screenOrState": "chess-rankings-table workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rankings-table_start.png",
+      "screenshotHash": "eb06244a10e65a11ce5327ea1b43e5f3afafebc977ab2d1d90770d42eb9612ed"
+    },
+    {
+      "rowId": "chess-club-chess-rankings-table-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rankings-table",
+      "screenOrState": "chess-rankings-table workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rankings-table_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-rankings-table-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rankings-table",
+      "screenOrState": "chess-rankings-table workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rankings-table_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "rowId": "chess-club-chess-club-night-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-club-night",
+      "screenOrState": "chess-club-night workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-club-night_start.png",
+      "screenshotHash": "ac9549c4cb585495c0c47563e10f757685b4560dadacee04a7e990f837c65c20"
+    },
+    {
+      "rowId": "chess-club-chess-club-night-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-club-night",
+      "screenOrState": "chess-club-night workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-club-night_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-club-night-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-club-night",
+      "screenOrState": "chess-club-night workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-club-night_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "rowId": "chess-club-chess-pairing-queue-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-pairing-queue",
+      "screenOrState": "chess-pairing-queue workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-pairing-queue_start.png",
+      "screenshotHash": "33b8471f86c2332d94541150e155fe1d7d167ec13d6b397bbf750bde846190ab"
+    },
+    {
+      "rowId": "chess-club-chess-pairing-queue-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-pairing-queue",
+      "screenOrState": "chess-pairing-queue workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-pairing-queue_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-pairing-queue-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-pairing-queue",
+      "screenOrState": "chess-pairing-queue workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-pairing-queue_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "rowId": "chess-club-chess-export-package-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-export-package",
+      "screenOrState": "chess-export-package workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-export-package_start.png",
+      "screenshotHash": "996a5f5d7c7bbda77a82a6b77c0a7014064f66e571daf63958d4b525da4321f1"
+    },
+    {
+      "rowId": "chess-club-chess-export-package-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-export-package",
+      "screenOrState": "chess-export-package workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-export-package_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-export-package-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-export-package",
+      "screenOrState": "chess-export-package workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-export-package_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "rowId": "chess-club-chess-rules-documents-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rules-documents",
+      "screenOrState": "chess-rules-documents workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rules-documents_start.png",
+      "screenshotHash": "64955c3d867f1925fee5acf81c62469727010dac5b655402bc13c51e300f20fd"
+    },
+    {
+      "rowId": "chess-club-chess-rules-documents-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rules-documents",
+      "screenOrState": "chess-rules-documents workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rules-documents_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-rules-documents-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-rules-documents",
+      "screenOrState": "chess-rules-documents workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-rules-documents_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "rowId": "chess-club-chess-discussion-thread-start",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-discussion-thread",
+      "screenOrState": "chess-discussion-thread workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-discussion-thread_start.png",
+      "screenshotHash": "a29332ca858d6b2c679dc12ef6e611e7472ffe2bb0aa7a7be43c686a3cf31aef"
+    },
+    {
+      "rowId": "chess-club-chess-discussion-thread-action",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-discussion-thread",
+      "screenOrState": "chess-discussion-thread workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-discussion-thread_action.png",
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "rowId": "chess-club-chess-discussion-thread-complete",
+      "communityName": "Chess Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "chess-discussion-thread",
+      "screenOrState": "chess-discussion-thread workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-discussion-thread_complete.png",
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "currentReviewRunId": "phaseA-authz-repro-hoa-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "AuthZ Repro HOA, community 3 of the Phase A LLM Vision UX Judge walkthrough. Throwaway test-only package built earlier this session to reproduce/verify AuthZ authorization behavior; its entry-gate flow is already proven working end-to-end. Not a canonical full-B25 capture. Third independent live confirmation of the UXReview.P1 identity-legibility fix."
+  },
+  "screenRows": [
+    {
+      "rowId": "hoa-entry-gate",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Fresh entry gate before any account exists",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/entry-gate.png",
+      "screenshotHash": "c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013"
+    },
+    {
+      "rowId": "hoa-home-role-summary",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Morgan (Board Member)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/home-role-summary.png",
+      "screenshotHash": "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3"
+    },
+    {
+      "rowId": "hoa-persona-picker-dialog",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/persona-picker-dialog.png",
+      "screenshotHash": "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13"
+    },
+    {
+      "rowId": "hoa-sign-in-specific-person",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/sign-in-specific-person.png",
+      "screenshotHash": "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f"
+    }
+  ]
+}

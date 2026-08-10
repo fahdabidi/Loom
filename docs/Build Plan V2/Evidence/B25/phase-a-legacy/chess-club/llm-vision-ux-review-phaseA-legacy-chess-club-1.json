@@ -1,0 +1,859 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-legacy-chess-club-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["chess-club-chess-match-meetup-start", "chess-club-chess-match-meetup-action", "chess-club-chess-match-meetup-complete", "chess-club-chess-match-result-start", "chess-club-chess-match-result-action", "chess-club-chess-match-result-complete", "chess-club-chess-rankings-table-start", "chess-club-chess-rankings-table-action", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-start", "chess-club-chess-club-night-action", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-start", "chess-club-chess-pairing-queue-action", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-start", "chess-club-chess-export-package-action", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-start", "chess-club-chess-rules-documents-action", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-start", "chess-club-chess-discussion-thread-action", "chess-club-chess-discussion-thread-complete"],
+  "reviewedScreenshotHashes": ["313df049da1c7c914068b29bed416b462a1aa5168a64d1c06cf057082d05634e", "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e", "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7", "86488271cbec3759d962bf82b8973beeaa6895e1f07345e78835af5d3fc914ae", "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e", "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7", "eb06244a10e65a11ce5327ea1b43e5f3afafebc977ab2d1d90770d42eb9612ed", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3", "ac9549c4cb585495c0c47563e10f757685b4560dadacee04a7e990f837c65c20", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3", "33b8471f86c2332d94541150e155fe1d7d167ec13d6b397bbf750bde846190ab", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3", "996a5f5d7c7bbda77a82a6b77c0a7014064f66e571daf63958d4b525da4321f1", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3", "64955c3d867f1925fee5acf81c62469727010dac5b655402bc13c51e300f20fd", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3", "a29332ca858d6b2c679dc12ef6e611e7472ffe2bb0aa7a7be43c686a3cf31aef", "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209", "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "Only one of the eight claimed workflows is actually depicted: every action and complete screenshot in this set renders the same 'Club board / Board 1 / Round 3 / 12 players / Ava vs Liam / Ava wins 1-0' match-result detail. Six workflows (rankings-table, club-night, pairing-queue, export-package, rules-documents, discussion-thread) share byte-identical action and complete captures under a generic 'Chess Club home' title, and the meetup workflow reuses the match-result captures verbatim under 'Board 1 match result' — so there is no rankings table, no calendar, no queue detail, no export payload, no document list, and no discussion thread anywhere in the evidence. The complete state always announces 'Chess result saved' regardless of workflow, and every minimized card carries the identical four-button shell (Tap for expanded view / Member form / Expand / Record match result), so 'Record match result' is offered as the primary CTA on rules-documents and discussion cards. Copy across the set is rubric-restating rather than product copy ('Member form captures labeled details, privacy c…', 'Ad preference and sponsored-message beh…', 'In-focus product surface', 'Choice and standing'), and start screens are captured mid-scroll with clipped headers and titles.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "No. State is somewhat legible — the complete screens carry a distinct 'Chess result saved' banner plus a 'Club record' history block, and the start screens show status chips like 'Waiting', 'Not available' and 'Saved' — but workflow identity collapses almost entirely. Six workflows' action screens are the same image titled 'Chess Club home' showing the Board 1 / Ava vs Liam match result, and the meetup workflow's action screen is the match-result screen titled 'Board 1 match result'. A user on the rankings, calendar, export, rules or discussion workflow would see a chess match score and nothing identifying the workflow they opened. The complete banner compounds it by saying 'Chess result saved' even on the export-package and rules-documents runs.",
+      "score": 18,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "chess-rankings-table_action, chess-club-night_action, chess-pairing-queue_action, chess-export-package_action, chess-rules-documents_action and chess-discussion-thread_action are all the identical 'Chess Club home' sheet showing 'Club board / Board 1 / Round 3 / 12 players' and 'Ava wins 1-0; standings and next pairing will update.'",
+        "chess-match-meetup_action is pixel-identical to chess-match-result_action, both titled 'Board 1 match result' with the same 'Club record' body and 'Edit score / Dispute result / Open standings' buttons",
+        "Every complete screen shows the same banner text 'Chess result saved — Chess Club shows board, players, result, correction option, standings impact, and next pairing.' including on the rules-documents and discussion-thread rows"
+      ],
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-action", "chess-club-chess-match-meetup-complete", "chess-club-chess-match-result-action", "chess-club-chess-match-result-complete", "chess-club-chess-rankings-table-action", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-action", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-action", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-action", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-action", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-action", "chess-club-chess-discussion-thread-complete"]
+    },
+    {
+      "questionId": "copy-accuracy",
+      "question": "Does the displayed text read like real product copy about actual Chess Club content, or like generic/spec-restating placeholder?",
+      "answer": "Mixed, trending placeholder. A thin layer of genuinely chess-specific copy exists — 'Ava vs Liam, Board 1, friendly ladder night', 'Ava wins 1-0; standings and next pairing will update', 'Board 1', 'Round 3', '12 players' — and it reads like a real club. But it is surrounded by copy that restates the acceptance criteria instead of describing content: 'Confirm player names, round, board, result, edit option, and standings update before saving.', 'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.', 'Member form captures labeled details, privacy c…', 'Ad preference and sponsored-message beh…', 'In-focus product surface', 'Local package details', and 'The saved result keeps status, history, and change actions visible for this community task.' Card subtitles are also mismatched: the 'Pairing discussion' card is subtitled with ad-preference text.",
+      "score": 30,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "chess-rankings-table_start shows a card titled 'Pairing discussion' whose subtitle reads 'Ad preference and sponsored-message beh…' — unrelated to chess pairing discussion",
+        "chess-match-meetup_action 'Club record' block lists 'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.', which enumerates rubric items rather than describing this match",
+        "chess-pairing-queue_start and chess-export-package_start both show the banner 'In-focus product surface  Expand', engine jargon rather than product language"
+      ],
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-start", "chess-club-chess-match-meetup-action", "chess-club-chess-pairing-queue-start", "chess-club-chess-export-package-start", "chess-club-chess-match-result-action", "chess-club-chess-rules-documents-start"]
+    },
+    {
+      "questionId": "actionability",
+      "question": "Are the available actions clear, and is it clear why disabled or unavailable ones are unavailable?",
+      "answer": "No. The same action set is stamped onto every card regardless of what the card is: 'Tap for expanded view', 'Member form', 'Expand', and 'Record match result' appear on the 'Club night calendar', 'Rules documents', 'Pairing discussion' and 'Organizer pairing queue' cards, where recording a match result is not a sensible action. Unavailability is asserted without a reason a legacy-schema user could act on: 'Not available' paired with 'Another community role manages this item.' names no role and offers no path. The 'Waiting' chip on chess-match-meetup_start at least explains itself ('Waiting for the member form to be submitted.'). On chess-export-package_start the primary button carries a download icon but is still labeled 'Record match result', so icon and label disagree outright.",
+      "score": 25,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "chess-match-result_start shows 'Live rankings table' and 'Club night calendar' cards each with the chip 'Not available' and the line 'Another community role manages this item.' with no named role or next step",
+        "chess-export-package_start shows a full-width button with a download glyph whose label reads 'Record match result'",
+        "chess-rankings-table_start shows 'Record match result' as the CTA on the 'Pairing discussion' card"
+      ],
+      "affectedScreenRowIds": ["chess-club-chess-match-result-start", "chess-club-chess-export-package-start", "chess-club-chess-rankings-table-start", "chess-club-chess-match-meetup-start", "chess-club-chess-pairing-queue-start", "chess-club-chess-rules-documents-start", "chess-club-chess-discussion-thread-start"]
+    },
+    {
+      "questionId": "visual-quality",
+      "question": "Is the visual presentation free of repeated generic card shells, clipping, crowding and empty content where real content is expected?",
+      "answer": "No. Every start screen is a stack of visually interchangeable dark card shells with the same icon (clipboard), the same 'Minimized' chip on the right, and the same two rows of four buttons; only the title line differs, and titles truncate ('Organizer pairing que…'). Start screens are captured mid-scroll so headers are clipped — chess-match-meetup_start opens with 'Club board' sliced by the app bar, and card content is cut off behind the bottom navigation on nearly every start capture. The action/complete sheets also cut off below 'Standings — Players can see updated ladder position and next match.' with two button shells half-visible behind the nav bar. The brown-on-brown treatment of the complete sheet gives low contrast between the 'Club board' card and its container.",
+      "score": 28,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "chess-match-meetup_start's topmost card header 'Club board' is horizontally clipped by the app bar, showing only the lower half of the glyphs",
+        "chess-rankings-table_start shows the card title truncated as 'Organizer pairing que…' and a subtitle truncated as 'Member form captures labeled details, privacy c…'",
+        "chess-match-result_complete and chess-discussion-thread_complete both cut off two button shells behind the Home/Matches/Calendar/Rankings nav bar, leaving only the top few pixels of each"
+      ],
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-start", "chess-club-chess-rankings-table-start", "chess-club-chess-match-result-complete", "chess-club-chess-discussion-thread-complete", "chess-club-chess-club-night-start", "chess-club-chess-pairing-queue-start"]
+    },
+    {
+      "questionId": "workflow-scoping-correctness",
+      "question": "Does what is shown make sense for the specific workflow being demonstrated on each row?",
+      "answer": "No, for six of eight workflows it is outright wrong. The rankings-table, club-night, pairing-queue, export-package, rules-documents and discussion-thread rows all resolve to a chess match-result detail. There is no ranked ladder table, no dated club-night calendar entries, no queue of waiting players, no export file/size/format, no document list with titles or versions, and no thread with messages or authors anywhere in the 24 captures. The bottom nav offers Matches, Calendar and Rankings tabs, but 'Home' remains the selected tab on every single screen, including the two rows that are supposed to be demonstrating the rankings table and the club night calendar.",
+      "score": 12,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "chess-rules-documents_action shows the match-result sheet with 'Edit score', 'Dispute result' and 'Open standings' buttons; no document title, author or version appears anywhere on that screen",
+        "chess-export-package_complete shows the banner 'Chess result saved' rather than any export artifact, filename, format or size",
+        "The bottom nav pill 'Home' is the filled/selected tab on all 24 screens including chess-rankings-table_start where the 'Rankings' pill is also clipped by the right screen edge"
+      ],
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-action", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-action", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-action", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-action", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-action", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-action", "chess-club-chess-discussion-thread-complete"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "chess-club-chess-match-meetup-start",
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-start"],
+      "critique": "This is supposed to be the start of a match meetup, but the visible surface is a match-result composer: the top brown card reads 'Club board — Confirm player names, round, board, result, edit option, and standings update before saving.' with an 'Edit score' chip and a 'Record match result' button. Nothing on screen names a meetup, a time, a place, or an opponent invitation. Below it, the 'Match result record' card at least carries a real state pair — a 'Waiting' chip plus 'Waiting for the member form to be submitted.' — which is the clearest disabled-state explanation in the whole set. The 'Live rankings table' card immediately under it is subtitled 'Member form captures labeled details, privacy c…', spec text truncated mid-word. The capture is mid-scroll so the top card's 'Club board' header is sliced by the app bar, and the third card ('Club night calendar') is cut in half by the bottom nav.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A meetup start screen naming the proposed match — opponent, board, date/time, venue — with a clear primary action to propose or accept the meetup, not a result-recording composer.",
+      "visibleObservations": [
+        "Top card: 'Club board' with 'Confirm player names, round, board, result, edit option, and standings update before saving.'",
+        "Chips/buttons: 'Edit score', 'Record match result'",
+        "'Match result record' card with 'Minimized' chip, 'Waiting' chip, and 'Waiting for the member form to be submitted.'",
+        "'Live rankings table' card subtitled 'Member form captures labeled details, privacy c…'",
+        "Bottom nav: Home (selected), Matches, Calendar, Rankings — 'Rankings' clipped at the right edge",
+        "Top card header 'Club board' clipped by the app bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear this is the meetup workflow at its start state?",
+          "visibleEvidence": "Visible headings are 'Club board', 'Match result record', 'Live rankings table', 'Club night calendar' — the word meetup appears nowhere",
+          "why": "Every visible affordance points at recording a score; a user could not tell they were in a meetup flow."
+        },
+        {
+          "question": "Are unavailable actions explained?",
+          "visibleEvidence": "'Waiting' chip beside 'Waiting for the member form to be submitted.'",
+          "why": "This one card does explain itself, which is why the failure here is scoping rather than actionability."
+        }
+      ],
+      "screenshotHash": "313df049da1c7c914068b29bed416b462a1aa5168a64d1c06cf057082d05634e"
+    },
+    {
+      "screenRowId": "chess-club-chess-match-meetup-action",
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-action", "chess-club-chess-match-result-action"],
+      "critique": "This capture is pixel-identical to chess-match-result_action: the same modal titled 'Board 1 match result' with an X close, the same 'Club board' summary chips ('Board 1', 'Round 3', '12 players', 'Correction option'), the same 'Ava vs Liam, Board 1, friendly ladder night.' and 'Ava wins 1-0; standings and next pairing will update.', and the same 'Club record' block ending in 'Edit score', 'Dispute result', 'Open standings'. For the meetup workflow that is the wrong screen entirely — the in-progress state of arranging a meetup should be about scheduling, not about a score that has already been decided. The 'Club record' body is also spec-restating: 'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.' mentions ballots and nominations that have nothing to do with a chess meetup. Content runs past the bottom edge below 'Open standings' with no visible scroll affordance.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A meetup-in-progress sheet showing the proposed date/time, board, both players' confirmation status, and actions to confirm, propose a new time, or cancel.",
+      "visibleObservations": [
+        "Modal title 'Board 1 match result' with an X close control",
+        "Chips 'Board 1', 'Round 3', '12 players', 'Correction option'",
+        "'Players — Ava vs Liam, Board 1, friendly ladder night.'",
+        "'Result — Ava wins 1-0; standings and next pairing will update.'",
+        "'Club record' with 'Choice and standing', 'Open result', repeated 'Players' and 'Result' rows",
+        "Buttons 'Edit score', 'Dispute result', 'Open standings'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does this screen depict the meetup workflow in progress?",
+          "visibleEvidence": "Title reads 'Board 1 match result' and the body states 'Ava wins 1-0'",
+          "why": "A completed score is shown where a pending meetup arrangement should be; the screen belongs to a different workflow."
+        },
+        {
+          "question": "Is the copy specific to real content?",
+          "visibleEvidence": "'Nominations, ballot options, selected title, match result, or standings are visible before saving.'",
+          "why": "It enumerates every possible entity type rather than describing this one, which reads as spec text."
+        }
+      ],
+      "screenshotHash": "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e"
+    },
+    {
+      "screenRowId": "chess-club-chess-match-meetup-complete",
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-complete", "chess-club-chess-match-result-complete"],
+      "critique": "The completion signal itself is decent in isolation — a heading 'Board 1 match result', a distinct banner card 'Chess result saved' and a 'Club record' block stating 'The saved result keeps status, history, and change actions visible for this community task.' — but it is the wrong completion for a meetup, and it is byte-identical to chess-match-result_complete. A finished meetup should confirm a scheduled game, not announce a saved score. The banner copy again lists mechanisms rather than facts: 'Chess Club shows board, players, result, correction option, standings impact, and next pairing.' names the app in the third person inside its own UI. Visually the sheet is brown-on-brown, so the inner 'Club board' card barely separates from its container, and the bottom of the sheet is cut by the nav bar leaving two half-rendered button shells under 'Standings — Players can see updated ladder position and next match.'",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A meetup-complete confirmation naming the agreed date, time, board and both players, with actions to add to calendar or reschedule.",
+      "visibleObservations": [
+        "Heading 'Board 1 match result' inside a brown sheet under the 'Chess Club' app bar",
+        "Banner 'Chess result saved — Chess Club shows board, players, result, correction option, standings impact, and next pairing.'",
+        "'Club record — The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Standings — Players can see updated ladder position and next match.'",
+        "Two button shells clipped by the bottom nav bar",
+        "Low contrast between the inner card and the brown sheet background"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the complete state describe what actually completed in this workflow?",
+          "visibleEvidence": "Banner reads 'Chess result saved'",
+          "why": "It confirms a result save, not a meetup arrangement, so the completion message is factually wrong for this row."
+        },
+        {
+          "question": "Is there any layout clipping?",
+          "visibleEvidence": "Two rounded button shells appear as slivers directly above the Home/Matches/Calendar/Rankings bar",
+          "why": "The primary post-completion actions are cut off, which is a real usability defect, not just a capture artifact."
+        }
+      ],
+      "screenshotHash": "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7"
+    },
+    {
+      "screenRowId": "chess-club-chess-match-result-start",
+      "affectedScreenRowIds": ["chess-club-chess-match-result-start"],
+      "critique": "This is the one start screen whose framing matches its workflow: the top brown card 'Club board — Confirm player names, round, board, result, edit option, and standings update before saving.' plus a full-width 'Record match result' button is a plausible pre-submission state for recording a result. It still fails on the surrounding cards: 'Live rankings table' and 'Club night calendar' are both stamped with the chip 'Not available' and the identical line 'Another community role manages this item.' In a schema with no signed-in identity, that sentence names no role and gives the user nothing to do about it, and it appears verbatim on two different cards. Both cards also carry a 'Member form' button while simultaneously being marked not available, which contradicts itself. The capture is mid-scroll — the 'Club board' header is clipped by the app bar — and a third card is sliced by the nav bar.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A result-entry start state showing the specific pairing to be scored with an unambiguous primary action, and any locked cards explaining concretely who manages them and how to request access.",
+      "visibleObservations": [
+        "'Club board' card with 'Confirm player names, round, board, result, edit option, and standings update before saving.' and an 'Edit score' chip",
+        "Full-width 'Record match result' button",
+        "'Live rankings table' card: 'Another community role manages this item.' with chips 'Minimized' and 'Not available'",
+        "'Club night calendar' card: identical subtitle and identical 'Not available' chip",
+        "Both locked cards still offer a 'Member form' button",
+        "Top card header clipped by app bar; a fourth card clipped by the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear why the disabled items are disabled?",
+          "visibleEvidence": "'Not available' chip with 'Another community role manages this item.'",
+          "why": "No role is named and no recourse is offered, so the restriction reads as an unexplained dead end."
+        },
+        {
+          "question": "Is the workflow identifiable at start?",
+          "visibleEvidence": "'Record match result' button under a 'Club board' confirmation card",
+          "why": "This part does work — the action and the pre-save checklist together identify the result-recording flow."
+        }
+      ],
+      "screenshotHash": "86488271cbec3759d962bf82b8973beeaa6895e1f07345e78835af5d3fc914ae"
+    },
+    {
+      "screenRowId": "chess-club-chess-match-result-action",
+      "affectedScreenRowIds": ["chess-club-chess-match-result-action", "chess-club-chess-match-meetup-action"],
+      "critique": "For this workflow the content is at least on-topic — 'Board 1 match result' with 'Ava vs Liam, Board 1, friendly ladder night.' and 'Ava wins 1-0; standings and next pairing will update.' is real, specific chess copy, and the chips 'Board 1', 'Round 3', '12 players', 'Correction option' give useful context without an account system. The defects are duplication and padding: 'Players' and 'Result' are printed twice on the same sheet, once in the 'Club board' card and again inside 'Club record', with no difference in content, which makes the sheet look padded rather than informative. The 'Club record' preamble 'Review players, round, score, result, standings impact, and next club action.' followed by 'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.' introduces ballots and nominations that do not exist in this flow. The screen also does not visibly distinguish itself from the complete state's source content, and it runs off the bottom below 'Open standings'.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A single non-duplicated result review sheet: the pairing, the score being submitted, the standings delta it will cause, and confirm/edit/cancel actions.",
+      "visibleObservations": [
+        "Title 'Board 1 match result' with X close",
+        "'Players — Ava vs Liam, Board 1, friendly ladder night.' appears twice on the same screen",
+        "'Result — Ava wins 1-0; standings and next pairing will update.' appears twice",
+        "'Club record — Review players, round, score, result, standings impact, and next club action.'",
+        "'Open result — Change vote, dispute score, view results, and next meeting or round stay available.'",
+        "Buttons 'Edit score', 'Dispute result', 'Open standings'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the content duplicated or padded?",
+          "visibleEvidence": "'Ava vs Liam, Board 1, friendly ladder night.' is rendered at two separate points on one sheet",
+          "why": "Repeating the same two fields inside two nested cards adds height without adding information."
+        },
+        {
+          "question": "Does the copy describe this workflow accurately?",
+          "visibleEvidence": "'Change vote, dispute score, view results, and next meeting or round stay available.'",
+          "why": "Voting and meetings are unrelated to a match score; the sentence is a shared generic template."
+        }
+      ],
+      "screenshotHash": "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e"
+    },
+    {
+      "screenRowId": "chess-club-chess-match-result-complete",
+      "affectedScreenRowIds": ["chess-club-chess-match-result-complete", "chess-club-chess-match-meetup-complete"],
+      "critique": "This is the most defensible screen in the set: heading 'Board 1 match result', a clear terminal banner 'Chess result saved', and a 'Club record' follow-up mentioning 'Standings — Players can see updated ladder position and next match.' State is legible without any identity display. It still falls short of production quality. The banner body 'Chess Club shows board, players, result, correction option, standings impact, and next pairing.' describes the app's capabilities instead of stating the outcome, and it does not state the actual standings change — no new ladder position, no next opponent, despite promising both. The brown sheet on brown app bar gives the inner 'Club board' card almost no edge definition, and the post-save actions are cut off mid-shell by the bottom navigation, so the user cannot see what they can do next.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A saved confirmation stating the concrete outcome — 'Ava 1–0 Liam recorded, Ava moves to #3, next pairing Ava vs Noor' — with fully visible follow-up actions.",
+      "visibleObservations": [
+        "Heading 'Board 1 match result'",
+        "Banner 'Chess result saved' with grid icon",
+        "'Club record — The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Standings — Players can see updated ladder position and next match.' with no position or opponent given",
+        "Chips 'Board 1', 'Round 3', '12 players', 'Correction option'",
+        "Action buttons clipped by the bottom nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the complete state unambiguous?",
+          "visibleEvidence": "'Chess result saved' rendered in a visually distinct banner card",
+          "why": "The terminal state does read clearly; this dimension passes on this screen."
+        },
+        {
+          "question": "Does it show the outcome it promises?",
+          "visibleEvidence": "'Players can see updated ladder position and next match.'",
+          "why": "It promises a position and a next match but shows neither, leaving thin content where real data is expected."
+        }
+      ],
+      "screenshotHash": "845b7a087d1f401aeadbbe6364ec1dddf3713f3cd53f9a79f968bc746b6206b7"
+    },
+    {
+      "screenRowId": "chess-club-chess-rankings-table-start",
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-start"],
+      "critique": "A rankings-table start state shows no rankings at all — no player names, no win/loss records, no ordered positions, not even an empty-table placeholder. What is visible is a scrolled list of three interchangeable dark card shells: a partially cut card, 'Organizer pairing que…' (title truncated) subtitled 'Member form captures labeled details, privacy c…' (also truncated), and 'Pairing discussion' subtitled 'Ad preference and sponsored-message beh…', which is ad-consent copy pasted onto a chess pairing card. All three carry the identical four buttons 'Tap for expanded view', 'Member form', 'Expand', 'Record match result', so the primary CTA on a discussion card is to record a match score. At the bottom sits a bare 'Local package details' disclosure row with a chevron and a large empty region above it. The 'Rankings' nav pill is clipped by the right screen edge.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "An actual ladder: ranked rows of club members with rating/score/record, sortable, with the current round indicated.",
+      "visibleObservations": [
+        "No ranking rows, positions, ratings or player names anywhere on screen",
+        "Card title truncated to 'Organizer pairing que…'",
+        "Subtitle truncated to 'Member form captures labeled details, privacy c…'",
+        "'Pairing discussion' card subtitled 'Ad preference and sponsored-message beh…'",
+        "Identical button set repeated on all three cards, including 'Record match result'",
+        "'Local package details' row with chevron and a large empty gap above it",
+        "'Rankings' bottom-nav pill clipped at the right edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does this screen show a rankings table?",
+          "visibleEvidence": "The three visible card titles are 'Organizer pairing que…', 'Pairing discussion' and a clipped card — none contain a table",
+          "why": "The workflow's central artifact is absent, so the screen cannot demonstrate the workflow."
+        },
+        {
+          "question": "Is the card copy accurate to its card?",
+          "visibleEvidence": "'Pairing discussion' subtitled 'Ad preference and sponsored-message beh…'",
+          "why": "Advertising-consent text under a chess pairing discussion card is a straightforward content mismatch."
+        }
+      ],
+      "screenshotHash": "eb06244a10e65a11ce5327ea1b43e5f3afafebc977ab2d1d90770d42eb9612ed"
+    },
+    {
+      "screenRowId": "chess-club-chess-rankings-table-action",
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-action", "chess-club-chess-club-night-action", "chess-club-chess-pairing-queue-action", "chess-club-chess-export-package-action", "chess-club-chess-rules-documents-action", "chess-club-chess-rules-documents-action"],
+      "critique": "The in-progress state of the rankings workflow is a modal titled generically 'Chess Club home' whose entire body is the Board 1 match-result detail: chips 'Board 1', 'Round 3', '12 players', 'Correction option', then 'Ava vs Liam, Board 1, friendly ladder night.' and 'Ava wins 1-0; standings and next pairing will update.', then a 'Club record' block ending in 'Edit score', 'Dispute result', 'Open standings'. There is no table, no sort control, no list of players, and no indication that a ranking is being computed or updated. The title 'Chess Club home' actively removes context — it tells the user only which community they are in, not which workflow. This exact image is shared with five other workflows' action rows, so the rankings workflow has no distinct in-progress evidence at all.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The rankings table mid-interaction — e.g. sorted ladder rows with a pending recalculation indicator after the Board 1 result — titled 'Club rankings', not 'Chess Club home'.",
+      "visibleObservations": [
+        "Modal title 'Chess Club home' with X close",
+        "Body is the match-result detail: 'Ava vs Liam, Board 1, friendly ladder night.' / 'Ava wins 1-0'",
+        "Buttons 'Edit score', 'Dispute result', 'Open standings'",
+        "No table, column headers, player list or sort control visible",
+        "'Club record' block identical to the match-result workflow's",
+        "Content clipped at the bottom edge below 'Open standings'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user tell which workflow this is?",
+          "visibleEvidence": "The title bar reads only 'Chess Club home'",
+          "why": "A community-level title on a workflow-level sheet erases the workflow identity the rubric requires."
+        },
+        {
+          "question": "Is the rankings content present?",
+          "visibleEvidence": "'Open standings' appears as a button, meaning standings are elsewhere",
+          "why": "The screen points at standings rather than showing them, so the rankings workflow is undemonstrated."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-rankings-table-complete",
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-complete"],
+      "critique": "The completion of the rankings workflow announces 'Chess result saved', which is the wrong event — nothing about a ranking being published or recalculated appears. The heading is again the generic 'Chess Club home', so neither the workflow nor the specific object completed is identifiable. The one line that gestures at rankings, 'Standings — Players can see updated ladder position and next match.', describes what players could see rather than showing the updated ladder, so where the workflow's payoff content belongs there is a sentence instead. This capture is byte-identical to five other workflows' complete rows, meaning the rankings completion state has no independent evidence. The sheet is also clipped: two button shells sit half-hidden behind the bottom nav bar.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A published-rankings confirmation showing the updated top of the ladder with the changed positions highlighted, titled for the rankings workflow.",
+      "visibleObservations": [
+        "Heading 'Chess Club home' rather than a rankings title",
+        "Banner 'Chess result saved'",
+        "'Standings — Players can see updated ladder position and next match.' with no ladder rendered",
+        "Match-result chips 'Board 1', 'Round 3', '12 players' at the top",
+        "Two action buttons clipped by the bottom navigation",
+        "Identical to five other workflows' complete captures"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion message match the workflow?",
+          "visibleEvidence": "Banner text is 'Chess result saved' on the rankings-table row",
+          "why": "A result-save confirmation cannot serve as the terminal state of a rankings workflow."
+        },
+        {
+          "question": "Is real content shown where expected?",
+          "visibleEvidence": "'Players can see updated ladder position and next match.'",
+          "why": "The ladder itself is replaced by a description of the ladder, which is thin placeholder content."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "screenRowId": "chess-club-chess-club-night-start",
+      "affectedScreenRowIds": ["chess-club-chess-club-night-start"],
+      "critique": "For a club-night workflow this start screen shows no date, no time, no venue and no attendee list. Instead a dark strip reading 'In-focus product surface  Expand' — internal engine vocabulary, not product language — sits above a brown sheet headed 'Chess Club home' containing the Board 1 match-result summary and, oddly, a second card also titled 'Club board' repeating 'Confirm player names, round, board, result, edit option, and standings update before saving.' with an 'Edit score' chip. Two cards with the same title stacked on one screen is a straightforward hierarchy defect. The primary button is 'Record match result', which is not what starting a club night should do. Below, an 'Organizer pairing que…' card is truncated in title and cut in half by the nav bar.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A club-night start showing the scheduled date/time, location, RSVP count and boards planned, with an RSVP or open-the-night primary action.",
+      "visibleObservations": [
+        "Dark strip 'In-focus product surface  Expand'",
+        "Heading 'Chess Club home'",
+        "Two separate cards both titled 'Club board' on the same screen",
+        "'Ava vs Liam, Board 1, friendly ladder night.' and 'Ava wins 1-0' shown at the top",
+        "Primary button 'Record match result'",
+        "'Organizer pairing que…' card truncated and clipped by the bottom nav",
+        "No date, time, venue or RSVP anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does anything identify this as club-night scheduling?",
+          "visibleEvidence": "Only the phrase 'friendly ladder night' inside the match summary hints at a night; no date or venue appears",
+          "why": "An incidental phrase inside unrelated content is not workflow identification."
+        },
+        {
+          "question": "Is the visual hierarchy sound?",
+          "visibleEvidence": "Two stacked cards both headed 'Club board'",
+          "why": "Duplicate sibling headings make it impossible to tell which card is the subject and which is the composer."
+        }
+      ],
+      "screenshotHash": "ac9549c4cb585495c0c47563e10f757685b4560dadacee04a7e990f837c65c20"
+    },
+    {
+      "screenRowId": "chess-club-chess-club-night-action",
+      "affectedScreenRowIds": ["chess-club-chess-club-night-action"],
+      "critique": "The club-night in-progress state is the shared 'Chess Club home' modal showing the Board 1 match result — 'Ava vs Liam, Board 1, friendly ladder night.', 'Ava wins 1-0; standings and next pairing will update.' — with 'Edit score', 'Dispute result' and 'Open standings' as the actions. A club night in progress should show the evening's schedule, which boards are playing, who has arrived, or which round is running; none of that is present. The 'Open result' line promises 'next meeting or round stay available', which is the closest the screen comes to acknowledging a meeting, but it is a capability sentence rather than an actual next meeting. Because this image is identical to the rankings, pairing-queue, export, rules and discussion action captures, the club-night workflow contributes no unique in-progress evidence.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A live club-night view: tonight's date, round in progress, board assignments and arrival/RSVP status, with actions to start the next round.",
+      "visibleObservations": [
+        "Title 'Chess Club home' with X close",
+        "'Players — Ava vs Liam, Board 1, friendly ladder night.'",
+        "'Open result — Change vote, dispute score, view results, and next meeting or round stay available.'",
+        "Actions 'Edit score', 'Dispute result', 'Open standings'",
+        "No date, round schedule, board assignments or attendee list",
+        "Identical layout and content to five other workflows' action captures"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the club night visible in any form?",
+          "visibleEvidence": "'next meeting or round stay available' inside a generic capability sentence",
+          "why": "A passing mention of meetings in template copy is not a depiction of the club night in progress."
+        },
+        {
+          "question": "Are the offered actions appropriate?",
+          "visibleEvidence": "'Edit score', 'Dispute result', 'Open standings'",
+          "why": "All three belong to result adjudication, none to running or attending a club night."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-club-night-complete",
+      "affectedScreenRowIds": ["chess-club-chess-club-night-complete"],
+      "critique": "The terminal state for club night reads 'Chess result saved' under the heading 'Chess Club home' — neither string identifies a club night, and no attendance summary, results-of-the-evening roundup, or next-date confirmation appears. The follow-up card says 'The saved result keeps status, history, and change actions visible for this community task.', where 'this community task' is a generic stand-in for whatever the user actually did; production copy would name the club night. The only forward-looking line, 'Players can see updated ladder position and next match.', again describes rather than shows. Layout-wise the sheet is brown-on-brown with weak card separation and two follow-up buttons sheared off by the bottom nav, so the completion offers no visible exit path.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A club-night wrap-up: date held, attendance, results recorded that evening, and the next scheduled night.",
+      "visibleObservations": [
+        "Heading 'Chess Club home'",
+        "Banner 'Chess result saved'",
+        "'The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Standings — Players can see updated ladder position and next match.'",
+        "No attendance, date or evening summary",
+        "Two follow-up buttons clipped by the bottom nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the wording name what completed?",
+          "visibleEvidence": "'this community task' in the Club record body",
+          "why": "A generic placeholder phrase in place of the club night's name is placeholder-sounding copy."
+        },
+        {
+          "question": "Is a next step visible?",
+          "visibleEvidence": "Only the tops of two button shells are visible above the nav bar",
+          "why": "The user reaches a terminal state with its actions cut off, which blocks the flow."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "screenRowId": "chess-club-chess-pairing-queue-start",
+      "affectedScreenRowIds": ["chess-club-chess-pairing-queue-start"],
+      "critique": "A pairing queue with no queue: there is no list of waiting players, no positions, no wait times, and no next-up indicator. The screen shows the 'In-focus product surface  Expand' engine strip, the 'Chess Club home' heading, the Board 1 match-result summary, then a second 'Club board' card repeating the pre-save checklist with an 'Edit score' chip and a 'Record match result' button. The only nod to pairing is a 'Pairing discussion' card just visible at the bottom with a 'Minimized' chip, and it is bisected by the nav bar. Duplicate 'Club board' headings again appear twice on one screen. Nothing here would let a member see where they sit in the queue or join it.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "An ordered queue of players awaiting pairing with positions, wait times, and join/leave-queue actions.",
+      "visibleObservations": [
+        "'In-focus product surface  Expand' strip",
+        "Heading 'Chess Club home'",
+        "Two cards titled 'Club board' on the same screen",
+        "'Record match result' as the only full-width action",
+        "'Pairing discussion' card with 'Minimized' chip, clipped by the bottom nav",
+        "No queue list, positions or wait indicators"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the queue itself rendered?",
+          "visibleEvidence": "The visible cards are 'Club board' (twice) and 'Pairing discussion'; no ordered list appears",
+          "why": "Without any queue entries the workflow's core object is missing entirely."
+        },
+        {
+          "question": "Is the primary action right for this workflow?",
+          "visibleEvidence": "Full-width button labelled 'Record match result'",
+          "why": "Recording a score is not how a member enters or manages a pairing queue."
+        }
+      ],
+      "screenshotHash": "33b8471f86c2332d94541150e155fe1d7d167ec13d6b397bbf750bde846190ab"
+    },
+    {
+      "screenRowId": "chess-club-chess-pairing-queue-action",
+      "affectedScreenRowIds": ["chess-club-chess-pairing-queue-action"],
+      "critique": "The pairing-queue in-progress capture is again the shared 'Chess Club home' match-result modal with 'Board 1', 'Round 3', '12 players', 'Correction option', 'Ava vs Liam, Board 1, friendly ladder night.' and 'Ava wins 1-0'. A queue mid-action should show a pairing being generated or a player being matched — a pending pair, a shuffle in progress, a confirm-pairing action. Instead the actions offered are 'Edit score', 'Dispute result' and 'Open standings'. The '12 players' chip is the only datum that could plausibly relate to a queue, and it is presented as match metadata, not queue depth. Since this file is identical across six workflows, there is no pairing-queue-specific in-progress evidence in this catalog.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A pairing being generated or confirmed: proposed pairs for the round, byes, and a confirm/regenerate action.",
+      "visibleObservations": [
+        "Title 'Chess Club home'",
+        "Chips 'Board 1', 'Round 3', '12 players', 'Correction option'",
+        "'Ava wins 1-0; standings and next pairing will update.'",
+        "Actions 'Edit score', 'Dispute result', 'Open standings'",
+        "No proposed pairings, byes or queue positions",
+        "Shared byte-identical capture with five other workflows"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does anything show pairing in progress?",
+          "visibleEvidence": "'standings and next pairing will update.' — a future-tense promise inside result copy",
+          "why": "The pairing is described as something that will happen elsewhere rather than shown happening here."
+        },
+        {
+          "question": "Is workflow state distinguishable from the other rows?",
+          "visibleEvidence": "The title 'Chess Club home' is the same on the rankings, club-night, export, rules and discussion action captures",
+          "why": "Identical titles and bodies make the six workflows indistinguishable at their action state."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-pairing-queue-complete",
+      "affectedScreenRowIds": ["chess-club-chess-pairing-queue-complete"],
+      "critique": "Completion of a pairing queue should show the finalised pairings for the round; this screen shows 'Chess result saved' beneath 'Chess Club home' and the same Board 1 result block. No pair list, no board assignments, no confirmation that anyone was matched. The line 'Chess Club shows board, players, result, correction option, standings impact, and next pairing.' mentions 'next pairing' but no pairing is displayed, so the screen claims content it does not render. As with the other five shared completes, the two follow-up buttons are cut off by the bottom nav bar and card-on-sheet contrast in the brown treatment is very low, making the 'Club board' card edge hard to perceive.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "Finalised round pairings — each board with its two players and any bye — plus a publish/notify confirmation.",
+      "visibleObservations": [
+        "Heading 'Chess Club home'",
+        "Banner 'Chess result saved'",
+        "'...standings impact, and next pairing.' with no pairing shown",
+        "'Standings — Players can see updated ladder position and next match.'",
+        "Follow-up buttons clipped by the bottom nav",
+        "Low contrast between the inner card and the brown sheet"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Are the resulting pairings visible?",
+          "visibleEvidence": "The banner mentions 'next pairing' but the body only contains 'Ava vs Liam' from the completed match",
+          "why": "The completed artifact of the queue workflow is absent, so completion cannot be verified by a user."
+        },
+        {
+          "question": "Is the completion message correct for this row?",
+          "visibleEvidence": "'Chess result saved'",
+          "why": "It reports a result save rather than a pairing publication."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "screenRowId": "chess-club-chess-export-package-start",
+      "affectedScreenRowIds": ["chess-club-chess-export-package-start"],
+      "critique": "This screen contains the sharpest single defect in the set: the full-width primary button renders a download/export glyph but is labelled 'Record match result'. Icon and label state two different actions, so a user cannot predict what tapping it does. Beyond that, an export-package start shows nothing exportable — no file name, format, date range, size estimate or content scope. The visible content is the 'In-focus product surface' strip, 'Chess Club home', the Board 1 match summary, and a duplicate 'Club board' card with the pre-save checklist and an 'Edit score' chip. A 'Rules documents' card is clipped in half by the bottom nav. Nothing here communicates what package would be produced.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "An export configuration state: what will be included (results, standings, roster), the format, the date range, and an 'Export' button with a matching icon.",
+      "visibleObservations": [
+        "Full-width button with a download icon labelled 'Record match result'",
+        "'In-focus product surface  Expand' strip",
+        "Heading 'Chess Club home'",
+        "Duplicate 'Club board' cards with 'Confirm player names, round, board, result, edit option, and standings update before saving.'",
+        "'Rules documents' card clipped by the bottom nav",
+        "No file, format, scope or size information"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the primary action's meaning clear?",
+          "visibleEvidence": "A download arrow glyph sits immediately left of the words 'Record match result'",
+          "why": "Icon and label contradict each other, which is a direct actionability failure a user would hit on first tap."
+        },
+        {
+          "question": "Is the export subject identified?",
+          "visibleEvidence": "No filename, format, or content scope appears; the body is the Board 1 match summary",
+          "why": "The workflow's object is entirely missing from its own start state."
+        }
+      ],
+      "screenshotHash": "996a5f5d7c7bbda77a82a6b77c0a7014064f66e571daf63958d4b525da4321f1"
+    },
+    {
+      "screenRowId": "chess-club-chess-export-package-action",
+      "affectedScreenRowIds": ["chess-club-chess-export-package-action"],
+      "critique": "An export in progress should show progress: a spinner, a percentage, a file being assembled, or at minimum a 'preparing your export' state. This capture instead shows the shared 'Chess Club home' modal with the Board 1 match-result detail and the actions 'Edit score', 'Dispute result', 'Open standings'. There is no loading indicator anywhere on the screen, so the in-progress state of the export workflow is not represented at all — a user could not distinguish this from an idle detail view. The duplicated 'Players' and 'Result' rows inside 'Club board' and again inside 'Club record' pad the sheet without adding data, and the sheet is cut off below 'Open standings'.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "An export-in-progress state with a determinate or indeterminate progress indicator, the package being built, and a cancel action.",
+      "visibleObservations": [
+        "Title 'Chess Club home' with X close",
+        "No progress bar, spinner or percentage anywhere",
+        "'Ava vs Liam, Board 1, friendly ladder night.' repeated twice on the sheet",
+        "Actions 'Edit score', 'Dispute result', 'Open standings'",
+        "'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.'",
+        "Content clipped at the bottom edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is a loading/in-progress state visible?",
+          "visibleEvidence": "The screen shows a static result detail with 'Edit score' and 'Dispute result' buttons and no indicator of activity",
+          "why": "For an export the action state is precisely the progress state, and it is absent."
+        },
+        {
+          "question": "Would a user know an export was running?",
+          "visibleEvidence": "Every visible string relates to a chess score, none to a file or package",
+          "why": "There is no signal connecting this screen to exporting anything."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-export-package-complete",
+      "affectedScreenRowIds": ["chess-club-chess-export-package-complete"],
+      "critique": "The export workflow's completion says 'Chess result saved'. For an export, the terminal state must name the produced artifact — file name, format, size, and a share/download action — and none of that appears; the body is the same Board 1 match summary and 'Standings — Players can see updated ladder position and next match.' The heading 'Chess Club home' gives no workflow context. This is a completion message for a different workflow attached to this row, so a user finishing an export would be told a chess score was saved and given no way to retrieve their package. The two follow-up buttons are additionally clipped by the bottom nav, removing whatever action might have been offered.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "An export-complete confirmation naming the generated file, its format and size, with download/share actions.",
+      "visibleObservations": [
+        "Heading 'Chess Club home'",
+        "Banner 'Chess result saved'",
+        "No file name, format, size or download affordance",
+        "'Club record — The saved result keeps status, history, and change actions visible for this community task.'",
+        "Match-result chips 'Board 1', 'Round 3', '12 players' at top",
+        "Follow-up buttons sheared by the bottom nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user retrieve the exported package?",
+          "visibleEvidence": "No download, share or file-name element is present; the only visible actions are clipped shells",
+          "why": "The workflow terminates with its whole purpose unrealised on screen."
+        },
+        {
+          "question": "Is the completion copy accurate?",
+          "visibleEvidence": "'Chess result saved' on the export-package row",
+          "why": "The message names an unrelated event, which actively misinforms the user."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "screenRowId": "chess-club-chess-rules-documents-start",
+      "affectedScreenRowIds": ["chess-club-chess-rules-documents-start"],
+      "critique": "A rules-documents start state shows no documents: no titles, no versions, no dates, no authors, no file types. What is present is the 'In-focus product surface  Expand' strip, the heading 'Chess Club home', the Board 1 match summary, and a second 'Club board' card whose body is again 'Confirm player names, round, board, result, edit option, and standings update before saving.' with an 'Edit score' chip and a 'Record match result' button — a scoring composer sitting where a document library belongs. At the very bottom a 'Member tools' heading is visible only as sliced glyph tops behind the nav bar, so the one element that might have introduced documents is unreadable.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A document list: club rules and bylaws with titles, versions, last-updated dates and open/download actions.",
+      "visibleObservations": [
+        "'In-focus product surface  Expand' strip",
+        "Heading 'Chess Club home'",
+        "Two 'Club board' cards with identical checklist copy",
+        "'Record match result' primary button",
+        "A 'Member tools' heading clipped to unreadable glyph tops behind the nav bar",
+        "No document titles, versions or dates anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Are any rules documents shown?",
+          "visibleEvidence": "The only document-adjacent word on screen is the clipped heading fragment at the very bottom",
+          "why": "The workflow's content type never appears, so the screen cannot demonstrate it."
+        },
+        {
+          "question": "Is the layout free of clipping?",
+          "visibleEvidence": "The bottom heading is cut so severely only the upper strokes of the letters render",
+          "why": "Text sliced to illegibility by the nav bar is an outright layout defect."
+        }
+      ],
+      "screenshotHash": "64955c3d867f1925fee5acf81c62469727010dac5b655402bc13c51e300f20fd"
+    },
+    {
+      "screenRowId": "chess-club-chess-rules-documents-action",
+      "affectedScreenRowIds": ["chess-club-chess-rules-documents-action"],
+      "critique": "Opening or editing a rules document should show document content — a title, body text, a version, a change being made. This capture is the shared 'Chess Club home' modal containing the Board 1 match result: 'Ava vs Liam, Board 1, friendly ladder night.', 'Ava wins 1-0; standings and next pairing will update.', with 'Edit score', 'Dispute result' and 'Open standings' as the actions. There is not one character of document text on the screen. The 'Club record' preamble 'Review players, round, score, result, standings impact, and next club action.' is unrelated to documents, and the sheet duplicates 'Players' and 'Result' twice, so what little content exists is padded. This file is shared with five other workflows.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The opened rules document with its title, version, body text and edit/comment actions.",
+      "visibleObservations": [
+        "Title 'Chess Club home' with X close",
+        "No document title, body text or version anywhere",
+        "'Players' and 'Result' rows rendered twice on the same sheet",
+        "Actions 'Edit score', 'Dispute result', 'Open standings'",
+        "'Review players, round, score, result, standings impact, and next club action.'",
+        "Byte-identical to five other workflows' action captures"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is any document content visible?",
+          "visibleEvidence": "The screen's entire text concerns board, round, players and a 1-0 score",
+          "why": "The document workflow shows a match record, so persona/workflow scoping is wrong."
+        },
+        {
+          "question": "Are the actions appropriate to documents?",
+          "visibleEvidence": "'Edit score' and 'Dispute result' are the offered controls",
+          "why": "Neither action applies to a rules document; a user would have no way to act on the document."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-rules-documents-complete",
+      "affectedScreenRowIds": ["chess-club-chess-rules-documents-complete"],
+      "critique": "The rules-documents workflow finishes with the banner 'Chess result saved' under the heading 'Chess Club home' — a document was ostensibly published or updated, yet the confirmation names a chess score. No document title, no version number, no 'updated' timestamp appears. The supporting line 'The saved result keeps status, history, and change actions visible for this community task.' would have been the right shape for a document version history but refers only to 'this community task' and shows no history entries. The screen also inherits the shared clipping problem: two follow-up buttons are cut by the bottom nav, and the low-contrast brown card sits on a brown sheet with barely visible borders.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A document-saved confirmation naming the document and its new version, with view/share and version-history actions.",
+      "visibleObservations": [
+        "Heading 'Chess Club home'",
+        "Banner 'Chess result saved'",
+        "'The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Standings — Players can see updated ladder position and next match.'",
+        "No document name, version or timestamp",
+        "Two follow-up buttons clipped by the bottom nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the confirmation identify the document?",
+          "visibleEvidence": "The only named entities are 'Board 1', 'Round 3', 'Ava' and 'Liam'",
+          "why": "No document is identified, so the user cannot confirm which item was saved."
+        },
+        {
+          "question": "Is version history shown as promised?",
+          "visibleEvidence": "'keeps status, history, and change actions visible' with no history rows rendered",
+          "why": "The copy promises history the screen does not display, leaving thin content in its place."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    },
+    {
+      "screenRowId": "chess-club-chess-discussion-thread-start",
+      "affectedScreenRowIds": ["chess-club-chess-discussion-thread-start"],
+      "critique": "This is the only start capture with a genuinely distinct state signal — the 'Organizer pairing queue' card shows a checkmark chip reading 'Saved' with the subtitle 'Record saved', which reads clearly. But it is the wrong card for a discussion-thread workflow, and the screen contains no thread at all: no messages, no authors, no timestamps, no reply composer. The card's four buttons are the same shared set ('Tap for expanded view', 'Member form', 'Expand', 'Record match result'), so the only action offered on a discussion row is to record a match score. Below it the 'In-focus product surface  Expand' engine strip introduces the brown 'Chess Club home' sheet with the Board 1 match summary, and a second 'Club board' card is clipped mid-sentence at 'Confirm player names, round, board, result, edit'.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A discussion thread: the topic, member posts with authors and timestamps, and a reply composer.",
+      "visibleObservations": [
+        "'Organizer pairing queue' card with a checkmark chip 'Saved' and subtitle 'Record saved'",
+        "Buttons 'Tap for expanded view', 'Member form', 'Expand', 'Record match result'",
+        "'In-focus product surface  Expand' strip",
+        "Heading 'Chess Club home' with the Board 1 match summary",
+        "Second 'Club board' card clipped mid-sentence at '...result, edit'",
+        "No posts, authors, timestamps or composer"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is a discussion thread present?",
+          "visibleEvidence": "Visible cards are 'Organizer pairing queue' and two 'Club board' cards; no messages appear",
+          "why": "The workflow's central content — the conversation — is entirely absent."
+        },
+        {
+          "question": "Is any state signal legible?",
+          "visibleEvidence": "Checkmark chip 'Saved' with 'Record saved' beneath the card title",
+          "why": "This is the clearest saved-state chip in the set; the failure here is content, not state legibility."
+        }
+      ],
+      "screenshotHash": "a29332ca858d6b2c679dc12ef6e611e7472ffe2bb0aa7a7be43c686a3cf31aef"
+    },
+    {
+      "screenRowId": "chess-club-chess-discussion-thread-action",
+      "affectedScreenRowIds": ["chess-club-chess-discussion-thread-action"],
+      "critique": "Posting to or reading a thread should show messages and a composer; this capture is the shared 'Chess Club home' modal with the Board 1 match-result detail and the actions 'Edit score', 'Dispute result', 'Open standings'. No message bubbles, no author names, no reply field, no timestamps. The nearest thing to discussion vocabulary is 'Open result — Change vote, dispute score, view results, and next meeting or round stay available.', which is about voting and disputes rather than conversation. The 'Choice and standing' block referencing 'Nominations, ballot options, selected title' suggests this template was written for a polling workflow and reused wholesale. As with the other five, this exact image serves multiple workflows.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The thread mid-conversation: existing posts with authors and times, plus an active reply composer.",
+      "visibleObservations": [
+        "Title 'Chess Club home' with X close",
+        "No posts, authors, timestamps or reply field",
+        "'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.'",
+        "'Open result — Change vote, dispute score, view results...'",
+        "Actions 'Edit score', 'Dispute result', 'Open standings'",
+        "Identical to five other workflows' action captures"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user participate in a discussion here?",
+          "visibleEvidence": "The only interactive controls are 'Edit score', 'Dispute result' and 'Open standings'",
+          "why": "There is no way to read or write a message, so the workflow is unusable as depicted."
+        },
+        {
+          "question": "Does the copy belong to this workflow?",
+          "visibleEvidence": "'Nominations, ballot options, selected title'",
+          "why": "Ballot vocabulary in a discussion thread indicates a shared template rather than workflow-specific copy."
+        }
+      ],
+      "screenshotHash": "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209"
+    },
+    {
+      "screenRowId": "chess-club-chess-discussion-thread-complete",
+      "affectedScreenRowIds": ["chess-club-chess-discussion-thread-complete"],
+      "critique": "The discussion workflow concludes with 'Chess result saved' under the generic heading 'Chess Club home' — no posted message is echoed back, no thread is shown updated, no post count or 'your reply was posted' confirmation appears. The follow-up card promises that 'status, history, and change actions' stay visible, which for a thread would mean the conversation itself, yet the body underneath is 'Standings — Players can see updated ladder position and next match.' The visual treatment repeats the set-wide problems: brown card on brown sheet with minimal edge contrast, and two action buttons cut off by the Home/Matches/Calendar/Rankings bar, so no next step is reachable from the terminal state.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A posted-confirmation showing the new message in the thread with its author and timestamp, and actions to keep replying or return to the thread list.",
+      "visibleObservations": [
+        "Heading 'Chess Club home'",
+        "Banner 'Chess result saved'",
+        "'Standings — Players can see updated ladder position and next match.' as the follow-up detail",
+        "No posted message, author or thread echo",
+        "Two action buttons clipped by the bottom nav bar",
+        "Low card-on-sheet contrast in the brown treatment"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the discussion outcome confirmed?",
+          "visibleEvidence": "Banner text 'Chess result saved' with no message content shown",
+          "why": "The user gets a confirmation for an unrelated event and no evidence their post exists."
+        },
+        {
+          "question": "Are next actions reachable?",
+          "visibleEvidence": "Only the top edges of two button shells are visible above the nav bar",
+          "why": "Clipped terminal actions leave the user stranded at the end of the flow."
+        }
+      ],
+      "screenshotHash": "0c88ea558c823d09c36ab4ec8df54f4880bf6fbb62fd5314a61f346f07a714b3"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "six-workflows-share-match-result-screens",
+      "title": "Six workflows' action and complete states are the same match-result screen",
+      "description": "The action captures for chess-rankings-table, chess-club-night, chess-pairing-queue, chess-export-package, chess-rules-documents and chess-discussion-thread are byte-identical (hash e0033376…), and their complete captures are likewise byte-identical (hash 0c88ea55…). All twelve render the same content: heading 'Chess Club home', chips 'Board 1', 'Round 3', '12 players', 'Correction option', 'Players — Ava vs Liam, Board 1, friendly ladder night.', 'Result — Ava wins 1-0; standings and next pairing will update.', and the actions 'Edit score', 'Dispute result', 'Open standings'. No rankings table, calendar, queue, export artifact, document, or thread appears anywhere in the set. Six of eight workflows therefore have no evidence of their own behaviour.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-action", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-action", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-action", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-action", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-action", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-action", "chess-club-chess-discussion-thread-complete"],
+      "requiredFix": "Each workflow must render and be captured showing its own subject matter: a ranked ladder for rankings-table, dated club-night entries for club-night, an ordered waiting list for pairing-queue, a named export artifact for export-package, a document list/body for rules-documents, and authored posts for discussion-thread — each with a workflow-specific title rather than 'Chess Club home'."
+    },
+    {
+      "findingId": "meetup-reuses-result-captures",
+      "title": "chess-match-meetup action and complete are the chess-match-result captures",
+      "description": "chess-match-meetup_action is pixel-identical to chess-match-result_action (hash 492aa15c…) and chess-match-meetup_complete is pixel-identical to chess-match-result_complete (hash 845b7a08…). Both are titled 'Board 1 match result' and show a concluded score ('Ava wins 1-0'), with the complete state banner reading 'Chess result saved'. A meetup workflow — arranging when and where a game happens — is never depicted; there is no date, time, venue, invitation or confirmation anywhere in the three meetup rows.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-start", "chess-club-chess-match-meetup-action", "chess-club-chess-match-meetup-complete"],
+      "requiredFix": "Build and capture a real meetup surface: proposed opponent, date/time, board and venue, with propose/accept/reschedule actions and a completion that confirms the scheduled game rather than a saved score."
+    },
+    {
+      "findingId": "wrong-completion-banner-every-workflow",
+      "title": "Every complete state announces 'Chess result saved' regardless of workflow",
+      "description": "All eight workflows' complete captures display the banner 'Chess result saved — Chess Club shows board, players, result, correction option, standings impact, and next pairing.' On the export-package, rules-documents and discussion-thread rows this actively misinforms: the user is told a chess score was saved when they exported a package, updated a document, or posted a message. The supporting card compounds it with 'The saved result keeps status, history, and change actions visible for this community task.', where 'this community task' is a generic stand-in for the thing the user actually did.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-complete", "chess-club-chess-match-result-complete", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-complete", "chess-club-chess-pairing-queue-complete", "chess-club-chess-export-package-complete", "chess-club-chess-rules-documents-complete", "chess-club-chess-discussion-thread-complete"],
+      "requiredFix": "Derive the completion banner from the workflow that completed and name the concrete object — e.g. 'Rankings published', 'Club night scheduled for Thu 14 Aug', 'chess-club-results.csv ready', 'Club rules v3 saved', 'Reply posted' — and drop the 'this community task' placeholder."
+    },
+    {
+      "findingId": "record-match-result-cta-on-every-card",
+      "title": "'Record match result' is the CTA on unrelated cards, and its icon contradicts its label on export",
+      "description": "Every minimized card in this community carries the identical four-button shell — 'Tap for expanded view', 'Member form', 'Expand', 'Record match result' — regardless of the card's subject. It appears on 'Club night calendar', 'Rules documents', 'Pairing discussion' and 'Organizer pairing queue' cards, where recording a chess score is not a valid action. On chess-export-package_start the same full-width button renders a download/export glyph while still reading 'Record match result', so the icon and label describe different actions.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-start", "chess-club-chess-match-result-start", "chess-club-chess-rankings-table-start", "chess-club-chess-club-night-start", "chess-club-chess-pairing-queue-start", "chess-club-chess-export-package-start", "chess-club-chess-rules-documents-start", "chess-club-chess-discussion-thread-start"],
+      "requiredFix": "Give each card the action that belongs to its own content type ('Open rules', 'Reply', 'RSVP', 'Export', 'View queue') and make the button icon match its label everywhere."
+    },
+    {
+      "findingId": "spec-restating-and-mismatched-copy",
+      "title": "Body copy restates acceptance criteria and is mismatched to its cards",
+      "description": "Across the set, copy describes mechanisms rather than content: 'Confirm player names, round, board, result, edit option, and standings update before saving.', 'Choice and standing — Nominations, ballot options, selected title, match result, or standings are visible before saving.', 'Open result — Change vote, dispute score, view results, and next meeting or round stay available.', 'Member form captures labeled details, privacy c…', and the engine-jargon strips 'In-focus product surface' and 'Local package details'. Ballot and nomination vocabulary appears in a chess community that has no voting workflow. Worse, on chess-rankings-table_start the card titled 'Pairing discussion' is subtitled 'Ad preference and sponsored-message beh…', which is advertising-consent copy on a chess pairing card.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-start", "chess-club-chess-match-meetup-action", "chess-club-chess-match-result-action", "chess-club-chess-pairing-queue-start", "chess-club-chess-export-package-start", "chess-club-chess-rules-documents-start", "chess-club-chess-discussion-thread-action"],
+      "requiredFix": "Replace criteria-restating and cross-domain copy with sentences describing the actual chess content on each card, and remove internal strings like 'In-focus product surface' and 'Local package details' from user-visible surfaces."
+    },
+    {
+      "findingId": "clipping-truncation-and-duplicate-headings",
+      "title": "Clipped headers, truncated titles, actions cut by the nav bar, and duplicate 'Club board' headings",
+      "description": "Start captures are mid-scroll with the leading card header sliced by the app bar (chess-match-meetup_start, chess-match-result_start). Titles and subtitles truncate mid-word ('Organizer pairing que…', 'Member form captures labeled details, privacy c…'). On chess-rules-documents_start a 'Member tools' heading is cut to unreadable glyph tops behind the bottom nav. Every complete sheet cuts two follow-up buttons in half behind the Home/Matches/Calendar/Rankings bar, so the terminal state offers no reachable next step. Separately, chess-club-night_start, chess-pairing-queue_start, chess-export-package_start, chess-rules-documents_start and chess-discussion-thread_start each stack two sibling cards both titled 'Club board', destroying hierarchy, and the brown-on-brown sheet gives the inner card almost no edge contrast.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-match-meetup-start", "chess-club-chess-match-result-start", "chess-club-chess-rankings-table-start", "chess-club-chess-club-night-start", "chess-club-chess-pairing-queue-start", "chess-club-chess-export-package-start", "chess-club-chess-rules-documents-start", "chess-club-chess-discussion-thread-start", "chess-club-chess-match-result-complete", "chess-club-chess-discussion-thread-complete"],
+      "requiredFix": "Add bottom padding so sheet actions clear the navigation bar, capture start states from the top of the scroll, allow card titles to wrap to two lines instead of ellipsizing, deduplicate the sibling 'Club board' headings, and raise card-versus-sheet contrast in the brown theme."
+    },
+    {
+      "findingId": "unexplained-not-available-state",
+      "title": "'Not available' cards cite an unnamed role and still offer a form button",
+      "description": "On chess-match-result_start, the 'Live rankings table' and 'Club night calendar' cards each show a 'Not available' chip beside the identical sentence 'Another community role manages this item.' No role is named and no path to request access is offered, so the restriction is an unexplained dead end — particularly in this legacy schema where there is no identity or role display to reconcile it against. Both cards simultaneously present a 'Member form' button while marked not available, which contradicts the chip.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-match-result-start"],
+      "requiredFix": "Name the managing role concretely (e.g. 'Managed by the club organizer') and either hide or visibly disable the secondary buttons on cards marked 'Not available' so the affordances agree with the state."
+    },
+    {
+      "findingId": "nav-tab-never-reflects-workflow",
+      "title": "'Home' stays the selected nav tab on all 24 screens, including the rankings and calendar workflows",
+      "description": "The bottom navigation offers Home, Matches, Calendar and Rankings, and the 'Home' pill is rendered as the filled/selected tab on every one of the 24 captures — including chess-rankings-table_start/action/complete and chess-club-night_start/action/complete, whose workflows correspond directly to the Rankings and Calendar tabs. On chess-match-meetup_start and chess-rankings-table_start the 'Rankings' pill is additionally clipped by the right screen edge.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["chess-club-chess-rankings-table-start", "chess-club-chess-rankings-table-action", "chess-club-chess-rankings-table-complete", "chess-club-chess-club-night-start", "chess-club-chess-club-night-action", "chess-club-chess-club-night-complete", "chess-club-chess-match-meetup-start"],
+      "requiredFix": "Select the nav tab that corresponds to the surface being shown, and size the tab row so the fourth pill is not clipped at the right edge."
+    }
+  ]
+}

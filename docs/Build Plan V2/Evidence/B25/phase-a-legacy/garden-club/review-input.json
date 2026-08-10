@@ -1,0 +1,147 @@
+{
+  "currentReviewRunId": "phaseA-legacy-garden-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B13",
+    "appId": "ext_garden_club",
+    "note": "Garden Club, part of the Phase A legacy-community sweep (loomEvidenceTargets, B13). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "garden-club-garden-event-rsvp-start",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "garden-event-rsvp workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+      "screenshotHash": "c8ca955a1ab16b267b7a50b3be1c12471f3b9351081648f6fc6aff24055ffee5"
+    },
+    {
+      "rowId": "garden-club-garden-event-rsvp-action",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "garden-event-rsvp workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_action.png",
+      "screenshotHash": "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8"
+    },
+    {
+      "rowId": "garden-club-garden-event-rsvp-complete",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "garden-event-rsvp workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png",
+      "screenshotHash": "0d75ab46343937c24e30b98e34ddd2459d25541e648d2c2711711b5939377a73"
+    },
+    {
+      "rowId": "garden-club-plant-exchange-submission-start",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "plant-exchange-submission",
+      "screenOrState": "plant-exchange-submission workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+      "screenshotHash": "5401aa267df5f92bdbbf41c57e60515743ee42c95614b53cd9024ae0cfb5c5fc"
+    },
+    {
+      "rowId": "garden-club-plant-exchange-submission-action",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "plant-exchange-submission",
+      "screenOrState": "plant-exchange-submission workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_action.png",
+      "screenshotHash": "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1"
+    },
+    {
+      "rowId": "garden-club-plant-exchange-submission-complete",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "plant-exchange-submission",
+      "screenOrState": "plant-exchange-submission workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png",
+      "screenshotHash": "ae9ee246bc9980ecdacefbb292f66592131fc8ae386ee93da6deb718e4115114"
+    },
+    {
+      "rowId": "garden-club-garden-tool-loan-start",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-tool-loan",
+      "screenOrState": "garden-tool-loan workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-tool-loan_start.png",
+      "screenshotHash": "6212c46dd1dd55665a10b1f6687ad70a2302f9e9f2d48f572df548dcf777552c"
+    },
+    {
+      "rowId": "garden-club-garden-tool-loan-action",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-tool-loan",
+      "screenOrState": "garden-tool-loan workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-tool-loan_action.png",
+      "screenshotHash": "61d8a493555fd34cfc489215ed6e78c04cd94abed707bccac8caf170529d0038"
+    },
+    {
+      "rowId": "garden-club-garden-tool-loan-complete",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-tool-loan",
+      "screenOrState": "garden-tool-loan workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-tool-loan_complete.png",
+      "screenshotHash": "a909a9118d7be7d9cbb2df9115844940d06b585c43cca07a1cbd7c9612479a1a"
+    },
+    {
+      "rowId": "garden-club-garden-volunteer-shift-start",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-volunteer-shift",
+      "screenOrState": "garden-volunteer-shift workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-volunteer-shift_start.png",
+      "screenshotHash": "e8ae66eb50cd1a05587d135683bd7d99183a6f033258acacd7d50fc59dcaa0cd"
+    },
+    {
+      "rowId": "garden-club-garden-volunteer-shift-action",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-volunteer-shift",
+      "screenOrState": "garden-volunteer-shift workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-volunteer-shift_action.png",
+      "screenshotHash": "15b4772eaec42eebf9f77d11e7f45b4323b54296ff09eb68844ca07e6a55a460"
+    },
+    {
+      "rowId": "garden-club-garden-volunteer-shift-complete",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-volunteer-shift",
+      "screenOrState": "garden-volunteer-shift workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-volunteer-shift_complete.png",
+      "screenshotHash": "307e69499418550c9b50f02424c41af057d01d2b3a3b7d97f2a41964c7a3f23b"
+    },
+    {
+      "rowId": "garden-club-garden-export-custom-schemas-start",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-export-custom-schemas",
+      "screenOrState": "garden-export-custom-schemas workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+      "screenshotHash": "d8258fa0ee66941ad00642b988b75fb8f393fc78b6cf6c6deaaa7969ec59513d"
+    },
+    {
+      "rowId": "garden-club-garden-export-custom-schemas-action",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-export-custom-schemas",
+      "screenOrState": "garden-export-custom-schemas workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_action.png",
+      "screenshotHash": "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143"
+    },
+    {
+      "rowId": "garden-club-garden-export-custom-schemas-complete",
+      "communityName": "Garden Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "garden-export-custom-schemas",
+      "screenOrState": "garden-export-custom-schemas workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png",
+      "screenshotHash": "283b62fea973cd7b60c7e334ae6321480a86f363ef6b2d3f8fa8c0b086fd54c4"
+    }
+  ]
+}

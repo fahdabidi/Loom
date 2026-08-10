@@ -1,0 +1,255 @@
+{
+  "currentReviewRunId": "phaseA-legacy-riverside-youth-soccer-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B14",
+    "appId": "ext_youth_soccer",
+    "note": "Riverside Youth Soccer, part of the Phase A legacy-community sweep (loomEvidenceTargets, B14). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "riverside-youth-soccer-soccer-registration-payment-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-registration-payment",
+      "screenOrState": "soccer-registration-payment workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_start.png",
+      "screenshotHash": "a2e80ce922f1ad51f8cbcf521b2b3ba4098d0e8cc0496f9f2c67c23ee8ddf94b"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-registration-payment-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-registration-payment",
+      "screenOrState": "soccer-registration-payment workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_action.png",
+      "screenshotHash": "a6468cc6e759af9c3bb490b7999e7d9b1bc05fdd261b24f659483f892824f06f"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-registration-payment-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-registration-payment",
+      "screenOrState": "soccer-registration-payment workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_complete.png",
+      "screenshotHash": "011cc414c8921b343cef976b7ec4b67cec4d737ceee01cb1ddbf0cb764b108fe"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-waiver-document-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-waiver-document",
+      "screenOrState": "soccer-waiver-document workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_start.png",
+      "screenshotHash": "db700748118279605d2231f10b1e25d11243c20230fc6272d103e74ce7a209ff"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-waiver-document-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-waiver-document",
+      "screenOrState": "soccer-waiver-document workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_action.png",
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-waiver-document-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-waiver-document",
+      "screenOrState": "soccer-waiver-document workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_complete.png",
+      "screenshotHash": "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-guardian-join-approval-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-guardian-join-approval",
+      "screenOrState": "soccer-guardian-join-approval workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_start.png",
+      "screenshotHash": "5706732cac331cf62571d81c8854bd37eed0001b3dd7843cb00f8c3347428fca"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-guardian-join-approval-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-guardian-join-approval",
+      "screenOrState": "soccer-guardian-join-approval workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_action.png",
+      "screenshotHash": "495298e55e3790a619b6f65b8767160b7f096c5c55f17aa345b4dfff88ffd5ec"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-guardian-join-approval-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-guardian-join-approval",
+      "screenOrState": "soccer-guardian-join-approval workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_complete.png",
+      "screenshotHash": "7b7ac7890267e27bc855af33f47e4c7e04ebcb1eca10c0002a91d2007574a634"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-practice-schedule-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-practice-schedule",
+      "screenOrState": "soccer-practice-schedule workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_start.png",
+      "screenshotHash": "5cb8eb154fc6a9eeca0134a246ee1be5de303c971b0320798ed327ecca84c62f"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-practice-schedule-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-practice-schedule",
+      "screenOrState": "soccer-practice-schedule workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_action.png",
+      "screenshotHash": "0df5849117caacf6546ca33c17e200d0dbff2fa6aa68fbe0896d007f47cba857"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-practice-schedule-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-practice-schedule",
+      "screenOrState": "soccer-practice-schedule workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_complete.png",
+      "screenshotHash": "8ab1fb9ee43780c6550bc8755ee423ef7f22918b4d41525538f9f7b65be601fe"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-discussion-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-discussion",
+      "screenOrState": "soccer-team-discussion workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_start.png",
+      "screenshotHash": "940a0aaca1009062c0ebc130958060f09da45660d027d8b937479183285fdf89"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-discussion-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-discussion",
+      "screenOrState": "soccer-team-discussion workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_action.png",
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-discussion-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-discussion",
+      "screenOrState": "soccer-team-discussion workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_complete.png",
+      "screenshotHash": "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-roster-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-roster",
+      "screenOrState": "soccer-team-roster workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+      "screenshotHash": "9497710f7eb694fb4bc9be48ede48b5c47f47463edb27cb7c4bd6f545c16ac58"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-roster-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-roster",
+      "screenOrState": "soccer-team-roster workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+      "screenshotHash": "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-team-roster-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-team-roster",
+      "screenOrState": "soccer-team-roster workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png",
+      "screenshotHash": "0474dd949a43680080427f9ff46d6761e6726e77749c8bb3127f84b0c762d47e"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-reminder-notification-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-reminder-notification",
+      "screenOrState": "soccer-reminder-notification workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+      "screenshotHash": "15433b74842a5f346489c221ccf7cce61b98f7e82aa28a60b248487ee8ee38cf"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-reminder-notification-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-reminder-notification",
+      "screenOrState": "soccer-reminder-notification workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+      "screenshotHash": "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-reminder-notification-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-reminder-notification",
+      "screenOrState": "soccer-reminder-notification workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png",
+      "screenshotHash": "5d9c76c5a25a4327b9d90977aee48e7a6d7a00dd4bfaa2fb8c0720562bac6ab6"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-minor-redaction-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-minor-redaction",
+      "screenOrState": "soccer-minor-redaction workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_start.png",
+      "screenshotHash": "d1db045c66475c61272b8aeee2d05102fe6fe5ab909130f5180386c00ca08a52"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-minor-redaction-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-minor-redaction",
+      "screenOrState": "soccer-minor-redaction workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_action.png",
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-minor-redaction-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-minor-redaction",
+      "screenOrState": "soccer-minor-redaction workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_complete.png",
+      "screenshotHash": "bffa45e860fca451f391eff0a80c8c46ed6517776b9444f3edeaf9eb088febf3"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-export-metadata-start",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-export-metadata",
+      "screenOrState": "soccer-export-metadata workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_start.png",
+      "screenshotHash": "21fca2cc868d6413dae7ad6c92628e0b726a7a12869a86ee39e50a62097bfb24"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-export-metadata-action",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-export-metadata",
+      "screenOrState": "soccer-export-metadata workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_action.png",
+      "screenshotHash": "3e67f47e63433aba3f9ba5a89bd8793ef0e4a4428ffb6293d513c647316c4c4b"
+    },
+    {
+      "rowId": "riverside-youth-soccer-soccer-export-metadata-complete",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "soccer-export-metadata",
+      "screenOrState": "soccer-export-metadata workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_complete.png",
+      "screenshotHash": "43461a19a2d77e2a53ec4c042c208909de7ce1204c69c82e6bc0c5feaa22e8bd"
+    }
+  ]
+}

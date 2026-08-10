@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-08-09
 audience: llm-agent
 derived_from:
   - app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart
@@ -66,7 +66,7 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 |---|---|---|
 | `missing_label` | Empty `label` | Every transition needs button text |
 | `dangling_instance_data_key` | Guard/effect names an undeclared field | Declare it in `instanceDataSchema`, or fix the typo |
-| `unknown_effect_op` | `op` isn't one of the nine | See [effects.md](../reference/effects.md) |
+| `unknown_effect_op` | `op` isn't one of the twelve | See [effects.md](../reference/effects.md) |
 | `computed_field_written_by_effect` | An effect writes a `formula` field | Delete the effect. Computed fields are read-only. |
 | `dangling_related_instance_field` | `relatedInstance` / `relatedInstanceField` names an undeclared field | Declare the id-holding field on **this** workflow |
 | `dangling_create_instance_target` | `createInstance.workflowType` doesn't exist | Declare the target type, or fix the name |
@@ -79,8 +79,8 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 | Code | Meaning | Fix |
 |---|---|---|
 | `unknown_formula_field` | Formula references an undeclared field | Declare it. Formulas may only see **this** workflow's schema. |
-| `unknown_formula_function` | Not one of the 20 | See [formulas.md](../reference/formulas.md). Note: there is no `!` and no `!=`. |
-| `invalid_formula_syntax` | Won't parse | Check operators; no `!`/`!=` |
+| `unknown_formula_function` | Not one of the 23 | See [formulas.md](../reference/formulas.md). Note: unary `!` (not) IS supported; `!=` is NOT — restructure as `if(a == b, false, true)`. |
+| `invalid_formula_syntax` | Won't parse | Check operators; `!` is fine, `!=` is not |
 | `circular_formula_dependency` | Computed fields reference each other cyclically | Break the cycle |
 | `effect_field_in_editable_fields` | `editableFields` names a non-`formEntry` field | Only `writableBy: "formEntry"` fields may be edited |
 

@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.5.0
+doc_version: 1.6.0
 status: current
-last_verified: 2026-07-27
+last_verified: 2026-08-09
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
@@ -24,13 +24,46 @@ Nothing is aspirational.
     "states":       { /* ... */ },     // REQUIRED. Non-empty.
     "transitions":  [ /* ... */ ],     // REQUIRED. May be empty [] (a terminal-only type).
     "renderBindings":     [ /* ... */ ],  // optional, defaults []
-    "instanceDataSchema": { /* ... */ }   // optional, defaults {}
+    "instanceDataSchema": { /* ... */ },  // optional, defaults {}
+    "visibility":         { /* ... */ }   // optional — see "visibility / readGuard" below. Defaults to public.
   }
 }
 ```
 
 ⚠️ **`workflowType` is the map key**, passed into `fromJson` separately. Do not add a `workflowType`
 field inside the object — it is ignored.
+
+## `visibility` / `readGuard` — who may read instances of this type
+
+✅ **IMPLEMENTED** (`WorkflowVisibility`/`WorkflowVisibilityDefault`, `workflow_models.dart:471-538`) —
+genuinely enforced read-path filtering in `local_workflow_engine_api.dart` (`queryInstances`/`aggregate`
+scoping, ~lines 340-392), not advisory. Found missing from this doc entirely 2026-08-09 while comparing a
+Skill-authored package against `guide/05-validation.md`'s `no_read_visibility_declared` warning, which was
+the only place this construct was mentioned anywhere in `docs/references`.
+
+```jsonc
+"visibility": {
+  "default": "public",              // "public" | "membersOnly" | "guarded". Default if omitted: "public".
+  "readGuard": { "allowedPersonaIds": ["hoa-board"] }   // REQUIRED sibling when default is "guarded".
+                                                          // Same WorkflowGuard shape as editGuard/creationGuard.
+}
+```
+
+| `default` value | Who may read an instance of this type |
+|---|---|
+| `public` (or `visibility` omitted entirely) | Anyone — today's default, unchanged behavior for every existing community that doesn't declare this key. |
+| `membersOnly` | Any signed-in, active-status account for this community. |
+| `guarded` | Must also pass the sibling `readGuard` (a `WorkflowGuard`, evaluated per-instance) — **and requires `readGuard` to be present, or parsing fails** (`workflow_models.dart:528-532`). |
+
+**Per-state override:** a `states.<stateName>.readGuard` (same `WorkflowGuard` shape) takes precedence
+over the workflow-level `visibility.readGuard` for instances currently in that state — evaluated as
+`stateGuard ?? machine.visibility.readGuard` (`local_workflow_engine_api.dart:388-389`). This lets a type
+be `guarded` overall but relax (or further restrict) which persona can read a specific state, e.g. a
+`published` state opening up to `membersOnly` while `draft` stays board-only.
+
+**Validator:** `no_read_visibility_declared` (warning only, `guide/05-validation.md`) fires whenever a
+workflow type omits `visibility` entirely — it never blocks `report.passed`, since the omitted-default
+(`public`) is legitimate and matches every pre-existing community's actual behavior.
 
 ---
 

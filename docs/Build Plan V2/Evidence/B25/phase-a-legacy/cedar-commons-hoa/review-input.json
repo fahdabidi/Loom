@@ -1,0 +1,201 @@
+{
+  "currentReviewRunId": "phaseA-legacy-cedar-commons-hoa-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B14",
+    "appId": "ext_hoa",
+    "note": "Cedar Commons HOA, part of the Phase A legacy-community sweep (loomEvidenceTargets, B14). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "cedar-commons-hoa-hoa-facility-reservation-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-facility-reservation",
+      "screenOrState": "hoa-facility-reservation workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+      "screenshotHash": "088fb2e3a20a72bd5721cddb038159fcce30148a61bf6b92dd5ce631cdffa892"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-facility-reservation-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-facility-reservation",
+      "screenOrState": "hoa-facility-reservation workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+      "screenshotHash": "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-facility-reservation-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-facility-reservation",
+      "screenOrState": "hoa-facility-reservation workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png",
+      "screenshotHash": "399d4aafe604d869c6fc6348adde9dfacce39d1ed303252b32f618abf7767e47"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-export-evidence-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-export-evidence",
+      "screenOrState": "hoa-export-evidence workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+      "screenshotHash": "9e679f131ce4ea32a2fd0614fd65d8339191ac098c98c35c3a42d1d4cbaaa6b6"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-export-evidence-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-export-evidence",
+      "screenOrState": "hoa-export-evidence workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png",
+      "screenshotHash": "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-export-evidence-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-export-evidence",
+      "screenOrState": "hoa-export-evidence workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png",
+      "screenshotHash": "6e48b551899c349f1b98b6f6a717bffe64eacf72c7e503b60c6be06cd81bdc6b"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-architectural-request-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-architectural-request",
+      "screenOrState": "hoa-architectural-request workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_start.png",
+      "screenshotHash": "79a991a7a3bd2ff0c70ec48da78f3f2e0710d7fc63453ef271a3c83c4f99d5c0"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-architectural-request-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-architectural-request",
+      "screenOrState": "hoa-architectural-request workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_action.png",
+      "screenshotHash": "a2217a62325ba9cad3310513c5886ce8fb374ab3b0ba43b90e291a8a191d8567"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-architectural-request-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-architectural-request",
+      "screenOrState": "hoa-architectural-request workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_complete.png",
+      "screenshotHash": "fbe29ccd828f78f81ede75531b7c18f39006720bcf76b43ecae650b27fd6856d"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-dues-payment-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-dues-payment",
+      "screenOrState": "hoa-dues-payment workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_start.png",
+      "screenshotHash": "24563d2478fecd9f8d5df5eef27d96586254012cfed734e38a90dbf67f9af359"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-dues-payment-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-dues-payment",
+      "screenOrState": "hoa-dues-payment workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_action.png",
+      "screenshotHash": "3b2cfd9beb4239c7d31c829d96a754c3d31515167434ce3d89b897fd3c659a99"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-dues-payment-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-dues-payment",
+      "screenOrState": "hoa-dues-payment workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_complete.png",
+      "screenshotHash": "0fe7e049bd0a9244c172e4cc5b580fa712351fe3efd25a9c9bc0b7e4ba2b26b0"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-committee-decision-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-committee-decision",
+      "screenOrState": "hoa-committee-decision workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_start.png",
+      "screenshotHash": "7c038e402c35beb6df13e932f98a4d7e3a587a6c3a1c3bbdeb0e58d166164d71"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-committee-decision-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-committee-decision",
+      "screenOrState": "hoa-committee-decision workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_action.png",
+      "screenshotHash": "606d1ecfdc1e974b7a970dea341412e3e6ba708c00ef9bc0b93fb3e2a40edfb3"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-committee-decision-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-committee-decision",
+      "screenOrState": "hoa-committee-decision workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_complete.png",
+      "screenshotHash": "56c9b6e38708c5b901c1e0bb32b3b9d26dba89c269c16fb073d9c408859b81fa"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-member-document-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-member-document",
+      "screenOrState": "hoa-member-document workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_start.png",
+      "screenshotHash": "764ed22d9ca72e1e29dda0d56250df2e39aa2433b81c4b7f2da213c957f0a9d3"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-member-document-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-member-document",
+      "screenOrState": "hoa-member-document workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_action.png",
+      "screenshotHash": "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-member-document-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-member-document",
+      "screenOrState": "hoa-member-document workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_complete.png",
+      "screenshotHash": "96122afad79139800a010643e46da34385b9194a496377f6daecec0ececea1aa"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-owner-notification-start",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-owner-notification",
+      "screenOrState": "hoa-owner-notification workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_start.png",
+      "screenshotHash": "4cee1d240e8ab206cd7d74c19b4719e4408a07b635c680c4dbb35d8fcff98c17"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-owner-notification-action",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-owner-notification",
+      "screenOrState": "hoa-owner-notification workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_action.png",
+      "screenshotHash": "4778b54477859cea6c865d619133d1d08761b47fcb4fb42f4f3dfa0b61dbcbfc"
+    },
+    {
+      "rowId": "cedar-commons-hoa-hoa-owner-notification-complete",
+      "communityName": "Cedar Commons HOA",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "hoa-owner-notification",
+      "screenOrState": "hoa-owner-notification workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_complete.png",
+      "screenshotHash": "eebb0542e89f5f5f053fd8a284697832a10140009fd2667c0ab0f075192cd052"
+    }
+  ]
+}

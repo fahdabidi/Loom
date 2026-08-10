@@ -1,0 +1,112 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+This community uses the legacy flat schema (no engine-native persona/account system) and bypasses the
+entry gate and persona-picker entirely -- there is no signed-in identity concept here. So for this review,
+treat the "identity/context legibility" rubric dimension as: can the user tell what workflow and what
+state (start/in-progress/complete) they are looking at, even without an account system? Do not fail a
+screen merely for lacking a signed-in-account display -- that is expected and correct for this schema.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Context/state legibility: is it clear what workflow this is and what state (loading/empty/error/start/
+  in-progress/complete) it is in?
+- Copy accuracy: does displayed text sound like real product copy describing actual community content, or
+  is it generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown make sense for the workflow being demonstrated?
+- Visual quality: no repeated generic card shells, no thin/empty content where real content is expected, no
+  obvious layout clipping or crowding.
+
+Community: Riverside Youth Soccer (community_id: ext_youth_soccer, phase B14 of this repo's B25 evidence catalog).
+
+Screenshots to review (read each with your Read tool -- there are 27 of them, grouped by workflow):
+- rowId "riverside-youth-soccer-soccer-registration-payment-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_start.png -- soccer-registration-payment workflow, start state
+- rowId "riverside-youth-soccer-soccer-registration-payment-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_action.png -- soccer-registration-payment workflow, action state
+- rowId "riverside-youth-soccer-soccer-registration-payment-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_complete.png -- soccer-registration-payment workflow, complete state
+- rowId "riverside-youth-soccer-soccer-waiver-document-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_start.png -- soccer-waiver-document workflow, start state
+- rowId "riverside-youth-soccer-soccer-waiver-document-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_action.png -- soccer-waiver-document workflow, action state
+- rowId "riverside-youth-soccer-soccer-waiver-document-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-waiver-document_complete.png -- soccer-waiver-document workflow, complete state
+- rowId "riverside-youth-soccer-soccer-guardian-join-approval-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_start.png -- soccer-guardian-join-approval workflow, start state
+- rowId "riverside-youth-soccer-soccer-guardian-join-approval-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_action.png -- soccer-guardian-join-approval workflow, action state
+- rowId "riverside-youth-soccer-soccer-guardian-join-approval-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_complete.png -- soccer-guardian-join-approval workflow, complete state
+- rowId "riverside-youth-soccer-soccer-practice-schedule-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_start.png -- soccer-practice-schedule workflow, start state
+- rowId "riverside-youth-soccer-soccer-practice-schedule-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_action.png -- soccer-practice-schedule workflow, action state
+- rowId "riverside-youth-soccer-soccer-practice-schedule-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_complete.png -- soccer-practice-schedule workflow, complete state
+- rowId "riverside-youth-soccer-soccer-team-discussion-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_start.png -- soccer-team-discussion workflow, start state
+- rowId "riverside-youth-soccer-soccer-team-discussion-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_action.png -- soccer-team-discussion workflow, action state
+- rowId "riverside-youth-soccer-soccer-team-discussion-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-discussion_complete.png -- soccer-team-discussion workflow, complete state
+- rowId "riverside-youth-soccer-soccer-team-roster-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png -- soccer-team-roster workflow, start state
+- rowId "riverside-youth-soccer-soccer-team-roster-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png -- soccer-team-roster workflow, action state
+- rowId "riverside-youth-soccer-soccer-team-roster-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png -- soccer-team-roster workflow, complete state
+- rowId "riverside-youth-soccer-soccer-reminder-notification-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png -- soccer-reminder-notification workflow, start state
+- rowId "riverside-youth-soccer-soccer-reminder-notification-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png -- soccer-reminder-notification workflow, action state
+- rowId "riverside-youth-soccer-soccer-reminder-notification-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png -- soccer-reminder-notification workflow, complete state
+- rowId "riverside-youth-soccer-soccer-minor-redaction-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_start.png -- soccer-minor-redaction workflow, start state
+- rowId "riverside-youth-soccer-soccer-minor-redaction-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_action.png -- soccer-minor-redaction workflow, action state
+- rowId "riverside-youth-soccer-soccer-minor-redaction-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_complete.png -- soccer-minor-redaction workflow, complete state
+- rowId "riverside-youth-soccer-soccer-export-metadata-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_start.png -- soccer-export-metadata workflow, start state
+- rowId "riverside-youth-soccer-soccer-export-metadata-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_action.png -- soccer-export-metadata workflow, action state
+- rowId "riverside-youth-soccer-soccer-export-metadata-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_complete.png -- soccer-export-metadata workflow, complete state
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-legacy-riverside-youth-soccer-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["riverside-youth-soccer-soccer-registration-payment-start", "riverside-youth-soccer-soccer-registration-payment-action", "riverside-youth-soccer-soccer-registration-payment-complete", "riverside-youth-soccer-soccer-waiver-document-start", "riverside-youth-soccer-soccer-waiver-document-action", "riverside-youth-soccer-soccer-waiver-document-complete", "riverside-youth-soccer-soccer-guardian-join-approval-start", "riverside-youth-soccer-soccer-guardian-join-approval-action", "riverside-youth-soccer-soccer-guardian-join-approval-complete", "riverside-youth-soccer-soccer-practice-schedule-start", "riverside-youth-soccer-soccer-practice-schedule-action", "riverside-youth-soccer-soccer-practice-schedule-complete", "riverside-youth-soccer-soccer-team-discussion-start", "riverside-youth-soccer-soccer-team-discussion-action", "riverside-youth-soccer-soccer-team-discussion-complete", "riverside-youth-soccer-soccer-team-roster-start", "riverside-youth-soccer-soccer-team-roster-action", "riverside-youth-soccer-soccer-team-roster-complete", "riverside-youth-soccer-soccer-reminder-notification-start", "riverside-youth-soccer-soccer-reminder-notification-action", "riverside-youth-soccer-soccer-reminder-notification-complete", "riverside-youth-soccer-soccer-minor-redaction-start", "riverside-youth-soccer-soccer-minor-redaction-action", "riverside-youth-soccer-soccer-minor-redaction-complete", "riverside-youth-soccer-soccer-export-metadata-start", "riverside-youth-soccer-soccer-export-metadata-action", "riverside-youth-soccer-soccer-export-metadata-complete"],
+  "reviewedScreenshotHashes": ["a2e80ce922f1ad51f8cbcf521b2b3ba4098d0e8cc0496f9f2c67c23ee8ddf94b", "a6468cc6e759af9c3bb490b7999e7d9b1bc05fdd261b24f659483f892824f06f", "011cc414c8921b343cef976b7ec4b67cec4d737ceee01cb1ddbf0cb764b108fe", "db700748118279605d2231f10b1e25d11243c20230fc6272d103e74ce7a209ff", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358", "5706732cac331cf62571d81c8854bd37eed0001b3dd7843cb00f8c3347428fca", "495298e55e3790a619b6f65b8767160b7f096c5c55f17aa345b4dfff88ffd5ec", "7b7ac7890267e27bc855af33f47e4c7e04ebcb1eca10c0002a91d2007574a634", "5cb8eb154fc6a9eeca0134a246ee1be5de303c971b0320798ed327ecca84c62f", "0df5849117caacf6546ca33c17e200d0dbff2fa6aa68fbe0896d007f47cba857", "8ab1fb9ee43780c6550bc8755ee423ef7f22918b4d41525538f9f7b65be601fe", "940a0aaca1009062c0ebc130958060f09da45660d027d8b937479183285fdf89", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358", "9497710f7eb694fb4bc9be48ede48b5c47f47463edb27cb7c4bd6f545c16ac58", "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3", "0474dd949a43680080427f9ff46d6761e6726e77749c8bb3127f84b0c762d47e", "15433b74842a5f346489c221ccf7cce61b98f7e82aa28a60b248487ee8ee38cf", "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425", "5d9c76c5a25a4327b9d90977aee48e7a6d7a00dd4bfaa2fb8c0720562bac6ab6", "d1db045c66475c61272b8aeee2d05102fe6fe5ab909130f5180386c00ca08a52", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "bffa45e860fca451f391eff0a80c8c46ed6517776b9444f3edeaf9eb088febf3", "21fca2cc868d6413dae7ad6c92628e0b726a7a12869a86ee39e50a62097bfb24", "3e67f47e63433aba3f9ba5a89bd8793ef0e4a4428ffb6293d513c647316c4c4b", "43461a19a2d77e2a53ec4c042c208909de7ce1204c69c82e6bc0c5feaa22e8bd"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 27 of them), with real
+per-screen critique -- do not skip any row or reuse the same critique text across rows. Do not include
+sourceReviewRunId, carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere
+in your response.

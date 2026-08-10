@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/camera-club/llm-vision-ux-review-phaseA-legacy-camera-club-1.json",
+  "expectedReviewRunId": "phaseA-legacy-camera-club-1",
+  "declaredReviewRunId": "phaseA-legacy-camera-club-1",
+  "expectedAppCommitSha": "559f3a1b",
+  "declaredAppCommitSha": "559f3a1b",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 12,
+  "reviewedScreenRowCount": 12,
+  "reviewedScreenshotHashCount": 12,
+  "reviewedScreenRowIds": [
+    "camera-club-photo-walk-rsvp-start",
+    "camera-club-photo-walk-rsvp-action",
+    "camera-club-photo-walk-rsvp-complete",
+    "camera-club-critique-submission-start",
+    "camera-club-critique-submission-action",
+    "camera-club-critique-submission-complete",
+    "camera-club-gear-loan-request-start",
+    "camera-club-gear-loan-request-action",
+    "camera-club-gear-loan-request-complete",
+    "camera-club-camera-validation-report-start",
+    "camera-club-camera-validation-report-action",
+    "camera-club-camera-validation-report-complete"
+  ],
+  "reviewedScreenshotHashes": [
+    "2998638337219c6298831f18b499b7585f58908c6146a9c5fae8c405b5fe5911",
+    "89f0034a1cbba44b673325028149e9bc15129836e81a0e1f5b9ea5e685bfd84d",
+    "b126c6581b58bacd942e49b65be3536be6cd267ac1a4b5d3f67d0af4f954f2e7",
+    "1c062de7c4caf5220891765acecd80483badfc26805ad7dc39fedb473c886994",
+    "abf7a3b8121a54b8ab8132fc4708d78dfd010cf8d585983b1a3600dcef520123",
+    "f6c4c5df1fb63d2bba57f2e15f6d7b49caa46b2ea5f9b13f31c81da5211d89f4",
+    "8f157f5ce899043a1ce32d5056dc6ae94e98cc98ac9b09e102d58faca3a9dab1",
+    "98ab205d41eadf7ec620bf052eb19298776144236b9cf5bda120a00e97605075",
+    "0502078d6b909d7f194d5d5c6074dd565eb9b74640a5ff849ea49c3257912cb0",
+    "32ea057748b3f1c9e189b522c77d5a872ae58c3cc5f24bdad1e36611b1b066a8",
+    "eac171463996827c69c44210c246a5e18d4a725fd78ceb199c0d216c0ec3c201",
+    "33c8938a94dbac47c132df57273d78afbdf14b7f21ec8bc7af120ba935a138a4"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "phase": "B14",
   "status": "pass",
-  "screenshotsAudited": 24,
+  "workflowShards": 4,
+  "screenshotsAudited": 102,
   "missingScreenshots": []
 }

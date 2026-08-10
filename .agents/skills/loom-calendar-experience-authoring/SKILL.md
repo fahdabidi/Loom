@@ -1,6 +1,6 @@
 ---
 name: loom-calendar-experience-authoring
-description: Author the JSON for a Loom Communities Calendar (event-RSVP) experience, using only docs/references as source material. A narrow, portable subset of the full using-loom-to-build-an-extension skill, scoped to the one experience type that is currently built and verified end-to-end (Tabletop Club's Calendar). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
+description: Author the JSON for a Loom Communities experience using only docs/references as source material, restricted to the archetypes confirmed real in docs/references/archetypes/README.md (event-rsvp, votePoll, equipment-loan, paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox). Originally scoped to Calendar/event-RSVP only (2026-08-04); broadened 2026-08-09 once every other real archetype was confirmed to already have a canonical pattern in docs/references/guide/03-common-patterns.md. A narrow, portable subset of the full using-loom-to-build-an-extension skill — deliberately does NOT use that skill's components/card-surfaces/* material, which uses a different, incompatible vocabulary from the real cardSurfaceFamily enum (see "CardSurfaces vocabulary trap" below). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
 ---
 
 # Loom Calendar Experience Authoring
@@ -53,34 +53,70 @@ portable export used to test that directly against a provider with no filesystem
 
 ## Scope
 
-Build only:
-- The event itself (`event-rsvp`): scheduling, capacity, cancellation, editing.
-- Member RSVP (`event-rsvp-response`, one row per event per member): going / maybe / declined /
-  waitlisted, with a real capacity guard.
-- Reminders (`notification`): a per-member notice created before an event starts.
+**Broadened 2026-08-09** (was Calendar/`event-rsvp`-only from 2026-08-04). Build any workflow whose
+required `cardSurfaceFamily` is confirmed real in
+[`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — that file is the
+live source of truth, always re-check it, do not treat the list below as frozen:
 
-See [`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — `event-rsvp`
-is the only `cardSurfaceFamily` this Skill's scope needs, and the status table there tells you what is and
-isn't real in the live app today. Anything outside this scope is a signal to use
-`using-loom-to-build-an-extension` instead, not to force-fit it into this Skill's constructs.
+- **3 real bespoke archetypes**: `event-rsvp` (event/RSVP/reminder — the original scope, still the richest-
+  taught pattern, see `chatgpt-upload/17-worked-example-calendar.jsonc`), `votePoll` (ballot with tally/
+  eligibility/runoff), `equipment-loan` (loan/reservation/giveaway lifecycle with a queue).
+- **6 🟡 GENERIC archetypes** (real, rendered by the shared `GenericWorkflowInstanceCard`, not a bespoke
+  widget): `paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`,
+  `notificationInbox`.
+- Each of the 3 bespoke + payment/approval/loan/discussion above has a canonical pattern already written in
+  [`docs/references/guide/03-common-patterns.md`](../../../docs/references/guide/03-common-patterns.md) —
+  P1 (RSVP), P2 (ballot), P3 (approval queue), P4 (loan), P5 (payment), P6 (discussion thread). `formEntry`
+  and `notificationInbox` are simple enough (a field/button pair; a sender→recipient record) not to need a
+  dedicated pattern — build them directly from `workflow-grammar.md` + `field-types.md`.
+
+**Explicitly out of scope — say so per Hard Rule 7, never force-fit**: any `cardSurfaceFamily` marked
+❌ NOT REAL in `archetypes/README.md` as of this writing — `documentLibrary`, `exportWizard`,
+`audienceSelector`, `stateMachineGrid`/`table`, `volunteerRoster`, `searchAiAnswer`, `singleItem`. A request
+needing one of these gets a plain, specific refusal (which product-doc section, why it doesn't fit any real
+family, what family it would actually need if it existed) — not an approximation with a real archetype it
+doesn't belong to, and not a silent drop.
+
+**If a request is only partially in scope** (common — most real communities mix in-scope and out-of-scope
+workflows): author the in-scope part completely and validator-clean, and report the rest by product-doc
+section/workflow id/needed-family, in the same response. Do not refuse the whole request because part of it
+is out of scope, and do not silently ship an incomplete package with no explanation of what's missing.
+
+⚠️ **The CardSurfaces vocabulary trap** — found 2026-08-09 while authoring against a real product doc.
+Product docs' own "### B25 Card Surface Registry Mapping" tables name surfaces like `payment`, `documents`,
+`calendar`, `workflow-status`, `notification-inbox`, `portability`, and link to
+`docs/CardSurfaces/*.md` — **none of those names are real `cardSurfaceFamily` values**, and that whole
+`docs/CardSurfaces/` folder is explicitly superseded (`archetypes/README.md`: "every file invents a
+nonexistent `CommunityXxxApi`. Nothing from it is promoted here"). Never copy a product doc's registry-table
+name directly into `cardSurfaceFamily`. Always translate through `archetypes/README.md`'s real enum:
+`payment`→`paymentCheckout`, `documents`/`external-document-link`→`documentLibrary` (❌ NOT REAL — use
+`formEntry` + a `type:"url"` field instead, see `field-types.md`), `calendar`→`event-rsvp`,
+`workflow-status`→`approvalQueueItem` or `statusTimeline`, `notification-inbox`→`notificationInbox`,
+`portability`→`exportWizard` (❌ NOT REAL — use `formEntry`, and never fabricate a `checksum`/export-id
+value; see `platform-services.md`'s ❌ Not implemented list — a hardcoded-looking hash is AP-6).
+
+This Skill deliberately never reads `using-loom-to-build-an-extension`'s
+`components/card-surfaces/*` material — that sibling Skill's own Operating Rule 15 points at the same
+superseded vocabulary this warning exists to avoid. This Skill only ever refers to `docs/references`.
 
 ## Read order
 
-Same load order as `docs/references/README.md`, narrowed to what a Calendar experience needs:
+Same load order as `docs/references/README.md`, plus the pattern for whatever archetype the request needs:
 
 1. [`docs/references/guide/01-authoring-procedure.md`](../../../docs/references/guide/01-authoring-procedure.md) — the algorithm.
-2. [`docs/references/reference/workflow-grammar.md`](../../../docs/references/reference/workflow-grammar.md) — the contract.
-3. [`docs/references/reference/guards.md`](../../../docs/references/reference/guards.md), [`effects.md`](../../../docs/references/reference/effects.md), [`formulas.md`](../../../docs/references/reference/formulas.md), [`field-types.md`](../../../docs/references/reference/field-types.md).
-4. [`docs/references/guide/03-common-patterns.md`](../../../docs/references/guide/03-common-patterns.md) — P1 (RSVP with capacity and waitlist) for the simple case.
-5. [`chatgpt-upload/17-worked-example-calendar.jsonc`](./chatgpt-upload/17-worked-example-calendar.jsonc) — the richer per-member-row + reminder pattern, needed as soon as the request includes notifications.
-6. [`docs/references/reference/render-bindings.md`](../../../docs/references/reference/render-bindings.md) and [`guide/07-actions-and-fabs.md`](../../../docs/references/guide/07-actions-and-fabs.md) — where the event card appears and how the "New event" affordance presents.
-7. [`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — confirm `event-rsvp` is correct.
+2. [`docs/references/reference/workflow-grammar.md`](../../../docs/references/reference/workflow-grammar.md) — the contract, including the `visibility`/`readGuard` section.
+3. [`docs/references/reference/guards.md`](../../../docs/references/reference/guards.md), [`effects.md`](../../../docs/references/reference/effects.md), [`formulas.md`](../../../docs/references/reference/formulas.md), [`field-types.md`](../../../docs/references/reference/field-types.md) — including `field-types.md`'s `type:"url"` section for any document/external-link field.
+4. [`docs/references/guide/03-common-patterns.md`](../../../docs/references/guide/03-common-patterns.md) — read the pattern matching the request: P1 RSVP, P2 ballot, P3 approval queue, P4 loan/giveaway, P5 payment, P6 discussion thread. Read more than one when a community needs more than one archetype.
+5. [`chatgpt-upload/17-worked-example-calendar.jsonc`](./chatgpt-upload/17-worked-example-calendar.jsonc) — the richer per-member-row + reminder pattern, needed as soon as an `event-rsvp`-shaped request includes notifications.
+6. [`docs/references/reference/render-bindings.md`](../../../docs/references/reference/render-bindings.md) and [`guide/07-actions-and-fabs.md`](../../../docs/references/guide/07-actions-and-fabs.md) — where each card appears and how "create" affordances present, per tab.
+7. [`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — the source of truth for which `cardSurfaceFamily` fits a given workflow, and which values are real vs. not, for **every** workflow in scope, not just to confirm one.
 8. [`docs/references/guide/04-antipatterns.md`](../../../docs/references/guide/04-antipatterns.md) and [`guide/05-validation.md`](../../../docs/references/guide/05-validation.md) — self-check before emitting.
-9. [`docs/references/reference/theming.md`](../../../docs/references/reference/theming.md), [`platform-services.md`](../../../docs/references/reference/platform-services.md) — only if relevant.
+9. [`docs/references/reference/theming.md`](../../../docs/references/reference/theming.md), [`platform-services.md`](../../../docs/references/reference/platform-services.md) — always check `platform-services.md`'s ❌ Not implemented table before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer — those must never be fabricated (AP-6).
 
 When run inside this repo (Claude Code, Codex), read these files live from `docs/references` — they are
-kept current there. Do not read the copies under `chatgpt-upload/`; those are frozen at export time for a
-provider that cannot reach this repo.
+kept current there. Do not read the copies under `chatgpt-upload/` for anything **except**
+`17-worked-example-calendar.jsonc` itself, which is authored directly in this Skill bundle (not a mirror of
+a `docs/references` file) and has no live-repo equivalent to read instead.
 
 ## The two RSVP shapes
 

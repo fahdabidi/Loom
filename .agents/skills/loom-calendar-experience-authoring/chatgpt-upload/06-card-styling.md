@@ -42,7 +42,7 @@ that wants its compact cards to show more (or fewer) fields does so by editing e
 and triage the item at a glance (what/when/where); push everything else (host, description, secondary
 metadata) to `"detail"` only.
 
-## Per-category visual style: `styleField` (PROPOSED, not yet App-Shell-implemented)
+## Per-category visual style: `styleField` (already implemented)
 
 By default every card on a tab renders in one flat community/tab accent — every event on a Calendar
 looks the same color regardless of what kind of event it is. `styleField` lets a workflow's own data
@@ -89,10 +89,11 @@ constant formula, still a real formula (not a stored value), still using the sam
 "cardStyleId": { "type": "number", "formula": "1", "displayContexts": [] }
 ```
 
-**Resolution (not yet App-Shell-implemented):** the archetype reads `instanceData[binding.styleField] ??
-0` and looks up that integer, modulo the palette size, in a small, fixed set of style slots *derived
-from the same community/tab accent this binding already resolves* — never a new, unrelated, hardcoded
-color. A community that never sets `styleField` sees no change at all: today's single flat accent.
+**Resolution (implemented):** `_calendarEntryStyleColor`
+(`part28_engine_native_calendar_surface.dart:359-366`) reads `instanceData[binding.styleField] ?? 0` and
+looks up that integer, modulo the palette size, in a small, fixed set of style slots *derived from the
+same community/tab accent this binding already resolves* — never a new, unrelated, hardcoded color. A
+community that never sets `styleField` sees no change at all: today's single flat accent.
 
 **Always hide the pointer fields from fact-pill rendering.** `category` and `cardStyleId` (or any field
 whose only job is feeding `styleField`) should declare `"displayContexts": []` — they exist to drive
@@ -107,7 +108,8 @@ visual styling, not to be read as a fact by the viewer.
 - [ ] Did you reuse nested `if()` rather than reaching for a function that doesn't exist yet? Check
       `formulas.md`'s implemented vocabulary before assuming a gap.
 - [ ] Does `styleField` name a **declared, `number`-typed** field in this same workflow's own
-      `instanceDataSchema`? (Validator: `dangling_style_field`.)
+      `instanceDataSchema`? (Not yet validator-enforced — `dangling_style_field` is referenced in the
+      reference docs but not implemented in `workflow_validator.dart`; check by hand until it lands.)
 - [ ] Have you left `styleField` off entirely for a workflow that has no meaningful category
       distinction? Absence is the correct default, not an oversight.
 

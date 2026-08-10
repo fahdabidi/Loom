@@ -1,0 +1,97 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the four
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+This is a RE-REVIEW of a community that FAILED an earlier review (run phaseA-apartment-events-1) on
+identity legibility: the "Account role and permissions" dialog and the Home tab showed which persona TYPE
+was active but never the signed-in account's actual name. A fix has since landed. Judge this fresh capture
+strictly on its own merits -- do not assume the fix worked, verify it from the pixels.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Identity/context legibility: can the user tell who they are (their actual account/display name, not just
+  a role/persona type) and what role they are acting as?
+- State legibility: is the current state (loading/empty/error/populated) unambiguous?
+- Copy accuracy: does displayed text sound like real product copy describing actual data, or is it generic/
+  placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown match what this persona should see?
+
+Community: Apartment Events (a locally-authored real community package -- "Classes, gatherings, and amenity
+reservations for neighbors."). The signed-in account for all screens after the first is: display name
+"Jamie", persona "Event Manager" (Apartment Event Manager), account ID "apartment-event-manager-20".
+
+Screenshots to review (read each with your Read tool):
+1. rowId "ae2-entry-gate" -- docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/entry-gate-fixed.png
+   -- the fresh entry gate shown before any account exists for this community.
+2. rowId "ae2-home-role-summary" -- docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/home-role-summary-fixed.png
+   -- the community Home tab, immediately after signing up as Jamie / Event Manager.
+3. rowId "ae2-persona-picker-dialog" -- docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/persona-picker-dialog-fixed.png
+   -- the "Account role and permissions" dialog, opened via the people icon in the top app bar, while
+   signed in as Jamie.
+4. rowId "ae2-sign-in-specific-person" -- docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/sign-in-specific-person-fixed.png
+   -- the "Sign in as a specific person" account list, reached from within that same role-picker dialog.
+
+Pay particular attention to whether the signed-in account's actual name/identity is discoverable on each
+screen, especially screen 2 (Home) and screen 3 (the role picker) versus screen 4 (the account list) --
+compare against what a prior review of this same flow found missing.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-apartment-events-2-postfix",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["ae2-entry-gate", "ae2-home-role-summary", "ae2-persona-picker-dialog", "ae2-sign-in-specific-person"],
+  "reviewedScreenshotHashes": ["a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6", "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3", "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984", "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all four screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 4 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 4), with real per-screen critique --
+do not skip any row or reuse the same critique text across rows. Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere in your response.

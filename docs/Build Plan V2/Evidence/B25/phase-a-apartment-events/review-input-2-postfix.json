@@ -1,0 +1,46 @@
+{
+  "currentReviewRunId": "phaseA-apartment-events-2-postfix",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Recapture of the original phaseA-apartment-events-1 screen set after UXReview.P1 (+fix1/fix2/fix3) landed, to confirm the identity-legibility finding is resolved. Same community package (apartment-events.loom-extension.zip / apartment-events.loom-init.zip, still present in the emulator's app-private storage from the original run), same persona/account (Jamie, apartment-event-manager-20). Not a canonical full-B25 capture."
+  },
+  "screenRows": [
+    {
+      "rowId": "ae2-entry-gate",
+      "communityName": "Apartment Events",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Fresh entry gate before any account exists",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/entry-gate-fixed.png",
+      "screenshotHash": "a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6"
+    },
+    {
+      "rowId": "ae2-home-role-summary",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Event Manager",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/home-role-summary-fixed.png",
+      "screenshotHash": "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3"
+    },
+    {
+      "rowId": "ae2-persona-picker-dialog",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/persona-picker-dialog-fixed.png",
+      "screenshotHash": "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984"
+    },
+    {
+      "rowId": "ae2-sign-in-specific-person",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/sign-in-specific-person-fixed.png",
+      "screenshotHash": "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33"
+    }
+  ]
+}

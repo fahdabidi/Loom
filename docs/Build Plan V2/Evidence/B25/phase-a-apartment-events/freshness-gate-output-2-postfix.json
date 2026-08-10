@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/llm-vision-ux-review-phaseA-apartment-events-2-postfix.json",
+  "expectedReviewRunId": "phaseA-apartment-events-2-postfix",
+  "declaredReviewRunId": "phaseA-apartment-events-2-postfix",
+  "expectedAppCommitSha": "559f3a1b",
+  "declaredAppCommitSha": "559f3a1b",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "ae2-entry-gate",
+    "ae2-home-role-summary",
+    "ae2-persona-picker-dialog",
+    "ae2-sign-in-specific-person"
+  ],
+  "reviewedScreenshotHashes": [
+    "a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6",
+    "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3",
+    "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984",
+    "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

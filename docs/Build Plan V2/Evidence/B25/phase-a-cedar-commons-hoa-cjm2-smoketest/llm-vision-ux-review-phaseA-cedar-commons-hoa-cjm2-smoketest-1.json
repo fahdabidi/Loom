@@ -1,0 +1,286 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-cedar-commons-hoa-cjm2-smoketest-1",
+  "freshReview": true,
+  "appCommitSha": "51d81e8c",
+  "reviewedScreenRowIds": ["hoa-home-signed-in", "hoa-home-document-detail", "hoa-calendar-tab", "hoa-marketplace-tab", "hoa-giving-tab"],
+  "reviewedScreenshotHashes": ["9e55d3ea7752cece119a381d5fab413520fd81c0cf94d403df12349bd363d15c", "10456610277a87b81416446218cad6aa6a4e2940802511b291e22988c4ad33b5", "8a9cf05f72a8aae462d5171ed17e2fd3d5c4798d64884c9bafa52f04b8744581", "1053e6cfa606fc8d3e6c07e727060041678d19c86185021623947f3a2341a673", "184696b0385a2acf286c938e10c7b68c9522d388bbbe4f9e2784798c3e3dfee9"],
+  "reviewerType": "llm-vision-agent-tool-dispatch",
+  "summary": "The Home screen and the Marketplace empty state are genuinely production-shaped — the identity card reads 'Signed in as Priya_Nairt Homeowner' with the real role blurb, and Marketplace shows a centered storefront icon plus 'Marketplace is coming to Cedar Commons HOA'. Everything else in this package leaks internals or fails silently: the document detail renders raw schema keys as fact pills ('version', 'accessLevel', 'choice: Open https://cedar-commons-hoa…' behind a broken-chain icon) above a greyed-out 'Save changes' with no reason given; Calendar replaces the seeded reservation with uncontained black body text 'Could not show hoa-res-room-a: event date is missing or invalid' and an off-palette green 'Retry'; and Giving renders literally nothing below its 'Payments, dues, donations, receipts, and ad-off state.' header — no bill, no icon, no sentence, no spinner. Both Calendar and Giving also show a ghosted, ~15%-opacity 'Local package details' row that reads as a half-rendered debug affordance. Giving is the blocker: a homeowner sent to pay dues sees a blank rectangle and cannot distinguish loading from empty from broken.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "Mostly yes, but not always. Four of the five screens keep a persistent identity card that names the account and the role together, but on the document-detail screen the card has scrolled off entirely and the only identity surface left is the app bar, which reads 'Cedar Commons HOA' with a bell, a chat bubble and a people glyph — no name, no avatar, no role chip.",
+      "score": 72,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Home screen: 'Signed in as Priya_Nairt' above a bold 'Homeowner', with the blurb and a grey '2 roles' pill on the right.",
+        "Document-detail screen: the entire visible page is the Governing Rules v3 card and the blue app bar 'Cedar Commons HOA' — no account name, avatar, or role indicator appears anywhere.",
+        "Giving screen: identity persists as 'Signed in as Priya_Nair' / 'Homeowner' at the top of the scroll."
+      ],
+      "affectedScreenRowIds": ["hoa-home-signed-in", "hoa-home-document-detail", "hoa-calendar-tab", "hoa-marketplace-tab", "hoa-giving-tab"]
+    },
+    {
+      "questionId": "empty-vs-broken-state-legibility",
+      "question": "For the Calendar and Giving tabs specifically, does the screen communicate that this is a genuine empty/error state (as opposed to looking incomplete or broken with no explanation)?",
+      "answer": "No — and the contrast with Marketplace makes the gap unmistakable. Marketplace uses a centered icon plus community-named headline. Calendar prints a raw parse error with an internal instance slug and an off-palette green Retry. Giving renders nothing at all below its header — no message, no icon, no spinner, no seeded dues bill.",
+      "score": 18,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Calendar: uncontained black body text reading 'Could not show hoa-res-room-a: event date is missing or invalid' with a green 'Retry' link centered under it.",
+        "Giving: the area between the header card and the bottom tab bar is entirely empty white.",
+        "Marketplace by comparison: storefront icon plus bold 'Marketplace is coming to Cedar Commons HOA', centered and clearly authored as an empty state.",
+        "Calendar and Giving both render a ghosted 'Local package details' row at very low opacity."
+      ],
+      "affectedScreenRowIds": ["hoa-calendar-tab", "hoa-giving-tab", "hoa-marketplace-tab"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "hoa-home-signed-in",
+      "affectedScreenRowIds": ["hoa-home-signed-in"],
+      "critique": "This is the strongest screen of the five. The identity block resolves both rubric identity questions: 'Signed in as Priya_Nairt' / bold 'Homeowner' / role blurb. Three issues: a 'No sponsored message right now.' banner is the first thing shown; the section subtitle 'Pinned and unassigned community surfaces.' is internal taxonomy; and the bottom tab bar clips the fourth 'Giving' tab at the right edge.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A signed-in HOA home feed that leads with resident items, keeps identity persistent, uses resident-facing section language, suppresses empty sponsored slots, and fits all tabs in the viewport.",
+      "visibleObservations": [
+        "Grey banner: 'No sponsored message right now.'",
+        "Community card: 'Cedar Commons HOA' with description 'Pay dues, read documents, reserve facilities, and submit requests.'",
+        "Identity block: 'Signed in as Priya_Nairt' / 'Homeowner' plus role description and '2 roles' pill",
+        "Section card: 'Home' / 'Pinned and unassigned community surfaces.'",
+        "Bottom tab bar: Home, Calendar, Marketplace, and a clipped 'Giving' tab"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Identity/context legibility: can the user tell who they are by account name and role?",
+          "visibleEvidence": "'Signed in as Priya_Nairt' followed by bold 'Homeowner' and the role blurb",
+          "why": "Both name and role are stated together with concrete capabilities, though the '2 roles' pill hints at an alternate role that is never named."
+        },
+        {
+          "question": "Copy accuracy: does displayed text sound like real product copy?",
+          "visibleEvidence": "'Pinned and unassigned community surfaces.' and 'No sponsored message right now.'",
+          "why": "These are internal platform vocabulary and placeholder ad-slot narration rather than resident-facing copy."
+        },
+        {
+          "question": "Actionability: are available actions clear?",
+          "visibleEvidence": "The grey '2 roles' pill and the clipped 'Giving' tab",
+          "why": "Neither is self-explanatory — the pill has no verb/chevron, and the tab is cut by the screen edge with no overflow indicator."
+        }
+      ],
+      "screenshotHash": "9e55d3ea7752cece119a381d5fab413520fd81c0cf94d403df12349bd363d15c"
+    },
+    {
+      "screenRowId": "hoa-home-document-detail",
+      "affectedScreenRowIds": ["hoa-home-document-detail"],
+      "critique": "The expanded 'Governing Rules v3' instance leaks its JSON schema into the UI: fact pills read 'version' and 'accessLevel' (raw keys) plus 'choice: Open https://cedar-commons-hoa…' behind a broken-chain icon. The url pill is NOT visibly degraded — same fill/shape as its neighbors, tappable-looking, with only a small unlabelled broken-chain glyph differentiating it. Below, all four fields render on editable-looking underlines with a disabled grey 'Save changes' button and no explanation, for a persona whose job is only to read documents.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A read-mode document card with humanized labels/values, a single clearly-labelled link that is either functional or visibly disabled with a reason, no raw field keys, and no editable inputs/disabled Save for a read-only persona.",
+      "visibleObservations": [
+        "Fact pills: 'Governing Rules v3', 'version', 'choice: Open https://cedar-commons-hoa…' with broken-chain icon, 'accessLevel'",
+        "Form fields on editable underlines: Title, Version = 3.0, Open = clipped URL, Access Level = 'open' lowercase",
+        "Disabled grey 'Save changes' button above enabled blue 'Acknowledge'/'Download' buttons"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Actionability: is the 'Open' pill's state legible?",
+          "visibleEvidence": "Pill styled identically to neighbors, differentiated only by a small broken-chain icon",
+          "why": "It reads as a live control since nothing greys it out, while the one differentiating signal is too subtle to interpret, especially next to unmistakably solid Acknowledge/Download buttons."
+        },
+        {
+          "question": "Copy accuracy: does text sound like real product copy?",
+          "visibleEvidence": "Pills reading 'version' and 'accessLevel', value 'open' lowercase",
+          "why": "Raw JSON keys and an unmapped enum token appear right next to correctly humanized form labels for the same fields."
+        },
+        {
+          "question": "Persona-scoping correctness: does this match what a Homeowner should see?",
+          "visibleEvidence": "Editable-underline inputs plus disabled Save for a 'reads governing documents' persona",
+          "why": "Presenting authoring affordances implies rights this read-only persona should not have, with no explanation for why Save is disabled."
+        }
+      ],
+      "screenshotHash": "10456610277a87b81416446218cad6aa6a4e2940802511b291e22988c4ad33b5"
+    },
+    {
+      "screenRowId": "hoa-calendar-tab",
+      "affectedScreenRowIds": ["hoa-calendar-tab"],
+      "critique": "The seeded reservation does not render. Instead: 'Could not show hoa-res-room-a: event date is missing or invalid' in plain uncontained black text, exposing an internal instance slug, with an off-palette green 'Retry' link (every other action in the package uses HOA blue). Retry is a false affordance since a malformed stored date will not resolve by refetching. A ghosted 'Local package details' row sits below at ~15% opacity.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The seeded reservation rendered with date/time/facility/capacity; if genuinely unparseable, a contained error card with icon, human copy naming the amenity, accent-blue action, and no retry for non-transient failures.",
+      "visibleObservations": [
+        "Card header 'Calendar' / 'Events, schedules, capacity, and reminders.'",
+        "Uncontained black error text with internal id 'hoa-res-room-a'",
+        "Green 'Retry' link (only green element in the set)",
+        "No calendar grid or entries anywhere",
+        "Ghosted 'Local package details' row"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "State legibility: is this a genuine empty/error state or does it look broken?",
+          "visibleEvidence": "Plain black error text with green Retry, no container, no icon, no error color",
+          "why": "Reads as broken rather than designed — no visual error treatment, and it's a data-shape failure, not an empty state."
+        },
+        {
+          "question": "Copy accuracy: does text describe actual data in product language?",
+          "visibleEvidence": "'hoa-res-room-a' and 'event date is missing or invalid'",
+          "why": "This is an engineering diagnostic verbatim, not resident-facing copy naming the amenity or reservation."
+        },
+        {
+          "question": "Actionability: is it clear why Retry is offered?",
+          "visibleEvidence": "The lone green 'Retry' link under the error",
+          "why": "Retry targets a failure mode (invalid stored date) it cannot fix, offering no genuine path forward."
+        }
+      ],
+      "screenshotHash": "8a9cf05f72a8aae462d5171ed17e2fd3d5c4798d64884c9bafa52f04b8744581"
+    },
+    {
+      "screenRowId": "hoa-marketplace-tab",
+      "affectedScreenRowIds": ["hoa-marketplace-tab"],
+      "critique": "This is the reference implementation of a correct empty state: a centered storefront icon, then bold 'Marketplace is coming to Cedar Commons HOA', naming the specific community. State is unambiguous, no error text, no retry, no ghosted rows. Minor: the headline sits close to the tab bar and any supporting CTA is below the fold; the tab bar still clips 'Giving' at the right edge.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Keep this pattern and reuse it verbatim as the template for Calendar and Giving.",
+      "visibleObservations": [
+        "Card header 'Marketplace' / 'Shared items, offers, claims, loans, and giveaways.'",
+        "Centered storefront icon",
+        "Bold headline 'Marketplace is coming to Cedar Commons HOA'",
+        "No error text, no retry, no ghosted rows"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "State legibility: is the empty state unambiguous and intentional?",
+          "visibleEvidence": "Centered icon plus bold community-named headline",
+          "why": "The composition and specific wording are signals a broken screen would not produce."
+        },
+        {
+          "question": "Copy accuracy: does text sound like real product copy about this community?",
+          "visibleEvidence": "'coming to Cedar Commons HOA' with the real community name interpolated",
+          "why": "Names the actual installed community instead of generic 'no results' text."
+        },
+        {
+          "question": "Persona-scoping correctness: does this match what a Homeowner should see?",
+          "visibleEvidence": "No listings and no create/post action for an HOA with no marketplace scope",
+          "why": "Correct — the HOA product doc never promises a marketplace."
+        }
+      ],
+      "screenshotHash": "1053e6cfa606fc8d3e6c07e727060041678d19c86185021623947f3a2341a673"
+    },
+    {
+      "screenRowId": "hoa-giving-tab",
+      "affectedScreenRowIds": ["hoa-giving-tab", "hoa-marketplace-tab"],
+      "critique": "The worst screen in the set. Below the 'Giving / Payments, dues, donations, receipts, and ad-off state.' header there is nothing — no dues instance, amount, due date, pay button, empty-state icon, sentence, or spinner. Roughly a third of the screen is blank white, broken only by a ghosted 'Local package details' row. Against the Marketplace tab's authored empty state, the contrast proves the app knows how to build one and did not here. The subtitle's 'ad-off state' is internal monetization jargon.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "The seeded dues invoice with amount/period/due date/status and a 'Pay dues' action; if nothing outstanding, a Marketplace-style empty state; resident-facing subtitle with no jargon.",
+      "visibleObservations": [
+        "Card header 'Giving' / 'Payments, dues, donations, receipts, and ad-off state.'",
+        "Blank white region roughly a third of the screen down to the tab bar",
+        "Ghosted 'Local package details' row at very low opacity",
+        "No dues instance, amount, due date, pay button, error, empty-state icon, or spinner",
+        "Identity block above still shows 'Signed in as Priya_Nair' / 'Homeowner'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "State legibility: is the current state unambiguous?",
+          "visibleEvidence": "Blank white space with only a ghosted 'Local package details' row",
+          "why": "Nothing names the state — indistinguishable from a stalled fetch or crashed list."
+        },
+        {
+          "question": "Persona-scoping correctness: does this match what this Homeowner should see?",
+          "visibleEvidence": "Role blurb 'Pays dues...' directly above an empty Giving tab",
+          "why": "The persona's first listed responsibility is paying dues, and a dues instance was seeded, yet it's missing."
+        },
+        {
+          "question": "Copy accuracy: does displayed text describe actual data?",
+          "visibleEvidence": "'ad-off state' in the subtitle",
+          "why": "Describes a system flag, not anything a homeowner recognizes while paying an assessment."
+        }
+      ],
+      "screenshotHash": "184696b0385a2acf286c938e10c7b68c9522d388bbbe4f9e2784798c3e3dfee9"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "giving-tab-blank-no-state",
+      "title": "Giving tab renders completely blank — no dues instance, no empty state, no error",
+      "description": "Below the Giving header, everything is empty white space down to the tab bar, containing only a ghosted 'Local package details' row. The seeded dues-payment instance does not appear and nothing explains its absence. Marketplace proves the app has a correct empty-state pattern, so this is an unhandled path, not a missing capability. Root cause confirmed independently: the render binding's default role=\"actor\" resolution requires createdByPersonaId == viewer, but hoa-dues-payment is created by hoa-board and paid by hoa-homeowner — a creator-vs-payer mismatch the default binding role never accounts for (see Community JSON Migration Tracker §1a #4).",
+      "severity": "critical-blocker",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-giving-tab"],
+      "requiredFix": "Either declare role: \"any\" on the dues-payment render binding (with a corresponding read-visibility scope) or wire a custom rolesForInstance for the Giving tab that checks payerPersonaId rather than createdByPersonaId. Additionally render a real empty state when a persona genuinely has no dues due."
+    },
+    {
+      "findingId": "calendar-raw-parse-error-uncontained",
+      "title": "Calendar shows a raw developer parse error with an internal instance id instead of the seeded reservation",
+      "description": "The Calendar tab shows 'Could not show hoa-res-room-a: event date is missing or invalid' as plain uncontained text with an off-palette green Retry. Root cause confirmed independently: the calendar surface (part28_engine_native_calendar_surface.dart:635) hardcodes instanceData['eventDate'] and never consults instanceDataSchema for any other date-typed field name; this fixture's field is named reservationDate (see Community JSON Migration Tracker §1a #2).",
+      "severity": "critical-blocker",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-calendar-tab"],
+      "requiredFix": "Either rename the field to eventDate (or add a computed formula field aliasing it), or make the calendar surface honor a configurable date-field name. Separately, replace the raw error text with a contained error card and remove Retry for non-transient failures."
+    },
+    {
+      "findingId": "open-fact-pill-illegible-degraded-state",
+      "title": "'Open' fact pill looks tappable while carrying a broken-link icon and a raw 'choice:' URL label",
+      "description": "The type:\"url\" field with openMode:\"choice\" renders per CJM.2's implemented contract (a visibly-labelled unsupported state, since only openMode:\"external\" is implemented) but the visual differentiation from a live control is too subtle in practice — same fill/shape as neighboring pills, only a small broken-chain icon differs, and the label surfaces the internal 'choice:' discriminator verbatim.",
+      "severity": "major",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-document-detail"],
+      "requiredFix": "Either land openMode:\"external\" for this specific field now (avoiding the unsupported state entirely) as a JSON-only change, or improve the unsupported-state visual treatment (stronger dimming, no raw 'choice:' prefix, human label) when CJM.2's embedded/choice follow-on lands."
+    },
+    {
+      "findingId": "raw-schema-keys-in-fact-pills",
+      "title": "Raw JSON field keys ('version', 'accessLevel') and unmapped enum value ('open') shown to end users",
+      "description": "Fact pills show 'version' and 'accessLevel' verbatim next to the same fields correctly humanized as 'Version'/'Access Level' in the form below; 'Access Level' value renders as unmapped lowercase 'open'.",
+      "severity": "major",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-document-detail"],
+      "requiredFix": "Route fact-pill labels and enum values through the same humanization used for form field labels; wrap/ellipsize long URL values."
+    },
+    {
+      "findingId": "readonly-persona-shown-editable-fields-and-dead-save",
+      "title": "Homeowner sees editable-looking document fields and an unexplained disabled 'Save changes'",
+      "description": "Title/Version/Open/Access Level render on editable-style underlines with a disabled grey Save button and no explanation, for a persona whose role is read-only on this document.",
+      "severity": "major",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-document-detail"],
+      "requiredFix": "Render read-only for personas without edit rights (no input underlines, no Save). Confirm via a focused-field capture whether inputs actually accept input."
+    },
+    {
+      "findingId": "ghosted-local-package-details-row",
+      "title": "Half-opacity 'Local package details' developer row visible on Calendar and Giving",
+      "description": "Both tabs render a ~15%-opacity 'Local package details' row with a chevron — looks half-painted, and is developer vocabulary that should never reach a resident.",
+      "severity": "major",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-calendar-tab", "hoa-giving-tab"],
+      "requiredFix": "Gate this row behind a developer/authoring mode so it never renders for member personas."
+    },
+    {
+      "findingId": "identity-lost-on-scroll",
+      "title": "Account name and role disappear once the identity card scrolls out of view",
+      "description": "On the document-detail screen the identity card has scrolled away and the app bar shows no name/avatar/role — only 'Cedar Commons HOA' plus icons.",
+      "severity": "minor",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-document-detail", "hoa-home-signed-in"],
+      "requiredFix": "Add a persistent identity affordance to the app bar that survives scrolling and tab changes; label the '2 roles' control explicitly."
+    },
+    {
+      "findingId": "internal-vocabulary-in-user-copy",
+      "title": "Platform jargon in resident-facing copy: 'unassigned community surfaces' and 'ad-off state'",
+      "description": "Home's section subtitle and Giving's subtitle both expose internal platform taxonomy/monetization vocabulary. Home also leads with an empty sponsored-message banner.",
+      "severity": "minor",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-signed-in", "hoa-giving-tab"],
+      "requiredFix": "Replace platform taxonomy with resident language; hide the sponsored-message slot entirely when empty."
+    },
+    {
+      "findingId": "giving-tab-clipped-in-bottom-nav",
+      "title": "Fourth bottom-nav tab 'Giving' is clipped at the right screen edge on all five screens",
+      "description": "The bottom nav consistently cuts the fourth tab off at the right edge with no overflow indicator, regardless of selection state.",
+      "severity": "minor",
+      "status": "open",
+      "affectedScreenRowIds": ["hoa-home-signed-in", "hoa-home-document-detail", "hoa-calendar-tab", "hoa-marketplace-tab", "hoa-giving-tab"],
+      "requiredFix": "Size the tab bar so all tabs fit, or make it horizontally scrollable with a visible edge fade."
+    }
+  ]
+}

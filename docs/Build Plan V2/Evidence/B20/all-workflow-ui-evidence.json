@@ -1,44 +1,8 @@
 {
   "schemaVersion": 1,
   "status": "pass",
-  "phases": [
-    "B12",
-    "B13",
-    "B14",
-    "B15",
-    "B16",
-    "B17",
-    "B18",
-    "B19",
-    "B20"
-  ],
-  "expectedPhases": [
-    "B12",
-    "B13",
-    "B14",
-    "B15",
-    "B16",
-    "B17",
-    "B18",
-    "B19",
-    "B20"
-  ],
-  "missingPhases": [],
-  "workflowCount": 67,
-  "screenshotCount": 207,
-  "workflowEvidenceManifestPaths": [
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B12/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B13/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B14/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B16/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B17/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B18/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B19/workflow-ui-evidence.json",
-    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/workflow-ui-evidence.json"
-  ],
-  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
-  "captureMode": "full-b25",
-  "fullB25Coverage": true,
-  "commitEligible": true
+  "phases": [],
+  "workflowCount": 0,
+  "screenshotCount": 2,
+  "workflowEvidenceManifestPaths": []
 }

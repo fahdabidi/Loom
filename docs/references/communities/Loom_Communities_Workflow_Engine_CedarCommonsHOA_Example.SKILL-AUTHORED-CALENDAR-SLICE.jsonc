@@ -1,0 +1,797 @@
+// Produced 2026-08-09 by a sandboxed dispatch of the `.agents/skills/loom-calendar-experience-authoring`
+// Skill (see Community JSON Migration Tracker §1b/§1c for the full context and judge verdict).
+//
+// This is a DELIBERATE PARTIAL package — the Skill is scoped only to the Calendar tab / `event-rsvp`
+// cardSurfaceFamily, so it covers ONLY the 2 of Cedar Commons HOA's 7 real workflows that fit that shape
+// (`hoa-meeting`, `hoa-facility-reservation`). It does NOT cover hoa-dues-payment, hoa-member-document,
+// hoa-architectural-request, hoa-committee-decision, hoa-owner-notification, or hoa-export-evidence — all
+// correctly reported as out of scope by the Skill itself (see the tracker's §1c verdict for exactly why).
+//
+// This is NOT the canonical Cedar Commons HOA fixture (that remains
+// Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc, and the pre-this-run hand-authored
+// version is preserved at Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.HAND-AUTHORED-BACKUP.jsonc).
+// This file exists as a comparison/reference artifact and as the source for a planned follow-up merge:
+// the tracker's §1c verdict found the Skill's `hoa-facility-reservation` avoids a real bug present in the
+// hand-authored version (`locationOverlap` placed on the `reserve` transition's guard here, the real
+// IMPLEMENTED placement per guards.md §9 -- vs. the hand-authored version's `creationGuard` placement,
+// which guards.md §9 also recommends but which workflow-grammar.md marks PROPOSED, not yet implemented,
+// meaning the hand-authored fixture's double-booking protection never actually runs).
+//
+// Validator result at time of authoring: {"status":"pass","errorCount":0,"warningCount":0,"findings":[]}
+
+{
+  "schemaVersion": 1,
+  "packageId": "init_cedar_commons_hoa_1",
+  "communityId": "community_cedar_commons_hoa",
+  "communityHandle": "cedar-commons-hoa",
+  "displayName": "Cedar Commons HOA",
+  "extensionId": "ext_cedar_commons_hoa",
+  "branding": {
+    "accentColor": "#1B4F72"
+  },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-cedar-commons-hoa-v1",
+
+  "experience": {
+    "experienceSchemaVersion": 2,
+    "workflowGrammarVersion": 1,
+
+    "displayName": "Cedar Commons HOA",
+    "tagline": "Meetings, review sessions, and amenity reservations for Cedar Commons owners.",
+    "accentColor": "#1B4F72",
+
+    "notificationPresentation": { "style": "bell" },
+
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
+
+    "personas": [
+      {
+        "personaId": "hoa-homeowner",
+        "label": "Homeowner",
+        "roleLabel": "Homeowner",
+        "description": "Owns a lot at Cedar Commons; attends meetings and reserves shared amenities."
+      },
+      {
+        "personaId": "hoa-board",
+        "label": "Board",
+        "roleLabel": "Board member",
+        "description": "Schedules HOA meetings and review sessions, and publishes amenity reservation windows."
+      }
+    ],
+
+    "workflowDefinitions": {
+
+      "hoa-meeting": {
+        "initialState": "open",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "open": {
+            "label": "Scheduled",
+            "tone": "positive",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "capacity", "agendaSummary", "category", "reminderOffsetHours"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "cancel-meeting",
+            "label": "Cancel meeting",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["hoa-board"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "styleField": "cardStyleId",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New meeting",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              },
+              {
+                "kind": "create",
+                "workflowType": "hoa-meeting-rsvp",
+                "label": "Respond to this meeting",
+                "byPersonaIds": ["hoa-homeowner", "hoa-board"],
+                "scope": "instance",
+                "presentation": "button",
+                "prefill": {
+                  "eventId": "{context.id}",
+                  "personaId": "$actor"
+                }
+              }
+            ],
+            "responseTable": {
+              "workflowType": "hoa-meeting-rsvp",
+              "eventField": "eventId",
+              "pendingStates": ["pending"]
+            },
+            "filterableFacets": [
+              { "field": "isFull", "label": "At capacity" },
+              { "field": "hasWaitlist", "label": "Has waitlist" },
+              { "field": "goingCount", "label": "Attending" }
+            ]
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "maxLength": 80, "searchable": true, "sortable": true,
+            "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "schedule", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "location": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "location_on_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["detail"]
+          },
+          "capacity": {
+            "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "groups_outlined", "labelTemplate": "{value} seats",
+            "displayContexts": ["detail"]
+          },
+          "agendaSummary": {
+            "type": "textarea", "writableBy": "formEntry", "storage": "inline", "maxLength": 500,
+            "displayIcon": "description", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "category": {
+            "type": "text", "writableBy": "formEntry", "storage": "inline", "displayContexts": []
+          },
+          "reminderOffsetHours": {
+            "type": "number", "writableBy": "formEntry", "storage": "inline", "displayContexts": []
+          },
+
+          "cardStyleId": {
+            "type": "number",
+            "formula": "if(category == 'annual', 1, if(category == 'review', 2, 0))",
+            "displayContexts": []
+          },
+          "reminderAt": {
+            "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))",
+            "displayIcon": "notifications_active", "labelTemplate": "Reminder {value}",
+            "displayContexts": ["detail"]
+          },
+
+          "responses": {
+            "type": "list",
+            "source": "query(hoa-meeting-rsvp where eventId == id)"
+          },
+          "responseCounts": {
+            "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": []
+          },
+          "goingCount": {
+            "type": "number", "formula": "mapGet(responseCounts, 'going')",
+            "displayIcon": "how_to_reg", "labelTemplate": "Attending: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "waitlistedCount": {
+            "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')",
+            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "seatsRemaining": {
+            "type": "number", "formula": "capacity - goingCount",
+            "displayIcon": "event_seat", "labelTemplate": "{value} seats left",
+            "displayContexts": ["detail"]
+          },
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity", "displayContexts": [] },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0", "displayContexts": [] }
+        }
+      },
+
+      "hoa-meeting-rsvp": {
+        "initialState": "pending",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "pending": { "label": "No response yet", "tone": "info" },
+          "going": { "label": "Attending", "tone": "positive" },
+          "maybe": { "label": "Maybe", "tone": "info" },
+          "declined": { "label": "Not attending", "tone": "negative" },
+          "waitlisted": { "label": "Waitlisted", "tone": "warning" }
+        },
+        "transitions": [
+          {
+            "id": "respond-going",
+            "label": "Attending",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["pending", "maybe", "declined", "waitlisted"],
+            "to": "going",
+            "guard": {
+              "allowedPersonaIds": ["hoa-homeowner", "hoa-board"],
+              "relatedAggregate": {
+                "workflowType": "hoa-meeting-rsvp",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": "<",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            "id": "respond-maybe",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["pending", "going", "declined", "waitlisted"],
+            "to": "maybe",
+            "guard": { "allowedPersonaIds": ["hoa-homeowner", "hoa-board"] },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "hoa-meeting-rsvp",
+                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
+                  "sortKey": "rsvpedAt",
+                  "limit": 1
+                },
+                "transitionId": "respond-going",
+                "onSuccessEffects": [
+                  {
+                    "op": "createInstance",
+                    "workflowType": "notification",
+                    "fields": {
+                      "recipientPersonaId": "{personaId}",
+                      "title": "A seat opened up",
+                      "body": "You were moved off the waitlist and are now marked attending for this Cedar Commons meeting.",
+                      "createdAt": "$timestamp"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "respond-declined",
+            "label": "Not attending",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "waitlisted"],
+            "to": "declined",
+            "guard": { "allowedPersonaIds": ["hoa-homeowner", "hoa-board"] },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "hoa-meeting-rsvp",
+                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
+                  "sortKey": "rsvpedAt",
+                  "limit": 1
+                },
+                "transitionId": "respond-going",
+                "onSuccessEffects": [
+                  {
+                    "op": "createInstance",
+                    "workflowType": "notification",
+                    "fields": {
+                      "recipientPersonaId": "{personaId}",
+                      "title": "A seat opened up",
+                      "body": "You were moved off the waitlist and are now marked attending for this Cedar Commons meeting.",
+                      "createdAt": "$timestamp"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "respond-waitlist",
+            "label": "Join waitlist",
+            "icon": "hourglass_empty",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "declined"],
+            "to": "waitlisted",
+            "guard": {
+              "allowedPersonaIds": ["hoa-homeowner", "hoa-board"],
+              "relatedAggregate": {
+                "workflowType": "hoa-meeting-rsvp",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": ">=",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "rsvpedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "send-meeting-reminder",
+            "label": "Add reminder",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "going", "waitlisted"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "personaId" } },
+            "inputs": {
+              "notificationTitle": { "type": "text", "required": true },
+              "notificationBody": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "{personaId}",
+                  "title": "{input.notificationTitle}",
+                  "body": "{input.notificationBody}",
+                  "createdAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
+            ]
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "eventId": { "type": "text", "required": true, "storage": "inline" },
+          "personaId": { "type": "text", "required": true, "storage": "inline" },
+          "rsvpedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "sortable": true, "hideWhenEmpty": true
+          },
+          "reminderSentAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline", "hideWhenEmpty": true
+          }
+        }
+      },
+
+      "hoa-facility-reservation": {
+        "initialState": "open",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "open": {
+            "label": "Open for reservation",
+            "tone": "positive",
+            "editableFields": ["facility", "eventDate", "eventTime", "notes", "category"],
+            "editGuard": { "allowedPersonaIds": ["hoa-board"] }
+          },
+          "reserved": { "label": "Reserved", "tone": "info" },
+          "cancelled": { "label": "Window cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "reserve",
+            "label": "Reserve",
+            "icon": "event_seat",
+            "tone": "primary",
+            "from": ["open"],
+            "to": "reserved",
+            "guard": {
+              "allowedPersonaIds": ["hoa-homeowner", "hoa-board"],
+              "locationOverlap": {
+                "locationField": "facility",
+                "dateField": "eventDate",
+                "timeField": "eventTime",
+                "durationMinutes": 180
+              }
+            },
+            "inputs": {
+              "purpose": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "reservedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "reservedAt", "value": "$timestamp" },
+              { "op": "set", "key": "purpose", "value": "{input.purpose}" },
+              {
+                "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "$actor",
+                  "title": "Reservation confirmed",
+                  "body": "Your Cedar Commons amenity reservation is confirmed. Cancel from the Calendar tab if your plans change.",
+                  "subjectLabel": "{facility}",
+                  "createdAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "update-purpose",
+            "label": "Change purpose",
+            "icon": "edit_note",
+            "tone": "secondary",
+            "from": ["reserved"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "reservedByPersonaId" } },
+            "inputs": {
+              "purpose": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "purpose", "value": "{input.purpose}" }
+            ]
+          },
+          {
+            "id": "send-reservation-reminder",
+            "label": "Add reminder",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["reserved"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "reservedByPersonaId" } },
+            "inputs": {
+              "notificationTitle": { "type": "text", "required": true },
+              "notificationBody": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "{reservedByPersonaId}",
+                  "title": "{input.notificationTitle}",
+                  "body": "{input.notificationBody}",
+                  "subjectLabel": "{facility}",
+                  "createdAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-my-reservation",
+            "label": "Cancel my reservation",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["reserved"],
+            "to": "open",
+            "guard": { "actorEqualsField": { "key": "reservedByPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "reservedByPersonaId", "value": null },
+              { "op": "set", "key": "reservedAt", "value": null },
+              { "op": "set", "key": "purpose", "value": null },
+              { "op": "set", "key": "reminderSentAt", "value": null }
+            ]
+          },
+          {
+            "id": "release-reservation",
+            "label": "Release reservation",
+            "icon": "lock_open",
+            "tone": "secondary",
+            "from": ["reserved"],
+            "to": "open",
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "notification",
+                "fields": {
+                  "recipientPersonaId": "{reservedByPersonaId}",
+                  "title": "Your reservation was released",
+                  "body": "The board released this amenity reservation. Contact the board office if you need it reinstated.",
+                  "subjectLabel": "{facility}",
+                  "createdAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "reservedByPersonaId", "value": null },
+              { "op": "set", "key": "reservedAt", "value": null },
+              { "op": "set", "key": "purpose", "value": null },
+              { "op": "set", "key": "reminderSentAt", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-window",
+            "label": "Cancel reservation window",
+            "icon": "block",
+            "tone": "destructive",
+            "from": ["open", "reserved"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["hoa-board"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["open", "reserved"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "styleField": "cardStyleId",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New reservation window",
+                "byPersonaIds": ["hoa-board"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ],
+            "filterableFacets": [
+              { "field": "isReserved", "label": "Already reserved" }
+            ]
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "facility": {
+            "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "searchable": true, "sortable": true,
+            "displayIcon": "home_work_outlined", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "schedule", "labelTemplate": "Starts {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "notes": {
+            "type": "textarea", "writableBy": "formEntry", "storage": "inline", "maxLength": 300,
+            "displayIcon": "description", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "category": {
+            "type": "text", "writableBy": "formEntry", "storage": "inline", "displayContexts": []
+          },
+
+          "reservedByPersonaId": {
+            "type": "personaId?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Reserved by {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "reservedAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "fact_check", "labelTemplate": "Confirmed {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "purpose": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "notes", "labelTemplate": "Purpose: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+          "reminderSentAt": {
+            "type": "date?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "notifications_active", "labelTemplate": "Reminder set {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"]
+          },
+
+          "cardStyleId": {
+            "type": "number",
+            "formula": "if(category == 'pool', 1, if(category == 'court', 2, 0))",
+            "displayContexts": []
+          },
+          "isReserved": {
+            "type": "bool",
+            "formula": "if(reservedByPersonaId == null, false, true)",
+            "displayContexts": []
+          }
+        }
+      },
+
+      "notification": {
+        "initialState": "unread",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "unread": { "label": "Unread", "tone": "info" },
+          "read": { "label": "Read", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "mark-read",
+            "label": "Mark read",
+            "icon": "done",
+            "tone": "secondary",
+            "from": ["unread"],
+            "to": "read",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "recipientPersonaId": {
+            "type": "personaId", "required": true, "writableBy": "effect", "storage": "inline"
+          },
+          "title": {
+            "type": "text", "required": true, "writableBy": "effect", "storage": "inline",
+            "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+          },
+          "body": {
+            "type": "text", "required": true, "writableBy": "effect", "storage": "inline",
+            "labelTemplate": "{value}", "displayContexts": ["detail"]
+          },
+          "subjectLabel": {
+            "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "label_outline", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"]
+          },
+          "createdAt": {
+            "type": "date", "required": true, "writableBy": "effect", "storage": "inline",
+            "sortable": true, "displayIcon": "schedule", "labelTemplate": "{value}",
+            "displayContexts": ["detail"]
+          }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "meeting-board-2026-08-18",
+        "workflowType": "hoa-meeting",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "title": "August board meeting",
+          "eventDate": "2026-08-18",
+          "eventTime": "19:00",
+          "location": "Cedar Commons Clubhouse - Community Room",
+          "capacity": 40,
+          "agendaSummary": "Reserve study update, landscaping contract bids, and the FY27 dues schedule first reading.",
+          "category": "board",
+          "reminderOffsetHours": 24
+        }
+      },
+      {
+        "instanceId": "meeting-arc-review-2026-08-25",
+        "workflowType": "hoa-meeting",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "title": "Architectural Review Committee session",
+          "eventDate": "2026-08-25",
+          "eventTime": "18:00",
+          "location": "Cedar Commons Clubhouse - Meeting Room B",
+          "capacity": 12,
+          "agendaSummary": "Owner presentations for exterior paint, fence replacement, and driveway extension requests.",
+          "category": "review",
+          "reminderOffsetHours": 48
+        }
+      },
+      {
+        "instanceId": "meeting-annual-2026-09-15",
+        "workflowType": "hoa-meeting",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "title": "Annual homeowners meeting",
+          "eventDate": "2026-09-15",
+          "eventTime": "18:30",
+          "location": "Cedar Commons Clubhouse - Great Room",
+          "capacity": 120,
+          "agendaSummary": "Budget ratification, board election, and the 2027 reserve funding plan.",
+          "category": "annual",
+          "reminderOffsetHours": 72
+        }
+      },
+
+      {
+        "instanceId": "rsvp-board-2026-08-18-board",
+        "workflowType": "hoa-meeting-rsvp",
+        "currentState": "going",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "eventId": "meeting-board-2026-08-18",
+          "personaId": "hoa-board"
+        }
+      },
+      {
+        "instanceId": "rsvp-board-2026-08-18-owner",
+        "workflowType": "hoa-meeting-rsvp",
+        "currentState": "pending",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "eventId": "meeting-board-2026-08-18",
+          "personaId": "hoa-homeowner"
+        }
+      },
+      {
+        "instanceId": "rsvp-arc-review-2026-08-25-owner",
+        "workflowType": "hoa-meeting-rsvp",
+        "currentState": "going",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "eventId": "meeting-arc-review-2026-08-25",
+          "personaId": "hoa-homeowner"
+        }
+      },
+      {
+        "instanceId": "rsvp-annual-2026-09-15-owner",
+        "workflowType": "hoa-meeting-rsvp",
+        "currentState": "pending",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "eventId": "meeting-annual-2026-09-15",
+          "personaId": "hoa-homeowner"
+        }
+      },
+
+      {
+        "instanceId": "reservation-great-room-2026-08-22-morning",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "facility": "Clubhouse Great Room",
+          "eventDate": "2026-08-22",
+          "eventTime": "10:00",
+          "notes": "Three-hour block. Setup and cleanup must happen inside the window; chairs returned to the storage closet.",
+          "category": "clubhouse"
+        }
+      },
+      {
+        "instanceId": "reservation-great-room-2026-08-22-afternoon",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "reserved",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "facility": "Clubhouse Great Room",
+          "eventDate": "2026-08-22",
+          "eventTime": "14:00",
+          "notes": "Three-hour block. Setup and cleanup must happen inside the window; chairs returned to the storage closet.",
+          "category": "clubhouse",
+          "reservedByPersonaId": "hoa-homeowner",
+          "reservedAt": "2026-08-06T14:22:00",
+          "purpose": "Birthday party for the owners at 42 Cedar Ridge Court"
+        }
+      },
+      {
+        "instanceId": "reservation-pool-pavilion-2026-08-29",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "facility": "Pool Pavilion",
+          "eventDate": "2026-08-29",
+          "eventTime": "11:00",
+          "notes": "Pool deck stays open to all owners; the pavilion and grills are what is reserved.",
+          "category": "pool"
+        }
+      },
+      {
+        "instanceId": "reservation-tennis-court-2-2026-09-05",
+        "workflowType": "hoa-facility-reservation",
+        "currentState": "open",
+        "createdByPersonaId": "hoa-board",
+        "instanceData": {
+          "facility": "Tennis Court 2",
+          "eventDate": "2026-09-05",
+          "eventTime": "08:00",
+          "notes": "Court 1 stays unreserved for drop-in play.",
+          "category": "court"
+        }
+      }
+    ]
+  }
+}

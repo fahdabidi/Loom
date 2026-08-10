@@ -1,0 +1,112 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+This community uses the legacy flat schema (no engine-native persona/account system) and bypasses the
+entry gate and persona-picker entirely -- there is no signed-in identity concept here. So for this review,
+treat the "identity/context legibility" rubric dimension as: can the user tell what workflow and what
+state (start/in-progress/complete) they are looking at, even without an account system? Do not fail a
+screen merely for lacking a signed-in-account display -- that is expected and correct for this schema.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Context/state legibility: is it clear what workflow this is and what state (loading/empty/error/start/
+  in-progress/complete) it is in?
+- Copy accuracy: does displayed text sound like real product copy describing actual community content, or
+  is it generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown make sense for the workflow being demonstrated?
+- Visual quality: no repeated generic card shells, no thin/empty content where real content is expected, no
+  obvious layout clipping or crowding.
+
+Community: Masjid Nur (community_id: ext_mosque, phase B14 of this repo's B25 evidence catalog).
+
+Screenshots to review (read each with your Read tool -- there are 27 of them, grouped by workflow):
+- rowId "masjid-nur-mosque-donor-visibility-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png -- mosque-donor-visibility workflow, start state
+- rowId "masjid-nur-mosque-donor-visibility-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png -- mosque-donor-visibility workflow, action state
+- rowId "masjid-nur-mosque-donor-visibility-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png -- mosque-donor-visibility workflow, complete state
+- rowId "masjid-nur-mosque-search-ai-citation-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png -- mosque-search-ai-citation workflow, start state
+- rowId "masjid-nur-mosque-search-ai-citation-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_action.png -- mosque-search-ai-citation workflow, action state
+- rowId "masjid-nur-mosque-search-ai-citation-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_complete.png -- mosque-search-ai-citation workflow, complete state
+- rowId "masjid-nur-mosque-announcement-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_start.png -- mosque-announcement workflow, start state
+- rowId "masjid-nur-mosque-announcement-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_action.png -- mosque-announcement workflow, action state
+- rowId "masjid-nur-mosque-announcement-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_complete.png -- mosque-announcement workflow, complete state
+- rowId "masjid-nur-mosque-donation-payment-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_start.png -- mosque-donation-payment workflow, start state
+- rowId "masjid-nur-mosque-donation-payment-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_action.png -- mosque-donation-payment workflow, action state
+- rowId "masjid-nur-mosque-donation-payment-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_complete.png -- mosque-donation-payment workflow, complete state
+- rowId "masjid-nur-mosque-discussion-thread-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_start.png -- mosque-discussion-thread workflow, start state
+- rowId "masjid-nur-mosque-discussion-thread-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_action.png -- mosque-discussion-thread workflow, action state
+- rowId "masjid-nur-mosque-discussion-thread-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_complete.png -- mosque-discussion-thread workflow, complete state
+- rowId "masjid-nur-mosque-event-rsvp-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_start.png -- mosque-event-rsvp workflow, start state
+- rowId "masjid-nur-mosque-event-rsvp-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_action.png -- mosque-event-rsvp workflow, action state
+- rowId "masjid-nur-mosque-event-rsvp-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_complete.png -- mosque-event-rsvp workflow, complete state
+- rowId "masjid-nur-mosque-care-request-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_start.png -- mosque-care-request workflow, start state
+- rowId "masjid-nur-mosque-care-request-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_action.png -- mosque-care-request workflow, action state
+- rowId "masjid-nur-mosque-care-request-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_complete.png -- mosque-care-request workflow, complete state
+- rowId "masjid-nur-mosque-volunteer-signup-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_start.png -- mosque-volunteer-signup workflow, start state
+- rowId "masjid-nur-mosque-volunteer-signup-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_action.png -- mosque-volunteer-signup workflow, action state
+- rowId "masjid-nur-mosque-volunteer-signup-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_complete.png -- mosque-volunteer-signup workflow, complete state
+- rowId "masjid-nur-mosque-neutral-notification-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_start.png -- mosque-neutral-notification workflow, start state
+- rowId "masjid-nur-mosque-neutral-notification-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_action.png -- mosque-neutral-notification workflow, action state
+- rowId "masjid-nur-mosque-neutral-notification-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_complete.png -- mosque-neutral-notification workflow, complete state
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-legacy-masjid-nur-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["masjid-nur-mosque-donor-visibility-start", "masjid-nur-mosque-donor-visibility-action", "masjid-nur-mosque-donor-visibility-complete", "masjid-nur-mosque-search-ai-citation-start", "masjid-nur-mosque-search-ai-citation-action", "masjid-nur-mosque-search-ai-citation-complete", "masjid-nur-mosque-announcement-start", "masjid-nur-mosque-announcement-action", "masjid-nur-mosque-announcement-complete", "masjid-nur-mosque-donation-payment-start", "masjid-nur-mosque-donation-payment-action", "masjid-nur-mosque-donation-payment-complete", "masjid-nur-mosque-discussion-thread-start", "masjid-nur-mosque-discussion-thread-action", "masjid-nur-mosque-discussion-thread-complete", "masjid-nur-mosque-event-rsvp-start", "masjid-nur-mosque-event-rsvp-action", "masjid-nur-mosque-event-rsvp-complete", "masjid-nur-mosque-care-request-start", "masjid-nur-mosque-care-request-action", "masjid-nur-mosque-care-request-complete", "masjid-nur-mosque-volunteer-signup-start", "masjid-nur-mosque-volunteer-signup-action", "masjid-nur-mosque-volunteer-signup-complete", "masjid-nur-mosque-neutral-notification-start", "masjid-nur-mosque-neutral-notification-action", "masjid-nur-mosque-neutral-notification-complete"],
+  "reviewedScreenshotHashes": ["236c82142d662ff8be2919b28002ef14c491bdbf1ddd62c38ac43bd86eda79c1", "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447", "597ad4f27c746eb10e09f94e5debea4d4f9a4e3398b96a46e039c59299cce2d5", "9604dd6299cb8210f224a6b45c4f65ff8928f6126c9e82275833ae44815562ad", "fe1bed61f8aba91397c42b4aafc401e4f6da32e9b3db651ae485589cae44851f", "de1a59a33d144e91cd05a354545bbe9df08517f5fce276b13622fd07e257a37d", "f700211d2de57894ec3ed58dc2e6f9c1e319775638ab71b1e2a1a5d9871807b5", "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44", "7e163b212b0e7e48f83fd85fc85acca22cb664129d2a5bfb65c9819ba732e83d", "f78b44f3eeb65f8029adf6f2f5f1fbed87e1f6884092a6a1b4a602d0c4e1aeec", "3228702b515c3c9ccb591d8eae68fe882ec538e3eb89ef1e5b9ec24eddbf5e59", "1ae5984e8cd1107fd25daf9d6dea7a1946c9dab7e7f1a784b13fe19c053eed7a", "245a1c0f564d7040853a21e392b8b6058be8d45467e1108cba19fb6241b85659", "fe1bed61f8aba91397c42b4aafc401e4f6da32e9b3db651ae485589cae44851f", "de1a59a33d144e91cd05a354545bbe9df08517f5fce276b13622fd07e257a37d", "b81f313ac2a0ad352bf05969e1b127386d672afead65c72f64ba40d0818d625c", "f47713eb6df7182a208ba1810ed186f0014354b85eb5470cc98dd6079bd898fc", "bad7ca9ef15f127e7bcd309d58b9049ca36e03563a025ea714840279f59fcc2a", "0a94e4050819b364f6a0f9673d53c3afa080d159d886c67e61a8e4daee333d2f", "25a253485cf007c45627ba6fec112b3bfed039bf7eb7771a02deb7bc0050ccc6", "6c04d48fbafe046ec6127a1fc6cd603fdce944f0080c87d06747c0fef2381107", "642a24f35cadb5160ba2d800d2636086fbbc2cda9782b513384a631757859849", "49e6fc594c77dca1eb94d587a9ea6482c45fd0f8b42892ccb0aa00b1a1aad937", "97405316610feacefce1f58ed05f52770b5a88196dc84bde2884133275468ade", "4e802760e724baad9977c61c66e04d6c07dacd213b7ec1f87655facaf93cfc61", "b677a8791f9a307ebea0760cc43a96f773a5017a443e61411a8dc53cd4fb5f2a", "dbbb84847d7059727299703c3ee0d1b0e15147c0972caafc2113240b6e8e8664"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 27 of them), with real
+per-screen critique -- do not skip any row or reuse the same critique text across rows. Do not include
+sourceReviewRunId, carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere
+in your response.

@@ -1,0 +1,255 @@
+{
+  "currentReviewRunId": "phaseA-legacy-neighborhood-book-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B14",
+    "appId": "ext_book_club",
+    "note": "Neighborhood Book Club, part of the Phase A legacy-community sweep (loomEvidenceTargets, B14). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "neighborhood-book-club-book-nomination-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-nomination",
+      "screenOrState": "book-nomination workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+      "screenshotHash": "fdb882b44de6ae8dffed1de692bbd1564b51788df72ba0bb847c16d0f8fc6e28"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-nomination-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-nomination",
+      "screenOrState": "book-nomination workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_action.png",
+      "screenshotHash": "ab24edb901bd56c7372840edf7e241af6db0c7b68a7ce0712c8be735935d8843"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-nomination-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-nomination",
+      "screenOrState": "book-nomination workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png",
+      "screenshotHash": "68b491f904731e1e1d566371503d623d73862fa30d5c34d01001179d8a145cec"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-selection-publish-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-selection-publish",
+      "screenOrState": "book-selection-publish workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+      "screenshotHash": "6af7a24a92f0b9567e53f79051f81d74903681c1556ad56846c64e8ac2f7c16e"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-selection-publish-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-selection-publish",
+      "screenOrState": "book-selection-publish workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_action.png",
+      "screenshotHash": "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-selection-publish-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-selection-publish",
+      "screenOrState": "book-selection-publish workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png",
+      "screenshotHash": "ef5759c7f3eb3728d4817c0ebbe4c97f7fc428c3d7c4c839eba061c988e47c88"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-reading-material-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-reading-material",
+      "screenOrState": "book-reading-material workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_start.png",
+      "screenshotHash": "25bd94bc3a4d4206dc8aba20efd34abfa4c44f15ff229d6cf313e1ac788075c2"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-reading-material-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-reading-material",
+      "screenOrState": "book-reading-material workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_action.png",
+      "screenshotHash": "1e98b5ba316a3b397a47dbcadc3849afa88a018a1f4f3ca386ece4cc617bdc6b"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-reading-material-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-reading-material",
+      "screenOrState": "book-reading-material workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_complete.png",
+      "screenshotHash": "518edf9cc7e2861b531c6c6d6e09d746d3177fced2c749e9a22f03dc45d2cd98"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-vote-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-vote",
+      "screenOrState": "book-vote workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+      "screenshotHash": "918ef3feeb3c83a03e7f42b7bd4b1182bc5faadd67cf1f362511462afe1f3e5f"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-vote-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-vote",
+      "screenOrState": "book-vote workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_action.png",
+      "screenshotHash": "e32a11ee741f0148d6dc064d83b5d0f5c12661bbc255e4ca38795547c226fb59"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-vote-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-vote",
+      "screenOrState": "book-vote workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png",
+      "screenshotHash": "a5e34536c2e5a54104cf4fa36428c9201399536bd8b912706ead61b7203ce600"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-search-ai-digest-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-search-ai-digest",
+      "screenOrState": "book-search-ai-digest workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png",
+      "screenshotHash": "dea065f91186cdabfc0a02a16bca4ee50bb750128390207bf2833baea936585b"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-search-ai-digest-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-search-ai-digest",
+      "screenOrState": "book-search-ai-digest workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_action.png",
+      "screenshotHash": "7f7ef22f005dba6bb077ac33f519833639971a5f414d83a202e2cc97c15cb539"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-search-ai-digest-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-search-ai-digest",
+      "screenOrState": "book-search-ai-digest workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_complete.png",
+      "screenshotHash": "4cd2f815d16f0b94c2fb2339427d65fef3a83122a55a3487589d5171389ad2fb"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-meeting-rsvp-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-meeting-rsvp",
+      "screenOrState": "book-meeting-rsvp workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_start.png",
+      "screenshotHash": "0c473b2461e0d45fe1ff41e973cf8adeedb28a0f19a14b8df99e1ddc468bf69d"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-meeting-rsvp-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-meeting-rsvp",
+      "screenOrState": "book-meeting-rsvp workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_action.png",
+      "screenshotHash": "d14f70288a77ea3ad86cd790291f75f234511f7a024b90eed9c7dbe22284d7cc"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-meeting-rsvp-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-meeting-rsvp",
+      "screenOrState": "book-meeting-rsvp workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_complete.png",
+      "screenshotHash": "8e0ab70e21a2ed9c13b5eb987a1a9b9df0c72edbe2d267e8dd3e9a49d4ef4bd7"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-export-metadata-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-export-metadata",
+      "screenOrState": "book-export-metadata workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_start.png",
+      "screenshotHash": "1aec7237a9bacdbaedd9318145b3894f6c7a0dc303bea61ad50bfa238fcc0b69"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-export-metadata-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-export-metadata",
+      "screenOrState": "book-export-metadata workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_action.png",
+      "screenshotHash": "e217ad3a30563c5d1c14ee86b4b7fcca5a6a143141634fe41838a6d06897d145"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-export-metadata-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-export-metadata",
+      "screenOrState": "book-export-metadata workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_complete.png",
+      "screenshotHash": "14875014e3378dd9ec3194dbb350eb8b05f09eaf0cd1710262e258c04bf40006"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-discussion-message-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-discussion-message",
+      "screenOrState": "book-discussion-message workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_start.png",
+      "screenshotHash": "5cf04447f6d8a27ad3681a0cba759c0f77134aa1bf4024f26a4e92e943607bbc"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-discussion-message-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-discussion-message",
+      "screenOrState": "book-discussion-message workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_action.png",
+      "screenshotHash": "e90705523609677dfe743cbf0492701f919a4923603c0c1dddb70d9e1b2f0680"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-discussion-message-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-discussion-message",
+      "screenOrState": "book-discussion-message workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_complete.png",
+      "screenshotHash": "5e824d3fb1cd38e34332e0e13dad5a1317a0a0d1b3fa47b549ba81d640927deb"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-library-item-start",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-library-item",
+      "screenOrState": "book-library-item workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_start.png",
+      "screenshotHash": "e216d02e58570192eca08e1ba31e96782523d4bd0ed539e56ad52c8dbb1d9c09"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-library-item-action",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-library-item",
+      "screenOrState": "book-library-item workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_action.png",
+      "screenshotHash": "8d7a90e2c4e18d643f3e30dad59e2db4b16ada197c0af456255be2ec9c125a77"
+    },
+    {
+      "rowId": "neighborhood-book-club-book-library-item-complete",
+      "communityName": "Neighborhood Book Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "book-library-item",
+      "screenOrState": "book-library-item workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_complete.png",
+      "screenshotHash": "0dc23471ec00b00b9f6cc176c5294d0c2385cbf154ff0863d605a32464be3b4f"
+    }
+  ]
+}

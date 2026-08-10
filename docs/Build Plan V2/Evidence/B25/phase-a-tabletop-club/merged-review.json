@@ -1,0 +1,736 @@
+{
+  "currentReviewRunId": "phaseA-tabletop-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Tabletop Club, community 2 of the Phase A LLM Vision UX Judge walkthrough. Engine-native community with a real product doc (docs/references/communities/tabletop-club.md) to reconcile against. Not a canonical full-B25 capture. Captured after UXReview.P1 (+fix1/fix2/fix3, identity legibility) landed, so this run doubles as a second, independent live confirmation of that fix on a different community."
+  },
+  "screenRows": [
+    {
+      "rowId": "tc-entry-gate",
+      "communityName": "Tabletop Club",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Entry gate showing the community's seeded demo accounts before sign-in",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/screenshots/entry-gate.png",
+      "screenshotHash": "a61079a79ff2ef2b41eb2e983604f5087437a64162501244676bc5260ab21d0f",
+      "llmVisionScreenReview": {
+        "screenRowId": "tc-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "tc-sign-in-specific-person",
+          "tc-entry-gate"
+        ],
+        "critique": "Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A distinct account-switcher: a titled bar ('Sign in as a specific person') with a back/close control, a header stating the current account ('Currently signed in as Sam K. - tabletop-member-04') instead of the pre-auth 'Welcome to Loom' hero, visible 'Tabletop Club' context, the current row visually pinned or elevated rather than differentiated only by a chip, and a real create-account control.",
+        "visibleObservations": [
+          "No app bar, no title, no back or close affordance anywhere in the viewport",
+          "Hero identical to screen 1: 'Welcome to Loom' / 'Choose an account below or create a new one.'",
+          "'Existing Accounts' heading and orange 'Member (Member)' group header, both identical to the entry gate",
+          "Sam K. row (ID: tabletop-member-04, wrapped onto two lines) carries a bordered chip with a green check reading 'Signed in'",
+          "Jordan W., Priya N., Casey M., Riley B. rows all show the sign-in arrow icon",
+          "'Taylor G.' row clipped at the bottom edge",
+          "No 'Tabletop Club' text anywhere on the screen"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Identity/context legibility: can the user tell who they currently are on this screen?",
+            "visibleEvidence": "Only the green-check 'Signed in' chip on the 'Sam K. / ID: tabletop-member-04' row indicates the current account; the hero says 'Choose an account below or create a new one.'",
+            "why": "Identity is present but inverted in prominence -- it is the smallest, most easily missed element, while the page's headline instructs the user to pick an account as though nobody were signed in. Screen 3 states the same fact in a dedicated header block, so this screen is a measurable regression in identity exposure within one navigation step."
+          },
+          {
+            "question": "State legibility: is it unambiguous what state this screen is in?",
+            "visibleEvidence": "The pre-auth hero 'Welcome to Loom' coexists with a 'Signed in' chip on the Sam K. row.",
+            "why": "Two elements on the same screen assert opposite states. A user cannot tell whether they have been signed out and returned to the gate or are switching accounts from an authenticated session."
+          },
+          {
+            "question": "Actionability: is it clear how to leave this screen without switching accounts?",
+            "visibleEvidence": "There is no app bar, back arrow, Cancel button, or close control visible anywhere in the frame.",
+            "why": "The user arrived here from a dialog that had a 'Cancel' button; this screen offers no equivalent escape, so backing out of an account switch has no visible affordance."
+          },
+          {
+            "question": "Persona-scoping correctness: does the content match an authenticated Member switching accounts?",
+            "visibleEvidence": "The group header still reads 'Member (Member)' and the community name 'Tabletop Club' appears nowhere.",
+            "why": "The screen is the generic gate rather than a community-scoped switcher; it neither confirms which community's roster is being listed nor cleans up the duplicated role label inherited from the entry gate."
+          }
+        ],
+        "screenshotHash": "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+      "productUxCritique": "LLM vision critique: Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A distinct account-switcher: a titled bar ('Sign in as a specific person') with a back/close control, a header stating the current account ('Currently signed in as Sam K. - tabletop-member-04') instead of the pre-auth 'Welcome to Loom' hero, visible 'Tabletop Club' context, the current row visually pinned or elevated rather than differentiated only by a chip, and a real create-account control."
+    },
+    {
+      "rowId": "tc-home-role-summary",
+      "communityName": "Tabletop Club",
+      "persona": "tabletop-member (Sam K.)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing in as Sam K. (Member)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/screenshots/home-role-summary.png",
+      "screenshotHash": "9d24ff7954fab81660c70904cb2556394422264f862464b6c9a8a0de66f16b86",
+      "llmVisionScreenReview": {
+        "screenRowId": "tc-home-role-summary",
+        "affectedScreenRowIds": [
+          "tc-home-role-summary"
+        ],
+        "critique": "Identity and role are handled well here: inside the intro card the line 'Signed in as Sam K.' sits directly above the bold 'Member' heading and the role description 'Member - RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues.', with a '2 roles' chip on the right hinting the account can switch. The community is named twice (orange app bar 'Tabletop Club' plus the card title) and carries its real description. Everything below that card, however, is not production copy. 'Pinned and unassigned community surfaces.' under the 'Home' heading is internal information-architecture jargon -- 'unassigned surfaces' is a builder concept, not something a board-game club member understands. 'Round: initial' in the teal card beneath it is a raw state token, not a sentence. The top strip reads 'No sponsored message right now.', an empty state that exposes an ad slot to the user for no benefit and, at the very top of the content area, sets the tone that this page has nothing in it. Layout is also broken at the fold: the teal 'Propose a game' FAB overlaps and obscures the right half of the 'Pinned and unassigned community surfaces.' line, and the bottom navigation clips the fourth item to 'Giving' with its label running off the right edge, so the tab bar is visibly cut rather than scrolled. The role description text is also duplicated -- 'Member' as heading and 'Member - RSVPs to...' as body -- repeating the word immediately.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A Home tab where identity ('Signed in as Sam K.', Member) stays as-is, but the body shows real club content -- upcoming game nights, dues status, loaner-game holds -- with human section subtitles instead of 'unassigned community surfaces', no raw 'Round: initial' token, an empty ad slot hidden rather than announced, a FAB that does not sit on top of body text, and a bottom nav whose last tab is fully visible.",
+        "visibleObservations": [
+          "Orange app bar: back arrow, 'Tabletop Club', bell icon, chat icon, people icon",
+          "'No sponsored message right now.' strip with megaphone icon",
+          "Intro card: 'Tabletop Club' + 'Board game nights, tournaments, loaner games, and dues for local tabletop fans.' with a dismiss X",
+          "'Signed in as Sam K.' above bold 'Member' and the full role description, with a '2 roles' chip",
+          "'Home' section titled 'Pinned and unassigned community surfaces.'",
+          "Teal card reading 'Round: initial'",
+          "Teal FAB 'Propose a game' overlapping the Home section text",
+          "Bottom nav: Home (selected, filled orange), Calendar, Marketplace, 'Giving' clipped at the right edge"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Copy accuracy: does the displayed text describe actual club data in product language?",
+            "visibleEvidence": "'Pinned and unassigned community surfaces.' and 'Round: initial' are both rendered as visible body copy.",
+            "why": "Neither string describes anything a Tabletop Club member would recognize. 'Surfaces' is the app's internal noun for content slots and 'initial' is an enum value; both are debug-grade text sitting in the primary content column of the landing tab."
+          },
+          {
+            "question": "State legibility: is the current state of this page unambiguous?",
+            "visibleEvidence": "The topmost content is 'No sponsored message right now.' and the only content card visible is 'Round: initial'.",
+            "why": "The page is neither clearly populated nor clearly empty. It announces one absent thing, then shows a card whose entire content is a state token, leaving the user unable to tell whether the club has no activity or the page failed to load its real content."
+          },
+          {
+            "question": "Actionability: are available actions clear and unobstructed?",
+            "visibleEvidence": "The teal 'Propose a game' FAB is drawn over the right portion of the 'Pinned and unassigned community surfaces.' line.",
+            "why": "The action itself is clear and correctly scoped to a Member (proposing purchases is in the listed Member permissions), but it occludes body text rather than floating clear of it, which is a visible layout defect in the captured state."
+          },
+          {
+            "question": "Identity/context legibility: can the user tell who they are and what role they are acting as?",
+            "visibleEvidence": "'Signed in as Sam K.' immediately above bold 'Member' plus a '2 roles' chip.",
+            "why": "This is the correct pattern -- real display name, current acting role, and a hint that other roles exist. The caveat is that it lives inside a dismissible card with an X, so once dismissed the identity line may vanish from Home entirely."
+          }
+        ],
+        "screenshotHash": "9d24ff7954fab81660c70904cb2556394422264f862464b6c9a8a0de66f16b86",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Identity and role are handled well here: inside the intro card the line 'Signed in as Sam K.' sits directly above the bold 'Member' heading and the role description 'Member - RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues.', with a '2 roles' chip on the right hinting the account can switch. The community is named twice (orange app bar 'Tabletop Club' plus the card title) and carries its real description. Everything below that card, however, is not production copy. 'Pinned and unassigned community surfaces.' under the 'Home' heading is internal information-architecture jargon -- 'unassigned surfaces' is a builder concept, not something a board-game club member understands. 'Round: initial' in the teal card beneath it is a raw state token, not a sentence. The top strip reads 'No sponsored message right now.', an empty state that exposes an ad slot to the user for no benefit and, at the very top of the content area, sets the tone that this page has nothing in it. Layout is also broken at the fold: the teal 'Propose a game' FAB overlaps and obscures the right half of the 'Pinned and unassigned community surfaces.' line, and the bottom navigation clips the fourth item to 'Giving' with its label running off the right edge, so the tab bar is visibly cut rather than scrolled. The role description text is also duplicated -- 'Member' as heading and 'Member - RSVPs to...' as body -- repeating the word immediately.",
+      "productUxCritique": "LLM vision critique: Identity and role are handled well here: inside the intro card the line 'Signed in as Sam K.' sits directly above the bold 'Member' heading and the role description 'Member - RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues.', with a '2 roles' chip on the right hinting the account can switch. The community is named twice (orange app bar 'Tabletop Club' plus the card title) and carries its real description. Everything below that card, however, is not production copy. 'Pinned and unassigned community surfaces.' under the 'Home' heading is internal information-architecture jargon -- 'unassigned surfaces' is a builder concept, not something a board-game club member understands. 'Round: initial' in the teal card beneath it is a raw state token, not a sentence. The top strip reads 'No sponsored message right now.', an empty state that exposes an ad slot to the user for no benefit and, at the very top of the content area, sets the tone that this page has nothing in it. Layout is also broken at the fold: the teal 'Propose a game' FAB overlaps and obscures the right half of the 'Pinned and unassigned community surfaces.' line, and the bottom navigation clips the fourth item to 'Giving' with its label running off the right edge, so the tab bar is visibly cut rather than scrolled. The role description text is also duplicated -- 'Member' as heading and 'Member - RSVPs to...' as body -- repeating the word immediately.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A Home tab where identity ('Signed in as Sam K.', Member) stays as-is, but the body shows real club content -- upcoming game nights, dues status, loaner-game holds -- with human section subtitles instead of 'unassigned community surfaces', no raw 'Round: initial' token, an empty ad slot hidden rather than announced, a FAB that does not sit on top of body text, and a bottom nav whose last tab is fully visible."
+    },
+    {
+      "rowId": "tc-persona-picker-dialog",
+      "communityName": "Tabletop Club",
+      "persona": "tabletop-member (Sam K.)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/screenshots/persona-picker-dialog.png",
+      "screenshotHash": "8edb3428c48d4dbd4af84b2ba66a01b9d84d729432f7391851b4d0acf830f7b8",
+      "llmVisionScreenReview": {
+        "screenRowId": "tc-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "tc-persona-picker-dialog"
+        ],
+        "critique": "This is the strongest screen of the four for identity: below the title 'Account role and permissions' and the explanatory 'Your memberships determine which community actions are available. Choose the role you want to use in this community.', it shows a grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04' -- the only place in the flow that pairs the display name with the account identifier. Role state is also unambiguous: 'Member' is the filled orange radio on a tinted pink row, 'Organizer' is an empty orange radio on plain background, and both carry full descriptions ('Organizer - Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues.'). The defect is layout: the 'Sign in as a specific person' row below the divider is sheared mid-word -- 'person' is rendered as a half-height sliver of glyphs under 'Sign in as a specific' -- and it sits under the fixed 'Cancel' footer with no visible scroll indicator. A destructive-ish action (switching accounts entirely) is presented in a visually broken, half-legible state. Secondary issues: the role descriptions each repeat the role name as their first word ('Member - Member - ...' effectively, since the heading already says 'Member'), and the dialog offers 'Organizer' as a selectable radio without any visible indication of whether Sam K. actually holds that membership -- if the account is Member-only, an enabled Organizer radio is a persona-scoping problem, and if the account does hold both, nothing on screen confirms it beyond the Home tab's separate '2 roles' chip.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A dialog that keeps the 'Signed in as Sam K. / ID: tabletop-member-04' block, sizes its content so 'Sign in as a specific person' renders fully above the Cancel footer, drops the redundant role-name prefix from each description, and visibly distinguishes roles this account holds from roles it does not (disabled state plus a reason) rather than showing all as equally selectable.",
+        "visibleObservations": [
+          "Title 'Account role and permissions' over a scrimmed Home screen",
+          "Body: 'Your memberships determine which community actions are available. Choose the role you want to use in this community.'",
+          "Grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04'",
+          "'Organizer' with unselected orange radio and its full description",
+          "'Member' with filled orange radio on a pink-tinted selected row and its full description",
+          "'Sign in as a specific person' clipped mid-word below a divider",
+          "Orange 'Cancel' text button bottom-right"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Identity/context legibility: does this dialog show who the user actually is, not just their role?",
+            "visibleEvidence": "'Signed in as Sam K.' with 'ID: tabletop-member-04' beneath it and an 'S' monogram avatar.",
+            "why": "Name, stable account ID, and avatar together make identity unmistakable, and the selected 'Member' radio makes the acting role equally clear. This is the reference implementation the other screens should match."
+          },
+          {
+            "question": "Actionability: are the available actions clear and fully readable?",
+            "visibleEvidence": "'Sign in as a specific person' is rendered with the word 'person' cut horizontally in half at the bottom edge of the scroll area.",
+            "why": "A user cannot confidently tap a control whose label is visually truncated mid-word, and there is no scrollbar or chevron indicating more content exists -- the item reads as a rendering bug rather than an affordance."
+          },
+          {
+            "question": "Persona-scoping correctness: does the choice set match what this persona should see?",
+            "visibleEvidence": "'Organizer' is presented with a live, enabled orange radio identical in treatment to the selected 'Member' radio.",
+            "why": "Nothing on screen states whether Sam K. holds an Organizer membership. If not, the dialog is offering a role the account cannot use with no disabled styling and no explanation; the rubric requires that hidden or unavailable options be explained, and here neither the availability nor the reason is visible."
+          }
+        ],
+        "screenshotHash": "8edb3428c48d4dbd4af84b2ba66a01b9d84d729432f7391851b4d0acf830f7b8",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: This is the strongest screen of the four for identity: below the title 'Account role and permissions' and the explanatory 'Your memberships determine which community actions are available. Choose the role you want to use in this community.', it shows a grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04' -- the only place in the flow that pairs the display name with the account identifier. Role state is also unambiguous: 'Member' is the filled orange radio on a tinted pink row, 'Organizer' is an empty orange radio on plain background, and both carry full descriptions ('Organizer - Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues.'). The defect is layout: the 'Sign in as a specific person' row below the divider is sheared mid-word -- 'person' is rendered as a half-height sliver of glyphs under 'Sign in as a specific' -- and it sits under the fixed 'Cancel' footer with no visible scroll indicator. A destructive-ish action (switching accounts entirely) is presented in a visually broken, half-legible state. Secondary issues: the role descriptions each repeat the role name as their first word ('Member - Member - ...' effectively, since the heading already says 'Member'), and the dialog offers 'Organizer' as a selectable radio without any visible indication of whether Sam K. actually holds that membership -- if the account is Member-only, an enabled Organizer radio is a persona-scoping problem, and if the account does hold both, nothing on screen confirms it beyond the Home tab's separate '2 roles' chip.",
+      "productUxCritique": "LLM vision critique: This is the strongest screen of the four for identity: below the title 'Account role and permissions' and the explanatory 'Your memberships determine which community actions are available. Choose the role you want to use in this community.', it shows a grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04' -- the only place in the flow that pairs the display name with the account identifier. Role state is also unambiguous: 'Member' is the filled orange radio on a tinted pink row, 'Organizer' is an empty orange radio on plain background, and both carry full descriptions ('Organizer - Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues.'). The defect is layout: the 'Sign in as a specific person' row below the divider is sheared mid-word -- 'person' is rendered as a half-height sliver of glyphs under 'Sign in as a specific' -- and it sits under the fixed 'Cancel' footer with no visible scroll indicator. A destructive-ish action (switching accounts entirely) is presented in a visually broken, half-legible state. Secondary issues: the role descriptions each repeat the role name as their first word ('Member - Member - ...' effectively, since the heading already says 'Member'), and the dialog offers 'Organizer' as a selectable radio without any visible indication of whether Sam K. actually holds that membership -- if the account is Member-only, an enabled Organizer radio is a persona-scoping problem, and if the account does hold both, nothing on screen confirms it beyond the Home tab's separate '2 roles' chip.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A dialog that keeps the 'Signed in as Sam K. / ID: tabletop-member-04' block, sizes its content so 'Sign in as a specific person' renders fully above the Cancel footer, drops the redundant role-name prefix from each description, and visibly distinguishes roles this account holds from roles it does not (disabled state plus a reason) rather than showing all as equally selectable."
+    },
+    {
+      "rowId": "tc-sign-in-specific-person",
+      "communityName": "Tabletop Club",
+      "persona": "tabletop-member (Sam K.)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/screenshots/sign-in-specific-person.png",
+      "screenshotHash": "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a",
+      "llmVisionScreenReview": {
+        "screenRowId": "tc-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "tc-sign-in-specific-person",
+          "tc-entry-gate"
+        ],
+        "critique": "Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A distinct account-switcher: a titled bar ('Sign in as a specific person') with a back/close control, a header stating the current account ('Currently signed in as Sam K. - tabletop-member-04') instead of the pre-auth 'Welcome to Loom' hero, visible 'Tabletop Club' context, the current row visually pinned or elevated rather than differentiated only by a chip, and a real create-account control.",
+        "visibleObservations": [
+          "No app bar, no title, no back or close affordance anywhere in the viewport",
+          "Hero identical to screen 1: 'Welcome to Loom' / 'Choose an account below or create a new one.'",
+          "'Existing Accounts' heading and orange 'Member (Member)' group header, both identical to the entry gate",
+          "Sam K. row (ID: tabletop-member-04, wrapped onto two lines) carries a bordered chip with a green check reading 'Signed in'",
+          "Jordan W., Priya N., Casey M., Riley B. rows all show the sign-in arrow icon",
+          "'Taylor G.' row clipped at the bottom edge",
+          "No 'Tabletop Club' text anywhere on the screen"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Identity/context legibility: can the user tell who they currently are on this screen?",
+            "visibleEvidence": "Only the green-check 'Signed in' chip on the 'Sam K. / ID: tabletop-member-04' row indicates the current account; the hero says 'Choose an account below or create a new one.'",
+            "why": "Identity is present but inverted in prominence -- it is the smallest, most easily missed element, while the page's headline instructs the user to pick an account as though nobody were signed in. Screen 3 states the same fact in a dedicated header block, so this screen is a measurable regression in identity exposure within one navigation step."
+          },
+          {
+            "question": "State legibility: is it unambiguous what state this screen is in?",
+            "visibleEvidence": "The pre-auth hero 'Welcome to Loom' coexists with a 'Signed in' chip on the Sam K. row.",
+            "why": "Two elements on the same screen assert opposite states. A user cannot tell whether they have been signed out and returned to the gate or are switching accounts from an authenticated session."
+          },
+          {
+            "question": "Actionability: is it clear how to leave this screen without switching accounts?",
+            "visibleEvidence": "There is no app bar, back arrow, Cancel button, or close control visible anywhere in the frame.",
+            "why": "The user arrived here from a dialog that had a 'Cancel' button; this screen offers no equivalent escape, so backing out of an account switch has no visible affordance."
+          },
+          {
+            "question": "Persona-scoping correctness: does the content match an authenticated Member switching accounts?",
+            "visibleEvidence": "The group header still reads 'Member (Member)' and the community name 'Tabletop Club' appears nowhere.",
+            "why": "The screen is the generic gate rather than a community-scoped switcher; it neither confirms which community's roster is being listed nor cleans up the duplicated role label inherited from the entry gate."
+          }
+        ],
+        "screenshotHash": "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+      "productUxCritique": "LLM vision critique: Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A distinct account-switcher: a titled bar ('Sign in as a specific person') with a back/close control, a header stating the current account ('Currently signed in as Sam K. - tabletop-member-04') instead of the pre-auth 'Welcome to Loom' hero, visible 'Tabletop Club' context, the current row visually pinned or elevated rather than differentiated only by a chip, and a real create-account control."
+    }
+  ],
+  "status": "llm-vision-review-fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "generatedAt": "2026-08-09T09:09:50.870415Z",
+  "llmVisionReview": {
+    "schemaVersion": 1,
+    "status": "fail",
+    "freshReview": true,
+    "freshnessProblems": [],
+    "currentReviewRunId": "phaseA-tabletop-club-1",
+    "expectedReviewRunId": "phaseA-tabletop-club-1",
+    "sourceReviewRunId": "",
+    "carriedForward": false,
+    "reusedPriorReview": false,
+    "appCommitSha": "559f3a1b",
+    "reviewedScreenRowIds": [
+      "tc-entry-gate",
+      "tc-home-role-summary",
+      "tc-persona-picker-dialog",
+      "tc-sign-in-specific-person"
+    ],
+    "reviewedScreenshotHashes": [
+      "a61079a79ff2ef2b41eb2e983604f5087437a64162501244676bc5260ab21d0f",
+      "9d24ff7954fab81660c70904cb2556394422264f862464b6c9a8a0de66f16b86",
+      "8edb3428c48d4dbd4af84b2ba66a01b9d84d729432f7391851b4d0acf830f7b8",
+      "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a"
+    ],
+    "reviewerType": "llm-vision-headless-cli",
+    "sourcePath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/llm-vision-ux-review-phaseA-tabletop-club-1.json",
+    "importedAt": "2026-08-09T09:09:50.871439Z",
+    "summary": "Identity legibility is genuinely solved across this flow: Home shows 'Signed in as Sam K.' above the 'Member' role, the role dialog repeats 'Signed in as Sam K.' with 'ID: tabletop-member-04' and an 'S' avatar, and the account list marks the Sam K. row with a green-check 'Signed in' chip instead of the sign-in arrow the other rows carry. What fails is copy and layout polish: Home renders the developer-facing strings 'Round: initial' and 'Pinned and unassigned community surfaces.', the role dialog clips its 'Sign in as a specific person' action mid-word ('person' is cut in half at the divider), and the account list (screen 4) is the unmodified entry-gate screen — same 'Welcome to Loom' / 'Choose an account below or create a new one.' hero, no app bar, no back affordance, and no indication that the user is already inside Tabletop Club. Screen 1's group header also reads 'Member (Member)', a duplicated label that looks like an unresolved template. None of these break identity, but several are user-visible non-production copy and one is a clipped, partially unreachable control.",
+    "holisticQuestionAnswers": [
+      {
+        "questionId": "identity-legibility",
+        "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+        "answer": "Yes. On all three post-sign-in screens the account's actual display name is on screen, not just the persona type. Home surfaces 'Signed in as Sam K.' directly above the bold 'Member' role line, so name and acting role are legible together. The role dialog goes further and pairs the name with the account identifier ('ID: tabletop-member-04') and an 'S' monogram avatar, which is the strongest identity disclosure of the four screens. The account list resolves identity by state rather than by header: the Sam K. row uniquely shows a green-check 'Signed in' chip where Jordan W., Priya N., Casey M. and Riley B. show a sign-in arrow. That last one is the weakest form -- it requires scanning rows to find the marked one, and the screen's own hero still says 'Choose an account below or create a new one', which implies nobody is signed in yet. So identity is never absent, but its prominence degrades from dialog (explicit, with ID) to Home (explicit, no ID) to account list (inferred from a per-row chip).",
+        "score": 84,
+        "blocksPass": false,
+        "visibleEvidence": [
+          "Screen 2 (tc-home-role-summary) reads 'Signed in as Sam K.' on the line directly above the bold role heading 'Member'.",
+          "Screen 3 (tc-persona-picker-dialog) shows an 'S' avatar with 'Signed in as Sam K.' and the second line 'ID: tabletop-member-04'.",
+          "Screen 4 (tc-sign-in-specific-person) marks only the 'Sam K. / ID: tabletop-member-04' row with a green-check 'Signed in' chip; every other row shows a sign-in arrow icon instead.",
+          "Screen 4 still shows the pre-auth hero 'Welcome to Loom' and 'Choose an account below or create a new one.', which contradicts the 'Signed in' chip further down the same screen."
+        ],
+        "affectedScreenRowIds": [
+          "tc-home-role-summary",
+          "tc-persona-picker-dialog",
+          "tc-sign-in-specific-person"
+        ],
+        "scope": "holistic",
+        "verdict": "pass",
+        "evidenceUsed": [
+          "tc-home-role-summary",
+          "tc-persona-picker-dialog",
+          "tc-sign-in-specific-person"
+        ]
+      }
+    ],
+    "screenReviews": [
+      {
+        "screenRowId": "tc-entry-gate",
+        "affectedScreenRowIds": [
+          "tc-entry-gate"
+        ],
+        "critique": "The gate is legible and correctly pre-auth: the orange 'Welcome to Loom' hero with 'Choose an account below or create a new one.' sits above an 'Existing Accounts' list of four named rows (Jordan W. / tabletop-member-03, Sam K. / tabletop-member-04, Priya N. / tabletop-member-05, Casey M. / tabletop-member-06), each with a teal monogram avatar and a right-aligned sign-in arrow, and a pinned footer that names the destination community: 'Choose an active account or create one to continue to Tabletop Club.' The defect is the group header, which renders as 'Member (Member)' in orange -- the role name duplicated in parentheses, which reads like an unresolved 'name (roleLabel)' template rather than product copy, and tells the user nothing the four identical rows below don't. Nothing on this screen names the community above the fold either; 'Tabletop Club' appears only in the footer sentence, and the club's description ('Board game nights, tournaments, loaner games, and dues...') is absent entirely, so the hero is fully generic. The list is also clipped mid-row on 'Casey M.' with no visible scroll affordance, and the promised 'create a new one' action is nowhere on screen -- there is no visible create/add-account control, only the 'Check membership status' refresh button, so a stated affordance has no visible target.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A community-branded gate: 'Tabletop Club' and its description in the hero rather than only in the footer, a non-duplicated group header (e.g. 'Members' or 'Organizers'), a visible 'Create a new account' control matching the hero copy's promise, and a list whose scrollability is evident rather than a row sheared in half.",
+        "visibleObservations": [
+          "Orange hero card: 'Welcome to Loom' with two-person icon and 'Choose an account below or create a new one.'",
+          "Section heading 'Existing Accounts' in bold black",
+          "Orange group header text 'Member (Member)'",
+          "Rows: Jordan W. (tabletop-member-03), Sam K. (tabletop-member-04), Priya N. (tabletop-member-05), Casey M. (tabletop-member-06), each with teal circular monogram and sign-in arrow",
+          "Casey M. row is cut off at the bottom of the scroll region",
+          "Pinned footer: 'Choose an active account or create one to continue to Tabletop Club.' plus an outlined 'Check membership status' button with a refresh icon"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Copy accuracy: does the displayed text sound like real product copy describing actual data?",
+            "visibleEvidence": "The group header literally reads 'Member (Member)' -- the same word twice, once parenthesized.",
+            "why": "A human writing this header would never repeat the role in parentheses; the shape 'X (Y)' with X == Y is the signature of a format string where two different fields happened to resolve to the same value. It is placeholder-grade text on the very first screen a user sees."
+          },
+          {
+            "question": "Actionability: are available actions clear, and is it clear why any are missing?",
+            "visibleEvidence": "The hero says 'Choose an account below or create a new one.' but the only non-row control on screen is 'Check membership status'.",
+            "why": "The copy advertises an account-creation path that has no visible affordance in the viewport. Either the control is below the clipped fold with no cue that scrolling reveals it, or it is absent; from pixels alone the user cannot act on half the instruction they were just given."
+          },
+          {
+            "question": "Identity/context legibility: is it clear which community this gate belongs to?",
+            "visibleEvidence": "'Tabletop Club' appears only in the small footer line 'continue to Tabletop Club.'; the hero says 'Welcome to Loom'.",
+            "why": "Community context is present but demoted to the least prominent text on the screen, while the largest text is product-level branding. The seeded club description is not shown at all."
+          }
+        ],
+        "screenshotHash": "a61079a79ff2ef2b41eb2e983604f5087437a64162501244676bc5260ab21d0f",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "tc-home-role-summary",
+        "affectedScreenRowIds": [
+          "tc-home-role-summary"
+        ],
+        "critique": "Identity and role are handled well here: inside the intro card the line 'Signed in as Sam K.' sits directly above the bold 'Member' heading and the role description 'Member - RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues.', with a '2 roles' chip on the right hinting the account can switch. The community is named twice (orange app bar 'Tabletop Club' plus the card title) and carries its real description. Everything below that card, however, is not production copy. 'Pinned and unassigned community surfaces.' under the 'Home' heading is internal information-architecture jargon -- 'unassigned surfaces' is a builder concept, not something a board-game club member understands. 'Round: initial' in the teal card beneath it is a raw state token, not a sentence. The top strip reads 'No sponsored message right now.', an empty state that exposes an ad slot to the user for no benefit and, at the very top of the content area, sets the tone that this page has nothing in it. Layout is also broken at the fold: the teal 'Propose a game' FAB overlaps and obscures the right half of the 'Pinned and unassigned community surfaces.' line, and the bottom navigation clips the fourth item to 'Giving' with its label running off the right edge, so the tab bar is visibly cut rather than scrolled. The role description text is also duplicated -- 'Member' as heading and 'Member - RSVPs to...' as body -- repeating the word immediately.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A Home tab where identity ('Signed in as Sam K.', Member) stays as-is, but the body shows real club content -- upcoming game nights, dues status, loaner-game holds -- with human section subtitles instead of 'unassigned community surfaces', no raw 'Round: initial' token, an empty ad slot hidden rather than announced, a FAB that does not sit on top of body text, and a bottom nav whose last tab is fully visible.",
+        "visibleObservations": [
+          "Orange app bar: back arrow, 'Tabletop Club', bell icon, chat icon, people icon",
+          "'No sponsored message right now.' strip with megaphone icon",
+          "Intro card: 'Tabletop Club' + 'Board game nights, tournaments, loaner games, and dues for local tabletop fans.' with a dismiss X",
+          "'Signed in as Sam K.' above bold 'Member' and the full role description, with a '2 roles' chip",
+          "'Home' section titled 'Pinned and unassigned community surfaces.'",
+          "Teal card reading 'Round: initial'",
+          "Teal FAB 'Propose a game' overlapping the Home section text",
+          "Bottom nav: Home (selected, filled orange), Calendar, Marketplace, 'Giving' clipped at the right edge"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Copy accuracy: does the displayed text describe actual club data in product language?",
+            "visibleEvidence": "'Pinned and unassigned community surfaces.' and 'Round: initial' are both rendered as visible body copy.",
+            "why": "Neither string describes anything a Tabletop Club member would recognize. 'Surfaces' is the app's internal noun for content slots and 'initial' is an enum value; both are debug-grade text sitting in the primary content column of the landing tab."
+          },
+          {
+            "question": "State legibility: is the current state of this page unambiguous?",
+            "visibleEvidence": "The topmost content is 'No sponsored message right now.' and the only content card visible is 'Round: initial'.",
+            "why": "The page is neither clearly populated nor clearly empty. It announces one absent thing, then shows a card whose entire content is a state token, leaving the user unable to tell whether the club has no activity or the page failed to load its real content."
+          },
+          {
+            "question": "Actionability: are available actions clear and unobstructed?",
+            "visibleEvidence": "The teal 'Propose a game' FAB is drawn over the right portion of the 'Pinned and unassigned community surfaces.' line.",
+            "why": "The action itself is clear and correctly scoped to a Member (proposing purchases is in the listed Member permissions), but it occludes body text rather than floating clear of it, which is a visible layout defect in the captured state."
+          },
+          {
+            "question": "Identity/context legibility: can the user tell who they are and what role they are acting as?",
+            "visibleEvidence": "'Signed in as Sam K.' immediately above bold 'Member' plus a '2 roles' chip.",
+            "why": "This is the correct pattern -- real display name, current acting role, and a hint that other roles exist. The caveat is that it lives inside a dismissible card with an X, so once dismissed the identity line may vanish from Home entirely."
+          }
+        ],
+        "screenshotHash": "9d24ff7954fab81660c70904cb2556394422264f862464b6c9a8a0de66f16b86",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "tc-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "tc-persona-picker-dialog"
+        ],
+        "critique": "This is the strongest screen of the four for identity: below the title 'Account role and permissions' and the explanatory 'Your memberships determine which community actions are available. Choose the role you want to use in this community.', it shows a grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04' -- the only place in the flow that pairs the display name with the account identifier. Role state is also unambiguous: 'Member' is the filled orange radio on a tinted pink row, 'Organizer' is an empty orange radio on plain background, and both carry full descriptions ('Organizer - Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues.'). The defect is layout: the 'Sign in as a specific person' row below the divider is sheared mid-word -- 'person' is rendered as a half-height sliver of glyphs under 'Sign in as a specific' -- and it sits under the fixed 'Cancel' footer with no visible scroll indicator. A destructive-ish action (switching accounts entirely) is presented in a visually broken, half-legible state. Secondary issues: the role descriptions each repeat the role name as their first word ('Member - Member - ...' effectively, since the heading already says 'Member'), and the dialog offers 'Organizer' as a selectable radio without any visible indication of whether Sam K. actually holds that membership -- if the account is Member-only, an enabled Organizer radio is a persona-scoping problem, and if the account does hold both, nothing on screen confirms it beyond the Home tab's separate '2 roles' chip.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A dialog that keeps the 'Signed in as Sam K. / ID: tabletop-member-04' block, sizes its content so 'Sign in as a specific person' renders fully above the Cancel footer, drops the redundant role-name prefix from each description, and visibly distinguishes roles this account holds from roles it does not (disabled state plus a reason) rather than showing all as equally selectable.",
+        "visibleObservations": [
+          "Title 'Account role and permissions' over a scrimmed Home screen",
+          "Body: 'Your memberships determine which community actions are available. Choose the role you want to use in this community.'",
+          "Grey 'S' avatar with 'Signed in as Sam K.' and 'ID: tabletop-member-04'",
+          "'Organizer' with unselected orange radio and its full description",
+          "'Member' with filled orange radio on a pink-tinted selected row and its full description",
+          "'Sign in as a specific person' clipped mid-word below a divider",
+          "Orange 'Cancel' text button bottom-right"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Identity/context legibility: does this dialog show who the user actually is, not just their role?",
+            "visibleEvidence": "'Signed in as Sam K.' with 'ID: tabletop-member-04' beneath it and an 'S' monogram avatar.",
+            "why": "Name, stable account ID, and avatar together make identity unmistakable, and the selected 'Member' radio makes the acting role equally clear. This is the reference implementation the other screens should match."
+          },
+          {
+            "question": "Actionability: are the available actions clear and fully readable?",
+            "visibleEvidence": "'Sign in as a specific person' is rendered with the word 'person' cut horizontally in half at the bottom edge of the scroll area.",
+            "why": "A user cannot confidently tap a control whose label is visually truncated mid-word, and there is no scrollbar or chevron indicating more content exists -- the item reads as a rendering bug rather than an affordance."
+          },
+          {
+            "question": "Persona-scoping correctness: does the choice set match what this persona should see?",
+            "visibleEvidence": "'Organizer' is presented with a live, enabled orange radio identical in treatment to the selected 'Member' radio.",
+            "why": "Nothing on screen states whether Sam K. holds an Organizer membership. If not, the dialog is offering a role the account cannot use with no disabled styling and no explanation; the rubric requires that hidden or unavailable options be explained, and here neither the availability nor the reason is visible."
+          }
+        ],
+        "screenshotHash": "8edb3428c48d4dbd4af84b2ba66a01b9d84d729432f7391851b4d0acf830f7b8",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "tc-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "tc-sign-in-specific-person",
+          "tc-entry-gate"
+        ],
+        "critique": "Reached from inside the role dialog while already signed in, this screen is pixel-for-pixel the pre-authentication entry gate: identical 'Welcome to Loom' hero, identical 'Choose an account below or create a new one.' subtitle, identical 'Existing Accounts' heading and identical 'Member (Member)' group header. The one genuine difference -- and it is a real one -- is that the 'Sam K. / ID: tabletop-member-04' row now shows a bordered chip with a green filled check reading 'Signed in' where every other row (Jordan W., Priya N., Casey M., Riley B., Taylor G.) shows the plain sign-in arrow. So current identity is discoverable, but only by scanning six rows for the odd one out, while the largest text on the page actively contradicts it by telling an already-signed-in user to choose an account. The screen also drops all chrome: there is no app bar, no title naming this as 'Sign in as a specific person', no back arrow or Cancel, and no 'Tabletop Club' context anywhere in the viewport -- the entry gate at least had the footer line 'continue to Tabletop Club.', which is absent here. Compared with screen 3, which states 'Signed in as Sam K.' with the account ID in a dedicated header block, this screen exposes strictly weaker identity framing despite being the account-switching surface where being sure who you currently are matters most. The list is again clipped mid-row on 'Taylor G.' with no scroll cue, and there is still no visible 'create a new one' control despite the hero promising it.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "A distinct account-switcher: a titled bar ('Sign in as a specific person') with a back/close control, a header stating the current account ('Currently signed in as Sam K. - tabletop-member-04') instead of the pre-auth 'Welcome to Loom' hero, visible 'Tabletop Club' context, the current row visually pinned or elevated rather than differentiated only by a chip, and a real create-account control.",
+        "visibleObservations": [
+          "No app bar, no title, no back or close affordance anywhere in the viewport",
+          "Hero identical to screen 1: 'Welcome to Loom' / 'Choose an account below or create a new one.'",
+          "'Existing Accounts' heading and orange 'Member (Member)' group header, both identical to the entry gate",
+          "Sam K. row (ID: tabletop-member-04, wrapped onto two lines) carries a bordered chip with a green check reading 'Signed in'",
+          "Jordan W., Priya N., Casey M., Riley B. rows all show the sign-in arrow icon",
+          "'Taylor G.' row clipped at the bottom edge",
+          "No 'Tabletop Club' text anywhere on the screen"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Identity/context legibility: can the user tell who they currently are on this screen?",
+            "visibleEvidence": "Only the green-check 'Signed in' chip on the 'Sam K. / ID: tabletop-member-04' row indicates the current account; the hero says 'Choose an account below or create a new one.'",
+            "why": "Identity is present but inverted in prominence -- it is the smallest, most easily missed element, while the page's headline instructs the user to pick an account as though nobody were signed in. Screen 3 states the same fact in a dedicated header block, so this screen is a measurable regression in identity exposure within one navigation step."
+          },
+          {
+            "question": "State legibility: is it unambiguous what state this screen is in?",
+            "visibleEvidence": "The pre-auth hero 'Welcome to Loom' coexists with a 'Signed in' chip on the Sam K. row.",
+            "why": "Two elements on the same screen assert opposite states. A user cannot tell whether they have been signed out and returned to the gate or are switching accounts from an authenticated session."
+          },
+          {
+            "question": "Actionability: is it clear how to leave this screen without switching accounts?",
+            "visibleEvidence": "There is no app bar, back arrow, Cancel button, or close control visible anywhere in the frame.",
+            "why": "The user arrived here from a dialog that had a 'Cancel' button; this screen offers no equivalent escape, so backing out of an account switch has no visible affordance."
+          },
+          {
+            "question": "Persona-scoping correctness: does the content match an authenticated Member switching accounts?",
+            "visibleEvidence": "The group header still reads 'Member (Member)' and the community name 'Tabletop Club' appears nowhere.",
+            "why": "The screen is the generic gate rather than a community-scoped switcher; it neither confirms which community's roster is being listed nor cleans up the duplicated role label inherited from the entry gate."
+          }
+        ],
+        "screenshotHash": "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a",
+        "blocksPass": true
+      }
+    ],
+    "findings": [
+      {
+        "findingId": "account-switcher-reuses-preauth-gate",
+        "title": "'Sign in as a specific person' renders the pre-auth entry gate verbatim, with no chrome and contradictory copy",
+        "description": "Screen 4 is visually identical to screen 1 -- same 'Welcome to Loom' hero, same 'Choose an account below or create a new one.' subtitle, same 'Existing Accounts' and 'Member (Member)' headers -- despite being reached from inside the role dialog while signed in as Sam K. It has no app bar, no screen title, no back or Cancel control, and no 'Tabletop Club' context (the entry gate at least had 'continue to Tabletop Club.' in its footer; that line is gone here). The only signal of the current session is a small green-check 'Signed in' chip on the Sam K. row, which directly contradicts the headline instruction to choose an account. Screen 3, one step earlier, states 'Signed in as Sam K.' with 'ID: tabletop-member-04' in a dedicated header block, so identity exposure regresses on the very surface where account confusion is most costly.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-sign-in-specific-person",
+          "tc-entry-gate",
+          "tc-persona-picker-dialog"
+        ],
+        "requiredFix": "Give the switcher its own surface: titled app bar 'Sign in as a specific person' with a back/close control, replace the 'Welcome to Loom' pre-auth hero with a 'Currently signed in as Sam K. - tabletop-member-04' header, show the community name, and visually elevate or pin the current account row rather than relying solely on a chip.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "home-developer-copy",
+        "title": "Home tab shows internal jargon and a raw state token as body copy",
+        "description": "The Home tab renders 'Pinned and unassigned community surfaces.' as the subtitle of its 'Home' section and a card whose entire visible content is 'Round: initial'. 'Surfaces' is the app's internal noun for content slots and 'initial' is an unformatted enum value; neither describes anything a Tabletop Club member would recognize. The topmost content strip additionally reads 'No sponsored message right now.', announcing an empty ad slot as the first thing in the content column. Together these leave the landing tab ambiguous between 'this club has no activity' and 'this page failed to load real content'.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-home-role-summary"
+        ],
+        "requiredFix": "Replace 'Pinned and unassigned community surfaces.' with member-facing section copy, render round/state information as a human sentence or remove it, and hide the sponsored-message strip when empty instead of announcing its absence.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "role-dialog-clipped-action",
+        "title": "'Sign in as a specific person' is clipped mid-word in the role dialog",
+        "description": "In the 'Account role and permissions' dialog, the 'Sign in as a specific person' action wraps to a second line that is sheared horizontally -- only the top sliver of the word 'person' is drawn -- and it sits beneath the fixed 'Cancel' footer with no scrollbar, chevron, or other cue that the dialog scrolls. An account-switching action, which is the most consequential control in the dialog, is presented in a half-legible, apparently broken state.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-persona-picker-dialog"
+        ],
+        "requiredFix": "Size the dialog content so the 'Sign in as a specific person' row renders in full above the Cancel footer, or make the scroll region visibly scrollable with a fade/indicator so no label is truncated mid-word.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "duplicated-role-label-header",
+        "title": "Account group header renders as 'Member (Member)'",
+        "description": "Both the entry gate and the account switcher label their account group 'Member (Member)' in orange -- the same word repeated in parentheses. The 'X (Y)' shape with X equal to Y is characteristic of an unresolved format string binding two fields that happen to hold the same value, and it appears on the first screen a new user sees. The same duplication pattern recurs inside role descriptions, where the heading 'Member' is immediately followed by body text beginning 'Member - RSVPs to game nights...' on both Home and the role dialog.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-entry-gate",
+          "tc-sign-in-specific-person",
+          "tc-home-role-summary",
+          "tc-persona-picker-dialog"
+        ],
+        "requiredFix": "Render the group header as a single non-duplicated label (e.g. 'Members'), and strip the leading role-name prefix from role descriptions where the heading already states it.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "unexplained-organizer-option",
+        "title": "Organizer role offered with no indication of whether this account holds it",
+        "description": "The role dialog presents 'Organizer' with an enabled orange radio styled identically to the selected 'Member' radio, while the dialog's own body text says 'Your memberships determine which community actions are available.' Nothing visible states whether Sam K. actually holds an Organizer membership in Tabletop Club. If the account does not, the dialog offers an unavailable role with no disabled state and no reason; if it does, only the separate '2 roles' chip on Home hints at it, and that chip lives inside a dismissible card.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-persona-picker-dialog",
+          "tc-home-role-summary"
+        ],
+        "requiredFix": "Show held roles as selectable and non-held roles as disabled with an inline reason (e.g. 'You are not an Organizer in Tabletop Club'), so availability and its cause are both visible.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "home-fab-and-nav-clipping",
+        "title": "FAB overlaps body text and the bottom nav clips its last tab",
+        "description": "On Home the teal 'Propose a game' FAB is drawn across the right half of the 'Pinned and unassigned community surfaces.' line, obscuring body text rather than floating clear of it. In the same frame the bottom navigation's fourth item is cut by the right screen edge, showing 'Giving' with its pill and label running off-screen, so the tab bar reads as clipped rather than scrollable.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-home-role-summary"
+        ],
+        "requiredFix": "Add bottom padding to the scroll content so the FAB never overlaps text, and make the bottom nav either fit its items within the viewport or show an unambiguous scroll/overflow affordance.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "missing-create-account-control",
+        "title": "'create a new one' is promised in the hero but has no visible control",
+        "description": "Both the entry gate and the account switcher state 'Choose an account below or create a new one.' in the hero, yet neither viewport contains any create/add-account control -- the only non-row control on the entry gate is the outlined 'Check membership status' refresh button, and the switcher has no controls at all. Both lists are also clipped mid-row ('Casey M.' on the gate, 'Taylor G.' on the switcher) with no scroll indicator, so the user has no cue that further content or the missing control lies below.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "tc-entry-gate",
+          "tc-sign-in-specific-person"
+        ],
+        "requiredFix": "Surface a persistent 'Create a new account' control in the same viewport as the copy that promises it, and add a scroll affordance so clipped list rows read as scrollable rather than truncated.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      }
+    ],
+    "blockingFindingIds": [
+      "account-switcher-reuses-preauth-gate",
+      "home-developer-copy",
+      "role-dialog-clipped-action"
+    ],
+    "blockingQuestionIds": [],
+    "blockingScreenRowIds": [
+      "tc-entry-gate",
+      "tc-home-role-summary",
+      "tc-persona-picker-dialog",
+      "tc-sign-in-specific-person"
+    ]
+  },
+  "deterministicScaffoldHolisticQuestionAnswers": [],
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "Yes. On all three post-sign-in screens the account's actual display name is on screen, not just the persona type. Home surfaces 'Signed in as Sam K.' directly above the bold 'Member' role line, so name and acting role are legible together. The role dialog goes further and pairs the name with the account identifier ('ID: tabletop-member-04') and an 'S' monogram avatar, which is the strongest identity disclosure of the four screens. The account list resolves identity by state rather than by header: the Sam K. row uniquely shows a green-check 'Signed in' chip where Jordan W., Priya N., Casey M. and Riley B. show a sign-in arrow. That last one is the weakest form -- it requires scanning rows to find the marked one, and the screen's own hero still says 'Choose an account below or create a new one', which implies nobody is signed in yet. So identity is never absent, but its prominence degrades from dialog (explicit, with ID) to Home (explicit, no ID) to account list (inferred from a per-row chip).",
+      "score": 84,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Screen 2 (tc-home-role-summary) reads 'Signed in as Sam K.' on the line directly above the bold role heading 'Member'.",
+        "Screen 3 (tc-persona-picker-dialog) shows an 'S' avatar with 'Signed in as Sam K.' and the second line 'ID: tabletop-member-04'.",
+        "Screen 4 (tc-sign-in-specific-person) marks only the 'Sam K. / ID: tabletop-member-04' row with a green-check 'Signed in' chip; every other row shows a sign-in arrow icon instead.",
+        "Screen 4 still shows the pre-auth hero 'Welcome to Loom' and 'Choose an account below or create a new one.', which contradicts the 'Signed in' chip further down the same screen."
+      ],
+      "affectedScreenRowIds": [
+        "tc-home-role-summary",
+        "tc-persona-picker-dialog",
+        "tc-sign-in-specific-person"
+      ],
+      "scope": "holistic",
+      "verdict": "pass",
+      "evidenceUsed": [
+        "tc-home-role-summary",
+        "tc-persona-picker-dialog",
+        "tc-sign-in-specific-person"
+      ]
+    }
+  ],
+  "deterministicScaffoldWorkflowPersonaScorecards": [],
+  "workflowPersonaScorecards": [],
+  "findings": [
+    {
+      "findingId": "account-switcher-reuses-preauth-gate",
+      "title": "'Sign in as a specific person' renders the pre-auth entry gate verbatim, with no chrome and contradictory copy",
+      "description": "Screen 4 is visually identical to screen 1 -- same 'Welcome to Loom' hero, same 'Choose an account below or create a new one.' subtitle, same 'Existing Accounts' and 'Member (Member)' headers -- despite being reached from inside the role dialog while signed in as Sam K. It has no app bar, no screen title, no back or Cancel control, and no 'Tabletop Club' context (the entry gate at least had 'continue to Tabletop Club.' in its footer; that line is gone here). The only signal of the current session is a small green-check 'Signed in' chip on the Sam K. row, which directly contradicts the headline instruction to choose an account. Screen 3, one step earlier, states 'Signed in as Sam K.' with 'ID: tabletop-member-04' in a dedicated header block, so identity exposure regresses on the very surface where account confusion is most costly.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-sign-in-specific-person",
+        "tc-entry-gate",
+        "tc-persona-picker-dialog"
+      ],
+      "requiredFix": "Give the switcher its own surface: titled app bar 'Sign in as a specific person' with a back/close control, replace the 'Welcome to Loom' pre-auth hero with a 'Currently signed in as Sam K. - tabletop-member-04' header, show the community name, and visually elevate or pin the current account row rather than relying solely on a chip.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "home-developer-copy",
+      "title": "Home tab shows internal jargon and a raw state token as body copy",
+      "description": "The Home tab renders 'Pinned and unassigned community surfaces.' as the subtitle of its 'Home' section and a card whose entire visible content is 'Round: initial'. 'Surfaces' is the app's internal noun for content slots and 'initial' is an unformatted enum value; neither describes anything a Tabletop Club member would recognize. The topmost content strip additionally reads 'No sponsored message right now.', announcing an empty ad slot as the first thing in the content column. Together these leave the landing tab ambiguous between 'this club has no activity' and 'this page failed to load real content'.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-home-role-summary"
+      ],
+      "requiredFix": "Replace 'Pinned and unassigned community surfaces.' with member-facing section copy, render round/state information as a human sentence or remove it, and hide the sponsored-message strip when empty instead of announcing its absence.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "role-dialog-clipped-action",
+      "title": "'Sign in as a specific person' is clipped mid-word in the role dialog",
+      "description": "In the 'Account role and permissions' dialog, the 'Sign in as a specific person' action wraps to a second line that is sheared horizontally -- only the top sliver of the word 'person' is drawn -- and it sits beneath the fixed 'Cancel' footer with no scrollbar, chevron, or other cue that the dialog scrolls. An account-switching action, which is the most consequential control in the dialog, is presented in a half-legible, apparently broken state.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-persona-picker-dialog"
+      ],
+      "requiredFix": "Size the dialog content so the 'Sign in as a specific person' row renders in full above the Cancel footer, or make the scroll region visibly scrollable with a fade/indicator so no label is truncated mid-word.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "duplicated-role-label-header",
+      "title": "Account group header renders as 'Member (Member)'",
+      "description": "Both the entry gate and the account switcher label their account group 'Member (Member)' in orange -- the same word repeated in parentheses. The 'X (Y)' shape with X equal to Y is characteristic of an unresolved format string binding two fields that happen to hold the same value, and it appears on the first screen a new user sees. The same duplication pattern recurs inside role descriptions, where the heading 'Member' is immediately followed by body text beginning 'Member - RSVPs to game nights...' on both Home and the role dialog.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-entry-gate",
+        "tc-sign-in-specific-person",
+        "tc-home-role-summary",
+        "tc-persona-picker-dialog"
+      ],
+      "requiredFix": "Render the group header as a single non-duplicated label (e.g. 'Members'), and strip the leading role-name prefix from role descriptions where the heading already states it.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "unexplained-organizer-option",
+      "title": "Organizer role offered with no indication of whether this account holds it",
+      "description": "The role dialog presents 'Organizer' with an enabled orange radio styled identically to the selected 'Member' radio, while the dialog's own body text says 'Your memberships determine which community actions are available.' Nothing visible states whether Sam K. actually holds an Organizer membership in Tabletop Club. If the account does not, the dialog offers an unavailable role with no disabled state and no reason; if it does, only the separate '2 roles' chip on Home hints at it, and that chip lives inside a dismissible card.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-persona-picker-dialog",
+        "tc-home-role-summary"
+      ],
+      "requiredFix": "Show held roles as selectable and non-held roles as disabled with an inline reason (e.g. 'You are not an Organizer in Tabletop Club'), so availability and its cause are both visible.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "home-fab-and-nav-clipping",
+      "title": "FAB overlaps body text and the bottom nav clips its last tab",
+      "description": "On Home the teal 'Propose a game' FAB is drawn across the right half of the 'Pinned and unassigned community surfaces.' line, obscuring body text rather than floating clear of it. In the same frame the bottom navigation's fourth item is cut by the right screen edge, showing 'Giving' with its pill and label running off-screen, so the tab bar reads as clipped rather than scrollable.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-home-role-summary"
+      ],
+      "requiredFix": "Add bottom padding to the scroll content so the FAB never overlaps text, and make the bottom nav either fit its items within the viewport or show an unambiguous scroll/overflow affordance.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "missing-create-account-control",
+      "title": "'create a new one' is promised in the hero but has no visible control",
+      "description": "Both the entry gate and the account switcher state 'Choose an account below or create a new one.' in the hero, yet neither viewport contains any create/add-account control -- the only non-row control on the entry gate is the outlined 'Check membership status' refresh button, and the switcher has no controls at all. Both lists are also clipped mid-row ('Casey M.' on the gate, 'Taylor G.' on the switcher) with no scroll indicator, so the user has no cue that further content or the missing control lies below.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "tc-entry-gate",
+        "tc-sign-in-specific-person"
+      ],
+      "requiredFix": "Surface a persistent 'Create a new account' control in the same viewport as the copy that promises it, and add a scroll affordance so clipped list rows read as scrollable rather than truncated.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    }
+  ],
+  "unresolvedBlockerFindings": [],
+  "unresolvedMajorFindings": [
+    "account-switcher-reuses-preauth-gate",
+    "home-developer-copy",
+    "role-dialog-clipped-action"
+  ]
+}

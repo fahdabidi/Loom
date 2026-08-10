@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.8.0
+doc_version: 1.9.0
 status: current
-last_verified: 2026-07-31
+last_verified: 2026-08-09
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -330,10 +330,17 @@ an overlapping time range."** Unlike `relatedAggregate`, this does not name a se
 and a `[start, start + durationMinutes)` range that overlaps this instance's own. **This is a hard guard —
 it blocks the mutation outright**, not a display-only warning.
 
-**Use as a `creationGuard`** (workflow-grammar.md) so a genuinely conflicting event can never be created
-in the first place — including every sibling a recurring series generates, since `creationGuard` is
-checked at the one shared choke point (`_createInstanceValidated`) every creation path already funnels
-through, `generateRecurringInstances`'s per-occurrence creation included.
+**Use as a plain transition `guard`** (the shape shown above) — this is the real, working placement,
+confirmed enforced by `_passesLocationOverlapGuard`. ⚠️ **Do not place this inside a `creationGuard`.**
+`workflow-grammar.md` marks `creationGuard` **PROPOSED, not yet implemented** — `_createInstanceValidated`
+runs zero guard checks today, so a `locationOverlap` guard placed there silently never runs, producing a
+package that structurally implies double-booking protection while actually enforcing none. (Found
+2026-08-09: exactly this mistake shipped in a real community fixture, because this section's own
+`creationGuard` recommendation below doesn't repeat that caveat inline.) Once `creationGuard` ships for
+real, placing `locationOverlap` there becomes the stronger option — it would also cover every sibling a
+recurring series generates via the one shared choke point (`_createInstanceValidated`,
+`generateRecurringInstances`'s per-occurrence creation included) — but until then, the transition-guard
+placement above is the only one that actually blocks anything.
 
 **Use for:** "Main Hall can't be double-booked for two overlapping game nights."
 

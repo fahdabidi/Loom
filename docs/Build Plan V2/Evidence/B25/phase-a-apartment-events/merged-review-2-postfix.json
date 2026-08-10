@@ -1,0 +1,670 @@
+{
+  "currentReviewRunId": "phaseA-apartment-events-2-postfix",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Recapture of the original phaseA-apartment-events-1 screen set after UXReview.P1 (+fix1/fix2/fix3) landed, to confirm the identity-legibility finding is resolved. Same community package (apartment-events.loom-extension.zip / apartment-events.loom-init.zip, still present in the emulator's app-private storage from the original run), same persona/account (Jamie, apartment-event-manager-20). Not a canonical full-B25 capture."
+  },
+  "screenRows": [
+    {
+      "rowId": "ae2-entry-gate",
+      "communityName": "Apartment Events",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Fresh entry gate before any account exists",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/entry-gate-fixed.png",
+      "screenshotHash": "a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae2-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae2-sign-in-specific-person",
+          "ae2-entry-gate"
+        ],
+        "critique": "Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+        "verdict": "pass",
+        "severity": "major",
+        "targetProductionSurface": "A titled account-switcher surface ('Sign in as a specific person') with a visible back/close control returning to Apartment Events, the community context retained in the header or footer, the populated account row and 'Signed in' chip kept as-is, and account creation demoted below or behind a secondary action so it doesn't compete with picking an existing account.",
+        "visibleObservations": [
+          "Blank white band at the top with a faint ghost of a status bar and no app bar, title, or back control",
+          "'Welcome to Loom' header card with 'Choose an account below or create a new one.'",
+          "Teal group header 'Event Manager (Apartment Event Manager)'",
+          "Account row: 'J' avatar, 'Jamie', 'ID: apartment-event-manager-20', chip with green check reading 'Signed in'",
+          "'Create New Account' with empty 'Display name', 'Persona type' = 'Event Manager', and a teal 'Sign Up' button",
+          "No footer mentioning Apartment Events, unlike the entry gate"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and its status unambiguous?",
+            "visibleEvidence": "'Jamie' with 'ID: apartment-event-manager-20' and a green-check chip labelled 'Signed in'.",
+            "why": "Name, stable ID, role group header, and active status are all rendered in one row, leaving no ambiguity about which account is currently active."
+          },
+          {
+            "question": "Is it clear where this screen is and how to leave it?",
+            "visibleEvidence": "Top of the screen is blank white with no app bar; the only heading is 'Welcome to Loom'.",
+            "why": "The screen presents as a fresh entry gate rather than the 'Sign in as a specific person' picker reached from the role dialog, and no back or close control is drawn, so the return path to Apartment Events is not visible."
+          },
+          {
+            "question": "Is the persona scoping correct?",
+            "visibleEvidence": "Group header 'Event Manager (Apartment Event Manager)' above the single Jamie row.",
+            "why": "The one existing account is grouped under its actual Apartment Events role with the package's full role name, which is correct scoping for this community."
+          },
+          {
+            "question": "Are the actions clear?",
+            "visibleEvidence": "A full 'Create New Account' form with 'Persona type' already set to 'Event Manager' and an enabled-looking 'Sign Up' button occupies the lower half.",
+            "why": "Creating a second Event Manager is given equal or greater visual weight than the existing account row, so the primary intent -- switching to a specific person -- is not the visually dominant action."
+          }
+        ],
+        "screenshotHash": "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+      "productUxCritique": "LLM vision critique: Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A titled account-switcher surface ('Sign in as a specific person') with a visible back/close control returning to Apartment Events, the community context retained in the header or footer, the populated account row and 'Signed in' chip kept as-is, and account creation demoted below or behind a secondary action so it doesn't compete with picking an existing account."
+    },
+    {
+      "rowId": "ae2-home-role-summary",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Event Manager",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/home-role-summary-fixed.png",
+      "screenshotHash": "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae2-home-role-summary",
+        "affectedScreenRowIds": [
+          "ae2-home-role-summary"
+        ],
+        "critique": "This is the screen that failed last time and it now passes on identity: inside the teal Apartment Events card, a bordered inset shows a people glyph, 'Signed in as Jamie' in regular weight, 'Event Manager' in bold beneath it, and the full package description 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.', with a '3 roles' chip on the right. Both halves of the question -- who am I, and what am I acting as -- are answerable from pixels alone, and the community subtitle 'Classes, gatherings, and amenity reservations for neighbors.' matches the real package copy rather than lorem filler. Two rough edges remain. The '3 roles' chip is a flat non-button-looking pill with no chevron or 'Change' affordance, so the fact that role switching lives behind the top-bar people icon is undiscoverable from this card. And the 'Nothing is pinned yet' card at the bottom is clipped by the Home/Calendar/Messages nav bar -- only the heading and a sliver of the card are visible, so the empty state's explanatory line (and any create action a manager should have) is cut off. For an Event Manager persona whose whole job is creating events, an empty Home with no visible create affordance above the fold reads as under-scoped.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "Same card, with the '3 roles' chip styled as an actionable control (chevron or 'Switch role' label) so role switching is discoverable from Home, and the 'Nothing is pinned yet' empty state fully visible with its supporting sentence and, for a manager persona, a primary action such as 'Create an event'.",
+        "visibleObservations": [
+          "Teal app bar 'Apartment Events' with back arrow, bell, chat bubble, and people icons",
+          "Dark banner: megaphone icon and 'No sponsored message right now.'",
+          "Community card: 'Apartment Events' / 'Classes, gatherings, and amenity reservations for neighbors.' with a close X",
+          "Bordered inset: 'Signed in as Jamie' / bold 'Event Manager' / 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.' plus a '3 roles' chip",
+          "Row: 'Home' / 'Pinned and unassigned community surfaces.'",
+          "Partially clipped card 'Nothing is pinned yet' behind the bottom nav",
+          "Bottom nav pills: Home (selected, filled teal), Calendar, Messages"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are by name, not just by role type?",
+            "visibleEvidence": "'Signed in as Jamie' rendered directly above bold 'Event Manager' inside the community card inset.",
+            "why": "The account display name and the acting role appear together in one block, which is exactly what the prior review found missing on this screen."
+          },
+          {
+            "question": "Does the displayed text describe actual data rather than placeholder copy?",
+            "visibleEvidence": "'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.'",
+            "why": "This is domain-specific package copy naming resident events and facility windows; it could not be reused for another community, so it reads as real product data."
+          },
+          {
+            "question": "Is the empty state unambiguous?",
+            "visibleEvidence": "'Nothing is pinned yet' heading with a house glyph, cut off mid-card by the bottom navigation bar.",
+            "why": "The wording is unambiguous about emptiness, but the card is clipped so any supporting sentence or recovery action is not visible in this capture."
+          },
+          {
+            "question": "Is what's shown correct for an Event Manager persona?",
+            "visibleEvidence": "'3 roles' chip alongside the Event Manager description, with Home showing only 'Pinned and unassigned community surfaces.'",
+            "why": "Nothing shown contradicts manager scope, but no manager-only affordance (create/edit event) is visible above the fold, so persona-appropriate capability is asserted in text and not demonstrated in controls."
+          }
+        ],
+        "screenshotHash": "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3",
+        "blocksPass": false
+      },
+      "screenSpecificCritique": "LLM vision critique: This is the screen that failed last time and it now passes on identity: inside the teal Apartment Events card, a bordered inset shows a people glyph, 'Signed in as Jamie' in regular weight, 'Event Manager' in bold beneath it, and the full package description 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.', with a '3 roles' chip on the right. Both halves of the question -- who am I, and what am I acting as -- are answerable from pixels alone, and the community subtitle 'Classes, gatherings, and amenity reservations for neighbors.' matches the real package copy rather than lorem filler. Two rough edges remain. The '3 roles' chip is a flat non-button-looking pill with no chevron or 'Change' affordance, so the fact that role switching lives behind the top-bar people icon is undiscoverable from this card. And the 'Nothing is pinned yet' card at the bottom is clipped by the Home/Calendar/Messages nav bar -- only the heading and a sliver of the card are visible, so the empty state's explanatory line (and any create action a manager should have) is cut off. For an Event Manager persona whose whole job is creating events, an empty Home with no visible create affordance above the fold reads as under-scoped.",
+      "productUxCritique": "LLM vision critique: This is the screen that failed last time and it now passes on identity: inside the teal Apartment Events card, a bordered inset shows a people glyph, 'Signed in as Jamie' in regular weight, 'Event Manager' in bold beneath it, and the full package description 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.', with a '3 roles' chip on the right. Both halves of the question -- who am I, and what am I acting as -- are answerable from pixels alone, and the community subtitle 'Classes, gatherings, and amenity reservations for neighbors.' matches the real package copy rather than lorem filler. Two rough edges remain. The '3 roles' chip is a flat non-button-looking pill with no chevron or 'Change' affordance, so the fact that role switching lives behind the top-bar people icon is undiscoverable from this card. And the 'Nothing is pinned yet' card at the bottom is clipped by the Home/Calendar/Messages nav bar -- only the heading and a sliver of the card are visible, so the empty state's explanatory line (and any create action a manager should have) is cut off. For an Event Manager persona whose whole job is creating events, an empty Home with no visible create affordance above the fold reads as under-scoped.",
+      "verdict": "",
+      "severity": "",
+      "findingIds": [],
+      "targetProductionSurface": "Same card, with the '3 roles' chip styled as an actionable control (chevron or 'Switch role' label) so role switching is discoverable from Home, and the 'Nothing is pinned yet' empty state fully visible with its supporting sentence and, for a manager persona, a primary action such as 'Create an event'."
+    },
+    {
+      "rowId": "ae2-persona-picker-dialog",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/persona-picker-dialog-fixed.png",
+      "screenshotHash": "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae2-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "ae2-persona-picker-dialog"
+        ],
+        "critique": "The second half of the prior failure is fixed here. The dialog titled 'Account role and permissions' now leads with an identity block -- mint circular 'J' avatar, 'Signed in as Jamie', and grey 'ID: apartment-event-manager-20' -- placed between the explanatory paragraph and the radio list, so the dialog is unambiguously about this account and not about an abstract persona type. The selected radio is filled and its label 'Event Manager' plus its description are rendered in teal while 'Resident' and 'Facility Resident' are black/grey, giving a clear second selection cue beyond the radio dot. Two defects are visible. First, the third option's description is truncated mid-sentence: 'Facility-Reservation Resident - Has resident access plus permission to reserve designated' simply stops, with the remainder clipped by the scroll edge above the Cancel row -- a user evaluating that role cannot read what it grants. Second, the only button in the dialog is 'Cancel'; there is no 'Save', 'Switch', or 'Use this role' affordance, so it is not stated whether tapping a radio applies the change immediately or whether the selection is discarded. The explanatory copy says 'Choose the role you want to use in this community' but the commit mechanism is left to guesswork.",
+        "verdict": "pass",
+        "severity": "major",
+        "targetProductionSurface": "Same dialog with the identity block retained, every role description rendered in full (wrapping or scrolling without a hard clip), and an explicit confirm action next to Cancel -- or, if selection commits on tap, inline copy saying so.",
+        "visibleObservations": [
+          "Title 'Account role and permissions'",
+          "Body: 'Your memberships determine which community actions are available. Choose the role you want to use in this community.'",
+          "Mint 'J' avatar with 'Signed in as Jamie' and 'ID: apartment-event-manager-20'",
+          "Selected teal radio: 'Event Manager' with description in teal text",
+          "Unselected radio 'Resident - Browses the calendar and manages event RSVPs.'",
+          "Unselected radio 'Facility Resident' whose description ends abruptly at 'reserve designated'",
+          "Single text button 'Cancel' at bottom right; dimmed Home screen visible behind the scrim"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Does the dialog show the signed-in account's actual name, not just the persona type?",
+            "visibleEvidence": "'Signed in as Jamie' with 'ID: apartment-event-manager-20' beside a 'J' avatar, above the radio list.",
+            "why": "Name plus stable account ID identify the specific account, which is precisely what the earlier run reported absent from this dialog."
+          },
+          {
+            "question": "Is it clear how a role change is committed or cancelled?",
+            "visibleEvidence": "The only button rendered is 'Cancel' at the bottom right; no Save/Apply/Switch button is present.",
+            "why": "With no affirmative action, the user cannot tell whether selecting a radio takes effect immediately or requires a confirm that isn't there, making the primary purpose of the dialog ambiguous."
+          },
+          {
+            "question": "Is the copy complete and accurate?",
+            "visibleEvidence": "'Facility-Reservation Resident - Has resident access plus permission to reserve designated' ends with no terminal punctuation and no continuation.",
+            "why": "A role's permission description cut off mid-phrase is an accuracy failure at the point where the user is deciding between roles."
+          },
+          {
+            "question": "Does the option set match this persona's memberships?",
+            "visibleEvidence": "Three options -- Event Manager, Resident, Facility Resident -- matching the '3 roles' chip seen on Home.",
+            "why": "The count is internally consistent between Home and the dialog, and the role names are Apartment Events domain roles rather than generic ones."
+          }
+        ],
+        "screenshotHash": "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: The second half of the prior failure is fixed here. The dialog titled 'Account role and permissions' now leads with an identity block -- mint circular 'J' avatar, 'Signed in as Jamie', and grey 'ID: apartment-event-manager-20' -- placed between the explanatory paragraph and the radio list, so the dialog is unambiguously about this account and not about an abstract persona type. The selected radio is filled and its label 'Event Manager' plus its description are rendered in teal while 'Resident' and 'Facility Resident' are black/grey, giving a clear second selection cue beyond the radio dot. Two defects are visible. First, the third option's description is truncated mid-sentence: 'Facility-Reservation Resident - Has resident access plus permission to reserve designated' simply stops, with the remainder clipped by the scroll edge above the Cancel row -- a user evaluating that role cannot read what it grants. Second, the only button in the dialog is 'Cancel'; there is no 'Save', 'Switch', or 'Use this role' affordance, so it is not stated whether tapping a radio applies the change immediately or whether the selection is discarded. The explanatory copy says 'Choose the role you want to use in this community' but the commit mechanism is left to guesswork.",
+      "productUxCritique": "LLM vision critique: The second half of the prior failure is fixed here. The dialog titled 'Account role and permissions' now leads with an identity block -- mint circular 'J' avatar, 'Signed in as Jamie', and grey 'ID: apartment-event-manager-20' -- placed between the explanatory paragraph and the radio list, so the dialog is unambiguously about this account and not about an abstract persona type. The selected radio is filled and its label 'Event Manager' plus its description are rendered in teal while 'Resident' and 'Facility Resident' are black/grey, giving a clear second selection cue beyond the radio dot. Two defects are visible. First, the third option's description is truncated mid-sentence: 'Facility-Reservation Resident - Has resident access plus permission to reserve designated' simply stops, with the remainder clipped by the scroll edge above the Cancel row -- a user evaluating that role cannot read what it grants. Second, the only button in the dialog is 'Cancel'; there is no 'Save', 'Switch', or 'Use this role' affordance, so it is not stated whether tapping a radio applies the change immediately or whether the selection is discarded. The explanatory copy says 'Choose the role you want to use in this community' but the commit mechanism is left to guesswork.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "Same dialog with the identity block retained, every role description rendered in full (wrapping or scrolling without a hard clip), and an explicit confirm action next to Cancel -- or, if selection commits on tap, inline copy saying so."
+    },
+    {
+      "rowId": "ae2-sign-in-specific-person",
+      "communityName": "Apartment Events",
+      "persona": "apartment-event-manager (Jamie)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/screenshots/sign-in-specific-person-fixed.png",
+      "screenshotHash": "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33",
+      "llmVisionScreenReview": {
+        "screenRowId": "ae2-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae2-sign-in-specific-person",
+          "ae2-entry-gate"
+        ],
+        "critique": "Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+        "verdict": "pass",
+        "severity": "major",
+        "targetProductionSurface": "A titled account-switcher surface ('Sign in as a specific person') with a visible back/close control returning to Apartment Events, the community context retained in the header or footer, the populated account row and 'Signed in' chip kept as-is, and account creation demoted below or behind a secondary action so it doesn't compete with picking an existing account.",
+        "visibleObservations": [
+          "Blank white band at the top with a faint ghost of a status bar and no app bar, title, or back control",
+          "'Welcome to Loom' header card with 'Choose an account below or create a new one.'",
+          "Teal group header 'Event Manager (Apartment Event Manager)'",
+          "Account row: 'J' avatar, 'Jamie', 'ID: apartment-event-manager-20', chip with green check reading 'Signed in'",
+          "'Create New Account' with empty 'Display name', 'Persona type' = 'Event Manager', and a teal 'Sign Up' button",
+          "No footer mentioning Apartment Events, unlike the entry gate"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and its status unambiguous?",
+            "visibleEvidence": "'Jamie' with 'ID: apartment-event-manager-20' and a green-check chip labelled 'Signed in'.",
+            "why": "Name, stable ID, role group header, and active status are all rendered in one row, leaving no ambiguity about which account is currently active."
+          },
+          {
+            "question": "Is it clear where this screen is and how to leave it?",
+            "visibleEvidence": "Top of the screen is blank white with no app bar; the only heading is 'Welcome to Loom'.",
+            "why": "The screen presents as a fresh entry gate rather than the 'Sign in as a specific person' picker reached from the role dialog, and no back or close control is drawn, so the return path to Apartment Events is not visible."
+          },
+          {
+            "question": "Is the persona scoping correct?",
+            "visibleEvidence": "Group header 'Event Manager (Apartment Event Manager)' above the single Jamie row.",
+            "why": "The one existing account is grouped under its actual Apartment Events role with the package's full role name, which is correct scoping for this community."
+          },
+          {
+            "question": "Are the actions clear?",
+            "visibleEvidence": "A full 'Create New Account' form with 'Persona type' already set to 'Event Manager' and an enabled-looking 'Sign Up' button occupies the lower half.",
+            "why": "Creating a second Event Manager is given equal or greater visual weight than the existing account row, so the primary intent -- switching to a specific person -- is not the visually dominant action."
+          }
+        ],
+        "screenshotHash": "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33",
+        "blocksPass": true
+      },
+      "screenSpecificCritique": "LLM vision critique: Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+      "productUxCritique": "LLM vision critique: Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
+      "targetProductionSurface": "A titled account-switcher surface ('Sign in as a specific person') with a visible back/close control returning to Apartment Events, the community context retained in the header or footer, the populated account row and 'Signed in' chip kept as-is, and account creation demoted below or behind a secondary action so it doesn't compete with picking an existing account."
+    }
+  ],
+  "status": "llm-vision-review-fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "generatedAt": "2026-08-09T07:45:34.443649Z",
+  "llmVisionReview": {
+    "schemaVersion": 1,
+    "status": "fail",
+    "freshReview": true,
+    "freshnessProblems": [],
+    "currentReviewRunId": "phaseA-apartment-events-2-postfix",
+    "expectedReviewRunId": "phaseA-apartment-events-2-postfix",
+    "sourceReviewRunId": "",
+    "carriedForward": false,
+    "reusedPriorReview": false,
+    "appCommitSha": "559f3a1b",
+    "reviewedScreenRowIds": [
+      "ae2-entry-gate",
+      "ae2-home-role-summary",
+      "ae2-persona-picker-dialog",
+      "ae2-sign-in-specific-person"
+    ],
+    "reviewedScreenshotHashes": [
+      "a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6",
+      "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3",
+      "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984",
+      "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33"
+    ],
+    "reviewerType": "llm-vision-headless-cli",
+    "sourcePath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/llm-vision-ux-review-phaseA-apartment-events-2-postfix.json",
+    "importedAt": "2026-08-09T07:45:34.444686Z",
+    "summary": "The identity-legibility defect from the prior run is visibly fixed in the pixels: the Home tab's community card now renders a bordered inset reading 'Signed in as Jamie' above 'Event Manager', and the 'Account role and permissions' dialog now renders a mint 'J' avatar with 'Signed in as Jamie' and 'ID: apartment-event-manager-20' directly above the three role radios. Role/persona copy is real product copy sourced from the Apartment Events package ('Creates, edits, and cancels resident events and publishes reservable facility windows.'), and the account list correctly groups Jamie under 'Event Manager (Apartment Event Manager)' with a green-check 'Signed in' chip. Remaining problems are lower-severity: the entry gate shows an 'Existing Accounts' heading over a completely blank region with no empty-state sentence, the role dialog truncates the Facility Resident description mid-sentence ('reserve designated') and offers only 'Cancel' with no visible confirm affordance, and the account-list screen is headed 'Welcome to Loom' with no visible title or back control tying it to 'Sign in as a specific person'.",
+    "holisticQuestionAnswers": [
+      {
+        "questionId": "identity-legibility",
+        "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+        "answer": "Yes, on every screen where an account exists. Home shows 'Signed in as Jamie' with 'Event Manager' beneath it; the role dialog shows a 'J' avatar with 'Signed in as Jamie' and the full account ID 'apartment-event-manager-20'; the account list shows the name 'Jamie' with the same ID and a 'Signed in' status chip. The entry gate legitimately shows no identity because no account exists yet. The prior run's specific failure -- persona type visible but account name absent on Home and in the role dialog -- is no longer reproducible in these pixels.",
+        "score": 88,
+        "blocksPass": false,
+        "visibleEvidence": [
+          "Home (ae2-home-role-summary): inset panel reads 'Signed in as Jamie' on the first line with bold 'Event Manager' on the second, inside the teal Apartment Events card, next to a '3 roles' chip.",
+          "Role dialog (ae2-persona-picker-dialog): mint circular avatar lettered 'J' beside 'Signed in as Jamie' and grey secondary line 'ID: apartment-event-manager-20', positioned above the Event Manager / Resident / Facility Resident radio list.",
+          "Account list (ae2-sign-in-specific-person): row reads 'Jamie' / 'ID: apartment-event-manager-20' under the group header 'Event Manager (Apartment Event Manager)' with a green check chip labelled 'Signed in'.",
+          "Entry gate (ae2-entry-gate): no identity shown anywhere, consistent with a pre-account state where the Existing Accounts region is empty."
+        ],
+        "affectedScreenRowIds": [
+          "ae2-entry-gate",
+          "ae2-home-role-summary",
+          "ae2-persona-picker-dialog",
+          "ae2-sign-in-specific-person"
+        ],
+        "scope": "holistic",
+        "verdict": "pass",
+        "evidenceUsed": [
+          "ae2-entry-gate",
+          "ae2-home-role-summary",
+          "ae2-persona-picker-dialog",
+          "ae2-sign-in-specific-person"
+        ]
+      }
+    ],
+    "screenReviews": [
+      {
+        "screenRowId": "ae2-entry-gate",
+        "affectedScreenRowIds": [
+          "ae2-entry-gate"
+        ],
+        "critique": "The gate reads cleanly at the top -- teal people glyph, 'Welcome to Loom', 'Choose an account below or create a new one.' -- and the bottom bar carries community-specific copy, 'Choose an active account or create one to continue to Apartment Events.' with a 'Check membership status' outlined button, so the user knows which community they are gating into. The defect is directly under the bold 'Existing Accounts' heading: roughly 100px of pure white space, then a hairline divider, then 'Create New Account'. Nothing says 'No accounts yet' -- the empty state is rendered as an absence rather than as copy, which is indistinguishable from a list that failed to load or is still loading. The 'Persona type' dropdown is pre-filled with 'Event Manager' while 'Display name' is an empty placeholder, so the filled 'Sign Up' button's enabled/disabled logic is not explained; a user cannot tell from the pixels whether tapping Sign Up with a blank name will fail.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "Same gate, but the Existing Accounts section should render an explicit empty state (e.g. 'No accounts on this device yet -- create one below') so empty is visually distinct from loading or error, and the Sign Up button should either be visibly disabled until Display name is non-empty or carry helper text stating the name is required.",
+        "visibleObservations": [
+          "Header card: people icon, 'Welcome to Loom', 'Choose an account below or create a new one.'",
+          "Bold section heading 'Existing Accounts' followed by empty white space and a divider",
+          "'Create New Account' with an empty 'Display name' outlined field",
+          "Outlined dropdown labelled 'Persona type' pre-selected to 'Event Manager'",
+          "Solid teal pill button 'Sign Up' with a person-plus icon",
+          "Bottom bar: 'Choose an active account or create one to continue to Apartment Events.' plus 'Check membership status' button with a refresh icon"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the current state (loading / empty / error / populated) unambiguous?",
+            "visibleEvidence": "'Existing Accounts' heading sits above a blank white gap with no text of any kind before the divider line.",
+            "why": "A silent gap carries no state signal. An account list that is empty, one that is still fetching, and one that errored would all render as this same blank region, so the user cannot tell which happened."
+          },
+          {
+            "question": "Is the community context legible before sign-in?",
+            "visibleEvidence": "'Choose an active account or create one to continue to Apartment Events.'",
+            "why": "The bottom bar names the destination community explicitly, so the user knows this gate belongs to Apartment Events and not to Loom generally, despite the generic 'Welcome to Loom' header."
+          },
+          {
+            "question": "Are available actions clear and their disabled reasons explained?",
+            "visibleEvidence": "Solid teal 'Sign Up' button rendered at full opacity while 'Display name' shows only placeholder text.",
+            "why": "The button looks enabled with an empty required field; nothing on screen states the name requirement, so the action's precondition is invisible until the user taps."
+          }
+        ],
+        "screenshotHash": "a2a2ff015f0ab430f71f185a90c7d8befa768c730f7af4a32f8d61cfc9518fb6",
+        "blocksPass": false
+      },
+      {
+        "screenRowId": "ae2-home-role-summary",
+        "affectedScreenRowIds": [
+          "ae2-home-role-summary"
+        ],
+        "critique": "This is the screen that failed last time and it now passes on identity: inside the teal Apartment Events card, a bordered inset shows a people glyph, 'Signed in as Jamie' in regular weight, 'Event Manager' in bold beneath it, and the full package description 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.', with a '3 roles' chip on the right. Both halves of the question -- who am I, and what am I acting as -- are answerable from pixels alone, and the community subtitle 'Classes, gatherings, and amenity reservations for neighbors.' matches the real package copy rather than lorem filler. Two rough edges remain. The '3 roles' chip is a flat non-button-looking pill with no chevron or 'Change' affordance, so the fact that role switching lives behind the top-bar people icon is undiscoverable from this card. And the 'Nothing is pinned yet' card at the bottom is clipped by the Home/Calendar/Messages nav bar -- only the heading and a sliver of the card are visible, so the empty state's explanatory line (and any create action a manager should have) is cut off. For an Event Manager persona whose whole job is creating events, an empty Home with no visible create affordance above the fold reads as under-scoped.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "Same card, with the '3 roles' chip styled as an actionable control (chevron or 'Switch role' label) so role switching is discoverable from Home, and the 'Nothing is pinned yet' empty state fully visible with its supporting sentence and, for a manager persona, a primary action such as 'Create an event'.",
+        "visibleObservations": [
+          "Teal app bar 'Apartment Events' with back arrow, bell, chat bubble, and people icons",
+          "Dark banner: megaphone icon and 'No sponsored message right now.'",
+          "Community card: 'Apartment Events' / 'Classes, gatherings, and amenity reservations for neighbors.' with a close X",
+          "Bordered inset: 'Signed in as Jamie' / bold 'Event Manager' / 'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.' plus a '3 roles' chip",
+          "Row: 'Home' / 'Pinned and unassigned community surfaces.'",
+          "Partially clipped card 'Nothing is pinned yet' behind the bottom nav",
+          "Bottom nav pills: Home (selected, filled teal), Calendar, Messages"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are by name, not just by role type?",
+            "visibleEvidence": "'Signed in as Jamie' rendered directly above bold 'Event Manager' inside the community card inset.",
+            "why": "The account display name and the acting role appear together in one block, which is exactly what the prior review found missing on this screen."
+          },
+          {
+            "question": "Does the displayed text describe actual data rather than placeholder copy?",
+            "visibleEvidence": "'Apartment Event Manager - Creates, edits, and cancels resident events and publishes reservable facility windows.'",
+            "why": "This is domain-specific package copy naming resident events and facility windows; it could not be reused for another community, so it reads as real product data."
+          },
+          {
+            "question": "Is the empty state unambiguous?",
+            "visibleEvidence": "'Nothing is pinned yet' heading with a house glyph, cut off mid-card by the bottom navigation bar.",
+            "why": "The wording is unambiguous about emptiness, but the card is clipped so any supporting sentence or recovery action is not visible in this capture."
+          },
+          {
+            "question": "Is what's shown correct for an Event Manager persona?",
+            "visibleEvidence": "'3 roles' chip alongside the Event Manager description, with Home showing only 'Pinned and unassigned community surfaces.'",
+            "why": "Nothing shown contradicts manager scope, but no manager-only affordance (create/edit event) is visible above the fold, so persona-appropriate capability is asserted in text and not demonstrated in controls."
+          }
+        ],
+        "screenshotHash": "5083917a9f787ecf60a307f09e6d377491185ebdebcabfaf783abb6dec6e01d3",
+        "blocksPass": false
+      },
+      {
+        "screenRowId": "ae2-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "ae2-persona-picker-dialog"
+        ],
+        "critique": "The second half of the prior failure is fixed here. The dialog titled 'Account role and permissions' now leads with an identity block -- mint circular 'J' avatar, 'Signed in as Jamie', and grey 'ID: apartment-event-manager-20' -- placed between the explanatory paragraph and the radio list, so the dialog is unambiguously about this account and not about an abstract persona type. The selected radio is filled and its label 'Event Manager' plus its description are rendered in teal while 'Resident' and 'Facility Resident' are black/grey, giving a clear second selection cue beyond the radio dot. Two defects are visible. First, the third option's description is truncated mid-sentence: 'Facility-Reservation Resident - Has resident access plus permission to reserve designated' simply stops, with the remainder clipped by the scroll edge above the Cancel row -- a user evaluating that role cannot read what it grants. Second, the only button in the dialog is 'Cancel'; there is no 'Save', 'Switch', or 'Use this role' affordance, so it is not stated whether tapping a radio applies the change immediately or whether the selection is discarded. The explanatory copy says 'Choose the role you want to use in this community' but the commit mechanism is left to guesswork.",
+        "verdict": "pass",
+        "severity": "major",
+        "targetProductionSurface": "Same dialog with the identity block retained, every role description rendered in full (wrapping or scrolling without a hard clip), and an explicit confirm action next to Cancel -- or, if selection commits on tap, inline copy saying so.",
+        "visibleObservations": [
+          "Title 'Account role and permissions'",
+          "Body: 'Your memberships determine which community actions are available. Choose the role you want to use in this community.'",
+          "Mint 'J' avatar with 'Signed in as Jamie' and 'ID: apartment-event-manager-20'",
+          "Selected teal radio: 'Event Manager' with description in teal text",
+          "Unselected radio 'Resident - Browses the calendar and manages event RSVPs.'",
+          "Unselected radio 'Facility Resident' whose description ends abruptly at 'reserve designated'",
+          "Single text button 'Cancel' at bottom right; dimmed Home screen visible behind the scrim"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Does the dialog show the signed-in account's actual name, not just the persona type?",
+            "visibleEvidence": "'Signed in as Jamie' with 'ID: apartment-event-manager-20' beside a 'J' avatar, above the radio list.",
+            "why": "Name plus stable account ID identify the specific account, which is precisely what the earlier run reported absent from this dialog."
+          },
+          {
+            "question": "Is it clear how a role change is committed or cancelled?",
+            "visibleEvidence": "The only button rendered is 'Cancel' at the bottom right; no Save/Apply/Switch button is present.",
+            "why": "With no affirmative action, the user cannot tell whether selecting a radio takes effect immediately or requires a confirm that isn't there, making the primary purpose of the dialog ambiguous."
+          },
+          {
+            "question": "Is the copy complete and accurate?",
+            "visibleEvidence": "'Facility-Reservation Resident - Has resident access plus permission to reserve designated' ends with no terminal punctuation and no continuation.",
+            "why": "A role's permission description cut off mid-phrase is an accuracy failure at the point where the user is deciding between roles."
+          },
+          {
+            "question": "Does the option set match this persona's memberships?",
+            "visibleEvidence": "Three options -- Event Manager, Resident, Facility Resident -- matching the '3 roles' chip seen on Home.",
+            "why": "The count is internally consistent between Home and the dialog, and the role names are Apartment Events domain roles rather than generic ones."
+          }
+        ],
+        "screenshotHash": "f69f5985f942525f79151d54a347ffe53f746923bb7047d9cf7066410b90c984",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "ae2-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "ae2-sign-in-specific-person",
+          "ae2-entry-gate"
+        ],
+        "critique": "Identity is strongest here: 'Existing Accounts' is now populated with a teal group header 'Event Manager (Apartment Event Manager)' and a card showing a mint 'J' avatar, the name 'Jamie', 'ID: apartment-event-manager-20', and a green-check chip reading 'Signed in', so both who and what-role and current-status are all readable at once, and the populated state contrasts cleanly with the blank version on the entry gate. The problem is framing and navigation. This surface was reached from inside the 'Account role and permissions' dialog, but the header reads 'Welcome to Loom' / 'Choose an account below or create a new one.' -- there is no title matching the 'Sign in as a specific person' entry point, and no visible back arrow, close X, or app bar anywhere; the top ~100px is blank white with only a faint ghost of the previous screen's status bar. From these pixels a user who arrived via the role dialog has no rendered way back to Apartment Events, and the community-context footer that the entry gate carried ('...to continue to Apartment Events') is gone here, so the screen has also lost its community scoping. The prominent 'Create New Account' form with 'Persona type' pre-set to 'Event Manager' sits below an already-signed-in Event Manager account, which invites accidental duplicate account creation.",
+        "verdict": "pass",
+        "severity": "major",
+        "targetProductionSurface": "A titled account-switcher surface ('Sign in as a specific person') with a visible back/close control returning to Apartment Events, the community context retained in the header or footer, the populated account row and 'Signed in' chip kept as-is, and account creation demoted below or behind a secondary action so it doesn't compete with picking an existing account.",
+        "visibleObservations": [
+          "Blank white band at the top with a faint ghost of a status bar and no app bar, title, or back control",
+          "'Welcome to Loom' header card with 'Choose an account below or create a new one.'",
+          "Teal group header 'Event Manager (Apartment Event Manager)'",
+          "Account row: 'J' avatar, 'Jamie', 'ID: apartment-event-manager-20', chip with green check reading 'Signed in'",
+          "'Create New Account' with empty 'Display name', 'Persona type' = 'Event Manager', and a teal 'Sign Up' button",
+          "No footer mentioning Apartment Events, unlike the entry gate"
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and its status unambiguous?",
+            "visibleEvidence": "'Jamie' with 'ID: apartment-event-manager-20' and a green-check chip labelled 'Signed in'.",
+            "why": "Name, stable ID, role group header, and active status are all rendered in one row, leaving no ambiguity about which account is currently active."
+          },
+          {
+            "question": "Is it clear where this screen is and how to leave it?",
+            "visibleEvidence": "Top of the screen is blank white with no app bar; the only heading is 'Welcome to Loom'.",
+            "why": "The screen presents as a fresh entry gate rather than the 'Sign in as a specific person' picker reached from the role dialog, and no back or close control is drawn, so the return path to Apartment Events is not visible."
+          },
+          {
+            "question": "Is the persona scoping correct?",
+            "visibleEvidence": "Group header 'Event Manager (Apartment Event Manager)' above the single Jamie row.",
+            "why": "The one existing account is grouped under its actual Apartment Events role with the package's full role name, which is correct scoping for this community."
+          },
+          {
+            "question": "Are the actions clear?",
+            "visibleEvidence": "A full 'Create New Account' form with 'Persona type' already set to 'Event Manager' and an enabled-looking 'Sign Up' button occupies the lower half.",
+            "why": "Creating a second Event Manager is given equal or greater visual weight than the existing account row, so the primary intent -- switching to a specific person -- is not the visually dominant action."
+          }
+        ],
+        "screenshotHash": "6214f48c849ea92ede8212a9ed1ff9b3b0c64498f70b6873031eb8880a335b33",
+        "blocksPass": true
+      }
+    ],
+    "findings": [
+      {
+        "findingId": "role-dialog-description-truncated-and-no-confirm",
+        "title": "Role dialog truncates the Facility Resident description and offers no confirm action",
+        "description": "In the 'Account role and permissions' dialog the third option's description ends mid-sentence at 'Facility-Reservation Resident - Has resident access plus permission to reserve designated', clipped by the dialog's scroll edge with no terminal punctuation. The dialog's only button is 'Cancel' -- there is no Save, Apply, Switch, or 'Use this role' control -- so although the body copy instructs 'Choose the role you want to use in this community', nothing on screen states whether tapping a radio commits the change or whether the selection is lost. The user is asked to make a permissions decision on incomplete text with an unclear commit mechanism.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae2-persona-picker-dialog"
+        ],
+        "requiredFix": "Render every role description in full (allow wrapping/scrolling rather than a hard clip), and add an explicit confirm action alongside Cancel -- or, if selection commits immediately on tap, say so in the dialog copy.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "account-list-lacks-title-and-back-affordance",
+        "title": "'Sign in as a specific person' renders as the generic entry gate with no title or way back",
+        "description": "The account list reached from inside the role dialog is headed 'Welcome to Loom' / 'Choose an account below or create a new one.' with roughly 100px of blank white above it and no app bar, title, back arrow, or close control drawn anywhere. It also drops the community footer the entry gate carried ('Choose an active account or create one to continue to Apartment Events.'), so the screen loses both its 'sign in as a specific person' framing and its Apartment Events scoping. A user who opened it from the role picker has no visible return path.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae2-sign-in-specific-person"
+        ],
+        "requiredFix": "Give this surface its own title matching the entry point ('Sign in as a specific person') plus a visible back or close control returning to Apartment Events, and retain the community-context line so the screen is not mistaken for a cold-start gate.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "entry-gate-missing-empty-state-copy",
+        "title": "'Existing Accounts' empty state is a blank gap with no copy",
+        "description": "On the entry gate the bold 'Existing Accounts' heading is followed by an unlabelled blank white region and then a divider before 'Create New Account'. No text such as 'No accounts yet' is rendered. Compared against the populated version of the same section on the account-list screen (group header plus Jamie row), this confirms empty renders as pure absence, making an empty list visually identical to a list that is still loading or that failed to load.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae2-entry-gate"
+        ],
+        "requiredFix": "Render an explicit empty-state line under 'Existing Accounts' (e.g. 'No accounts on this device yet -- create one below') and distinct loading/error treatments so the three states are visually separable.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "home-role-chip-not-actionable",
+        "title": "Home's '3 roles' chip gives no cue that role switching is available",
+        "description": "The Home community card shows 'Signed in as Jamie' / 'Event Manager' with a flat '3 roles' pill on the right. The pill has no chevron, underline, or verb label, so it reads as a static count rather than an entry point; the actual role switcher lives behind the unlabelled people icon in the top app bar, which is not discoverable from this card. Additionally the 'Nothing is pinned yet' card below is clipped by the bottom navigation, hiding whatever supporting copy or manager-facing create action it contains.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae2-home-role-summary"
+        ],
+        "requiredFix": "Style the roles chip as an actionable control (chevron or 'Switch role' label) that opens the role dialog, and ensure the Home empty state renders fully above the bottom navigation with its supporting sentence and any persona-appropriate primary action.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "account-creation-competes-with-account-switching",
+        "title": "Create New Account form dominates the account-switcher surface",
+        "description": "On the 'Sign in as a specific person' surface, the single existing account row for Jamie occupies one compact card while a full 'Create New Account' form -- Display name field, 'Persona type' dropdown pre-set to 'Event Manager', and a solid teal 'Sign Up' button -- occupies the lower half of the screen. Since Jamie is already signed in as an Event Manager, the most visually prominent path invites creating a duplicate Event Manager account rather than switching between people.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "ae2-sign-in-specific-person"
+        ],
+        "requiredFix": "Demote account creation on this surface to a secondary action (collapsed section or 'Create a new account' link) so selecting an existing person is the dominant action when accounts already exist.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      }
+    ],
+    "blockingFindingIds": [
+      "role-dialog-description-truncated-and-no-confirm",
+      "account-list-lacks-title-and-back-affordance"
+    ],
+    "blockingQuestionIds": [],
+    "blockingScreenRowIds": [
+      "ae2-persona-picker-dialog",
+      "ae2-sign-in-specific-person",
+      "ae2-entry-gate"
+    ]
+  },
+  "deterministicScaffoldHolisticQuestionAnswers": [],
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "Yes, on every screen where an account exists. Home shows 'Signed in as Jamie' with 'Event Manager' beneath it; the role dialog shows a 'J' avatar with 'Signed in as Jamie' and the full account ID 'apartment-event-manager-20'; the account list shows the name 'Jamie' with the same ID and a 'Signed in' status chip. The entry gate legitimately shows no identity because no account exists yet. The prior run's specific failure -- persona type visible but account name absent on Home and in the role dialog -- is no longer reproducible in these pixels.",
+      "score": 88,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Home (ae2-home-role-summary): inset panel reads 'Signed in as Jamie' on the first line with bold 'Event Manager' on the second, inside the teal Apartment Events card, next to a '3 roles' chip.",
+        "Role dialog (ae2-persona-picker-dialog): mint circular avatar lettered 'J' beside 'Signed in as Jamie' and grey secondary line 'ID: apartment-event-manager-20', positioned above the Event Manager / Resident / Facility Resident radio list.",
+        "Account list (ae2-sign-in-specific-person): row reads 'Jamie' / 'ID: apartment-event-manager-20' under the group header 'Event Manager (Apartment Event Manager)' with a green check chip labelled 'Signed in'.",
+        "Entry gate (ae2-entry-gate): no identity shown anywhere, consistent with a pre-account state where the Existing Accounts region is empty."
+      ],
+      "affectedScreenRowIds": [
+        "ae2-entry-gate",
+        "ae2-home-role-summary",
+        "ae2-persona-picker-dialog",
+        "ae2-sign-in-specific-person"
+      ],
+      "scope": "holistic",
+      "verdict": "pass",
+      "evidenceUsed": [
+        "ae2-entry-gate",
+        "ae2-home-role-summary",
+        "ae2-persona-picker-dialog",
+        "ae2-sign-in-specific-person"
+      ]
+    }
+  ],
+  "deterministicScaffoldWorkflowPersonaScorecards": [],
+  "workflowPersonaScorecards": [],
+  "findings": [
+    {
+      "findingId": "role-dialog-description-truncated-and-no-confirm",
+      "title": "Role dialog truncates the Facility Resident description and offers no confirm action",
+      "description": "In the 'Account role and permissions' dialog the third option's description ends mid-sentence at 'Facility-Reservation Resident - Has resident access plus permission to reserve designated', clipped by the dialog's scroll edge with no terminal punctuation. The dialog's only button is 'Cancel' -- there is no Save, Apply, Switch, or 'Use this role' control -- so although the body copy instructs 'Choose the role you want to use in this community', nothing on screen states whether tapping a radio commits the change or whether the selection is lost. The user is asked to make a permissions decision on incomplete text with an unclear commit mechanism.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae2-persona-picker-dialog"
+      ],
+      "requiredFix": "Render every role description in full (allow wrapping/scrolling rather than a hard clip), and add an explicit confirm action alongside Cancel -- or, if selection commits immediately on tap, say so in the dialog copy.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "account-list-lacks-title-and-back-affordance",
+      "title": "'Sign in as a specific person' renders as the generic entry gate with no title or way back",
+      "description": "The account list reached from inside the role dialog is headed 'Welcome to Loom' / 'Choose an account below or create a new one.' with roughly 100px of blank white above it and no app bar, title, back arrow, or close control drawn anywhere. It also drops the community footer the entry gate carried ('Choose an active account or create one to continue to Apartment Events.'), so the screen loses both its 'sign in as a specific person' framing and its Apartment Events scoping. A user who opened it from the role picker has no visible return path.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae2-sign-in-specific-person"
+      ],
+      "requiredFix": "Give this surface its own title matching the entry point ('Sign in as a specific person') plus a visible back or close control returning to Apartment Events, and retain the community-context line so the screen is not mistaken for a cold-start gate.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "entry-gate-missing-empty-state-copy",
+      "title": "'Existing Accounts' empty state is a blank gap with no copy",
+      "description": "On the entry gate the bold 'Existing Accounts' heading is followed by an unlabelled blank white region and then a divider before 'Create New Account'. No text such as 'No accounts yet' is rendered. Compared against the populated version of the same section on the account-list screen (group header plus Jamie row), this confirms empty renders as pure absence, making an empty list visually identical to a list that is still loading or that failed to load.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae2-entry-gate"
+      ],
+      "requiredFix": "Render an explicit empty-state line under 'Existing Accounts' (e.g. 'No accounts on this device yet -- create one below') and distinct loading/error treatments so the three states are visually separable.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "home-role-chip-not-actionable",
+      "title": "Home's '3 roles' chip gives no cue that role switching is available",
+      "description": "The Home community card shows 'Signed in as Jamie' / 'Event Manager' with a flat '3 roles' pill on the right. The pill has no chevron, underline, or verb label, so it reads as a static count rather than an entry point; the actual role switcher lives behind the unlabelled people icon in the top app bar, which is not discoverable from this card. Additionally the 'Nothing is pinned yet' card below is clipped by the bottom navigation, hiding whatever supporting copy or manager-facing create action it contains.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae2-home-role-summary"
+      ],
+      "requiredFix": "Style the roles chip as an actionable control (chevron or 'Switch role' label) that opens the role dialog, and ensure the Home empty state renders fully above the bottom navigation with its supporting sentence and any persona-appropriate primary action.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "account-creation-competes-with-account-switching",
+      "title": "Create New Account form dominates the account-switcher surface",
+      "description": "On the 'Sign in as a specific person' surface, the single existing account row for Jamie occupies one compact card while a full 'Create New Account' form -- Display name field, 'Persona type' dropdown pre-set to 'Event Manager', and a solid teal 'Sign Up' button -- occupies the lower half of the screen. Since Jamie is already signed in as an Event Manager, the most visually prominent path invites creating a duplicate Event Manager account rather than switching between people.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "ae2-sign-in-specific-person"
+      ],
+      "requiredFix": "Demote account creation on this surface to a secondary action (collapsed section or 'Create a new account' link) so selecting an existing person is the dominant action when accounts already exist.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    }
+  ],
+  "unresolvedBlockerFindings": [],
+  "unresolvedMajorFindings": [
+    "role-dialog-description-truncated-and-no-confirm",
+    "account-list-lacks-title-and-back-affordance"
+  ]
+}

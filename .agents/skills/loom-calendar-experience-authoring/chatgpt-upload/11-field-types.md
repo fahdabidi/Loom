@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-07-16
+last_verified: 2026-08-09
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -15,7 +15,7 @@ derived_from:
 `instanceDataSchema` is the **single source of truth** for a workflow's data: validation, display,
 editability, and computation. Every field a workflow touches MUST be declared here.
 
-## Field object — all 14 attributes
+## Field object — all 15 attributes
 
 ```jsonc
 "<fieldName>": {
@@ -32,7 +32,8 @@ editability, and computation. Every field a workflow touches MUST be declared he
   "hideWhenEmpty": false,          // default false
   "maxLength": 500,
   "formula": "<expression>",       // makes the field COMPUTED (read-only)
-  "source": "query(<type> where <foreignField> == <localField>)"  // makes the field QUERY-BACKED (read-only)
+  "source": "query(<type> where <foreignField> == <localField>)",  // makes the field QUERY-BACKED (read-only)
+  "openMode": "external"|"embedded"|"choice"  // type: "url" only — see below. PROPOSED, not yet implemented.
 }
 ```
 
@@ -54,8 +55,115 @@ values below; an unrecognized type will parse but render unpredictably.
 | `personaId` | A single persona id | `personaId?` for nullable |
 | `personaId[]` | Array of persona ids | **The standard for member lists** |
 | `image` | Image reference | Use `storage: "reference"` |
+| `url` | An openable external or embedded link/document | ⚠️ PROPOSED, not yet implemented — see below. Use `url?` for nullable. |
 
 **Nullable convention:** append `?` (e.g. `date?`, `personaId?`) for fields that are legitimately empty.
+
+## `type: "url"` — external/embedded document and link fields (PROPOSED)
+
+⚠️ **PROPOSED 2026-08-09, not yet implemented.** Found while scoping Cedar Commons HOA's
+`hoa-member-document` and Riverside Youth Soccer's `soccer-waiver-document` on the v2 generic-archetype
+migration: both need a field whose value is a link the user can actually open (an embedded viewer, an
+external browser/app, or a choice of either), not just display as text. No existing mechanism does this —
+`GenericWorkflowInstanceCard` and every bespoke archetype (`EquipmentLoanArchetypeCard` included) render
+`instanceDataSchema` fields through the same shared fact-pill code, and that code only ever displays a
+field's value or fires an `applyTransition` call. Nothing today launches a URL or opens a webview as a
+side effect of anything.
+
+**This is deliberately a field-type/display capability, not a new archetype and not a new `effects.md`
+op.** Opening a link is a presentation action tied to one field's *value* — it has no bearing on workflow
+state, so it does not belong in the effects vocabulary (every effect op exists to mutate `instanceData`
+inside the same transaction as a state change; a platform navigation is neither). And because every
+archetype already consumes the same schema-driven field renderer, building this once at the field-type
+level makes it available to `event-rsvp`, `equipment-loan`, `votePoll`, and every 🟡 GENERIC archetype
+simultaneously — not something a community has to opt into per-archetype.
+
+```jsonc
+"externalUrl": {
+  "type": "url", "required": true, "writableBy": "formEntry",
+  "openMode": "choice",
+  "displayIcon": "description", "labelTemplate": "Open {value}"
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `openMode` | string | **yes**, for `type: "url"` fields | `external` — always opens via the platform's normal external-link handling (a new browser tab/app). `embedded` — always opens in an in-app viewer. `choice` — renders both an "Open embedded" and "Open externally" control and lets the user pick. |
+
+**Rendering contract:** the shared field renderer shows a `type: "url"` field as a tappable control (not
+plain text), labeled per `labelTemplate` if present, using the icon/style already established for
+actionable fields. Tapping it performs the platform action named by `openMode` — it does **not** call
+`applyTransition` and never mutates `instanceData`. A workflow that also needs to *record* that the link
+was opened (an audit trail, an acknowledgement) declares that as an ordinary transition with its own
+`appendUnique`/`set` effect on a separate field, exactly as any other user action — the two concerns are
+independent and composed by declaring both, not by overloading one field.
+
+**Why `openMode` is required, not defaulted:** an absent value could plausibly mean either "external is
+always safe, default to it" or "the author forgot to decide" — for a capability that reaches outside the
+app (launching another app, or rendering arbitrary content in an embedded viewer), defaulting silently is
+the wrong failure mode. Requiring an explicit choice makes the validator catch the omission
+(`missing_url_open_mode`) rather than guessing.
+
+**Validation (once implemented):** `type: "url"` fields MUST declare `openMode` as one of the three listed
+values → else `missing_url_open_mode` / `invalid_url_open_mode`. `openMode: "embedded"` or `"choice"`
+requires the embedded-viewer platform capability to actually be present in the build — declaring it
+without that capability wired is a build-time gap, not a JSON error (same category of honesty issue as
+`archetypes/README.md`'s `❌ NOT REAL` entries, not a new validator rule).
+
+**Known follow-on, deliberately out of scope here:** `openMode: "embedded"`/`"choice"` need an embedded
+viewer capability (`webview_flutter` is not currently a dependency of `loom_communities_app_shell` —
+confirmed by reading its `pubspec.yaml`). `openMode: "external"` only needs `url_launcher`, not currently
+a dependency either, but a materially smaller addition. Implementation may reasonably land `external`
+first and treat `embedded`/`choice` as a following increment — that is an implementation-sequencing
+decision, not a grammar change; the field-level contract above does not change based on which increments
+are built first.
+
+## Citation lists — `type: "url"` items inside a `type: "list"` field (PROPOSED)
+
+⚠️ **PROPOSED 2026-08-09, not yet implemented.** Found scoping Neighborhood Book Club's
+`book-search-ai-digest` and Masjid Nur's `mosque-search-ai-citation` workflows: both need a field that is a
+*list of citations* — each one a short label plus an openable source link — not a single link. The
+single-field `type: "url"` shape above covers "this one field is a link" but not "this field is a list, and
+each item in it is (label + link)."
+
+**This does not need a new field `type`.** A citation list is simply `type: "list"` whose items happen to be
+objects containing a `url`-shaped member, declared via an `itemSchema`:
+
+```jsonc
+"citations": {
+  "type": "list",
+  "writableBy": "effect",
+  "itemSchema": {
+    "label": { "type": "text" },
+    "source": { "type": "url", "openMode": "external" }
+  },
+  "displayIcon": "auto_stories",
+  "labelTemplate": "{value.length} sources"
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `itemSchema` | object | only meaningful on `type: "list"` fields whose items are objects with an openable member | Same field-object grammar as `instanceDataSchema` itself, one level down — each key is a member name, each value a field object. Only `type`/`openMode` are meaningful inside an `itemSchema` member today (no nested `formula`/`source`/`writableBy` — a citation item's members are plain data, written whole by whatever effect appends the citation). |
+
+**Rendering contract:** the shared field renderer, on encountering a `type: "list"` field with `itemSchema`
+containing a `type: "url"` member, renders each list item as a row with the non-`url` members (e.g. `label`)
+as text and the `url` member as a tappable control per that member's own `openMode` — exactly the same
+tap-triggers-platform-action, never-`applyTransition` contract as a top-level `type: "url"` field, just
+applied per-row instead of once. A list field with no `itemSchema`, or an `itemSchema` with no `url`-typed
+member, renders exactly as `type: "list"` does today (unchanged) — this is additive, not a new required
+attribute on every list.
+
+**Why not a new field type (e.g. `citationList`):** the list is still fundamentally "an array of things" —
+sorting, `size()` formulas, `hideWhenEmpty`, and `source`-query hydration should all keep working on it
+unchanged. The only new idea is "an item's member can itself be a `url`," which composes with the existing
+`type: "list"` + nested-object convention rather than requiring a parallel type.
+
+**Validation (once implemented):** `itemSchema` members follow the same `missing_url_open_mode`/
+`invalid_url_open_mode` rules as top-level fields, scoped to that item member (⚠️ proposed —
+`missing_url_open_mode`/`invalid_url_open_mode` fire identically whether the `type: "url"` declaration is
+top-level or inside an `itemSchema`, no new rule ids needed). `itemSchema` on a non-`"list"`-typed field is
+`item_schema_on_non_list_field` (⚠️ proposed, new).
 
 ## The four kinds of field — pick deliberately
 
@@ -190,3 +298,7 @@ person → `person_outline`, place → `location_on_outlined`, capacity → `gro
 | `source` must parse as `query(type where foreignField == localField)` | `invalid_source_query_syntax` |
 | `source`'s `workflowType` must be a declared type | `dangling_source_query_workflow_type` |
 | `source`'s `foreignField`/`localField` must resolve on their respective types | `dangling_instance_data_key` |
+| `type: "url"` requires `openMode` | `missing_url_open_mode` (⚠️ proposed) |
+| `openMode` must be `external`, `embedded`, or `choice` | `invalid_url_open_mode` (⚠️ proposed) |
+| `openMode` on a non-`"url"`-typed field | `url_open_mode_on_non_url_field` (⚠️ proposed) |
+| `itemSchema` on a non-`"list"`-typed field | `item_schema_on_non_list_field` (⚠️ proposed) |

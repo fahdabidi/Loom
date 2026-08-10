@@ -1,0 +1,120 @@
+{
+  "currentReviewRunId": "phaseA-legacy-camera-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B15",
+    "appId": "ext_camera_club",
+    "note": "Camera Club, part of the Phase A legacy-community sweep (loomEvidenceTargets, B15). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "camera-club-photo-walk-rsvp-start",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "photo-walk-rsvp",
+      "screenOrState": "photo-walk-rsvp workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+      "screenshotHash": "2998638337219c6298831f18b499b7585f58908c6146a9c5fae8c405b5fe5911"
+    },
+    {
+      "rowId": "camera-club-photo-walk-rsvp-action",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "photo-walk-rsvp",
+      "screenOrState": "photo-walk-rsvp workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+      "screenshotHash": "89f0034a1cbba44b673325028149e9bc15129836e81a0e1f5b9ea5e685bfd84d"
+    },
+    {
+      "rowId": "camera-club-photo-walk-rsvp-complete",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "photo-walk-rsvp",
+      "screenOrState": "photo-walk-rsvp workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png",
+      "screenshotHash": "b126c6581b58bacd942e49b65be3536be6cd267ac1a4b5d3f67d0af4f954f2e7"
+    },
+    {
+      "rowId": "camera-club-critique-submission-start",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "critique-submission",
+      "screenOrState": "critique-submission workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_start.png",
+      "screenshotHash": "1c062de7c4caf5220891765acecd80483badfc26805ad7dc39fedb473c886994"
+    },
+    {
+      "rowId": "camera-club-critique-submission-action",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "critique-submission",
+      "screenOrState": "critique-submission workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_action.png",
+      "screenshotHash": "abf7a3b8121a54b8ab8132fc4708d78dfd010cf8d585983b1a3600dcef520123"
+    },
+    {
+      "rowId": "camera-club-critique-submission-complete",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "critique-submission",
+      "screenOrState": "critique-submission workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_complete.png",
+      "screenshotHash": "f6c4c5df1fb63d2bba57f2e15f6d7b49caa46b2ea5f9b13f31c81da5211d89f4"
+    },
+    {
+      "rowId": "camera-club-gear-loan-request-start",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "gear-loan-request",
+      "screenOrState": "gear-loan-request workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
+      "screenshotHash": "8f157f5ce899043a1ce32d5056dc6ae94e98cc98ac9b09e102d58faca3a9dab1"
+    },
+    {
+      "rowId": "camera-club-gear-loan-request-action",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "gear-loan-request",
+      "screenOrState": "gear-loan-request workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
+      "screenshotHash": "98ab205d41eadf7ec620bf052eb19298776144236b9cf5bda120a00e97605075"
+    },
+    {
+      "rowId": "camera-club-gear-loan-request-complete",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "gear-loan-request",
+      "screenOrState": "gear-loan-request workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_complete.png",
+      "screenshotHash": "0502078d6b909d7f194d5d5c6074dd565eb9b74640a5ff849ea49c3257912cb0"
+    },
+    {
+      "rowId": "camera-club-camera-validation-report-start",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "camera-validation-report",
+      "screenOrState": "camera-validation-report workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_camera-validation-report_start.png",
+      "screenshotHash": "32ea057748b3f1c9e189b522c77d5a872ae58c3cc5f24bdad1e36611b1b066a8"
+    },
+    {
+      "rowId": "camera-club-camera-validation-report-action",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "camera-validation-report",
+      "screenOrState": "camera-validation-report workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_camera-validation-report_action.png",
+      "screenshotHash": "eac171463996827c69c44210c246a5e18d4a725fd78ceb199c0d216c0ec3c201"
+    },
+    {
+      "rowId": "camera-club-camera-validation-report-complete",
+      "communityName": "Camera Club",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "camera-validation-report",
+      "screenOrState": "camera-validation-report workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_camera-validation-report_complete.png",
+      "screenshotHash": "33c8938a94dbac47c132df57273d78afbdf14b7f21ec8bc7af120ba935a138a4"
+    }
+  ]
+}

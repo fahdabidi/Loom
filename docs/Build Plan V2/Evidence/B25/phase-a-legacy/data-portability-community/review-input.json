@@ -1,0 +1,255 @@
+{
+  "currentReviewRunId": "phaseA-legacy-data-portability-community-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B16",
+    "appId": "ext_export_migration",
+    "note": "Data Portability Community, part of the Phase A legacy-community sweep (loomEvidenceTargets, B16). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "data-portability-community-export-import-replay-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-replay",
+      "screenOrState": "export-import-replay workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_start.png",
+      "screenshotHash": "9d033ba746f442d016568b6dedf98c2a6bf67c147620e632103abbb61727e5f7"
+    },
+    {
+      "rowId": "data-portability-community-export-import-replay-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-replay",
+      "screenOrState": "export-import-replay workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_action.png",
+      "screenshotHash": "3a1f88732a57f229ebfe92b0acb7b8c601d9dd6cb8aa696576b113b95e7dc50f"
+    },
+    {
+      "rowId": "data-portability-community-export-import-replay-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-replay",
+      "screenOrState": "export-import-replay workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_complete.png",
+      "screenshotHash": "dc822c2395a244d34d6c263c9a2ee5b3d0b7a63d6418670b162f692cce100800"
+    },
+    {
+      "rowId": "data-portability-community-export-full-bundle-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-full-bundle",
+      "screenOrState": "export-full-bundle workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_start.png",
+      "screenshotHash": "6aacc2fc9f91f52344143213e0bec8578807f5b88b140cd2026acd226fc7bcb9"
+    },
+    {
+      "rowId": "data-portability-community-export-full-bundle-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-full-bundle",
+      "screenOrState": "export-full-bundle workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_action.png",
+      "screenshotHash": "1e8d1f1241226a3f8d182f77c205ad5062c23664b03c7627d52878e7c55ad991"
+    },
+    {
+      "rowId": "data-portability-community-export-full-bundle-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-full-bundle",
+      "screenOrState": "export-full-bundle workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_complete.png",
+      "screenshotHash": "f1094ba2d35fb263302c3c27b42881e2b714631df781d76b0975caf735456f9a"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-verification-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-verification",
+      "screenOrState": "export-transfer-verification workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_start.png",
+      "screenshotHash": "7a81152c6ced9043dab56f38c37e0d3e646cf721b39b3889552a5c87ec4a7987"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-verification-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-verification",
+      "screenOrState": "export-transfer-verification workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_action.png",
+      "screenshotHash": "9f576b1e97ccbb7d431bcacb616aa28db06c7176530fe3ed5fdb8231c564d90c"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-verification-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-verification",
+      "screenOrState": "export-transfer-verification workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_complete.png",
+      "screenshotHash": "a1c16428e75ffa4776bca2aa71329c0eaffc7af0a36fcd11640ff3ea4e5bd38e"
+    },
+    {
+      "rowId": "data-portability-community-export-protected-redaction-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-protected-redaction",
+      "screenOrState": "export-protected-redaction workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+      "screenshotHash": "fd0a340b26283ef9ef5ba20f2f5bae3c6b8a8bf77ddadb4547971a228ad226c1"
+    },
+    {
+      "rowId": "data-portability-community-export-protected-redaction-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-protected-redaction",
+      "screenOrState": "export-protected-redaction workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
+      "screenshotHash": "f8a232bd43d936a35570c6eace031f7fbebf1af0ef7348edb7113f63ec293748"
+    },
+    {
+      "rowId": "data-portability-community-export-protected-redaction-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-protected-redaction",
+      "screenOrState": "export-protected-redaction workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png",
+      "screenshotHash": "5612ad20b83228b0963ff7a170c3a0e8ed3b40d91e8059427e8e17e59908883e"
+    },
+    {
+      "rowId": "data-portability-community-export-redacted-bundle-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-redacted-bundle",
+      "screenOrState": "export-redacted-bundle workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
+      "screenshotHash": "6aacc2fc9f91f52344143213e0bec8578807f5b88b140cd2026acd226fc7bcb9"
+    },
+    {
+      "rowId": "data-portability-community-export-redacted-bundle-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-redacted-bundle",
+      "screenOrState": "export-redacted-bundle workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_action.png",
+      "screenshotHash": "1e8d1f1241226a3f8d182f77c205ad5062c23664b03c7627d52878e7c55ad991"
+    },
+    {
+      "rowId": "data-portability-community-export-redacted-bundle-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-redacted-bundle",
+      "screenOrState": "export-redacted-bundle workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_complete.png",
+      "screenshotHash": "f1094ba2d35fb263302c3c27b42881e2b714631df781d76b0975caf735456f9a"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-rollback-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-rollback",
+      "screenOrState": "export-transfer-rollback workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_start.png",
+      "screenshotHash": "8548d0f643200589f6a97bdd7a487c699fc5d83b3eda9cde6f1b438ba2b30231"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-rollback-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-rollback",
+      "screenOrState": "export-transfer-rollback workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_action.png",
+      "screenshotHash": "77ba1cdde466c22225ce19e15344c09ee5bed726561ad4136cfc3034fb0c7beb"
+    },
+    {
+      "rowId": "data-portability-community-export-transfer-rollback-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-transfer-rollback",
+      "screenOrState": "export-transfer-rollback workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_complete.png",
+      "screenshotHash": "6e18ef68610b5c3b21c5fd1cb35fc0e2d33226e7743a728abdc6f7815212def4"
+    },
+    {
+      "rowId": "data-portability-community-export-import-preview-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-preview",
+      "screenOrState": "export-import-preview workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_start.png",
+      "screenshotHash": "29679dbcc821686c0effff37f5e7580f4e356e3bef90522ae7c424178cc0a68b"
+    },
+    {
+      "rowId": "data-portability-community-export-import-preview-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-preview",
+      "screenOrState": "export-import-preview workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_action.png",
+      "screenshotHash": "3a1f88732a57f229ebfe92b0acb7b8c601d9dd6cb8aa696576b113b95e7dc50f"
+    },
+    {
+      "rowId": "data-portability-community-export-import-preview-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-import-preview",
+      "screenOrState": "export-import-preview workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_complete.png",
+      "screenshotHash": "dc822c2395a244d34d6c263c9a2ee5b3d0b7a63d6418670b162f692cce100800"
+    },
+    {
+      "rowId": "data-portability-community-export-schema-listing-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-schema-listing",
+      "screenOrState": "export-schema-listing workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
+      "screenshotHash": "6b6119b506cf750b9414a73a8261c8a81adac38cb78734d556128a9005a07706"
+    },
+    {
+      "rowId": "data-portability-community-export-schema-listing-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-schema-listing",
+      "screenOrState": "export-schema-listing workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_action.png",
+      "screenshotHash": "cb5fc0bbc2cc91e6f97fe14a81ba010299bf50a55b98d8b15f33cb811589d315"
+    },
+    {
+      "rowId": "data-portability-community-export-schema-listing-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-schema-listing",
+      "screenOrState": "export-schema-listing workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_complete.png",
+      "screenshotHash": "7c7a4d3efda31be1b73f9d7262ab075021bb1b760b86672a7cf11753fa296eed"
+    },
+    {
+      "rowId": "data-portability-community-export-checksum-evidence-start",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-checksum-evidence",
+      "screenOrState": "export-checksum-evidence workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_start.png",
+      "screenshotHash": "e3a0f0b0c4035da789178819dc06284c75c0263f46b79c67617dd7abed93e0ce"
+    },
+    {
+      "rowId": "data-portability-community-export-checksum-evidence-action",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-checksum-evidence",
+      "screenOrState": "export-checksum-evidence workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_action.png",
+      "screenshotHash": "0c176cfdb7fe9453dd056a3434cd8366b5c35fe38a75cb9ace02a2a472e4334e"
+    },
+    {
+      "rowId": "data-portability-community-export-checksum-evidence-complete",
+      "communityName": "Data Portability Community",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "export-checksum-evidence",
+      "screenOrState": "export-checksum-evidence workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_complete.png",
+      "screenshotHash": "ae5419e23cfae5549791fd181169ce95b85d17dadf6de4128d2db58600066ee7"
+    }
+  ]
+}

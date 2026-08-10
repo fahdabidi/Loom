@@ -1,0 +1,124 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the five
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Identity/context legibility: can the user tell who they are (their actual account/display name, not just
+  a role/persona type) and what role they are acting as?
+- State legibility: is the current state (loading/empty/error/populated) unambiguous?
+- Copy accuracy: does displayed text sound like real product copy describing actual data, or is it generic/
+  placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown match what this persona should see?
+
+Additionally, for any screen that shows an error message, an empty state, or a disabled/unsupported
+control, classify the gap (in that screen's findings entry, if you create one) as one of:
+- "product-spec-gap" -- the community's product doc calls for this and it's simply not built yet
+- "implementation-gap" -- real application code needs to change
+- "evidence-gap" -- you cannot tell from this screenshot alone; more capture is needed
+
+Community: Cedar Commons HOA (an HOA community package: "Run dues, documents, facilities, reviews, and
+exports" per its product doc), installed from a locally-authored JSON package (extensionId
+ext_verify_cedar_commons_hoa) as part of testing the generic JSON-driven archetype pipeline -- this
+specific package is NOT the community's older, legacy hardcoded version (which also exists in the app
+under the same display name; ignore it, you are only shown screens from the new package). The signed-in
+account for all screens after the first is a Homeowner persona; the display name shown may read
+"Priya_Nairt" or "Priya_Nair" depending on the screen -- both are tester-entered demo names, not a data
+bug, do not flag the trailing "t" as a copy-accuracy issue.
+
+Screenshots to review (read each with your Read tool):
+1. rowId "hoa-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/home-signed-in.png
+   -- the community Home tab immediately after signing up as a Homeowner.
+2. rowId "hoa-home-document-detail" -- docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/home-document-detail.png
+   -- Home tab scrolled to the "Governing Rules v3" document instance, expanded to show its fields
+   (Title, Version, an "Open" field, Access Level) and Acknowledge/Download buttons. Look closely at the
+   "Open" row above the plain-text fields -- it is a fact pill, not a form field, and its exact rendered
+   state (label, icon, whether it looks tappable) is the specific thing being tested here.
+3. rowId "hoa-calendar-tab" -- docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/calendar-bug.png
+   -- the Calendar tab, which should show a seeded facility reservation.
+4. rowId "hoa-marketplace-tab" -- docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/marketplace-empty.png
+   -- the Marketplace tab.
+5. rowId "hoa-giving-tab" -- docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/giving-empty.png
+   -- the Giving tab, which should show a seeded dues-payment instance for this Homeowner to pay.
+
+Pay particular attention to:
+- Screen 2's "Open" fact pill: is its current visual state (a normal-looking action vs. a visibly
+  degraded/disabled-looking one) legible enough that a real user would understand whether tapping it does
+  anything, or would they be confused about why it looks different from the buttons below it?
+- Screens 3 and 5: both show a tab that a homeowner would reasonably expect to show real content (a
+  reservation, a dues bill) but neither does. Evaluate whether the screen communicates WHY nothing is
+  there (a genuine empty state) or whether it looks broken/incomplete with no explanation -- this
+  distinction matters for classifying severity.
+- Screen 4 is the one tab in this set that is an intentional, no-content-bound empty state (nothing should
+  be wrong with it) -- use it as your comparison point for what a correct empty state looks like versus
+  screens 3 and 5.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-cedar-commons-hoa-cjm2-smoketest-1",
+  "freshReview": true,
+  "appCommitSha": "51d81e8c",
+  "reviewedScreenRowIds": ["hoa-home-signed-in", "hoa-home-document-detail", "hoa-calendar-tab", "hoa-marketplace-tab", "hoa-giving-tab"],
+  "reviewedScreenshotHashes": ["9e55d3ea7752cece119a381d5fab413520fd81c0cf94d403df12349bd363d15c", "10456610277a87b81416446218cad6aa6a4e2940802511b291e22988c4ad33b5", "8a9cf05f72a8aae462d5171ed17e2fd3d5c4798d64884c9bafa52f04b8744581", "1053e6cfa606fc8d3e6c07e727060041678d19c86185021623947f3a2341a673", "184696b0385a2acf286c938e10c7b68c9522d388bbbe4f9e2784798c3e3dfee9"],
+  "reviewerType": "llm-vision-agent-tool-dispatch",
+  "summary": "<2-4 sentence overall summary of what you found across all five screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    },
+    {
+      "questionId": "empty-vs-broken-state-legibility",
+      "question": "For the Calendar and Giving tabs specifically, does the screen communicate that this is a genuine empty/error state (as opposed to looking incomplete or broken with no explanation)?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["hoa-calendar-tab", "hoa-giving-tab", "hoa-marketplace-tab"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 5 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 5), with real per-screen critique --
+do not skip any row or reuse the same critique text across rows. Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere in your response.

@@ -1,0 +1,255 @@
+{
+  "currentReviewRunId": "phaseA-legacy-masjid-nur-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B14",
+    "appId": "ext_mosque",
+    "note": "Masjid Nur, part of the Phase A legacy-community sweep (loomEvidenceTargets, B14). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "masjid-nur-mosque-donor-visibility-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donor-visibility",
+      "screenOrState": "mosque-donor-visibility workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+      "screenshotHash": "236c82142d662ff8be2919b28002ef14c491bdbf1ddd62c38ac43bd86eda79c1"
+    },
+    {
+      "rowId": "masjid-nur-mosque-donor-visibility-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donor-visibility",
+      "screenOrState": "mosque-donor-visibility workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+      "screenshotHash": "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447"
+    },
+    {
+      "rowId": "masjid-nur-mosque-donor-visibility-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donor-visibility",
+      "screenOrState": "mosque-donor-visibility workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png",
+      "screenshotHash": "597ad4f27c746eb10e09f94e5debea4d4f9a4e3398b96a46e039c59299cce2d5"
+    },
+    {
+      "rowId": "masjid-nur-mosque-search-ai-citation-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-search-ai-citation",
+      "screenOrState": "mosque-search-ai-citation workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png",
+      "screenshotHash": "9604dd6299cb8210f224a6b45c4f65ff8928f6126c9e82275833ae44815562ad"
+    },
+    {
+      "rowId": "masjid-nur-mosque-search-ai-citation-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-search-ai-citation",
+      "screenOrState": "mosque-search-ai-citation workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_action.png",
+      "screenshotHash": "fe1bed61f8aba91397c42b4aafc401e4f6da32e9b3db651ae485589cae44851f"
+    },
+    {
+      "rowId": "masjid-nur-mosque-search-ai-citation-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-search-ai-citation",
+      "screenOrState": "mosque-search-ai-citation workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_complete.png",
+      "screenshotHash": "de1a59a33d144e91cd05a354545bbe9df08517f5fce276b13622fd07e257a37d"
+    },
+    {
+      "rowId": "masjid-nur-mosque-announcement-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-announcement",
+      "screenOrState": "mosque-announcement workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_start.png",
+      "screenshotHash": "f700211d2de57894ec3ed58dc2e6f9c1e319775638ab71b1e2a1a5d9871807b5"
+    },
+    {
+      "rowId": "masjid-nur-mosque-announcement-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-announcement",
+      "screenOrState": "mosque-announcement workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_action.png",
+      "screenshotHash": "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44"
+    },
+    {
+      "rowId": "masjid-nur-mosque-announcement-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-announcement",
+      "screenOrState": "mosque-announcement workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_complete.png",
+      "screenshotHash": "7e163b212b0e7e48f83fd85fc85acca22cb664129d2a5bfb65c9819ba732e83d"
+    },
+    {
+      "rowId": "masjid-nur-mosque-donation-payment-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donation-payment",
+      "screenOrState": "mosque-donation-payment workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_start.png",
+      "screenshotHash": "f78b44f3eeb65f8029adf6f2f5f1fbed87e1f6884092a6a1b4a602d0c4e1aeec"
+    },
+    {
+      "rowId": "masjid-nur-mosque-donation-payment-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donation-payment",
+      "screenOrState": "mosque-donation-payment workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_action.png",
+      "screenshotHash": "3228702b515c3c9ccb591d8eae68fe882ec538e3eb89ef1e5b9ec24eddbf5e59"
+    },
+    {
+      "rowId": "masjid-nur-mosque-donation-payment-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-donation-payment",
+      "screenOrState": "mosque-donation-payment workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_complete.png",
+      "screenshotHash": "1ae5984e8cd1107fd25daf9d6dea7a1946c9dab7e7f1a784b13fe19c053eed7a"
+    },
+    {
+      "rowId": "masjid-nur-mosque-discussion-thread-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-discussion-thread",
+      "screenOrState": "mosque-discussion-thread workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_start.png",
+      "screenshotHash": "245a1c0f564d7040853a21e392b8b6058be8d45467e1108cba19fb6241b85659"
+    },
+    {
+      "rowId": "masjid-nur-mosque-discussion-thread-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-discussion-thread",
+      "screenOrState": "mosque-discussion-thread workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_action.png",
+      "screenshotHash": "fe1bed61f8aba91397c42b4aafc401e4f6da32e9b3db651ae485589cae44851f"
+    },
+    {
+      "rowId": "masjid-nur-mosque-discussion-thread-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-discussion-thread",
+      "screenOrState": "mosque-discussion-thread workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-discussion-thread_complete.png",
+      "screenshotHash": "de1a59a33d144e91cd05a354545bbe9df08517f5fce276b13622fd07e257a37d"
+    },
+    {
+      "rowId": "masjid-nur-mosque-event-rsvp-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-event-rsvp",
+      "screenOrState": "mosque-event-rsvp workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_start.png",
+      "screenshotHash": "b81f313ac2a0ad352bf05969e1b127386d672afead65c72f64ba40d0818d625c"
+    },
+    {
+      "rowId": "masjid-nur-mosque-event-rsvp-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-event-rsvp",
+      "screenOrState": "mosque-event-rsvp workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_action.png",
+      "screenshotHash": "f47713eb6df7182a208ba1810ed186f0014354b85eb5470cc98dd6079bd898fc"
+    },
+    {
+      "rowId": "masjid-nur-mosque-event-rsvp-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-event-rsvp",
+      "screenOrState": "mosque-event-rsvp workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_complete.png",
+      "screenshotHash": "bad7ca9ef15f127e7bcd309d58b9049ca36e03563a025ea714840279f59fcc2a"
+    },
+    {
+      "rowId": "masjid-nur-mosque-care-request-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-care-request",
+      "screenOrState": "mosque-care-request workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_start.png",
+      "screenshotHash": "0a94e4050819b364f6a0f9673d53c3afa080d159d886c67e61a8e4daee333d2f"
+    },
+    {
+      "rowId": "masjid-nur-mosque-care-request-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-care-request",
+      "screenOrState": "mosque-care-request workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_action.png",
+      "screenshotHash": "25a253485cf007c45627ba6fec112b3bfed039bf7eb7771a02deb7bc0050ccc6"
+    },
+    {
+      "rowId": "masjid-nur-mosque-care-request-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-care-request",
+      "screenOrState": "mosque-care-request workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_complete.png",
+      "screenshotHash": "6c04d48fbafe046ec6127a1fc6cd603fdce944f0080c87d06747c0fef2381107"
+    },
+    {
+      "rowId": "masjid-nur-mosque-volunteer-signup-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-volunteer-signup",
+      "screenOrState": "mosque-volunteer-signup workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_start.png",
+      "screenshotHash": "642a24f35cadb5160ba2d800d2636086fbbc2cda9782b513384a631757859849"
+    },
+    {
+      "rowId": "masjid-nur-mosque-volunteer-signup-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-volunteer-signup",
+      "screenOrState": "mosque-volunteer-signup workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_action.png",
+      "screenshotHash": "49e6fc594c77dca1eb94d587a9ea6482c45fd0f8b42892ccb0aa00b1a1aad937"
+    },
+    {
+      "rowId": "masjid-nur-mosque-volunteer-signup-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-volunteer-signup",
+      "screenOrState": "mosque-volunteer-signup workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_complete.png",
+      "screenshotHash": "97405316610feacefce1f58ed05f52770b5a88196dc84bde2884133275468ade"
+    },
+    {
+      "rowId": "masjid-nur-mosque-neutral-notification-start",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-neutral-notification",
+      "screenOrState": "mosque-neutral-notification workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_start.png",
+      "screenshotHash": "4e802760e724baad9977c61c66e04d6c07dacd213b7ec1f87655facaf93cfc61"
+    },
+    {
+      "rowId": "masjid-nur-mosque-neutral-notification-action",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-neutral-notification",
+      "screenOrState": "mosque-neutral-notification workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_action.png",
+      "screenshotHash": "b677a8791f9a307ebea0760cc43a96f773a5017a443e61411a8dc53cd4fb5f2a"
+    },
+    {
+      "rowId": "masjid-nur-mosque-neutral-notification-complete",
+      "communityName": "Masjid Nur",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "mosque-neutral-notification",
+      "screenOrState": "mosque-neutral-notification workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_complete.png",
+      "screenshotHash": "dbbb84847d7059727299703c3ee0d1b0e15147c0972caafc2113240b6e8e8664"
+    }
+  ]
+}

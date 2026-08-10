@@ -1,0 +1,106 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+This community uses the legacy flat schema (no engine-native persona/account system) and bypasses the
+entry gate and persona-picker entirely -- there is no signed-in identity concept here. So for this review,
+treat the "identity/context legibility" rubric dimension as: can the user tell what workflow and what
+state (start/in-progress/complete) they are looking at, even without an account system? Do not fail a
+screen merely for lacking a signed-in-account display -- that is expected and correct for this schema.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Context/state legibility: is it clear what workflow this is and what state (loading/empty/error/start/
+  in-progress/complete) it is in?
+- Copy accuracy: does displayed text sound like real product copy describing actual community content, or
+  is it generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown make sense for the workflow being demonstrated?
+- Visual quality: no repeated generic card shells, no thin/empty content where real content is expected, no
+  obvious layout clipping or crowding.
+
+Community: Cedar Commons HOA (community_id: ext_hoa, phase B14 of this repo's B25 evidence catalog).
+
+Screenshots to review (read each with your Read tool -- there are 21 of them, grouped by workflow):
+- rowId "cedar-commons-hoa-hoa-facility-reservation-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png -- hoa-facility-reservation workflow, start state
+- rowId "cedar-commons-hoa-hoa-facility-reservation-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png -- hoa-facility-reservation workflow, action state
+- rowId "cedar-commons-hoa-hoa-facility-reservation-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png -- hoa-facility-reservation workflow, complete state
+- rowId "cedar-commons-hoa-hoa-export-evidence-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png -- hoa-export-evidence workflow, start state
+- rowId "cedar-commons-hoa-hoa-export-evidence-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png -- hoa-export-evidence workflow, action state
+- rowId "cedar-commons-hoa-hoa-export-evidence-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png -- hoa-export-evidence workflow, complete state
+- rowId "cedar-commons-hoa-hoa-architectural-request-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_start.png -- hoa-architectural-request workflow, start state
+- rowId "cedar-commons-hoa-hoa-architectural-request-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_action.png -- hoa-architectural-request workflow, action state
+- rowId "cedar-commons-hoa-hoa-architectural-request-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_complete.png -- hoa-architectural-request workflow, complete state
+- rowId "cedar-commons-hoa-hoa-dues-payment-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_start.png -- hoa-dues-payment workflow, start state
+- rowId "cedar-commons-hoa-hoa-dues-payment-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_action.png -- hoa-dues-payment workflow, action state
+- rowId "cedar-commons-hoa-hoa-dues-payment-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_complete.png -- hoa-dues-payment workflow, complete state
+- rowId "cedar-commons-hoa-hoa-committee-decision-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_start.png -- hoa-committee-decision workflow, start state
+- rowId "cedar-commons-hoa-hoa-committee-decision-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_action.png -- hoa-committee-decision workflow, action state
+- rowId "cedar-commons-hoa-hoa-committee-decision-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_complete.png -- hoa-committee-decision workflow, complete state
+- rowId "cedar-commons-hoa-hoa-member-document-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_start.png -- hoa-member-document workflow, start state
+- rowId "cedar-commons-hoa-hoa-member-document-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_action.png -- hoa-member-document workflow, action state
+- rowId "cedar-commons-hoa-hoa-member-document-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_complete.png -- hoa-member-document workflow, complete state
+- rowId "cedar-commons-hoa-hoa-owner-notification-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_start.png -- hoa-owner-notification workflow, start state
+- rowId "cedar-commons-hoa-hoa-owner-notification-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_action.png -- hoa-owner-notification workflow, action state
+- rowId "cedar-commons-hoa-hoa-owner-notification-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_complete.png -- hoa-owner-notification workflow, complete state
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-legacy-cedar-commons-hoa-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["cedar-commons-hoa-hoa-facility-reservation-start", "cedar-commons-hoa-hoa-facility-reservation-action", "cedar-commons-hoa-hoa-facility-reservation-complete", "cedar-commons-hoa-hoa-export-evidence-start", "cedar-commons-hoa-hoa-export-evidence-action", "cedar-commons-hoa-hoa-export-evidence-complete", "cedar-commons-hoa-hoa-architectural-request-start", "cedar-commons-hoa-hoa-architectural-request-action", "cedar-commons-hoa-hoa-architectural-request-complete", "cedar-commons-hoa-hoa-dues-payment-start", "cedar-commons-hoa-hoa-dues-payment-action", "cedar-commons-hoa-hoa-dues-payment-complete", "cedar-commons-hoa-hoa-committee-decision-start", "cedar-commons-hoa-hoa-committee-decision-action", "cedar-commons-hoa-hoa-committee-decision-complete", "cedar-commons-hoa-hoa-member-document-start", "cedar-commons-hoa-hoa-member-document-action", "cedar-commons-hoa-hoa-member-document-complete", "cedar-commons-hoa-hoa-owner-notification-start", "cedar-commons-hoa-hoa-owner-notification-action", "cedar-commons-hoa-hoa-owner-notification-complete"],
+  "reviewedScreenshotHashes": ["088fb2e3a20a72bd5721cddb038159fcce30148a61bf6b92dd5ce631cdffa892", "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0", "399d4aafe604d869c6fc6348adde9dfacce39d1ed303252b32f618abf7767e47", "9e679f131ce4ea32a2fd0614fd65d8339191ac098c98c35c3a42d1d4cbaaa6b6", "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c", "6e48b551899c349f1b98b6f6a717bffe64eacf72c7e503b60c6be06cd81bdc6b", "79a991a7a3bd2ff0c70ec48da78f3f2e0710d7fc63453ef271a3c83c4f99d5c0", "a2217a62325ba9cad3310513c5886ce8fb374ab3b0ba43b90e291a8a191d8567", "fbe29ccd828f78f81ede75531b7c18f39006720bcf76b43ecae650b27fd6856d", "24563d2478fecd9f8d5df5eef27d96586254012cfed734e38a90dbf67f9af359", "3b2cfd9beb4239c7d31c829d96a754c3d31515167434ce3d89b897fd3c659a99", "0fe7e049bd0a9244c172e4cc5b580fa712351fe3efd25a9c9bc0b7e4ba2b26b0", "7c038e402c35beb6df13e932f98a4d7e3a587a6c3a1c3bbdeb0e58d166164d71", "606d1ecfdc1e974b7a970dea341412e3e6ba708c00ef9bc0b93fb3e2a40edfb3", "56c9b6e38708c5b901c1e0bb32b3b9d26dba89c269c16fb073d9c408859b81fa", "764ed22d9ca72e1e29dda0d56250df2e39aa2433b81c4b7f2da213c957f0a9d3", "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a", "96122afad79139800a010643e46da34385b9194a496377f6daecec0ececea1aa", "4cee1d240e8ab206cd7d74c19b4719e4408a07b635c680c4dbb35d8fcff98c17", "4778b54477859cea6c865d619133d1d08761b47fcb4fb42f4f3dfa0b61dbcbfc", "eebb0542e89f5f5f053fd8a284697832a10140009fd2667c0ab0f075192cd052"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 21 of them), with real
+per-screen critique -- do not skip any row or reuse the same critique text across rows. Do not include
+sourceReviewRunId, carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere
+in your response.

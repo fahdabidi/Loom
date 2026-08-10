@@ -10,38 +10,50 @@ never write Dart, Flutter, or any other code, and you will never invent an API. 
 community can do is expressed as JSON: state machines (`workflowDefinitions`), data schemas, guards,
 effects, formulas, and render bindings. The files in this bundle enumerate that grammar completely.
 
-## Scope for this test — Calendar only
+## Scope — every real archetype, not just Calendar
 
-This bundle is a deliberately narrowed subset of Loom's full authoring reference, scoped to exactly one
-*render surface*: **the Calendar tab, using the `event-rsvp` `cardSurfaceFamily`** — because that is the
-one part of Loom's real, running reference implementation (Tabletop Club) that has been built and
-verified end-to-end as of this bundle's creation.
+**Broadened 2026-08-09** (this bundle was Calendar/`event-rsvp`-only from 2026-08-04 through 2026-08-09).
+You may author a `workflowDefinitions` entry for **any** workflow whose correct `cardSurfaceFamily` is
+listed as real in `15-archetypes.md` (the live source of truth — always check it, this list is a summary,
+not a substitute):
 
-**"Calendar only" constrains the render surface, not the number of workflow types.** You may declare as
-many `workflowDefinitions` entries as the request genuinely needs, as long as every one of them renders
-with `tabId: "calendar"` and `cardSurfaceFamily: "event-rsvp"`. Two things that don't share the same
-states and transitions are two separate workflow types — that's `01-authoring-procedure.md` Step 2's
-ordinary test, not you inventing a second archetype. For example: a plain event-RSVP type *and* a
-separate facility/amenity-reservation type (its own states like `available`/`reserved`, its own `reserve`
-transition restricted to a privileged persona) are **both in scope** as two workflow types sharing one
-calendar surface — exactly how Tabletop Club's real JSON declares `event-rsvp` and `tournament-event` as
-two separate types both bound to `tabId: "calendar"`. Do not refuse or scope-narrow a request just because
-it needs more than one workflow type; only refuse when it needs a different `cardSurfaceFamily`.
+- **3 real bespoke archetypes**: `event-rsvp` (event/RSVP/reminder — see `17-worked-example-calendar.jsonc`
+  for the full worked pattern), `votePoll` (ballot/tally/eligibility/runoff), `equipment-loan` (loan/
+  reservation/giveaway with a queue).
+- **6 generic-but-real archetypes** (rendered by the shared generic card, not a bespoke widget):
+  `paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`,
+  `notificationInbox`.
+- `02-common-patterns.md` (the full copy of Loom's canonical patterns file) has a ready-made pattern for
+  six of these nine: P1 RSVP, P2 ballot, P3 approval queue, P4 loan, P5 payment, P6 discussion thread.
+  `formEntry`/`notificationInbox`/`statusTimeline` are simple enough to build directly from
+  `07-workflow-grammar.md` + `11-field-types.md` without a dedicated worked pattern.
 
-What's actually out of scope is a different *render surface* entirely: payments (`paymentCheckout`),
-ballots (`votePoll`), loans (`equipment-loan`), marketplaces, document libraries, discussion threads, and
-so on — those need a `cardSurfaceFamily` other than `event-rsvp`, which nothing in this bundle documents
-as real yet. If a request genuinely needs one of those (e.g. real payment processing beyond a
-display-only fee label), say so explicitly rather than approximate it with calendar constructs.
+**Two workflow types sharing one render surface is normal, not scope-narrowing.** You may declare as many
+`workflowDefinitions` entries as a request genuinely needs. Two things that don't share the same states and
+transitions are two separate workflow types — that's `01-authoring-procedure.md` Step 2's ordinary test,
+not you inventing a second archetype.
 
-Within Calendar, you may build:
-- The event itself: scheduling, capacity, cancellation, editing.
-- Member RSVP: going / maybe / declined / waitlisted, with a real capacity guard.
-- Reminders: a per-member notification created before an event starts.
-- A second (or third...) calendar-bound workflow type for a genuinely different kind of calendar entry —
-  e.g. an amenity/facility reservation slot with its own states/transitions/guards, restricted to a
-  privileged persona — as long as it still renders via `tabId: "calendar"` /
-  `cardSurfaceFamily: "event-rsvp"`.
+**What's actually out of scope**: a `cardSurfaceFamily` NOT listed as real in `15-archetypes.md` —
+currently `documentLibrary`, `exportWizard`, `audienceSelector`, `stateMachineGrid`/`table`,
+`volunteerRoster`, `searchAiAnswer`, `singleItem`. If a request genuinely needs one of those, say so
+explicitly (which part of the request, why, what family it would need) rather than approximating it with a
+real archetype it doesn't belong to. A `documentLibrary`-shaped need (a document with an open/download
+action) is usually expressible as `formEntry` + a `type:"url"` field instead — see `11-field-types.md` —
+check that before declaring the whole request out of scope.
+
+**If a request is only partially in scope** (the common case for a real, multi-workflow community): author
+the in-scope part completely and validator-clean, and report everything else by name/section/needed-family
+in the same response, rather than refusing the whole request or silently dropping part of it.
+
+⚠️ **A trap to watch for, found 2026-08-09 authoring against a real product doc**: some product docs have
+their own "Card Surface Registry Mapping" table naming surfaces like `payment`, `documents`, `calendar`,
+`workflow-status`, `notification-inbox`, `portability` — **these are not real `cardSurfaceFamily` values**.
+Always translate through `15-archetypes.md`'s real names instead of copying a product doc's own table
+literally: `payment`→`paymentCheckout`, `documents`→`formEntry`+`type:"url"` (not `documentLibrary`, which
+isn't real), `calendar`→`event-rsvp`, `workflow-status`→`approvalQueueItem`/`statusTimeline`,
+`notification-inbox`→`notificationInbox`, `portability`→`formEntry` (not `exportWizard`, which isn't real —
+and never fabricate a checksum/export-id value; real checksum/ID generation are both unimplemented platform
+services per `14-platform-services.md`, so a hardcoded-looking hash is a hard antipattern, not a shortcut).
 
 ## Hard rules — never violate these
 
@@ -63,8 +75,9 @@ Within Calendar, you may build:
    and report it plainly instead of inventing a workaround.
 5. **Never seed or effect-write a computed (`formula`) field.** Computed fields are derived at read time
    only.
-6. **Never invent a `cardSurfaceFamily` value.** For this Calendar-only scope, the only value you should
-   need is `event-rsvp` — see `15-archetypes.md` for why others don't apply here.
+6. **Never invent a `cardSurfaceFamily` value not listed as real in `15-archetypes.md`.** Do not copy a
+   product doc's own "Card Surface Registry Mapping" table names either — see the CardSurfaces vocabulary
+   trap in the Scope section above; those names are a different, incompatible vocabulary.
 7. **When the grammar genuinely cannot express something, say so.** Never approximate, never silently
    drop a stated requirement, never substitute a hardcoded value for one that should be computed.
 
@@ -75,11 +88,11 @@ Within Calendar, you may build:
 | 1 | `01-authoring-procedure.md` | Always — read this in full before writing anything. It's the algorithm: personas → workflow types → states-vs-data → states/transitions → data schema → guards → effects → render bindings → seed data → self-check → (validate). |
 | 2 | `07-workflow-grammar.md` | Always — the normative contract every workflow definition must satisfy. |
 | 3 | `08-guards.md`, `09-effects.md`, `10-formulas.md`, `11-field-types.md` | Always — you will reach for these four constantly while writing transitions and data schemas. |
-| 4 | `02-common-patterns.md` — specifically **P1, "RSVP with capacity and waitlist"** | The canonical, simplest RSVP shape. Use this if the request is plain "members RSVP to events," nothing more. |
-| 5 | `17-worked-example-calendar.jsonc` | The richer pattern: per-member response rows (`event-rsvp-response`) plus a `notification` type, needed as soon as the request includes reminders or any other per-member follow-up. Read the comments — they explain why this shape exists and cite exactly which constructs are confirmed real. |
-| 6 | `12-render-bindings.md` | When deciding where the event card appears and how it presents (tabs, roles, actions, FAB). |
-| 7 | `05-actions-and-fabs.md` | When deciding whether an organizer's "create event" affordance should be a FAB, and how member RSVP actions should present. |
-| 8 | `15-archetypes.md` | To confirm `event-rsvp` is the correct — and, in this scope, the only relevant — `cardSurfaceFamily`. |
+| 4 | `02-common-patterns.md` | Read the pattern(s) matching what the request needs — **P1** RSVP with capacity/waitlist, **P2** ballot with tally/eligibility/runoff, **P3** approval queue (propose→decide), **P4** loan lifecycle with queue, **P5** payment, **P6** discussion thread. A community needing several archetypes means reading several patterns. |
+| 5 | `17-worked-example-calendar.jsonc` | The richer per-member-row pattern for `event-rsvp`: response rows (`event-rsvp-response`) plus a `notification` type, needed as soon as an event-shaped request includes reminders or other per-member follow-up. Read the comments — they explain why this shape exists and cite exactly which constructs are confirmed real. |
+| 6 | `12-render-bindings.md` | When deciding where each card appears and how it presents (tabs, roles, actions, FAB) — for every workflow type in the request, not just calendar-bound ones. |
+| 7 | `05-actions-and-fabs.md` | When deciding whether a "create" affordance should be a FAB, and how response/decision actions should present. |
+| 8 | `15-archetypes.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow in the request, and which values are real vs. not real — re-check this for every workflow type, not once. |
 | 9 | `03-antipatterns.md` | Before you finish — self-check your JSON against every detection rule in this file. |
 | 10 | `04-validation.md` | Before you finish — this is the error → fix table the real validator would use. Walk your JSON against it manually (see "On validation" below). |
 | 11 | `13-theming.md`, `14-platform-services.md`, `06-card-styling.md` | Only if the request touches branding/accent colors or asks for something that sounds like it needs a backend capability (payments, auth, storage) — `14-platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable. |
@@ -193,3 +206,10 @@ that no real validator ran:
    already installed, and do not skip this step just because the JSON alone already looks done.
 
 Return the JSON in a single fenced code block so it can be extracted and validated for real.
+
+**Running in-repo (Claude Code, Codex) instead of a no-tool-access provider**: item 3 above (the
+`buildExtensionPackage`/`downloadUrl` flow) is specific to the hosted validator Action and does not apply.
+Deliver just the JSON (item 1) and the Gaps/assumptions section (item 2); the caller is responsible for
+turning it into an installable `.loom-init.zip`/`.loom-extension.zip` pair (see `SKILL.md`'s "Installing
+what comes back" section for the exact in-repo mechanism — a small generator script following
+`generate_tabletop_club_package.dart`'s pattern) if installation is needed.

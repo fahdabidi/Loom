@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-08-09
 audience: llm-agent
 derived_from:
   - app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart
@@ -66,7 +66,7 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 |---|---|---|
 | `missing_label` | Empty `label` | Every transition needs button text |
 | `dangling_instance_data_key` | Guard/effect names an undeclared field | Declare it in `instanceDataSchema`, or fix the typo |
-| `unknown_effect_op` | `op` isn't one of the nine | See [effects.md](../reference/effects.md) |
+| `unknown_effect_op` | `op` isn't one of the twelve | See [effects.md](../reference/effects.md) |
 | `computed_field_written_by_effect` | An effect writes a `formula` field | Delete the effect. Computed fields are read-only. |
 | `dangling_related_instance_field` | `relatedInstance` / `relatedInstanceField` names an undeclared field | Declare the id-holding field on **this** workflow |
 | `dangling_create_instance_target` | `createInstance.workflowType` doesn't exist | Declare the target type, or fix the name |
@@ -79,8 +79,8 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 | Code | Meaning | Fix |
 |---|---|---|
 | `unknown_formula_field` | Formula references an undeclared field | Declare it. Formulas may only see **this** workflow's schema. |
-| `unknown_formula_function` | Not one of the 20 | See [formulas.md](../reference/formulas.md). Note: there is no `!` and no `!=`. |
-| `invalid_formula_syntax` | Won't parse | Check operators; no `!`/`!=` |
+| `unknown_formula_function` | Not one of the 23 | See [formulas.md](../reference/formulas.md). Note: unary `!` (not) IS supported; `!=` is NOT — restructure as `if(a == b, false, true)`. |
+| `invalid_formula_syntax` | Won't parse | Check operators; `!` is fine, `!=` is not |
 | `circular_formula_dependency` | Computed fields reference each other cyclically | Break the cycle |
 | `effect_field_in_editable_fields` | `editableFields` names a non-`formEntry` field | Only `writableBy: "formEntry"` fields may be edited |
 
@@ -115,6 +115,7 @@ seriously rather than dismissing them as noise.
 | `editable_fields_without_edit_guard` (warning) | A state declares `editableFields` but no `editGuard`. `editGuard`'s absent-default is the *opposite* of every other guard: with none, the editor never renders for anyone, for any persona — the field list is silently inert. | Add `"editGuard": {"allowedPersonaIds": [...]}` to the state naming who may edit, or remove `editableFields` if editing was never actually meant to be exposed. |
 | `no_creation_path_for_editable_type` (warning) | A workflow type has `formEntry` fields but nothing anywhere in the package (`renderBindings[].actions[].kind: "create"`, `createInstance`, or `generateRecurringInstances`) ever creates an instance of it. Every instance that will ever exist is whatever was seeded (AP-13). | Add a `kind: "create"` action to one of the type's `renderBindings` (see `07-actions-and-fabs.md`), or have another type's effect create it, or explicitly note in your gaps section that instances are deliberately provisioned only outside this package. |
 | `no_destructive_exit_for_managed_type` (warning) | A primary-bound type with an `editGuard` declared somewhere (i.e. clearly meant to be actively managed) has zero `tone: "destructive"` transition anywhere. | Add a cancel/withdraw/delete-shaped transition with `"tone": "destructive"`, or confirm every instance of this type is genuinely meant to be permanent once created. |
+| `no_read_visibility_declared` (warning) | A workflow type omits the workflow-level `visibility` block, so its read policy is implicit even though the compatibility default remains `public`. | Add `"visibility": {"default": "public"}` (or `"default": "membersOnly"` / `"default": "guarded"` with a sibling `"readGuard"`) to make the community's intended read policy explicit. |
 
 ---
 

@@ -28,7 +28,8 @@
       "Bash(wsl bash -lc 'python3 -c \" *)",
       "Bash(python3 -c \"import json; json.load\\(open\\('/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/references/spec-version.json'\\)\\); print\\('valid'\\)\")",
       "Bash(wsl.exe -e bash -lc \"python3 -c \\\\\"import json; json.load\\(open\\('/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/references/spec-version.json'\\)\\); print\\('valid'\\)\\\\\"\")",
-      "Bash(awk 'NR>=455 && NR<=497 {print NR\": \"length\\($0\\)}' \"docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_3.md\")"
+      "Bash(awk 'NR>=455 && NR<=497 {print NR\": \"length\\($0\\)}' \"docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_3.md\")",
+      "Bash(wsl -e bash -lc 'export PATH=\"$HOME/flutter/bin:/usr/lib/android-sdk/platform-tools:/usr/lib/android-sdk/emulator:$PATH\" *)"
     ],
     "additionalDirectories": [
       "\\mnt\\c\\Users\\fahd_\\OneDrive\\Documents\\Loom"

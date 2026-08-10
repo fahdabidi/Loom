@@ -1,0 +1,95 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the four
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Identity/context legibility: can the user tell who they are (their actual account/display name, not just
+  a role/persona type) and what role they are acting as?
+- State legibility: is the current state (loading/empty/error/populated) unambiguous?
+- Copy accuracy: does displayed text sound like real product copy describing actual data, or is it generic/
+  placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown match what this persona should see?
+
+Community: AuthZ Repro HOA ("Test-only community for live read-visibility verification" -- a throwaway
+test-only package, not a real consumer-facing community). The signed-in account for all screens after the
+first is: display name "Morgan", persona "Board Member", account ID "board-member-20".
+
+Screenshots to review (read each with your Read tool):
+1. rowId "hoa-entry-gate" -- docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/entry-gate.png
+   -- the fresh entry gate shown before any account exists for this community.
+2. rowId "hoa-home-role-summary" -- docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/home-role-summary.png
+   -- the community Home tab, immediately after signing up as Morgan (Board Member).
+3. rowId "hoa-persona-picker-dialog" -- docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/persona-picker-dialog.png
+   -- the "Account role and permissions" dialog, opened via the people icon in the top app bar, while
+   signed in as Morgan.
+4. rowId "hoa-sign-in-specific-person" -- docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/sign-in-specific-person.png
+   -- the "Sign in as a specific person" account list, reached from within that same role-picker dialog.
+
+Pay particular attention to whether the signed-in account's actual name/identity is discoverable on each
+screen, especially screen 2 (Home) and screen 3 (the role picker) versus screen 4 (the account list) -- a
+real difference in what identity information they expose is a meaningful, citable finding, not a guess.
+Since this is a throwaway test-only community, do not penalize placeholder-sounding domain content (e.g.
+generic "title" placeholders on Home cards) as a separate identity-legibility issue -- flag it as its own
+distinct finding if relevant, but keep it out of the identity-legibility holistic answer.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-authz-repro-hoa-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["hoa-entry-gate", "hoa-home-role-summary", "hoa-persona-picker-dialog", "hoa-sign-in-specific-person"],
+  "reviewedScreenshotHashes": ["c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013", "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3", "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13", "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all four screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 4 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 4), with real per-screen critique --
+do not skip any row or reuse the same critique text across rows. Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere in your response.

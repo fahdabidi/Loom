@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/llm-vision-ux-review-phaseA-authz-repro-hoa-1.json",
+  "expectedReviewRunId": "phaseA-authz-repro-hoa-1",
+  "declaredReviewRunId": "phaseA-authz-repro-hoa-1",
+  "expectedAppCommitSha": "559f3a1b",
+  "declaredAppCommitSha": "559f3a1b",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "hoa-entry-gate",
+    "hoa-home-role-summary",
+    "hoa-persona-picker-dialog",
+    "hoa-sign-in-specific-person"
+  ],
+  "reviewedScreenshotHashes": [
+    "c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013",
+    "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3",
+    "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13",
+    "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

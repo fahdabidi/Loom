@@ -1,0 +1,112 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+This community uses the legacy flat schema (no engine-native persona/account system) and bypasses the
+entry gate and persona-picker entirely -- there is no signed-in identity concept here. So for this review,
+treat the "identity/context legibility" rubric dimension as: can the user tell what workflow and what
+state (start/in-progress/complete) they are looking at, even without an account system? Do not fail a
+screen merely for lacking a signed-in-account display -- that is expected and correct for this schema.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Context/state legibility: is it clear what workflow this is and what state (loading/empty/error/start/
+  in-progress/complete) it is in?
+- Copy accuracy: does displayed text sound like real product copy describing actual community content, or
+  is it generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled/
+  hidden?
+- Persona-scoping correctness: does what's shown make sense for the workflow being demonstrated?
+- Visual quality: no repeated generic card shells, no thin/empty content where real content is expected, no
+  obvious layout clipping or crowding.
+
+Community: Neighborhood Book Club (community_id: ext_book_club, phase B14 of this repo's B25 evidence catalog).
+
+Screenshots to review (read each with your Read tool -- there are 27 of them, grouped by workflow):
+- rowId "neighborhood-book-club-book-nomination-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png -- book-nomination workflow, start state
+- rowId "neighborhood-book-club-book-nomination-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_action.png -- book-nomination workflow, action state
+- rowId "neighborhood-book-club-book-nomination-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png -- book-nomination workflow, complete state
+- rowId "neighborhood-book-club-book-selection-publish-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png -- book-selection-publish workflow, start state
+- rowId "neighborhood-book-club-book-selection-publish-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_action.png -- book-selection-publish workflow, action state
+- rowId "neighborhood-book-club-book-selection-publish-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png -- book-selection-publish workflow, complete state
+- rowId "neighborhood-book-club-book-reading-material-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_start.png -- book-reading-material workflow, start state
+- rowId "neighborhood-book-club-book-reading-material-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_action.png -- book-reading-material workflow, action state
+- rowId "neighborhood-book-club-book-reading-material-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-reading-material_complete.png -- book-reading-material workflow, complete state
+- rowId "neighborhood-book-club-book-vote-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png -- book-vote workflow, start state
+- rowId "neighborhood-book-club-book-vote-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_action.png -- book-vote workflow, action state
+- rowId "neighborhood-book-club-book-vote-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png -- book-vote workflow, complete state
+- rowId "neighborhood-book-club-book-search-ai-digest-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png -- book-search-ai-digest workflow, start state
+- rowId "neighborhood-book-club-book-search-ai-digest-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_action.png -- book-search-ai-digest workflow, action state
+- rowId "neighborhood-book-club-book-search-ai-digest-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_complete.png -- book-search-ai-digest workflow, complete state
+- rowId "neighborhood-book-club-book-meeting-rsvp-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_start.png -- book-meeting-rsvp workflow, start state
+- rowId "neighborhood-book-club-book-meeting-rsvp-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_action.png -- book-meeting-rsvp workflow, action state
+- rowId "neighborhood-book-club-book-meeting-rsvp-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_complete.png -- book-meeting-rsvp workflow, complete state
+- rowId "neighborhood-book-club-book-export-metadata-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_start.png -- book-export-metadata workflow, start state
+- rowId "neighborhood-book-club-book-export-metadata-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_action.png -- book-export-metadata workflow, action state
+- rowId "neighborhood-book-club-book-export-metadata-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_complete.png -- book-export-metadata workflow, complete state
+- rowId "neighborhood-book-club-book-discussion-message-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_start.png -- book-discussion-message workflow, start state
+- rowId "neighborhood-book-club-book-discussion-message-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_action.png -- book-discussion-message workflow, action state
+- rowId "neighborhood-book-club-book-discussion-message-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_complete.png -- book-discussion-message workflow, complete state
+- rowId "neighborhood-book-club-book-library-item-start" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_start.png -- book-library-item workflow, start state
+- rowId "neighborhood-book-club-book-library-item-action" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_action.png -- book-library-item workflow, action state
+- rowId "neighborhood-book-club-book-library-item-complete" -- docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-library-item_complete.png -- book-library-item workflow, complete state
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-legacy-neighborhood-book-club-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["neighborhood-book-club-book-nomination-start", "neighborhood-book-club-book-nomination-action", "neighborhood-book-club-book-nomination-complete", "neighborhood-book-club-book-selection-publish-start", "neighborhood-book-club-book-selection-publish-action", "neighborhood-book-club-book-selection-publish-complete", "neighborhood-book-club-book-reading-material-start", "neighborhood-book-club-book-reading-material-action", "neighborhood-book-club-book-reading-material-complete", "neighborhood-book-club-book-vote-start", "neighborhood-book-club-book-vote-action", "neighborhood-book-club-book-vote-complete", "neighborhood-book-club-book-search-ai-digest-start", "neighborhood-book-club-book-search-ai-digest-action", "neighborhood-book-club-book-search-ai-digest-complete", "neighborhood-book-club-book-meeting-rsvp-start", "neighborhood-book-club-book-meeting-rsvp-action", "neighborhood-book-club-book-meeting-rsvp-complete", "neighborhood-book-club-book-export-metadata-start", "neighborhood-book-club-book-export-metadata-action", "neighborhood-book-club-book-export-metadata-complete", "neighborhood-book-club-book-discussion-message-start", "neighborhood-book-club-book-discussion-message-action", "neighborhood-book-club-book-discussion-message-complete", "neighborhood-book-club-book-library-item-start", "neighborhood-book-club-book-library-item-action", "neighborhood-book-club-book-library-item-complete"],
+  "reviewedScreenshotHashes": ["fdb882b44de6ae8dffed1de692bbd1564b51788df72ba0bb847c16d0f8fc6e28", "ab24edb901bd56c7372840edf7e241af6db0c7b68a7ce0712c8be735935d8843", "68b491f904731e1e1d566371503d623d73862fa30d5c34d01001179d8a145cec", "6af7a24a92f0b9567e53f79051f81d74903681c1556ad56846c64e8ac2f7c16e", "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524", "ef5759c7f3eb3728d4817c0ebbe4c97f7fc428c3d7c4c839eba061c988e47c88", "25bd94bc3a4d4206dc8aba20efd34abfa4c44f15ff229d6cf313e1ac788075c2", "1e98b5ba316a3b397a47dbcadc3849afa88a018a1f4f3ca386ece4cc617bdc6b", "518edf9cc7e2861b531c6c6d6e09d746d3177fced2c749e9a22f03dc45d2cd98", "918ef3feeb3c83a03e7f42b7bd4b1182bc5faadd67cf1f362511462afe1f3e5f", "e32a11ee741f0148d6dc064d83b5d0f5c12661bbc255e4ca38795547c226fb59", "a5e34536c2e5a54104cf4fa36428c9201399536bd8b912706ead61b7203ce600", "dea065f91186cdabfc0a02a16bca4ee50bb750128390207bf2833baea936585b", "7f7ef22f005dba6bb077ac33f519833639971a5f414d83a202e2cc97c15cb539", "4cd2f815d16f0b94c2fb2339427d65fef3a83122a55a3487589d5171389ad2fb", "0c473b2461e0d45fe1ff41e973cf8adeedb28a0f19a14b8df99e1ddc468bf69d", "d14f70288a77ea3ad86cd790291f75f234511f7a024b90eed9c7dbe22284d7cc", "8e0ab70e21a2ed9c13b5eb987a1a9b9df0c72edbe2d267e8dd3e9a49d4ef4bd7", "1aec7237a9bacdbaedd9318145b3894f6c7a0dc303bea61ad50bfa238fcc0b69", "e217ad3a30563c5d1c14ee86b4b7fcca5a6a143141634fe41838a6d06897d145", "14875014e3378dd9ec3194dbb350eb8b05f09eaf0cd1710262e258c04bf40006", "5cf04447f6d8a27ad3681a0cba759c0f77134aa1bf4024f26a4e92e943607bbc", "e90705523609677dfe743cbf0492701f919a4923603c0c1dddb70d9e1b2f0680", "5e824d3fb1cd38e34332e0e13dad5a1317a0a0d1b3fa47b549ba81d640927deb", "e216d02e58570192eca08e1ba31e96782523d4bd0ed539e56ad52c8dbb1d9c09", "8d7a90e2c4e18d643f3e30dad59e2db4b16ada197c0af456255be2ec9c125a77", "0dc23471ec00b00b9f6cc176c5294d0c2385cbf154ff0863d605a32464be3b4f"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "<2-4 sentence overall summary of what you found across all screens>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the rowIds above>",
+      "affectedScreenRowIds": ["<same rowId, or related ones if this critique spans screens>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen, at least 80 characters, citing exact visible text/labels/colors you saw -- do not write generic filler>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 27 of them), with real
+per-screen critique -- do not skip any row or reuse the same critique text across rows. Do not include
+sourceReviewRunId, carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere
+in your response.

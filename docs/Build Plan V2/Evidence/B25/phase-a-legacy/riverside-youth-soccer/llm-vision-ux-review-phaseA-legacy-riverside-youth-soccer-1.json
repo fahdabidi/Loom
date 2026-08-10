@@ -1,0 +1,1061 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-legacy-riverside-youth-soccer-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["riverside-youth-soccer-soccer-registration-payment-start", "riverside-youth-soccer-soccer-registration-payment-action", "riverside-youth-soccer-soccer-registration-payment-complete", "riverside-youth-soccer-soccer-waiver-document-start", "riverside-youth-soccer-soccer-waiver-document-action", "riverside-youth-soccer-soccer-waiver-document-complete", "riverside-youth-soccer-soccer-guardian-join-approval-start", "riverside-youth-soccer-soccer-guardian-join-approval-action", "riverside-youth-soccer-soccer-guardian-join-approval-complete", "riverside-youth-soccer-soccer-practice-schedule-start", "riverside-youth-soccer-soccer-practice-schedule-action", "riverside-youth-soccer-soccer-practice-schedule-complete", "riverside-youth-soccer-soccer-team-discussion-start", "riverside-youth-soccer-soccer-team-discussion-action", "riverside-youth-soccer-soccer-team-discussion-complete", "riverside-youth-soccer-soccer-team-roster-start", "riverside-youth-soccer-soccer-team-roster-action", "riverside-youth-soccer-soccer-team-roster-complete", "riverside-youth-soccer-soccer-reminder-notification-start", "riverside-youth-soccer-soccer-reminder-notification-action", "riverside-youth-soccer-soccer-reminder-notification-complete", "riverside-youth-soccer-soccer-minor-redaction-start", "riverside-youth-soccer-soccer-minor-redaction-action", "riverside-youth-soccer-soccer-minor-redaction-complete", "riverside-youth-soccer-soccer-export-metadata-start", "riverside-youth-soccer-soccer-export-metadata-action", "riverside-youth-soccer-soccer-export-metadata-complete"],
+  "reviewedScreenshotHashes": ["a2e80ce922f1ad51f8cbcf521b2b3ba4098d0e8cc0496f9f2c67c23ee8ddf94b", "a6468cc6e759af9c3bb490b7999e7d9b1bc05fdd261b24f659483f892824f06f", "011cc414c8921b343cef976b7ec4b67cec4d737ceee01cb1ddbf0cb764b108fe", "db700748118279605d2231f10b1e25d11243c20230fc6272d103e74ce7a209ff", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358", "5706732cac331cf62571d81c8854bd37eed0001b3dd7843cb00f8c3347428fca", "495298e55e3790a619b6f65b8767160b7f096c5c55f17aa345b4dfff88ffd5ec", "7b7ac7890267e27bc855af33f47e4c7e04ebcb1eca10c0002a91d2007574a634", "5cb8eb154fc6a9eeca0134a246ee1be5de303c971b0320798ed327ecca84c62f", "0df5849117caacf6546ca33c17e200d0dbff2fa6aa68fbe0896d007f47cba857", "8ab1fb9ee43780c6550bc8755ee423ef7f22918b4d41525538f9f7b65be601fe", "940a0aaca1009062c0ebc130958060f09da45660d027d8b937479183285fdf89", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358", "9497710f7eb694fb4bc9be48ede48b5c47f47463edb27cb7c4bd6f545c16ac58", "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3", "0474dd949a43680080427f9ff46d6761e6726e77749c8bb3127f84b0c762d47e", "15433b74842a5f346489c221ccf7cce61b98f7e82aa28a60b248487ee8ee38cf", "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425", "5d9c76c5a25a4327b9d90977aee48e7a6d7a00dd4bfaa2fb8c0720562bac6ab6", "d1db045c66475c61272b8aeee2d05102fe6fe5ab909130f5180386c00ca08a52", "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87", "bffa45e860fca451f391eff0a80c8c46ed6517776b9444f3edeaf9eb088febf3", "21fca2cc868d6413dae7ad6c92628e0b726a7a12869a86ee39e50a62097bfb24", "3e67f47e63433aba3f9ba5a89bd8793ef0e4a4428ffb6293d513c647316c4c4b", "43461a19a2d77e2a53ec4c042c208909de7ce1204c69c82e6bc0c5feaa22e8bd"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "Riverside Youth Soccer has genuinely good seed content in a handful of screens — the 'Season registration fee' sheet ($125.00 USD, Leo Rivera, U10 Falcons spring season), the 'Guardian approval desk' (Mia Rivera, parent of Leo Rivera), the 'U10 Falcons roster' (jersey 14, waiver due before Saturday), and 'Saturday practice schedule' (9:00 AM, Riverside Field 3) all read like real product copy. But three of the eight workflows do not demonstrate themselves: soccer-waiver-document and soccer-team-discussion both open the identical 'Youth privacy record' surface that belongs to soccer-minor-redaction, so six of the 27 screens are the wrong workflow, and soccer-reminder-notification's action sheet is titled 'Guardian practice reminder' but its body is the 'Choose attendance' RSVP form. Nearly every 'start' capture is a mid-scroll Home-feed frame clipped at the top ('form state.' cut in half, 'Protected export includes roster metadata,' cut in half) rather than the workflow's entry point, and two start frames (team-discussion, team-roster) are the same feed position showing the same 'Team discussion thre…' card. Layered on top is pervasive verbatim duplication inside every action sheet — the same Team/Schedule/Privacy triad printed twice per screen — plus spec-language copy ('Member form captures labeled details, privacy c…', 'The saved result keeps status, history, and change actions visible for this community task.') and truncated card titles.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "No. Workflow identity fails outright on six screens: soccer-waiver-document action/complete and soccer-team-discussion action/complete both render the 'Youth privacy record' surface — the same title, the same 'Roster and visibility' card (Team / Schedule / Privacy) and the same 'Roster visibility' card — that soccer-minor-redaction action also renders. A reviewer looking at the waiver evidence has no way to tell they are in a waiver flow; the word 'waiver' does not appear anywhere on those two screens. State legibility is weaker still: most 'start' frames are arbitrary mid-scroll positions of the shared Home feed, with the top card sliced ('…form state.' on registration-payment start, 'Protected export includes roster metadata,' on export start), so there is no title, no step indicator and no 'not started' signal. Where completion IS signalled it is signalled well — 'Registration paid', 'Guardian approved', 'Roster opened', 'Team update saved' are distinct filled banners — but soccer-reminder-notification start and complete are visually the same screen (same 'Guardian practice reminder' header, same 'Team update saved' banner beginning), so start-vs-complete is indistinguishable there.",
+      "score": 34,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "soccer-waiver-document action is titled 'Youth privacy record' with body 'Roster and visibility / Team / U10 Falcons, coach Jordan Patel, 12-player roster.' — pixel-for-pixel the same surface as soccer-minor-redaction action; the word 'waiver' appears nowhere on it",
+        "soccer-team-discussion complete shows the heading 'Youth privacy record' and the subtitle 'Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians.' — no thread, no message, no discussion content at all",
+        "soccer-registration-payment start opens mid-sentence with a clipped card reading only 'form state.' under the app bar, giving no workflow title for the state being demonstrated",
+        "soccer-reminder-notification start and soccer-reminder-notification complete both render the identical 'Guardian practice reminder' hero plus the 'Team update saved' banner, so the start state is indistinguishable from the completed state"
+      ],
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-waiver-document-action",
+        "riverside-youth-soccer-soccer-waiver-document-complete",
+        "riverside-youth-soccer-soccer-team-discussion-action",
+        "riverside-youth-soccer-soccer-team-discussion-complete",
+        "riverside-youth-soccer-soccer-minor-redaction-action",
+        "riverside-youth-soccer-soccer-registration-payment-start",
+        "riverside-youth-soccer-soccer-reminder-notification-start",
+        "riverside-youth-soccer-soccer-reminder-notification-complete",
+        "riverside-youth-soccer-soccer-export-metadata-start"
+      ]
+    },
+    {
+      "questionId": "copy-accuracy",
+      "question": "Does the displayed text read like real product copy about Riverside Youth Soccer, or like generic/spec placeholder text?",
+      "answer": "It is split. The seeded domain copy is excellent and specific — '$ 125.00 USD', 'Leo Rivera', 'U10 Falcons spring season registration for Leo Rivera.', 'Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.', 'Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday.', 'Saturday practice at 9:00 AM on Riverside Field 3', 'coach Jordan Patel, 12-player roster'. But the scaffolding copy wrapped around it is spec text lifted from a requirements doc, not product copy: 'Member form captures labeled details, privacy c…' repeated as the subtitle of two different feed cards, 'Another community role manages this item.', 'You can read the current details without changing …', 'Role visibility — The saved result keeps status, history, and change actions visible for this community task.', and 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' Sentences that describe what a screen is supposed to show ('… are visible') are QA acceptance criteria, not things you say to a parent paying a registration fee.",
+      "score": 45,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "soccer-registration-payment action card 'Checkout and receipt' subtitle reads 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' — a spec assertion presented as user-facing copy",
+        "soccer-waiver-document start and soccer-team-discussion start both show cards subtitled 'Member form captures labeled details, privacy c…' — identical generic text on two different features",
+        "soccer-minor-redaction start shows 'Waiver document libr… / Another community role manages this item.' as the only description of that feature",
+        "soccer-team-discussion complete 'Role visibility' card reads 'The saved result keeps status, history, and change actions visible for this community task.' — never names the task"
+      ],
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-waiver-document-start",
+        "riverside-youth-soccer-soccer-team-discussion-start",
+        "riverside-youth-soccer-soccer-team-roster-start",
+        "riverside-youth-soccer-soccer-minor-redaction-start",
+        "riverside-youth-soccer-soccer-team-discussion-complete",
+        "riverside-youth-soccer-soccer-guardian-join-approval-complete",
+        "riverside-youth-soccer-soccer-export-metadata-start"
+      ]
+    },
+    {
+      "questionId": "visual-quality-duplication",
+      "question": "Do the screens avoid repeated generic card shells, duplicated content and clipping?",
+      "answer": "No — duplication is the single most visible defect. Every action sheet prints the same content block twice within one scroll view: on soccer-practice-schedule action, 'Event details' lists Team / Schedule / Privacy, then the 'Choose attendance' card below it lists Event details / Attendance options / Member reminder and then repeats Team ('U10 Falcons, coach Jordan Patel, 12-player roster.') and Schedule again verbatim. The same doubling occurs on the guardian-approval sheet (Guardian / Safety info / Decision note printed twice), the roster sheet (Featured player / Protected fields / Team context twice), the redaction sheet (Team / Schedule / Privacy twice) and the registration sheet (Registration / Receipt twice). Card titles are clipped rather than wrapped — 'Guardian join and app…', 'Protected minor-data…', 'Waiver document libr…', 'Team discussion thre…', 'Youth soccer export …'. Feed frames are cut mid-card at the top of the viewport, and soccer-team-discussion start ends in a large empty green void below 'Local package details'. There is also an off-palette break: soccer-team-roster action uses a slate-blue app bar and soccer-team-roster complete a slate-blue 'Roster opened' banner, in a community otherwise themed forest green.",
+      "score": 30,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "soccer-practice-schedule action prints 'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' twice on one screen, once in 'Event details' and once again inside 'Choose attendance'",
+        "soccer-guardian-join-approval action prints 'Guardian — Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.' twice, in 'Roster and visibility' and again in 'Roster visibility'",
+        "Card titles clipped with ellipsis rather than wrapping: 'Guardian join and app…', 'Protected minor-data…', 'Waiver document libr…', 'Youth soccer export …'",
+        "soccer-team-roster action renders a slate-blue app bar behind 'U10 Falcons roster' while every other surface in this community uses the forest-green accent",
+        "soccer-team-discussion start shows roughly a third of the viewport as empty dark-green space below the 'Local package details' collapsed row"
+      ],
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-practice-schedule-action",
+        "riverside-youth-soccer-soccer-guardian-join-approval-action",
+        "riverside-youth-soccer-soccer-team-roster-action",
+        "riverside-youth-soccer-soccer-team-roster-complete",
+        "riverside-youth-soccer-soccer-minor-redaction-action",
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-team-discussion-start",
+        "riverside-youth-soccer-soccer-reminder-notification-action"
+      ]
+    },
+    {
+      "questionId": "actionability",
+      "question": "Are the available actions clear, and is it clear why disabled or hidden ones are unavailable?",
+      "answer": "Partly. Primary verbs are strong and domain-specific where they appear: 'Pay and save receipt', 'Approve request', 'Request changes', 'Publish schedule', 'Open roster', 'Preview redaction', 'Generate export', 'Message guardians', 'Start team discussion thread'. Disabled state is handled better than average in one case — the 'Waiver document libr…' card pairs a 'Not available' chip with the reason 'Another community role manages this item.', and 'Youth soccer export …' pairs 'Read only' with 'You can read the current details without changing …'. The failures are (a) the 'Minimized' chip, which appears on every feed card and is internal jargon that tells a parent nothing, (b) 'Tap for expanded view' sitting next to a separate 'Expand' button on the same card, which is two controls for one job, and (c) the action sheets that carry no visible primary CTA at all — the registration action sheet is scrolled such that neither 'Change payer' nor 'Pay and save receipt' is on screen, and the practice/reminder sheets show 'Choose attendance' as a heading with no Going / Maybe / Not going controls visible.",
+      "score": 52,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "soccer-minor-redaction start shows a 'Not available' chip with the explanatory line 'Another community role manages this item.' — a correctly explained disabled action",
+        "Every feed card carries a 'Minimized' chip alongside both 'Tap for expanded view' and a separate 'Expand' button, e.g. on soccer-practice-schedule start's 'Practice schedule' card",
+        "soccer-practice-schedule action shows the heading 'Choose attendance' and the text 'before choosing Going, Maybe, or Not going.' but no Going / Maybe / Not going buttons are visible on the screen",
+        "soccer-registration-payment action sheet shows 'Payment summary' and 'Checkout and receipt' but no pay button anywhere in frame"
+      ],
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-minor-redaction-start",
+        "riverside-youth-soccer-soccer-practice-schedule-start",
+        "riverside-youth-soccer-soccer-practice-schedule-action",
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-reminder-notification-action",
+        "riverside-youth-soccer-soccer-guardian-join-approval-start"
+      ]
+    },
+    {
+      "questionId": "persona-scoping-correctness",
+      "question": "Does what is shown make sense for the workflow being demonstrated in each capture?",
+      "answer": "For five of eight workflows, yes — registration-payment, guardian-join-approval, practice-schedule, team-roster and export-metadata each surface content that plainly belongs to them (a $125 season fee, a guardian access request with emergency-contact status, a Saturday 9 AM Field 3 practice, a 12-player U10 Falcons roster with redacted birthdates, a five-step protected export with checksum verification). For the other three it is wrong: waiver-document and team-discussion both display the minor-redaction surface, and reminder-notification's action sheet mixes a reminder title with an attendance-RSVP body. There is also a coherence problem in the mixed feed frames: the soccer-practice-schedule start capture is dominated by the purple 'Season registration fee' payment card under an 'In-focus product surface' bar, so the screen labelled as the practice-schedule start is mostly showing the payment workflow.",
+      "score": 40,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "soccer-team-discussion action shows 'Roster visibility — Review member names, role-filtered details, protected fields, and who can see each item.' with no thread, post, reply or author anywhere",
+        "soccer-reminder-notification action is titled 'Guardian practice reminder' but its second card is 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going.'",
+        "soccer-practice-schedule start devotes the lower two-thirds of the frame to the purple 'Season registration fee' card showing '$ 125.00 USD' and 'Leo Rivera'",
+        "soccer-waiver-document action never shows a waiver, a signature field, or a signed-by name"
+      ],
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-waiver-document-action",
+        "riverside-youth-soccer-soccer-waiver-document-complete",
+        "riverside-youth-soccer-soccer-team-discussion-action",
+        "riverside-youth-soccer-soccer-team-discussion-complete",
+        "riverside-youth-soccer-soccer-reminder-notification-action",
+        "riverside-youth-soccer-soccer-practice-schedule-start"
+      ]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-registration-payment-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-registration-payment-start"],
+      "critique": "This is not a start state, it is an arbitrary mid-scroll frame of the Home feed. The topmost element under the green 'Riverside Youth Soccer' app bar is a purple card sliced through its text so only the fragment 'form state.' is legible. Below it 'Receipt and next steps' offers 'Change payer' and 'Pay and save receipt' — real, well-named actions — but the workflow title 'Season registration fee' has already scrolled off, so nothing on screen names the workflow. The frame then continues past the payment surface entirely into a green 'Requests and approvals' section header and a 'Guardian join and app…' card whose title is truncated with an ellipsis, mixing a second workflow into the registration evidence. The 'Team' tab at the bottom right is clipped by the screen edge.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "The registration workflow's actual entry point: the 'Season registration fee' title in view, the $125.00 amount and Leo Rivera / U10 Falcons context, an explicit unpaid status, and a single primary 'Pay and save receipt' CTA — with no unrelated approvals card in frame.",
+      "visibleObservations": [
+        "Clipped purple card at top showing only the words 'form state.'",
+        "'Receipt and next steps — Pay dues, change payer details, retry a failed payment, or open the receipt after confirmation.'",
+        "Buttons 'Change payer' and 'Pay and save receipt'",
+        "Green section header 'Requests and approvals — Requests that need a decision or member follow-up.'",
+        "Card title truncated to 'Guardian join and app…' with a 'Minimized' chip",
+        "Bottom nav 'Home / Registration / Schedule / Team' with 'Team' cut off at the right edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear what workflow this is and that it is in a start state?",
+          "visibleEvidence": "Top card reads only 'form state.'; no 'Season registration fee' title is visible anywhere in the frame",
+          "why": "A start capture must establish the workflow. Here the identifying title is scrolled off and the first legible text is half a sentence, so neither the workflow nor its 'not yet paid' state is established."
+        },
+        {
+          "question": "Are the available actions clear?",
+          "visibleEvidence": "'Change payer' and 'Pay and save receipt' buttons are both fully rendered and labelled",
+          "why": "The verbs themselves are specific and correct for a registration fee; the problem is context, not the controls."
+        }
+      ],
+      "screenshotHash": "a2e80ce922f1ad51f8cbcf521b2b3ba4098d0e8cc0496f9f2c67c23ee8ddf94b"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-registration-payment-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-registration-payment-action"],
+      "critique": "The strongest screen in the set for content: a purple sheet titled 'Season registration fee' with a 'Payment summary' whose chips read '$ 125.00 USD', 'Leo Rivera', 'Receipt saved', 'Private payer', and detail rows naming 'U10 Falcons spring season registration for Leo Rivera.' That is real product copy. Two defects undercut it. First, the 'Checkout and receipt' card below repeats the same rows — 'Registration — U10 Falcons spring season registration for Leo Rivera.' appears a second time verbatim, and 'Receipt' appears twice — so the sheet says everything twice. Second, the card's subtitle 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' is an acceptance criterion, not copy a guardian should read. There is also no pay CTA in frame: the sheet shows a close 'X' only, so this action state shows no action.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A checkout sheet showing amount, payer, player, receipt destination and privacy once, with a visible primary 'Pay $125.00' button and a secondary 'Change payer'.",
+      "visibleObservations": [
+        "Purple app bar with 'X' and title 'Season registration fee'",
+        "Chips: '$ 125.00 USD', 'Leo Rivera', 'Receipt saved', 'Private payer'",
+        "'Entitlement — Player registration status changes to paid and active.'",
+        "'Retry option — Failed payments can be retried without losing form state.'",
+        "'Registration — U10 Falcons spring season registration for Leo Rivera.' printed twice",
+        "No pay or confirm button visible anywhere on the sheet"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the text sound like real product copy about this community?",
+          "visibleEvidence": "'U10 Falcons spring season registration for Leo Rivera.' and '$ 125.00 USD'",
+          "why": "The domain rows are concrete and correct; but 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' reads as a spec line and breaks the illusion."
+        },
+        {
+          "question": "Is content repeated within the screen?",
+          "visibleEvidence": "'Registration — U10 Falcons spring season registration for Leo Rivera.' appears at the top of 'Payment summary' and again at the bottom of 'Checkout and receipt'",
+          "why": "Verbatim repetition inside one scroll view is a template-assembly artifact, not a design choice, and doubles the reading cost."
+        }
+      ],
+      "screenshotHash": "a6468cc6e759af9c3bb490b7999e7d9b1bc05fdd261b24f659483f892824f06f"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-registration-payment-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-registration-payment-complete"],
+      "critique": "Completion is legible here: below the intact 'Season registration fee' hero and its 'Payment summary' chips, a distinct banner reads 'Registration paid — Leo Rivera registration is paid with receipt, payer, season, and status visible.' That is a proper terminal state naming the player. Two problems. The 'Receipt saved' chip is already present in the summary above the paid banner, which means the pre-payment and post-payment summaries are identical — nothing in the chip row changed between the action and complete captures, so the screen does not visually demonstrate a transition. And the 'Registration paid' banner is clipped by the bottom nav bar mid-sentence, cutting the sentence off after 'status visible.' with no room to breathe.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A paid confirmation showing a receipt number, timestamp, the amount charged, and an 'Open receipt' action — with the summary chips visibly changed from the pre-payment state.",
+      "visibleObservations": [
+        "Hero 'Season registration fee' with subtitle 'Confirm payer, player, season fee, receipt destination, retry option, and scholarship note before payment.'",
+        "Chips '$ 125.00 USD', 'Leo Rivera', 'Receipt saved', 'Private payer'",
+        "Banner 'Registration paid — Leo Rivera registration is paid with receipt, payer, season, and status visible.'",
+        "Banner text is cut off at the bottom nav edge",
+        "No receipt number or payment timestamp anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the complete state distinguishable from the in-progress state?",
+          "visibleEvidence": "'Registration paid — Leo Rivera registration is paid with receipt, payer, season, and status visible.'",
+          "why": "The named banner does establish completion, even though the summary chips above it are unchanged from the action state."
+        },
+        {
+          "question": "Is the subtitle appropriate for a completed payment?",
+          "visibleEvidence": "Hero subtitle still reads 'Confirm payer, player, season fee, receipt destination, retry option, and scholarship note before payment.'",
+          "why": "Instructing the user to confirm details 'before payment' on a screen that says the payment is done is contradictory copy."
+        }
+      ],
+      "screenshotHash": "011cc414c8921b343cef976b7ec4b67cec4d737ceee01cb1ddbf0cb764b108fe"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-waiver-document-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-waiver-document-start"],
+      "critique": "A mid-scroll feed frame that never names the waiver workflow. The top card is sliced so only 'Edit details' and 'Open document' remain — 'Open document' is the closest thing to waiver context and it is a generic verb. The frame then scrolls into a green 'Member tools — Useful actions for this community.' header and two cards, 'Team and roster view' and 'Team discussion thre…' (title truncated), both of which carry the identical subtitle 'Member form captures labeled details, privacy c…'. Two different features described by the same truncated generic sentence is exactly the repeated-generic-card-shell problem. Nothing on this screen mentions a waiver, a signature, a guardian signer, or a due date, despite the roster elsewhere saying 'waiver due before Saturday'.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "The waiver workflow's entry point: the waiver document named, which player it covers (Leo Rivera), who must sign (guardian Mia Rivera), the Saturday due date, an unsigned status, and a 'Review and sign waiver' primary action.",
+      "visibleObservations": [
+        "Clipped card exposing only 'Edit details' and 'Open document'",
+        "Green header 'Member tools — Useful actions for this community.'",
+        "'Team and roster view' card with 'Minimized' chip",
+        "'Team discussion thre…' card title truncated",
+        "Both cards subtitled identically: 'Member form captures labeled details, privacy c…'",
+        "Actions 'Tap for expanded view', 'Member form', 'Expand', 'Open roster', 'Start team discussion thread'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user tell this is the waiver-document workflow?",
+          "visibleEvidence": "No occurrence of the word 'waiver' anywhere in frame; the nearest label is the generic 'Open document'",
+          "why": "The screen is indistinguishable from any other feed position, so it carries no evidence for this workflow's start state."
+        },
+        {
+          "question": "Are card descriptions specific to each card?",
+          "visibleEvidence": "'Member form captures labeled details, privacy c…' appears as the subtitle of both 'Team and roster view' and 'Team discussion thre…'",
+          "why": "Identical truncated boilerplate on two distinct features means the copy is a template default rather than content."
+        }
+      ],
+      "screenshotHash": "db700748118279605d2231f10b1e25d11243c20230fc6272d103e74ce7a209ff"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-waiver-document-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-waiver-document-action", "riverside-youth-soccer-soccer-minor-redaction-action", "riverside-youth-soccer-soccer-team-discussion-action"],
+      "critique": "This capture is the wrong workflow entirely. The green sheet is titled 'Youth privacy record' and its content is 'Roster and visibility' (Team: 'U10 Falcons, coach Jordan Patel, 12-player roster.'; Schedule: 'Saturday practice at 9:00 AM on Riverside Field 3…'; Privacy: 'Minor profile fields are redacted for guardians…') followed by 'Roster visibility' repeating Team, Schedule and Privacy a second time verbatim, ending in 'Filter roster' and 'Hide protected fields' buttons. That is the minor-redaction surface — it is byte-identical to the soccer-minor-redaction action capture. No waiver text, no signature affordance, no signer, no document. As waiver evidence this screen is void, and the double-printed Team/Schedule/Privacy block makes it visually redundant even on its own terms.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A waiver signing sheet: the waiver's title and text, the covered player, the signing guardian, a signature/acknowledge control, and the Saturday deadline.",
+      "visibleObservations": [
+        "Sheet title 'Youth privacy record' with an 'X' close",
+        "'Roster and visibility' card: Team / Schedule / Privacy",
+        "'Roster visibility' card repeating Team / Schedule / Privacy identically",
+        "'Roster records — Member names, roles, counts, status, and protected fields are visible according to persona.'",
+        "Buttons 'Filter roster' and 'Hide protected fields'",
+        "Zero references to a waiver or signature"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does what's shown make sense for the waiver-document workflow?",
+          "visibleEvidence": "Title 'Youth privacy record' with roster-visibility controls 'Filter roster' / 'Hide protected fields'",
+          "why": "These are redaction controls. The waiver workflow is not represented at all, so this row cannot pass."
+        },
+        {
+          "question": "Is content duplicated on the screen?",
+          "visibleEvidence": "'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' printed once at y≈490 and again at y≈1515",
+          "why": "The same three rows are rendered twice in one scroll view, which reads as a template assembly bug."
+        }
+      ],
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-waiver-document-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-waiver-document-complete", "riverside-youth-soccer-soccer-team-discussion-complete"],
+      "critique": "Again the wrong surface: hero 'Youth privacy record' with subtitle 'Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians.' followed by 'Roster and visibility' and a shield banner 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.' Nothing here says a waiver was signed. Worse, the completion banner is the generic 'Team update saved' with a laundry-list body mentioning RSVP choice, reminder body, checksum and inbox preview — four unrelated concepts crammed into one sentence, none of which is a waiver. The 'Role visibility' card below adds 'The saved result keeps status, history, and change actions visible for this community task.' which names no task. This screen proves nothing about waiver completion.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A signed-waiver confirmation: waiver name, 'Signed by Mia Rivera' with a timestamp, the covered player Leo Rivera, and a 'View signed waiver' action.",
+      "visibleObservations": [
+        "Hero 'Youth privacy record' with redaction/export subtitle",
+        "'Roster and visibility' card: Team / Schedule / Privacy",
+        "Banner 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+        "'Role visibility — The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Role visibility' card is clipped by the bottom nav",
+        "No waiver, signer or signature date anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion banner describe this workflow's outcome?",
+          "visibleEvidence": "'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+          "why": "A generic 'update saved' listing RSVP, reminders and checksums says nothing about a waiver being signed, and the same banner is reused on unrelated workflows."
+        },
+        {
+          "question": "Is the workflow identifiable?",
+          "visibleEvidence": "Hero title reads 'Youth privacy record', not anything waiver-related",
+          "why": "The capture shows the minor-redaction surface, so the waiver workflow has no complete-state evidence."
+        }
+      ],
+      "screenshotHash": "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-guardian-join-approval-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-guardian-join-approval-start"],
+      "critique": "Another mid-scroll feed frame. The top card is sliced to expose only 'Request changes' and 'Approve request' — which at least hints at an approval workflow — but the request itself, the requester's name and any pending count are all above the fold and lost. The frame then moves into a green 'Documents and data — Documents, exports, imports, and transfer records.' header and two export cards, 'Protected minor-data…' and 'Youth soccer export …', both titles truncated with ellipses. So the majority of the screen is showing the export workflow, not guardian approvals. The 'Read only' chip on the second card is at least explained by its subtitle 'You can read the current details without changing …' — though that sentence is itself truncated mid-word.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A pending-approvals entry point naming the request: 'Mia Rivera requests U10 Falcons access', a pending badge, and Approve / Request changes / Reject actions with the request details visible.",
+      "visibleObservations": [
+        "Clipped card exposing 'Request changes' and 'Approve request'",
+        "Green header 'Documents and data — Documents, exports, imports, and transfer records.'",
+        "'Protected minor-data…' card, subtitle 'Protected youth roster profile includes minor-da…'",
+        "'Youth soccer export …' card, subtitle 'You can read the current details without changing …'",
+        "Chips 'Minimized', 'Read only'; buttons 'Data package', 'Preview redaction', 'Expand'",
+        "Bottom-right 'Team' tab clipped at screen edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the guardian join request visible in its start state?",
+          "visibleEvidence": "Only the buttons 'Request changes' and 'Approve request' survive at the top; the requester 'Mia Rivera' is nowhere on screen",
+          "why": "You can see that something can be approved but not what or by whom, which is the substance of an approval start state."
+        },
+        {
+          "question": "Is it clear why an action is restricted?",
+          "visibleEvidence": "'Read only' chip paired with 'You can read the current details without changing …'",
+          "why": "The reason is given, which is good practice, but the explanatory sentence is itself truncated before it finishes."
+        }
+      ],
+      "screenshotHash": "5706732cac331cf62571d81c8854bd37eed0001b3dd7843cb00f8c3347428fca"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-guardian-join-approval-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-guardian-join-approval-action"],
+      "critique": "Content-wise this is one of the better sheets: titled 'Guardian approval desk', it names the actual request — 'Guardian — Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.' — plus 'Safety info — Emergency contact and pickup authorization are present for coach action.' and 'Decision note — Coach can approve, reject, or ask for a missing waiver before activation.' That is specific, plausible youth-sports copy. But the sheet then prints a second card, 'Roster visibility', which repeats Guardian, Safety info and Decision note word for word below two generic rows ('Roster records', 'Protected visibility'). The 'Roster visibility' framing is also wrong for an approval decision — the user is approving a guardian, not auditing roster field visibility. And no approve/reject buttons are visible in frame; the decision note describes actions the screen does not offer.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An approval decision sheet showing the request details once, with visible Approve / Reject / Request waiver buttons and the emergency-contact record.",
+      "visibleObservations": [
+        "Title 'Guardian approval desk'",
+        "'Guardian — Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.'",
+        "'Safety info — Emergency contact and pickup authorization are present for coach action.'",
+        "'Decision note — Coach can approve, reject, or ask for a missing waiver before activation.'",
+        "Second card 'Roster visibility' repeats all three rows verbatim",
+        "No Approve or Reject button visible"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the copy describe actual community content?",
+          "visibleEvidence": "'Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.'",
+          "why": "Named guardian, named player, named team and a relative timeframe — this reads as a real pending request."
+        },
+        {
+          "question": "Are the described actions actually available?",
+          "visibleEvidence": "'Coach can approve, reject, or ask for a missing waiver before activation.' with no such buttons in frame",
+          "why": "Copy promises three decisions the visible UI does not provide, so actionability fails on the action state itself."
+        }
+      ],
+      "screenshotHash": "495298e55e3790a619b6f65b8767160b7f096c5c55f17aa345b4dfff88ffd5ec"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-guardian-join-approval-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-guardian-join-approval-complete"],
+      "critique": "The clearest completion state in the set. The hero 'Guardian approval desk' carries a real subtitle — 'Confirm guardian identity, player connection, emergency-contact status, and approval notes before activating membership.' — and the outcome banner is workflow-specific: 'Guardian approved — Mia Rivera is active for U10 Falcons with player link, emergency-contact status, and decision history visible.' with a family icon. That is a proper terminal state that names the person and the resulting status. It still inherits two ambient defects: the 'Role visibility' card below falls back to the boilerplate 'The saved result keeps status, history, and change actions visible for this community task.' and the next row 'Membership state' is clipped in half by the bottom nav bar, so the screen ends on a sliced line of text. There is also no approval timestamp or approver name.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "An approved-guardian confirmation naming the approver and time, with the activated membership record and a link to the decision history.",
+      "visibleObservations": [
+        "Hero 'Guardian approval desk' with the confirm-identity subtitle",
+        "'Roster and visibility' card with Guardian / Safety info / Decision note",
+        "Banner 'Guardian approved — Mia Rivera is active for U10 Falcons with player link, emergency-contact status, and decision history visible.'",
+        "'Role visibility — The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Membership state' row clipped mid-height by the bottom nav",
+        "No approver name or approval timestamp"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the completed state unambiguous and specific?",
+          "visibleEvidence": "'Guardian approved — Mia Rivera is active for U10 Falcons with player link, emergency-contact status, and decision history visible.'",
+          "why": "It names the guardian, the team and the resulting active status, so a reader knows exactly what finished."
+        },
+        {
+          "question": "Is there any layout clipping?",
+          "visibleEvidence": "The 'Membership state' row is cut horizontally by the light bottom navigation bar",
+          "why": "Content sliding under the nav bar rather than being padded above it is a real but minor layout defect."
+        }
+      ],
+      "screenshotHash": "7b7ac7890267e27bc855af33f47e4c7e04ebcb1eca10c0002a91d2007574a634"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-practice-schedule-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-practice-schedule-start"],
+      "critique": "The 'Practice schedule' card is genuinely at the top of this frame with a 'Publish schedule' action, which is the right anchor — but its subtitle is truncated to 'Practice details include date, location, capacity, R…' so the actual practice details are never shown, and the card carries the meaningless 'Minimized' chip plus both 'Tap for expanded view' and a separate 'Expand' button. Below it the screen is taken over by an unrelated 'Giving — Payments, donations, receipts, and member preferences.' header and then an 'In-focus product surface' bar containing the full purple 'Season registration fee' card with '$ 125.00 USD' and 'Leo Rivera'. Roughly two thirds of a practice-schedule start capture is showing the payment workflow, which makes the evidence ambiguous about what is being demonstrated.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A practice-schedule start showing the upcoming Saturday 9:00 AM Riverside Field 3 session with date, capacity and RSVP status, and a clear unpublished/unanswered state — without an unrelated payment card dominating the frame.",
+      "visibleObservations": [
+        "'Practice schedule' card, subtitle truncated to 'Practice details include date, location, capacity, R…'",
+        "Buttons 'Tap for expanded view', 'Event details', 'Expand', 'Publish schedule'",
+        "Green header 'Giving — Payments, donations, receipts, and member preferences.'",
+        "Dark bar 'In-focus product surface' with an 'Expand' link",
+        "Purple 'Season registration fee' card with '$ 125.00 USD', 'Leo Rivera', 'Receipt saved', 'Private payer'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does what's shown make sense for the practice-schedule workflow?",
+          "visibleEvidence": "The lower two-thirds shows 'Season registration fee' and '$ 125.00 USD' under an 'In-focus product surface' bar",
+          "why": "The payment surface is given more visual weight than the practice card the row is meant to demonstrate."
+        },
+        {
+          "question": "Are the actions on the practice card clear and non-redundant?",
+          "visibleEvidence": "'Tap for expanded view' sits beside a separate 'Expand' button on the same card, with a 'Minimized' chip above",
+          "why": "Three controls expressing the same expand concept, one of them internal jargon, is redundant and unclear."
+        }
+      ],
+      "screenshotHash": "5cb8eb154fc6a9eeca0134a246ee1be5de303c971b0320798ed327ecca84c62f"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-practice-schedule-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-practice-schedule-action"],
+      "critique": "Titled 'Saturday practice schedule' with a genuinely good 'Event details' card — Team 'U10 Falcons, coach Jordan Patel, 12-player roster.', Schedule 'Saturday practice at 9:00 AM on Riverside Field 3 with RSVP and attendance result visible.', plus chips 'Saturday 9 AM', 'Field 3', 'RSVP available'. That is legible, specific and well laid out. The failure is below: the 'Choose attendance' card says 'Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going.' and then lists Event details / Attendance options / Member reminder — but no Going, Maybe or Not going control appears anywhere on the screen. It then re-prints 'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' and starts 'Schedule' again, duplicating the card above and running off the bottom of the frame mid-row.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An RSVP sheet with the practice details shown once and three tappable responses (Going / Maybe / Not going) plus current attendance count against capacity.",
+      "visibleObservations": [
+        "Title 'Saturday practice schedule'",
+        "Chips 'Saturday 9 AM', 'Field 3', 'RSVP available'",
+        "'Choose attendance' with rows Event details / Attendance options / Member reminder",
+        "'Attendance options — Going, Maybe, Not going, and Change response remain available while the event is open.'",
+        "'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' printed a second time at the bottom",
+        "Bottom row cut off mid-glyph"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Are the described attendance actions actually present?",
+          "visibleEvidence": "'Going, Maybe, Not going, and Change response remain available while the event is open.' with no such buttons rendered",
+          "why": "The action state of an RSVP workflow must show the RSVP controls; describing them in prose is not the same as offering them."
+        },
+        {
+          "question": "Is the event context concrete?",
+          "visibleEvidence": "'Saturday practice at 9:00 AM on Riverside Field 3' with 'Field 3' and 'Saturday 9 AM' chips",
+          "why": "Time and venue are specific and consistent with the rest of the community's data."
+        }
+      ],
+      "screenshotHash": "0df5849117caacf6546ca33c17e200d0dbff2fa6aa68fbe0896d007f47cba857"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-practice-schedule-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-practice-schedule-complete"],
+      "critique": "The hero is well composed — a calendar icon tile beside 'Saturday practice schedule', with the 'Event details' card and its 'Saturday 9 AM' / 'Field 3' / 'RSVP available' chips intact. But the hero subtitle is wrong for a schedule: 'The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.' — a checksum and an inbox preview have nothing to do with a practice time, and this exact sentence is reused as the completion text on the reminder, redaction and discussion workflows. The completion banner repeats it a third time under the heading 'Team update saved'. So the screen says the same non-specific sentence twice and never states what actually completed: no RSVP response ('Going'), no attendance count, no published-at time. 'RSVP available' still reads as an open invitation, contradicting a completed state.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A completed RSVP/publish state naming the chosen response and resulting attendance (e.g. 'You're going — 9 of 12 attending'), with the schedule marked published.",
+      "visibleObservations": [
+        "Hero 'Saturday practice schedule' with calendar tile",
+        "Subtitle 'The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+        "'Event details' with Team / Schedule / Privacy and chips 'Saturday 9 AM', 'Field 3', 'RSVP available'",
+        "Banner 'Team update saved' repeating the same subtitle sentence",
+        "Banner text clipped by the bottom nav after 'and protected data'",
+        "No attendance response or count shown"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the screen show what completed?",
+          "visibleEvidence": "'Team update saved' with body 'The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+          "why": "A generic saved-confirmation that lists five unrelated capabilities does not tell the user which one just happened."
+        },
+        {
+          "question": "Is the same sentence repeated?",
+          "visibleEvidence": "The identical 'The soccer update shows RSVP choice, reminder body, checksum or saved result…' text appears as both the hero subtitle and the banner body",
+          "why": "Printing the same paragraph twice within one viewport is redundant and signals templated content."
+        }
+      ],
+      "screenshotHash": "8ab1fb9ee43780c6550bc8755ee423ef7f22918b4d41525538f9f7b65be601fe"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-discussion-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-discussion-start", "riverside-youth-soccer-soccer-team-roster-start"],
+      "critique": "This frame is visually indistinguishable from the soccer-team-roster start capture — same clipped card reading 'Open roster details, update team notes, message guardians, or export a protected team sheet.', same 'Message guardians' and 'Open roster' buttons, same 'Team discussion thre…' card below. One feed position is being submitted as the start state for two different workflows. On its own merits the screen is thin: the discussion card's title is truncated, its subtitle is the generic 'Member form captures labeled details, privacy c…', and its only substantive action is 'Start team discussion thread'. Below the card sits a collapsed 'Local package details' row and then roughly a third of the viewport of empty dark-green space — visible emptiness where a thread list should be.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A team-discussion entry point listing existing U10 Falcons threads with authors and recent replies, or a genuine empty state explaining there are no threads yet, plus a 'Start a thread' CTA.",
+      "visibleObservations": [
+        "Clipped top card: 'Open roster details, update team notes, message guardians, or export a protected team sheet.'",
+        "Buttons 'Message guardians' and 'Open roster'",
+        "'Team discussion thre…' card with 'Minimized' chip and subtitle 'Member form captures labeled details, privacy c…'",
+        "Buttons 'Tap for expanded view', 'Member form', 'Expand', 'Start team discussion thread'",
+        "Collapsed row 'Local package details' with a chevron",
+        "Large empty green region occupying the lower third of the content area"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is there real discussion content or a proper empty state?",
+          "visibleEvidence": "The lower third of the frame is blank dark-green space below the 'Local package details' chevron row",
+          "why": "Neither threads nor an explicit empty-state message is present, so the screen shows thin/empty content where real content is expected."
+        },
+        {
+          "question": "Is this start frame distinct from other workflows' start frames?",
+          "visibleEvidence": "The frame matches the team-roster start capture element for element, down to the 'Message guardians' button position",
+          "why": "Two rows evidenced by the same feed position means neither workflow has a distinct start state."
+        }
+      ],
+      "screenshotHash": "940a0aaca1009062c0ebc130958060f09da45660d027d8b937479183285fdf89"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-discussion-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-discussion-action", "riverside-youth-soccer-soccer-waiver-document-action", "riverside-youth-soccer-soccer-minor-redaction-action"],
+      "critique": "Wrong workflow. Tapping into the team discussion produces a sheet titled 'Youth privacy record' whose content is 'Roster and visibility' (Team / Schedule / Privacy) and 'Roster visibility' (Roster records / Protected visibility, then Team / Schedule / Privacy again), ending with 'Filter roster' and 'Hide protected fields'. There is no thread, no message body, no author, no reply field, no timestamp — nothing that constitutes a discussion. It is the same capture used for the waiver and minor-redaction action rows, so three workflows are all evidenced by one screen. Even setting the mismatch aside, the sheet prints the Team/Schedule/Privacy triad twice and offers only redaction controls.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A team thread view: thread title, posts from coach Jordan Patel and guardians with names and timestamps, and a reply composer.",
+      "visibleObservations": [
+        "Sheet title 'Youth privacy record'",
+        "'Roster and visibility': Team / Schedule / Privacy",
+        "'Roster visibility — Review member names, role-filtered details, protected fields, and who can see each item.'",
+        "Team / Schedule / Privacy repeated a second time",
+        "Buttons 'Filter roster' and 'Hide protected fields'",
+        "No message, author, timestamp or composer anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does this screen demonstrate the team-discussion workflow?",
+          "visibleEvidence": "Title 'Youth privacy record' with buttons 'Filter roster' and 'Hide protected fields'",
+          "why": "Every element belongs to the minor-redaction workflow; discussion has no representation, so this row has no valid evidence."
+        },
+        {
+          "question": "Is the layout free of repeated shells?",
+          "visibleEvidence": "'Privacy — Minor profile fields are redacted for guardians and visible to coaches only where permitted.' appears twice",
+          "why": "The same three-row block rendered in two stacked cards is duplicated content within one view."
+        }
+      ],
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-discussion-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-discussion-complete", "riverside-youth-soccer-soccer-waiver-document-complete"],
+      "critique": "Identical to the waiver-document complete capture and equally wrong for this row: hero 'Youth privacy record', subtitle about 'protected minor data, redaction result, export scope, and permission boundaries', the 'Roster and visibility' card, then the shield banner 'Team update saved' with the RSVP/checksum/inbox laundry-list sentence. A completed team discussion should show a posted message; instead there is no thread, no post text, no author and no 'posted' confirmation. The 'Role visibility' card at the bottom contributes only 'The saved result keeps status, history, and change actions visible for this community task.' and is sliced by the bottom nav. This row cannot be assessed as a discussion completion because no discussion is present.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A posted-thread confirmation: the thread title, the message just posted, its author and timestamp, and who it was visible to.",
+      "visibleObservations": [
+        "Hero 'Youth privacy record' with redaction/export subtitle",
+        "'Roster and visibility' card: Team / Schedule / Privacy",
+        "Shield banner 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+        "'Role visibility — The saved result keeps status, history, and change actions visible for this community task.'",
+        "Card clipped by the bottom nav bar",
+        "No posted message or thread anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the completion specific to a team discussion?",
+          "visibleEvidence": "Banner reads 'Team update saved' with a body listing RSVP choice, reminder body and checksum",
+          "why": "Nothing in the banner or the page refers to a thread or a posted message, so the completion is neither specific nor correct."
+        },
+        {
+          "question": "Is this capture distinct from other rows?",
+          "visibleEvidence": "It matches the waiver-document complete capture element for element, including the 'Team update saved' shield banner",
+          "why": "One screenshot serving two workflow-complete rows means at least one of them is unevidenced."
+        }
+      ],
+      "screenshotHash": "f31badc80a06a480529379673b6a1297c89eb4b904237f9a6986c0240a6ee358"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-roster-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-roster-start", "riverside-youth-soccer-soccer-team-discussion-start"],
+      "critique": "The clipped top card here is at least roster-relevant — 'Open roster details, update team notes, message guardians, or export a protected team sheet.' with 'Message guardians' and 'Open roster' buttons — but the card's own title is scrolled off, and the frame is otherwise the same feed position submitted for the team-discussion start row. The dominant card actually visible in full is 'Team discussion thre…', which belongs to a different workflow, and its subtitle is the recycled 'Member form captures labeled details, privacy c…'. No player names, no roster count, no waiver-status column appear despite the roster sheet elsewhere having all three. The lower third of the frame is empty green space under a collapsed 'Local package details' row.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A roster entry point showing the U10 Falcons player list with names, jersey numbers and waiver status, a 12-player count, and Open roster / Message guardians actions.",
+      "visibleObservations": [
+        "Clipped card text 'Open roster details, update team notes, message guardians, or export a protected team sheet.'",
+        "Buttons 'Message guardians' and 'Open roster'",
+        "Fully visible card is 'Team discussion thre…' with 'Minimized' chip",
+        "Subtitle 'Member form captures labeled details, privacy c…'",
+        "Collapsed 'Local package details' row with chevron",
+        "Empty dark-green area filling the lower third"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is any roster content visible in this start state?",
+          "visibleEvidence": "The only roster reference is the button label 'Open roster'; no player name or count appears",
+          "why": "A roster start state showing zero roster data does not establish the workflow or its content."
+        },
+        {
+          "question": "Is the screen visually distinct from the discussion start row?",
+          "visibleEvidence": "Same clipped card, same 'Message guardians'/'Open roster' pair, same 'Team discussion thre…' card in the same position",
+          "why": "Reusing one feed position for two rows means the captures are not workflow-specific evidence."
+        }
+      ],
+      "screenshotHash": "9497710f7eb694fb4bc9be48ede48b5c47f47463edb27cb7c4bd6f545c16ac58"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-roster-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-roster-action"],
+      "critique": "Content quality is high — titled 'U10 Falcons roster' with 'Featured player — Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday.', 'Protected fields — Birthdates and medical notes are redacted unless the coach has permission.' and 'Team context — U10 Falcons practice Saturday at Riverside Field 3.' A lock icon correctly marks the protected-fields row. Two defects. First, the app bar is slate-blue while every other surface in this green-branded community uses forest green, so the sheet looks like it came from a different product. Second, the 'Roster visibility' card below reprints Featured player, Protected fields and Team context word for word after two generic rows, so the sheet states everything twice before reaching 'Filter roster' / 'Hide protected fields'. Also, a 'roster' showing exactly one 'Featured player' out of a stated 12-player squad is thin content for a roster view.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "The full U10 Falcons roster: all 12 players with jersey numbers, guardians and waiver status, redacted fields visibly masked, in the community's green accent.",
+      "visibleObservations": [
+        "Slate-blue app bar with 'U10 Falcons roster'",
+        "'Featured player — Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday.'",
+        "Lock icon on 'Protected fields — Birthdates and medical notes are redacted unless the coach has permission.'",
+        "'Team context — U10 Falcons practice Saturday at Riverside Field 3.'",
+        "All three rows repeated inside the 'Roster visibility' card",
+        "Buttons 'Filter roster' and 'Hide protected fields'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the copy describe real community content?",
+          "visibleEvidence": "'Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday.'",
+          "why": "Player, number, guardian and a deadline are all concrete and internally consistent with the rest of the community."
+        },
+        {
+          "question": "Is the visual treatment consistent with the community brand?",
+          "visibleEvidence": "The app bar behind 'U10 Falcons roster' is slate-blue, unlike the forest-green bars on every other sheet in this set",
+          "why": "An off-palette header on one workflow's sheet breaks the visual system and reads as an unthemed default."
+        }
+      ],
+      "screenshotHash": "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-team-roster-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-team-roster-complete"],
+      "critique": "The hero reads well — 'U10 Falcons roster' with the subtitle 'Open player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive details.' — and the completion banner is workflow-specific: 'Roster opened — The U10 Falcons roster shows players, guardians, waiver status, and protected-field handling.' But that banner is rendered in slate-blue inside an otherwise forest-green screen, the same off-palette break seen on the roster action sheet. 'Roster opened' is also a weak terminal state: opening a roster is a navigation event, not a completed task, and the screen still shows only the one 'Featured player' rather than the roster the banner claims is now visible. The 'Role visibility' card falls back to boilerplate and its 'Update roster' row is sliced by the bottom nav.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "An opened roster listing the actual 12 players with guardian and waiver-status columns, in the community green accent, with an 'Update roster' action fully visible.",
+      "visibleObservations": [
+        "Hero 'U10 Falcons roster' with the 'without exposing sensitive details' subtitle",
+        "'Roster and visibility' card with Featured player / Protected fields / Team context",
+        "Slate-blue banner 'Roster opened — The U10 Falcons roster shows players, guardians, waiver status, and protected-field handling.'",
+        "'Role visibility — The saved result keeps status, history, and change actions visible for this community task.'",
+        "'Update roster' row clipped by the bottom nav",
+        "Only one player (Leo Rivera) shown despite a 12-player roster"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion banner match the visible content?",
+          "visibleEvidence": "'The U10 Falcons roster shows players, guardians, waiver status, and protected-field handling.' above a card listing a single 'Featured player'",
+          "why": "The banner claims a roster of players is shown while only one player is rendered, so the copy overstates the content."
+        },
+        {
+          "question": "Is the accent colour consistent?",
+          "visibleEvidence": "The 'Roster opened' banner is slate-blue against the green page background and green app bar",
+          "why": "Same off-palette break as the roster action sheet, isolating this workflow visually from the rest of the community."
+        }
+      ],
+      "screenshotHash": "0474dd949a43680080427f9ff46d6761e6726e77749c8bb3127f84b0c762d47e"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-reminder-notification-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-reminder-notification-start", "riverside-youth-soccer-soccer-reminder-notification-complete"],
+      "critique": "Unlike the other start rows this one opens on a real hero — a calendar tile beside 'Guardian practice reminder' with the accurate subtitle 'Send the reminder message body with sender, guardian audience, timestamp, and inbox channel.' The 'Event details' card and the 'Saturday 9 AM' / 'Field 3' / 'RSVP available' chips render cleanly. The problem is that this start frame is visually the same screen as the reminder complete frame apart from the subtitle line, so start and completion are not distinguishable. There is also no draft reminder message body anywhere despite the subtitle promising one, no recipient count for the guardian audience, and the 'Response choices' card underneath describes confirming details 'before saving' but is cut off by the bottom nav before any control appears.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A reminder composer start state: the draft message body, the guardian recipient count, the send channel, and a 'Send reminder' primary action in an explicitly unsent state.",
+      "visibleObservations": [
+        "Hero 'Guardian practice reminder' with calendar tile",
+        "Subtitle 'Send the reminder message body with sender, guardian audience, timestamp, and inbox channel.'",
+        "'Event details' with Team / Schedule / Privacy",
+        "Chips 'Saturday 9 AM', 'Field 3', 'RSVP available'",
+        "'Response choices — Confirm time, field, recipient guardians, protected details, and inbox preview before saving.'",
+        "No message body text and no send control visible"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the start state distinguishable from the complete state?",
+          "visibleEvidence": "This frame and the reminder complete frame share the same hero, the same 'Event details' card and the same three chips",
+          "why": "Only the subtitle line differs, so a viewer cannot tell from the screens whether the reminder has been sent."
+        },
+        {
+          "question": "Is the promised reminder content shown?",
+          "visibleEvidence": "Subtitle says 'Send the reminder message body…' but no message body appears on screen",
+          "why": "The core artifact of the workflow — the reminder text — is absent from its own start screen."
+        }
+      ],
+      "screenshotHash": "15433b74842a5f346489c221ccf7cce61b98f7e82aa28a60b248487ee8ee38cf"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-reminder-notification-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-reminder-notification-action", "riverside-youth-soccer-soccer-practice-schedule-action"],
+      "critique": "The sheet is titled 'Guardian practice reminder' but its body is the attendance-RSVP surface: below 'Event details' comes 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going.' with rows Event details / Attendance options / Member reminder, then Team and Schedule reprinted. Apart from the title bar this is the same composition as the practice-schedule action sheet. A reminder-notification action should show the reminder being composed or sent; instead it shows a parent choosing whether to attend. No message body, no recipient list, no send button appears. The screen also repeats 'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' twice and is cut off mid-row at the bottom.",
+      "verdict": "fail",
+      "severity": "critical-blocker",
+      "targetProductionSurface": "A reminder-send sheet: the composed message body, the guardian recipients and count, the delivery channel, and a 'Send reminder' action.",
+      "visibleObservations": [
+        "Title 'Guardian practice reminder'",
+        "'Event details' with Team / Schedule / Privacy and chips 'Saturday 9 AM', 'Field 3', 'RSVP available'",
+        "'Choose attendance' card describing 'Going, Maybe, or Not going'",
+        "'Member reminder — The saved response keeps calendar, reminder, and capacity status visible.'",
+        "'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' repeated at the bottom",
+        "No message body, recipient list or send control"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the body match the title of the sheet?",
+          "visibleEvidence": "Title 'Guardian practice reminder' over a card headed 'Choose attendance' about Going / Maybe / Not going",
+          "why": "The sheet demonstrates the RSVP workflow under a reminder heading, so the reminder workflow's action state is not evidenced."
+        },
+        {
+          "question": "Is this composition unique to this row?",
+          "visibleEvidence": "The 'Event details' + 'Choose attendance' pairing matches the practice-schedule action capture exactly below the title bar",
+          "why": "Two rows sharing a body means the reminder row is effectively a re-titled duplicate."
+        }
+      ],
+      "screenshotHash": "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-reminder-notification-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-reminder-notification-complete"],
+      "critique": "Same hero as the reminder start frame — calendar tile, 'Guardian practice reminder', 'Event details' with the Saturday 9 AM / Field 3 / RSVP available chips — with the subtitle swapped to the recycled 'The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.' The banner below is the generic 'Team update saved' repeating that identical sentence, clipped by the bottom nav after 'and protected data'. For a reminder that has supposedly been sent, there is no sent timestamp, no recipient count ('sent to 12 guardians'), no inbox preview and no message body — precisely the things the subtitle claims are shown. Saying the same undifferentiated paragraph twice and calling it 'Team update saved' does not evidence a delivered notification.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A sent-reminder confirmation: the message body as delivered, sent timestamp, guardian recipient count and inbox channel.",
+      "visibleObservations": [
+        "Hero 'Guardian practice reminder' with calendar tile",
+        "Subtitle 'The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+        "'Event details' with chips 'Saturday 9 AM', 'Field 3', 'RSVP available'",
+        "Banner 'Team update saved' repeating the same sentence",
+        "Banner clipped mid-sentence at the bottom nav",
+        "No sent timestamp, recipient count or message body"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the screen show the reminder was actually delivered?",
+          "visibleEvidence": "Banner reads 'Team update saved', not anything about a reminder being sent to guardians",
+          "why": "A generic save confirmation shared across four workflows cannot establish that a notification was delivered."
+        },
+        {
+          "question": "Is the copy specific to this workflow?",
+          "visibleEvidence": "The subtitle mentioning 'checksum or saved result' appears verbatim on the practice-schedule, redaction and discussion completions too",
+          "why": "Text reused across four unrelated workflows is boilerplate, not product copy."
+        }
+      ],
+      "screenshotHash": "5d9c76c5a25a4327b9d90977aee48e7a6d7a00dd4bfaa2fb8c0720562bac6ab6"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-minor-redaction-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-minor-redaction-start"],
+      "critique": "A mid-scroll feed frame again: the top card is sliced to 'Edit details' plus a full-width 'Preview redaction' button, which is the only redaction-specific element on screen. Below it are two unrelated cards — 'Youth soccer export …' (title truncated, 'Read only' chip) and 'Waiver document libr…' (title truncated, 'Not available' chip) — then the 'Member tools' green header. Credit where due: both restricted cards explain themselves, 'You can read the current details without changing …' and 'Another community role manages this item.', which is better disabled-state practice than most of this set. But no redacted field, no minor's record and no before/after preview is visible, so the start state of a redaction workflow shows nothing being redacted.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A redaction start state showing a minor's profile with the protected fields (birthdate, medical notes) visibly masked, who can see what, and a 'Preview redaction' action in context.",
+      "visibleObservations": [
+        "Clipped card exposing 'Edit details' and 'Preview redaction'",
+        "'Youth soccer export …' card with 'Read only' chip and 'You can read the current details without changing …'",
+        "'Waiver document libr…' card with 'Not available' chip and 'Another community role manages this item.'",
+        "Green header 'Member tools — Useful actions for this community.'",
+        "Buttons 'Tap for expanded view', 'Data package', 'Member form', 'Expand'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear why unavailable actions are unavailable?",
+          "visibleEvidence": "'Not available' chip accompanied by 'Another community role manages this item.'",
+          "why": "The chip is paired with an actual reason, which is the correct pattern — the weakness is that the reason is generic rather than naming the role."
+        },
+        {
+          "question": "Does the screen show redaction content?",
+          "visibleEvidence": "The only redaction reference is the button 'Preview redaction'; no masked field is displayed",
+          "why": "A redaction start state with no protected data on screen fails to establish what the workflow operates on."
+        }
+      ],
+      "screenshotHash": "d1db045c66475c61272b8aeee2d05102fe6fe5ab909130f5180386c00ca08a52"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-minor-redaction-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-minor-redaction-action", "riverside-youth-soccer-soccer-waiver-document-action", "riverside-youth-soccer-soccer-team-discussion-action"],
+      "critique": "This is the one row where the 'Youth privacy record' sheet is the correct surface, and its content is reasonable: 'Privacy — Minor profile fields are redacted for guardians and visible to coaches only where permitted.', 'Protected visibility — Hidden, redacted, filter, message, and export actions follow the role policy.', with 'Filter roster' and 'Hide protected fields' actions. The problem is that this same capture is also submitted for the waiver and team-discussion action rows, so it cannot serve as unique evidence. Internally, the sheet prints Team / Schedule / Privacy twice — once in 'Roster and visibility' and again inside 'Roster visibility' — and it still shows no actually redacted value: it describes redaction policy in prose rather than showing a masked birthdate or medical note.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A redaction preview showing concrete fields with their values masked (e.g. 'Birthdate ••/••/••••'), labelled by who can see each, with a toggle between coach and guardian views.",
+      "visibleObservations": [
+        "Sheet title 'Youth privacy record'",
+        "'Privacy — Minor profile fields are redacted for guardians and visible to coaches only where permitted.'",
+        "'Protected visibility — Hidden, redacted, filter, message, and export actions follow the role policy.'",
+        "Team / Schedule / Privacy rows printed twice",
+        "Buttons 'Filter roster' and 'Hide protected fields'",
+        "No masked or redacted field value shown"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the screen demonstrate redaction rather than describe it?",
+          "visibleEvidence": "'Minor profile fields are redacted for guardians and visible to coaches only where permitted.' with no field values on screen",
+          "why": "Prose about the policy is not a demonstration; a redaction action state should show the masking applied to real fields."
+        },
+        {
+          "question": "Is this capture unique to this row?",
+          "visibleEvidence": "The identical sheet is also submitted as the waiver-document action and team-discussion action captures",
+          "why": "Shared evidence across three workflows means the capture cannot substantiate any one of them individually."
+        }
+      ],
+      "screenshotHash": "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-minor-redaction-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-minor-redaction-complete"],
+      "critique": "For this row the hero is correct and well written — 'Youth privacy record' with 'Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians.' — and the 'Roster and visibility' card renders cleanly with Team, Schedule and the Privacy row carrying an eye-with-slash icon that reinforces the redaction concept. The completion signal, however, is the same generic shield banner used across four workflows: 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.' Only the last four words relate to redaction. No redaction result is actually shown: no count of fields redacted, no before/after, no masked value. The 'Role visibility' card below is boilerplate and is sliced by the bottom nav.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A redaction-applied confirmation naming what was redacted (e.g. 'Birthdate and medical notes hidden from 8 guardians') with the masked record visible.",
+      "visibleObservations": [
+        "Hero 'Youth privacy record' with the protected-minor-data subtitle",
+        "'Roster and visibility' with Team / Schedule / Privacy and an eye-slash privacy icon",
+        "Shield banner 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.'",
+        "'Role visibility — The saved result keeps status, history, and change actions visible for this community task.'",
+        "Bottom card clipped by the nav bar",
+        "No redacted field count or masked value"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion state name the redaction outcome?",
+          "visibleEvidence": "'Team update saved' with a body listing RSVP choice, reminder body, checksum and inbox preview",
+          "why": "Only the trailing 'protected data handling' is relevant; the banner is a shared generic and does not report a redaction result."
+        },
+        {
+          "question": "Is the hero copy appropriate to the workflow?",
+          "visibleEvidence": "'Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians.'",
+          "why": "This is on-topic and reads as a real feature description, which is why the generic banner beneath it stands out as a regression."
+        }
+      ],
+      "screenshotHash": "bffa45e860fca451f391eff0a80c8c46ed6517776b9444f3edeaf9eb088febf3"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-export-metadata-start",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-export-metadata-start"],
+      "critique": "The frame opens on a card sliced mid-sentence — 'Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.' with its heading cut away — then shows 'Package progress' with a full-width 'Generate export' button, which is the right primary action for this workflow. But 'Package progress' is described by 'Confirm time, field, recipient guardians, protected details, and inbox preview before saving.' — copy borrowed from the reminder workflow (recipient guardians and inbox preview have nothing to do with an export package), and a card labelled 'progress' shows no progress indicator at all. Below, the frame drifts into the 'Waiver document libr…' card ('Not available') and the 'Member tools' header, with a 'Team and roster view' card sliced in half by the bottom nav.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An export start state naming the package scope (records included, redaction choices, destination, estimated size) with a not-yet-generated status and a 'Generate export' CTA.",
+      "visibleObservations": [
+        "Top card clipped mid-sentence: 'Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.'",
+        "'Package progress — Confirm time, field, recipient guardians, protected details, and inbox preview before saving.'",
+        "Buttons 'Edit details' and full-width 'Generate export'",
+        "'Waiver document libr…' card with 'Not available' chip",
+        "Green header 'Member tools — Useful actions for this community.'",
+        "'Team and roster view' card sliced by the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the card copy appropriate to an export?",
+          "visibleEvidence": "'Package progress — Confirm time, field, recipient guardians, protected details, and inbox preview before saving.'",
+          "why": "Time, field and inbox preview are reminder/event concepts; the sentence appears verbatim on the reminder sheet, so the copy has been cross-wired."
+        },
+        {
+          "question": "Does 'Package progress' show progress?",
+          "visibleEvidence": "The card contains only prose and an 'Edit details' button — no bar, percentage or step indicator",
+          "why": "A card named for progress that displays none is thin content and misleads about the state."
+        }
+      ],
+      "screenshotHash": "21fca2cc868d6413dae7ad6c92628e0b726a7a12869a86ee39e50a62097bfb24"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-export-metadata-action",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-export-metadata-action"],
+      "critique": "The best-structured sheet in the set. 'Protected soccer export' presents 'Export steps' as a genuinely numbered list — 1 Team, 2 Schedule, 3 Privacy, 4 Guardian update, 5 Export state — with numeral badges in circles beside each icon, which is the only screen here that conveys sequence and therefore in-progress state. Step 5 'Export state — Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.' is on-topic. The weaknesses: steps 1–3 are the same Team / Schedule / Privacy rows recycled from every other sheet in the community, so the 'steps' are really just the shared context block with numbers attached; none of the five steps shows a completed/pending indicator, so the numbering implies progress it does not report; and the 'Export workspace' card below restates the same scope in prose ('Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible.').",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "An export sheet with the five steps showing per-step status (done/current/pending), the record count and file size, the destination, and the checksum value.",
+      "visibleObservations": [
+        "Title 'Protected soccer export'",
+        "'Export steps' numbered 1–5 with circular numeral badges",
+        "Step 4 'Guardian update — Guardians receive schedule, roster-safe details, reminder message body, timestamp, and inbox channel.'",
+        "Step 5 'Export state — Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.'",
+        "'Export workspace — Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible.'",
+        "'Export scope — Selected records, redaction choices, destination, file size, and checksum are shown as export steps.'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is in-progress state legible on this screen?",
+          "visibleEvidence": "Numbered badges 1 through 5 beside Team, Schedule, Privacy, Guardian update and Export state",
+          "why": "The numbering communicates a sequence, which is more state information than any other sheet in this community offers, though no step is marked current or done."
+        },
+        {
+          "question": "Is the content specific enough for an export?",
+          "visibleEvidence": "'Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.'",
+          "why": "It names the right artifacts for a data export, but no actual file size, record count or checksum value is rendered."
+        }
+      ],
+      "screenshotHash": "3e67f47e63433aba3f9ba5a89bd8793ef0e4a4428ffb6293d513c647316c4c4b"
+    },
+    {
+      "screenRowId": "riverside-youth-soccer-soccer-export-metadata-complete",
+      "affectedScreenRowIds": ["riverside-youth-soccer-soccer-export-metadata-complete"],
+      "critique": "The hero 'Protected soccer export' with the tight subtitle 'Roster and registration data with minor protection.' is the crispest piece of copy in the whole community — short, concrete, no spec language. The numbered 'Export steps' card renders cleanly beneath it. Two problems. The title and subtitle are pinned flush to the left screen edge with no leading padding, unlike every other hero in this set which is inset — the 'P' of 'Protected' and the 'R' of 'Roster' sit hard against the frame border. And the completion banner is once again the shared 'Team update saved', clipped by the bottom nav after only two lines, so a finished export reports no file, no size, no checksum value and no destination — none of the things step 5 promised.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A completed-export confirmation: the generated file with its size and checksum, the destination it went to, a completion timestamp, and a download or verify action.",
+      "visibleObservations": [
+        "Hero 'Protected soccer export — Roster and registration data with minor protection.'",
+        "Hero text flush against the left screen edge with no inset padding",
+        "'Export steps' 1–5 with Team, Schedule, Privacy, Guardian update, Export state",
+        "Banner 'Team update saved' clipped by the bottom nav after two lines",
+        "No file name, size, checksum value or destination shown",
+        "No download or verify action"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion state report the export result?",
+          "visibleEvidence": "The only completion element is a clipped 'Team update saved' banner; no checksum, file size or destination appears",
+          "why": "Step 5 explicitly promises 'checksum verification, and transfer progress', so a completion screen showing neither leaves the workflow unresolved."
+        },
+        {
+          "question": "Is the layout free of crowding or clipping?",
+          "visibleEvidence": "'Protected soccer export' and 'Roster and registration data with minor protection.' begin at the very left border of the frame",
+          "why": "Missing horizontal padding on the hero breaks alignment with the inset cards below it and reads as a layout defect."
+        }
+      ],
+      "screenshotHash": "43461a19a2d77e2a53ec4c042c208909de7ce1204c69c82e6bc0c5feaa22e8bd"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "wrong-workflow-substituted",
+      "title": "Waiver-document and team-discussion evidence shows the minor-redaction surface",
+      "description": "Four screens across two workflows render the 'Youth privacy record' surface that belongs to soccer-minor-redaction. soccer-waiver-document action and soccer-team-discussion action are the same capture as soccer-minor-redaction action — title 'Youth privacy record', a 'Roster and visibility' card (Team / Schedule / Privacy), a 'Roster visibility' card repeating those rows, and 'Filter roster' / 'Hide protected fields' buttons. soccer-waiver-document complete and soccer-team-discussion complete are likewise the same 'Youth privacy record' hero with the 'Team update saved' banner. The word 'waiver' never appears on the waiver screens, and no thread, post, author or composer appears on the discussion screens. Two of eight workflows therefore have no action-state or complete-state evidence at all.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-waiver-document-action",
+        "riverside-youth-soccer-soccer-waiver-document-complete",
+        "riverside-youth-soccer-soccer-team-discussion-action",
+        "riverside-youth-soccer-soccer-team-discussion-complete"
+      ],
+      "requiredFix": "Route each workflow to its own surface and recapture. The waiver action/complete must show the waiver document, the covered player (Leo Rivera), the signing guardian (Mia Rivera), the Saturday deadline and a signed confirmation. The discussion action/complete must show a real U10 Falcons thread with authored posts, timestamps and a posted-message confirmation."
+    },
+    {
+      "findingId": "reminder-sheet-shows-rsvp-body",
+      "title": "Reminder-notification action sheet is titled 'Guardian practice reminder' but shows the RSVP form",
+      "description": "soccer-reminder-notification action carries the title 'Guardian practice reminder' over a body identical to the practice-schedule action sheet: an 'Event details' card followed by 'Choose attendance — Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going.' No message body, recipient list, send channel or send button is present. Relatedly, the reminder start and reminder complete captures are visually the same screen (same calendar-tile hero, same 'Event details' card, same 'Saturday 9 AM' / 'Field 3' / 'RSVP available' chips), so the workflow has no distinguishable states.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-reminder-notification-action",
+        "riverside-youth-soccer-soccer-reminder-notification-start",
+        "riverside-youth-soccer-soccer-reminder-notification-complete"
+      ],
+      "requiredFix": "Give the reminder workflow its own surface: a composer showing the draft message body, the guardian recipient count and inbox channel with a 'Send reminder' action, and a completion state showing the sent message, timestamp and recipient count — visibly different from the start state."
+    },
+    {
+      "findingId": "duplicated-content-blocks-in-sheets",
+      "title": "Every action sheet prints the same context rows twice",
+      "description": "Each detail sheet renders a context card and then a second card that repeats the same rows verbatim. On soccer-practice-schedule action, 'Team — U10 Falcons, coach Jordan Patel, 12-player roster.' and 'Schedule — Saturday practice at 9:00 AM on Riverside Field 3…' appear in 'Event details' and again inside 'Choose attendance'. On soccer-guardian-join-approval action, 'Guardian — Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.', 'Safety info' and 'Decision note' all appear twice. On soccer-team-roster action, 'Featured player — Leo Rivera, jersey 14…', 'Protected fields' and 'Team context' all appear twice. On soccer-registration-payment action, 'Registration — U10 Falcons spring season registration for Leo Rivera.' and 'Receipt' appear twice. On the redaction sheet, Team / Schedule / Privacy appear twice. The pattern also shows up between hero and banner on the completion screens, where the same paragraph is printed as both subtitle and banner body.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-practice-schedule-action",
+        "riverside-youth-soccer-soccer-guardian-join-approval-action",
+        "riverside-youth-soccer-soccer-team-roster-action",
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-minor-redaction-action",
+        "riverside-youth-soccer-soccer-practice-schedule-complete",
+        "riverside-youth-soccer-soccer-reminder-notification-complete"
+      ],
+      "requiredFix": "De-duplicate the sheet composition so each context row renders once per screen; the second card should carry only content the first does not, or be removed."
+    },
+    {
+      "findingId": "start-states-are-mid-scroll-feed-frames",
+      "title": "Most 'start' captures are arbitrary scroll positions with clipped top cards",
+      "description": "Six of the eight start rows capture the shared Home feed mid-scroll rather than a workflow entry point, with the topmost card sliced through its text. soccer-registration-payment start opens on the fragment 'form state.'; soccer-export-metadata start opens on 'Protected export includes roster metadata, redaction preview, checksum verification, and transfer progress.' with its heading cut off; soccer-waiver-document start and soccer-minor-redaction start open on bare 'Edit details' buttons; soccer-guardian-join-approval start opens on bare 'Request changes' / 'Approve request' buttons. soccer-team-discussion start and soccer-team-roster start are the same feed position submitted twice, both dominated by the 'Team discussion thre…' card, with a third of the viewport left empty below 'Local package details'. soccer-practice-schedule start devotes its lower two-thirds to the unrelated 'Season registration fee' payment card.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-registration-payment-start",
+        "riverside-youth-soccer-soccer-waiver-document-start",
+        "riverside-youth-soccer-soccer-guardian-join-approval-start",
+        "riverside-youth-soccer-soccer-practice-schedule-start",
+        "riverside-youth-soccer-soccer-team-discussion-start",
+        "riverside-youth-soccer-soccer-team-roster-start",
+        "riverside-youth-soccer-soccer-minor-redaction-start",
+        "riverside-youth-soccer-soccer-export-metadata-start"
+      ],
+      "requiredFix": "Capture each start state at the top of that workflow's own surface, with its title, its not-yet-started status and its primary action all in frame, and no unrelated workflow card occupying the majority of the viewport."
+    },
+    {
+      "findingId": "generic-shared-completion-banner",
+      "title": "'Team update saved' is reused as the completion state for four unrelated workflows",
+      "description": "soccer-practice-schedule complete, soccer-reminder-notification complete, soccer-minor-redaction complete, soccer-waiver-document complete and soccer-team-discussion complete all end in the same banner: 'Team update saved — The soccer update shows RSVP choice, reminder body, checksum or saved result, inbox preview, and protected data handling.' The sentence lists five unrelated capabilities and names none of the specific outcome, and on several screens it is printed twice (once as the hero subtitle, once as the banner body). It is also clipped by the bottom navigation bar on every occurrence. By contrast the workflows that do have specific banners — 'Registration paid — Leo Rivera registration is paid…', 'Guardian approved — Mia Rivera is active for U10 Falcons…', 'Roster opened — The U10 Falcons roster shows players, guardians, waiver status…' — read correctly, which shows the specific pattern is achievable.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-practice-schedule-complete",
+        "riverside-youth-soccer-soccer-reminder-notification-complete",
+        "riverside-youth-soccer-soccer-minor-redaction-complete",
+        "riverside-youth-soccer-soccer-waiver-document-complete",
+        "riverside-youth-soccer-soccer-team-discussion-complete",
+        "riverside-youth-soccer-soccer-export-metadata-complete"
+      ],
+      "requiredFix": "Give each workflow a completion banner that names its own outcome and the resulting artifact (RSVP response and attendance count; reminder sent time and recipient count; fields redacted; waiver signed by and when; export file, size and checksum), and pad it clear of the bottom nav."
+    },
+    {
+      "findingId": "spec-language-in-user-facing-copy",
+      "title": "Card descriptions read as acceptance criteria rather than product copy",
+      "description": "Alongside the good seeded copy, the scaffolding text is written as requirements-doc assertions: 'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.' (registration action), 'Member names, roles, counts, status, and protected fields are visible according to persona.' (every roster sheet), 'The saved result keeps status, history, and change actions visible for this community task.' (four completion screens, naming no task), 'Title, date, time, location, host, capacity, and current attendance are visible before responding.' (practice action), plus the truncated generic 'Member form captures labeled details, privacy c…' used as the subtitle of two different feed cards and 'Another community role manages this item.' as the entire description of the waiver library. Sentences of the form 'X, Y, and Z are visible' describe the screen to a tester rather than speaking to a parent or coach.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-practice-schedule-action",
+        "riverside-youth-soccer-soccer-team-roster-action",
+        "riverside-youth-soccer-soccer-guardian-join-approval-action",
+        "riverside-youth-soccer-soccer-waiver-document-start",
+        "riverside-youth-soccer-soccer-team-discussion-start",
+        "riverside-youth-soccer-soccer-team-roster-start",
+        "riverside-youth-soccer-soccer-minor-redaction-start",
+        "riverside-youth-soccer-soccer-guardian-join-approval-complete"
+      ],
+      "requiredFix": "Rewrite all '… are visible' scaffolding lines as product copy that states the content itself, and replace the shared 'Member form captures labeled details, privacy c…' subtitle with per-feature descriptions."
+    },
+    {
+      "findingId": "described-actions-not-present",
+      "title": "Action sheets describe controls they do not render",
+      "description": "Several action states name actions that are nowhere on screen. soccer-practice-schedule action and soccer-reminder-notification action both say 'Going, Maybe, Not going, and Change response remain available while the event is open.' with no such buttons rendered. soccer-guardian-join-approval action says 'Coach can approve, reject, or ask for a missing waiver before activation.' with no Approve or Reject button in frame. soccer-registration-payment action shows the payment summary but no pay button anywhere, even though the feed card behind it offers 'Pay and save receipt'. Separately, every feed card carries a 'Minimized' status chip — internal jargon that means nothing to a parent — alongside both a 'Tap for expanded view' control and a redundant 'Expand' button.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-practice-schedule-action",
+        "riverside-youth-soccer-soccer-reminder-notification-action",
+        "riverside-youth-soccer-soccer-guardian-join-approval-action",
+        "riverside-youth-soccer-soccer-registration-payment-action",
+        "riverside-youth-soccer-soccer-practice-schedule-start"
+      ],
+      "requiredFix": "Render the actual controls each sheet describes (RSVP buttons, Approve/Reject, Pay), and drop the 'Minimized' chip and the duplicate 'Tap for expanded view' / 'Expand' pairing in favour of one clear expand affordance."
+    },
+    {
+      "findingId": "off-palette-blue-on-roster",
+      "title": "Team-roster surfaces use a slate-blue accent in a green-themed community",
+      "description": "soccer-team-roster action renders its app bar in slate-blue behind 'U10 Falcons roster', and soccer-team-roster complete renders the 'Roster opened' banner in the same slate-blue, while every other surface in Riverside Youth Soccer — app bar, section headers, completion banners on the guardian and schedule flows, bottom nav — uses forest green. The registration workflow separately uses purple. The result is three different accent families across one community's evidence set, with the blue reading as an unthemed default rather than an intentional category colour.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-team-roster-action",
+        "riverside-youth-soccer-soccer-team-roster-complete"
+      ],
+      "requiredFix": "Apply the community's green accent to the roster app bar and the 'Roster opened' banner, or document the colour-by-category scheme and apply it consistently across all eight workflows."
+    },
+    {
+      "findingId": "truncated-titles-and-nav-clipping",
+      "title": "Card titles ellipsise and content slides under the bottom nav",
+      "description": "Feed card titles are cut rather than wrapped: 'Guardian join and app…', 'Protected minor-data…', 'Waiver document libr…', 'Team discussion thre…', 'Youth soccer export …', and subtitles truncate mid-word ('Practice details include date, location, capacity, R…', 'You can read the current details without changing …'). Separately, content is clipped by the light bottom navigation bar on the majority of full-app captures — the 'Registration paid' banner, the 'Membership state' row, the 'Update roster' row, the 'Team update saved' body and the 'Team and roster view' card are each sliced horizontally. The 'Team' tab itself is cut off at the right screen edge on several frames.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "riverside-youth-soccer-soccer-registration-payment-start",
+        "riverside-youth-soccer-soccer-registration-payment-complete",
+        "riverside-youth-soccer-soccer-guardian-join-approval-start",
+        "riverside-youth-soccer-soccer-guardian-join-approval-complete",
+        "riverside-youth-soccer-soccer-team-roster-complete",
+        "riverside-youth-soccer-soccer-minor-redaction-start",
+        "riverside-youth-soccer-soccer-export-metadata-start",
+        "riverside-youth-soccer-soccer-export-metadata-complete",
+        "riverside-youth-soccer-soccer-waiver-document-start"
+      ],
+      "requiredFix": "Allow card titles to wrap to two lines, add bottom padding equal to the nav bar height so no content is occluded, and fix the horizontal overflow that clips the 'Team' tab and the flush-left hero on the export complete screen."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/llm-vision-ux-review-phaseA-cedar-commons-hoa-cjm2-smoketest-1.json",
+  "expectedReviewRunId": "phaseA-cedar-commons-hoa-cjm2-smoketest-1",
+  "declaredReviewRunId": "phaseA-cedar-commons-hoa-cjm2-smoketest-1",
+  "expectedAppCommitSha": "51d81e8c",
+  "declaredAppCommitSha": "51d81e8c",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 5,
+  "reviewedScreenRowCount": 5,
+  "reviewedScreenshotHashCount": 5,
+  "reviewedScreenRowIds": [
+    "hoa-home-signed-in",
+    "hoa-home-document-detail",
+    "hoa-calendar-tab",
+    "hoa-marketplace-tab",
+    "hoa-giving-tab"
+  ],
+  "reviewedScreenshotHashes": [
+    "9e55d3ea7752cece119a381d5fab413520fd81c0cf94d403df12349bd363d15c",
+    "10456610277a87b81416446218cad6aa6a4e2940802511b291e22988c4ad33b5",
+    "8a9cf05f72a8aae462d5171ed17e2fd3d5c4798d64884c9bafa52f04b8744581",
+    "1053e6cfa606fc8d3e6c07e727060041678d19c86185021623947f3a2341a673",
+    "184696b0385a2acf286c938e10c7b68c9522d388bbbe4f9e2784798c3e3dfee9"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

@@ -1,0 +1,611 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-legacy-garden-club-1",
+  "freshReview": true,
+  "appCommitSha": "559f3a1b",
+  "reviewedScreenRowIds": ["garden-club-garden-event-rsvp-start", "garden-club-garden-event-rsvp-action", "garden-club-garden-event-rsvp-complete", "garden-club-plant-exchange-submission-start", "garden-club-plant-exchange-submission-action", "garden-club-plant-exchange-submission-complete", "garden-club-garden-tool-loan-start", "garden-club-garden-tool-loan-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-start", "garden-club-garden-volunteer-shift-action", "garden-club-garden-volunteer-shift-complete", "garden-club-garden-export-custom-schemas-start", "garden-club-garden-export-custom-schemas-action", "garden-club-garden-export-custom-schemas-complete"],
+  "reviewedScreenshotHashes": ["c8ca955a1ab16b267b7a50b3be1c12471f3b9351081648f6fc6aff24055ffee5", "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8", "0d75ab46343937c24e30b98e34ddd2459d25541e648d2c2711711b5939377a73", "5401aa267df5f92bdbbf41c57e60515743ee42c95614b53cd9024ae0cfb5c5fc", "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1", "ae9ee246bc9980ecdacefbb292f66592131fc8ae386ee93da6deb718e4115114", "6212c46dd1dd55665a10b1f6687ad70a2302f9e9f2d48f572df548dcf777552c", "61d8a493555fd34cfc489215ed6e78c04cd94abed707bccac8caf170529d0038", "a909a9118d7be7d9cbb2df9115844940d06b585c43cca07a1cbd7c9612479a1a", "e8ae66eb50cd1a05587d135683bd7d99183a6f033258acacd7d50fc59dcaa0cd", "15b4772eaec42eebf9f77d11e7f45b4323b54296ff09eb68844ca07e6a55a460", "307e69499418550c9b50f02424c41af057d01d2b3a3b7d97f2a41964c7a3f23b", "d8258fa0ee66941ad00642b988b75fb8f393fc78b6cf6c6deaaa7969ec59513d", "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143", "283b62fea973cd7b60c7e334ae6321480a86f363ef6b2d3f8fa8c0b086fd54c4"],
+  "reviewerType": "llm-vision-headless-cli",
+  "summary": "Garden Club splits sharply into two tiers. The garden-event-rsvp, plant-exchange-submission, and garden-export-custom-schemas workflows are genuinely production-shaped: real named content (\"Spring Planting Workshop\", \"Sat, Apr 18 / 10:00 AM / Riverside Greenhouse / 18 of 24 spots\", \"Sweet Genovese basil, 6 starter pots, Pickup Sat 1-3 PM\", \"checksum 8F4A-PLANT, 2 schemas selected\"), with state transitions readable across start -> action -> complete. The garden-tool-loan and garden-volunteer-shift workflows (6 of 15 screens) are engine scaffolding wearing a garden label: every screen repeats the identical chip triplet \"Details ready / Editable / State saved\", the identical helper sentence \"This view shows editable details, current progress, and the next step before saving.\", a generic 9-dot grid icon, and complete states whose entire payload is the tautology \"Saved -- Garden tool loan state updated.\" / \"Volunteer shift signup updated.\" No tool name, queue position, due date, shift date, time, or slot count is ever shown. Two screens (tool-loan start, export start) are also captured mid-scroll with the primary card's title clipped off above the app bar. Failing on placeholder-grade copy in two of five workflows."
+  ,
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "context-state-legibility",
+      "question": "Across this community's workflows, is it always clear what workflow and what state (start/in-progress/complete) the user is looking at?",
+      "answer": "Workflow identity is mostly clear -- the green \"Garden Club\" app bar plus per-card titles (\"Spring Planting Workshop\", \"Basil seedlings offer\", \"Garden tool loan\", \"Garden volunteer shift\", \"Garden data export package\") name the workflow on 13 of 15 screens, and modal sheets carry a matching X-titled header (\"Spring Workshop\", \"Offer a plant\", \"Garden tool loan\", \"Garden volunteer shift\", \"Garden export package\"). State legibility is where it breaks down. RSVP and plant-exchange read cleanly: \"Your RSVP\" -> \"Choose your response\" with a selected \"Going\" pill -> \"Your RSVP: Going\" + \"RSVP confirmed\" + a \"Going\" check chip; and \"Offer plant\" -> \"Offer plant\"/\"Edit offer\" -> \"Offer posted\" + \"Posted\" check chip. But tool-loan and volunteer-shift show the same \"Details ready / Editable / State saved\" chip row in ALL THREE states, so the start screen already claims \"State saved\" before anything has been done, and the only real state signal is a small \"Saved\" chip in the corner. On the export start screen the card title is scrolled off entirely -- the user sees only \"Redaction preview / Checksum verified / Download ready / Generate export\" floating under the app bar with no heading, and on tool-loan start the card above is sliced through mid-word (\"Tap for expanded view\" / \"Data package\" cut in half).",
+      "score": 58,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "On garden-tool-loan start, action, and complete the identical chips 'Details ready', 'Editable', 'State saved' appear -- 'State saved' is shown before the user has done anything",
+        "On garden-export-custom-schemas start the topmost visible element is a partial card showing only 'Redaction preview', 'Checksum verified', 'Download ready' and a 'Generate export' button with no title above it",
+        "On garden-event-rsvp complete the header block reads 'Your RSVP: Going' with a separate 'RSVP confirmed' panel and a check-marked 'Going' chip, which is unambiguous"
+      ],
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-start", "garden-club-garden-tool-loan-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-start", "garden-club-garden-volunteer-shift-action", "garden-club-garden-volunteer-shift-complete", "garden-club-garden-export-custom-schemas-start"]
+    },
+    {
+      "questionId": "copy-accuracy",
+      "question": "Does the displayed text read like real product copy about actual Garden Club content, or like generic scaffolding?",
+      "answer": "Split. Three workflows carry copy that could ship: \"Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members.\", \"Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared.\", \"The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum.\" -- all specific to a gardening club, with real nouns and numbers. Two workflows do not: tool-loan and volunteer-shift bodies are engine-narration about the UI itself (\"This view shows editable details, current progress, and the next step before saving.\", \"Task details\", \"Saved details\") plus status strings that restate the workflow name (\"Garden tool loan state updated.\", \"Volunteer shift signup updated.\"). The one-line hooks that ARE specific (\"Borrow the broadfork and manage the loan queue.\", \"Compost turning shift has open volunteer slots.\") are then repeated verbatim two or three times per screen as title-subtitle-body-and-Task-details, which reads as template filling rather than authored copy.",
+      "score": 52,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "garden-tool-loan complete shows 'Garden tool loan state updated.' three separate times -- as card body, under 'Saved details', and under 'Saved'",
+        "garden-volunteer-shift action shows 'Sign up for the compost turning volunteer shift.' as both the card body and again verbatim under the 'Task details' heading",
+        "By contrast plant-exchange-submission action shows authored copy: 'Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board.'"
+      ],
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-start", "garden-club-garden-tool-loan-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-start", "garden-club-garden-volunteer-shift-action", "garden-club-garden-volunteer-shift-complete"]
+    },
+    {
+      "questionId": "visual-quality",
+      "question": "Is there repeated generic card shell, thin content, clipping, or crowding?",
+      "answer": "Yes, in the two weak workflows and at two capture boundaries. The tool-loan and volunteer-shift action sheets are pixel-for-pixel the same layout -- same 9-dot grid glyph in a circle, same green hero card, same dark 'This view shows editable details...' strip with 'Edit response', same 'Task details' card with the same three chips, same teal primary button, same low-contrast 'Edit details' link -- differing only in the string substituted into each slot. Their complete screens likewise duplicate each other. The 'Edit details' text on both action sheets is dark teal on a near-black card and is barely legible. There is also visible dead space: the export start screen has roughly a third of the viewport empty below 'Local package details' with only a chevron, and the tool-loan start screen has a similar empty band below the card. The RSVP and plant-exchange screens do not have this problem -- they carry dense, differentiated content (date/time/location/capacity chips, plant variety chips, an 'Offer preview' section).",
+      "score": 55,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "garden-tool-loan action and garden-volunteer-shift action are identical layouts down to the 9-dot grid icon, chip positions, teal 'Start ...' button and faint 'Edit details' link",
+        "On both action sheets 'Edit details' renders in dark teal on a dark card, far below normal contrast",
+        "garden-export-custom-schemas start has a large empty region between 'Local package details' and the bottom nav bar"
+      ],
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-action", "garden-club-garden-volunteer-shift-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-complete", "garden-club-garden-export-custom-schemas-start", "garden-club-garden-tool-loan-start"]
+    },
+    {
+      "questionId": "actionability",
+      "question": "Are the available actions clear, and is it clear why disabled or de-emphasised ones are in that state?",
+      "answer": "Primary actions are clear everywhere -- 'RSVP to event', 'Offer plant', 'Start garden tool loan', 'Start garden volunteer shift', 'Generate export' are all prominent filled or outlined buttons. The problem is secondary affordances. On the RSVP action sheet 'Maybe later' is rendered in dark green on the dark card, visually indistinguishable from disabled, with nothing explaining whether it is tappable. The same treatment hits 'Edit details' on both the tool-loan and volunteer-shift action sheets and 'Change scope' at the bottom of the export action sheet. Separately, on the tool-loan/volunteer-shift screens 'Editable' and 'State saved' are presented as chips that look tappable but are status labels. On the start screens the 'Start garden tool loan' / 'Start garden volunteer shift' buttons are ghost-outlined rather than filled, which reads as lower-priority than the filled variants used elsewhere.",
+      "score": 63,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "On garden-event-rsvp action, 'Maybe later' sits at the same baseline as the filled 'RSVP to event' button but is dark-green-on-dark and looks disabled",
+        "'Change scope' at the foot of the garden-export-custom-schemas action sheet is teal on dark green with no border, unlike the bordered 'Change scope' button higher on the same screen"
+      ],
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-action", "garden-club-garden-tool-loan-action", "garden-club-garden-volunteer-shift-action", "garden-club-garden-export-custom-schemas-action"]
+    },
+    {
+      "questionId": "persona-scoping-correctness",
+      "question": "Does what is shown make sense for the workflow being demonstrated in this legacy flat-schema community?",
+      "answer": "Yes on the whole. Nothing shows a signed-in account chip, which is correct for this schema, and the surrounding surfaces stay in-domain: the bottom nav reads Home / Exchange / Calendar / Documents, and the section cards are 'Care and volunteers', 'Member tools', 'Documents and data' -- an exchange-and-calendar shaped club, matching the workflows. Each workflow appears under a plausible parent section (plant exchange under the exchange surface, export under 'Documents and data', tool loan under 'Member tools'). The one oddity is that on the export start screen the neighbouring minimized card is 'Garden tool loan' described as 'A submitted member form is ready for action and fol...', a form-submission framing that does not match the borrow-a-broadfork framing that same workflow uses on its own screens.",
+      "score": 78,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Bottom nav consistently shows 'Home / Exchange / Calendar / Documents' with Home selected, appropriate to a garden club with a plant exchange board",
+        "On garden-export-custom-schemas start the minimized 'Garden tool loan' card is described as 'A submitted member form is ready for action and fol...' which conflicts with 'Shared garden tools are available to borrow or queue for.' on the tool-loan screens"
+      ],
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-start", "garden-club-garden-tool-loan-start"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "garden-club-garden-event-rsvp-start",
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-start"],
+      "critique": "Strongest screen in the set. The blue hero card names a real event -- 'Spring Planting Workshop' with body 'Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members.' -- and carries four factual chips: 'Sat, Apr 18', '10:00 AM', 'Riverside Greenhouse', '18 of 24 spots'. The 'Your RSVP' panel states the pre-action state honestly ('Choose Going, Maybe, or Not going after checking the schedule, location, host, and capacity.') and the single outlined 'RSVP to event' button is the obvious next step. Two blemishes: the blue event card against the green 'Garden Club' app bar and green 'Care and volunteers' card below is the only non-green surface on the screen and reads as an unthemed component, and the bottom of the viewport is crowded -- the 'Plant exchange subm...' card is truncated mid-title and half-hidden behind the nav bar, with the 'Documents' tab label itself clipped at the right screen edge.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A garden event RSVP entry point with the event named, dated, located, capacity-counted, and an unambiguous un-answered RSVP state -- which this delivers; theming of the event card should follow the community accent, and the card stack should not collide with the bottom nav.",
+      "visibleObservations": [
+        "Hero title 'Spring Planting Workshop' with calendar-check icon in a translucent circle",
+        "Chips: 'Sat, Apr 18', '10:00 AM', 'Riverside Greenhouse', '18 of 24 spots'",
+        "'Your RSVP' panel with instructional body text and no answer selected",
+        "Outlined 'RSVP to event' button",
+        "Green 'Care and volunteers' card: 'Private requests, volunteer shifts, and member support.'",
+        "'Plant exchange subm...' card truncated and partially occluded by the bottom nav; 'Documents' tab label clipped at right edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear this is the pre-RSVP start state rather than a completed one?",
+          "visibleEvidence": "'Your RSVP' followed by 'Choose Going, Maybe, or Not going after checking the schedule, location, host, and capacity.'",
+          "why": "The panel heading has no value appended and the body is phrased as a forward instruction, so no answer has been given yet. The complete-state screen confirms the contrast by reading 'Your RSVP: Going'."
+        },
+        {
+          "question": "Does the copy describe real community content?",
+          "visibleEvidence": "'Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members.' / '18 of 24 spots'",
+          "why": "Specific gardening activities and a concrete capacity ratio; nothing here is a template slot."
+        }
+      ],
+      "screenshotHash": "c8ca955a1ab16b267b7a50b3be1c12471f3b9351081648f6fc6aff24055ffee5"
+    },
+    {
+      "screenRowId": "garden-club-garden-event-rsvp-action",
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-action"],
+      "critique": "The RSVP sheet is genuinely well-formed: header 'Spring Workshop' with an X, hero repeating 'Spring Planting Workshop' plus 'Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse' and a distinct body ('Join the club for bed prep, seedling setup, and a shared planning session before the spring exchange opens.') rather than re-pasting the card text. 'Choose your response' explains the consequence -- 'Your RSVP updates the attendee count and leaves a reminder in your community inbox.' -- and the three options Going / Maybe / Not going are real radio-style pills with 'Going' filled dark green to show selection. Live status chips '18 going', '6 spots left', 'RSVP open' reconcile with the card's '18 of 24 spots'. The defect is 'Maybe later' at bottom left: dark green text on the dark card, no border, sitting beside the filled 'RSVP to event' button -- it is unreadable at a glance and indistinguishable from a disabled control, with no explanation of what dismissing does.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A decision sheet with the event restated, current attendance visible, three mutually exclusive responses with the current pick highlighted, and a legible dismiss affordance.",
+      "visibleObservations": [
+        "Sheet header 'Spring Workshop' with X close",
+        "'Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse'",
+        "Chips '18 going', '6 spots left', 'RSVP open'",
+        "'Going' pill filled dark green with check icon; 'Maybe' and 'Not going' outlined",
+        "'Maybe later' rendered in dark green on dark background, low contrast",
+        "'Event details' section beginning below the fold"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the currently selected response visually unambiguous?",
+          "visibleEvidence": "'Going' is a solid dark-green filled pill with a check-circle icon while 'Maybe' and 'Not going' are transparent with thin outlines",
+          "why": "Fill versus outline is a clear selection signal and is reinforced by the icon set."
+        },
+        {
+          "question": "Is the secondary dismiss action clearly available?",
+          "visibleEvidence": "'Maybe later' appears as dark green text on the dark card with no border or background",
+          "why": "The contrast is low enough that the control reads as disabled; nothing on screen indicates whether it is tappable or why it would be de-emphasised."
+        }
+      ],
+      "screenshotHash": "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8"
+    },
+    {
+      "screenRowId": "garden-club-garden-event-rsvp-complete",
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-complete"],
+      "critique": "The completion is legible and specific. The panel that read 'Your RSVP' on the start screen now reads 'Your RSVP: Going' with real follow-through copy -- 'A reminder is set for Saturday morning. You can still change your response before capacity closes.' -- and a separate confirmation block 'RSVP confirmed / You are going to Spring Planting Workshop. Calendar, attendee count, and reminder status stay visible.' plus a check-marked 'Going' chip. That is three independent, non-redundant confirmations of the same fact, which is the right density. One inconsistency worth flagging: the capacity chip still reads '18 of 24 spots', identical to the start screen, even though the copy claims the RSVP 'updates the attendee count' -- the user just joined and the count did not move, so the number reads stale. Bottom crowding recurs: the 'Care and volunteers' card's body line is sliced by the nav bar.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A confirmed-RSVP state showing the chosen response, what happens next (reminder, calendar), a route to change it, and an attendee count that reflects the user's own RSVP.",
+      "visibleObservations": [
+        "'Your RSVP: Going' heading replacing the start screen's 'Your RSVP'",
+        "'A reminder is set for Saturday morning. You can still change your response before capacity closes.'",
+        "'RSVP confirmed' block naming the event: 'You are going to Spring Planting Workshop.'",
+        "Check-marked 'Going' chip bottom-right of the card",
+        "Capacity chip unchanged at '18 of 24 spots'",
+        "'Care and volunteers' card body text clipped by the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the complete state distinguishable from the start state?",
+          "visibleEvidence": "'Your RSVP: Going' plus an 'RSVP confirmed' panel and a checked 'Going' chip, none of which appear on the start screen",
+          "why": "Three separate additive changes make the transition obvious without needing to compare screenshots."
+        },
+        {
+          "question": "Are the numbers on screen self-consistent after the action?",
+          "visibleEvidence": "'18 of 24 spots' on the complete screen, identical to the start screen, while the action sheet said 'Your RSVP updates the attendee count'",
+          "why": "The user's own Going response should have incremented the count; showing the same 18 makes the figure look static rather than live."
+        }
+      ],
+      "screenshotHash": "0d75ab46343937c24e30b98e34ddd2459d25541e648d2c2711711b5939377a73"
+    },
+    {
+      "screenRowId": "garden-club-plant-exchange-submission-start",
+      "affectedScreenRowIds": ["garden-club-plant-exchange-submission-start"],
+      "critique": "Good, content-rich entry point. 'Basil seedlings offer' with a flower glyph, body 'Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared.', and four concrete chips -- 'Sweet Genovese basil', '6 starter pots', 'Pickup Sat 1-3 PM', 'Contact after claim' -- plus a preview line that sets expectations: 'Members will see the plant variety, pickup window, privacy note, and how to claim the offer.' The privacy framing is the standout: 'Contact after claim' is stated before the user commits, not after. Two visual problems. The debug-flavoured strip 'In-focus product surface / Expand' sits above the card in near-black and is developer-facing chrome, not product copy. And the bottom third is a crowded minimized-card stack -- 'Garden volunteer shift' with 'Volunteer details include shift, availability, and prot...' truncated, then a row of 'Tap for expanded view' / 'Member form' / 'Expand' / 'Start garden volunteer shift', the last of which is cut through mid-line by the nav bar.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A plant-offer entry point stating variety, quantity, pickup window and privacy posture with one clear 'Offer plant' action, free of instrumentation chrome and without a clipped card stack at the fold.",
+      "visibleObservations": [
+        "Dark strip reading 'In-focus product surface' with an 'Expand' affordance above the main card",
+        "Title 'Basil seedlings offer' with flower icon",
+        "Chips 'Sweet Genovese basil', '6 starter pots', 'Pickup Sat 1-3 PM', 'Contact after claim'",
+        "Outlined 'Offer plant' button",
+        "Minimized 'Garden volunteer shift' card with truncated body and a 'Minimized' badge",
+        "'Start garden volunteer shift' button clipped by the bottom nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the copy describe actual community content rather than a template?",
+          "visibleEvidence": "'Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared.'",
+          "why": "Named cultivar, specific count, and a real privacy decision -- none of this is slot-filled boilerplate."
+        },
+        {
+          "question": "Is any developer-facing chrome visible?",
+          "visibleEvidence": "'In-focus product surface' with 'Expand' at the top of the content area",
+          "why": "This describes the rendering harness rather than the plant offer and would not appear in a shipped garden club app."
+        }
+      ],
+      "screenshotHash": "5401aa267df5f92bdbbf41c57e60515743ee42c95614b53cd9024ae0cfb5c5fc"
+    },
+    {
+      "screenRowId": "garden-club-plant-exchange-submission-action",
+      "affectedScreenRowIds": ["garden-club-plant-exchange-submission-action"],
+      "critique": "The 'Offer a plant' sheet is well-constructed and does not repeat the card verbatim: hero 'Basil seedlings' / 'Sweet Genovese - 6 starter pots' / 'Share healthy starts with nearby members and choose exactly what contact details are visible after a claim.' The 'Marketplace listing' section explains the commit point precisely -- 'Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board.' -- with two privacy chips 'Contact after claim' and 'Phone/address private', a filled teal 'Offer plant' primary and an outlined 'Edit offer' secondary, which is the correct primary/secondary weighting. An 'Offer preview' section follows showing 'Plant details / Sweet Genovese basil, six starter'. Minor issues: the teal primary button clashes with the otherwise all-green palette, and the preview section is cut off mid-sentence at the viewport bottom so the pickup window and privacy note that the copy promises to preview are not actually visible in this capture.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A pre-publish confirmation sheet showing the full listing as members will see it -- variety, quantity, pickup window, privacy note -- with publish and edit paths, and the preview fully visible rather than cut at the fold.",
+      "visibleObservations": [
+        "Sheet header 'Offer a plant' with X close",
+        "Hero 'Basil seedlings' / 'Sweet Genovese - 6 starter pots'",
+        "'Marketplace listing' section with chips 'Contact after claim' and 'Phone/address private'",
+        "Filled teal 'Offer plant' button above an outlined 'Edit offer' button",
+        "'Offer preview' section with 'Plant details -- Sweet Genovese basil, six starter' truncated at the screen edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is it clear what happens when the primary action is pressed?",
+          "visibleEvidence": "'Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board.'",
+          "why": "The copy names the destination (the plant exchange board) and the fields being committed, so the consequence of 'Offer plant' is explicit."
+        },
+        {
+          "question": "Is the privacy posture legible before publishing?",
+          "visibleEvidence": "Chips 'Contact after claim' and 'Phone/address private' sit directly above the 'Offer plant' button",
+          "why": "The two sharing rules are adjacent to the commit control, so the user sees them at the moment of decision."
+        }
+      ],
+      "screenshotHash": "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1"
+    },
+    {
+      "screenRowId": "garden-club-plant-exchange-submission-complete",
+      "affectedScreenRowIds": ["garden-club-plant-exchange-submission-complete"],
+      "critique": "Clean completion. The instructional preview line from the start screen ('Members will see the plant variety, pickup window, privacy note...') is replaced by the past-tense fact 'Offer posted to the plant exchange board.', and a distinct 'Offer posted' block adds real substance rather than restating the title: 'Basil seedlings are listed with pickup details and contact sharing limited until a member claims them.' A checked 'Posted' chip closes it out. The four content chips persist unchanged, which is correct here since variety, quantity, pickup window and privacy rule genuinely do not change on posting. Two gaps: there is no post-publish action at all -- no 'View listing', 'Share', or 'Withdraw offer' -- so the workflow dead-ends, and the same crowded minimized 'Garden volunteer shift' stack is clipped by the nav bar, with a button sliced mid-line at the very bottom.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A posted-offer confirmation naming the listing and its live privacy state, plus at least one onward route (view the live listing, or withdraw/edit it).",
+      "visibleObservations": [
+        "'Offer posted to the plant exchange board.' replacing the start screen's forward-looking preview line",
+        "'Offer posted' block: 'Basil seedlings are listed with pickup details and contact sharing limited until a member claims them.'",
+        "Checked 'Posted' chip at bottom right of the card",
+        "Chips 'Sweet Genovese basil', '6 starter pots', 'Pickup Sat 1-3 PM', 'Contact after claim' retained",
+        "Minimized 'Garden volunteer shift' card below, with a button row clipped by the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the completion copy add information beyond restating the title?",
+          "visibleEvidence": "'Basil seedlings are listed with pickup details and contact sharing limited until a member claims them.'",
+          "why": "It states the live privacy condition and the trigger that will change it (a member claiming), which the user could not infer from a bare 'Posted'."
+        },
+        {
+          "question": "Is there an onward action after posting?",
+          "visibleEvidence": "The only interactive element remaining on the card is the non-actionable 'Posted' status chip",
+          "why": "A posted marketplace listing normally offers view/edit/withdraw; with none present the flow terminates on this screen."
+        }
+      ],
+      "screenshotHash": "ae9ee246bc9980ecdacefbb292f66592131fc8ae386ee93da6deb718e4115114"
+    },
+    {
+      "screenRowId": "garden-club-garden-tool-loan-start",
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-start"],
+      "critique": "This is where the community drops to scaffolding. The card is titled 'Garden tool loan' with a generic 9-dot grid icon (the same glyph used for the unrelated 'Member tools' section directly above it), subtitle 'Borrow the broadfork and manage the loan queue.' and body 'Shared garden tools are available to borrow or queue for.' -- the only two real sentences on the screen, and they are near-duplicates of each other. Everything below is engine metadata dressed as content: chips 'Details ready', 'Editable', 'State saved'. 'State saved' on a start screen is actively misleading, since nothing has been saved. A real tool-loan start would show which tool, whether it is currently out, who has it, the queue depth, and the return date -- the subtitle promises a 'loan queue' that is nowhere rendered. The capture is also clipped: the card above is sliced mid-glyph so 'Tap for expanded view' and 'Data package' appear as half-height text immediately under the app bar, and the developer strip 'In-focus product surface / Expand' sits above the card.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A tool-loan entry point naming the specific tool (the broadfork), its availability status, current holder and due-back date if out, the queue length and the user's position, with a 'Borrow' or 'Join queue' action -- not three generic state chips.",
+      "visibleObservations": [
+        "Generic 9-dot grid icon, identical to the icon on the 'Member tools' section card above",
+        "Chips 'Details ready', 'Editable', 'State saved' with no loan-specific data",
+        "Subtitle 'Borrow the broadfork and manage the loan queue.' and body 'Shared garden tools are available to borrow or queue for.' conveying nearly the same thing",
+        "Outlined 'Start garden tool loan' button",
+        "Top of viewport clipped mid-card: 'Tap for expanded view' and 'Data package' rendered as sliced half-height text under the app bar",
+        "Developer strip 'In-focus product surface' with 'Expand'",
+        "Large empty band between the card and the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the screen show any actual tool-loan content?",
+          "visibleEvidence": "The only data-bearing elements are the chips 'Details ready', 'Editable', 'State saved'",
+          "why": "None of these describe a tool, a borrower, a due date or a queue. The word 'broadfork' appears once in a subtitle and no loan record is rendered anywhere."
+        },
+        {
+          "question": "Is the start state accurately represented?",
+          "visibleEvidence": "'State saved' chip is displayed alongside a 'Start garden tool loan' button",
+          "why": "Claiming saved state before the workflow has been started contradicts the un-started state the same screen is demonstrating."
+        },
+        {
+          "question": "Is there layout clipping?",
+          "visibleEvidence": "'Tap for expanded view' and 'Data package' appear cut horizontally through the middle of the letterforms at the top of the content area",
+          "why": "The capture is mid-scroll and the preceding card is sliced rather than scrolled cleanly under the app bar."
+        }
+      ],
+      "screenshotHash": "6212c46dd1dd55665a10b1f6687ad70a2302f9e9f2d48f572df548dcf777552c"
+    },
+    {
+      "screenRowId": "garden-club-garden-tool-loan-action",
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-action", "garden-club-garden-volunteer-shift-action"],
+      "critique": "The action sheet is pure template. Header 'Garden tool loan', hero repeating 'Garden tool loan' plus the same two sentences from the card ('Shared garden tools are available to borrow or queue for.' / 'Borrow the broadfork and manage the loan queue.') with their order swapped. Below that, a strip narrating the UI to the user -- 'This view shows editable details, current progress, and the next step before saving.' -- which is documentation, not product copy. Then a 'Task details' card whose body is a third verbatim repetition of 'Borrow the broadfork and manage the loan queue.', the same three chips 'Details ready / Editable / Editable / State saved', a teal 'Start garden tool loan' button, and an 'Edit details' link in dark teal on dark green that is barely readable. A section headed 'Activity details' begins at the fold with no content visible. There is no form here at all: no tool picker, no borrow dates, no queue view -- nothing the user could actually edit, despite two controls labelled 'Edit response' and 'Edit details'. This screen is byte-for-byte the same layout as the volunteer-shift action sheet with different strings.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A borrow-request form: which tool, requested dates, current queue position, condition/return terms, with a submit action -- and helper text about the loan rather than about the view itself.",
+      "visibleObservations": [
+        "'This view shows editable details, current progress, and the next step before saving.' -- copy describing the UI rather than the loan",
+        "'Borrow the broadfork and manage the loan queue.' appears twice on this screen (hero body and 'Task details' body)",
+        "Generic headings 'Task details' and 'Activity details'",
+        "Chips 'Details ready', 'Editable', 'State saved' repeated from the start screen",
+        "'Edit details' link in dark teal on a dark card, very low contrast",
+        "No input fields, date pickers or queue list anywhere on the sheet"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does this sheet let the user do anything specific to a tool loan?",
+          "visibleEvidence": "The only controls are 'Edit response', 'Start garden tool loan' and 'Edit details' -- there are no fields, dates or tool selections",
+          "why": "'Editable' is asserted by a chip but nothing on screen is editable, so the action state demonstrates no actual loan mechanics."
+        },
+        {
+          "question": "Does the body copy read as real product copy?",
+          "visibleEvidence": "'This view shows editable details, current progress, and the next step before saving.'",
+          "why": "It narrates the screen's own structure in generic terms and would apply unchanged to any workflow in any community -- the definition of placeholder copy."
+        },
+        {
+          "question": "Is this layout distinct from other workflows?",
+          "visibleEvidence": "The same hero-plus-'This view shows editable details...'-plus-'Task details'-plus-three-chips-plus-teal-button stack appears identically on the garden-volunteer-shift action sheet",
+          "why": "Two workflows rendering as the same shell with substituted strings is the repeated generic card shell the rubric prohibits."
+        }
+      ],
+      "screenshotHash": "61d8a493555fd34cfc489215ed6e78c04cd94abed707bccac8caf170529d0038"
+    },
+    {
+      "screenRowId": "garden-club-garden-tool-loan-complete",
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-complete"],
+      "critique": "The completion state is tautological. The string 'Garden tool loan state updated.' is printed three times on one screen -- as the card body, as the entire content of the 'Saved details' section, and again under the 'Saved' block -- and it conveys nothing: not which tool was borrowed, not from when to when, not the user's queue position, not a return date, not who to collect from. The three chips 'Details ready / Editable / State saved' are unchanged from the start and action screens, so the only pixels that distinguish 'complete' from 'start' are the small checked 'Saved' chip and the disappearance of the 'Start garden tool loan' button. Worse, the 'This view shows editable details, current progress, and the next step before saving.' strip is still present on a screen where saving has already happened, so the helper text now contradicts the state. 'Saved details' followed by a 'Saved' block followed by a 'Saved' chip is three redundant confirmations of nothing.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A confirmed loan showing the tool borrowed, the pickup and return dates, the user's position if queued, and a route to return the tool or cancel -- instead of a status string that restates the workflow name.",
+      "visibleObservations": [
+        "'Garden tool loan state updated.' repeated three times on one screen",
+        "Sections headed 'Saved details' and 'Saved' plus a checked 'Saved' chip -- three redundant success markers",
+        "Chips 'Details ready', 'Editable', 'State saved' identical to the start and action screens",
+        "'This view shows editable details, current progress, and the next step before saving.' still shown after saving",
+        "No tool name, dates, queue position or return path anywhere on the card"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the complete state tell the user what actually happened?",
+          "visibleEvidence": "'Saved -- Garden tool loan state updated.'",
+          "why": "It names the workflow and asserts a change without stating what changed; a member could not tell whether they now hold the broadfork or are third in the queue."
+        },
+        {
+          "question": "Is the persistent helper text still correct in this state?",
+          "visibleEvidence": "'This view shows editable details, current progress, and the next step before saving.' appears above 'Saved details'",
+          "why": "It refers to a pre-save state on a post-save screen, so the same card asserts both 'before saving' and 'Saved'."
+        }
+      ],
+      "screenshotHash": "a909a9118d7be7d9cbb2df9115844940d06b585c43cca07a1cbd7c9612479a1a"
+    },
+    {
+      "screenRowId": "garden-club-garden-volunteer-shift-start",
+      "affectedScreenRowIds": ["garden-club-garden-volunteer-shift-start"],
+      "critique": "Same shell as the tool-loan start, same generic 9-dot grid icon, same 'Details ready / Editable / State saved' chip triplet, same ghost 'Start garden volunteer shift' button. The two content lines are marginally better than tool-loan's because they name an activity -- 'Sign up for the compost turning volunteer shift.' and 'Compost turning shift has open volunteer slots.' -- but they are again a restatement pair, and the critical facts a volunteer needs are all missing: no date, no start/end time, no slot count ('open volunteer slots' with no number), no location, no coordinator. Compare the RSVP card on the same community, which manages four factual chips including '18 of 24 spots'; this card had room for exactly the same treatment and instead spent it on engine metadata. The screen is otherwise clean -- no clipping at the top, and the 'Documents and data' section below renders fully -- though the minimized 'Garden export custo...' card at the bottom is truncated in both title and body ('You can read the current details without changing ...') and its button row is cut by the nav bar.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A shift signup card showing the shift date and time window, location, how many slots remain out of how many, and what the task involves, with a 'Sign up' action.",
+      "visibleObservations": [
+        "Generic 9-dot grid icon in a translucent circle",
+        "'Sign up for the compost turning volunteer shift.' and 'Compost turning shift has open volunteer slots.' -- restatements of one another",
+        "Chips 'Details ready', 'Editable', 'State saved' -- no date, time or slot count",
+        "Outlined 'Start garden volunteer shift' button",
+        "'Documents and data' section: 'Documents, exports, imports, and transfer records.'",
+        "Minimized 'Garden export custo...' card with truncated title and body, button row clipped by the nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Could a member decide whether to take this shift from what is shown?",
+          "visibleEvidence": "'Compost turning shift has open volunteer slots.' with chips reading only 'Details ready', 'Editable', 'State saved'",
+          "why": "No date, time window, duration, location or remaining-slot count is displayed, so the signup decision cannot be made from this screen."
+        },
+        {
+          "question": "Is the chip row carrying product information?",
+          "visibleEvidence": "'Details ready' / 'Editable' / 'State saved'",
+          "why": "These describe the record's internal lifecycle rather than the shift, and are identical to the chips on the unrelated garden-tool-loan card."
+        }
+      ],
+      "screenshotHash": "e8ae66eb50cd1a05587d135683bd7d99183a6f033258acacd7d50fc59dcaa0cd"
+    },
+    {
+      "screenRowId": "garden-club-garden-volunteer-shift-action",
+      "affectedScreenRowIds": ["garden-club-garden-volunteer-shift-action", "garden-club-garden-tool-loan-action"],
+      "critique": "This sheet and the garden-tool-loan action sheet are the same rendered component with different strings -- identical grid icon, identical hero card proportions, identical 'This view shows editable details, current progress, and the next step before saving.' strip with an 'Edit response' button, identical 'Task details' heading, identical chip triplet, identical teal full-width button, identical low-contrast 'Edit details' link at the same position, identical 'Activity details' heading cut off at the fold. The content is the two shift sentences swapped in order between hero subtitle and body, then 'Sign up for the compost turning volunteer shift.' repeated a third time under 'Task details'. For a signup action there is no shift date, no time, no slot counter, no availability picker, and no way to indicate which shift or how many hours -- yet a chip asserts 'Editable' and two buttons offer to edit. The primary button reads 'Start garden volunteer shift', which is engine phrasing; a volunteer signing up would expect 'Sign up' or 'Claim shift'.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A signup form with the shift date/time, remaining slots, expected task and duration, plus a 'Sign up for this shift' confirm -- rather than a generic task shell with UI-narrating helper text.",
+      "visibleObservations": [
+        "Layout identical to the garden-tool-loan action sheet including icon, chip positions and button styling",
+        "'Sign up for the compost turning volunteer shift.' appears twice (hero body and 'Task details' body)",
+        "'This view shows editable details, current progress, and the next step before saving.'",
+        "Chips 'Details ready', 'Editable', 'State saved'",
+        "Teal 'Start garden volunteer shift' primary button",
+        "'Edit details' in dark teal on dark green, very low contrast",
+        "'Activity details' heading with no content above the fold"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the primary action label match the user's mental model?",
+          "visibleEvidence": "The filled teal button reads 'Start garden volunteer shift'",
+          "why": "'Start' reads as beginning the shift itself rather than signing up for it, and mirrors the engine's 'Start <workflow name>' pattern also seen on the tool-loan sheet."
+        },
+        {
+          "question": "Is any shift-specific data available on the action screen?",
+          "visibleEvidence": "The only shift-specific string is 'Sign up for the compost turning volunteer shift.', repeated twice",
+          "why": "No date, time, slot count or availability control is rendered, so the action sheet demonstrates no signup mechanics."
+        }
+      ],
+      "screenshotHash": "15b4772eaec42eebf9f77d11e7f45b4323b54296ff09eb68844ca07e6a55a460"
+    },
+    {
+      "screenRowId": "garden-club-garden-volunteer-shift-complete",
+      "affectedScreenRowIds": ["garden-club-garden-volunteer-shift-complete"],
+      "critique": "Mirrors the tool-loan complete screen exactly, down to the arrangement of 'Saved details' / 'Saved' / checked 'Saved' chip. The status string 'Volunteer shift signup updated.' is printed three times and says nothing a volunteer needs: not that they are confirmed, not the shift date or time, not how many slots now remain, not whether a reminder was set. 'Updated' is also the wrong word for a first-time signup -- it hedges between created and modified. The chips still read 'Details ready / Editable / State saved' unchanged from start and action, and the pre-save helper text 'This view shows editable details, current progress, and the next step before saving.' persists on a saved screen. The contrast with the RSVP complete screen in the same community is stark: that one says 'You are going to Spring Planting Workshop. Calendar, attendee count, and reminder status stay visible.' This one says its own name plus the word 'updated'.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A confirmed signup naming the shift, its date and time, the volunteer's slot, remaining open slots, and a cancel/change route -- matching the specificity the RSVP complete screen already achieves.",
+      "visibleObservations": [
+        "'Volunteer shift signup updated.' repeated three times (card body, 'Saved details' body, 'Saved' block body)",
+        "Checked 'Saved' chip plus 'Saved details' section plus 'Saved' block -- triple redundancy",
+        "Chips 'Details ready', 'Editable', 'State saved' unchanged from the start state",
+        "'This view shows editable details, current progress, and the next step before saving.' shown after saving",
+        "No shift date, time, slot count or cancel action anywhere"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the confirmation tell the volunteer they are actually on the shift?",
+          "visibleEvidence": "'Saved -- Volunteer shift signup updated.'",
+          "why": "'Updated' is ambiguous between created, changed and cancelled, and no shift details are shown to confirm what the user is now committed to."
+        },
+        {
+          "question": "Is this screen visually distinguishable from the tool-loan complete screen?",
+          "visibleEvidence": "Both show the same grid icon, same three chips, same 'Saved details'/'Saved'/'Saved' chip arrangement in the same positions",
+          "why": "Only the substituted status string differs, which is the repeated generic card shell the rubric flags."
+        }
+      ],
+      "screenshotHash": "307e69499418550c9b50f02424c41af057d01d2b3a3b7d97f2a41964c7a3f23b"
+    },
+    {
+      "screenRowId": "garden-club-garden-export-custom-schemas-start",
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-start"],
+      "critique": "The capture is scrolled past its own subject. The export card's title, description and schema selection are all above the viewport, so the screen opens with an orphaned chip row -- 'Redaction preview', 'Checksum verified', 'Download ready' -- and a 'Generate export' button under the 'Garden Club' app bar with no heading to bind them to. A user landing here cannot tell what is being exported; the words 'export' and the '2 schemas selected' chip visible on the action and complete screens are absent. Below, 'Member tools / Useful actions for this community.' is a thin generic section, and the minimized 'Garden tool loan' card describes itself as 'A submitted member form is ready for action and fol...' -- a form-submission framing that contradicts the 'Shared garden tools are available to borrow or queue for.' framing that same workflow uses on its own screens. The lower third is a collapsed 'Local package details' row with a chevron and then roughly a fifth of the viewport of empty dark green, so the screen reads as thin.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "An export entry point with its title and scope visible at rest -- which schemas, what redaction applies, package size or row counts -- and a 'Generate export' action beneath them, not chips floating without a heading.",
+      "visibleObservations": [
+        "Top of content area is a partial card: chips 'Redaction preview', 'Checksum verified', 'Download ready' and a 'Generate export' button, with no title above them",
+        "'Member tools / Useful actions for this community.' generic section card",
+        "Minimized 'Garden tool loan' card described as 'A submitted member form is ready for action and fol...', conflicting with the tool-loan screens' own framing",
+        "Collapsed 'Local package details' row with a chevron and no content",
+        "Large empty region between 'Local package details' and the bottom nav"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user tell which workflow this start screen belongs to?",
+          "visibleEvidence": "The only cues are the chips 'Redaction preview' / 'Checksum verified' / 'Download ready' and the 'Generate export' button; no card title is on screen",
+          "why": "Workflow identity has to be reverse-engineered from chip labels, and nothing indicates this is specifically the garden data export with two custom schemas."
+        },
+        {
+          "question": "Is the screen visually substantial?",
+          "visibleEvidence": "Below 'Local package details' there is an unfilled dark green band running to the bottom nav",
+          "why": "A collapsed disclosure row plus dead space where package contents would sit reads as thin content in a place real content is expected."
+        }
+      ],
+      "screenshotHash": "d8258fa0ee66941ad00642b988b75fb8f393fc78b6cf6c6deaaa7969ec59513d"
+    },
+    {
+      "screenRowId": "garden-club-garden-export-custom-schemas-action",
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-action"],
+      "critique": "The best of the non-RSVP action sheets. Header 'Garden export package', hero 'Garden data export package' with the actual schema names as the subtitle -- 'garden_event + plant_exchange' -- and a body that enumerates the decision points: 'Confirm selected data, protected-field redaction, checksum, and destination before generating the export.' The 'Export package checkpoint' section then says concretely what ships: 'The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum.' Chips '2 schemas selected', 'Redaction preview', 'Checksum verified', 'Download ready' reconcile with that sentence, and 'Generate export' is a clear filled primary. Two flaws. The strip 'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.' is a capability inventory rather than product copy -- it tells the user the options exist instead of showing their values (no destination, no retry state, no rollback control is actually rendered). And 'Change scope' appears twice: once as a bordered button near the top and once as a low-contrast teal link at the bottom that reads as disabled, with no explanation of the difference.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "An export confirmation sheet naming the schemas, the redaction rules, the destination and the checksum, showing actual values for each rather than asserting that the options are visible, with one unambiguous scope-change route.",
+      "visibleObservations": [
+        "Hero 'Garden data export package' with subtitle 'garden_event + plant_exchange'",
+        "'Export package checkpoint' body naming event attendance, plant offers, redacted member contact fields and an audit checksum",
+        "Chips '2 schemas selected', 'Redaction preview', 'Checksum verified', 'Download ready'",
+        "'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.' -- a list of capabilities, not values",
+        "Filled teal 'Generate export' button",
+        "'Change scope' appearing twice: as a bordered button and as a faint teal link at the bottom"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the sheet name the actual data being exported?",
+          "visibleEvidence": "'garden_event + plant_exchange' and '2 schemas selected'",
+          "why": "The custom schema identifiers are shown verbatim and the count chip agrees with them, so the export scope is concrete."
+        },
+        {
+          "question": "Does the helper strip show real values?",
+          "visibleEvidence": "'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.'",
+          "why": "It asserts that seven things are visible without displaying any of them -- no destination or retry/rollback control appears on the sheet."
+        }
+      ],
+      "screenshotHash": "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143"
+    },
+    {
+      "screenRowId": "garden-club-garden-export-custom-schemas-complete",
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-complete"],
+      "critique": "A solid completion with one real gap. The card now carries a concrete result line -- 'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download progress.' -- naming an actual checksum value rather than just asserting one exists, and the subtitle 'Choose event and plant-exchange data before download.' plus the four chips ('2 schemas selected', 'Redaction preview', 'Checksum verified', 'Download ready') tie back cleanly to the action sheet. A 'Transfer record' section gives the audit trail. The problem is that the identical sentence appears twice on the same screen, once as the card body and again as the entire 'Transfer record' body, so the audit section adds no information. The same 'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.' capability-inventory strip is repeated here too, and 'Change scope' renders twice more. Most importantly, for a state described as 'Download ready' there is no download button anywhere on the screen -- the only controls are two 'Change scope' buttons, so the terminal action of the workflow is missing.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A finished export showing the checksum, row/record counts per schema, file size and timestamp, with a prominent Download (or Share) action -- the completion currently has no way to obtain the package it says is ready.",
+      "visibleObservations": [
+        "'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download progress.' shown twice -- as card body and as the entire 'Transfer record' body",
+        "Chips '2 schemas selected', 'Redaction preview', 'Checksum verified', 'Download ready'",
+        "Two 'Change scope' buttons on one screen",
+        "'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.' repeated from the action sheet",
+        "No download, save or share control anywhere on the screen"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the user act on the completed export?",
+          "visibleEvidence": "A 'Download ready' chip is shown, but the only buttons on screen are 'Change scope' and 'Change scope'",
+          "why": "The state claims the package is ready to download while offering no download affordance, so the workflow cannot be completed from this screen."
+        },
+        {
+          "question": "Does the 'Transfer record' section add information?",
+          "visibleEvidence": "'Transfer record' body is the identical sentence as the card body: 'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download progress.'",
+          "why": "A transfer record should carry timestamp, destination and record counts; duplicating the summary line makes it a shell heading."
+        }
+      ],
+      "screenshotHash": "283b62fea973cd7b60c7e334ae6321480a86f363ef6b2d3f8fa8c0b086fd54c4"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "tool-loan-shift-generic-shell",
+      "title": "garden-tool-loan and garden-volunteer-shift render as the same generic engine shell with no real content",
+      "description": "Six of fifteen screens (all of garden-tool-loan and all of garden-volunteer-shift) use an identical component stack: a 9-dot grid icon in a translucent circle, a hero card whose subtitle and body are two restatements of the same sentence, the chip triplet 'Details ready / Editable / State saved', a strip reading 'This view shows editable details, current progress, and the next step before saving.' with an 'Edit response' button, a 'Task details' or 'Saved details' section repeating the hero sentence a third time, and a 'Start <workflow name>' button. The action sheets for the two workflows are the same layout down to control positions; the complete screens likewise. No loan or shift data is ever rendered: no tool identity beyond the word 'broadfork' in a subtitle, no queue position, no due date, no shift date, no time window, no slot count. This is directly contrasted within the same community by the RSVP card, which shows 'Sat, Apr 18', '10:00 AM', 'Riverside Greenhouse', '18 of 24 spots', and the plant exchange card, which shows 'Sweet Genovese basil', '6 starter pots', 'Pickup Sat 1-3 PM'.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-start", "garden-club-garden-tool-loan-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-start", "garden-club-garden-volunteer-shift-action", "garden-club-garden-volunteer-shift-complete"],
+      "requiredFix": "Give both workflows domain content and a domain icon. Tool loan: tool name, availability, current holder, due-back date, queue depth and the user's position, with a 'Borrow' / 'Join queue' action. Volunteer shift: shift date, time window, location, slots filled out of total, task description, with a 'Sign up' action. Replace the 'Details ready / Editable / State saved' chips with these facts, and replace 'This view shows editable details...' with copy about the loan or shift."
+    },
+    {
+      "findingId": "tautological-completion-copy",
+      "title": "Complete states say only '<workflow name> state updated', repeated three times per screen",
+      "description": "On garden-tool-loan complete the string 'Garden tool loan state updated.' appears three times -- as the card body, as the whole 'Saved details' body, and as the 'Saved' block body. On garden-volunteer-shift complete 'Volunteer shift signup updated.' appears three times in exactly the same slots. Each is accompanied by a 'Saved details' heading, a 'Saved' block and a checked 'Saved' chip: three redundant success markers around zero information. Neither screen states what was borrowed or signed up for, for when, or how to undo it. 'Updated' is also ambiguous for a first-time action. The garden-export-custom-schemas complete screen has a milder version of the same defect, duplicating 'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download progress.' as both the card body and the entire 'Transfer record' body.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-complete", "garden-club-garden-export-custom-schemas-complete"],
+      "requiredFix": "Write completion copy that states the resulting fact and the next step, in the style already achieved by the RSVP complete screen ('You are going to Spring Planting Workshop. Calendar, attendee count, and reminder status stay visible.') and the plant exchange complete screen ('Basil seedlings are listed with pickup details and contact sharing limited until a member claims them.'). Collapse the triple 'Saved details' / 'Saved' / 'Saved' chip redundancy into one confirmation."
+    },
+    {
+      "findingId": "stale-prestate-chips-and-helper-text",
+      "title": "'State saved' chip and 'before saving' helper text persist unchanged across start, action and complete",
+      "description": "The chip row 'Details ready / Editable / State saved' is byte-identical on the start, action and complete screens of both garden-tool-loan and garden-volunteer-shift. On the start screens this asserts saved state before the workflow has begun, alongside a 'Start ...' button. Conversely the strip 'This view shows editable details, current progress, and the next step before saving.' remains on the complete screens, so a single card simultaneously says 'before saving' and 'Saved'. Because the chips never change, the only pixel-level difference between the start and complete states is a small corner chip, which makes state very hard to read at a glance.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-tool-loan-start", "garden-club-garden-tool-loan-action", "garden-club-garden-tool-loan-complete", "garden-club-garden-volunteer-shift-start", "garden-club-garden-volunteer-shift-action", "garden-club-garden-volunteer-shift-complete"],
+      "requiredFix": "Make the chip row and helper text state-dependent: on start show availability/openness, on action show what is being edited, on complete show the saved result. Remove 'State saved' from un-started screens and remove the 'before saving' helper from saved screens."
+    },
+    {
+      "findingId": "export-complete-missing-download",
+      "title": "Export complete screen advertises 'Download ready' but offers no download action",
+      "description": "garden-export-custom-schemas complete shows a 'Download ready' chip and body copy reading 'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download progress.' The only interactive controls on the screen are two 'Change scope' buttons -- one inside the scope strip and one inside the 'Transfer record' section. There is no Download, Save or Share affordance, so the terminal step of the export workflow cannot be performed from its own completion state.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-complete"],
+      "requiredFix": "Add a primary Download (or Share/Save to Documents) action to the completed export, and give the 'Transfer record' section real audit content -- timestamp, destination, per-schema record counts, file size -- rather than duplicating the summary sentence."
+    },
+    {
+      "findingId": "captures-clipped-mid-card",
+      "title": "Two start screens are captured mid-scroll with the primary card's title cut off",
+      "description": "On garden-export-custom-schemas start the export card's title and description are scrolled above the viewport, leaving an orphaned chip row ('Redaction preview', 'Checksum verified', 'Download ready') and a 'Generate export' button sitting directly under the 'Garden Club' app bar with no heading -- workflow identity is not determinable from the screen. On garden-tool-loan start the card above is sliced horizontally through the letterforms, so 'Tap for expanded view' and 'Data package' render as half-height text fragments beneath the app bar. Both screens also carry large empty regions lower down (below 'Local package details' and below the tool-loan card respectively), so they read as thin as well as clipped.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-start", "garden-club-garden-tool-loan-start"],
+      "requiredFix": "Anchor start-state captures so the subject card's title and description are fully visible, and ensure preceding cards scroll cleanly under the app bar rather than being sliced mid-glyph."
+    },
+    {
+      "findingId": "low-contrast-secondary-actions",
+      "title": "Secondary actions render dark-on-dark and read as disabled with no reason given",
+      "description": "'Maybe later' on garden-event-rsvp action, 'Edit details' on both the garden-tool-loan and garden-volunteer-shift action sheets, and the lower 'Change scope' on garden-export-custom-schemas action are all rendered as dark teal or dark green text on near-black or dark green cards, with no border or background. Each sits beside a high-contrast filled primary, so the visual read is 'disabled', but nothing on any of these screens explains why they would be unavailable. On the export action sheet the ambiguity is compounded by 'Change scope' appearing twice with two different treatments -- a bordered button near the top and the faint link at the bottom.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-action", "garden-club-garden-tool-loan-action", "garden-club-garden-volunteer-shift-action", "garden-club-garden-export-custom-schemas-action"],
+      "requiredFix": "Raise secondary/text-button contrast to meet accessibility minimums against the dark card surfaces, and if a control genuinely is disabled, show the reason. De-duplicate the two differently styled 'Change scope' controls on the export sheet."
+    },
+    {
+      "findingId": "instrumentation-chrome-and-crowding",
+      "title": "Developer-facing 'In-focus product surface' strips and minimized-card stacks clipped by the bottom nav",
+      "description": "The strip 'In-focus product surface' with an 'Expand' affordance appears above the main card on garden-event-rsvp start (as 'Minimized' badging), plant-exchange-submission start, garden-tool-loan start and garden-volunteer-shift start. This is harness chrome, not product copy. Separately, several home-surface screens end in a stack of minimized cards whose text is double-truncated and whose button rows are sliced by the bottom nav: 'Plant exchange subm...' on rsvp start, 'Garden volunteer shift' with 'Volunteer details include shift, availability, and prot...' and a clipped 'Start garden volunteer shift' button on plant-exchange start and complete, and 'Garden export custo...' with 'You can read the current details without changing ...' on volunteer-shift start. The 'Documents' bottom-nav label is itself clipped at the right screen edge on several screens.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-start", "garden-club-plant-exchange-submission-start", "garden-club-plant-exchange-submission-complete", "garden-club-garden-tool-loan-start", "garden-club-garden-volunteer-shift-start"],
+      "requiredFix": "Remove or hide the 'In-focus product surface' / 'Minimized' instrumentation banners in product captures, add bottom padding so card stacks clear the nav bar instead of being sliced, and let the bottom nav scroll or shrink so the 'Documents' tab label is not clipped at the screen edge."
+    },
+    {
+      "findingId": "rsvp-count-not-incremented",
+      "title": "Attendee count stays at '18 of 24 spots' after the user RSVPs Going",
+      "description": "The garden-event-rsvp action sheet states 'Your RSVP updates the attendee count and leaves a reminder in your community inbox.' and shows '18 going' / '6 spots left'. After selecting Going and confirming, the complete screen still displays '18 of 24 spots', identical to the start screen. The user's own attendance is not reflected in the figure the copy promised it would change, making the count look static.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-event-rsvp-complete", "garden-club-garden-event-rsvp-action", "garden-club-garden-event-rsvp-start"],
+      "requiredFix": "Increment the attendee count on the complete state (e.g. '19 of 24 spots' / '5 spots left') so it agrees with the confirmed RSVP and with the action sheet's stated behaviour."
+    },
+    {
+      "findingId": "tool-loan-description-conflict",
+      "title": "Garden tool loan is described two different ways in two places",
+      "description": "On its own screens the garden-tool-loan workflow is framed as borrowing shared equipment: 'Shared garden tools are available to borrow or queue for.' and 'Borrow the broadfork and manage the loan queue.' But on the garden-export-custom-schemas start screen the minimized card for that same workflow reads 'Garden tool loan -- A submitted member form is ready for action and fol...', a form-submission framing with a 'Member form' chip and an 'Open' button. The two descriptions do not describe the same thing, so the card the user taps does not match the screen they land on.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["garden-club-garden-export-custom-schemas-start", "garden-club-garden-tool-loan-start"],
+      "requiredFix": "Use one consistent description of the tool-loan workflow across its minimized card and its full screen, reflecting whichever framing is correct (borrow/queue, or member-form submission)."
+    }
+  ]
+}

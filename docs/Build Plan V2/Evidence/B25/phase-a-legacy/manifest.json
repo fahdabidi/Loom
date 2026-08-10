@@ -1,0 +1,82 @@
+[
+  {
+    "communityName": "Garden Club",
+    "slug": "garden-club",
+    "phase": "B13",
+    "runId": "phaseA-legacy-garden-club-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/garden-club",
+    "screenshotCount": 15
+  },
+  {
+    "communityName": "Neighborhood Book Club",
+    "slug": "neighborhood-book-club",
+    "phase": "B14",
+    "runId": "phaseA-legacy-neighborhood-book-club-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/neighborhood-book-club",
+    "screenshotCount": 27
+  },
+  {
+    "communityName": "Riverside Youth Soccer",
+    "slug": "riverside-youth-soccer",
+    "phase": "B14",
+    "runId": "phaseA-legacy-riverside-youth-soccer-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/riverside-youth-soccer",
+    "screenshotCount": 27
+  },
+  {
+    "communityName": "Cedar Commons HOA",
+    "slug": "cedar-commons-hoa",
+    "phase": "B14",
+    "runId": "phaseA-legacy-cedar-commons-hoa-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/cedar-commons-hoa",
+    "screenshotCount": 21
+  },
+  {
+    "communityName": "Masjid Nur",
+    "slug": "masjid-nur",
+    "phase": "B14",
+    "runId": "phaseA-legacy-masjid-nur-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/masjid-nur",
+    "screenshotCount": 27
+  },
+  {
+    "communityName": "Chess Club",
+    "slug": "chess-club",
+    "phase": "B15",
+    "runId": "phaseA-legacy-chess-club-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/chess-club",
+    "screenshotCount": 24
+  },
+  {
+    "communityName": "Camera Club",
+    "slug": "camera-club",
+    "phase": "B15",
+    "runId": "phaseA-legacy-camera-club-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/camera-club",
+    "screenshotCount": 12
+  },
+  {
+    "communityName": "Member Social Space",
+    "slug": "member-social-space",
+    "phase": "B16",
+    "runId": "phaseA-legacy-member-social-space-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/member-social-space",
+    "screenshotCount": 24
+  },
+  {
+    "communityName": "Ad-Free Community",
+    "slug": "ad-free-community",
+    "phase": "B16",
+    "runId": "phaseA-legacy-ad-free-community-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/ad-free-community",
+    "screenshotCount": 18
+  },
+  {
+    "communityName": "Data Portability Community",
+    "slug": "data-portability-community",
+    "phase": "B16",
+    "runId": "phaseA-legacy-data-portability-community-1",
+    "dir": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-legacy/data-portability-community",
+    "screenshotCount": 27
+  }
+]

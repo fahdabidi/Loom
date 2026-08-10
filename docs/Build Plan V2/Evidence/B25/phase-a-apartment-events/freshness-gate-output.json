@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-apartment-events/llm-vision-ux-review-phaseA-apartment-events-1.json",
+  "expectedReviewRunId": "phaseA-apartment-events-1",
+  "declaredReviewRunId": "phaseA-apartment-events-1",
+  "expectedAppCommitSha": "69632957",
+  "declaredAppCommitSha": "69632957",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "ae-entry-gate",
+    "ae-home-role-summary",
+    "ae-persona-picker-dialog",
+    "ae-sign-in-specific-person"
+  ],
+  "reviewedScreenshotHashes": [
+    "ba60ac24b4c0925f197c4e4a0d9da1572f0147c0e5443727a866132b2e0a4900",
+    "0127138161cc5954ae6570162ecef23a07cfc1ec8338ca7fc58afa7a379dcd5d",
+    "9407cc2b8a1b2589843e46d3c48797c14c55fcd2fc79041a278d42d3cc1d65ab",
+    "c12d0957353876b85848f14c55d4d6f71f4c754a4f4c821208c58b55923fa609"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

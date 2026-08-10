@@ -1,0 +1,678 @@
+{
+  "currentReviewRunId": "phaseA-authz-repro-hoa-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "AuthZ Repro HOA, community 3 of the Phase A LLM Vision UX Judge walkthrough. Throwaway test-only package built earlier this session to reproduce/verify AuthZ authorization behavior; its entry-gate flow is already proven working end-to-end. Not a canonical full-B25 capture. Third independent live confirmation of the UXReview.P1 identity-legibility fix."
+  },
+  "screenRows": [
+    {
+      "rowId": "hoa-entry-gate",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "anonymous",
+      "workflowId": "auth-entry-gate",
+      "screenOrState": "Fresh entry gate before any account exists",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/entry-gate.png",
+      "screenshotHash": "c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013",
+      "llmVisionScreenReview": {
+        "screenRowId": "hoa-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "hoa-sign-in-specific-person",
+          "hoa-entry-gate"
+        ],
+        "critique": "Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A community-scoped account list with a title such as \"Sign in as a specific person -- AuthZ Repro HOA\", a back affordance, and de-duplicated role group headers.",
+        "visibleObservations": [
+          "Header card \"Welcome to Loom\" / \"Choose an account below or create a new one.\" identical to the entry gate.",
+          "Group label in green: \"Board Member (Board Member)\".",
+          "Account row: \"M\" avatar, \"Morgan\", \"ID: board-member-20\" wrapped across two lines, and a chip \"Signed in\" with a green filled checkmark.",
+          "\"Create New Account\" section: empty \"Display name\" field, \"Persona type\" = \"Board Member\", filled \"Sign Up\" button.",
+          "No app bar, no title, and no back arrow at the top of the screen -- the top region is blank white."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and distinguishable from other accounts?",
+            "visibleEvidence": "Row reads \"Morgan\" / \"ID: board-member-20\" with a green-check \"Signed in\" chip on the right.",
+            "why": "Name, stable ID, and active-session marker are all present, so the active account is unmistakable."
+          },
+          {
+            "question": "Does the displayed text read like real product copy?",
+            "visibleEvidence": "Group header \"Board Member (Board Member)\" repeats the identical string inside the parentheses.",
+            "why": "A role label and a persona-type label that happen to be equal are concatenated without de-duplication, which reads as a template artefact."
+          },
+          {
+            "question": "Does the screen make its own context clear given it was reached from a modal?",
+            "visibleEvidence": "Top of screen is blank white with no title or back arrow; the only header is the generic \"Welcome to Loom\" card.",
+            "why": "Nothing on screen names \"Sign in as a specific person\" or AuthZ Repro HOA, so the user loses the thread of where they are and how to return."
+          }
+        ],
+        "screenshotHash": "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f",
+        "blocksPass": false
+      },
+      "screenSpecificCritique": "LLM vision critique: Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+      "productUxCritique": "LLM vision critique: Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+      "verdict": "",
+      "severity": "",
+      "findingIds": [],
+      "targetProductionSurface": "A community-scoped account list with a title such as \"Sign in as a specific person -- AuthZ Repro HOA\", a back affordance, and de-duplicated role group headers."
+    },
+    {
+      "rowId": "hoa-home-role-summary",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Morgan (Board Member)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/home-role-summary.png",
+      "screenshotHash": "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3",
+      "llmVisionScreenReview": {
+        "screenRowId": "hoa-home-role-summary",
+        "affectedScreenRowIds": [
+          "hoa-home-role-summary",
+          "hoa-persona-picker-dialog"
+        ],
+        "critique": "Identity and context read well: the teal app bar shows \"AuthZ Repro HOA\" with bell / chat / people icons, and the community card repeats the name with the tagline \"Test-only community for live read-visibility verification.\" and an inset reading \"Signed in as Morgan\" / \"Board Member\" / \"2 roles\". Three problems are visible. First, the third line of that inset is the truncated fragment \"Board Member -\" -- a role label followed by a dangling hyphen and nothing after it, which reads as an unpopulated description field rather than product copy. Second, the two light cards below \"Home / Pinned and unassigned community surfaces.\" contain nothing but a tag chip whose label is the literal lowercase word \"title\", so the populated state is visually indistinguishable from broken data. Third, \"2 roles\" is styled as a flat pill with no chevron or button affordance, so it is unclear whether it is a static count or the entry point to role switching (which actually lives behind the people icon).",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A Home that names the signed-in person, states the acting role with a complete description, exposes role switching with an explicit affordance, and renders real card titles.",
+        "visibleObservations": [
+          "Teal app bar: back arrow, \"AuthZ Repro HOA\" wrapped to two lines, bell, chat bubble, and people icons.",
+          "Dark banner with megaphone icon: \"No sponsored message right now.\"",
+          "Community card inset: \"Signed in as Morgan\" / \"Board Member\" / \"Board Member -\" with a \"2 roles\" pill on the right.",
+          "Section card: house icon, \"Home\", \"Pinned and unassigned community surfaces.\"",
+          "Two near-white cards, each containing only a tag-icon chip labelled \"title\".",
+          "Bottom nav: filled \"Home\" pill (selected) and outlined \"Messages\" pill."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are and what role they are acting as?",
+            "visibleEvidence": "\"Signed in as Morgan\" directly above bolded \"Board Member\" inside the community card inset.",
+            "why": "Both the account display name and the active role are on screen without opening any dialog; only the ID is absent, which is acceptable here."
+          },
+          {
+            "question": "Is the populated state unambiguous?",
+            "visibleEvidence": "Two content cards whose only text is the chip label \"title\"; the sponsored slot explicitly says \"No sponsored message right now.\"",
+            "why": "The sponsored slot models empty state well, but the content cards give no way to tell a real item from a rendering failure."
+          },
+          {
+            "question": "Are the available actions clear and is role switching discoverable?",
+            "visibleEvidence": "Flat \"2 roles\" pill with no chevron; role switching is actually behind the unlabelled people icon in the app bar.",
+            "why": "The count hints that more roles exist but does not indicate where to change them, so discovery depends on guessing the icon."
+          }
+        ],
+        "screenshotHash": "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3",
+        "blocksPass": false
+      },
+      "screenSpecificCritique": "LLM vision critique: Identity and context read well: the teal app bar shows \"AuthZ Repro HOA\" with bell / chat / people icons, and the community card repeats the name with the tagline \"Test-only community for live read-visibility verification.\" and an inset reading \"Signed in as Morgan\" / \"Board Member\" / \"2 roles\". Three problems are visible. First, the third line of that inset is the truncated fragment \"Board Member -\" -- a role label followed by a dangling hyphen and nothing after it, which reads as an unpopulated description field rather than product copy. Second, the two light cards below \"Home / Pinned and unassigned community surfaces.\" contain nothing but a tag chip whose label is the literal lowercase word \"title\", so the populated state is visually indistinguishable from broken data. Third, \"2 roles\" is styled as a flat pill with no chevron or button affordance, so it is unclear whether it is a static count or the entry point to role switching (which actually lives behind the people icon).",
+      "productUxCritique": "LLM vision critique: Identity and context read well: the teal app bar shows \"AuthZ Repro HOA\" with bell / chat / people icons, and the community card repeats the name with the tagline \"Test-only community for live read-visibility verification.\" and an inset reading \"Signed in as Morgan\" / \"Board Member\" / \"2 roles\". Three problems are visible. First, the third line of that inset is the truncated fragment \"Board Member -\" -- a role label followed by a dangling hyphen and nothing after it, which reads as an unpopulated description field rather than product copy. Second, the two light cards below \"Home / Pinned and unassigned community surfaces.\" contain nothing but a tag chip whose label is the literal lowercase word \"title\", so the populated state is visually indistinguishable from broken data. Third, \"2 roles\" is styled as a flat pill with no chevron or button affordance, so it is unclear whether it is a static count or the entry point to role switching (which actually lives behind the people icon).",
+      "verdict": "",
+      "severity": "",
+      "findingIds": [],
+      "targetProductionSurface": "A Home that names the signed-in person, states the acting role with a complete description, exposes role switching with an explicit affordance, and renders real card titles."
+    },
+    {
+      "rowId": "hoa-persona-picker-dialog",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "Account role and permissions dialog opened via the people icon",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/persona-picker-dialog.png",
+      "screenshotHash": "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13",
+      "llmVisionScreenReview": {
+        "screenRowId": "hoa-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "hoa-persona-picker-dialog"
+        ],
+        "critique": "This is the strongest screen of the four. The dialog titled \"Account role and permissions\" explains itself in real product voice -- \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" -- and the identity block (mint \"M\" avatar, \"Signed in as Morgan\", \"ID: board-member-20\") sits above the choices, so the user knows both who they are and what they are about to change. The selected \"Board Member\" radio is filled and tinted dark green while \"Resident\" is an unfilled outline, making current state unmistakable. Two flaws: each option's subtitle is a truncated fragment -- \"Board Member -\" and \"Resident -\", both ending in a bare hyphen where the permission description should be, which defeats the dialog's stated purpose of explaining what each role can do. Also, only \"Cancel\" is present; the dialog appears to apply selection immediately with no confirm action or explanatory note, so the consequence of tapping a radio is unstated.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A role picker that names the account, shows each role with a real one-line permission summary, and makes clear whether selection applies immediately.",
+        "visibleObservations": [
+          "Title \"Account role and permissions\" over the body copy about memberships determining available actions.",
+          "Mint circular avatar \"M\", \"Signed in as Morgan\", grey line \"ID: board-member-20\".",
+          "Selected filled radio: \"Board Member\" in green with subtitle \"Board Member -\".",
+          "Unselected outline radio: \"Resident\" with subtitle \"Resident -\".",
+          "Divider, then \"Sign in as a specific person…\" with sub-line \"Use one of this community's individual accounts.\" and an enter-arrow icon.",
+          "Single green text action \"Cancel\" bottom-right; dimmed Home content visible behind the scrim."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are, by name, on this screen?",
+            "visibleEvidence": "\"Signed in as Morgan\" with \"ID: board-member-20\" beneath it, next to an \"M\" avatar.",
+            "why": "Name plus account ID are both shown, so this screen exposes at least as much identity as the account list does."
+          },
+          {
+            "question": "Does the copy describe actual data rather than placeholders?",
+            "visibleEvidence": "Role subtitles read \"Board Member -\" and \"Resident -\", each ending in a hyphen with nothing after it.",
+            "why": "The dialog promises to explain permissions but the per-role descriptions are empty, so the trailing hyphen exposes an unfilled template field."
+          },
+          {
+            "question": "Are the available actions clear?",
+            "visibleEvidence": "Only \"Cancel\" is offered alongside the radios and \"Sign in as a specific person…\".",
+            "why": "The escape hatch and the drill-in are clear, but nothing states whether picking a radio commits immediately or requires a confirm."
+          }
+        ],
+        "screenshotHash": "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13",
+        "blocksPass": false
+      },
+      "screenSpecificCritique": "LLM vision critique: This is the strongest screen of the four. The dialog titled \"Account role and permissions\" explains itself in real product voice -- \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" -- and the identity block (mint \"M\" avatar, \"Signed in as Morgan\", \"ID: board-member-20\") sits above the choices, so the user knows both who they are and what they are about to change. The selected \"Board Member\" radio is filled and tinted dark green while \"Resident\" is an unfilled outline, making current state unmistakable. Two flaws: each option's subtitle is a truncated fragment -- \"Board Member -\" and \"Resident -\", both ending in a bare hyphen where the permission description should be, which defeats the dialog's stated purpose of explaining what each role can do. Also, only \"Cancel\" is present; the dialog appears to apply selection immediately with no confirm action or explanatory note, so the consequence of tapping a radio is unstated.",
+      "productUxCritique": "LLM vision critique: This is the strongest screen of the four. The dialog titled \"Account role and permissions\" explains itself in real product voice -- \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" -- and the identity block (mint \"M\" avatar, \"Signed in as Morgan\", \"ID: board-member-20\") sits above the choices, so the user knows both who they are and what they are about to change. The selected \"Board Member\" radio is filled and tinted dark green while \"Resident\" is an unfilled outline, making current state unmistakable. Two flaws: each option's subtitle is a truncated fragment -- \"Board Member -\" and \"Resident -\", both ending in a bare hyphen where the permission description should be, which defeats the dialog's stated purpose of explaining what each role can do. Also, only \"Cancel\" is present; the dialog appears to apply selection immediately with no confirm action or explanatory note, so the consequence of tapping a radio is unstated.",
+      "verdict": "",
+      "severity": "",
+      "findingIds": [],
+      "targetProductionSurface": "A role picker that names the account, shows each role with a real one-line permission summary, and makes clear whether selection applies immediately."
+    },
+    {
+      "rowId": "hoa-sign-in-specific-person",
+      "communityName": "AuthZ Repro HOA",
+      "persona": "board-member (Morgan)",
+      "workflowId": "account-role-picker",
+      "screenOrState": "\"Sign in as a specific person\" account list, reached from the role picker",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/screenshots/sign-in-specific-person.png",
+      "screenshotHash": "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f",
+      "llmVisionScreenReview": {
+        "screenRowId": "hoa-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "hoa-sign-in-specific-person",
+          "hoa-entry-gate"
+        ],
+        "critique": "Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A community-scoped account list with a title such as \"Sign in as a specific person -- AuthZ Repro HOA\", a back affordance, and de-duplicated role group headers.",
+        "visibleObservations": [
+          "Header card \"Welcome to Loom\" / \"Choose an account below or create a new one.\" identical to the entry gate.",
+          "Group label in green: \"Board Member (Board Member)\".",
+          "Account row: \"M\" avatar, \"Morgan\", \"ID: board-member-20\" wrapped across two lines, and a chip \"Signed in\" with a green filled checkmark.",
+          "\"Create New Account\" section: empty \"Display name\" field, \"Persona type\" = \"Board Member\", filled \"Sign Up\" button.",
+          "No app bar, no title, and no back arrow at the top of the screen -- the top region is blank white."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and distinguishable from other accounts?",
+            "visibleEvidence": "Row reads \"Morgan\" / \"ID: board-member-20\" with a green-check \"Signed in\" chip on the right.",
+            "why": "Name, stable ID, and active-session marker are all present, so the active account is unmistakable."
+          },
+          {
+            "question": "Does the displayed text read like real product copy?",
+            "visibleEvidence": "Group header \"Board Member (Board Member)\" repeats the identical string inside the parentheses.",
+            "why": "A role label and a persona-type label that happen to be equal are concatenated without de-duplication, which reads as a template artefact."
+          },
+          {
+            "question": "Does the screen make its own context clear given it was reached from a modal?",
+            "visibleEvidence": "Top of screen is blank white with no title or back arrow; the only header is the generic \"Welcome to Loom\" card.",
+            "why": "Nothing on screen names \"Sign in as a specific person\" or AuthZ Repro HOA, so the user loses the thread of where they are and how to return."
+          }
+        ],
+        "screenshotHash": "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f",
+        "blocksPass": false
+      },
+      "screenSpecificCritique": "LLM vision critique: Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+      "productUxCritique": "LLM vision critique: Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+      "verdict": "",
+      "severity": "",
+      "findingIds": [],
+      "targetProductionSurface": "A community-scoped account list with a title such as \"Sign in as a specific person -- AuthZ Repro HOA\", a back affordance, and de-duplicated role group headers."
+    }
+  ],
+  "status": "llm-vision-review-fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "generatedAt": "2026-08-09T09:14:09.923940Z",
+  "llmVisionReview": {
+    "schemaVersion": 1,
+    "status": "fail",
+    "freshReview": true,
+    "freshnessProblems": [],
+    "currentReviewRunId": "phaseA-authz-repro-hoa-1",
+    "expectedReviewRunId": "phaseA-authz-repro-hoa-1",
+    "sourceReviewRunId": "",
+    "carriedForward": false,
+    "reusedPriorReview": false,
+    "appCommitSha": "559f3a1b",
+    "reviewedScreenRowIds": [
+      "hoa-entry-gate",
+      "hoa-home-role-summary",
+      "hoa-persona-picker-dialog",
+      "hoa-sign-in-specific-person"
+    ],
+    "reviewedScreenshotHashes": [
+      "c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013",
+      "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3",
+      "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13",
+      "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f"
+    ],
+    "reviewerType": "llm-vision-headless-cli",
+    "sourcePath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-authz-repro-hoa/llm-vision-ux-review-phaseA-authz-repro-hoa-1.json",
+    "importedAt": "2026-08-09T09:14:09.925488Z",
+    "summary": "Identity legibility is genuinely solved across the signed-in surfaces: Home, the role picker, and the account list all render the actual display name \"Morgan\" (the latter two also render \"ID: board-member-20\"), so this flow does not have the 'role without a name' problem. The failures are elsewhere: the fresh entry gate renders an \"Existing Accounts\" heading over an empty gap with no empty-state copy, leaving loading-vs-empty ambiguous, and the role subtitle ships as a truncated fragment \"Board Member -\" with a dangling hyphen on both Home and the role picker. Home also shows two content cards whose only visible text is the literal token \"title\", and a \"2 roles\" pill whose tappability is not signalled. Three of four screens pass with minor issues; the entry gate fails on state legibility.",
+    "holisticQuestionAnswers": [
+      {
+        "questionId": "identity-legibility",
+        "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+        "answer": "Yes, on every screen where an account exists. On Home (hoa-home-role-summary) the community card carries a bordered inset reading \"Signed in as Morgan\" above \"Board Member\", so name and acting role are shown together. In the role picker (hoa-persona-picker-dialog) identity is even stronger: a mint circular avatar with the letter \"M\", \"Signed in as Morgan\", and \"ID: board-member-20\" sit directly above the Board Member / Resident radio group. The account list (hoa-sign-in-specific-person) shows the same M avatar with \"Morgan\", \"ID: board-member-20\", and a checked \"Signed in\" chip. So there is no meaningful identity gap between screen 4 and screens 2-3 here -- screens 3 and 4 both expose name plus account ID, and screen 2 exposes name plus role but not the ID, which is acceptable for a home surface. The only screen without a name is the fresh entry gate, which is correct because no account exists yet. Points deducted only because Home stops at the name and never exposes the account ID, and because the role line under the name on both Home and the picker is the truncated fragment \"Board Member -\", which slightly muddies the 'what am I acting as' half of the question.",
+        "score": 88,
+        "blocksPass": false,
+        "visibleEvidence": [
+          "hoa-home-role-summary: bordered inset inside the teal community card reads \"Signed in as Morgan\" on the first line with \"Board Member\" bolded beneath it and a \"2 roles\" pill at the right.",
+          "hoa-persona-picker-dialog: mint circle containing \"M\", to its right \"Signed in as Morgan\" and grey secondary line \"ID: board-member-20\", placed above the selected Board Member radio.",
+          "hoa-sign-in-specific-person: row under group label \"Board Member (Board Member)\" shows avatar \"M\", name \"Morgan\", \"ID: board-member-20\", and a green check chip labelled \"Signed in\".",
+          "hoa-entry-gate: no name anywhere, only \"Welcome to Loom\" and \"Choose an account below or create a new one.\" -- correct for a pre-account state."
+        ],
+        "affectedScreenRowIds": [
+          "hoa-entry-gate",
+          "hoa-home-role-summary",
+          "hoa-persona-picker-dialog",
+          "hoa-sign-in-specific-person"
+        ],
+        "scope": "holistic",
+        "verdict": "pass",
+        "evidenceUsed": [
+          "hoa-entry-gate",
+          "hoa-home-role-summary",
+          "hoa-persona-picker-dialog",
+          "hoa-sign-in-specific-person"
+        ]
+      }
+    ],
+    "screenReviews": [
+      {
+        "screenRowId": "hoa-entry-gate",
+        "affectedScreenRowIds": [
+          "hoa-entry-gate"
+        ],
+        "critique": "The header card (\"Welcome to Loom\" in dark green over \"Choose an account below or create a new one.\") and the bottom sticky bar (\"Choose an active account or create one to continue to AuthZ Repro HOA.\" plus a \"Check membership status\" outlined button) are clear and correctly community-scoped. The defect is the \"Existing Accounts\" section: the bold heading is followed by roughly 100px of blank white and then a hairline divider before \"Create New Account\". There is no \"No accounts yet\" line, no skeleton, and no spinner, so a user cannot tell whether the list is empty, still loading, or failed to load. The instruction \"Choose an account below\" actively contradicts the empty region, since there is nothing below to choose. The \"Check membership status\" button also gives no hint of what it will do or what state it would resolve.",
+        "verdict": "fail",
+        "severity": "major",
+        "targetProductionSurface": "The Existing Accounts section should render an explicit empty state (e.g. \"No accounts on this device yet -- create one below\") or a loading skeleton, and the header copy should not tell the user to choose an account when none exist.",
+        "visibleObservations": [
+          "Heading \"Existing Accounts\" with an empty gap beneath it and no list rows, no placeholder text, no spinner.",
+          "Header card: \"Welcome to Loom\" / \"Choose an account below or create a new one.\"",
+          "Create New Account form: empty \"Display name\" field, \"Persona type\" dropdown preset to \"Board Member\", filled dark-green \"Sign Up\" button.",
+          "Sticky bottom bar: \"Choose an active account or create one to continue to AuthZ Repro HOA.\" plus outlined \"Check membership status\" button with refresh icon."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the current state (loading / empty / error / populated) unambiguous?",
+            "visibleEvidence": "\"Existing Accounts\" heading sits above pure white space terminated by a divider -- no row, no empty text, no spinner.",
+            "why": "An empty region is indistinguishable from an unresolved load, so the user cannot tell whether waiting would help."
+          },
+          {
+            "question": "Is the copy accurate for the state actually shown?",
+            "visibleEvidence": "\"Choose an account below or create a new one.\" and \"Choose an active account or create one to continue to AuthZ Repro HOA.\"",
+            "why": "Both strings offer a choice that does not exist in this state; the community name is correct, but the primary instruction is wrong for a zero-account gate."
+          },
+          {
+            "question": "Are the available actions clear?",
+            "visibleEvidence": "Outlined button \"Check membership status\" with no accompanying result or status text.",
+            "why": "Sign Up is unambiguous, but the membership-status action states neither the current membership state nor what checking will change."
+          }
+        ],
+        "screenshotHash": "c7075e99bfc00f2bad5d423ebd21ea758b23ca11544d8c1f58f99ec9b6089013",
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "hoa-home-role-summary",
+        "affectedScreenRowIds": [
+          "hoa-home-role-summary",
+          "hoa-persona-picker-dialog"
+        ],
+        "critique": "Identity and context read well: the teal app bar shows \"AuthZ Repro HOA\" with bell / chat / people icons, and the community card repeats the name with the tagline \"Test-only community for live read-visibility verification.\" and an inset reading \"Signed in as Morgan\" / \"Board Member\" / \"2 roles\". Three problems are visible. First, the third line of that inset is the truncated fragment \"Board Member -\" -- a role label followed by a dangling hyphen and nothing after it, which reads as an unpopulated description field rather than product copy. Second, the two light cards below \"Home / Pinned and unassigned community surfaces.\" contain nothing but a tag chip whose label is the literal lowercase word \"title\", so the populated state is visually indistinguishable from broken data. Third, \"2 roles\" is styled as a flat pill with no chevron or button affordance, so it is unclear whether it is a static count or the entry point to role switching (which actually lives behind the people icon).",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A Home that names the signed-in person, states the acting role with a complete description, exposes role switching with an explicit affordance, and renders real card titles.",
+        "visibleObservations": [
+          "Teal app bar: back arrow, \"AuthZ Repro HOA\" wrapped to two lines, bell, chat bubble, and people icons.",
+          "Dark banner with megaphone icon: \"No sponsored message right now.\"",
+          "Community card inset: \"Signed in as Morgan\" / \"Board Member\" / \"Board Member -\" with a \"2 roles\" pill on the right.",
+          "Section card: house icon, \"Home\", \"Pinned and unassigned community surfaces.\"",
+          "Two near-white cards, each containing only a tag-icon chip labelled \"title\".",
+          "Bottom nav: filled \"Home\" pill (selected) and outlined \"Messages\" pill."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are and what role they are acting as?",
+            "visibleEvidence": "\"Signed in as Morgan\" directly above bolded \"Board Member\" inside the community card inset.",
+            "why": "Both the account display name and the active role are on screen without opening any dialog; only the ID is absent, which is acceptable here."
+          },
+          {
+            "question": "Is the populated state unambiguous?",
+            "visibleEvidence": "Two content cards whose only text is the chip label \"title\"; the sponsored slot explicitly says \"No sponsored message right now.\"",
+            "why": "The sponsored slot models empty state well, but the content cards give no way to tell a real item from a rendering failure."
+          },
+          {
+            "question": "Are the available actions clear and is role switching discoverable?",
+            "visibleEvidence": "Flat \"2 roles\" pill with no chevron; role switching is actually behind the unlabelled people icon in the app bar.",
+            "why": "The count hints that more roles exist but does not indicate where to change them, so discovery depends on guessing the icon."
+          }
+        ],
+        "screenshotHash": "49c30190047cc8ca9a5704b7fcfda9f52c2d271af4b24bbcc10ee777943fedf3",
+        "blocksPass": false
+      },
+      {
+        "screenRowId": "hoa-persona-picker-dialog",
+        "affectedScreenRowIds": [
+          "hoa-persona-picker-dialog"
+        ],
+        "critique": "This is the strongest screen of the four. The dialog titled \"Account role and permissions\" explains itself in real product voice -- \"Your memberships determine which community actions are available. Choose the role you want to use in this community.\" -- and the identity block (mint \"M\" avatar, \"Signed in as Morgan\", \"ID: board-member-20\") sits above the choices, so the user knows both who they are and what they are about to change. The selected \"Board Member\" radio is filled and tinted dark green while \"Resident\" is an unfilled outline, making current state unmistakable. Two flaws: each option's subtitle is a truncated fragment -- \"Board Member -\" and \"Resident -\", both ending in a bare hyphen where the permission description should be, which defeats the dialog's stated purpose of explaining what each role can do. Also, only \"Cancel\" is present; the dialog appears to apply selection immediately with no confirm action or explanatory note, so the consequence of tapping a radio is unstated.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A role picker that names the account, shows each role with a real one-line permission summary, and makes clear whether selection applies immediately.",
+        "visibleObservations": [
+          "Title \"Account role and permissions\" over the body copy about memberships determining available actions.",
+          "Mint circular avatar \"M\", \"Signed in as Morgan\", grey line \"ID: board-member-20\".",
+          "Selected filled radio: \"Board Member\" in green with subtitle \"Board Member -\".",
+          "Unselected outline radio: \"Resident\" with subtitle \"Resident -\".",
+          "Divider, then \"Sign in as a specific person…\" with sub-line \"Use one of this community's individual accounts.\" and an enter-arrow icon.",
+          "Single green text action \"Cancel\" bottom-right; dimmed Home content visible behind the scrim."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Can the user tell who they are, by name, on this screen?",
+            "visibleEvidence": "\"Signed in as Morgan\" with \"ID: board-member-20\" beneath it, next to an \"M\" avatar.",
+            "why": "Name plus account ID are both shown, so this screen exposes at least as much identity as the account list does."
+          },
+          {
+            "question": "Does the copy describe actual data rather than placeholders?",
+            "visibleEvidence": "Role subtitles read \"Board Member -\" and \"Resident -\", each ending in a hyphen with nothing after it.",
+            "why": "The dialog promises to explain permissions but the per-role descriptions are empty, so the trailing hyphen exposes an unfilled template field."
+          },
+          {
+            "question": "Are the available actions clear?",
+            "visibleEvidence": "Only \"Cancel\" is offered alongside the radios and \"Sign in as a specific person…\".",
+            "why": "The escape hatch and the drill-in are clear, but nothing states whether picking a radio commits immediately or requires a confirm."
+          }
+        ],
+        "screenshotHash": "9641121450ef3b2d57424be50a43e00488cdc43096b402e4be726719926dcc13",
+        "blocksPass": false
+      },
+      {
+        "screenRowId": "hoa-sign-in-specific-person",
+        "affectedScreenRowIds": [
+          "hoa-sign-in-specific-person",
+          "hoa-entry-gate"
+        ],
+        "critique": "Reached from the role picker, this screen correctly resolves the empty-list problem seen on the fresh gate: \"Existing Accounts\" now holds a real row -- mint \"M\" avatar, name \"Morgan\", \"ID: board-member-20\" (wrapped awkwardly as \"ID: board-\" / \"member-20\"), and a chip with a green filled check reading \"Signed in\", which unambiguously marks the active account. Problems: the group label above it reads \"Board Member (Board Member)\", duplicating the same string in and out of parentheses, which looks like a role-name/persona-type template collision rather than product copy. The screen also reuses the generic sign-in gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with no title, back affordance, or breadcrumb tying it to \"Sign in as a specific person\" or to AuthZ Repro HOA, so after arriving from a modal the user has no visible route back and no confirmation of which community's accounts these are. The app bar region at the top renders blank white, reinforcing that impression. The \"Create New Account\" form defaults \"Persona type\" to \"Board Member\" with an empty \"Display name\", so tapping \"Sign Up\" without typing has an undefined outcome.",
+        "verdict": "pass",
+        "severity": "minor",
+        "targetProductionSurface": "A community-scoped account list with a title such as \"Sign in as a specific person -- AuthZ Repro HOA\", a back affordance, and de-duplicated role group headers.",
+        "visibleObservations": [
+          "Header card \"Welcome to Loom\" / \"Choose an account below or create a new one.\" identical to the entry gate.",
+          "Group label in green: \"Board Member (Board Member)\".",
+          "Account row: \"M\" avatar, \"Morgan\", \"ID: board-member-20\" wrapped across two lines, and a chip \"Signed in\" with a green filled checkmark.",
+          "\"Create New Account\" section: empty \"Display name\" field, \"Persona type\" = \"Board Member\", filled \"Sign Up\" button.",
+          "No app bar, no title, and no back arrow at the top of the screen -- the top region is blank white."
+        ],
+        "directQuestionAnswers": [
+          {
+            "question": "Is the signed-in account identifiable and distinguishable from other accounts?",
+            "visibleEvidence": "Row reads \"Morgan\" / \"ID: board-member-20\" with a green-check \"Signed in\" chip on the right.",
+            "why": "Name, stable ID, and active-session marker are all present, so the active account is unmistakable."
+          },
+          {
+            "question": "Does the displayed text read like real product copy?",
+            "visibleEvidence": "Group header \"Board Member (Board Member)\" repeats the identical string inside the parentheses.",
+            "why": "A role label and a persona-type label that happen to be equal are concatenated without de-duplication, which reads as a template artefact."
+          },
+          {
+            "question": "Does the screen make its own context clear given it was reached from a modal?",
+            "visibleEvidence": "Top of screen is blank white with no title or back arrow; the only header is the generic \"Welcome to Loom\" card.",
+            "why": "Nothing on screen names \"Sign in as a specific person\" or AuthZ Repro HOA, so the user loses the thread of where they are and how to return."
+          }
+        ],
+        "screenshotHash": "6b8cb0131b1e3cbd242b7aa7718c876939168044a81fcfb0e9e859df8bdd593f",
+        "blocksPass": false
+      }
+    ],
+    "findings": [
+      {
+        "findingId": "empty-existing-accounts-no-state",
+        "title": "\"Existing Accounts\" renders a blank gap with no empty or loading state",
+        "description": "On the fresh entry gate the bold \"Existing Accounts\" heading is followed by empty white space and then a divider -- no rows, no \"none yet\" copy, no skeleton, no spinner. Loading, empty, and failed-to-load are indistinguishable. The surrounding copy makes it worse: the header card says \"Choose an account below or create a new one.\" and the sticky bar says \"Choose an active account or create one to continue to AuthZ Repro HOA.\", both directing the user to choose from a list that has nothing in it. The same layout with a populated row is visible on hoa-sign-in-specific-person, confirming the section is simply unrendered rather than intentionally hidden.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-entry-gate"
+        ],
+        "requiredFix": "Render an explicit zero-state (e.g. \"No accounts on this device yet\") or a loading skeleton in the Existing Accounts section, and suppress or reword the \"choose an account below\" instruction when the list is empty.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "truncated-role-description-dangling-hyphen",
+        "title": "Role descriptions render as \"Board Member -\" / \"Resident -\" with a dangling hyphen",
+        "description": "Both the Home community card and the role-picker dialog show role subtitles that end in a bare hyphen with no text after it: \"Board Member -\" appears under the signed-in role on Home and under the selected radio in the dialog, and \"Resident -\" appears under the unselected radio. The dialog explicitly promises \"Your memberships determine which community actions are available\", but the per-role permission text that would deliver on that promise is missing, leaving a visibly unfilled \"<role> - <description>\" template.",
+        "severity": "major",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-home-role-summary",
+          "hoa-persona-picker-dialog"
+        ],
+        "requiredFix": "Populate each role with a real one-line permission summary, and when no description exists, drop the separator entirely instead of emitting a trailing hyphen.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": true
+      },
+      {
+        "findingId": "duplicated-role-group-header",
+        "title": "Account group header reads \"Board Member (Board Member)\"",
+        "description": "On the account list, the green group label above Morgan's row reads \"Board Member (Board Member)\" -- the same string rendered twice, once bare and once parenthesised. This is a role-label / persona-type concatenation that was not de-duplicated when the two values are equal, and it reads as a template artefact rather than product copy.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-sign-in-specific-person"
+        ],
+        "requiredFix": "Suppress the parenthetical persona type when it is identical to the role label, so the header reads simply \"Board Member\".",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "account-list-missing-context-header",
+        "title": "\"Sign in as a specific person\" list has no title, back affordance, or community scoping",
+        "description": "The account list reached from the role-picker dialog reuses the generic entry gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with a blank white region where an app bar would be. Nothing on screen repeats the originating action name \"Sign in as a specific person…\", names AuthZ Repro HOA, or offers a visible way back, even though the dialog described these as \"one of this community's individual accounts\".",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-sign-in-specific-person"
+        ],
+        "requiredFix": "Give the screen a titled app bar naming the action and the community, plus a back affordance returning to the role picker.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "roles-pill-affordance-unclear",
+        "title": "\"2 roles\" pill on Home gives no affordance for switching roles",
+        "description": "The Home community card shows a flat \"2 roles\" pill beside \"Board Member\" with no chevron, underline, or button styling. Role switching actually lives behind the unlabelled people icon in the teal app bar. A user who reads \"2 roles\" has no visible path to the second role, and no indication of whether the pill itself is tappable.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-home-role-summary"
+        ],
+        "requiredFix": "Make the roles pill an explicit control (chevron or \"Switch role\" label) that opens the Account role and permissions dialog, or label the app-bar people icon.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "home-cards-title-placeholder",
+        "title": "Home content cards display only the literal token \"title\"",
+        "description": "Below \"Home / Pinned and unassigned community surfaces.\" two light cards each contain a single tag chip whose label is the lowercase word \"title\" and no other content. This is placeholder domain data for a throwaway test community rather than an identity defect, but as rendered it makes a populated list indistinguishable from a rendering failure, since there is no fallback copy for an item with no usable title.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-home-role-summary"
+        ],
+        "requiredFix": "Render a real item title, and provide a visible fallback (e.g. \"Untitled surface\") plus supporting metadata so an item without a title cannot be mistaken for broken rendering.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      },
+      {
+        "findingId": "role-picker-no-confirm-semantics",
+        "title": "Role picker offers only \"Cancel\" with no stated commit behaviour",
+        "description": "The \"Account role and permissions\" dialog presents Board Member / Resident radios and a single green \"Cancel\" text action. There is no Confirm/Apply button and no line stating that selecting a radio switches the active role immediately, so the user cannot tell whether tapping \"Resident\" is a preview or an immediate permission change.",
+        "severity": "minor",
+        "status": "open",
+        "resolved": false,
+        "affectedScreenRowIds": [
+          "hoa-persona-picker-dialog"
+        ],
+        "requiredFix": "Either add an explicit confirm action or add a line stating that the selected role applies immediately.",
+        "source": "llm-vision-ux-judge",
+        "blocksPass": false
+      }
+    ],
+    "blockingFindingIds": [
+      "empty-existing-accounts-no-state",
+      "truncated-role-description-dangling-hyphen"
+    ],
+    "blockingQuestionIds": [],
+    "blockingScreenRowIds": [
+      "hoa-entry-gate"
+    ]
+  },
+  "deterministicScaffoldHolisticQuestionAnswers": [],
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "Yes, on every screen where an account exists. On Home (hoa-home-role-summary) the community card carries a bordered inset reading \"Signed in as Morgan\" above \"Board Member\", so name and acting role are shown together. In the role picker (hoa-persona-picker-dialog) identity is even stronger: a mint circular avatar with the letter \"M\", \"Signed in as Morgan\", and \"ID: board-member-20\" sit directly above the Board Member / Resident radio group. The account list (hoa-sign-in-specific-person) shows the same M avatar with \"Morgan\", \"ID: board-member-20\", and a checked \"Signed in\" chip. So there is no meaningful identity gap between screen 4 and screens 2-3 here -- screens 3 and 4 both expose name plus account ID, and screen 2 exposes name plus role but not the ID, which is acceptable for a home surface. The only screen without a name is the fresh entry gate, which is correct because no account exists yet. Points deducted only because Home stops at the name and never exposes the account ID, and because the role line under the name on both Home and the picker is the truncated fragment \"Board Member -\", which slightly muddies the 'what am I acting as' half of the question.",
+      "score": 88,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "hoa-home-role-summary: bordered inset inside the teal community card reads \"Signed in as Morgan\" on the first line with \"Board Member\" bolded beneath it and a \"2 roles\" pill at the right.",
+        "hoa-persona-picker-dialog: mint circle containing \"M\", to its right \"Signed in as Morgan\" and grey secondary line \"ID: board-member-20\", placed above the selected Board Member radio.",
+        "hoa-sign-in-specific-person: row under group label \"Board Member (Board Member)\" shows avatar \"M\", name \"Morgan\", \"ID: board-member-20\", and a green check chip labelled \"Signed in\".",
+        "hoa-entry-gate: no name anywhere, only \"Welcome to Loom\" and \"Choose an account below or create a new one.\" -- correct for a pre-account state."
+      ],
+      "affectedScreenRowIds": [
+        "hoa-entry-gate",
+        "hoa-home-role-summary",
+        "hoa-persona-picker-dialog",
+        "hoa-sign-in-specific-person"
+      ],
+      "scope": "holistic",
+      "verdict": "pass",
+      "evidenceUsed": [
+        "hoa-entry-gate",
+        "hoa-home-role-summary",
+        "hoa-persona-picker-dialog",
+        "hoa-sign-in-specific-person"
+      ]
+    }
+  ],
+  "deterministicScaffoldWorkflowPersonaScorecards": [],
+  "workflowPersonaScorecards": [],
+  "findings": [
+    {
+      "findingId": "empty-existing-accounts-no-state",
+      "title": "\"Existing Accounts\" renders a blank gap with no empty or loading state",
+      "description": "On the fresh entry gate the bold \"Existing Accounts\" heading is followed by empty white space and then a divider -- no rows, no \"none yet\" copy, no skeleton, no spinner. Loading, empty, and failed-to-load are indistinguishable. The surrounding copy makes it worse: the header card says \"Choose an account below or create a new one.\" and the sticky bar says \"Choose an active account or create one to continue to AuthZ Repro HOA.\", both directing the user to choose from a list that has nothing in it. The same layout with a populated row is visible on hoa-sign-in-specific-person, confirming the section is simply unrendered rather than intentionally hidden.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-entry-gate"
+      ],
+      "requiredFix": "Render an explicit zero-state (e.g. \"No accounts on this device yet\") or a loading skeleton in the Existing Accounts section, and suppress or reword the \"choose an account below\" instruction when the list is empty.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "truncated-role-description-dangling-hyphen",
+      "title": "Role descriptions render as \"Board Member -\" / \"Resident -\" with a dangling hyphen",
+      "description": "Both the Home community card and the role-picker dialog show role subtitles that end in a bare hyphen with no text after it: \"Board Member -\" appears under the signed-in role on Home and under the selected radio in the dialog, and \"Resident -\" appears under the unselected radio. The dialog explicitly promises \"Your memberships determine which community actions are available\", but the per-role permission text that would deliver on that promise is missing, leaving a visibly unfilled \"<role> - <description>\" template.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-home-role-summary",
+        "hoa-persona-picker-dialog"
+      ],
+      "requiredFix": "Populate each role with a real one-line permission summary, and when no description exists, drop the separator entirely instead of emitting a trailing hyphen.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": true
+    },
+    {
+      "findingId": "duplicated-role-group-header",
+      "title": "Account group header reads \"Board Member (Board Member)\"",
+      "description": "On the account list, the green group label above Morgan's row reads \"Board Member (Board Member)\" -- the same string rendered twice, once bare and once parenthesised. This is a role-label / persona-type concatenation that was not de-duplicated when the two values are equal, and it reads as a template artefact rather than product copy.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-sign-in-specific-person"
+      ],
+      "requiredFix": "Suppress the parenthetical persona type when it is identical to the role label, so the header reads simply \"Board Member\".",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "account-list-missing-context-header",
+      "title": "\"Sign in as a specific person\" list has no title, back affordance, or community scoping",
+      "description": "The account list reached from the role-picker dialog reuses the generic entry gate verbatim -- \"Welcome to Loom\" / \"Choose an account below or create a new one.\" -- with a blank white region where an app bar would be. Nothing on screen repeats the originating action name \"Sign in as a specific person…\", names AuthZ Repro HOA, or offers a visible way back, even though the dialog described these as \"one of this community's individual accounts\".",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-sign-in-specific-person"
+      ],
+      "requiredFix": "Give the screen a titled app bar naming the action and the community, plus a back affordance returning to the role picker.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "roles-pill-affordance-unclear",
+      "title": "\"2 roles\" pill on Home gives no affordance for switching roles",
+      "description": "The Home community card shows a flat \"2 roles\" pill beside \"Board Member\" with no chevron, underline, or button styling. Role switching actually lives behind the unlabelled people icon in the teal app bar. A user who reads \"2 roles\" has no visible path to the second role, and no indication of whether the pill itself is tappable.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-home-role-summary"
+      ],
+      "requiredFix": "Make the roles pill an explicit control (chevron or \"Switch role\" label) that opens the Account role and permissions dialog, or label the app-bar people icon.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "home-cards-title-placeholder",
+      "title": "Home content cards display only the literal token \"title\"",
+      "description": "Below \"Home / Pinned and unassigned community surfaces.\" two light cards each contain a single tag chip whose label is the lowercase word \"title\" and no other content. This is placeholder domain data for a throwaway test community rather than an identity defect, but as rendered it makes a populated list indistinguishable from a rendering failure, since there is no fallback copy for an item with no usable title.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-home-role-summary"
+      ],
+      "requiredFix": "Render a real item title, and provide a visible fallback (e.g. \"Untitled surface\") plus supporting metadata so an item without a title cannot be mistaken for broken rendering.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    },
+    {
+      "findingId": "role-picker-no-confirm-semantics",
+      "title": "Role picker offers only \"Cancel\" with no stated commit behaviour",
+      "description": "The \"Account role and permissions\" dialog presents Board Member / Resident radios and a single green \"Cancel\" text action. There is no Confirm/Apply button and no line stating that selecting a radio switches the active role immediately, so the user cannot tell whether tapping \"Resident\" is a preview or an immediate permission change.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": [
+        "hoa-persona-picker-dialog"
+      ],
+      "requiredFix": "Either add an explicit confirm action or add a line stating that the selected role applies immediately.",
+      "source": "llm-vision-ux-judge",
+      "blocksPass": false
+    }
+  ],
+  "unresolvedBlockerFindings": [],
+  "unresolvedMajorFindings": [
+    "empty-existing-accounts-no-state",
+    "truncated-role-description-dangling-hyphen"
+  ]
+}

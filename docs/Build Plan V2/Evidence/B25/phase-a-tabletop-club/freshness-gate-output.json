@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/phase-a-tabletop-club/llm-vision-ux-review-phaseA-tabletop-club-1.json",
+  "expectedReviewRunId": "phaseA-tabletop-club-1",
+  "declaredReviewRunId": "phaseA-tabletop-club-1",
+  "expectedAppCommitSha": "559f3a1b",
+  "declaredAppCommitSha": "559f3a1b",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "tc-entry-gate",
+    "tc-home-role-summary",
+    "tc-persona-picker-dialog",
+    "tc-sign-in-specific-person"
+  ],
+  "reviewedScreenshotHashes": [
+    "a61079a79ff2ef2b41eb2e983604f5087437a64162501244676bc5260ab21d0f",
+    "9d24ff7954fab81660c70904cb2556394422264f862464b6c9a8a0de66f16b86",
+    "8edb3428c48d4dbd4af84b2ba66a01b9d84d729432f7391851b4d0acf830f7b8",
+    "5262ab548f5563566f52514ca03e5d155c123ea39b2f1ea7cf0ea31c366b594a"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

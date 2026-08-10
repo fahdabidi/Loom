@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-07-03T01:22:18.377250Z",
-  "status": "running",
+  "updatedAt": "2026-08-09T10:11:01.483365Z",
+  "status": "failed",
   "mode": "full-b25",
   "phases": [
     "B12",
@@ -16,14 +16,13 @@
     "B20"
   ],
   "phaseCount": 9,
-  "completedPhases": 2,
-  "currentPhase": "B14",
-  "currentPhaseIndex": 3,
-  "currentWorkflowId": null,
-  "completedWorkflowsInCurrentPhase": 0,
-  "totalWorkflowsInCurrentPhase": null,
+  "completedPhases": 8,
+  "currentPhase": "B20",
+  "currentPhaseIndex": 9,
+  "currentShardIndex": 0,
+  "shardCount": 1,
+  "exitCode": 1,
   "device": "emulator-5554",
-  "evidenceRoot": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence",
-  "logPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "shardCount": 4
+  "evidenceRoot": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence",
+  "logPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log"
 }

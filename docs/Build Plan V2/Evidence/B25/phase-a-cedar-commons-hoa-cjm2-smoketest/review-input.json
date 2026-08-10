@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-cedar-commons-hoa-cjm2-smoketest-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "51d81e8c",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Not a canonical full-B25 capture. Cedar Commons HOA (engine-native, ext_verify_cedar_commons_hoa) is not in loomEvidenceTargets. Screenshots captured by hand via adb/uiautomator while smoke-testing the full Community JSON Migration Tracker tooling chain end to end (CJM.2 dispatch + JSON authoring + validator + real install + live walkthrough)."
+  },
+  "screenRows": [
+    {
+      "rowId": "hoa-home-signed-in",
+      "communityName": "Cedar Commons HOA",
+      "persona": "Homeowner",
+      "workflowId": "community-home",
+      "screenOrState": "Community Home tab immediately after signing up as a Homeowner",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/home-signed-in.png",
+      "screenshotHash": "9e55d3ea7752cece119a381d5fab413520fd81c0cf94d403df12349bd363d15c"
+    },
+    {
+      "rowId": "hoa-home-document-detail",
+      "communityName": "Cedar Commons HOA",
+      "persona": "Homeowner",
+      "workflowId": "hoa-member-document",
+      "screenOrState": "Home tab scrolled to the 'Governing Rules v3' document instance, expanded to show its fields and Acknowledge/Download actions",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/home-document-detail.png",
+      "screenshotHash": "10456610277a87b81416446218cad6aa6a4e2940802511b291e22988c4ad33b5"
+    },
+    {
+      "rowId": "hoa-calendar-tab",
+      "communityName": "Cedar Commons HOA",
+      "persona": "Homeowner",
+      "workflowId": "hoa-facility-reservation",
+      "screenOrState": "Calendar tab, attempting to render the seeded facility reservation instance",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/calendar-bug.png",
+      "screenshotHash": "8a9cf05f72a8aae462d5171ed17e2fd3d5c4798d64884c9bafa52f04b8744581"
+    },
+    {
+      "rowId": "hoa-marketplace-tab",
+      "communityName": "Cedar Commons HOA",
+      "persona": "Homeowner",
+      "workflowId": "none-bound",
+      "screenOrState": "Marketplace tab, a community with no workflow bound to tabId marketplace",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/marketplace-empty.png",
+      "screenshotHash": "1053e6cfa606fc8d3e6c07e727060041678d19c86185021623947f3a2341a673"
+    },
+    {
+      "rowId": "hoa-giving-tab",
+      "communityName": "Cedar Commons HOA",
+      "persona": "Homeowner",
+      "workflowId": "hoa-dues-payment",
+      "screenOrState": "Giving tab, attempting to render the seeded dues-payment instance for the signed-in Homeowner",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-cedar-commons-hoa-cjm2-smoketest/screenshots/giving-empty.png",
+      "screenshotHash": "184696b0385a2acf286c938e10c7b68c9522d388bbbe4f9e2784798c3e3dfee9"
+    }
+  ]
+}

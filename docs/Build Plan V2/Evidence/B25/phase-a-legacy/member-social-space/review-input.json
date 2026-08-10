@@ -1,0 +1,228 @@
+{
+  "currentReviewRunId": "phaseA-legacy-member-social-space-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "559f3a1b",
+    "captureMode": "automated-flutter-drive-b25-capture",
+    "phase": "B16",
+    "appId": "ext_platform_social",
+    "note": "Member Social Space, part of the Phase A legacy-community sweep (loomEvidenceTargets, B16). Captured via the existing automated b25_capture_workflow_screenshots.dart flutter-drive pipeline, not manual adb. Legacy flat-schema community: bypasses the entry gate/persona-picker entirely (no account system), so this rubric focuses on state legibility, copy accuracy, actionability, and persona-scoping rather than identity legibility."
+  },
+  "screenRows": [
+    {
+      "rowId": "member-social-space-platform-messages-entry-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-messages-entry",
+      "screenOrState": "platform-messages-entry workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_start.png",
+      "screenshotHash": "14113a2b76248a422a0cd2a9c89366daf0cf0db968ed9995e04135e78612f1a8"
+    },
+    {
+      "rowId": "member-social-space-platform-messages-entry-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-messages-entry",
+      "screenOrState": "platform-messages-entry workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_action.png",
+      "screenshotHash": "b2b647169c633d36215dcec3936827bc0d27fb369c064bab2ac8dc8c535edc3f"
+    },
+    {
+      "rowId": "member-social-space-platform-messages-entry-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-messages-entry",
+      "screenOrState": "platform-messages-entry workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_complete.png",
+      "screenshotHash": "94f3b1d3dabbde57109e81cb83ddff97927cef9596e2056108e646fad9248da5"
+    },
+    {
+      "rowId": "member-social-space-platform-blocked-target-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-blocked-target",
+      "screenOrState": "platform-blocked-target workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_start.png",
+      "screenshotHash": "6c2a9922569b9f447a13b4eb50f60032e4fbd63f2119c76a187d6ac7b663bda7"
+    },
+    {
+      "rowId": "member-social-space-platform-blocked-target-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-blocked-target",
+      "screenOrState": "platform-blocked-target workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_action.png",
+      "screenshotHash": "24f84f8d9e42dc5bfbbe30082d9ef3da3c8d14254ea653c0bf27f4eaf6aa5df3"
+    },
+    {
+      "rowId": "member-social-space-platform-blocked-target-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-blocked-target",
+      "screenOrState": "platform-blocked-target workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_complete.png",
+      "screenshotHash": "fed5ecc6c847fc05f1b2d7f0f6f8782219aa03fc7201c1e018952146be65136d"
+    },
+    {
+      "rowId": "member-social-space-platform-top-banner-no-fill-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-top-banner-no-fill",
+      "screenOrState": "platform-top-banner-no-fill workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_start.png",
+      "screenshotHash": "c7a31706952e380d6cd54a92da06852c147d046b2772ca2f41c5ca3bac3515aa"
+    },
+    {
+      "rowId": "member-social-space-platform-top-banner-no-fill-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-top-banner-no-fill",
+      "screenOrState": "platform-top-banner-no-fill workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_action.png",
+      "screenshotHash": "ba4bca20cbad8906f0b2e3e01f8a8ecf626a6b5ad5286def481e1feae149514d"
+    },
+    {
+      "rowId": "member-social-space-platform-top-banner-no-fill-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-top-banner-no-fill",
+      "screenOrState": "platform-top-banner-no-fill workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png",
+      "screenshotHash": "8903d29c88ee7f89bd0e9b4b261b0e145f9c9537187e77d7ae2342dc72529917"
+    },
+    {
+      "rowId": "member-social-space-platform-connections-entry-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connections-entry",
+      "screenOrState": "platform-connections-entry workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
+      "screenshotHash": "07a2dc129317ac156414407a1b0f65091663eee21e3edeb73a163924adea432b"
+    },
+    {
+      "rowId": "member-social-space-platform-connections-entry-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connections-entry",
+      "screenOrState": "platform-connections-entry workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_action.png",
+      "screenshotHash": "372930b369dc20498695a08cbec5abd0ef3e653734d67deee7ada688766364db"
+    },
+    {
+      "rowId": "member-social-space-platform-connections-entry-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connections-entry",
+      "screenOrState": "platform-connections-entry workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_complete.png",
+      "screenshotHash": "20790b355656fcf2532af4524f49a4cfe77c8b387f762be0a8433e5ded15cc18"
+    },
+    {
+      "rowId": "member-social-space-platform-message-stream-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-message-stream",
+      "screenOrState": "platform-message-stream workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+      "screenshotHash": "6090b19e04bb5c220efdbc3a1abd526ee7547d793417d1a59d825a62db6b78a3"
+    },
+    {
+      "rowId": "member-social-space-platform-message-stream-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-message-stream",
+      "screenOrState": "platform-message-stream workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
+      "screenshotHash": "b2b647169c633d36215dcec3936827bc0d27fb369c064bab2ac8dc8c535edc3f"
+    },
+    {
+      "rowId": "member-social-space-platform-message-stream-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-message-stream",
+      "screenOrState": "platform-message-stream workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png",
+      "screenshotHash": "94f3b1d3dabbde57109e81cb83ddff97927cef9596e2056108e646fad9248da5"
+    },
+    {
+      "rowId": "member-social-space-platform-sensitive-no-fill-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-sensitive-no-fill",
+      "screenOrState": "platform-sensitive-no-fill workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
+      "screenshotHash": "4655db04f2a9e05ff6fc330b18cff97b3c74ef6519af82c3cc840bbdb9e30cb6"
+    },
+    {
+      "rowId": "member-social-space-platform-sensitive-no-fill-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-sensitive-no-fill",
+      "screenOrState": "platform-sensitive-no-fill workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
+      "screenshotHash": "ac10dd4ffea8a68a0c29544a3d20a60ea2213c04c95bc1d6c54fa864f92e1f07"
+    },
+    {
+      "rowId": "member-social-space-platform-sensitive-no-fill-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-sensitive-no-fill",
+      "screenOrState": "platform-sensitive-no-fill workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png",
+      "screenshotHash": "4a1bcb93b89ddf7d6dca52da1e2cd6d34e2728568ee57dbda29294bb43735f39"
+    },
+    {
+      "rowId": "member-social-space-platform-connection-invite-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connection-invite",
+      "screenOrState": "platform-connection-invite workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_start.png",
+      "screenshotHash": "ebd705c057d8c63efa8d32786e2839271d7a5df4a6e062223e7a2edb9bc41fd2"
+    },
+    {
+      "rowId": "member-social-space-platform-connection-invite-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connection-invite",
+      "screenOrState": "platform-connection-invite workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
+      "screenshotHash": "75153e960649beb959dbb00cea1f9cdf846891bbe464b1306bd9ccc39c7dbcf4"
+    },
+    {
+      "rowId": "member-social-space-platform-connection-invite-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-connection-invite",
+      "screenOrState": "platform-connection-invite workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_complete.png",
+      "screenshotHash": "866c96c348547b4d56989dcf0a8b23d63a903c6fb67f0311b2ef36df20151897"
+    },
+    {
+      "rowId": "member-social-space-platform-in-stream-ad-start",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-in-stream-ad",
+      "screenOrState": "platform-in-stream-ad workflow, start state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
+      "screenshotHash": "cfb5301091bfa2bd87467724f3e4d3736035a5ccef62e5142a311c78198c5dd7"
+    },
+    {
+      "rowId": "member-social-space-platform-in-stream-ad-action",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-in-stream-ad",
+      "screenOrState": "platform-in-stream-ad workflow, action state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
+      "screenshotHash": "2bdd1e204b71a18a284699333d33269a3c27bb6537e5d0a695df79f58c7a57ee"
+    },
+    {
+      "rowId": "member-social-space-platform-in-stream-ad-complete",
+      "communityName": "Member Social Space",
+      "persona": "n/a (legacy flat schema, no account/persona system)",
+      "workflowId": "platform-in-stream-ad",
+      "screenOrState": "platform-in-stream-ad workflow, complete state",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png",
+      "screenshotHash": "b4dd8a3dc58cd1abe478500a2021d48ac678475532308df895554c17019c726d"
+    }
+  ]
+}
