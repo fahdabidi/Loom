@@ -409,6 +409,16 @@ All three approved by the user 2026-08-09 ("Approving all the others (1,2,4)"). 
 `## Do not do`, `## Required verification`, `## Git safety reminder`, `## Commit`, `## Required response
 format`) — see §5 for the exact dispatch mechanics.
 
+**Process addition, 2026-08-10 (`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`):** every ticket
+here changes code shared across multiple communities, not code scoped to one — "the ticket's own tests
+pass" only proves the ticket's own new behavior works, not that every *other* consumer of the same shared
+code path (every community declaring the same `cardSurfaceFamily`/mechanism) is unaffected. CJM.1 and
+CJM.3 shipped before this was named as a distinct required step (retroactive risk judged low for both, but
+that judgment itself wasn't done via a systematic per-consumer sweep — see the tool doc's "Status" section
+for the honest accounting). **Going forward, every shared-code ticket in this section must be independently
+verified via a Regression Impact Judge dispatch against every real consumer before being marked done**, not
+just its own scoped test run. CJM.5 (below) is the first ticket this applies to from the start.
+
 ### Ticket CJM.1 — `equipment-loan` giveaway generalization (done, 2026-08-10)
 
 `_isGiveaway` now derives from whether the workflow declares a `claim` transition
@@ -480,7 +490,11 @@ correct pattern, rather than a second hardcoded string). Once confirmed, becomes
 `data/v3_ticket_cjm5_event_rsvp_response_workflow_type.md`, dispatched via the same
 `call_implementation_agent.sh` pipeline as CJM.1/CJM.3/CJM.4, then independently verified (code diff read,
 `flutter analyze`/tests, live re-verification on Camera Club/Garden Club/Riverside Youth Soccer that RSVP
-buttons actually populate and work).
+buttons actually populate and work) — **plus a dedicated Regression Impact Judge dispatch**
+(`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) covering every `event-rsvp`/`responseTable`
+consumer by name (Camera Club, Garden Club, Riverside Youth Soccer already merged; Neighborhood Book Club,
+Masjid Nur pending at time of writing) before this ticket is marked done — this is the first ticket in this
+section required to go through that step from the start, not retrofitted after the fact.
 
 ### Ticket CJM.4 — validator rule: `no_render_binding_for_reachable_state` (done, 2026-08-09)
 
@@ -640,6 +654,11 @@ bash data/handoff_gate.sh <label>
 #      workflow_validator.dart) against the new fixture AND every existing shipped community,
 #      confirm zero new errors
 #    - for code-gap tickets touching UI: live re-verification on the emulator, not just analyze/test
+#    - for any ticket touching SHARED code (a widget/renderer/validator rule reused by more than one
+#      community's cardSurfaceFamily/mechanism, i.e. every ticket in §2): a dedicated Regression Impact
+#      Judge dispatch (docs/Build Plan V2/Tools/regression-impact-judge-tool.md) against every real
+#      consumer, not just this ticket's own scoped test -- "the ticket's tests pass" is not evidence the
+#      OTHER consumers of the same shared code are unaffected.
 ```
 
 **Session-wide WSL concurrency budget (standing user instruction): cap total concurrent `wsl.exe`
