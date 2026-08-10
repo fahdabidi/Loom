@@ -189,3 +189,4 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| Skill-authoring judge pass 1 (2026-08-10) | no | yes | None. | `chess-pairing-queue` silently dropped "waiting players see queue position" (§7/§9) — the first authoring attempt modeled each waiting player as a separate instance, making position uncomputable, then justified the drop with a false claim that Player has no admin-tab access. Fixed by redesigning to one shared queue-container instance with an ordered `waitingPlayerNames` list, where each player's list index is their real, visible queue position. | fixed |
