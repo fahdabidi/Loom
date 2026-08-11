@@ -604,7 +604,7 @@ void main() {
         expect(
           find.descendant(
             of: wingspanDetailCard,
-            matching: find.text('Holder: tabletop-member-03'),
+            matching: find.text('Holder: Tabletop Member 03'),
           ),
           findsOneWidget,
         );
@@ -634,7 +634,7 @@ void main() {
         );
         expect(gloomhavenListing, findsOneWidget);
         expect(find.text('On Loan'), findsOneWidget);
-        expect(find.text('Holder: tabletop-member-03'), findsOneWidget);
+        expect(find.text('Holder: Tabletop Member 03'), findsOneWidget);
         expect(find.text('Queue: 1'), findsOneWidget);
         expect(
           find.descendant(of: rootListing, matching: find.text('Queue: 2')),

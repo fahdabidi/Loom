@@ -260,7 +260,7 @@ void main() {
         expect(
           find.descendant(
             of: catanDialog,
-            matching: find.text('Holder: tabletop-member'),
+            matching: find.text('Holder: Tabletop Member'),
           ),
           findsOneWidget,
         );

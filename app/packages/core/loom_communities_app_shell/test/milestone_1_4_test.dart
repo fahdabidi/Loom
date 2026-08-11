@@ -282,7 +282,7 @@ void main() {
         );
 
         expect(find.text(itemName), findsOneWidget);
-        expect(find.text('Holder: $owner'), findsOneWidget);
+        expect(find.text('Holder: Garden Coordinator'), findsOneWidget);
         final itemPillText = tester.widget<Text>(
           find.byWidgetPredicate(
             (widget) => widget is Text && widget.data == itemName,
@@ -291,7 +291,7 @@ void main() {
         expect(itemPillText.maxLines, equals(2));
         final ownerPillText = tester.widget<Text>(
           find.byWidgetPredicate(
-            (widget) => widget is Text && widget.data == 'Holder: $owner',
+            (widget) => widget is Text && widget.data == 'Holder: Garden Coordinator',
           ),
         );
         expect(ownerPillText.maxLines, equals(2));

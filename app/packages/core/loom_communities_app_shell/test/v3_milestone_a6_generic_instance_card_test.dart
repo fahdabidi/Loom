@@ -491,7 +491,7 @@ void main() {
       await tester.pumpWidget(_host(_card(api, instance)));
       await tester.pump();
       expect(find.text('One card'), findsOneWidget);
-      expect(find.text('Enabled: false'), findsOneWidget);
+      expect(find.text('Enabled: No'), findsOneWidget);
       expect(find.text('Zero: 0'), findsOneWidget);
       expect(find.text('Members: 2'), findsNothing);
       expect(find.byIcon(Icons.title), findsOneWidget);

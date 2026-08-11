@@ -1036,6 +1036,9 @@ String _valueText(Object? rawValue) {
         ? humanizeIdentifierValue(rawValue)
         : rawValue;
   }
+  if (rawValue is bool) {
+    return rawValue ? 'Yes' : 'No';
+  }
   return '$rawValue';
 }
 
@@ -1043,6 +1046,7 @@ String humanizeIdentifierValue(String rawValue) {
   final spaced = rawValue
       .trim()
       .replaceAll('_', ' ')
+      .replaceAll('-', ' ')
       .replaceAllMapped(
         RegExp(r'(?<=[a-z0-9])([A-Z])'),
         (match) => ' ${match.group(0)}',
@@ -1064,7 +1068,7 @@ String humanizeIdentifierValue(String rawValue) {
 bool _looksLikeIdentifierValue(String rawValue) {
   final value = rawValue.trim();
   if (value.contains(' ')) return false;
-  return RegExp(r'^[A-Za-z][A-Za-z0-9_]*$').hasMatch(value);
+  return RegExp(r'^[A-Za-z][A-Za-z0-9_-]*$').hasMatch(value);
 }
 
 int _valueLength(Object? rawValue) {
