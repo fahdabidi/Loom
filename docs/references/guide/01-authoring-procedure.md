@@ -214,7 +214,7 @@ For each type, decide where its instances appear, per state and per role.
 ```
 
 - `tabId` — `home`/`messages` always exist; any other id must be declared in this community's own
-  `appShellConfiguration.tabs[]`/`personaTabs[]` (see `reference/render-bindings.md`'s `tabId — complete
+  `appShell.tabs[]`/`personaTabs[]` (see `reference/render-bindings.md`'s `tabId — complete
   rule` section) before any `renderBindings` entry can reference it. Choose whatever name fits this
   community's domain — `tabId` is not a reserved/closed vocabulary.
 - `role` ∈ `any` · `actor` · `receiver`
@@ -282,7 +282,7 @@ output can mechanically verify nothing was silently dropped.
    - **Mark it `not_implemented`, with `reasoning` that cites a real, checked constraint** — a specific
      validator rule, a specific closed enum (`archetypes/README.md`'s 9 real families — `tabId` is **not**
      a closed enum as of this doc's current version; do not cite a tabId restriction as a reason unless the
-     community's own `appShellConfiguration.tabs[]` genuinely doesn't declare the tab needed), a specific
+     community's own `appShell.tabs[]` genuinely doesn't declare the tab needed), a specific
      missing `formulas.md` function, or a specific `platform-services.md` ❌ Not-implemented row. **Reasoning that isn't grounded in one of those citations is not a valid
      `not_implemented` reason — re-read `guide/06-product-doc-to-json.md` and `render-bindings.md` before
      asserting a persona/tab/grammar restriction exists.** This is exactly the check that would have caught

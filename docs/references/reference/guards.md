@@ -54,6 +54,11 @@ Every id MUST be a declared persona. → else `dangling_allowed_persona_id` (war
 
 **Use for:** "only organizers can cancel", "only members can RSVP".
 
+**Also drives `role: "receiver"` resolution.** A `renderBindings` entry with `role: "receiver"` resolves to
+whichever personas pass at least one available transition's guard — an `allowedPersonaIds` guard here is
+usually what makes that resolution meaningful/narrow, rather than "every persona." See
+[`render-bindings.md`'s role resolution section](./render-bindings.md#role-actorreceiver-resolution--general-guard-derived-tab-agnostic).
+
 ---
 
 ## 2. `actorInList` — is the actor in (or not in) a list field?
@@ -370,6 +375,11 @@ frozen fixture, gating `notification`'s own `mark-read` transition (CAL.Notify.3
 UI to only ever *show* a viewer their own notifications) is a UI convention, not engine enforcement; a
 direct API call would bypass it, the same category of gap `editGuard`'s original App-Shell-only
 enforcement had (see `spec-version.json` → `editGuardEngineEnforcement`).
+
+**Also drives `role: "actor"` resolution.** If any transition on a workflow declares `actorEqualsField`,
+that field's value is who `role: "actor"` on a `renderBindings` entry resolves to for that instance — not
+just who this specific transition's guard gates. See
+[`render-bindings.md`'s role resolution section](./render-bindings.md#role-actorreceiver-resolution--general-guard-derived-tab-agnostic).
 
 ```jsonc
 // On notification's mark-read transition:

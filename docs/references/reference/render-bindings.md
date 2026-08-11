@@ -44,7 +44,7 @@ drafts).
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to. Each MUST be declared. |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | Which tab — `home`/`messages`, or any id declared in `appShellConfiguration.tabs[]` (rule below) |
+| `tabId` | string | **yes** | Which tab — `home`/`messages`, or any id declared in `appShell.tabs[]` (rule below) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` · `summary` |
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
@@ -69,42 +69,32 @@ code that will consume it, same convention. `responseTable`, `filterableFacets`,
 **PROPOSED — grammar/validator only, written ahead of the App Shell code that will consume them**, same
 convention this file's earlier additions used before their own consumers existed.
 
-## ⚠️ `role: "actor"`/`"receiver"` resolution — per-tab, creator-only, and NOT symmetric (found 2026-08-09)
+## `role: "actor"`/`"receiver"` resolution — general, guard-derived, tab-agnostic
 
-**This is not part of the JSON grammar at all — it's decided per-tab by App Shell dispatch code, and its
-real behavior is sharp enough to silently produce dead buttons and invisible cards if you assume
-`"actor"`/`"receiver"` resolve the way their names suggest.** A binding covering a state, passing the
-validator, and even satisfying `no_render_binding_for_reachable_state` does **not** mean a guard-permitted
-persona can actually reach it — role resolution is a separate, undocumented-until-now failure mode
-(confirmed by reading `part27_engine_native_binding_dispatcher.dart`, `part32_engine_native_list_surface.dart`,
-`part28_engine_native_calendar_surface.dart`, `part36_engine_native_marketplace_surface.dart`):
+Role resolution is engine-derived from this workflow's own guards, not hardcoded per tab — a binding's
+`role` behaves identically no matter which tab it's declared on, or what that tab is named.
 
-| Tab | Resolution | Practical effect |
-|---|---|---|
-| `admin` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → `"receiver"` | The **only** tab where `role: "receiver"` ever resolves to anything. |
-| `giving`, `home`, `messages`, `marketplace` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → **nothing** | `role: "receiver"` can **never** resolve here — a `"receiver"` binding on these tabs is permanently dead, no matter what the guard allows. |
-| `calendar` | No role callback is passed at all — always resolves to nothing | **Neither** `"actor"` nor `"receiver"` ever resolves — only `role: "any"` (or `"receiver"` + `audienceMemberField` + a dynamic-audience instance, per `binding_resolver.dart`) can render anything on Calendar. |
+- **`actor`** — the persona a transition's own `guard.actorEqualsField` names as the business-relevant
+  party, if any transition on this workflow declares one; otherwise the instance's creator
+  (`createdByPersonaId`). This means `actor` correctly resolves to "whoever the transition is really about"
+  (e.g. the payer on a dues charge the board created on their behalf), not just whoever happened to create
+  the record.
+- **`receiver`** — any persona who is not `actor` and passes at least one guard among the transitions
+  reachable from the instance's current state — i.e. anyone with some declared, guard-permitted agency over
+  this instance right now. A workflow whose approval transition is guarded to `allowedPersonaIds:
+  ["hoa-board"]` makes only `hoa-board` personas resolve as `receiver`; a workflow with no such restriction
+  makes every eligible persona a `receiver`. This is genuinely derived from the workflow's own guards, not a
+  separate permission declaration.
+- **`any`** — unchanged, always matches.
+- The `audienceMemberField` dynamic-audience mechanism (see the binding-object table above) is preserved
+  unchanged as an additional, explicit receiver signal for cases where a workflow wants to name a receiver
+  set independent of guard eligibility.
 
-Two consequences that have each caused real, shipped bugs:
-
-1. **`"actor"` means literal `createdByPersonaId`, not "whoever the transition's guard is really about."** A
-   workflow where persona X *creates* an instance on behalf of persona Y (e.g. the board creates a dues
-   charge that a homeowner must pay, `payerPersonaId` ≠ `createdByPersonaId`) will resolve `"actor"` to the
-   *creator* (board), never the business-relevant persona (the payer) — even though the payer is exactly who
-   the transition's own `guard.actorEqualsField` names. A `role: "actor"` binding in this situation is a dead
-   card for the very persona the transition exists for.
-2. **`role: "receiver"` is a trap outside `admin`.** It reads as "the other participant" and is easy to reach
-   for whenever a workflow has two personas, but on `giving`/`home`/`messages`/`marketplace`/`calendar` it
-   silently never resolves — the binding parses, validates, and produces zero errors or warnings, and the
-   card or button it was meant to expose simply never appears for anyone.
-
-**What to do about it, until this becomes an engine-level fix or a validator rule:** on every tab except
-`admin`, default to `role: "any"` whenever a binding needs to be visible/actionable to a persona that isn't
-guaranteed to be the instance's literal creator — `"any"` is the only selector these tabs can reliably
-resolve for a non-creator. The transition's own `guard` still restricts who can actually press a button;
-widening the binding's `role` to `"any"` only affects who can *see the card*, never who can *act on it*. Only
-reach for `"actor"`/`"receiver"` on non-`admin` tabs when you've confirmed the persona you need really is
-always `createdByPersonaId` for every instance of that type.
+**Practical guidance:** `receiver`-role bindings are most useful on approval/review-style transitions that
+already carry a real, narrowing guard (`allowedPersonaIds`, `actorEqualsField`, `actorInList`) — that guard
+is exactly what now determines who resolves as `receiver`. A transition with no guard at all makes every
+persona a receiver, which is rarely what's intended for a `receiver`-scoped binding; give it a real guard if
+you want `receiver` to mean something narrower than "everyone."
 
 ## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
 
@@ -408,7 +398,7 @@ workflow types actually create notifications.
 | Style | Where it renders | Shape |
 |---|---|---|
 | `bell` (default) | Shared AppBar, every tab | Icon + unread-count badge, opens a bottom-sheet panel listing notifications (mark-read on tap). Community-wide chrome, not tied to any one tab. |
-| `dedicatedTab` | Its own app-shell tab (`appShellConfiguration['tabs']`, not a `renderBindings[].tabId`) | A bespoke, always-scrollable list — the whole tab IS the notification inbox. |
+| `dedicatedTab` | Its own app-shell tab (`appShell['tabs']`, not a `renderBindings[].tabId`) | A bespoke, always-scrollable list — the whole tab IS the notification inbox. |
 | `fixedCard` | Pinned to the top of one specific tab's own content column | A persistent card above that tab's normal (e.g. date-grid) content — the one style that's genuinely tab-scoped rather than global. |
 | `fab` | A FloatingActionButton (own or shared with a tab's existing creatable-action FAB) | Same bottom-sheet panel as `bell`, triggered from a FAB instead of an AppBar icon — for a tab whose AppBar is already crowded. |
 
@@ -463,19 +453,19 @@ present in every community regardless of JSON:
 | `tabId` | Purpose | Declaration required? |
 |---|---|---|
 | `home` | The curated feed — what needs attention | No — always present |
-| `messages` | Discussion threads | No — always present (label/icon still overridable via `appShellConfiguration.tabs[]`, but the tab itself cannot be removed) |
+| `messages` | Discussion threads | No — always present (label/icon still overridable via `appShell.tabs[]`, but the tab itself cannot be removed) |
 
 **Every other `tabId` a `renderBindings` entry uses must be declared** in the community's own
-`appShellConfiguration.tabs[]` (community-wide) or `personaTabs[]` (persona-scoped) array — a `tabId` with
+`appShell.tabs[]` (community-wide) or `personaTabs[]` (persona-scoped) array — a `tabId` with
 no matching declaration fails validation (`unknown_tab_id`). A community names its own tabs; `calendar` is
 not a reserved word — one community may declare a tab literally named `calendar`, another may declare the
 same kind of content under `scheduling` or `events`. What matters is that the workflow's `renderBindings`
 and the community's tab declaration agree on the same string.
 
-### `appShellConfiguration.tabs[]` / `personaTabs[]` — tab declaration shape
+### `appShell.tabs[]` / `personaTabs[]` — tab declaration shape
 
 ```jsonc
-"appShellConfiguration": {
+"appShell": {
   "tabs": [
     {
       "tabId": "scheduling",              // REQUIRED — matched against renderBindings[].tabId
