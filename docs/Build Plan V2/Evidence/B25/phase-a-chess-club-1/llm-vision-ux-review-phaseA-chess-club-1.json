@@ -1,0 +1,17 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-chess-club-1",
+  "freshReview": true,
+  "appCommitSha": "90601aaf",
+  "reviewedScreenRowIds": ["cc1-updated-card", "cc1-home-signed-in", "cc1-home-scrolled-ranking", "cc1-calendar", "cc1-admin"],
+  "reviewedScreenshotHashes": ["d5dcb25a51ea7b33a0ad450ac194c6d27f51bf7deef971354ec0793c1b57c661", "1f0b410383cd214d3a191e75df1fcddc3f4d759d12ad5a739920a1babac5abe9", "02ee17f3274ffdd9654d479fb0049ab881354beb61eadef57d3978507f856f00", "4a71b3eb3be03d797c578b001039248f32dee51d2d196671fa185665a8c0912e", "c70bf8e3349698e472ddaf9f212829e9d88fd666e454f7d47db2568a3921ad06"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "Real, specific Chess Club content confirmed throughout (Maya Patel #1/1500 pts, Thursday club night, Season 2026 export scope). The weekday-header fix (CJM.12/14) and the disabled-Save hint fix (CJM.10) both hold cleanly on this fourth community. New real finding: raw ISO-8601 timestamps/dates ('Updated 2026-08-08T10:00:00Z', calendar day chips '2026-08-13') are never humanized -- a genuinely separate gap from CJM.15's boolean/hyphen fix, since the identifier-detection regex requires a leading letter and ISO dates start with a digit, so they never even reach the humanizer. FAB-occlusion findings across all 5 screens are the same known evidence-coverage pattern already established twice this session (mid-scroll screenshots, not true-max-scroll) -- not re-verified as a regression given CJM.13 already proven live multiple times. Remaining findings (unhumanized 'Delta' field key, chip/field duplication, '2 roles' ambiguity, admin capability coverage, nav tab clipping) are minor UX polish, deferred.",
+  "newFindingRequiringFutureWork": {
+    "findingId": "raw-iso-dates-never-humanized",
+    "title": "ISO-8601 dates/timestamps rendered verbatim -- a distinct, unaddressed gap from CJM.15",
+    "description": "humanizeIdentifierValue()/_looksLikeIdentifierValue() only recognize word-like identifiers (must start with a letter); an ISO date string like '2026-08-08T10:00:00Z' starts with a digit and never matches, so it passes straight through as raw text. This is architecturally different from CJM.15's boolean/hyphen fix -- it needs real date parsing and human formatting (e.g. 'Aug 8' / 'Thu, Aug 13'), not a regex extension. Confirmed on both the ranking card's 'Updated' chip and the calendar's day-selector chips.",
+    "severity": "major",
+    "deferralReason": "More complex than a regex tweak (needs a real date formatter across date/datetime/time field types); deferred to a future CJM ticket rather than implemented mid-walkthrough given this session's already very large scope. Tracked here, not silently dropped."
+  }
+}

@@ -1,0 +1,96 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the five
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Identity/context legibility: can the user tell who they are and what role they are acting as?
+- State legibility: is the current state unambiguous?
+- Copy accuracy: does displayed text sound like real product copy, or generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled ones are disabled?
+- Persona-scoping correctness: does what's shown match what this persona should see?
+- Data-source correctness: does content look like real sideloaded package data?
+- Truncation: are key facts fully readable, or clipped?
+- Raw-value leaks: are booleans, enums, or field keys ever shown unhumanized (this has been a recurring,
+  now largely-fixed bug class this session -- flag any recurrence precisely).
+
+Community: Chess Club (community_chess_club, extensionId ext_chess_club) -- "Ladder matches, club nights,
+and rankings for the neighborhood chess club." Real sideloaded package. Signed in as: display name
+"Walkthrough_Tester", persona "Organizer" (the club's admin-capable role).
+
+Screenshots to review (read each with your Read tool):
+1. rowId "cc1-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/updated-card.png
+2. rowId "cc1-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/home-signed-in.png
+3. rowId "cc1-home-scrolled-ranking" -- docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/home-scrolled-ranking.png
+   -- note the field labels "#" and "pts" are short-form by design for a compact leaderboard row (like a
+   real chess ranking table would use) -- do not flag these alone as raw-key leaks unless they read as
+   genuinely unlabeled/confusing in context.
+4. rowId "cc1-calendar" -- docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/calendar.png
+5. rowId "cc1-admin" -- docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/admin.png
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-chess-club-1",
+  "freshReview": true,
+  "appCommitSha": "90601aaf",
+  "reviewedScreenRowIds": ["cc1-updated-card", "cc1-home-signed-in", "cc1-home-scrolled-ranking", "cc1-calendar", "cc1-admin"],
+  "reviewedScreenshotHashes": ["d5dcb25a51ea7b33a0ad450ac194c6d27f51bf7deef971354ec0793c1b57c661", "1f0b410383cd214d3a191e75df1fcddc3f4d759d12ad5a739920a1babac5abe9", "02ee17f3274ffdd9654d479fb0049ab881354beb61eadef57d3978507f856f00", "4a71b3eb3be03d797c578b001039248f32dee51d2d196671fa185665a8c0912e", "c70bf8e3349698e472ddaf9f212829e9d88fd666e454f7d47db2568a3921ad06"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on the 3 prior communities (weekday header, disabled-Save hint, no raw booleans/enums/list-dumps, no FAB occlusion at true max scroll) hold on this fourth community?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 5 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (all 5). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere.

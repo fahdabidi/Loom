@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-chess-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "90601aaf",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Chess Club, run after CJM.9-15 fixed the sideload no-op and 8 shared-code UX findings across three prior communities (Garden Club, Neighborhood Book Club, Riverside Youth Soccer). Signed in as the Organizer persona (Chess Club's admin-capable role)."
+  },
+  "screenRows": [
+    {
+      "rowId": "cc1-updated-card",
+      "communityName": "Chess Club",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/updated-card.png",
+      "screenshotHash": "d5dcb25a51ea7b33a0ad450ac194c6d27f51bf7deef971354ec0793c1b57c661"
+    },
+    {
+      "rowId": "cc1-home-signed-in",
+      "communityName": "Chess Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Walkthrough_Tester / Organizer",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/home-signed-in.png",
+      "screenshotHash": "1f0b410383cd214d3a191e75df1fcddc3f4d759d12ad5a739920a1babac5abe9"
+    },
+    {
+      "rowId": "cc1-home-scrolled-ranking",
+      "communityName": "Chess Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "chess-ladder-ranking",
+      "screenOrState": "Home tab scrolled to a real ladder ranking instance card (Maya Patel, #1, 1500 pts)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/home-scrolled-ranking.png",
+      "screenshotHash": "02ee17f3274ffdd9654d479fb0049ab881354beb61eadef57d3978507f856f00"
+    },
+    {
+      "rowId": "cc1-calendar",
+      "communityName": "Chess Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "chess-club-night",
+      "screenOrState": "Calendar tab, month view with 3 real events, checking weekday header legibility on a fourth community/theme",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/calendar.png",
+      "screenshotHash": "4a71b3eb3be03d797c578b001039248f32dee51d2d196671fa185665a8c0912e"
+    },
+    {
+      "rowId": "cc1-admin",
+      "communityName": "Chess Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "chess-export-metadata",
+      "screenOrState": "Admin tab (Organizer-only), a real export-scope instance card checking the disabled-Save-hint fix (CJM.10)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/screenshots/admin.png",
+      "screenshotHash": "c70bf8e3349698e472ddaf9f212829e9d88fd666e454f7d47db2568a3921ad06"
+    }
+  ]
+}

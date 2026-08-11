@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-chess-club-1/llm-vision-ux-review-phaseA-chess-club-1.json",
+  "expectedReviewRunId": "phaseA-chess-club-1",
+  "declaredReviewRunId": "phaseA-chess-club-1",
+  "expectedAppCommitSha": "90601aaf",
+  "declaredAppCommitSha": "90601aaf",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 5,
+  "reviewedScreenRowCount": 5,
+  "reviewedScreenshotHashCount": 5,
+  "reviewedScreenRowIds": [
+    "cc1-updated-card",
+    "cc1-home-signed-in",
+    "cc1-home-scrolled-ranking",
+    "cc1-calendar",
+    "cc1-admin"
+  ],
+  "reviewedScreenshotHashes": [
+    "d5dcb25a51ea7b33a0ad450ac194c6d27f51bf7deef971354ec0793c1b57c661",
+    "1f0b410383cd214d3a191e75df1fcddc3f4d759d12ad5a739920a1babac5abe9",
+    "02ee17f3274ffdd9654d479fb0049ab881354beb61eadef57d3978507f856f00",
+    "4a71b3eb3be03d797c578b001039248f32dee51d2d196671fa185665a8c0912e",
+    "c70bf8e3349698e472ddaf9f212829e9d88fd666e454f7d47db2568a3921ad06"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}
