@@ -3504,60 +3504,6 @@ class _TabNativeRenderer extends StatelessWidget {
     // placeholder otherwise. Other domain tabs stay placeholder-only.
     switch (rendererId) {
       case 'CalendarTabSurface':
-        if (_isGardenEngineExperience(experience)) {
-          return _GardenClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isCameraEngineExperience(experience)) {
-          return _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (_hasEngineNativeCalendarBinding(experience)) {
           return EngineNativeCalendarSurface(
             experience: experience,
@@ -3653,51 +3599,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'MessagesTabSurface':
-        if (_isCameraEngineExperience(experience)) {
-          return _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (_hasEngineNativeBinding(experience, 'messages')) {
           return EngineNativeListSurface(
             experience: experience,
@@ -3715,60 +3616,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'MarketplaceTabSurface':
-        if (_isGardenEngineExperience(experience)) {
-          return _GardenClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isCameraEngineExperience(experience)) {
-          return _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (_hasEngineNativeBinding(experience, 'marketplace')) {
           return EngineNativeMarketplaceSurface(
             experience: experience,
@@ -3800,24 +3647,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'PaymentGivingTabSurface':
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (_hasEngineNativeBinding(experience, 'giving')) {
           return EngineNativeListSurface(
             experience: experience,
@@ -3864,51 +3693,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'DocumentsTabSurface':
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isGardenEngineExperience(experience)) {
-          return _GardenClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (experience.workflows.any(
           (workflow) => workflow.documentLibrary != null,
         )) {
@@ -3931,51 +3715,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'WorkflowStatusSurface':
-        if (_isCameraEngineExperience(experience)) {
-          return _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {
@@ -3995,24 +3734,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'CareVolunteerTabSurface':
-        if (_isGardenEngineExperience(experience)) {
-          return _GardenClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {
@@ -4033,51 +3754,6 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'AdminReviewComposeTabSurface':
-        if (_isCameraEngineExperience(experience)) {
-          return _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isBookEngineExperience(experience)) {
-          return _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isMosqueEngineExperience(experience)) {
-          return _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isYouthSoccerEngineExperience(experience)) {
-          return _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        if (_isChessEngineExperience(experience)) {
-          return _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
         if (_hasEngineNativeBinding(experience, 'admin')) {
           return EngineNativeListSurface(
             experience: experience,
@@ -4126,150 +3802,6 @@ class _TabNativeRenderer extends StatelessWidget {
         accent: accent,
         modernTheme: modernTheme,
         onInstanceScopedCreate: onInstanceScopedCreate,
-      );
-    }
-    if (_isGardenEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _GardenClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
-      );
-    }
-    if (_isCameraEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _CameraClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
-      );
-    }
-    if (_isBookEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _BookClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
-      );
-    }
-    if (_isMosqueEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _MosqueEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
-      );
-    }
-    if (_isYouthSoccerEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _YouthSoccerEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
-      );
-    }
-    if (_isChessEngineExperience(experience)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _ChessClubEngineTabSurface(
-            experience: experience,
-            persona: persona,
-            tabId: selectedTab.tabId,
-            accent: accent,
-            modernTheme: modernTheme,
-          ),
-          const SizedBox(height: 12),
-          _HomeTabSurfaceStack(
-            experience: experience,
-            sections: sections,
-            focusedWorkflowId: focusedWorkflowId,
-            expandedWorkflowId: expandedWorkflowId,
-            accent: accent,
-            theme: theme,
-            workflowBuilder: workflowBuilder,
-          ),
-        ],
       );
     }
     return _HomeTabSurfaceStack(
