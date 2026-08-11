@@ -1007,10 +1007,10 @@
           "supportingDocuments": {
             "type": "list", "writableBy": "effect", "storage": "inline",
             "itemSchema": {
-              "label": { "type": "text" },
-              "source": { "type": "url", "openMode": "external" },
-              "addedBy": { "type": "text" },
-              "addedAt": { "type": "text" }
+              "label": { "type": "text", "labelTemplate": "{value}" },
+              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" },
+              "addedBy": { "type": "text", "labelTemplate": "Added by {value}" },
+              "addedAt": { "type": "text", "labelTemplate": "Added {value}" }
             },
             "displayIcon": "attach_file", "labelTemplate": "{value.length} attachments",
             "hideWhenEmpty": true, "displayContexts": ["detail"]

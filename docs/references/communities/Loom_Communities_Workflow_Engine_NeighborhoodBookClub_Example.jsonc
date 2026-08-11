@@ -668,7 +668,10 @@
           "summary": { "type": "textarea", "writableBy": "formEntry", "maxLength": 1000,
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "citations": { "type": "list", "writableBy": "effect",
-            "itemSchema": { "label": { "type": "text" }, "source": { "type": "url", "openMode": "external" } },
+            "itemSchema": {
+              "label": { "type": "text", "labelTemplate": "{value}" },
+              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" }
+            },
             "displayIcon": "auto_stories", "labelTemplate": "{value.length} sources",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "submitterPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true },

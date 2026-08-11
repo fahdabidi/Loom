@@ -726,8 +726,8 @@
           "citations": {
             "type": "list", "writableBy": "effect",
             "itemSchema": {
-              "label": { "type": "text" },
-              "source": { "type": "url", "openMode": "external" }
+              "label": { "type": "text", "labelTemplate": "{value}" },
+              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" }
             },
             "displayIcon": "auto_stories", "labelTemplate": "{value.length} sources",
             "hideWhenEmpty": true, "displayContexts": ["detail"]
