@@ -44,7 +44,7 @@ drafts).
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to. Each MUST be declared. |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | Which tab (enumerated below) |
+| `tabId` | string | **yes** | Which tab — `home`/`messages`, or any id declared in `appShellConfiguration.tabs[]` (rule below) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` · `summary` |
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
@@ -455,19 +455,59 @@ how many actions there are — it governs the launched form, not the FAB itself.
 `presentationStyle` values and all three `multiActionStyle` values) ships end-to-end as of CALR.3g/3h/3b.
 `presentationStyle` also governs instance-scoped contextual FABs' launched forms.
 
-## `tabId` — complete list
+## `tabId` — complete rule
 
-| `tabId` | Purpose | Always present? |
+`tabId` is **not a closed enum.** Exactly two ids are structural — added unconditionally by the App Shell,
+present in every community regardless of JSON:
+
+| `tabId` | Purpose | Declaration required? |
 |---|---|---|
-| `home` | The curated feed — what needs attention | **Yes** (structural) |
-| `messages` | Discussion threads | **Yes** (structural, renameable but not removable) |
-| `calendar` | Events, schedules, RSVPs | Only if the community declares calendar content |
-| `marketplace` | Browse/borrow/claim items | Only if declared |
-| `giving` | Payments, dues, donations | Only if declared |
-| `admin` | Organizer-only queues and publishing | Only if declared |
+| `home` | The curated feed — what needs attention | No — always present |
+| `messages` | Discussion threads | No — always present (label/icon still overridable via `appShellConfiguration.tabs[]`, but the tab itself cannot be removed) |
 
-`home` and `messages` are added **unconditionally** by the App Shell. The rest appear only when a
-workflow binds to them.
+**Every other `tabId` a `renderBindings` entry uses must be declared** in the community's own
+`appShellConfiguration.tabs[]` (community-wide) or `personaTabs[]` (persona-scoped) array — a `tabId` with
+no matching declaration fails validation (`unknown_tab_id`). A community names its own tabs; `calendar` is
+not a reserved word — one community may declare a tab literally named `calendar`, another may declare the
+same kind of content under `scheduling` or `events`. What matters is that the workflow's `renderBindings`
+and the community's tab declaration agree on the same string.
+
+### `appShellConfiguration.tabs[]` / `personaTabs[]` — tab declaration shape
+
+```jsonc
+"appShellConfiguration": {
+  "tabs": [
+    {
+      "tabId": "scheduling",              // REQUIRED — matched against renderBindings[].tabId
+      "label": "Scheduling",              // REQUIRED — shown in the tab bar
+      "rendererContractId": "engine-native-generic-list",  // REQUIRED — see below
+      "iconKey": "calendar_today",        // optional, defaults to a generic icon
+      "description": "...",               // optional, defaults to "<label> surfaces for this community."
+      "pinningPolicy": "none",            // optional
+      "pinningPolicyRationale": "...",    // optional
+      "sectionTitles": [ /* ... */ ],     // optional
+      "cardSurfaceFamilies": [ /* ... */ ],  // optional — restricts which archetypes this tab shows, if set
+      "pinnedWorkflowIds": [ /* ... */ ], // optional
+      "visiblePersonaIds": [ /* ... */ ], // optional — omit for visible-to-all
+      "requiredPermission": "community.surface.navigation.read"  // optional, has a default
+    }
+  ],
+  "personaTabs": {
+    "<personaId>": [ /* same per-tab shape, additional tabs only that persona sees */ ]
+  }
+}
+```
+
+`rendererContractId` selects which widget renders the tab's content. Omit it (or use
+`"engine-native-generic-list"` explicitly) to get the shared engine-native list surface — the correct
+default for nearly every custom tab, since it already handles live queries, pagination, and dispatches each
+instance to its own `cardSurfaceFamily`-declared archetype. Only specify a different `rendererContractId` if
+building a genuinely bespoke, non-generic tab surface.
+
+`home` and `messages` never need a declaration to exist, but a declaration for either is still honored for
+cosmetic overrides (custom label/icon/description) if a community wants to rename `messages` to
+"Connections", for example — the structural guarantee (the tab always exists, cannot be removed) is
+independent of what it's labeled.
 
 ## `role` — complete list
 

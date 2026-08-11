@@ -258,7 +258,7 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | `home` · `calendar` · `marketplace` · `giving` · `admin` · `messages` |
+| `tabId` | string | **yes** | `home` / `messages` (always exist, system-guaranteed) or any id this community declares in `appShellConfiguration.tabs[]`/`personaTabs[]` — see [render-bindings.md](./render-bindings.md#tabid--complete-rule) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` (full, interactive) · `summary` (compact) |
 | `audienceMemberField` | string | no | Field holding the invited personas, for targeted visibility |

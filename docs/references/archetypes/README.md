@@ -13,13 +13,11 @@ instance.
 
 ## AGENT: hard rules
 
-1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist. ⚠️ **Not currently enforced by
-   the real validator** — confirmed 2026-08-09 by direct test: a package with an invalid
-   `cardSurfaceFamily` (e.g. `documentLibrary`) passed `community_package_validator.dart` with
-   `warningCount: 0`, no `missing_template` finding. `render-bindings.md` and `guide/05-validation.md`
-   both document `missing_template` as a real warning; neither is currently accurate. Until the validator
-   check is implemented (`workflow_validator.dart`), this hard rule has no automated safety net — the only
-   thing enforcing it is the author actually cross-checking this table.
+1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist, sourced from the single
+   canonical registry `loom_workflow_engine`'s `workflow_archetypes.dart` (`knownWorkflowArchetypeIds`).
+   **Enforced by the real validator** as of the tabId-open/archetype-closed migration: an unrecognized
+   `cardSurfaceFamily` is a hard validation error (`unknown_card_surface_family`), not a warning — a package
+   using one will not pass `community_package_validator.dart`.
 2. **Check the Status column.** A `🟡 GENERIC` archetype below still renders correctly — live
    transitions, live queries, creation, guards all genuinely work — it is just the shared
    icon+pills+buttons template, not a bespoke widget shaped like its name.
@@ -55,18 +53,17 @@ case 'equipment-loan' -> EquipmentLoanArchetypeCard           (part36_engine_nat
 default                -> GenericWorkflowInstanceCard         (part26_generic_instance_card.dart)
 ```
 
-`_enabledTabs` (`part27_engine_native_binding_dispatcher.dart:77-84`) now covers **all six** of
-Tabletop Club's real tabs — `{'admin', 'calendar', 'giving', 'home', 'marketplace', 'messages'}` —
-each gated at the tab-shell level by `_hasEngineNativeBinding(experience, tabId)`
-(`part12_persona_and_tabs.dart:497-506`). **For Tabletop Club, every tab now routes through
-`EngineNativeListSurface`/`EngineNativeBindingDispatcher`/`EngineNativeArchetypeCard` — none of them
-fall back to a legacy per-community `rendererId` widget anymore.** The old hardcoded `'ballot'` tab and
-`_TournamentBallotTabSurface`/`_TournamentBallotEngineStore` were deleted outright in Phase B.8 (not
-just bypassed). The other bespoke rendererId-keyed widgets the 2026-07-17 table described
-(`FormEntryTabSurface`, `StatusTimelineTabSurface`, `NotificationInboxTabSurface`, the old thread-detail
-code) still exist as **dead code for Tabletop Club** — the tab-level gate diverts away from them before
-the rendererId switch is ever reached — but remain genuinely load-bearing for the other seven,
-still-shallow-schema communities. Do not delete them.
+`tabId` is open (not a closed enum) as of the tabId-open/archetype-closed migration — see
+`render-bindings.md`'s `tabId — complete rule`. **Every real community, not just Tabletop Club, routes
+entirely through `EngineNativeListSurface`/`EngineNativeBindingDispatcher`/`EngineNativeArchetypeCard`** —
+confirmed by direct grep, zero occurrences of `rendererId` across all 11 real community fixtures. The old
+hardcoded `'ballot'` tab and `_TournamentBallotTabSurface`/`_TournamentBallotEngineStore` were deleted
+outright in Phase B.8 (not just bypassed). The other bespoke rendererId-keyed widgets the 2026-07-17 table
+described (`FormEntryTabSurface`, `StatusTimelineTabSurface`, `NotificationInboxTabSurface`, the old
+thread-detail code) are dead code for every real community, not load-bearing for any of them —
+superseding this doc's prior claim that they remained load-bearing for "the other seven, still-shallow-
+schema communities": that claim predated this session's Skill-authoring migration of all 10 communities to
+real engine-native JSON (2026-08-09 vs. 2026-08-10/11). Slated for removal in a dedicated follow-on pass.
 
 ## The archetypes (Tabletop Club's 9, re-verified 2026-08-05)
 
@@ -125,8 +122,9 @@ explicitly chose to build the generic queue/list/creation infrastructure rather 
 widget per workflow type, since that infrastructure is what Phase 3's Skill actually needs). It is not
 an oversight and not silently dropped.
 
-**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL, unused by
-Tabletop Club) does not get you a working interaction. Declaring `cardSurfaceFamily: "paymentCheckout"`
+**Consequence for the agent:** declaring `cardSurfaceFamily: "volunteerRoster"` (❌ NOT REAL — not in the
+canonical registry) now fails validation outright, in addition to never having produced a working
+interaction. Declaring `cardSurfaceFamily: "paymentCheckout"`
 (🟡 GENERIC) **does** get you a real, live, transition-capable card — just not a bespoke payment-shaped
 one. Do not tell the user an interaction doesn't work when it does (🟡 GENERIC is still fully
 functional), and do not tell the user a card is bespoke when it renders through the shared template.
