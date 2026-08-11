@@ -1304,6 +1304,54 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             ?.presentationStyle ??
         experience.creatableAction?.presentationStyle ??
         'popup';
+    const _defaultBottomPadding = 48.0;
+    const _creatableFabHeight = 56.0;
+    const _creatableFabSmallHeight = 40.0;
+    const _fabSpacing = 12.0;
+    final hasNotificationFab =
+        experience.resolvedNotificationPresentationStyle == 'fab';
+    final hasTabCreatableFab = creatableActions.isNotEmpty;
+    final hasFloatingActionButton =
+        hasNotificationFab ||
+        hasTabCreatableFab ||
+        instanceScopedFabActions.isNotEmpty;
+    final notificationFabHeight = hasNotificationFab ? _creatableFabSmallHeight : 0.0;
+    final instanceFabHeight =
+        instanceScopedFabActions.length * _creatableFabHeight;
+    final tabCreatableFabHeight = !hasTabCreatableFab
+        ? 0.0
+        : switch (multiActionStyle) {
+            'singleFirst' => _creatableFabHeight,
+            'stacked' => creatableActions.length == 1
+                ? _creatableFabHeight
+                : _creatableFabHeight *
+                        creatableActions.length.toDouble() +
+                    (_fabSpacing * (creatableActions.length - 1)),
+            _ => creatableActions.length == 1
+                ? _creatableFabHeight
+                : _creatableFabHeight *
+                        (creatableActions.length + 1).toDouble() +
+                    (_fabSpacing * creatableActions.length),
+          };
+    final notificationToFabSpacing =
+        hasNotificationFab &&
+                (hasTabCreatableFab || instanceScopedFabActions.isNotEmpty)
+            ? _fabSpacing
+            : 0.0;
+    final tabToInstanceFabSpacing =
+        hasTabCreatableFab ? instanceScopedFabActions.length * _fabSpacing : 0.0;
+    final floatingActionButtonContentHeight =
+        notificationFabHeight +
+        instanceFabHeight +
+        tabCreatableFabHeight +
+        notificationToFabSpacing +
+        tabToInstanceFabSpacing;
+    final floatingActionButtonBottomPadding =
+        hasFloatingActionButton
+            ? (kFloatingActionButtonMargin + floatingActionButtonContentHeight -
+                    _defaultBottomPadding)
+                .clamp(0.0, double.infinity)
+            : 0.0;
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
@@ -1345,7 +1393,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           16,
           16,
           16,
-          shellSpec.theme.tabHeight + 48,
+          shellSpec.theme.tabHeight +
+              _defaultBottomPadding +
+              floatingActionButtonBottomPadding,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
