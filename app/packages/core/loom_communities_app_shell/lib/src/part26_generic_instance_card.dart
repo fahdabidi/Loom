@@ -533,7 +533,7 @@ class _GenericWorkflowInstanceCardState
                   onPressed: _mutating || _edits.isEmpty ? null : _save,
                   child: const Text('Save changes'),
                 ),
-                if (!_mutating && _edits.isEmpty)
+                if (!_mutating && _edits.isEmpty && _error == null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
