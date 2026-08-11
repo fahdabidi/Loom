@@ -247,6 +247,67 @@ void main() {
     );
 
     testWidgets(
+      'WorkflowFactPillRow renders item and owner pills with two-line budget',
+      (WidgetTester tester) async {
+        const itemName = 'Steel wheelbarrow with reinforced axle';
+        const owner = 'garden-coordinator';
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: WorkflowFactPillRow(
+                instanceData: {
+                  'title': itemName,
+                  'holderPersonaId': owner,
+                },
+                instanceDataSchema: {
+                  'title': WorkflowFactPillFieldSchema(
+                    type: 'text',
+                    maxLines: 2,
+                    displayIcon: 'title',
+                    labelTemplate: '{value}',
+                    displayContexts: ['tile'],
+                  ),
+                  'holderPersonaId': WorkflowFactPillFieldSchema(
+                    type: 'personaId',
+                    maxLines: 2,
+                    displayIcon: 'person_outline',
+                    labelTemplate: 'Holder: {value}',
+                    displayContexts: ['tile'],
+                  ),
+                },
+                displayContext: 'tile',
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text(itemName), findsOneWidget);
+        expect(find.text('Holder: $owner'), findsOneWidget);
+        final itemPillText = tester.widget<Text>(
+          find.byWidgetPredicate(
+            (widget) => widget is Text && widget.data == itemName,
+          ),
+        );
+        expect(itemPillText.maxLines, equals(2));
+        final ownerPillText = tester.widget<Text>(
+          find.byWidgetPredicate(
+            (widget) => widget is Text && widget.data == 'Holder: $owner',
+          ),
+        );
+        expect(ownerPillText.maxLines, equals(2));
+      },
+    );
+
+    test('humanizeIdentifierValue normalizes raw enum-like values', () {
+      expect(humanizeIdentifierValue('onLoan'), equals('On Loan'));
+      expect(humanizeIdentifierValue('available'), equals('Available'));
+      expect(
+        humanizeIdentifierValue('Neighborhood Association Archive'),
+        equals('Neighborhood Association Archive'),
+      );
+    });
+
+    testWidgets(
       'equipment-loan and equipment-giveaway templates render exactly one WorkflowActionButtonRow in primary bindings',
       (WidgetTester tester) async {
         const loanTransition = WorkflowActionButtonTransition(

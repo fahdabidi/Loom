@@ -326,7 +326,7 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
             // A Marketplace tile contains schema facts plus one or more real
             // guarded actions. Keep phone-sized tiles at two columns and give
             // every cell enough height for the widest seeded loan state.
-            gridChildAspectRatio: 0.58,
+            gridChildAspectRatio: 0.62,
             gridCrossAxisSpacing: 10,
             gridMainAxisSpacing: 10,
             gridShrinkWrap: true,
@@ -536,6 +536,9 @@ class _EquipmentLoanArchetypeCardState
       schema[key] = WorkflowFactPillFieldSchema(
         type: field.type == 'textarea' ? 'text' : field.type,
         maxLength: field.maxLength,
+        maxLines: {'title', 'holderPersonaId', 'claimedByPersonaId'}.contains(key)
+            ? 2
+            : 1,
         displayIcon: field.displayIcon,
         // The frozen Marketplace schema intentionally leaves simple scalar
         // fields such as category and availabilityState without a label

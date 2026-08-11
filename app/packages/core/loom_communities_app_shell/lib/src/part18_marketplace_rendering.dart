@@ -154,6 +154,7 @@ class WorkflowFactPillFieldSchema {
   const WorkflowFactPillFieldSchema({
     this.type = 'text',
     this.maxLength = 80,
+    this.maxLines = 1,
     this.displayIcon,
     this.labelTemplate,
     this.hideWhenEmpty = false,
@@ -164,6 +165,7 @@ class WorkflowFactPillFieldSchema {
 
   final String type;
   final int? maxLength;
+  final int maxLines;
   final String? displayIcon;
   final String? labelTemplate;
   final bool hideWhenEmpty;
@@ -338,6 +340,7 @@ equipmentLoanDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
     type: 'text',
     maxLength: 80,
+    maxLines: 2,
     displayIcon: 'title',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
@@ -365,6 +368,7 @@ equipmentLoanDefaultInstanceDataSchema = {
   ),
   'holderPersonaId': WorkflowFactPillFieldSchema(
     type: 'personaId',
+    maxLines: 2,
     displayIcon: 'person_outline',
     labelTemplate: 'Holder: {value}',
     displayContexts: ['tile', 'detail'],
@@ -390,6 +394,7 @@ equipmentGiveawayDefaultInstanceDataSchema = {
   'title': WorkflowFactPillFieldSchema(
     type: 'text',
     maxLength: 80,
+    maxLines: 2,
     displayIcon: 'title',
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
@@ -410,6 +415,7 @@ equipmentGiveawayDefaultInstanceDataSchema = {
   ),
   'claimedByPersonaId': WorkflowFactPillFieldSchema(
     type: 'personaId',
+    maxLines: 2,
     displayIcon: 'person_outline',
     labelTemplate: 'Claimed by: {value}',
     hideWhenEmpty: true,
@@ -567,6 +573,7 @@ class WorkflowFactPillRow extends StatelessWidget {
         isCollection: type == 'personaid[]',
         foreground: foreground,
         accent: accent,
+        maxLines: schema.maxLines,
       );
     }
     if (type == 'url') {
@@ -586,6 +593,7 @@ class WorkflowFactPillRow extends StatelessWidget {
             label: label,
             foreground: foreground,
             accent: accent,
+            maxLines: schema.maxLines,
           ),
         );
       }
@@ -594,6 +602,7 @@ class WorkflowFactPillRow extends StatelessWidget {
         label: '${schema.openMode ?? 'unsupported'}: $label',
         foreground: foreground.withValues(alpha: 0.45),
         accent: accent,
+        maxLines: schema.maxLines,
       );
     }
     if (type == 'list' &&
@@ -640,6 +649,7 @@ class WorkflowFactPillRow extends StatelessWidget {
                     label: memberLabel,
                     foreground: foreground,
                     accent: accent,
+                    maxLines: member.value.maxLines,
                   ),
                 ),
               );
@@ -651,6 +661,7 @@ class WorkflowFactPillRow extends StatelessWidget {
                       '${member.value.openMode ?? 'unsupported'}: $memberLabel',
                   foreground: foreground.withValues(alpha: 0.45),
                   accent: accent,
+                  maxLines: member.value.maxLines,
                 ),
               );
             }
@@ -698,6 +709,7 @@ class WorkflowFactPillRow extends StatelessWidget {
       label: label,
       foreground: foreground,
       accent: accent,
+      maxLines: schema.maxLines,
     );
   }
 }
@@ -758,12 +770,14 @@ class _WorkflowPersonaFact extends StatelessWidget {
     required this.isCollection,
     required this.foreground,
     this.accent,
+    this.maxLines = 1,
   });
 
   final String label;
   final bool isCollection;
   final Color foreground;
   final Color? accent;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -792,6 +806,7 @@ class _WorkflowPersonaFact extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
+                maxLines: maxLines,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: tint,
@@ -1016,7 +1031,32 @@ String _valueText(Object? rawValue) {
         .where((item) => item.trim().isNotEmpty)
         .join(', ');
   }
+  if (rawValue is String) {
+    return _looksLikeIdentifierValue(rawValue)
+        ? humanizeIdentifierValue(rawValue)
+        : rawValue;
+  }
   return '$rawValue';
+}
+
+String humanizeIdentifierValue(String rawValue) {
+  final withSpaces = rawValue.trim().replaceAll('_', ' ');
+  final spaced = _humanizeFieldName(withSpaces);
+  return spaced
+      .split(' ')
+      .where((word) => word.isNotEmpty)
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
+      .join(' ');
+}
+
+bool _looksLikeIdentifierValue(String rawValue) {
+  final value = rawValue.trim();
+  if (value.contains(' ')) return false;
+  return RegExp(r'^[A-Za-z][A-Za-z0-9_]*$').hasMatch(value);
 }
 
 int _valueLength(Object? rawValue) {

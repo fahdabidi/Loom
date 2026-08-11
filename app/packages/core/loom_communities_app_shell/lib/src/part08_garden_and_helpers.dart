@@ -460,12 +460,14 @@ class _SurfaceFactPill extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.foreground,
+    this.maxLines = 1,
     this.accent,
   });
 
   final IconData icon;
   final String label;
   final Color foreground;
+  final int maxLines;
 
   /// Non-null only for communities that opted into the modern card theme —
   /// switches the pill from a `foreground`-tinted gray wash (dark ink at low
@@ -495,6 +497,7 @@ class _SurfaceFactPill extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
+                maxLines: maxLines,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: contentColor,
