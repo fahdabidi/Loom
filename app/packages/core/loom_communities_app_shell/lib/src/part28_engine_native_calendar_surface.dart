@@ -196,6 +196,16 @@ class _EngineNativeCalendarSurfaceState
           definitions: definitions,
           tabId: 'calendar',
           personaId: personaId,
+          rolesForInstance: (instance, viewerPersonaId) {
+            final machine = definitions[instance.workflowType];
+            if (machine == null) return const <String>{};
+            return deriveInstanceRoles(
+              machine,
+              instance,
+              viewerPersonaId: viewerPersonaId,
+              viewerPersonaTypeId: widget.persona.personaId,
+            );
+          },
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
               'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.personaId}',

@@ -3762,7 +3762,18 @@ class _TabNativeRenderer extends StatelessWidget {
             accent: accent,
             modernTheme: modernTheme,
             onInstanceScopedCreate: onInstanceScopedCreate,
-            rolesForInstance: _engineNativeAdminRolesForInstance,
+            rolesForInstance: (instance, viewerPersonaId) {
+              final definitions = experience.workflowDefinitions;
+              if (definitions == null) return const <String>[];
+              final machine = definitions[instance.workflowType];
+              if (machine == null) return const <String>[];
+              return deriveInstanceRoles(
+                machine,
+                instance,
+                viewerPersonaId: viewerPersonaId,
+                viewerPersonaTypeId: persona.personaId,
+              );
+            },
           );
         }
         if (experience.workflows.any(

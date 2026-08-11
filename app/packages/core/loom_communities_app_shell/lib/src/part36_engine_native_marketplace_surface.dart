@@ -33,11 +33,8 @@ class _EngineNativeMarketplaceSurfaceState
   Future<WorkflowEngineApi>? _engineFuture;
   String _searchQuery = '';
   String? _selectedCategory;
-  // Cache the bound method tear-off once. Re-evaluating a bound method can
-  // produce a different Function object, which would look like a changed
-  // query context to EngineNativeBindingDispatcher's identity check.
-  late final EngineNativeRolesForInstance _stableRolesForInstance =
-      _rolesForInstance;
+  late final EngineNativeRolesForInstance _stableMarketplaceRolesForInstance =
+      _marketplaceRolesForInstance;
 
   @override
   void initState() {
@@ -67,12 +64,21 @@ class _EngineNativeMarketplaceSurfaceState
     });
   }
 
-  Iterable<String> _rolesForInstance(
+  Iterable<String> _marketplaceRolesForInstance(
     WorkflowInstance instance,
     String viewerPersonaId,
-  ) => instance.createdByPersonaId == viewerPersonaId
-      ? const <String>['actor']
-      : const <String>[];
+  ) {
+    final definitions = widget.experience.workflowDefinitions;
+    if (definitions == null) return const <String>[];
+    final machine = definitions[instance.workflowType];
+    if (machine == null) return const <String>[];
+    return deriveInstanceRoles(
+      machine,
+      instance,
+      viewerPersonaId: viewerPersonaId,
+      viewerPersonaTypeId: widget.persona.personaId,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +116,7 @@ class _EngineNativeMarketplaceSurfaceState
           definitions: definitions,
           tabId: 'marketplace',
           personaId: personaId,
-          rolesForInstance: _stableRolesForInstance,
+          rolesForInstance: _stableMarketplaceRolesForInstance,
           builder: (context, bindings, changed) =>
               _EngineNativeMarketplaceContent(
                 bindings: bindings,

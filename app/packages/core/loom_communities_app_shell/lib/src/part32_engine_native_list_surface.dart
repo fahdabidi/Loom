@@ -95,7 +95,13 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
           tabId: widget.tabId,
           personaId: personaId,
           rolesForInstance:
-              widget.rolesForInstance ?? _engineNativeActorRolesForInstance,
+              widget.rolesForInstance ??
+              (instance, viewerPersonaId) => _deriveActorOrReceiverRolesForInstance(
+                definitions,
+                instance,
+                viewerPersonaId,
+                widget.persona.personaId,
+              ),
           builder: (context, bindings, changed) {
             if (bindings.isEmpty) {
               return SizedBox(
@@ -142,16 +148,18 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
   }
 }
 
-Iterable<String> _engineNativeActorRolesForInstance(
+Iterable<String> _deriveActorOrReceiverRolesForInstance(
+  Map<String, LoomWorkflowStateMachine> definitions,
   WorkflowInstance instance,
   String viewerPersonaId,
-) => instance.createdByPersonaId == viewerPersonaId
-    ? const <String>['actor']
-    : const <String>[];
-
-Iterable<String> _engineNativeAdminRolesForInstance(
-  WorkflowInstance instance,
-  String viewerPersonaId,
-) => instance.createdByPersonaId == viewerPersonaId
-    ? const <String>['actor']
-    : const <String>['receiver'];
+  String viewerPersonaTypeId,
+) {
+  final machine = definitions[instance.workflowType];
+  if (machine == null) return const <String>{};
+  return deriveInstanceRoles(
+    machine,
+    instance,
+    viewerPersonaId: viewerPersonaId,
+    viewerPersonaTypeId: viewerPersonaTypeId,
+  );
+}
