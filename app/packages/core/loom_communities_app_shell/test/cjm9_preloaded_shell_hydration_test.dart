@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 import 'authz_p6_test_helpers.dart';
 
@@ -236,9 +237,9 @@ void main() {
   testWidgets(
     'preloaded Garden install renders Exchange via engine-native marketplace surface',
     (tester) async {
-      final installation = await _installOverPreloadedShell(
-        fixtureRelative: _gardenFixtureRelative,
-      );
+      final installation = (await tester.runAsync(
+        () => _installOverPreloadedShell(fixtureRelative: _gardenFixtureRelative),
+      ))!;
       try {
         await tester.pumpWidget(
           _communityScreen(
@@ -266,7 +267,7 @@ void main() {
           findsNothing,
         );
       } finally {
-        await installation.dispose();
+        await tester.runAsync(installation.dispose);
       }
     },
   );
