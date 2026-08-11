@@ -67,6 +67,54 @@ landed; it is the first community being re-run through the new skill-based proce
 documented or implemented workflow/interaction.** Where the doc and the real implementation disagree, the
 doc gets expanded to cover the union, never trimmed to match the doc.
 
+### 0.2 CRITICAL — 6 of 10 communities' merged JSON has zero live effect until the legacy hybrid shims are removed (found 2026-08-10, during Garden Club's §6 walkthrough)
+
+**The §7 execution order has a real sequencing bug, caught empirically, not theoretically.** Step 7 says run
+the §6 UX Judge gate per community as its JSON locks; step 8 says remove the 6 hybrid communities' bespoke
+Dart widgets (`_GardenClubEngineTabSurface` etc.) only *after* all 10 rows read complete. This is backwards
+for exactly those 6 communities: `part02_tab_shell.dart:3507-4287` gates every tab surface
+(Calendar/Marketplace/Care/Documents/Home) behind `_isGardenEngineExperience`/`_isCameraEngineExperience`/
+`_isBookEngineExperience`/`_isMosqueEngineExperience`/`_isYouthSoccerEngineExperience`/
+`_isChessEngineExperience` — each checking for workflow-type names the **real, merged, engine-native JSON
+also declares** — and routing to a hardcoded, independently-fixtured legacy widget
+(`_GardenClubEngineTabSurface` line 8019, `_CameraClubEngineTabSurface` line 9059,
+`_ChessClubEngineTabSurface` line 9979, `_BookClubEngineTabSurface` line 11948, plus Mosque's and Youth
+Soccer's equivalents) **instead of** the real `EngineNativeArchetypeCard`/binding-dispatcher pipeline
+(`part27_engine_native_binding_dispatcher.dart`) every other community (Cedar Commons HOA, Tabletop Club,
+and the 3 non-hybrid communities below) actually renders through.
+
+**Confirmed via a real live walkthrough, not inference:** installing Garden Club's actual merged package
+(`docs/references/communities/Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc`) onto a running
+emulator and reviewing real screenshots (LLM Vision UX Judge Phase A dispatch) showed the exact text of the
+legacy widget's own independently-embedded fixture (`_gardenBundledFixtureJsonc`, `part02_tab_shell.dart:8920`
+— e.g. `"location": "Riverside Greenhouse", "capacityLabel": "18 of 24 spots"`) rendering on screen, **not**
+the real JSON's actual data (`location: "Community Garden Plot A"`, `capacity: 20`). The legacy fixture also
+independently hardcodes a fabricated checksum (`"checksum": "8F4A-PLANT"`, line 9054) that has nothing to do
+with the real JSON's correctly-declared-but-never-written `checksum` field — a second, separate instance of
+the exact pattern-4 defect this migration has been fixing, except baked into shipped Dart source where no
+community-JSON fix can ever reach it.
+
+**Practical consequence: the §6 gate cannot be meaningfully run for any of the 6 hybrid communities
+(Garden Club, Camera Club, Chess Club, Neighborhood Book Club, Masjid Nur, Riverside Youth Soccer) until
+their legacy shim is removed or bypassed first** — any walkthrough attempted now would review the *old*
+hardcoded UI, not the JSON this migration effort actually produced, and any findings from it would be
+worthless (already happened once, for Garden Club — see its §4 row for the discarded first-pass review).
+**The 3 non-hybrid communities (Member Social Space, Ad-Free Community, Data Portability Community) have no
+such shim and are NOT blocked** — confirmed no `_isXxxEngineExperience`/`_XxxEngineTabSurface` exists for any
+of them in `part02_tab_shell.dart`; their §6 walkthroughs can proceed in any order.
+
+**Revised execution order (supersedes §7 step 7/8 ordering for the 6 hybrid communities only):**
+1. Run §6 walkthroughs for the 3 non-hybrid communities now — unaffected, no reason to wait.
+2. Dispatch the legacy-shim removal/bypass as its own real ticket (or 6 tickets, one per community) —
+   effectively pulling forward the "explicit scrap all the legacy code" work from step 8, scoped to just
+   these 6 `_isXxxEngineExperience` gates + their `_XxxEngineTabSurface` classes + embedded fixtures, not the
+   full step-8 list (`part04_rich_spec_catalog.dart` etc. can still wait, since nothing currently blocks on
+   those). Requires careful regression verification (a Regression Impact Judge dispatch, given this is shared
+   routing code touching 6 communities at once) since the shims currently deliver a *working* (if
+   wrong-data) experience real code may still reference.
+3. Only then run/re-run §6 walkthroughs for the 6 previously-blocked communities, starting with Garden Club
+   (whose first-pass review is already known-invalid per above).
+
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
 Both approved by the user 2026-08-09. Both are field/display-level capabilities, deliberately **not** new
@@ -705,7 +753,7 @@ reasoning, kept as durable doc, not just chat explanation).
 | # | Community | Doc reconciliation | JSON authoring | Known code gaps | UX Judge walkthrough |
 |---|---|---|---|---|---|
 | 1 | Cedar Commons HOA | Locked (7 workflows, 1:1 with doc); event-rsvp-vs-equipment-loan question for facility reservation settled (event-rsvp — see the file's own header comment) | **Skill-authored (full, all 7 workflows), judged PASS, merged into canonical 2026-08-09** — validator-clean (0/0), no AP-6 fabrication, correct archetypes throughout, both bugs in the old hand-authored version fixed (inert `creationGuard`/`locationOverlap`, fabricated `checksum`/`receiptId`). 5 defects found across two judge passes (D1 `eventTime` field-name, D3 missing terminal-state bindings, D4 repeat-failure guard, D5 dead role/tab bindings) all fixed; D3 and D5's purely-structural shapes now caught automatically by validator rules (CJM.4, CJM.5); D1/D4/D5 all taught to the Skill itself (Hard Rules 8-10) — **confirmed 2026-08-09**: a 3rd, blind skill re-dispatch avoided D1 and D4 completely unassisted (independently judged). | CJM.2 (done, see §1a); CJM.4 (done); CJM.5 (done, 2026-08-09 — see §2); the `role:"actor"`-vs-payer design question flagged in §1a #4 was exactly D5 — now resolved (fix + validator rule + Skill self-check), same shape worth re-checking on Garden Club given the near-identical dues-payment pattern | **Done, 2026-08-10 — row closed.** Live walkthrough ran end-to-end on-device (install, both personas, all tabs): found ONE real, blocking, novel bug (Board's Admin tab crash — traced by the Root Cause Agent to a genuine App Shell lifecycle gap unrelated to this community's JSON, fixed as AuthZ.P8, commit `6bae3cec`, re-verified live with zero crash and correct role-resolved content rendering). The judge's remaining ~55 findings were triaged and are **accepted, documented grammar-tier limitations, not bugs**: (a) the 6 🟡 GENERIC archetypes render via the shared `GenericWorkflowInstanceCard` fact-pill+form template by design — no bespoke per-family visual treatment exists yet for any community, this is a known investment gap in the archetype tier itself, not something wrong with this community's JSON; (b) no `Documents`/`Requests` tab exists because the `tabId` enum is closed to `{admin, calendar, giving, home, marketplace, messages}` — already disclosed in the file's own header comment before this walkthrough ran; (c) several "missing action" findings (no pay button visible, no cancel on a reservation) trace to the same generic-card template not surfacing every available transition as prominently as a bespoke widget would — same root cause as (a), not a new defect. None of these block real usage (every guard-permitted transition IS reachable, per the D5 remediation) — they're a polish/investment gap for a future session, not a correctness bug. Full product-doc reconciliation gate (§6 step 7) deliberately not run as a second full pass — the walkthrough + reconciliation-flavored judge dispatch already covered its ground in one combined pass this cycle; re-running it separately would re-derive the same accepted findings above. |
-| 2 | Garden Club | **Done, 2026-08-10.** Skill-authored (split `garden-tool-loan-giveaway` into `garden-tool-loan`/`garden-tool-giveaway`, defensible per the type-vs-instance test), independently judged (FAIL, 3 findings), all fixed and re-validated (0 errors, 7 expected warnings): `delist` guard gap on both marketplace types (could strand custody), unwired `garden-notification` effects for `request-loan`/`claim`/`sign-up`, and a doc-internal B25 §9 inconsistency for `plant-exchange-submission` (corrected in the doc, not the JSON). JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc`. Row closed pending §6 live UX walkthrough. | Not started | CJM.1 (landed, used) | Not run |
+| 2 | Garden Club | **Done, 2026-08-10.** Skill-authored (split `garden-tool-loan-giveaway` into `garden-tool-loan`/`garden-tool-giveaway`, defensible per the type-vs-instance test), independently judged (FAIL, 3 findings), all fixed and re-validated (0 errors, 7 expected warnings): `delist` guard gap on both marketplace types (could strand custody), unwired `garden-notification` effects for `request-loan`/`claim`/`sign-up`, and a doc-internal B25 §9 inconsistency for `plant-exchange-submission` (corrected in the doc, not the JSON). JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc`. Row closed pending §6 live UX walkthrough. | Not started | CJM.1 (landed, used) | **First attempt run 2026-08-10, result DISCARDED — see §0.2.** The real package was installed and 6 real screenshots captured across both personas, but `part02_tab_shell.dart`'s legacy `_GardenClubEngineTabSurface` shim shadows the entire community and renders its own independently-hardcoded fixture instead of the reviewed JSON — confirmed by exact text mismatch (legacy fixture's `"Riverside Greenhouse"`/`"18 of 24 spots"` vs. the real JSON's `"Community Garden Plot A"`/`capacity: 20`) and a legacy-only fabricated checksum (`"8F4A-PLANT"`, `part02_tab_shell.dart:9054`) that doesn't exist in the real JSON at all. Must be re-run after §0.2's shim-removal ticket lands. |
 | 3 | Neighborhood Book Club | **Done, 2026-08-10.** Skill-authored (first real use of the new Hard Rule 11 requirement traceability table), independently judged (FAIL, 2 real issues: an isTerminal contract violation, and `book-vote-response`'s only creation path resting on a not-yet-implemented `scope:"instance"` create action), both fixed and re-validated (0 errors, 9 expected warnings). JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc`. Row closed pending §6 live UX walkthrough. | Not started | CJM.3 (landed, used) | Not run |
 | 4 | Riverside Youth Soccer | **Done, 2026-08-10.** Skill-authored, independently judged (FAIL, 1 real JSON defect + 1 shared App Shell bug), JSON defect fixed and re-validated (0 errors, 5 expected warnings): `soccer-export-metadata`'s `completed` state was declared `isTerminal: true` while `rollback-export` left it (a direct grammar contradiction). The judge also found CJM.5 (see §2) — a shared, cross-community bug, not fixable in this JSON; tracked separately, does not block this row from closing. JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc`. Row closed pending §6 live UX walkthrough (which should also verify CJM.5's real-world impact once fixed). | Not started | CJM.2 (landed, used); CJM.5 found here, affects this + other communities | Not run |
 | 5 | Chess Club | **Done, 2026-08-10.** Skill-authored, independently judged (FAIL, 1 real AP-11 violation — a silently dropped "queue position" requirement backed by a false justification), fixed via a real redesign (shared queue container + ordered list, not just a gap marker) and re-validated (0 errors, 1 expected warning for a deliberate singleton type). JSON: `docs/references/communities/Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc`. Row closed pending §6 live UX walkthrough. | Not started | None identified | Not run |
