@@ -381,6 +381,15 @@ const _hikeClubPackage = {
   'extensionId': 'ext_hiking_club',
   'branding': {'accentColor': '#2D6A4F'},
   'seedDataFiles': <dynamic>[],
+  'appShell': {
+    'tabs': [
+      {
+        'tabId': 'calendar',
+        'label': 'Calendar',
+        'rendererContractId': 'engine-native-generic-list',
+      },
+    ],
+  },
   'experience': {
     'experienceSchemaVersion': 2,
     'workflowGrammarVersion': 1,

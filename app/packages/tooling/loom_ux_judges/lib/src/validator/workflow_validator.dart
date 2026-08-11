@@ -1,8 +1,7 @@
 import 'dart:collection';
 
-import 'package:loom_workflow_engine/src/evaluator/formula_evaluator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:loom_workflow_engine/src/evaluator/source_query.dart';
-import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 /// A single validation finding — either an error (blocks pass) or a warning.
 class ValidationFinding {
@@ -136,11 +135,13 @@ class WorkflowValidator {
   /// When provided, this drives dangling-persona checks.
   /// When omitted, persona-id dangling checks are skipped.
   final Set<String>? knownPersonaIds;
+  final Set<String>? declaredTabIds;
 
   WorkflowValidator({
     this.templates,
     this.tableArchetypeConfigs,
     this.knownPersonaIds,
+    this.declaredTabIds,
   });
 
   /// Runs all validation checks against the given workflow definitions.
@@ -163,6 +164,8 @@ class WorkflowValidator {
       _checkNoReadVisibilityDeclared(machine, findings);
       _checkNoRenderBindingForReachableState(machine, findings);
       _checkDeadRoleBinding(machine, findings);
+      _checkKnownCardSurfaceFamily(machine, findings);
+      _checkKnownTabId(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
       _checkEditableFieldsWithoutEditGuard(machine, findings);
       _checkNoDestructiveExitForManagedType(machine, findings);
@@ -607,6 +610,55 @@ class WorkflowValidator {
           ),
         );
       }
+    }
+  }
+
+  void _checkKnownCardSurfaceFamily(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final binding in machine.renderBindings) {
+      if (knownWorkflowArchetypeIds.contains(binding.cardSurfaceFamily)) continue;
+      findings.add(
+        ValidationFinding(
+          type: 'unknown_card_surface_family',
+          message:
+              'cardSurfaceFamily "${binding.cardSurfaceFamily}" is not '
+              'declared in knownWorkflowArchetypeIds (the registry-backed source '
+              'of truth for render-binding families).',
+          location:
+              '${machine.workflowType}/renderBindings/${binding.states.join(",")}/cardSurfaceFamily',
+        ),
+      );
+    }
+  }
+
+  void _checkKnownTabId(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    // Unlike _checkKnownCardSurfaceFamily (a fixed global registry, always
+    // enforced), tabId declarations are caller-supplied context -- callers
+    // that never pass declaredTabIds (most standalone WorkflowValidator unit
+    // tests, exercising unrelated checks) haven't opted into this check, so
+    // it stays silent rather than treating "no context given" the same as
+    // "this community declared zero tabs." CommunityPackageValidator, the
+    // one real production call site, always passes a concrete (possibly
+    // empty) set, so real package validation is unaffected.
+    if (declaredTabIds == null) return;
+    final allowedTabIds = <String>{'home', 'messages', ...declaredTabIds!};
+    for (final binding in machine.renderBindings) {
+      if (allowedTabIds.contains(binding.tabId)) continue;
+      findings.add(
+        ValidationFinding(
+          type: 'unknown_tab_id',
+          message:
+              'tabId "${binding.tabId}" is not a built-in tab ("home", '
+              '"messages") and is not declared in appShell.tabs/personaTabs.',
+          location:
+              '${machine.workflowType}/renderBindings/${binding.states.join(",")}/tabId',
+        ),
+      );
     }
   }
 

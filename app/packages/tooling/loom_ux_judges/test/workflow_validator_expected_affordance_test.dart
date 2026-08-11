@@ -27,8 +27,44 @@ LoomWorkflowStateMachine _machine(
 ValidationReport _validate(Map<String, LoomWorkflowStateMachine> workflows) =>
     WorkflowValidator().validate(workflows);
 
+ValidationReport _validateWithDeclaredTabIds(
+  Map<String, LoomWorkflowStateMachine> workflows, {
+  Set<String>? declaredTabIds,
+}) => WorkflowValidator(
+      declaredTabIds: declaredTabIds,
+    ).validate(workflows);
+
 bool _hasWarning(ValidationReport report, String type) =>
     report.warnings.any((f) => f.type == type);
+
+LoomWorkflowStateMachine _machineWithTabAndFamily({
+  String cardSurfaceFamily = 'event-rsvp',
+  String tabId = 'home',
+}) => _machine(
+  'event',
+  states: {
+    'open': {'label': 'Open'},
+    'done': {'label': 'Done', 'isTerminal': true},
+  },
+  transitions: [
+    {
+      'id': 'finish',
+      'label': 'Finish',
+      'from': ['open'],
+      'to': 'done',
+    },
+  ],
+  visibility: {'default': 'public'},
+  renderBindings: [
+    {
+      'states': ['open', 'done'],
+      'role': 'any',
+      'tabId': tabId,
+      'cardSurfaceFamily': cardSurfaceFamily,
+      'bindingKind': 'summary',
+    },
+  ],
+);
 
 void main() {
   group('no_render_binding_for_reachable_state', () {
@@ -1038,6 +1074,87 @@ void main() {
           (finding) => finding.type == 'dead_role_binding',
         ),
         isEmpty,
+      );
+    });
+  });
+
+  group('known_card_surface_family_and_tab_id', () {
+    test(
+      'fires for unknown cardSurfaceFamily',
+      () {
+        final report = _validate({
+          'event': _machineWithTabAndFamily(
+            cardSurfaceFamily: 'not-a-known-family',
+          ),
+        });
+
+        expect(
+          report.errors.any(
+            (finding) => finding.type == 'unknown_card_surface_family',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'does not fire for known cardSurfaceFamily',
+      () {
+        final report = _validate({
+          'event': _machineWithTabAndFamily(cardSurfaceFamily: 'event-rsvp'),
+        });
+
+        expect(
+          report.errors.any(
+            (finding) => finding.type == 'unknown_card_surface_family',
+          ),
+          isFalse,
+        );
+      },
+    );
+
+    test('accepts built-in tabId values even without custom declarations', () {
+      for (final tabId in ['home', 'messages']) {
+        final report = _validate({
+          'event': _machineWithTabAndFamily(tabId: tabId),
+        });
+
+        expect(
+          report.errors.any((finding) => finding.type == 'unknown_tab_id'),
+          isFalse,
+          reason: 'home/messages tabs are always known: $tabId',
+        );
+      }
+    });
+
+    test(
+      'allows custom tabId when declared in appShell/ personaTabs',
+      () {
+        final report = _validateWithDeclaredTabIds(
+          {
+            'event': _machineWithTabAndFamily(tabId: 'community-home'),
+          },
+          declaredTabIds: {'community-home'},
+        );
+
+        expect(
+          report.errors.any((finding) => finding.type == 'unknown_tab_id'),
+          isFalse,
+        );
+      },
+    );
+
+    test('rejects custom tabId with no matching declaration', () {
+      final report = _validateWithDeclaredTabIds(
+        {
+          'event': _machineWithTabAndFamily(tabId: 'ghost-tab'),
+        },
+        declaredTabIds: {'other-tab'},
+      );
+
+      expect(
+        report.errors.any((finding) => finding.type == 'unknown_tab_id'),
+        isTrue,
       );
     });
   });

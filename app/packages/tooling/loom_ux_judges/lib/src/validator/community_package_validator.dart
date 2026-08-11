@@ -103,6 +103,7 @@ class CommunityPackageValidator {
       return ValidationReport(findings);
     }
     final personas = _personaIds(experience['personas']);
+    final declaredTabIds = _declaredTabIds(package);
     final workflows = <String, LoomWorkflowStateMachine>{};
     for (final entry in rawDefinitions.entries) {
       final type = entry.key.toString();
@@ -122,7 +123,10 @@ class CommunityPackageValidator {
       }
     }
     findings.addAll(
-      WorkflowValidator(knownPersonaIds: personas).validate(workflows).findings,
+      WorkflowValidator(
+        knownPersonaIds: personas,
+        declaredTabIds: declaredTabIds,
+      ).validate(workflows).findings,
     );
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
@@ -343,6 +347,40 @@ class CommunityPackageValidator {
         )
         .whereType<String>()
         .toSet();
+  }
+
+  Set<String> _declaredTabIds(Map<String, dynamic> package) {
+    final appShell = _objectMap(package['appShell']) ??
+        _objectMap(package['appShellCustomization']) ??
+        _objectMap(_objectMap(package['extension'])?['appShell']);
+    if (appShell == null) return {};
+
+    final declared = <String>{};
+    final rawTabs = appShell['tabs'];
+    if (rawTabs is List) {
+      for (final rawTab in rawTabs) {
+        final tab = _objectMap(rawTab);
+        final id = tab?['tabId'];
+        if (id is String && id.isNotEmpty) declared.add(id);
+      }
+    }
+
+    final personaTabs = _objectMap(appShell['personaTabs']);
+    if (personaTabs == null) return declared;
+
+    for (final rawPersonaTabs in personaTabs.values) {
+      if (rawPersonaTabs is! List) continue;
+      for (final rawTab in rawPersonaTabs) {
+        final tab = _objectMap(rawTab);
+        final id = tab?['tabId'];
+        if (id is String && id.isNotEmpty) declared.add(id);
+      }
+    }
+    return declared;
+  }
+
+  Map<String, Object?>? _objectMap(Object? value) {
+    return value is Map<String, Object?> ? value : null;
   }
 
   ValidationFinding _finding(

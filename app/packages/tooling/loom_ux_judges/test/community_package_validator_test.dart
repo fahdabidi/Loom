@@ -18,6 +18,24 @@ Map<String, dynamic> definition({Map<String, dynamic> schema = const {}}) =>
       ],
       'instanceDataSchema': schema,
     };
+
+Map<String, dynamic> definitionWithBinding({
+  String tabId = 'calendar',
+  String cardSurfaceFamily = 'event-rsvp',
+  Map<String, dynamic> schema = const {},
+}) =>
+    <String, dynamic>{
+      ...definition(schema: schema),
+      'renderBindings': <dynamic>[
+        {
+          'states': ['open', 'done'],
+          'role': 'any',
+          'tabId': tabId,
+          'cardSurfaceFamily': cardSurfaceFamily,
+          'bindingKind': 'summary',
+        },
+      ],
+    };
 Map<String, dynamic> seed({
   String id = 'one',
   String type = 'thing',
@@ -186,6 +204,65 @@ void main() {
         },
       };
       expect(findings(p), contains('stuck_state'));
+    });
+
+    test('16 custom tab in appShell.tabs is accepted', () {
+      final p = pkg();
+      final e = p['experience'] as Map<String, dynamic>;
+      e['workflowDefinitions'] = <String, dynamic>{
+        'thing': definitionWithBinding(tabId: 'calendar'),
+      };
+      // appShell is a top-level package field, a sibling of `experience` --
+      // matches loom_demo_local_backend's real
+      // initialization['appShell']/extension['appShell'] resolution, not
+      // nested inside experience.
+      p['appShell'] = <String, dynamic>{
+        'tabs': [
+          {
+            'tabId': 'calendar',
+            'label': 'Calendar',
+            'rendererContractId': 'community-calendar',
+          },
+        ],
+      };
+
+      expect(findings(p), isNot(contains('unknown_tab_id')));
+    });
+
+    test('17 fallback to appShellCustomization personaTabs is accepted', () {
+      final p = pkg();
+      final e = p['experience'] as Map<String, dynamic>;
+      e['workflowDefinitions'] = <String, dynamic>{
+        'thing': definitionWithBinding(tabId: 'owner-portal'),
+      };
+      p['appShellCustomization'] = <String, dynamic>{
+        'personaTabs': {
+          'owner': [
+            {
+              'tabId': 'owner-portal',
+              'label': 'Owner Portal',
+              'rendererContractId': 'owner-portal',
+            },
+          ],
+        },
+      };
+
+      expect(findings(p), isNot(contains('unknown_tab_id')));
+    });
+
+    test('18 unknown custom tabId is rejected when undeclared', () {
+      final p = pkg();
+      final e = p['experience'] as Map<String, dynamic>;
+      e['workflowDefinitions'] = <String, dynamic>{
+        'thing': definitionWithBinding(tabId: 'owner-portal'),
+      };
+      p['appShell'] = <String, dynamic>{
+        'tabs': [
+          {'tabId': 'calendar', 'label': 'Calendar', 'rendererContractId': 'x'},
+        ],
+      };
+
+      expect(findings(p), contains('unknown_tab_id'));
     });
   });
 }
