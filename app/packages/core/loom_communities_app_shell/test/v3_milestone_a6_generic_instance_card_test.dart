@@ -340,14 +340,34 @@ class _ControlledEngine implements WorkflowEngineApi {
       delegate.dueNotifications(asOf: asOf);
 }
 
+LoomWorkflowStateMachine _editableListMachine() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'open',
+      'states': {
+        'open': {
+          'label': 'Open',
+          'editableFields': ['selectedSchemaIds'],
+        },
+      },
+      'transitions': <dynamic>[],
+      'instanceDataSchema': {
+        'selectedSchemaIds': {
+          'type': 'list',
+          'writableBy': 'formEntry',
+          'displayContexts': ['tile'],
+        },
+      },
+    }, 'generic-instance-editable-list');
+
 GenericWorkflowInstanceCard _card(
   LocalWorkflowEngineApi api,
   WorkflowInstance instance, {
   String context = 'tile',
   String persona = 'person',
+  LoomWorkflowStateMachine? machine,
 }) => GenericWorkflowInstanceCard(
   instance: instance,
-  machine: _machine(),
+  machine: machine ?? _machine(),
   engine: api,
   personaId: persona,
   displayContext: context,
@@ -924,6 +944,63 @@ void main() {
             .text,
         '9',
       );
+    },
+  );
+
+  testWidgets(
+    'editable list fields show comma-joined initial text and clear hint when unsaved',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'list-hint',
+      );
+      final machine = _editableListMachine();
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'generic-instance-editable-list',
+        personaId: 'person',
+        initialInstanceData: {'selectedSchemaIds': ['a', 'b']},
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+
+      await tester.pumpWidget(_host(_card(api, instance, machine: machine)));
+      await tester.pump();
+
+      final editor = find.byKey(
+        ValueKey('generic-instance-editor-${instance.instanceId}-selectedSchemaIds'),
+      );
+      final editorText = tester.widget<TextField>(editor).controller!.text;
+      expect(editorText, equals('a, b'));
+      expect(editorText, isNot(contains('[')));
+      expect(editorText, isNot(contains(']')));
+      expect(editorText, contains('a'));
+      expect(editorText, contains('b'));
+
+      final saveHint = find.byKey(
+        ValueKey('generic-instance-save-hint-${instance.instanceId}'),
+      );
+      final save = find.byKey(
+        ValueKey('generic-instance-save-${instance.instanceId}'),
+      );
+      expect(saveHint, findsOneWidget);
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+
+      await tester.enterText(editor, 'a, b, c');
+      await tester.pump();
+      expect(saveHint, findsNothing);
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      final updated = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+      expect(updated.instanceData['selectedSchemaIds'], ['a', 'b', 'c']);
     },
   );
 

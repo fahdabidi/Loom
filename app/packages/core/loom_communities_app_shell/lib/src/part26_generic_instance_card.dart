@@ -118,10 +118,35 @@ class _GenericWorkflowInstanceCardState
   dynamic _valueFor(String key) =>
       _edits.containsKey(key) ? _edits[key] : _instance.instanceData[key];
 
-  TextEditingController _controllerFor(String key) => _controllers.putIfAbsent(
-    key,
-    () => TextEditingController(text: '${_valueFor(key) ?? ''}'),
-  );
+  TextEditingController _controllerFor(
+    String key,
+    InstanceDataField schema,
+  ) =>
+      _controllers.putIfAbsent(
+        key,
+        () => TextEditingController(
+          text: _editorSeedText(schema.type, _valueFor(key)),
+        ),
+      );
+
+  List<String> _splitCommaValues(String raw) => raw
+      .split(',')
+      .map((item) => item.trim())
+      .where((item) => item.isNotEmpty)
+      .toList(growable: false);
+
+  String _editorSeedText(String type, Object? value) {
+    if (type != 'list' && type != 'personaId[]') return '${value ?? ''}';
+    if (value == null) return '';
+    if (value is Iterable) {
+      if (value.isEmpty) return '';
+      return value
+          .map((item) => '$item')
+          .where((item) => item.trim().isNotEmpty)
+          .join(', ');
+    }
+    return '$value';
+  }
 
   bool _isCurrent(
     int generation,
@@ -147,7 +172,7 @@ class _GenericWorkflowInstanceCardState
       if (schema.type != 'bool' &&
           schema.type != 'date' &&
           schema.type != 'time') {
-        _controllerFor(key);
+        _controllerFor(key, schema);
       }
     }
   }
@@ -223,11 +248,7 @@ class _GenericWorkflowInstanceCardState
         updates[key] = parsed;
       } else if ((field.type == 'list' || field.type == 'personaId[]') &&
           value is String) {
-        updates[key] = value
-            .split(',')
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toList(growable: false);
+        updates[key] = _splitCommaValues(value);
       } else {
         updates[key] = value;
       }
@@ -512,6 +533,19 @@ class _GenericWorkflowInstanceCardState
                   onPressed: _mutating || _edits.isEmpty ? null : _save,
                   child: const Text('Save changes'),
                 ),
+                if (!_mutating && _edits.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'No changes to save yet.',
+                      key: ValueKey(
+                        'generic-instance-save-hint-${_instance.instanceId}',
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: factForeground?.withValues(alpha: 0.72),
+                      ),
+                    ),
+                  ),
               ],
               if (_loadingActions || _mutating)
                 Padding(
@@ -656,12 +690,28 @@ class _GenericWorkflowInstanceCardState
             }
           },
         );
+      case 'list':
+      case 'personaId[]':
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TextField(
+            key: editorKey,
+            controller: _controllerFor(key, schema),
+            enabled: !disabled,
+            maxLines: 1,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(labelText: label),
+            onChanged: (value) => setState(
+              () => _edits[key] = _splitCommaValues(value),
+            ),
+          ),
+        );
       default:
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TextField(
             key: editorKey,
-            controller: _controllerFor(key),
+            controller: _controllerFor(key, schema),
             enabled: !disabled,
             maxLines: schema.type == 'textarea' ? null : 1,
             keyboardType: schema.type == 'number'
