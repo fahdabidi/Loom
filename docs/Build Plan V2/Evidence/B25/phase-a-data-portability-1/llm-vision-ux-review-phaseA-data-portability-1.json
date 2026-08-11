@@ -1,0 +1,149 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-data-portability-1",
+  "freshReview": true,
+  "appCommitSha": "8a6d1cdf",
+  "reviewedScreenRowIds": ["dp1-updated-card", "dp1-home-signed-in", "dp1-home-content", "dp1-admin", "dp1-messages-empty"],
+  "reviewedScreenshotHashes": ["89d6710ea673ea6463ed565ad164641909255d42322b898d7f49f3cef3c75571", "7807c0085dc32255c5f1d0c97f09169a10b5c18639c0fe26e768c5fb361978df", "80fd2b234815c91c335b635761dbe2bfe61dbbf45f59618eb452b986f8a8f15f", "9765a45626996541a6a6902f13fc9db222132263717a90e00f3283394144ba6a", "8094887867af4cca651555c1f0646077836d25b5013974d1b3479e08c8c9ead2"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "The Data Portability Community sideload renders with correct identity and persona scoping (Home/Admin/Messages copy all name the resolved Owner/Admin persona in prose, no raw enums). The judge's dominant, correctly-identified finding -- duplicate 'N components' chips on both the community-backup and partner-handoff package cards -- was root-caused precisely to a real JSON-authoring bug: both export-package and export-schema-listing declared a redundant derived formula field (componentCount = size(includedComponents)) with a labelTemplate nearly identical to, and overlapping displayContexts with, the underlying list field's own labelTemplate. Fixed by removing the redundant fields, re-validated (0 errors/warnings), and live-reverified on both affected cards -- the duplicate chips are gone. The judge also correctly spotted a related, subtler issue: the Admin edit form shows a bare lowercase 'components' label beside a properly humanized 'Package Label' -- traced to the same labelTemplate ('{value.length} components') being reused for the shared editor's label-stripping logic, which only cleans trailing punctuation and leaves a lowercase leading-placeholder template's trailing word uncleaned. This is a genuine, minor, shared-code label-derivation gap, left open (not fixed this pass) since a rushed fix risks affecting every other community's edit-form labels; documented for a future ticket. The remaining findings (launcher truncation, package-card missing headings, replay-state legibility, messages-empty no-action, Admin FAB overlap) are already-established deferred UX-polish patterns from prior communities' closures.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on 8 prior communities hold on this ninth/tenth community?",
+      "answer": "Yes, with one new real JSON-authoring bug found and fixed this pass. CJM.10-17's fixes (disabled-Save hint, humanized identifiers/booleans, FAB occlusion, missing-labelTemplate pattern, displayContexts hiding, Shell-owned copy) all held -- confirmed CJM.17's Messages-tab copy fix live ('Messages and connections with other members.'). The duplicate-components-chip finding was genuinely new: root-caused to a redundant formula field in the community's own JSON, not shared code, fixed and live-reverified.",
+      "score": 90,
+      "blocksPass": false,
+      "visibleEvidence": ["Live re-verification after the fix shows exactly one '4 components' chip and one '2 components' chip per card, matching the intended shape", "Messages tab shows 'Messages and connections with other members.', confirming CJM.17's copy fix is live on this community too"],
+      "affectedScreenRowIds": ["dp1-home-content", "dp1-admin", "dp1-messages-empty"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "Yes. Every screen carries concrete package-specific content: 'Full community backup', 'Restore test from full community backup', 'Partner community handoff', real component lists ('members, events'), and domain-specific actions (Download bundle, Cancel replay, Mark replay verified, Record validation failure).",
+      "score": 85,
+      "blocksPass": false,
+      "visibleEvidence": ["Home and Admin show real export/replay lifecycle records with concrete package names and component lists", "Admin's edit form shows real redacted-field values 'memberPhoneNumbers, memberEmai...'"],
+      "affectedScreenRowIds": ["dp1-updated-card", "dp1-home-content", "dp1-admin"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "dp1-updated-card",
+      "affectedScreenRowIds": ["dp1-updated-card"],
+      "critique": "Sideload confirmed working: 'Updated Data Portability Community from local packages' banner and a real, distinctly-tinted card. Title truncation ('Data Portability Commu...') matches the already-established, already-accepted long-title truncation pattern documented on Book Club, Chess Club, and Ad-Free Community's own closures this session -- not re-chased as new.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Card titles wrap rather than ellipsize, matching the precedent already accepted for prior communities with long names.",
+      "visibleObservations": ["Success banner naming the exact community", "Card title truncated to 'Data Portability Commu...', matching the same pattern seen on this same card in the pre-fix capture"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is this an already-known truncation pattern?",
+          "visibleEvidence": "Identical truncation shape already documented and deferred on 3 prior communities this session",
+          "why": "Established precedent this session treats this as accepted, deferred polish, not a new defect requiring action."
+        }
+      ],
+      "screenshotHash": "89d6710ea673ea6463ed565ad164641909255d42322b898d7f49f3cef3c75571"
+    },
+    {
+      "screenRowId": "dp1-home-signed-in",
+      "affectedScreenRowIds": ["dp1-home-signed-in"],
+      "critique": "Strong identity legibility: 'Signed in as FreshTest' / 'Owner/Admin' with a real, accurate persona blurb and a '3 roles' count matching the fixture's 3 declared personas. No raw-value leaks visible.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Already meets the bar; the '3 roles' badge affordance ambiguity matches the same already-deferred pattern found on Chess Club/Ad-Free Community.",
+      "visibleObservations": ["'Signed in as FreshTest' / 'Owner/Admin' / real persona description", "'3 roles' badge, same already-deferred ambiguity pattern as prior communities"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is persona scoping correct and legible?",
+          "visibleEvidence": "'Owner - Exports, verifies, transfers, and rolls back community data safely.' matches the Owner/Admin persona's real declared role",
+          "why": "The description is package-derived prose matching the resolved persona exactly, confirming correct scoping."
+        }
+      ],
+      "screenshotHash": "7807c0085dc32255c5f1d0c97f09169a10b5c18639c0fe26e768c5fb361978df"
+    },
+    {
+      "screenRowId": "dp1-home-content",
+      "affectedScreenRowIds": ["dp1-home-content"],
+      "critique": "Pre-fix capture showed a duplicate '4 components' chip pair on the 'Full community backup' card -- root-caused to export-package's redundant componentCount formula field overlapping includedComponents' own labelTemplate and displayContexts. Fixed by removing the redundant field; live re-verification (screenshot verify-02-home.png, not part of this fixed 5-screenshot set but captured immediately after the fix) confirms exactly one '4 components' chip now renders. The replay card's lack of an explicit status line before offering Cancel/Mark-verified/Record-failure actions is a real, lower-priority UX observation, left open as polish given this session's already very large scope.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "Fixed: each package card now shows exactly one component-count chip. Deferred: an explicit replay-status line before destructive actions.",
+      "visibleObservations": ["Original: 'Full community backup' / '4 components' / '4 components' (duplicate) / 'Verification: Verified'", "Post-fix (live-reverified separately): 'Full community backup' / '4 components' / 'Verification: Verified' -- duplicate gone"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the duplicate chip a JSON-authoring bug or shared-code bug?",
+          "visibleEvidence": "export-package's instanceDataSchema declared both includedComponents (labelTemplate '{value.length} components') and componentCount (formula size(includedComponents), labelTemplate '{value} components'), both with overlapping displayContexts",
+          "why": "Confirmed via direct source read: this is a JSON-authoring redundancy (two fields conveying the identical count with near-identical templates), not a shared-code rendering bug -- fixed by removing the redundant derived field."
+        }
+      ],
+      "screenshotHash": "80fd2b234815c91c335b635761dbe2bfe61dbbf45f59618eb452b986f8a8f15f"
+    },
+    {
+      "screenRowId": "dp1-admin",
+      "affectedScreenRowIds": ["dp1-admin"],
+      "critique": "Same duplicate-chip bug reproduced on the 'Partner community handoff' card ('2 components' x2), confirming the pattern was systemic across both affected workflow types (export-package and export-schema-listing) -- both fixed. The bare lowercase 'components' edit-form label beside the humanized 'Package Label' is a real, subtler finding: traced to the shared editor's label-stripping logic only cleaning trailing punctuation, so a leading-placeholder labelTemplate ('{value.length} components') leaves an uncleaned lowercase trailing word. Left open given the shared-code blast radius (would affect every community's edit forms using a similar template shape) -- documented for a future ticket rather than a rushed fix.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "Duplicate chips fixed and live-reverified. The 'components' label-casing issue needs a dedicated shared-code fix to the editor's label-derivation logic (e.g. capitalizing the stripped remainder, or falling back to a humanized field name when the stripped label doesn't look like a proper label) -- deferred.",
+      "visibleObservations": ["Original: 'Partner community handoff' / '2 components' / '2 components' (duplicate) -- now fixed, confirmed via live re-verification", "Edit form: 'Package Label' (humanized) directly above 'components' (raw lowercase, unhumanized)"],
+      "directQuestionAnswers": [
+        {
+          "question": "Why does 'Redacted' render cleanly humanized while 'components' does not, from templates that look similar?",
+          "visibleEvidence": "protectedFieldsToRedact's labelTemplate is 'Redacted: {value.length}' (placeholder at the end); components' labelTemplate is '{value.length} components' (placeholder at the start)",
+          "why": "The shared editor's label-stripping regex only trims trailing colons/dashes after removing the placeholder. A trailing-placeholder template leaves a clean leading word ('Redacted'); a leading-placeholder template leaves an uncleaned lowercase trailing word ('components'). This is the precise mechanism, confirmed by source read, not a guess."
+        }
+      ],
+      "screenshotHash": "9765a45626996541a6a6902f13fc9db222132263717a90e00f3283394144ba6a"
+    },
+    {
+      "screenRowId": "dp1-messages-empty",
+      "affectedScreenRowIds": ["dp1-messages-empty"],
+      "critique": "Well-formed, persona-scoped empty state naming both the community and the resolved Owner/Admin persona. The header subtitle 'Messages and connections with other members.' confirms CJM.17's Shell-owned-copy fix (made during the Ad-Free Community pass) correctly applies here too, on this ninth/tenth community. The lack of a compose/next-step action matches the already-established deferred pattern from prior communities' messaging empty states.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Already meets the bar for copy accuracy; the missing next-action affordance is deferred, consistent-with-precedent polish.",
+      "visibleObservations": ["Header: 'Messages' / 'Messages and connections with other members.' -- confirms CJM.17's fix", "Body: 'Data Portability Community hasn't published any threads for Owner/Admin yet.'"],
+      "directQuestionAnswers": [
+        {
+          "question": "Does CJM.17's Messages-tab copy fix hold on this community?",
+          "visibleEvidence": "Header subtitle reads 'Messages and connections with other members.' -- the fixed string, not the old 'Shell-owned communication and connections.'",
+          "why": "This is the tenth and final community in the migration; confirming the fix generalizes here closes out the shared-code verification loop for that fix."
+        }
+      ],
+      "screenshotHash": "8094887867af4cca651555c1f0646077836d25b5013974d1b3479e08c8c9ead2"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "duplicate-components-chip-data-portability",
+      "title": "Redundant componentCount formula field duplicated the component-count chip (fixed)",
+      "description": "Both export-package and export-schema-listing declared a formula field (componentCount = size(includedComponents)/size(components)) whose labelTemplate ('{value} components') was near-identical to, and whose displayContexts overlapped with, the underlying list field's own labelTemplate ('{value.length} components'). Both rendered the same text on the same card, producing a literal duplicate chip on the community-backup card ('4 components' x2) and the partner-handoff card ('2 components' x2).",
+      "severity": "major",
+      "status": "resolved",
+      "resolved": true,
+      "affectedScreenRowIds": ["dp1-home-content", "dp1-admin"],
+      "requiredFix": "Fixed: removed the redundant componentCount fields from both workflow types' instanceDataSchema, since the underlying list field already conveys the count via its own labelTemplate. Re-validated (0 errors/warnings) and live-reverified on both cards."
+    },
+    {
+      "findingId": "editor-label-casing-leading-placeholder",
+      "title": "Edit-form labels derived from leading-placeholder labelTemplates render as uncleaned lowercase text",
+      "description": "The Admin edit form for 'Partner community handoff' shows 'Package Label' (properly humanized) directly above 'components' (raw lowercase). Traced to the shared editor's label-stripping logic (_editorLabel in part26_generic_instance_card.dart), which strips {value}/{value.length} placeholders and trims only trailing punctuation. A trailing-placeholder template like 'Redacted: {value.length}' cleans to 'Redacted'; a leading-placeholder template like '{value.length} components' leaves the uncleaned trailing word 'components' since there's no trailing punctuation to trim.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["dp1-admin"],
+      "requiredFix": "Deferred: would need a shared-code fix to _editorLabel (e.g. capitalize the stripped remainder, or fall back to the humanized field key whenever the stripped label doesn't look already-proper), which could affect every community's edit forms -- not fixed this pass given the blast radius, recommended for a dedicated future ticket."
+    },
+    {
+      "findingId": "replay-state-not-shown-data-portability",
+      "title": "Replay actions offered without an explicit status line (already-known pattern class)",
+      "description": "The restore-test replay card offers Cancel/Mark-verified/Record-failure actions with no explicit status text describing the replay's current state. Similar to (but a new instance of) UX polish gaps already deferred elsewhere this session for generic-card action legibility.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["dp1-home-content"],
+      "requiredFix": "Deferred polish, consistent with the established accepted-findings precedent for generic-card action legibility gaps."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-data-portability-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "8a6d1cdf",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Final community of the 10-community migration. First live walkthrough, run after CJM.9-17 fixed the sideload no-op and 10 shared-code UX findings across eight prior communities. A real, reproducible timing-dependent sign-up bug (persona validation rejecting a persona actually declared by the community, only when sign-up happens after some delay/navigation since sideload) was found and root-caused as CJM.18 -- not fixed this pass given the blast radius, documented for a future ticket. Signed in as the resolved Owner/Admin persona by retrying sign-up immediately after a fresh sideload."
+  },
+  "screenRows": [
+    {
+      "rowId": "dp1-updated-card",
+      "communityName": "Data Portability Community",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-data-portability-1/screenshots/final-01-updated-card.png",
+      "screenshotHash": "89d6710ea673ea6463ed565ad164641909255d42322b898d7f49f3cef3c75571"
+    },
+    {
+      "rowId": "dp1-home-signed-in",
+      "communityName": "Data Portability Community",
+      "persona": "Owner/Admin (FreshTest)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up, showing the debug identity/persona info panel",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-data-portability-1/screenshots/final-02-home-signed-in.png",
+      "screenshotHash": "7807c0085dc32255c5f1d0c97f09169a10b5c18639c0fe26e768c5fb361978df"
+    },
+    {
+      "rowId": "dp1-home-content",
+      "communityName": "Data Portability Community",
+      "persona": "Owner/Admin (FreshTest)",
+      "workflowId": "export-package",
+      "screenOrState": "Home tab showing real export/replay lifecycle records: a full community backup (4 components, Verified) and an in-progress restore-test replay with Cancel/Mark-verified/Record-failure actions",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-data-portability-1/screenshots/final-03-home-real-content.png",
+      "screenshotHash": "80fd2b234815c91c335b635761dbe2bfe61dbbf45f59618eb452b986f8a8f15f"
+    },
+    {
+      "rowId": "dp1-admin",
+      "communityName": "Data Portability Community",
+      "persona": "Owner/Admin (FreshTest)",
+      "workflowId": "export-package",
+      "screenOrState": "Admin tab showing role-specific export operations, including a real 'Partner community handoff' package with editable Package Label and components fields",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-data-portability-1/screenshots/final-04-admin.png",
+      "screenshotHash": "9765a45626996541a6a6902f13fc9db222132263717a90e00f3283394144ba6a"
+    },
+    {
+      "rowId": "dp1-messages-empty",
+      "communityName": "Data Portability Community",
+      "persona": "Owner/Admin (FreshTest)",
+      "workflowId": "member-messaging",
+      "screenOrState": "Messages tab, empty state, exercising CJM.17's Messages-tab copy fix live",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-data-portability-1/screenshots/final-05-messages-empty.png",
+      "screenshotHash": "8094887867af4cca651555c1f0646077836d25b5013974d1b3479e08c8c9ead2"
+    }
+  ]
+}
