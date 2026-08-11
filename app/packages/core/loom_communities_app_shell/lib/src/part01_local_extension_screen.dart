@@ -8,6 +8,7 @@ class _CreatableWorkflowAction {
     required this.machine,
     required this.label,
     required this.cardSurfaceFamily,
+    this.responseTable,
     this.resolvedInitialValues = const {},
   });
 
@@ -15,6 +16,7 @@ class _CreatableWorkflowAction {
   final LoomWorkflowStateMachine machine;
   final String label;
   final String cardSurfaceFamily;
+  final ResponseTableSpec? responseTable;
   final Map<String, dynamic> resolvedInitialValues;
 }
 
@@ -411,18 +413,20 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
-    final (keyPrefix, onCreated) = switch (action.workflowType) {
-      'event-rsvp' => (
-        'new-event',
-        (String instanceId) => _seedEventRsvpResponses(
-          eventId: instanceId,
-          engine: engine,
-          organizerPersonaId:
-              activePersona.accountId ?? activePersona.personaId,
-        ),
-      ),
-      _ => ('new-${action.workflowType}', null),
-    };
+    final shouldSeedResponseRows =
+        action.cardSurfaceFamily == 'event-rsvp' && action.responseTable != null;
+    final keyPrefix = shouldSeedResponseRows
+        ? 'new-event'
+        : 'new-${action.workflowType}';
+    final onCreated = shouldSeedResponseRows
+            ? (String instanceId) => _seedResponseRowsFor(
+            eventId: instanceId,
+            responseWorkflowType: action.responseTable!.workflowType,
+            eventField: action.responseTable!.eventField,
+            engine: engine,
+            organizerPersonaId: activePersona.accountId ?? activePersona.personaId,
+          )
+        : null;
     return EngineNativeArchetypeCreationCard(
       cardSurfaceFamily: action.cardSurfaceFamily,
       workflowType: action.workflowType,
@@ -444,8 +448,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     );
   }
 
-  Future<void> _seedEventRsvpResponses({
+  Future<void> _seedResponseRowsFor({
     required String eventId,
+    required String responseWorkflowType,
+    required String eventField,
     required WorkflowEngineApi engine,
     required String organizerPersonaId,
   }) async {
@@ -453,10 +459,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       communityExtensionId: community.extensionId,
     );
     await engine.createInstances(
-      workflowType: 'event-rsvp-response',
+      workflowType: responseWorkflowType,
       initialInstanceDataList: [
         for (final account in accounts)
-          {'eventId': eventId, 'personaId': account.accountId},
+          {eventField: eventId, 'personaId': account.accountId},
       ],
       personaId: organizerPersonaId,
     );
@@ -1243,6 +1249,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   machine: definition.value,
                   label: action.label!,
                   cardSurfaceFamily: binding.cardSurfaceFamily,
+                  responseTable: binding.responseTable,
                   resolvedInitialValues: resolveTabScopedPrefill(
                     action.prefill,
                     activePersona.personaId,
@@ -1277,6 +1284,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           cardSurfaceFamily: machine.renderBindings.isEmpty
                               ? binding.cardSurfaceFamily
                               : machine.renderBindings.first.cardSurfaceFamily,
+                          responseTable: binding.responseTable,
                           resolvedInitialValues: resolveInstanceScopedPrefill(
                             action.prefill,
                             focusedInstance,
@@ -1584,6 +1592,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         cardSurfaceFamily: machine.renderBindings.isEmpty
                             ? binding.cardSurfaceFamily
                             : machine.renderBindings.first.cardSurfaceFamily,
+                        responseTable: binding.responseTable,
                         resolvedInitialValues: resolveInstanceScopedPrefill(
                           action.prefill,
                           instance,

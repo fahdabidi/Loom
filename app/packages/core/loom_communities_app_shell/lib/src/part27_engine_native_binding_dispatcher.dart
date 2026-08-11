@@ -324,6 +324,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
         return _EventRsvpDetailCard(
           key: contentKey,
           instance: resolved.instance,
+          binding: resolved.binding,
           machine: resolved.machine,
           engine: engine,
           communityExtensionId: communityExtensionId,

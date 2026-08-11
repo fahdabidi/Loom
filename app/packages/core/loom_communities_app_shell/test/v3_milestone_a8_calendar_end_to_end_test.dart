@@ -2419,6 +2419,7 @@ void main() {
           findsOneWidget,
         );
 
+        await tester.ensureVisible(featured);
         await tester.tap(featured);
         await tester.pump();
         expect(

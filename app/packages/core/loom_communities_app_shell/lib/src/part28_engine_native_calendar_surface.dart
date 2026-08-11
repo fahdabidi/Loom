@@ -906,7 +906,9 @@ class _EngineNativeCalendarContentState
     final mutationQueue = _engineNativeMutationQueueFor(widget.engine);
     for (final entry in entries) {
       final response = _viewerResponseRowFor(entry);
+      final responseTable = entry.resolved.binding.responseTable;
       if (response == null || !_isReminderDueFor(entry, response)) continue;
+      if (responseTable == null) continue;
       final responseId = response['\$id'];
       if (responseId is! String ||
           responseId.isEmpty ||
@@ -930,7 +932,7 @@ class _EngineNativeCalendarContentState
           final eventTitle =
               freshEntry.resolved.instance.instanceData['title'] ?? 'Event';
           await widget.engine.applyTransition(
-            workflowType: 'event-rsvp-response',
+            workflowType: responseTable.workflowType,
             instanceId: responseId,
             transitionId: 'send-reminder',
             personaId: widget.personaId,
@@ -1433,6 +1435,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
     super.key,
     required this.instance,
     required this.machine,
+    required this.binding,
     required this.engine,
     required this.communityExtensionId,
     required this.personaId,
@@ -1444,6 +1447,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
 
   final WorkflowInstance instance;
   final LoomWorkflowStateMachine machine;
+  final RenderBinding binding;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
   final String personaId;
@@ -1465,6 +1469,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   final _edits = <String, dynamic>{};
   List<LoomWorkflowTransition> _actions = const [];
   Set<String> _eventActionIds = const {};
+  Set<String> _responseActionIds = const {};
   bool _loadingActions = true;
   bool _mutating = false;
   String? _error;
@@ -1522,7 +1527,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     if (oldWidget.instance != widget.instance ||
         oldWidget.personaId != widget.personaId ||
         oldWidget.machine != widget.machine ||
-        oldWidget.engine != widget.engine) {
+        oldWidget.engine != widget.engine ||
+        oldWidget.binding != widget.binding) {
       _actionRequest++;
       _generation++;
       _edits.clear();
@@ -1633,11 +1639,41 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   /// `event-rsvp` stores a member's selection on that member's response row.
   /// Other workflow types can share this detail-card surface while retaining
   /// their own event-level action model.
-  bool get _usesResponseRows => _instance.workflowType == 'event-rsvp';
+  bool get _usesResponseRows => widget.binding.responseTable != null;
+
+  String? get _responseRowsField {
+    final responseTable = widget.binding.responseTable;
+    if (responseTable == null) return null;
+    final expectedSource =
+        'query(${responseTable.workflowType} where ${responseTable.eventField} == id)';
+    final responseField = widget.machine.instanceDataSchema.entries
+        .where((field) => field.value.source == expectedSource)
+        .firstOrNull;
+    if (responseField == null) {
+      assert(() {
+        debugPrint(
+          'Event-rsvp detail card for ${widget.instance.instanceId} has '
+          'responseTable ${responseTable.workflowType}/${responseTable.eventField} '
+          'but no schema field with source $expectedSource.',
+        );
+        return true;
+      }());
+      return null;
+    }
+    return responseField.key;
+  }
+
+  List<dynamic>? get _viewerResponseRows {
+    final responseRowsField = _responseRowsField;
+    if (responseRowsField == null) return null;
+    final rows = _instance.instanceData[responseRowsField];
+    if (rows is! List) return null;
+    return rows;
+  }
 
   Map<String, dynamic>? get _viewerResponse {
     if (!_usesResponseRows) return null;
-    final responses = _instance.instanceData['responses'];
+    final responses = _viewerResponseRows;
     if (responses is! List) return null;
     for (final response in responses) {
       if (response is Map && response['personaId'] == widget.personaId) {
@@ -1682,7 +1718,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   List<_EventAttendeeGroup> get _attendeeGroups {
     final groups = <String, List<_EventAttendeeEntry>>{};
     if (_usesResponseRows) {
-      final responses = _instance.instanceData['responses'];
+      final responses = _viewerResponseRows;
       if (responses is! List) return const [];
       for (final response in responses) {
         if (response is! Map) continue;
@@ -1741,6 +1777,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
+    final responseTable = widget.binding.responseTable;
     final response = _viewerResponse;
     final request = ++_actionRequest;
     if (_isCurrent(generation, instance, machine, engine, personaId)) {
@@ -1748,16 +1785,10 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         _loadingActions = true;
         _actions = const [];
         _eventActionIds = const {};
+        _responseActionIds = const {};
         _error = null;
         _retry = null;
       });
-    }
-    if (_usesResponseRows && response == null) {
-      if (_isCurrent(generation, instance, machine, engine, personaId) &&
-          request == _actionRequest) {
-        setState(() => _loadingActions = false);
-      }
-      return;
     }
     try {
       final eventActions = await engine.availableTransitionsAsync(
@@ -1767,25 +1798,26 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         instanceData: instance.instanceData,
         personaId: personaId,
       );
-      final responseActions = response == null
+      final responseActions = response == null || responseTable == null
           ? const <LoomWorkflowTransition>[]
           : await engine.availableTransitionsAsync(
-              workflowType: 'event-rsvp-response',
+              workflowType: responseTable.workflowType,
               instanceId: response['\$id'] as String,
               currentState: response['\$state'] as String,
               instanceData: response,
               personaId: personaId,
             );
-      final result = response == null
-          ? eventActions
-          : <LoomWorkflowTransition>[...eventActions, ...responseActions];
       if (!_isCurrent(generation, instance, machine, engine, personaId) ||
           request != _actionRequest) {
         return;
       }
       setState(() {
-        _actions = result;
+        _actions = <LoomWorkflowTransition>[
+          ...eventActions,
+          ...responseActions,
+        ];
         _eventActionIds = eventActions.map((action) => action.id).toSet();
+        _responseActionIds = responseActions.map((action) => action.id).toSet();
         _loadingActions = false;
       });
     } catch (_) {
@@ -1805,13 +1837,14 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final transition = _actions
         .where((candidate) => candidate.id == transitionId)
         .firstOrNull;
-    final declaredInputs = transition?.inputs;
+    if (transition == null) return;
+    final declaredInputs = transition.inputs;
     final inputs = declaredInputs == null || declaredInputs.isEmpty
         ? null
         : await showDialog<Map<String, dynamic>>(
             context: context,
             builder: (context) => GenericTransitionInputDialog(
-              transition: transition!,
+              transition: transition,
               instanceData: _instance.instanceData,
             ),
           );
@@ -1830,10 +1863,21 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final engine = widget.engine;
     final personaId = widget.personaId;
     final response = _viewerResponse;
+    final responseTable = widget.binding.responseTable;
     final appliesToEvent = _eventActionIds.contains(transitionId);
-    if (_usesResponseRows && response == null && !appliesToEvent) {
+    final appliesToResponse = !appliesToEvent &&
+        _responseActionIds.contains(transitionId);
+    if (appliesToResponse &&
+        (_usesResponseRows && (response == null || responseTable == null))) {
       return Future.value();
     }
+    final responseWorkflowType = responseTable?.workflowType;
+    final targetWorkflowType = appliesToResponse
+        ? responseWorkflowType!
+        : instance.workflowType;
+    final targetInstanceId = appliesToResponse
+        ? response!['\$id'] as String
+        : instance.instanceId;
     return _runMutation(
       generation: generation,
       instance: instance,
@@ -1842,17 +1886,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       personaId: personaId,
       operation: () async {
         final result = await engine.applyTransition(
-          workflowType: response == null || appliesToEvent
-              ? instance.workflowType
-              : 'event-rsvp-response',
-          instanceId: response == null || appliesToEvent
-              ? instance.instanceId
-              : response['\$id'] as String,
+          workflowType: targetWorkflowType,
+          instanceId: targetInstanceId,
           transitionId: transitionId,
           personaId: personaId,
           inputs: inputs,
         );
-        if (response != null && !appliesToEvent) {
+        if (appliesToResponse && response != null && !appliesToEvent) {
           final page = await engine.queryInstances(
             tabId: 'calendar',
             personaId: personaId,
@@ -1877,6 +1917,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   Future<void> _applyMakeRecurring(Map<String, dynamic> inputs) {
     final generation = _generation;
     final instance = _instance;
+    final responseTable = widget.binding.responseTable;
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
@@ -1909,7 +1950,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             siblings.addAll(
               page.items.where(
                 (candidate) =>
-                    candidate.workflowType == 'event-rsvp' &&
+                    candidate.workflowType == instance.workflowType &&
                     candidate.instanceData['seriesId'] == seriesId &&
                     candidate.instanceId != instance.instanceId,
               ),
@@ -1925,18 +1966,19 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             }
             cursor = nextCursor;
           }
-          if (siblings.isNotEmpty) {
+          if (siblings.isNotEmpty && responseTable != null) {
+            final responseEventField = responseTable.eventField;
             final accounts = await ActiveIdentityScope.of(context).authApi
                 .listAccounts(
                   communityExtensionId: widget.communityExtensionId,
                 );
             for (final sibling in siblings) {
               await engine.createInstances(
-                workflowType: 'event-rsvp-response',
+                workflowType: responseTable.workflowType,
                 initialInstanceDataList: [
                   for (final account in accounts)
                     {
-                      'eventId': sibling.instanceId,
+                      responseEventField: sibling.instanceId,
                       'personaId': account.accountId,
                     },
                 ],
@@ -2001,7 +2043,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           members.addAll(
             page.items.where(
               (candidate) =>
-                  candidate.workflowType == 'event-rsvp' &&
+                  candidate.workflowType == instance.workflowType &&
                   candidate.instanceData['seriesId'] == seriesId,
             ),
           );
@@ -2027,7 +2069,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             continue;
           }
           final result = await engine.applyTransition(
-            workflowType: 'event-rsvp',
+            workflowType: instance.workflowType,
             instanceId: member.instanceId,
             transitionId: 'cancel-event',
             personaId: personaId,

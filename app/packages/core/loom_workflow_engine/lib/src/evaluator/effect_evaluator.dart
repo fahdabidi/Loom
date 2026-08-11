@@ -55,6 +55,19 @@ dynamic resolveEffectValue(
     if (instanceData.containsKey(fieldName)) {
       return instanceData[fieldName];
     }
+    // "{id}" is deliberately never a key in instanceData -- it's substituted
+    // from the instanceId parameter by the general pass below, so it must
+    // fall through rather than resolve to null here.
+    if (fieldName != 'id') {
+      // A whole-string field reference (as opposed to a field name embedded
+      // in a larger string, handled by the general replaceAll pass below) to
+      // a field the source instance doesn't currently have a value for
+      // resolves to null, mirroring the {input.X} case just above -- not to
+      // the literal, unsubstituted "{fieldName}" text the general pass below
+      // would otherwise leave behind, which downstream formula/type
+      // consumers can never expect.
+      return null;
+    }
   }
   if (value is String) {
     var resolved = value

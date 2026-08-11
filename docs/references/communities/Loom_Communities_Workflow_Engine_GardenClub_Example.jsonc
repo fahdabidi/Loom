@@ -97,7 +97,7 @@
                 "fields": {
                   "title": "{title}", "eventDate": "{eventDate}", "eventTime": "{eventTime}",
                   "location": "{location}", "capacity": "{capacity}",
-                  "reminderOffsetHours": "{reminderOffsetHours}"
+                  "reminderOffsetHours": "{reminderOffsetHours}", "seriesId": "$newSeriesId"
                 },
                 "recurrenceRule": { "freq": "{input.freq}", "interval": 1, "count": "{input.count}" }
               }
@@ -152,7 +152,10 @@
           "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
             "displayIcon": "event_seat", "labelTemplate": "{value} spots left", "displayContexts": ["detail"] },
           "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" },
+
+          "seriesId": { "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayContexts": [] }
         }
       },
 

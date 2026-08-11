@@ -135,6 +135,11 @@ class _GenericWorkflowCreationCardState
 
   dynamic _normalizedValue(String key, InstanceDataField schema) {
     final value = _values[key];
+    if (schema.type == 'number') {
+      if (value is num) return value;
+      if (value is String) return num.tryParse(value.trim()) ?? value;
+      return value;
+    }
     if (schema.type != 'list' && schema.type != 'personaId[]') return value;
     if (value is Iterable) return value.toList(growable: false);
     if (value is String) {
