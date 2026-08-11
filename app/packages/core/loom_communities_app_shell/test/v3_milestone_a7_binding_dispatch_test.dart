@@ -7,7 +7,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-const _syntheticDisabledTabId = 'nonexistent-tab';
+const _customTabId = 'nonexistent-tab';
 
 LoomWorkflowStateMachine _machine(
   String type,
@@ -267,9 +267,9 @@ void main() {
   });
 
   testWidgets(
-    'every disabled tab publishes its keyed empty builder without querying',
+    'every arbitrary tab queries engine and publishes keyed empty builder when no bindings exist',
     (tester) async {
-      for (final tab in [_syntheticDisabledTabId]) {
+      for (final tab in [_customTabId]) {
         final engine = _CountingEngine(
           ({required tabId, required personaId, required limit, cursor}) =>
               Future.value(const InstancePage(items: [])),
@@ -291,7 +291,7 @@ void main() {
         );
         await tester.pump();
         expect(received, 0, reason: tab);
-        expect(engine.queries, 0, reason: tab);
+        expect(engine.queries, 1, reason: tab);
         expect(
           find.byKey(Key('engine-native-bindings-empty-$tab-p')),
           findsOneWidget,
@@ -448,11 +448,10 @@ void main() {
   );
 
   testWidgets(
-    'stale loads and unsupported-tab invalidation cannot publish or paginate',
+    'stale loads and real-tab switching cannot publish stale callback data',
     (tester) async {
       final a = Completer<InstancePage>();
       final b = Completer<InstancePage>();
-      final calendar = Completer<InstancePage>();
       final engineA = _CountingEngine(
         ({required tabId, required personaId, required limit, cursor}) =>
             a.future,
@@ -461,7 +460,13 @@ void main() {
         ({required tabId, required personaId, required limit, cursor}) =>
             b.future,
       );
-      final machine = _machine('stale', [_binding('calendar')]);
+      final machine = _machine(
+        'stale',
+        [
+          _binding('calendar'),
+          _binding('giving'),
+        ],
+      );
       Widget widget(WorkflowEngineApi engine, String tab, String persona) =>
           _host(
             EngineNativeBindingDispatcher(
@@ -469,8 +474,9 @@ void main() {
               definitions: {'stale': machine},
               tabId: tab,
               personaId: persona,
-              builder: (_, bindings, __) =>
-                  Text('published-$persona-${bindings.length}'),
+              builder: (_, bindings, __) => Text(
+                'published-$persona-${bindings.map((b) => b.instance.instanceId).join(",")}',
+              ),
             ),
           );
       await tester.pumpWidget(widget(engineA, 'calendar', 'A'));
@@ -496,28 +502,158 @@ void main() {
       expect(engineA.queries, 1);
       b.complete(InstancePage(items: [_instance('b', 'stale')]));
       await tester.pumpAndSettle();
-      expect(find.text('published-B-1'), findsOneWidget);
-      final old = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
-            calendar.future,
+      expect(find.text('published-B-b'), findsOneWidget);
+
+      final staleCalendar = Completer<InstancePage>();
+      final staleGiving = Completer<InstancePage>();
+      final oldWithTwoTabCompletions = _CountingEngine(
+        ({required tabId, required personaId, required limit, cursor}) {
+          if (tabId == 'calendar') return staleCalendar.future;
+          if (tabId == 'giving') return staleGiving.future;
+          return Future.value(const InstancePage(items: []));
+        },
       );
-      await tester.pumpWidget(widget(old, 'calendar', 'C'));
+      await tester.pumpWidget(widget(oldWithTwoTabCompletions, 'calendar', 'C'));
       expect(
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
       );
-      await tester.pumpWidget(widget(old, _syntheticDisabledTabId, 'C'));
+      await tester.pumpWidget(
+        widget(oldWithTwoTabCompletions, 'giving', 'C'),
+      );
       await tester.pump();
       expect(
-        find.byKey(
-          const Key('engine-native-bindings-empty-nonexistent-tab-C'),
-        ),
+        find.byKey(const Key('engine-native-bindings-loading-giving-C')),
         findsOneWidget,
       );
-      expect(old.queries, 1);
-      calendar.complete(InstancePage(items: [_instance('old', 'stale')]));
+      staleGiving.complete(
+        InstancePage(
+          items: [_instance('fresh-giving', 'stale')],
+          hasMore: false,
+        ),
+      );
       await tester.pumpAndSettle();
-      expect(find.textContaining('published-C-1'), findsNothing);
+      expect(find.textContaining('published-C-fresh-giving'), findsOneWidget);
+      staleCalendar.complete(
+        InstancePage(items: [_instance('stale-calendar', 'stale')]),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('published-C-stale-calendar'),
+        findsNothing,
+      );
+      expect(find.textContaining('published-C-fresh-giving'), findsOneWidget);
+      await tester.pumpWidget(widget(oldWithTwoTabCompletions, 'calendar', 'C'));
+      expect(
+        find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'custom arbitrary tabId uses generic list dispatch from appShell metadata',
+    (tester) async {
+      const tabId = 'custom-schedule';
+      const tabInstanceId = 'custom-instance-1';
+      const extensionId = 'ext-a7-generic-tab-test';
+      const experienceConfiguration = {
+        'experienceSchemaVersion': 2,
+        'workflowGrammarVersion': 1,
+        'workflowDefinitions': {
+          'schedule': {
+            'workflowId': 'schedule',
+            'initialState': 'open',
+            'states': {
+              'open': {'label': 'Open'},
+            },
+            'transitions': <dynamic>[],
+            'renderBindings': [
+              {
+                'tabId': tabId,
+                'states': ['open'],
+                'role': 'any',
+                'cardSurfaceFamily': 'event',
+                'bindingKind': 'primary',
+              },
+            ],
+          },
+        },
+        'workflowInstances': [
+          {
+            'instanceId': tabInstanceId,
+            'workflowType': 'schedule',
+            'currentState': 'open',
+            'instanceData': {'title': 'Sprint planning'},
+            'createdByPersonaId': 'owner',
+          },
+        ],
+      };
+
+      final experience = experienceForExtensionId(
+        extensionId,
+        experienceConfiguration: experienceConfiguration,
+      );
+      await workflowEngineForExtensionId(extensionId);
+      final tabs = appShellTabsFor(
+        experience: experience,
+        personaId: 'local-member',
+        appShellConfiguration: const {
+          'tabs': [
+            {
+              'tabId': tabId,
+              'label': 'Custom schedule',
+            },
+          ],
+        },
+      );
+      final customTab = tabs.singleWhere((tab) => tab.tabId == tabId);
+      expect(customTab.rendererContractId, 'engine-native-generic-list');
+      final persona = const LoomPersonaDefinition(
+        personaId: 'local-member',
+        label: 'Member',
+        roleLabel: 'Member',
+        description: 'Engine-native test member',
+      );
+      // _TabNativeRenderer is library-private to loom_communities_app_shell
+      // (defined in a `part of` file) and unreachable from this test file,
+      // which only imports the public barrel. Its
+      // 'EngineNativeGenericListSurface' case is a direct, unconditional
+      // pass-through to EngineNativeListSurface(tabId: selectedTab.tabId,
+      // ...) -- see part02_tab_shell.dart -- so exercising that public
+      // widget directly, with the exact same arguments the switch case
+      // constructs, proves the same behavior: an arbitrary community-
+      // declared tabId with no rendererContractId override renders its own
+      // real instance data, not Home's content or an empty state.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ActiveIdentityScope(
+            identity: ActiveIdentityContext(
+              accountId: null,
+              authApi: LocalAuthApi(),
+              personaId: persona.personaId,
+            ),
+            child: Scaffold(
+              body: EngineNativeListSurface(
+                experience: experience,
+                persona: persona,
+                tabId: customTab.tabId,
+                accent: Colors.teal,
+                modernTheme: null,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('engine-native-list-item-$tabId-$tabInstanceId-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('engine-native-list-empty-$tabId')),
+        findsNothing,
+      );
     },
   );
 

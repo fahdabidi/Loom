@@ -3615,6 +3615,15 @@ class _TabNativeRenderer extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
         );
+      case 'EngineNativeGenericListSurface':
+        return EngineNativeListSurface(
+          experience: experience,
+          persona: persona,
+          tabId: selectedTab.tabId,
+          accent: accent,
+          modernTheme: modernTheme,
+          onInstanceScopedCreate: onInstanceScopedCreate,
+        );
       case 'MarketplaceTabSurface':
         if (_hasEngineNativeBinding(experience, 'marketplace')) {
           return EngineNativeMarketplaceSurface(

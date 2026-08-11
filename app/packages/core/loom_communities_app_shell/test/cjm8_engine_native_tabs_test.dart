@@ -52,10 +52,40 @@ class _EngineNativeCommunityFixture {
   _EngineNativeCommunityFixture({
     required this.experience,
     required this.engine,
+    required this.declaredTabIds,
   });
 
   final LoomExperienceDefinition experience;
   final WorkflowEngineApi engine;
+  final Set<String> declaredTabIds;
+}
+
+Set<String> _declaredTabIdsFromShell(Object? value) {
+  if (value is! Map<String, Object?>) {
+    return const {};
+  }
+  final ids = <String>{};
+  final appTabs = _readStringValuesFromList(value['tabs']);
+  final personaTabs = value['personaTabs'];
+  ids.addAll(appTabs);
+  if (personaTabs is Map<String, Object?>) {
+    for (final tabList in personaTabs.values) {
+      ids.addAll(_readStringValuesFromList(tabList));
+    }
+  }
+  return ids;
+}
+
+Set<String> _readStringValuesFromList(Object? value) {
+  if (value is! List<Object?>) {
+    return const {};
+  }
+  return {
+    for (final item in value)
+      if (item is Map<String, Object?>)
+        if (item['tabId'] is String && (item['tabId'] as String).trim().isNotEmpty)
+          (item['tabId'] as String).trim(),
+  };
 }
 
 class _SeededInstanceFixtureCheck {
@@ -90,13 +120,22 @@ Future<_EngineNativeCommunityFixture> _installFixture(String extensionId) async 
   final source = jsonDecode(
     stripJsonComments(_fixtureFile(sourcePath).readAsStringSync()),
   ) as Map<String, dynamic>;
+  final experienceRaw = source['experience'] as Map<String, Object?>?;
+  final declaredTabIds = {
+    ..._declaredTabIdsFromShell(source['appShell']),
+    ..._declaredTabIdsFromShell(experienceRaw?['appShell']),
+  };
   final experience = experienceForExtensionId(
     extensionId,
     displayName: source['displayName'] as String?,
-    experienceConfiguration: source['experience'] as Map<String, Object?>,
+    experienceConfiguration: experienceRaw ?? const <String, Object?>{},
   );
   final engine = await workflowEngineForExtensionId(extensionId);
-  return _EngineNativeCommunityFixture(experience: experience, engine: engine);
+  return _EngineNativeCommunityFixture(
+    experience: experience,
+    engine: engine,
+    declaredTabIds: declaredTabIds,
+  );
 }
 
 Future<bool> _tabRendersSeededInstance({
@@ -115,12 +154,13 @@ Future<bool> _tabRendersSeededInstance({
 
 void main() {
   test(
-    'engine-native communities keep only closed real tab IDs and drop obsolete custom tab IDs',
+    'engine-native communities keep only allowed appShell/open canonical tab IDs',
     () async {
       for (final extensionId in _fixturesByExtension.keys) {
         final fixture = await _installFixture(extensionId);
         final personas = _personasByExtension[extensionId]!;
         final obsolete = _obsoleteIdsByExtension[extensionId]!;
+        final allowedTabIds = {..._engineNativeTabIds, ...fixture.declaredTabIds};
         for (final personaId in personas) {
           final tabIds = [
             for (final tab in appShellTabsFor(
@@ -131,10 +171,10 @@ void main() {
           ];
 
           expect(
-            tabIds.toSet().difference(_engineNativeTabIds),
+            tabIds.toSet().difference(allowedTabIds),
             isEmpty,
             reason:
-                'Extension $extensionId persona $personaId has non-real tab IDs: $tabIds',
+                'Extension $extensionId persona $personaId has tabs outside home/messages/special + community-declared set: $tabIds',
           );
 
           for (final obsoleteId in obsolete) {

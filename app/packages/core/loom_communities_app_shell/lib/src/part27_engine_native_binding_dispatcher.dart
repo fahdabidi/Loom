@@ -74,14 +74,6 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
 
 class _EngineNativeBindingDispatcherState
     extends State<EngineNativeBindingDispatcher> {
-  static const _enabledTabs = <String>{
-    'admin',
-    'calendar',
-    'giving',
-    'home',
-    'marketplace',
-    'messages',
-  };
   int _generation = 0;
   List<EngineNativeResolvedBinding>? _bindings;
   Object? _error;
@@ -131,10 +123,6 @@ class _EngineNativeBindingDispatcherState
       if (clearBindings) _bindings = null;
       _error = null;
     });
-    if (!_enabledTabs.contains(tabId)) {
-      _publishSuccess(generation, const <EngineNativeResolvedBinding>[]);
-      return;
-    }
     _load(
       generation: generation,
       engine: engine,
@@ -201,7 +189,6 @@ class _EngineNativeBindingDispatcherState
         for (var index = 0; index < machine.renderBindings.length; index++) {
           final binding = machine.renderBindings[index];
           if (binding.tabId == tabId &&
-              _enabledTabs.contains(binding.tabId) &&
               resolved.any((candidate) => identical(candidate, binding))) {
             output.add(
               EngineNativeResolvedBinding(

@@ -859,6 +859,29 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'May host unassigned surfaces, but primary workflows should move to a tab-native renderer when a dedicated tab exists.',
   ),
+  'engine-native-generic-list': LoomTabRendererContract(
+    rendererId: 'EngineNativeGenericListSurface',
+    label: 'Generic engine-native instance list',
+    tabIds: const [],
+    surfaceFamilies: const [],
+    requiredAnatomy: const [
+      'No native tab-specific shape is required; content is fully driven by package-declared appShell metadata and render bindings.',
+    ],
+    requiredInteractions: const [
+      'queryInstances',
+      'resolveCommunityTheme',
+      'resolvePersonaTabs',
+    ],
+    requiredStates: const [
+      'Workflow instances as declared in community JSON',
+      'Any tab-specific content declared in appShell',
+    ],
+    evidenceRequirements: const [
+      'Generic engine-native list-root and item rendering',
+    ],
+    fallbackPolicy:
+        'Defer to community-declared appShell configuration and renderBindings; this contract guarantees list-based surfacing only.',
+  ),
   'calendar-agenda-event-detail': LoomTabRendererContract(
     rendererId: 'CalendarTabSurface',
     label: 'Calendar month/week/agenda and event detail',

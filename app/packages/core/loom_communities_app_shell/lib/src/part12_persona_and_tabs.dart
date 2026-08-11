@@ -608,7 +608,42 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
     for (final tab in generatedTabs) tab.tabId: tab,
   };
   for (final override in overrides) {
-    mergedById[override.tabId] = override.toTabSpec();
+    if (_engineNativeSpecialTabIdsForCosmetics.contains(override.tabId) &&
+        mergedById[override.tabId] != null) {
+      final generated = mergedById[override.tabId]!;
+      mergedById[override.tabId] = LoomAppShellTabSpec(
+        tabId: generated.tabId,
+        label: override.label,
+        icon: _tabIconForKey(override.iconKey),
+        description: override.description,
+        rendererContractId: generated.rendererContractId,
+        pinningPolicy: generated.pinningPolicy,
+        pinningPolicyRationale: generated.pinningPolicyRationale,
+        sectionTitles: generated.sectionTitles,
+        cardSurfaceFamilies: generated.cardSurfaceFamilies,
+        pinnedWorkflowIds: generated.pinnedWorkflowIds,
+        // The generated 'admin' entry's visiblePersonaIds is a
+        // self-referential [personaId] (always trivially true once
+        // included at all -- real gating already happened via
+        // _personaCanAdministerAnyWorkflow above, in _generatedAppShellTabsFor).
+        // A legacy declarative override that declares its OWN real,
+        // persona-independent permission list (e.g. ext_hoa's admin tab:
+        // visiblePersonaIds: ['hoa-board']) must keep governing final
+        // visibility -- preferring the generated value here would let
+        // "admin" leak to any persona the (legacy, quirky, unrelated to
+        // this ticket) _personaCanAdministerAnyWorkflow heuristic happens
+        // to also generate an entry for, discarding the override's real
+        // permission list. Only fall back to generated's value when the
+        // override didn't declare one at all (the common case once Ticket 4
+        // adds cosmetic-only JSON declarations with no visiblePersonaIds).
+        visiblePersonaIds: override.visiblePersonaIds.isNotEmpty
+            ? override.visiblePersonaIds
+            : generated.visiblePersonaIds,
+        requiredPermission: generated.requiredPermission,
+      );
+    } else {
+      mergedById[override.tabId] = override.toTabSpec();
+    }
   }
   final orderedIds = <String>[
     'home',
@@ -648,6 +683,12 @@ const _engineNativeTabIds = {
   'admin',
   'messages',
 };
+const _engineNativeSpecialTabIdsForCosmetics = {
+  'calendar',
+  'marketplace',
+  'giving',
+  'admin',
+};
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   required String extensionId,
@@ -664,10 +705,21 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   );
   // The static per-extension tables below are the legacy, hardcoded-by-
   // community declarations (CJM.7/CJM.8's own target) -- filtered to the
-  // closed six-tabId set for engine-native experiences. appShellConfiguration
-  // (package/persona-supplied at call time, e.g. by a real package's own
-  // config or a test fixture) is a different, orthogonal mechanism and is
-  // never filtered here, regardless of isEngineNativeExperience.
+  // closed six-tabId set for engine-native experiences. This is NOT just an
+  // obsolete-id filter: some real communities (e.g. Camera Club's calendar
+  // tab, labeled "Walks") still get their special-4 (calendar/marketplace/
+  // giving/admin) cosmetic override from this legacy table, since Ticket 4
+  // (migrating those overrides into appShell.tabs[] JSON) hasn't landed
+  // yet -- dropping the whole table for engine-native experiences would
+  // silently regress those communities' tab labels/icons/descriptions back
+  // to the generic hardcoded fallback. Filtering to the closed six keeps
+  // obsolete custom ids (critique, books, matches, rankings, etc.) out
+  // while preserving the special-4's legitimate overrides; once a real
+  // appShell.tabs[]/personaTabs JSON declaration exists for the same tabId
+  // (packageGlobal/packagePersona below), it's appended after this table in
+  // the returned list, so later-wins merge order in
+  // _mergeDeclarativeTabSpecs already gives JSON declarations precedence --
+  // no special-casing needed here for that handoff.
   var global = _declarativeTabSpecsByExtensionId[extensionId] ?? const [];
   var persona =
       _declarativeTabSpecsByExtensionAndPersona['$extensionId::$personaId'] ??
@@ -710,12 +762,14 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
   final tabId = _readShellString(value, const ['tabId', 'id']);
   final label = _readShellString(value, const ['label', 'title']);
   final iconKey = _readShellString(value, const ['iconKey', 'icon']) ?? 'home';
-  final rendererContractId = _readShellString(value, const [
-    'rendererContractId',
-    'renderer',
-    'rendererId',
-  ]);
-  if (tabId == null || label == null || rendererContractId == null) {
+  final rendererContractId =
+      _readShellString(value, const [
+        'rendererContractId',
+        'renderer',
+        'rendererId',
+      ]) ??
+      'engine-native-generic-list';
+  if (tabId == null || label == null) {
     return null;
   }
   return LoomDeclarativeTabSpec(
