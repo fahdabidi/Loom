@@ -1061,6 +1061,7 @@ class _EngineNativeCalendarContentState
             modernTheme: theme,
             accent: theme.accent ?? widget.accent,
             selectedDate: widget.presentation.selectedDate,
+            today: widget.currentDate(),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -2960,6 +2961,7 @@ class _EngineNativeMonthGrid extends StatelessWidget {
     required this.modernTheme,
     required this.accent,
     required this.selectedDate,
+    required this.today,
   });
 
   final DateTime month;
@@ -2969,14 +2971,27 @@ class _EngineNativeMonthGrid extends StatelessWidget {
   final LoomCardTheme modernTheme;
   final Color accent;
   final String? selectedDate;
+  final DateTime today;
 
   @override
   Widget build(BuildContext context) {
     final first = DateTime(month.year, month.month);
     final start = first.subtract(Duration(days: first.weekday - 1));
+    final todayKey = _calendarDay(today);
     return Column(
       key: const ValueKey('engine-native-calendar-month-grid'),
       children: [
+        Row(
+          key: const ValueKey('engine-native-calendar-weekday-header'),
+          children: [
+            for (var weekday = 0; weekday < 7; weekday++)
+              Expanded(
+                child: Center(
+                  child: Text(_calendarWeekdayAbbreviations[weekday]),
+                ),
+              ),
+          ],
+        ),
         for (var week = 0; week < 6; week++)
           Row(
             children: [
@@ -2988,6 +3003,9 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                         byDay[_calendarDay(date)] ?? const <_CalendarEntry>[];
                     final dateKey = _calendarDay(date);
                     final selected = dateKey == selectedDate;
+                    final isToday = dateKey == todayKey;
+                    final todayAccent = (modernTheme.accent ?? accent)
+                        .withValues(alpha: 0.12);
                     return Expanded(
                       child: InkWell(
                         onTap: () => onSelectDate(dateKey),
@@ -3001,63 +3019,100 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                         .withValues(alpha: 0.24),
                                     modernTheme.resolvedFill,
                                   )
+                                : isToday
+                                ? Color.alphaBlend(
+                                    todayAccent,
+                                    modernTheme.resolvedFill,
+                                  )
                                 : modernTheme.resolvedFill,
                             border: Border.all(
-                              color: modernTheme.resolvedBorder,
+                              color: isToday ? todayAccent : modernTheme.resolvedBorder,
+                              width: isToday ? 2 : 1,
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Stack(
                             children: [
-                              Text(
-                                '${date.day}',
-                                style: TextStyle(
-                                  color: modernTheme.resolvedHeading,
+                              Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${date.day}',
+                                      style: TextStyle(
+                                        color: modernTheme.resolvedHeading,
+                                      ),
+                                    ),
+                                    for (final entry in events)
+                                      InkWell(
+                                        key: ValueKey(
+                                          'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                                        ),
+                                        onTap: () =>
+                                            onSelectEntry(entry.identity),
+                                        child:
+                                            entry.resolved.binding.styleField ==
+                                                    null
+                                                ? Text(
+                                                    entry.title,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color:
+                                                          modernTheme.resolvedBody,
+                                                    ),
+                                                  )
+                                                : Row(
+                                                    children: [
+                                                      Container(
+                                                        width: 5,
+                                                        height: 5,
+                                                        margin:
+                                                            const EdgeInsets.only(
+                                                              right: 3,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              _calendarEntryStyleColor(
+                                                                entry,
+                                                                accent,
+                                                              ),
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          entry.title,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style: TextStyle(
+                                                            color: modernTheme
+                                                                .resolvedBody,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                        ),
+                                  ],
                                 ),
                               ),
-                              for (final entry in events)
-                                InkWell(
-                                  key: ValueKey(
-                                    'engine-native-calendar-entry-${entry.instanceId}-${entry.resolved.definitionBindingIndex}',
+                              if (isToday)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    key: ValueKey(
+                                      'engine-native-calendar-today-$dateKey',
+                                    ),
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: todayAccent,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                  onTap: () => onSelectEntry(entry.identity),
-                                  child:
-                                      entry.resolved.binding.styleField == null
-                                      ? Text(
-                                          entry.title,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: modernTheme.resolvedBody,
-                                          ),
-                                        )
-                                      : Row(
-                                          children: [
-                                            Container(
-                                              width: 5,
-                                              height: 5,
-                                              margin: const EdgeInsets.only(
-                                                right: 3,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: _calendarEntryStyleColor(
-                                                  entry,
-                                                  accent,
-                                                ),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                entry.title,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color:
-                                                      modernTheme.resolvedBody,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
                                 ),
                             ],
                           ),

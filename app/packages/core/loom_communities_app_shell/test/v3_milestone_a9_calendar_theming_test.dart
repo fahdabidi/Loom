@@ -244,6 +244,45 @@ void main() {
   );
 
   testWidgets(
+    'engine-native Calendar month grid shows Monday-first weekday header labels',
+    (tester) async {
+      final installed = (await tester.runAsync(() => _install('a9-theme')))!;
+      try {
+        await tester.pumpWidget(
+          _engineCalendar(
+            installed,
+            theme,
+            currentDate: () => DateTime(2026, 7, 10),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+        final header = find.byKey(
+          const ValueKey('engine-native-calendar-weekday-header'),
+        );
+        expect(header, findsOneWidget);
+        final headerLabels = tester
+            .widgetList<Text>(
+              find.descendant(
+                of: header,
+                matching: find.byType(Text),
+              ),
+            )
+            .map((widget) => widget.data!)
+            .toList();
+        expect(
+          headerLabels,
+          equals(const ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
     'engine-native Calendar selected date has an accent-driven highlight',
     (tester) async {
       final installed = (await tester.runAsync(() => _install('a9-selected')))!;
@@ -259,6 +298,42 @@ void main() {
             _decoration(tester, 'engine-native-calendar-date-2026-07-09').color,
           ),
         );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'engine-native Calendar today marker appears on month cell for injected today',
+    (tester) async {
+      final installed = (await tester.runAsync(() => _install('a9-selected')))!;
+      try {
+        await tester.pumpWidget(
+          _engineCalendar(
+            installed,
+            theme,
+            currentDate: () => DateTime(2026, 7, 10),
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-month-grid')),
+        );
+        final todayMarker = find.byKey(
+          const ValueKey('engine-native-calendar-today-2026-07-10'),
+        );
+        expect(todayMarker, findsOneWidget);
+        final todayCell = tester.widget<Container>(
+          find.byKey(const ValueKey('engine-native-calendar-date-2026-07-10')),
+        );
+        final todayDecoration = todayCell.decoration! as BoxDecoration;
+        final otherCell = tester.widget<Container>(
+          find.byKey(const ValueKey('engine-native-calendar-date-2026-07-11')),
+        );
+        final otherDecoration = otherCell.decoration! as BoxDecoration;
+        expect(todayDecoration.border!.top.width, greaterThan(1));
+        expect(otherDecoration.border!.top.width, equals(1));
       } finally {
         await tester.runAsync(installed.dispose);
       }
