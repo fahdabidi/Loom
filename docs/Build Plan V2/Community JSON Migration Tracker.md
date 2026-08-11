@@ -112,6 +112,35 @@ of them in `part02_tab_shell.dart`; their §6 walkthroughs can proceed in any or
    those). Requires careful regression verification (a Regression Impact Judge dispatch, given this is shared
    routing code touching 6 communities at once) since the shims currently deliver a *working* (if
    wrong-data) experience real code may still reference.
+
+**Ticket CJM.7 (done, 2026-08-10, commit `4a7f3f21`) — first pass, PARTIAL.** Removed all 42
+`if (_isXxxEngineExperience(experience))` gate blocks from `_TabNativeRenderer.build`
+(`part02_tab_shell.dart`). `flutter analyze` clean (2 expected new `unused_element_parameter` warnings on
+the now-dead shim constructors); full `loom_communities_app_shell` suite 214/215, identical to baseline.
+
+**A dedicated Regression Impact Judge dispatch (required per this section's own standing rule) found CJM.7
+alone is NOT safe to treat as closing this gap.** 5 of the 8 `rendererId` cases in `_TabNativeRenderer.build`
+(`CalendarTabSurface`/`MessagesTabSurface`/`MarketplaceTabSurface`/`PaymentGivingTabSurface`/
+`AdminReviewComposeTabSurface`) already had a working `_hasEngineNativeBinding`/`_hasEngineNativeCalendarBinding`
+fallback beneath the deleted gates and now correctly render the real JSON. **3 cases never had any such
+fallback at all** (`WorkflowStatusSurface`, `CareVolunteerTabSurface`, `DocumentsTabSurface` — only checked
+legacy typed struct fields `architecturalRequest`/`documentLibrary` that only Cedar Commons HOA's schema
+populates, never true for any of the six communities' real `workflowDefinitions`-based JSON) — so CJM.7
+turned "wrong legacy fixture content" into "literally blank `_TabPlaceholderSurface`" for: Garden Club's
+`care` tab; Camera Club's `critique` tab; Chess Club's `matches`/`rankings`/`documents`("Rules") tabs;
+Neighborhood Book Club's `books`/`search`/`documents`("Materials") tabs; Masjid Nur's `care`/`search` tabs;
+Riverside Youth Soccer's `registration`/`team`/`documents`("Waivers") tabs. None of this is caught by the
+green test suite (no existing test exercises these 3 rendererId cases). Cedar Commons HOA, Tabletop Club,
+and the 3 non-hybrid communities confirmed unaffected either way (no overlap with the deleted gates).
+
+**Root Cause Agent dispatched 2026-08-10** (`data/root_cause_brief_cjm8_missing_fallbacks.md`) to determine
+the exact correct fix shape before writing CJM.8 — specifically whether `selectedTab` (already in scope in
+`_TabNativeRenderer.build`) carries the real closed-enum `tabId` dynamically (so the fix can mirror the
+working 5 cases' pattern with `selectedTab.tabId` instead of a hardcoded literal), and whether multiple
+differently-labeled tabs within one community sharing a single real tabId is a genuine new gap or an
+already-accepted limitation of the closed-6-tabId model (§0.1 finding #1). **This section's row does not
+close, and no §6 walkthrough should be (re-)run for the 6 affected communities, until CJM.8 lands and is
+itself independently verified + Regression Impact Judged.**
 3. Only then run/re-run §6 walkthroughs for the 6 previously-blocked communities, starting with Garden Club
    (whose first-pass review is already known-invalid per above).
 
