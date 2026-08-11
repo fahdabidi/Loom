@@ -142,7 +142,9 @@ void main() {
           scrollFinder,
           const Offset(0, -240),
         );
-        await tester.pumpAndSettle();
+        for (var attempt = 0; attempt < 10; attempt++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
 
         await tester.ensureVisible(lastAgendaTileFinder);
         final agendaRect = tester.getRect(lastAgendaTileFinder);
