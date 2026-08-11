@@ -133,16 +133,46 @@ Riverside Youth Soccer's `registration`/`team`/`documents`("Waivers") tabs. None
 green test suite (no existing test exercises these 3 rendererId cases). Cedar Commons HOA, Tabletop Club,
 and the 3 non-hybrid communities confirmed unaffected either way (no overlap with the deleted gates).
 
-**Root Cause Agent dispatched 2026-08-10** (`data/root_cause_brief_cjm8_missing_fallbacks.md`) to determine
-the exact correct fix shape before writing CJM.8 — specifically whether `selectedTab` (already in scope in
-`_TabNativeRenderer.build`) carries the real closed-enum `tabId` dynamically (so the fix can mirror the
-working 5 cases' pattern with `selectedTab.tabId` instead of a hardcoded literal), and whether multiple
-differently-labeled tabs within one community sharing a single real tabId is a genuine new gap or an
-already-accepted limitation of the closed-6-tabId model (§0.1 finding #1). **This section's row does not
-close, and no §6 walkthrough should be (re-)run for the 6 affected communities, until CJM.8 lands and is
-itself independently verified + Regression Impact Judged.**
-3. Only then run/re-run §6 walkthroughs for the 6 previously-blocked communities, starting with Garden Club
-   (whose first-pass review is already known-invalid per above).
+**Root Cause Agent dispatched 2026-08-10** (`data/root_cause_brief_cjm8_missing_fallbacks.md`,
+report at `data/root_cause_report_cjm8_missing_fallbacks.md`) — found, with high confidence, that
+`selectedTab.tabId` is the *App Shell navigation* ID, not the engine's closed-enum binding ID, so a dynamic
+`selectedTab.tabId` fallback would remain empty by construction; a static alias table was also ruled out
+(several obsolete IDs collapse onto the same real tabId, which would render identical undifferentiated
+content under multiple visually-distinct labels — a new regression, not a faithful recreation). **The real
+fix is upstream, at tab-construction time**: `appShellTabsFor`/`_declarativeTabSpecsFor` must stop merging
+each community's legacy declarative custom-ID tab specs (`_declarativeTabSpecsByExtensionId`) into
+engine-native experiences' navigation at all, not try to route around them at render time.
+
+**Ticket CJM.8 (done, 2026-08-10, commits `4f43defb` + `f8075d3e`) — fully closed.** First commit
+implemented the root-cause report's recommendation: `appShellTabsFor`/`_mergeDeclarativeTabSpecs`/
+`_declarativeTabSpecsFor` now compute `isEngineNativeExperience` and filter both the generated base tab list
+and declarative overrides down to the six real tabIds for engine-native experiences, dropping all 9 named
+obsolete custom IDs across the 6 communities; real-tabId label overrides (Camera Club's `calendar`→"Walks",
+Garden Club's `marketplace`→"Exchange") confirmed still working; Cedar Commons HOA's legacy behavior
+confirmed byte-for-byte unchanged; 4 new regression tests added
+(`test/cjm8_engine_native_tabs_test.dart`). Independent verification (mine) found the first commit's filter
+was scoped too broadly — it applied to **every** declarative-tab source, not just the static per-extension
+legacy table, breaking 2 unrelated test fixtures (`authz_p4b_permission_wiring_test.dart`'s synthetic
+`private-surface` tab, `notification_dedicated_tab_test.dart`'s `notification-inbox` tab) that legitimately
+declare `workflowDefinitions` for unrelated testing purposes via `appShellConfiguration`, never intended to
+be constrained to the 6-community legacy-tab problem. Fixed directly (`f8075d3e`, not a Codex dispatch — a
+precise, well-understood scoping correction): the engine-native filter now applies **only** to the two static
+per-extension sources (`_declarativeTabSpecsByExtensionId`/`_declarativeTabSpecsByExtensionAndPersona`),
+never to `appShellConfiguration`-supplied tabs. Full suite back to 218 passed / 1 failed (baseline 214 +
+CJM.8's own 4 new tests, same single pre-existing named flaky failure).
+
+**Regression Impact Judge dispatched and completed** — independently re-ran the full suite (confirmed
+218/1), traced the fix boundary directly in source (confirmed correct: every real community's JSON has zero
+`appShellConfiguration` usage, so the filter's scope split only matters for test fixtures, exactly as
+intended), swept all 11 real communities individually (6 originally-affected ones confirmed fixed via the
+new tests; Cedar Commons HOA confirmed a no-op since its only static-table tab, `admin`, is already in the
+closed six; Tabletop Club and the 3 non-hybrid communities confirmed never in the static table at all), and
+grepped for any other uncovered `workflowDefinitions`+custom-tab combination (found none). **Verdict: CJM.8
+can be marked fully closed; all 6 previously-blocked communities' §6 walkthroughs may proceed.**
+3. Now run/re-run §6 walkthroughs for the 6 previously-blocked communities, starting with Garden Club
+   (whose first-pass review is already known-invalid per above), plus finish the 3 non-hybrid communities'
+   walkthroughs (Member Social Space install already proven working, walkthrough itself not yet run to
+   completion; Ad-Free Community and Data Portability Community not yet started).
 
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
