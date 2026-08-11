@@ -199,6 +199,8 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   Map<String, Object?> appShellConfiguration = const {},
   bool? hasActiveMembership,
 }) {
+  final isEngineNativeExperience =
+      experience.workflowDefinitions?.isNotEmpty ?? false;
   final packageDeclarativeSpecs = [
     ..._declarativeTabSpecsFromConfiguration(appShellConfiguration['tabs']),
     ..._declarativeTabSpecsFromPersonaConfiguration(
@@ -216,8 +218,11 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   final tabs = _mergeDeclarativeTabSpecs(
     experience: experience,
     personaId: personaId,
-    generatedTabs: generatedTabs,
+    generatedTabs: isEngineNativeExperience
+        ? _engineNativeTabsFrom(generatedTabs)
+        : generatedTabs,
     appShellConfiguration: appShellConfiguration,
+    isEngineNativeExperience: isEngineNativeExperience,
   );
   return [
     for (final tab in tabs)
@@ -591,15 +596,21 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   required String personaId,
   required List<LoomAppShellTabSpec> generatedTabs,
   required Map<String, Object?> appShellConfiguration,
+  required bool isEngineNativeExperience,
 }) {
-  final overrides = _declarativeTabSpecsFor(
-    extensionId: experience.extensionId,
-    personaId: personaId,
-    appShellConfiguration: appShellConfiguration,
-  );
-  if (overrides.isEmpty) {
-    return generatedTabs;
-  }
+  final overrides = isEngineNativeExperience
+      ? _engineNativeTabSpecsForOverrides(
+          _declarativeTabSpecsFor(
+            extensionId: experience.extensionId,
+            personaId: personaId,
+            appShellConfiguration: appShellConfiguration,
+          ),
+        )
+      : _declarativeTabSpecsFor(
+          extensionId: experience.extensionId,
+          personaId: personaId,
+          appShellConfiguration: appShellConfiguration,
+        );
   final mergedById = <String, LoomAppShellTabSpec>{
     for (final tab in generatedTabs) tab.tabId: tab,
   };
@@ -623,6 +634,36 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
       if (mergedById[tabId] != null) mergedById[tabId]!,
   ];
 }
+
+List<LoomAppShellTabSpec> _engineNativeTabsFrom(
+  List<LoomAppShellTabSpec> specs,
+) {
+  return [
+    for (final spec in specs)
+      if (_isEngineNativeTabId(spec.tabId)) spec,
+  ];
+}
+
+List<LoomDeclarativeTabSpec> _engineNativeTabSpecsForOverrides(
+  List<LoomDeclarativeTabSpec> specs,
+) {
+  return [
+    for (final spec in specs)
+      if (_isEngineNativeTabId(spec.tabId)) spec,
+  ];
+}
+
+bool _isEngineNativeTabId(String tabId) =>
+    _engineNativeTabIds.contains(tabId);
+
+const _engineNativeTabIds = {
+  'home',
+  'calendar',
+  'marketplace',
+  'giving',
+  'admin',
+  'messages',
+};
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   required String extensionId,
@@ -802,26 +843,6 @@ const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>
       cardSurfaceFamilies: ['calendarAgenda'],
       pinnedWorkflowIds: ['soccer-practice-schedule'],
       requiredPermission: 'community.surface.calendar.read',
-    ),
-    LoomDeclarativeTabSpec(
-      tabId: 'team',
-      label: 'Team',
-      iconKey: 'groups',
-      description:
-          'Guardian roster card, coach roster table, and protected minor detail.',
-      rendererContractId: 'workflow-status-timeline-actions',
-      pinningPolicy: 'pin-my-player',
-      pinningPolicyRationale:
-          'The team tab pins the player roster surface and protected detail card.',
-      sectionTitles: ['Team'],
-      cardSurfaceFamilies: [
-        'stateMachineGrid',
-        'table',
-        'protectedDetail',
-        'documentLibrary',
-      ],
-      pinnedWorkflowIds: ['soccer-team-roster'],
-      requiredPermission: 'community.surface.workflow.read',
     ),
     LoomDeclarativeTabSpec(
       tabId: 'payments',
