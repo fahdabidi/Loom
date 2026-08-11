@@ -598,19 +598,12 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   required Map<String, Object?> appShellConfiguration,
   required bool isEngineNativeExperience,
 }) {
-  final overrides = isEngineNativeExperience
-      ? _engineNativeTabSpecsForOverrides(
-          _declarativeTabSpecsFor(
-            extensionId: experience.extensionId,
-            personaId: personaId,
-            appShellConfiguration: appShellConfiguration,
-          ),
-        )
-      : _declarativeTabSpecsFor(
-          extensionId: experience.extensionId,
-          personaId: personaId,
-          appShellConfiguration: appShellConfiguration,
-        );
+  final overrides = _declarativeTabSpecsFor(
+    extensionId: experience.extensionId,
+    personaId: personaId,
+    appShellConfiguration: appShellConfiguration,
+    isEngineNativeExperience: isEngineNativeExperience,
+  );
   final mergedById = <String, LoomAppShellTabSpec>{
     for (final tab in generatedTabs) tab.tabId: tab,
   };
@@ -644,15 +637,6 @@ List<LoomAppShellTabSpec> _engineNativeTabsFrom(
   ];
 }
 
-List<LoomDeclarativeTabSpec> _engineNativeTabSpecsForOverrides(
-  List<LoomDeclarativeTabSpec> specs,
-) {
-  return [
-    for (final spec in specs)
-      if (_isEngineNativeTabId(spec.tabId)) spec,
-  ];
-}
-
 bool _isEngineNativeTabId(String tabId) =>
     _engineNativeTabIds.contains(tabId);
 
@@ -669,6 +653,7 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   required String extensionId,
   required String personaId,
   Map<String, Object?> appShellConfiguration = const {},
+  bool isEngineNativeExperience = false,
 }) {
   final packageGlobal = _declarativeTabSpecsFromConfiguration(
     appShellConfiguration['tabs'],
@@ -677,10 +662,22 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
     appShellConfiguration['personaTabs'],
     personaId: personaId,
   );
-  final global = _declarativeTabSpecsByExtensionId[extensionId] ?? const [];
-  final persona =
+  // The static per-extension tables below are the legacy, hardcoded-by-
+  // community declarations (CJM.7/CJM.8's own target) -- filtered to the
+  // closed six-tabId set for engine-native experiences. appShellConfiguration
+  // (package/persona-supplied at call time, e.g. by a real package's own
+  // config or a test fixture) is a different, orthogonal mechanism and is
+  // never filtered here, regardless of isEngineNativeExperience.
+  var global = _declarativeTabSpecsByExtensionId[extensionId] ?? const [];
+  var persona =
       _declarativeTabSpecsByExtensionAndPersona['$extensionId::$personaId'] ??
       const [];
+  if (isEngineNativeExperience) {
+    global = global.where((spec) => _isEngineNativeTabId(spec.tabId)).toList();
+    persona = persona
+        .where((spec) => _isEngineNativeTabId(spec.tabId))
+        .toList();
+  }
   return [...global, ...persona, ...packageGlobal, ...packagePersona];
 }
 
