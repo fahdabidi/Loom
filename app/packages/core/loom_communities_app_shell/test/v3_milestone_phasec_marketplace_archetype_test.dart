@@ -515,7 +515,7 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.descendant(of: catanListing, matching: find.text('available')),
+          find.descendant(of: catanListing, matching: find.text('Available')),
           findsOneWidget,
         );
         expect(
@@ -563,7 +563,7 @@ void main() {
         expect(
           find.descendant(
             of: catanDetailCard,
-            matching: find.text('available'),
+            matching: find.text('Available'),
           ),
           findsOneWidget,
         );
@@ -597,7 +597,7 @@ void main() {
         expect(
           find.descendant(
             of: wingspanDetailCard,
-            matching: find.text('onLoan'),
+            matching: find.text('On Loan'),
           ),
           findsOneWidget,
         );
@@ -633,7 +633,7 @@ void main() {
           const ValueKey('marketplace-listing-share-gloomhaven'),
         );
         expect(gloomhavenListing, findsOneWidget);
-        expect(find.text('onLoan'), findsOneWidget);
+        expect(find.text('On Loan'), findsOneWidget);
         expect(find.text('Holder: tabletop-member-03'), findsOneWidget);
         expect(find.text('Queue: 1'), findsOneWidget);
         expect(

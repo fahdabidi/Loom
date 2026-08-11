@@ -1040,13 +1040,21 @@ String _valueText(Object? rawValue) {
 }
 
 String humanizeIdentifierValue(String rawValue) {
-  final withSpaces = rawValue.trim().replaceAll('_', ' ');
-  final spaced = _humanizeFieldName(withSpaces);
+  final spaced = rawValue
+      .trim()
+      .replaceAll('_', ' ')
+      .replaceAllMapped(
+        RegExp(r'(?<=[a-z0-9])([A-Z])'),
+        (match) => ' ${match.group(0)}',
+      );
   return spaced
       .split(' ')
       .where((word) => word.isNotEmpty)
       .map(
-        (word) => word.isEmpty
+        // A word that is already all-uppercase (e.g. "TBD", "HOA") reads as
+        // an intentional acronym, not a raw camelCase/snake_case identifier
+        // -- title-casing it would make it less readable, not more.
+        (word) => word == word.toUpperCase()
             ? word
             : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
       )

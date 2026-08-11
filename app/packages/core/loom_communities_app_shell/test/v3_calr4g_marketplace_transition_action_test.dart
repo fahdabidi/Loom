@@ -254,7 +254,7 @@ void main() {
         );
         await _settle(tester);
         expect(
-          find.descendant(of: catanDialog, matching: find.text('onLoan')),
+          find.descendant(of: catanDialog, matching: find.text('On Loan')),
           findsOneWidget,
         );
         expect(
