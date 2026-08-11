@@ -1,0 +1,46 @@
+{
+  "currentReviewRunId": "phaseA-camera-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "90601aaf",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Camera Club, run after CJM.9-15 fixed the sideload no-op and 9 shared-code UX findings across four prior communities. Signed in as the Organizer persona."
+  },
+  "screenRows": [
+    {
+      "rowId": "cam1-updated-card",
+      "communityName": "Camera Club",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/updated-card.png",
+      "screenshotHash": "c909bd6a20ce7d3b8694317ff9a56a1d8baf3e8b1c5aef8e0b026a6e5752421f"
+    },
+    {
+      "rowId": "cam1-home-scrolled",
+      "communityName": "Camera Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "camera-validation-report",
+      "screenOrState": "Home tab scrolled to a real validation-report instance card, with bottom nav showing community-specific tab names (Walks, Gear, Club chat)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/home-scrolled.png",
+      "screenshotHash": "199f1f50f6d214b9e66abfef5687143807eddbadf3a7cd6fd41847f91b844a84"
+    },
+    {
+      "rowId": "cam1-walks-calendar",
+      "communityName": "Camera Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "photo-walk-response",
+      "screenOrState": "Walks tab (this community's Calendar), month view with a real event (Golden Gate sunrise walk)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/walks-calendar.png",
+      "screenshotHash": "d4baf01ba159ab871924e8971b65e3ece32c2f28c1d9014635a8d923051c3eab"
+    },
+    {
+      "rowId": "cam1-gear-marketplace",
+      "communityName": "Camera Club",
+      "persona": "Organizer (Walkthrough_Tester)",
+      "workflowId": "gear-loan / gear-giveaway",
+      "screenOrState": "Gear tab (this community's Marketplace), two real listings (Canon lens loan, speedlite giveaway)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/gear-marketplace.png",
+      "screenshotHash": "2357e7332fe5752e5356c3b2f5ace1315db67311668c35b4c3a3193d5f3d2120"
+    }
+  ]
+}

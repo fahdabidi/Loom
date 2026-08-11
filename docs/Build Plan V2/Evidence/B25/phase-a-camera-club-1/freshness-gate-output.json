@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/llm-vision-ux-review-phaseA-camera-club-1.json",
+  "expectedReviewRunId": "phaseA-camera-club-1",
+  "declaredReviewRunId": "phaseA-camera-club-1",
+  "expectedAppCommitSha": "90601aaf",
+  "declaredAppCommitSha": "90601aaf",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "cam1-updated-card",
+    "cam1-home-scrolled",
+    "cam1-walks-calendar",
+    "cam1-gear-marketplace"
+  ],
+  "reviewedScreenshotHashes": [
+    "c909bd6a20ce7d3b8694317ff9a56a1d8baf3e8b1c5aef8e0b026a6e5752421f",
+    "199f1f50f6d214b9e66abfef5687143807eddbadf3a7cd6fd41847f91b844a84",
+    "d4baf01ba159ab871924e8971b65e3ece32c2f28c1d9014635a8d923051c3eab",
+    "2357e7332fe5752e5356c3b2f5ace1315db67311668c35b4c3a3193d5f3d2120"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

@@ -1,0 +1,11 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-camera-club-1",
+  "freshReview": true,
+  "appCommitSha": "90601aaf",
+  "reviewedScreenRowIds": ["cam1-updated-card", "cam1-home-scrolled", "cam1-walks-calendar", "cam1-gear-marketplace"],
+  "reviewedScreenshotHashes": ["c909bd6a20ce7d3b8694317ff9a56a1d8baf3e8b1c5aef8e0b026a6e5752421f", "199f1f50f6d214b9e66abfef5687143807eddbadf3a7cd6fd41847f91b844a84", "d4baf01ba159ab871924e8971b65e3ece32c2f28c1d9014635a8d923051c3eab", "2357e7332fe5752e5356c3b2f5ace1315db67311668c35b4c3a3193d5f3d2120"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "Camera Club renders real, package-specific content throughout (Golden Gate sunrise walk, Canon 70-200mm lens loan, speedlite giveaway, Organizer role description). Identity/persona plumbing holds cleanly. Most findings are recurrences of already-known, already-triaged patterns from prior communities: the community-list 'updated card' highlight quirk (app's own focused-community logic, not a data bug), FAB occlusion in mid-scroll screenshots (known evidence-coverage gap, not re-chased given CJM.13 already proven at true max-scroll), raw ISO date chips (known, deferred date-formatting gap), and item-title truncation past maxLines:2 (known, deferred). One finding is a by-design decision from earlier this session: the 'camera-validation-report' workflow's counters ('3 workflows requested'/'implemented and validated') were deliberately restored per this community's product doc (§3/§5 rows), not build scaffolding. New minor findings (chip visual hierarchy, role-text duplication, Organizer gear-custody action scope) are deferred as polish, consistent with the established accepted-findings precedent.",
+  "note": "Full per-screen critique text (11 findings total) preserved in the session transcript that produced this review. No new blocking or shared-code-fixable defects found beyond what is already tracked."
+}

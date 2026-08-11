@@ -1,0 +1,88 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the four
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Apply this rubric to every screen:
+- Identity/context legibility, state legibility, copy accuracy, actionability, persona-scoping correctness,
+  data-source correctness, truncation, and raw-value leaks (booleans/enums/field keys/ISO dates shown
+  unhumanized -- a recurring bug class this session, several instances already fixed, some (date/timestamp
+  formatting specifically) known and deliberately deferred to a future pass -- still flag any instance you
+  see, precisely, but do not assume novelty).
+
+Community: Camera Club (community_camera_club, extensionId ext_camera_club) -- "Photo walks, critiques, and
+gear shared by the club." Real sideloaded package. Signed in as: display name "Walkthrough_Tester", persona
+"Organizer".
+
+Screenshots to review (read each with your Read tool):
+1. rowId "cam1-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/updated-card.png
+2. rowId "cam1-home-scrolled" -- docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/home-scrolled.png
+3. rowId "cam1-walks-calendar" -- docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/walks-calendar.png
+4. rowId "cam1-gear-marketplace" -- docs/Build Plan V2/Evidence/B25/phase-a-camera-club-1/screenshots/gear-marketplace.png
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-camera-club-1",
+  "freshReview": true,
+  "appCommitSha": "90601aaf",
+  "reviewedScreenRowIds": ["cam1-updated-card", "cam1-home-scrolled", "cam1-walks-calendar", "cam1-gear-marketplace"],
+  "reviewedScreenshotHashes": ["c909bd6a20ce7d3b8694317ff9a56a1d8baf3e8b1c5aef8e0b026a6e5752421f", "199f1f50f6d214b9e66abfef5687143807eddbadf3a7cd6fd41847f91b844a84", "d4baf01ba159ab871924e8971b65e3ece32c2f28c1d9014635a8d923051c3eab", "2357e7332fe5752e5356c3b2f5ace1315db67311668c35b4c3a3193d5f3d2120"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on 4 prior communities hold on this fifth community?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 4 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (all 4). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere.
