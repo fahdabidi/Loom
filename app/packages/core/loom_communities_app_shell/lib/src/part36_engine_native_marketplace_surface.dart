@@ -536,9 +536,12 @@ class _EquipmentLoanArchetypeCardState
       schema[key] = WorkflowFactPillFieldSchema(
         type: field.type == 'textarea' ? 'text' : field.type,
         maxLength: field.maxLength,
-        maxLines: {'title', 'holderPersonaId', 'claimedByPersonaId'}.contains(key)
-            ? 2
-            : 1,
+        // Any community's own field names may carry the same long-text/
+        // owner-attribution role the hardcoded equipment-loan archetype
+        // names explicitly (title/holderPersonaId/claimedByPersonaId) --
+        // apply the same non-truncating default to every fact pill here
+        // rather than keying off a fixed allowlist of field names (CJM.11).
+        maxLines: 2,
         displayIcon: field.displayIcon,
         // The frozen Marketplace schema intentionally leaves simple scalar
         // fields such as category and availabilityState without a label

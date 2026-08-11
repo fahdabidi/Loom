@@ -495,6 +495,12 @@ class _GenericWorkflowInstanceCardState
                       instanceDataSchema: {
                         entry.key: WorkflowFactPillFieldSchema(
                           type: entry.value.type,
+                          // Community-declared fact pills get the same
+                          // non-truncating default as the hardcoded
+                          // equipment-loan/giveaway archetypes (CJM.11) --
+                          // there is no per-field JSON knob for this, so a
+                          // fixed default is the right amount of control.
+                          maxLines: 2,
                           openMode: entry.value.openMode,
                           itemSchema: entry.value.itemSchema?.map(
                             (itemFieldName, itemFieldSchema) => MapEntry(
@@ -502,6 +508,7 @@ class _GenericWorkflowInstanceCardState
                               WorkflowFactPillFieldSchema(
                                 type: itemFieldSchema.type,
                                 maxLength: itemFieldSchema.maxLength,
+                                maxLines: 2,
                                 displayIcon: itemFieldSchema.displayIcon,
                                 labelTemplate: itemFieldSchema.labelTemplate,
                                 hideWhenEmpty: itemFieldSchema.hideWhenEmpty,
