@@ -2987,7 +2987,13 @@ class _EngineNativeMonthGrid extends StatelessWidget {
             for (var weekday = 0; weekday < 7; weekday++)
               Expanded(
                 child: Center(
-                  child: Text(_calendarWeekdayAbbreviations[weekday]),
+                  child: Text(
+                    _calendarWeekdayAbbreviations[weekday],
+                    style: TextStyle(
+                      color: modernTheme.resolvedHeading,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
           ],
