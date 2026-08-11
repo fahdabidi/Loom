@@ -202,20 +202,23 @@ available and unused.
 
 ---
 
-## 7. Stamp actor-identity fields via an effect on the workflow's own first transition, not via create-action `prefill` — a real, working alternative to the create-prefill gap below
+## 7. Stamp actor-identity fields via an effect on the workflow's own first transition — an equally valid alternative to `$actor` in create-action `prefill`
 
 **Requirement shape:** a self-created instance needs its owner/actor field
 (`ownerPersonaId`/`memberPersonaId`/`authorPersonaId`) populated with the real creating persona, for later
 `actorEqualsField` guards/`readGuard`s to work.
 
-**Looks plausible, currently unreliable (see the last "known limitation" below):**
+**Also correct, as of 2026-08-10 (see the last "known limitation" below — check current status):**
 ```jsonc
 "actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerPersonaId": "$actor" } }]
 ```
+`$actor` now correctly resolves in `prefill` for both creation scopes in the reference build this bank was
+last verified against. If you cannot confirm this is fixed in the build you're targeting, prefer the
+effect-based pattern below, which has no dependency on that fix.
 
-**Verified-correct, works regardless of whether that gap is fixed:** stamp the field via a normal
-transition effect instead — `$actor` inside `effects` is the single most common, worked-example-confirmed
-construct in this grammar.
+**Also correct, works via a different mechanism:** stamp the field via a normal transition effect
+instead — `$actor` inside `effects` is the single most common, worked-example-confirmed construct in this
+grammar.
 ```jsonc
 "states": {
   "offer": { "label": "Offer", "editableFields": ["priceLabel"],
@@ -237,8 +240,9 @@ that would check the field on the pre-stamp state must fall back to `allowedPers
 instance if the workflow-level `visibility` is `guarded`.
 
 **Found in:** a real community's checkout workflow — the fix was worked out by the same authoring agent that
-hit the underlying gap, once asked what it could have done differently. Recommended as the default for this
-shape regardless of the underlying gap's fix status.
+hit the underlying gap, once asked what it could have done differently. Kept in this bank as a valid
+alternative even after the underlying gap was fixed (2026-08-10) — both mechanisms work, use whichever fits
+the workflow's shape better.
 
 ---
 
@@ -254,13 +258,9 @@ whenever a requirement depends on either.
   its event workflow type literally `event-rsvp`, per-member RSVP action buttons may not populate correctly
   for a custom-named event/response pair — which is every real community. If this is still unfixed, name it
   explicitly in your Gaps section for any `event-rsvp`-shaped workflow rather than assuming it works.
-- **A `create` action's `prefill` may never resolve `$actor`, and `scope: "tab"` creates may drop `prefill`
-  entirely.** The grammar documents `prefill` as using "the effect interpolation grammar plus `{context.*}`"
-  (i.e. `$actor`/`$timestamp` should work), but this has been found not implemented for either creation
-  scope in at least one real build. `"prefill": {"ownerPersonaId": "$actor"}"` on a `scope: "tab"` create
-  action — the standard pattern for stamping an effect-only ownership field at creation — may produce an
-  instance with that field absent or the literal string `"$actor"`, either of which breaks every
-  `actorEqualsField` guard/readGuard keyed on it. This is the highest-blast-radius gap found so far, since
-  the pattern is used by nearly every "member creates their own X" workflow. If you cannot confirm this is
-  fixed, name it explicitly in your Gaps section for any workflow using `$actor` in a create action's
-  `prefill`.
+- **FIXED, 2026-08-10, in the reference build this bank was last verified against:** a `create` action's
+  `prefill` previously never resolved `$actor`, and `scope: "tab"` creates previously dropped `prefill`
+  entirely. `"prefill": {"ownerPersonaId": "$actor"}"` is a safe, working pattern again — independently
+  re-verified against every real consumer community, not just confirmed to compile. If you cannot confirm
+  this fix is present in the build you're targeting, prefer pattern 7 above instead, which has no
+  dependency on it.

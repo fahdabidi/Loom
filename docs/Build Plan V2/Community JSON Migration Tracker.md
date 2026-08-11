@@ -497,7 +497,7 @@ merged; Neighborhood Book Club pending judge) confirming RSVP buttons actually p
 the first ticket in this section required to go through that step from the start, not retrofitted after the
 fact.
 
-### Ticket CJM.6 — `create` action `prefill` never resolves `$actor` (either scope), `scope: "tab"` drops `prefill` entirely (found 2026-08-10, highest blast radius so far)
+### Ticket CJM.6 — `create` action `prefill` never resolves `$actor` (either scope), `scope: "tab"` drops `prefill` entirely (done, 2026-08-10)
 
 **Found while judging Ad-Free Community's skill-authored output, independently confirmed by direct source
 read (not just trusting the judge).** `render-bindings.md` documents `prefill` values as using "the effect
@@ -530,13 +530,22 @@ function), and extend the prefill value-resolver to substitute `$actor`/`$timest
 create-action `prefill` — at minimum Camera Club and Garden Club (already merged) — confirming their real
 create flows produce working, readable, actionable instances, not just this ticket's own new test.
 
-**Update, 2026-08-10:** a real, working alternative that needs no engine fix at all was found via the Skill
-Retrospective process (`docs/references/reference/solved-patterns.md` pattern 7) — stamp actor-identity
-fields via an effect on the workflow's own first transition instead of `prefill`. Ad-Free Community used
-this to ship without waiting on CJM.6. **This does not reduce CJM.6's priority** — Camera Club and Garden
-Club are already merged using the broken `prefill` pattern and still need either a real fix or a retrofit
-to pattern 7 — but it does mean future communities are no longer blocked on this ticket landing before they
-can be authored.
+**Done, 2026-08-10.** Fixed in commits `8ec0af17` (fix) + `6df2024f` (independent-verification follow-up —
+found and fixed a real Dart compile error the dispatch's own vsock-blocked verification never caught, plus
+3 real bugs in the dispatch's own new regression test: wrong workflow type mutated, fabricated widget key
+names, and a helper that left a dialog open blocking the FAB under test). **Regression Impact Judge
+dispatched and completed** (`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) — every real
+consumer at time of fix (Camera Club, Garden Club, Masjid Nur, Riverside Youth Soccer, Data Portability
+Community, Chess Club) individually traced against its own guards/readGuards/formulas and confirmed
+genuinely repaired, not just compiling; the pattern-7 workaround communities (Ad-Free Community, Member
+Social Space) confirmed on a fully independent code path, unaffected either way. `flutter analyze` clean;
+full suite shows zero new failures beyond the one pre-existing known-flaky test. Two small non-blocking
+follow-ups noted by the judge, not gating this ticket: (1) Data Portability Community's `export-transfer`/
+`export-transfer-rollback` `requestedAt` field — worth an emulator spot-check to confirm the pre-fix literal
+`"$timestamp"` string didn't hard-block creation via strict date-field validation (severity unconfirmed,
+now moot either way since the fix produces a real timestamp); (2) Tabletop Club's own reference JSON still
+has 3 tab-scoped create actions with `GAP-2` comments describing exactly what CJM.6 now fixes but never
+retrofitted with real `prefill` — a good, low-risk cleanup candidate, not urgent.
 
 ### Ticket CJM.4 — validator rule: `no_render_binding_for_reachable_state` (done, 2026-08-09)
 

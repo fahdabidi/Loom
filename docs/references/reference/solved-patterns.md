@@ -213,22 +213,23 @@ used `guarded` + a `readGuard` excluding that exact persona — the tighter patt
 
 ---
 
-## 7. Stamp actor-identity fields via an effect on the workflow's own first transition, not via create-action `prefill` — a real, working alternative to the CJM.6-blocked pattern
+## 7. Stamp actor-identity fields via an effect on the workflow's own first transition — an equally valid alternative to `$actor` in create-action `prefill`
 
 **Requirement shape:** a self-created instance needs its owner/actor field
 (`ownerPersonaId`/`memberPersonaId`/`authorPersonaId`) populated with the real creating persona, for later
 `actorEqualsField` guards/`readGuard`s to work.
 
-**Looks plausible, currently broken (see CJM.6 below):**
+**Also correct today (CJM.6 fixed, 2026-08-10):**
 ```jsonc
 "actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerPersonaId": "$actor" } }]
 ```
-Confirmed by direct source read: `$actor` is never substituted in `prefill` for either creation scope
-today, and `scope: "tab"` creates don't even read `prefill` at all.
+`$actor` now correctly resolves in `prefill` for both creation scopes — this pattern was broken between
+when it was first tried and 2026-08-10, but is a safe default again. The pattern below remains an equally
+valid alternative with no functional downside, not a required workaround.
 
-**Verified-correct, works today regardless of CJM.6's landing status:** stamp the field via a normal
-transition effect instead — `$actor` inside `effects` is the single most common, worked-example-confirmed
-construct in this entire grammar, used in nearly every community's transitions already.
+**Also correct, works via a different mechanism:** stamp the field via a normal transition effect
+instead — `$actor` inside `effects` is the single most common, worked-example-confirmed construct in this
+entire grammar, used in nearly every community's transitions already.
 ```jsonc
 "states": {
   "offer": { "label": "Offer", "editableFields": ["priceLabel"],
@@ -251,9 +252,9 @@ nothing to check `actorEqualsField` against yet) — a state-level `readGuard` o
 just-created, not-yet-stamped instance if the workflow-level `visibility` is `guarded`.
 
 **Found in:** Ad-Free Community's `ad-off-member-checkout`/`ad-off-community-checkout` — discovered via a
-Skill Retrospective after the CJM.6 defect above was found in the same package; the same authoring agent
-worked out this fix itself when asked what it could have done differently, and it's now the recommended
-default for this shape regardless of whether CJM.6 ever lands (it has no dependency on that fix at all).
+Skill Retrospective while CJM.6 (above) was still an open engine bug; the same authoring agent worked out
+this fix itself when asked what it could have done differently. Kept in this bank as a valid alternative
+even after CJM.6 landed — both mechanisms work today, use whichever fits the workflow's shape better.
 
 ---
 
@@ -268,16 +269,13 @@ mistakes — no JSON-level fix exists for either until the underlying engine tic
   (`part28_engine_native_calendar_surface.dart`). Since no real community names its event workflow type
   literally `event-rsvp`, per-member RSVP action buttons may not populate correctly for any community using
   a custom-named event/response pair — which is every real community. Status: under investigation.
-- **CJM.6 — a `create` action's `prefill` never resolves `$actor`, and `scope: "tab"` creates drop `prefill`
-  entirely.** `render-bindings.md` documents `prefill` as using "the effect interpolation grammar plus
-  `{context.*}`" (i.e. `$actor`/`$timestamp` should work) — confirmed by direct source read that this is not
-  implemented for either creation scope. `"prefill": {"ownerPersonaId": "$actor"}"` on a `scope: "tab"`
-  create action — the standard pattern for stamping an effect-only ownership field at creation — currently
-  produces an instance with that field absent or the literal string `"$actor"`, either of which breaks
-  every `actorEqualsField` guard/readGuard keyed on it. Status: fix ticket written, not yet landed. Until
-  this lands, any workflow relying on this pattern is at risk — this is the highest-blast-radius gap found
-  in this migration effort, since the pattern is used by nearly every "member creates their own X" workflow
-  across most communities authored so far. **A real, working alternative exists and needs no engine fix —
-  see pattern 7 above (stamp via an effect on the first transition instead).** Prefer pattern 7 for every
-  new workflow needing this shape until CJM.6 is confirmed landed; it costs a small amount of guard/schema
-  restructuring but has zero dependency on the engine fix's timeline.
+- **CJM.6 — FIXED, 2026-08-10 (commits `8ec0af17`, `6df2024f`).** A `create` action's `prefill` now
+  correctly resolves `$actor` (and `$timestamp`) for both `scope: "tab"` and `scope: "instance"` creates —
+  `"prefill": {"ownerPersonaId": "$actor"}"` is a safe, working pattern again. Independently re-verified via
+  a dedicated Regression Impact Judge dispatch against every real consumer (Camera Club, Garden Club,
+  Masjid Nur, Riverside Youth Soccer, Data Portability Community, Chess Club) — each traced individually
+  against its own guards/readGuards and confirmed genuinely repaired, not just compiling. Pattern 7 (stamp
+  via an effect on the first transition) remains a perfectly valid alternative and is what Ad-Free Community
+  and Member Social Space already ship with — there's no need to retrofit them now that CJM.6 is fixed,
+  since pattern 7 has no functional downside, but new workflows can use either `$actor`-in-`prefill` or
+  pattern 7 going forward.
