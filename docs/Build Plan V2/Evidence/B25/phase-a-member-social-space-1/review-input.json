@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-member-social-space-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "5e777684",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Member Social Space, run after CJM.9-15 fixed the sideload no-op and 9 shared-code UX findings across six prior communities. This community's persona model is distinctive -- personas are named individuals (e.g. 'Alex Rivera') rather than role types, matching its member-to-member messaging/connection purpose. Signed in as the resolved Member persona."
+  },
+  "screenRows": [
+    {
+      "rowId": "mss1-updated-card",
+      "communityName": "Member Social Space",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/updated-card.png",
+      "screenshotHash": "9def7ff26fda7d1adb18f9be6eead3dde21957f9510bc94cceb7ff91b0b932bb"
+    },
+    {
+      "rowId": "mss1-home-signed-in",
+      "communityName": "Member Social Space",
+      "persona": "Member (Alex Rivera / Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up, showing the distinctive named-individual persona model",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/home-signed-in.png",
+      "screenshotHash": "9ed8beffd2ced5964762bdda849801d348d36fdc084364c936e8b1a19ca86cb9"
+    },
+    {
+      "rowId": "mss1-home-scrolled-sponsor",
+      "communityName": "Member Social Space",
+      "persona": "Member (Alex Rivera / Walkthrough_Tester)",
+      "workflowId": "sponsored-content",
+      "screenOrState": "Home tab scrolled to a real sponsored-content card (Riverside Outdoors Co.) with View/Open/Dismiss/Report actions",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/home-scrolled-sponsor.png",
+      "screenshotHash": "ddbdacd6db447e7f4334ba8375fb3ce7e1c6ebb4ac9abece0f6888a9de964b17"
+    },
+    {
+      "rowId": "mss1-messages",
+      "communityName": "Member Social Space",
+      "persona": "Member (Alex Rivera / Walkthrough_Tester)",
+      "workflowId": "member-messaging",
+      "screenOrState": "Messages tab, empty for this freshly-created account with no existing connections",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/messages.png",
+      "screenshotHash": "3fb29c09bc224c8ecaf93bb56bfaece65baefc032b1e60213da148b08c1c07fe"
+    },
+    {
+      "rowId": "mss1-admin",
+      "communityName": "Member Social Space",
+      "persona": "Member (Alex Rivera / Walkthrough_Tester)",
+      "workflowId": "member-admin",
+      "screenOrState": "Admin tab, showing a persona-specific (not just role-specific) description tuned to the individual",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/admin.png",
+      "screenshotHash": "818d9aebb8524d363ea02735e2a9fef5e3886f24842134acda7e281074779da7"
+    }
+  ]
+}

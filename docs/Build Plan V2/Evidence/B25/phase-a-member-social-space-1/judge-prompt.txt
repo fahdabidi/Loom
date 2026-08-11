@@ -1,0 +1,91 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the five
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Apply this rubric to every screen: identity/context legibility, state legibility, copy accuracy,
+actionability, persona-scoping correctness, data-source correctness, truncation, and raw-value leaks
+(booleans/enums/field keys/ISO dates shown unhumanized -- a recurring bug class this session; most instances
+fixed, date/timestamp formatting specifically is known and deliberately deferred to a future pass -- still
+flag any instance precisely, no need to claim novelty).
+
+Community: Member Social Space (community_platform_social, extensionId ext_platform_social) -- "Message,
+connect, and stay in control of your community relationships." Real sideloaded package. This community's
+persona model is distinctive: personas are named individuals (e.g. "Alex Rivera") rather than role types
+like "Member"/"Organizer" seen in other communities -- this is intentional, not a bug, given its member-to-
+member messaging purpose. Signed in as: display name "Walkthrough_Tester", resolved persona "Alex Rivera"
+(Member).
+
+Screenshots to review (read each with your Read tool):
+1. rowId "mss1-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/updated-card.png
+2. rowId "mss1-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/home-signed-in.png
+3. rowId "mss1-home-scrolled-sponsor" -- docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/home-scrolled-sponsor.png
+4. rowId "mss1-messages" -- docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/messages.png
+5. rowId "mss1-admin" -- docs/Build Plan V2/Evidence/B25/phase-a-member-social-space-1/screenshots/admin.png
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-member-social-space-1",
+  "freshReview": true,
+  "appCommitSha": "5e777684",
+  "reviewedScreenRowIds": ["mss1-updated-card", "mss1-home-signed-in", "mss1-home-scrolled-sponsor", "mss1-messages", "mss1-admin"],
+  "reviewedScreenshotHashes": ["9def7ff26fda7d1adb18f9be6eead3dde21957f9510bc94cceb7ff91b0b932bb", "9ed8beffd2ced5964762bdda849801d348d36fdc084364c936e8b1a19ca86cb9", "ddbdacd6db447e7f4334ba8375fb3ce7e1c6ebb4ac9abece0f6888a9de964b17", "3fb29c09bc224c8ecaf93bb56bfaece65baefc032b1e60213da148b08c1c07fe", "818d9aebb8524d363ea02735e2a9fef5e3886f24842134acda7e281074779da7"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on 6 prior communities hold on this seventh community?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 5 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (all 5). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere.
