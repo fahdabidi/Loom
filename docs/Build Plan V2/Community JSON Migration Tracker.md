@@ -143,12 +143,15 @@ fix is upstream, at tab-construction time**: `appShellTabsFor`/`_declarativeTabS
 each community's legacy declarative custom-ID tab specs (`_declarativeTabSpecsByExtensionId`) into
 engine-native experiences' navigation at all, not try to route around them at render time.
 
-**Ticket CJM.8 (done, 2026-08-10, commits `4f43defb` + `f8075d3e`) — fully closed.** First commit
+**Ticket CJM.8 (done, 2026-08-10, commits `4f43defb` + `f8075d3e`) — fully closed at the unit-test level; a
+live re-walkthrough found one more real, unresolved gap — see the dated note below.** First commit
 implemented the root-cause report's recommendation: `appShellTabsFor`/`_mergeDeclarativeTabSpecs`/
 `_declarativeTabSpecsFor` now compute `isEngineNativeExperience` and filter both the generated base tab list
 and declarative overrides down to the six real tabIds for engine-native experiences, dropping all 9 named
 obsolete custom IDs across the 6 communities; real-tabId label overrides (Camera Club's `calendar`→"Walks",
-Garden Club's `marketplace`→"Exchange") confirmed still working; Cedar Commons HOA's legacy behavior
+Garden Club's `marketplace`→"Exchange") confirmed still working **at the tab-metadata/label level** (i.e.
+`cjm8_engine_native_tabs_test.dart`'s Dart widget tests, which check the tab exists with the right
+id/label — not its actual on-device content); Cedar Commons HOA's legacy behavior
 confirmed byte-for-byte unchanged; 4 new regression tests added
 (`test/cjm8_engine_native_tabs_test.dart`). Independent verification (mine) found the first commit's filter
 was scoped too broadly — it applied to **every** declarative-tab source, not just the static per-extension
@@ -173,6 +176,38 @@ can be marked fully closed; all 6 previously-blocked communities' §6 walkthroug
    (whose first-pass review is already known-invalid per above), plus finish the 3 non-hybrid communities'
    walkthroughs (Member Social Space install already proven working, walkthrough itself not yet run to
    completion; Ad-Free Community and Data Portability Community not yet started).
+
+**Garden Club re-walkthrough, 2026-08-10 (autonomous session) — CJM.7/CJM.8's fix confirmed genuinely
+working for Home and Calendar; a separate, real, NOT-yet-root-caused gap found on Marketplace.** Re-installed
+Garden Club's real package on a fresh emulator instance and confirmed, by direct visual inspection (not
+inference): the Home tab now renders the real engine-native list surface (a materially different structure
+from the pre-CJM.7 hardcoded fixture — "4 sections", "community-icon-badge", curated-surfaces framing) and
+the Calendar tab now renders through the real bespoke `EngineNativeCalendarSurface` (a genuine day-picker
+strip — Mon/Tue/Wed/Thu/Fri — matching the widget confirmed in the a8/a11 test suite, not the flat fact-pill
+card the first walkthrough saw). **However, the Exchange (marketplace) tab still shows the bare
+`_TabPlaceholderSurface` fallback** ("Exchange is coming to Garden Club... check back soon") despite the real
+JSON unambiguously declaring `tabId: "marketplace"` renderBindings on both `garden-tool-loan` and
+`garden-tool-giveaway` (confirmed via direct grep of the canonical `.jsonc`, 5 matches). `_hasEngineNativeBinding`
+(`part12_persona_and_tabs.dart:583-592`) is a purely structural check with no persona-gating, so it should
+have returned true. **Root cause not yet determined** — two live hypotheses, neither confirmed: (a) a stale
+in-memory `LoomExperienceDefinition`/`WorkflowDatabase` cache not refreshed after the "Update Garden Club
+from local packages" sideload action (Home/Calendar rendering correctly argues against a *total* staleness,
+but doesn't rule out a per-tab-family cache); (b) a genuine, separate logic gap specific to how the
+Marketplace case resolves for this JSON's specific binding shape, distinct from anything CJM.7/CJM.8 touched.
+Investigation was interrupted by an operator error (an `adb shell am force-stop` issued while `flutter run`
+was still attached killed the whole debug session and emulator connection, not just the app) before a
+force-restart re-check could confirm/refute the staleness hypothesis. **Also separately noted, lower
+priority, not yet assessed as blocking:** a static "In-focus product surface" preview panel (sourced from
+`part16_experience_catalog.dart`'s hardcoded `_experienceByExtensionId` catalog + `part08_garden_and_helpers.dart`,
+confirmed present for all 10 communities including Cedar Commons HOA, whose walkthrough already passed) shows
+canned illustrative content ("Spring Planting Workshop"/"Riverside Greenhouse") on the Calendar tab alongside
+the real day-picker — given Cedar Commons HOA's own successful walkthrough already coexisted with this same
+mechanism, treat as a likely-benign, pre-existing "capability showcase" pattern unless a future walkthrough
+finds otherwise, not a new regression. **Next step: relaunch the emulator cleanly (do not `am force-stop` an
+app while `flutter run` is attached — use the app's own back-navigation or `flutter run`'s own `q` uit
+command instead), re-verify whether Marketplace is still blank on a truly fresh app instance, and root-cause
+from there** (a Root Cause Agent dispatch is likely warranted if the fresh-instance re-check still shows the
+placeholder, mirroring the CJM.7→CJM.8 investigation pattern).
 
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
