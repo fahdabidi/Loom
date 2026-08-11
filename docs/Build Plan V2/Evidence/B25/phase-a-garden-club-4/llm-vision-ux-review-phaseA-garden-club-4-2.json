@@ -1,0 +1,80 @@
+{
+  "status": "pass",
+  "currentReviewRunId": "phaseA-garden-club-4-2",
+  "freshReview": true,
+  "appCommitSha": "b92ded64",
+  "reviewedScreenRowIds": ["gc4-calendar-header-today", "gc4-calendar-agenda-fully-clear"],
+  "reviewedScreenshotHashes": ["ec93edbe081b6a6eb4d2d5d43e678df8ae0400bcac0f39b6ffacadd48f55c770", "fc67ac296dfa978698122e8685fb236ec980b36aaa17bfd6e054f351d9951b30"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "Both remaining findings are resolved in these two screenshots. Screenshot 1 shows the Aug 2026 month grid with a full MON/TUE/WED/THU/FRI/SAT/SUN header row sitting directly above the day-number rows, and the 11 cell (today) carries a distinguishing dot marker plus a lightly tinted fill that no other unselected cell has. Screenshot 2 shows the Agenda 'Spring Workshop' detail card scrolled to its full bottom edge with rounded corners intact and roughly a third of the viewport of empty space plus a whole 'Local package details' row between the card and the bottom nav bar, so nothing is sliced. Remaining issues are cosmetic only: the weekday labels and the today marker are both very low-contrast, and the agenda card has a lopsided left/right inset.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "remaining-two-findings-resolution",
+      "question": "Are finding #4 (calendar weekday header + today marker) and finding #5 (Agenda card fully clear of the bottom nav) now resolved?",
+      "answer": "Yes to both, with minor polish caveats on #4. Finding #4: the weekday header row is unambiguously present — 'MON TUE WED THU FRI SAT SUN' runs across the full grid width between the 'Aug 2026' month title and the first week row (27 28 29 30 31 1 2), and the columns line up with the day cells beneath them. Today's cell (11, Tuesday) is distinguished from its neighbours by a small dot marker in its upper-right corner and a slightly lighter/greener cell fill; it is also clearly differentiated from the separately-styled selected cell (15, which has a green tint, a visible border, and the 'Spri...' event label matching the '2026-08-15' selection chip below the grid). The caveat is that both the header labels and the today marker are rendered in very low contrast against the dark background — the labels read as dark grey on dark green, and the today dot is small enough that it is easy to miss — so the requirement is met but only just, visually. Finding #5: fully resolved on the Calendar tab. At maximum scroll the 'Spring Workshop' agenda detail card terminates in a complete, unclipped bottom edge with both rounded bottom corners visible, ending well above the nav bar; below it sit the agenda container's bottom border, a full-width 'Local package details' disclosure row, and then a large band of empty background before the Home/Exchange/Calendar/Organize bar. There is no slicing, no overlap, and no content hidden behind the nav.",
+      "score": 88,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Weekday header row 'MON TUE WED THU FRI SAT SUN' spans the full grid width directly above the 27/28/29/30/31/1/2 week row in the Aug 2026 month view",
+        "Today's cell '11' shows a small dot marker at its top-right plus a faintly lighter fill, distinct from both plain cells (e.g. 10, 12) and the selected cell 15",
+        "The 'Spring Workshop' agenda card's bottom edge and both rounded bottom corners are fully rendered, followed by a 'Local package details' row and a wide empty gap before the bottom nav bar"
+      ],
+      "affectedScreenRowIds": ["gc4-calendar-header-today", "gc4-calendar-agenda-fully-clear"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "gc4-calendar-header-today",
+      "affectedScreenRowIds": ["gc4-calendar-header-today"],
+      "critique": "Finding #4 is resolved on this screen. The month grid now carries a proper weekday header row — MON, TUE, WED, THU, FRI, SAT, SUN — positioned between the 'Aug 2026' pager title and the first week of day numbers, with each label horizontally centred over its corresponding column, so the leading 27/28/29/30/31 spill-over days are now correctly readable as Mon-Fri of the prior month. Today's cell (11) is also marked: it carries a small dot indicator in the upper-right of the cell and a subtly lighter, greener fill than the flat dark cells around it, and it is visually distinct from the selected-date treatment on 15 (border + green tint + 'Spri...' event label, matching the '2026-08-15' chip below the grid). The remaining weakness is contrast rather than presence: the weekday labels render as muted dark grey on a dark green surface and sit close to the low end of legibility, and the today dot is small and dim enough that a user scanning quickly could miss which cell is today — especially since the selected cell is far louder than the today cell.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "already meets this — weekday header row and a today marker are both present; only contrast/emphasis polish remains",
+      "visibleObservations": [
+        "Weekday header row reads MON TUE WED THU FRI SAT SUN, left-to-right, above the day-number grid",
+        "Header labels are column-aligned with the day cells beneath (MON over 27, SUN over 2)",
+        "Cell '11' has a small dot indicator at its top-right corner and a marginally lighter fill than adjacent cells 10 and 12",
+        "Cell '15' is styled differently again — green tinted with a visible border and a truncated 'Spri...' event label",
+        "A selection chip below the grid reads '2026-08-15' with a checkmark, confirming 15 is selected and 11 is the separate today state",
+        "Weekday header text is low contrast: dark grey glyphs on the dark green page background",
+        "Month pager shows 'Aug 2026' with left/right chevrons; Day/Week/Month/Pending segmented control shows Month checked",
+        "The 'Agenda' section heading is visible at the bottom of the viewport above the nav bar"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the month grid show a weekday header row (Mon-Sun) above the day numbers, and does today's cell have a visible distinguishing marker?",
+          "visibleEvidence": "MON TUE WED THU FRI SAT SUN row sits directly above the 27-28-29-30-31-1-2 week; cell 11 shows a dot marker and a lighter fill versus its neighbours",
+          "why": "Both halves of the claim are directly observable in the pixels. The seven weekday abbreviations form a continuous row spanning the grid width and are aligned to the columns, which is exactly the missing element the original finding described. For the today marker, cell 11 is the only unselected cell in the grid with a corner dot and a non-uniform background tint, and today's date is 11 Aug 2026, so that treatment is the today indicator rather than an event dot on a random cell."
+        }
+      ],
+      "screenshotHash": "ec93edbe081b6a6eb4d2d5d43e678df8ae0400bcac0f39b6ffacadd48f55c770"
+    },
+    {
+      "screenRowId": "gc4-calendar-agenda-fully-clear",
+      "affectedScreenRowIds": ["gc4-calendar-agenda-fully-clear"],
+      "critique": "Finding #5 is resolved for the Calendar tab on this screen. At maximum scroll extent the 'Spring Workshop' agenda detail card renders its complete bottom edge — both bottom corners are rounded and unclipped, and the final content line ('No response record is available for you for this event.') is fully visible with normal internal padding beneath it, not cropped. Below the card the agenda container's own bottom border closes cleanly, then a full-width 'Local package details' disclosure row with chevron sits entirely in the clear, followed by a tall band of empty background before the Home/Exchange/Calendar/Organize nav bar. That gap is roughly a quarter of the viewport height, so the bottom nav is nowhere near occluding scrollable content; the previous slicing behaviour is gone and the scroll container now clearly reserves bottom inset padding. Two cosmetic observations that do not affect the verdict: the card is inset asymmetrically inside its dark container, with a wide dark gutter on the left but the card nearly flush to the container's right edge; and the amount of dead space between 'Local package details' and the nav bar is large enough that the bottom padding may now be over-generous rather than merely sufficient.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "already meets this — the agenda card scrolls fully clear of the bottom nav with generous space to spare; only horizontal inset symmetry and excess trailing whitespace are worth tidying",
+      "visibleObservations": [
+        "The 'Spring Workshop' card's bottom edge is fully drawn with both bottom corners rounded and no clipping",
+        "The card's last line of content, 'No response record is available for you for this event.', is completely visible with padding below it",
+        "A clear gap separates the card's bottom edge from the bottom navigation bar, with a 'Local package details' row and a large empty region in between",
+        "The dark agenda container's bottom border is visible below the card, confirming the list itself is fully scrolled",
+        "Card body content is intact: '1 / 20 going', '19 seats left', a capacity progress bar, Attendees with Going (garden-coordinator) and Pending (garden-member), plus 10:00 and 'Community Garden Plot A' chips",
+        "The card is horizontally off-centre inside its container — a wide dark gutter on the left, almost none on the right",
+        "The card's top is cut off by the app bar, which is expected at maximum scroll extent and not an occlusion defect",
+        "Bottom nav bar shows Home / Exchange / Calendar / Organize with Calendar selected and nothing overlapping it"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Can the Calendar tab's Agenda detail card be scrolled fully into view, with its complete bottom edge visible and clear space between it and the bottom navigation bar?",
+          "visibleEvidence": "The card's rounded bottom corners and full bottom border are drawn, then the container border, a 'Local package details' row, and a wide empty band before the nav bar",
+          "why": "This is direct visual confirmation rather than inference. The card terminates in an intact rounded bottom edge instead of running into or under the nav bar, and there are two additional pieces of chrome (the container's bottom border and the entire 'Local package details' disclosure row) rendered fully in the clear between the card and the nav bar, plus a large empty region beyond that. Nothing at the bottom of the scroll is truncated or hidden, so the Calendar-tab manifestation of the FAB/nav-bar occlusion problem is fixed."
+        }
+      ],
+      "screenshotHash": "fc67ac296dfa978698122e8685fb236ec980b36aaa17bfd6e054f351d9951b30"
+    }
+  ],
+  "findings": []
+}

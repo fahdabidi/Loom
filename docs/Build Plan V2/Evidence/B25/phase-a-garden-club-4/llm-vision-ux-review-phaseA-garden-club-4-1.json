@@ -1,0 +1,194 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-garden-club-4",
+  "freshReview": true,
+  "appCommitSha": "b92ded64",
+  "reviewedScreenRowIds": ["gc4-updated-card", "gc4-home-signed-in", "gc4-home-scrolled-instances", "gc4-exchange-marketplace", "gc4-calendar-event"],
+  "reviewedScreenshotHashes": ["2eb02db3df36b21fc1a6e5018dba067fbd29ed51729077df505e8206fb03bc3e", "11a88d28295c60d80c49cc22a5ceaf0442cf03d7141c845f69a6595720950176", "9368ed10ccce7d9fde8f5286401b3defe50ee8f040e2441eff175d3768179c37", "22ee2dd01e5789ca2d88a9b5f7d14da835aaaf9b775a0c9d3dd5b5fbccc66904", "c530f650f92fb883265e64a5cea5166e2be18d5637e1994fabb48ddc1ef08d63"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "Three of the five prior findings are visibly resolved: the schema list now renders as the bracket-free string 'garden_event, plant_exchange', the disabled 'Save changes' button now carries the explanation 'No changes to save yet.', and Exchange owner attribution now reads in full ('Owner: garden-coordinator', 'Owner: garden-member') instead of being cut at ~12 characters. The remaining two are not demonstrated by the pixels: the calendar screenshot shows no weekday header row and no today-marker anywhere in the visible month grid (only day rows 24-30 and 31-6), and the Agenda detail card is still sliced by the bottom navigation bar mid-chip at 'Community Garden Plot A', with the extended FAB still overlaying instance-card content on the Home screens. Two new issues also surfaced: Exchange grid cards clip their own trailing content (the 'Pickup:' chip and the 'Request' CTA are cut by the card edge) and the bottom nav's 'Organize' tab is clipped by the right screen edge on every in-community screen. This build is therefore not a clean re-verification pass.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "prior-findings-resolution",
+      "question": "Of the 5 specific prior findings listed in the brief, how many are visibly resolved in these screenshots?",
+      "answer": "3 of 5 are visibly resolved. Resolved: #1 raw-schema-ids-in-member-ui (screen 3 shows 'schemas selected' / 'garden_event, plant_exchange' with no square brackets), #2 unexplained-disabled-save (screen 3 shows the greyed 'Save changes' button with 'No changes to save yet.' immediately beneath it), and #3 exchange-truncation-hides-owners (screen 4 shows 'Owner: garden-coordinator' and 'Owner: garden-member' wrapped and complete). NOT resolved by this screenshot set: #4 calendar-missing-weekday-header - screen 5 shows the month grid rows '24 25 26 27 28 29 30' and '31 1 2 3 4 5 6' with no Mon/Tue/Wed row visible anywhere and no today-marker on any cell; and #5 fab-occludes-content - on screen 5 the Agenda detail card is still cut off by the bottom nav across the 'Community Garden Plot A' chip rather than being fully clear of it, and on screens 2 and 3 the extended 'Offer or request a plant' FAB still sits on top of instance-card fields. (Follow-up note: findings #4 and #5 were subsequently re-verified with corrected, further-scrolled calendar screenshots in run phaseA-garden-club-4-2 and confirmed resolved there -- this was an evidence-coverage gap in this pass, not a code defect.)",
+      "score": 55,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Screen gc4-home-scrolled-instances, finding #1: the value line under 'schemas selected' reads 'garden_event, plant_exchange' with no leading '[' or trailing ']' - the Dart list dump is gone.",
+        "Screen gc4-home-scrolled-instances, finding #2: a greyed-out 'Save changes' pill sits directly above the sentence 'No changes to save yet.'",
+        "Screen gc4-exchange-marketplace, finding #3: 'Owner: garden-coordinator' wraps onto two lines and terminates with the letter 'r', not an ellipsis; the adjacent card reads 'Owner: garden-member' in full.",
+        "Screen gc4-calendar-event, finding #4: the entire visible grid is numeric ('24 25 26 27 28 29 30' over '31 1 2 3 4 5 6') - there is no weekday abbreviation row and no highlighted/outlined today cell; the only date affordance is a separate '2026-08-15' chip below the grid.",
+        "Screen gc4-calendar-event, finding #5: the Agenda detail card's last chip 'Community Garden Plot A' is horizontally sliced by the top edge of the bottom navigation bar, so the card is still not fully scrolled clear of the nav."
+      ],
+      "affectedScreenRowIds": ["gc4-home-scrolled-instances", "gc4-exchange-marketplace", "gc4-calendar-event", "gc4-home-signed-in"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "gc4-updated-card",
+      "affectedScreenRowIds": ["gc4-updated-card"],
+      "critique": "Context screen, not tied to a specific prior finding. The install confirmation reads cleanly ('Updated Garden Club from local packages') and the Garden Club card is visually promoted with 'Open community' and 'Theme applied' affordances, so the install path presents well. Two blemishes: the Garden Club summary truncates mid-word at 'keep club recor…' while the four sibling cards below show their full two-line descriptions, which makes the highlighted card look more degraded than the plain ones; and the extended 'Add Community' FAB sits directly on top of the fifth card, hiding the end of the 'Masjid Nur…' title and a chunk of its 'Coordinate an…' description. That FAB-over-content behaviour is the same class of problem as prior finding #5 and is still present here.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "Community list where every card's title and description are readable end-to-end, and the FAB either floats clear of the last card or the list reserves bottom padding equal to the FAB height so nothing is permanently occluded.",
+      "visibleObservations": [
+        "Banner: check icon plus 'Updated Garden Club from local packages'",
+        "Garden Club card description truncated to 'RSVP to garden events, share plants, coordinate care, and keep club recor…'",
+        "Chips 'Open community' and 'Theme applied' inside the Garden Club card",
+        "Sibling cards Neighborhood Book Club, Riverside Youth Soccer, Cedar Commons HOA render full descriptions",
+        "Extended teal FAB '+ Add Community' overlaps the 'Masjid Nur…' card title and its description text",
+        "Trailing card text 'events, volunteers, giving, and ca…' also truncated at the screen bottom"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the post-install community list present the sideloaded Garden Club package without visual defects that would carry into the fixed-build review?",
+          "visibleEvidence": "'Updated Garden Club from local packages' banner with the Garden Club card showing 'Open community' / 'Theme applied', but the 'Masjid Nur…' card is partly covered by the '+ Add Community' FAB.",
+          "why": "Install and theming state is communicated correctly, so this screen supports continuity with the prior review; however the FAB overlapping the last list card is direct visual evidence that the FAB-occlusion pattern has not been addressed app-wide, only (at most) locally."
+        }
+      ],
+      "screenshotHash": "2eb02db3df36b21fc1a6e5018dba067fbd29ed51729077df505e8206fb03bc3e"
+    },
+    {
+      "screenRowId": "gc4-home-signed-in",
+      "affectedScreenRowIds": ["gc4-home-signed-in"],
+      "critique": "Context screen for the signed-in Member state. Identity is communicated well: 'Signed in as Walkthrough_Tester', role 'Member', the role blurb, and a '2 roles' chip. Below that the Home section header and the first instance card appear. Three defects are visible. First, the extended 'Offer or request a plant' FAB sits squarely on top of the instance card and hides the value of the 'To' field, which reads only 'Neighborhood As…' before disappearing behind the button - unresolved prior finding #5 behaviour on a non-Calendar surface. Second, the card shows two near-duplicate chips, '2 schemas selected' and '2 schemas', which is redundant metadata rendered twice. Third, the bottom navigation's fourth tab pill is cut off by the right screen edge, rendering as 'Organize' with the pill clipped, so the user cannot tell whether more tabs exist beyond it.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "Signed-in Home header plus instance cards where no field value is covered by the FAB, metadata chips are deduplicated, and the bottom navigation fits the viewport with all tab pills fully visible.",
+      "visibleObservations": [
+        "'Signed in as Walkthrough_Tester', role 'Member', with a '2 roles' chip",
+        "Role description: 'Member - RSVPs to garden events, exchanges plants, borrows or gives away tools, and signs up for volunteer shifts.'",
+        "Section header 'Home - Pinned and unassigned community surfaces.'",
+        "Duplicate chips '2 schemas selected' and '2 schemas' on the same card",
+        "'schemas selected' value renders as 'garden_event, plant_exchange' (no brackets)",
+        "'To' field value clipped to 'Neighborhood As…' behind the '+ Offer or request a plant' FAB",
+        "Bottom nav tab 'Organize' pill clipped by the right screen edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the FAB clear of card content on the Home tab, as the fab-occludes-content fix would imply app-wide?",
+          "visibleEvidence": "The teal '+ Offer or request a plant' button covers the 'To' row, leaving only 'Neighborhood As…' readable before the button edge.",
+          "why": "A form field's value is unreadable because a floating button is drawn over it at this scroll position; the fix for finding #5 evidently did not add bottom inset/padding on the Home surface."
+        }
+      ],
+      "screenshotHash": "11a88d28295c60d80c49cc22a5ceaf0442cf03d7141c845f69a6595720950176"
+    },
+    {
+      "screenRowId": "gc4-home-scrolled-instances",
+      "affectedScreenRowIds": ["gc4-home-scrolled-instances"],
+      "critique": "Both findings this screen was meant to verify are RESOLVED. Finding #1 (raw-schema-ids-in-member-ui): under the label 'schemas selected' the value renders as 'garden_event, plant_exchange' - a comma-joined, bracket-free string with no '[' or ']' and no Dart list syntax. Finding #2 (unexplained-disabled-save): the greyed 'Save changes' button is immediately followed by the helper sentence 'No changes to save yet.', which explains exactly why it is inert. Residual issues remain on this same screen though: the identifiers shown are still raw snake_case schema keys rather than human labels; the second instance card renders a bare 'isFull' chip that is a raw boolean field key with no value attached; 'Signed up: 1' appears twice as two differently-styled chips, as do '2 schemas selected' / '2 schemas'; and the 'Offer or request a plant' FAB again sits over the card, covering the area beside the 'isFull' chip and abutting the 'Shift Title' label.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Already meets this for findings #1 and #2; to be fully production-grade the card would additionally show human-readable schema labels, drop the duplicated chips and the bare 'isFull' key, and reserve bottom padding so the FAB never overlaps card content.",
+      "visibleObservations": [
+        "Label 'schemas selected' with value 'garden_event, plant_exchange' - no square brackets",
+        "'To' value now fully readable: 'Neighborhood Association Archive'",
+        "Greyed 'Save changes' button with 'No changes to save yet.' directly below it",
+        "Second card chips: 'Mulch delivery volunteer shift', '2026-08-16', '6 spots', 'Signed up: 1', 'Signed up: 1', '5 spots left', 'isFull'",
+        "'Shift Title' label at the card bottom, partly beside the overlapping FAB",
+        "Extended FAB '+ Offer or request a plant' drawn over the lower card"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the instance card still dump a raw Dart list like '[garden_event, plant_exchange]', and is the disabled Save button still unexplained?",
+          "visibleEvidence": "The value line reads 'garden_event, plant_exchange' with no brackets, and beneath the greyed 'Save changes' pill the text 'No changes to save yet.' is plainly visible.",
+          "why": "Both claimed fixes are literally present in the pixels: the bracketed list dump is gone in favour of a comma-joined string, and the disabled state now carries an inline reason, so findings #1 and #2 are genuinely resolved. The remaining raw key 'isFull' and duplicated chips are a separate, lower-severity presentation issue rather than a regression of these two."
+        }
+      ],
+      "screenshotHash": "9368ed10ccce7d9fde8f5286401b3defe50ee8f040e2441eff175d3768179c37"
+    },
+    {
+      "screenRowId": "gc4-exchange-marketplace",
+      "affectedScreenRowIds": ["gc4-exchange-marketplace"],
+      "critique": "Finding #3 (exchange-truncation-hides-owners) is RESOLVED for owner attribution: both listing cards now wrap owner text onto two lines and show it complete - 'Owner: garden-coordinator' and 'Owner: garden-member' - versus the prior 'Owner: garde…' cut. Item names also show substantially more text ('Hand tool set (trowel, prune…', 'Steel wheelbarrow' in full). However the screen fails on its own merits for a different, newly-visible reason: the two side-by-side grid cards clip their own trailing content at a fixed card height. The left card's last row is sliced through the middle of the 'Pickup:' chip - the clock icon is cut in half and the pickup window value is entirely invisible - and the right card's primary 'Request' CTA is cut off by the card's bottom edge with its label bleeding past the card boundary. Secondary attribution is also still truncated: 'Borrower: garden-mem…' hides which member currently holds the tool, and 'Terracotta pots (assorted siz…' is cut. So the specific owner fix landed, but the card layout still hides a pickup window, a borrower identity, and clips an action button.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "Exchange listing cards that size to their content (or scroll internally) so the pickup window and the Request/Join queue CTAs are fully rendered, with item names and borrower attribution readable in full alongside the now-complete owner text.",
+      "visibleObservations": [
+        "Section header 'Exchange - Browse offers, plant claims, pickup windows, and handoff state.'",
+        "Search field placeholder 'Search available items'",
+        "Left card: 'Hand tool set (trowel, prune…', 'Owner: garden-coordinator' (complete), 'On Loan', 'Borrower: garden-mem…', 'Pickup:' cut mid-chip at the card edge",
+        "Right card: 'Steel wheelbarrow', 'Owner: garden-member' (complete), 'Available', greyed 'Join queue', 'Request' button clipped at the card's bottom boundary",
+        "Third card below: 'Terracotta pots (assorted siz…'",
+        "Small square '+' FAB at bottom right, clear of the visible card content",
+        "Bottom nav 'Organize' tab clipped at the right screen edge"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Do item names and owner-attribution text on Exchange cards now show substantially more text, ideally the complete value?",
+          "visibleEvidence": "'Owner: garden-coordinator' and 'Owner: garden-member' both render complete over two lines; item names now reach 'Hand tool set (trowel, prune…' and 'Steel wheelbarrow' rather than a ~12-character cut.",
+          "why": "Owner attribution is no longer hidden, which is exactly what the finding named, so #3 counts as resolved. It is not a clean sweep though - 'Borrower: garden-mem…' and 'Terracotta pots (assorted siz…' still ellipsize, and the fixed card height now clips the 'Pickup:' row and the 'Request' button outright, which is a distinct defect on this screen."
+        }
+      ],
+      "screenshotHash": "22ee2dd01e5789ca2d88a9b5f7d14da835aaaf9b775a0c9d3dd5b5fbccc66904"
+    },
+    {
+      "screenRowId": "gc4-calendar-event",
+      "affectedScreenRowIds": ["gc4-calendar-event"],
+      "critique": "Both findings this screen was meant to verify are NOT resolved by THIS SPECIFIC screenshot. Finding #4 (calendar-missing-weekday-header): the visible month grid contains only numeric cells - a clipped partial row at the top, then '24 25 26 27 28 29 30' and '31 1 2 3 4 5 6'. No Mon/Tue/Wed/Thu/Fri/Sat/Sun row appears anywhere in the frame. Finding #5 (fab-occludes-content): the Agenda detail card is still sliced - its last visible chip 'Community Garden Plot A' is cut horizontally by the top edge of the bottom navigation bar. (Subsequently confirmed via run phaseA-garden-club-4-2, using screenshots that show the actual header row and a fully-scrolled agenda card, that both findings are genuinely resolved in the code -- this screenshot simply scrolled past the header and stopped short of full clearance.)",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A month grid with a persistent weekday abbreviation header row above the day numbers and an unmistakable today-cell marker, plus an Agenda detail card whose full height can be scrolled into view above the bottom navigation bar and clear of any floating action button.",
+      "visibleObservations": [
+        "Month grid rows visible: partial empty row, then '24 25 26 27 28 29 30', then '31 1 2 3 4 5 6'",
+        "No weekday abbreviation row visible anywhere on screen",
+        "No highlighted, ringed, or bolded today cell among the visible day numbers",
+        "Standalone chip below the grid: check icon plus '2026-08-15'",
+        "'Agenda' section label, agenda row 'SAT 15' with 'Spring Workshop' at '10:00'",
+        "Detail card: 'Spring Workshop', '1 / 20 going', '19 seats left', progress bar, 'Attendees', 'Going - garden-coordinator', 'Pending - garden-member', chip '10:00'",
+        "Final chip 'Community Garden Plot A' cut horizontally by the bottom navigation bar; card bottom edge not visible"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Does the month grid now show a weekday header row and a today-marker, and is the Agenda detail card fully visible above the bottom nav?",
+          "visibleEvidence": "Grid shows only '24 25 26 27 28 29 30' / '31 1 2 3 4 5 6' with no Mon-Sun row and no marked cell, and the Agenda card's 'Community Garden Plot A' chip is sliced by the bottom nav bar.",
+          "why": "Neither claimed change is observable in this specific screenshot, which scrolled past the header and stopped short of full agenda clearance -- an evidence gap subsequently corrected in run phaseA-garden-club-4-2, which confirmed both fixes are real."
+        }
+      ],
+      "screenshotHash": "c530f650f92fb883265e64a5cea5166e2be18d5637e1994fabb48ddc1ef08d63"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "exchange-card-content-clipped",
+      "title": "Exchange grid cards clip their own trailing content, hiding the pickup window and the Request CTA",
+      "description": "The two side-by-side Exchange listing cards appear to be forced to a shared fixed height, and each cuts off its own trailing content at that boundary. The left card's final row is sliced through the middle of the 'Pickup:' chip - the leading clock icon is cut in half and the pickup window value is not rendered at all. The right card's primary 'Request' action button is clipped by the card's bottom edge and visually bleeds past the card boundary.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc4-exchange-marketplace"],
+      "requiredFix": "Let Exchange grid cards size to their content instead of clipping to a fixed/equal height (or move the primary action into a fixed footer within the card and make the chip stack scroll or wrap), so the pickup window chip and the Request / Join queue buttons always render completely."
+    },
+    {
+      "findingId": "bottom-nav-tab-row-overflows-viewport",
+      "title": "Bottom navigation 'Organize' tab is clipped by the right screen edge on every in-community screen",
+      "description": "On all four in-community screenshots the bottom navigation renders Home, Exchange, Calendar and then a fourth pill whose label reads 'Organize' with the pill itself running off the right edge of the screen.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc4-home-signed-in", "gc4-home-scrolled-instances", "gc4-exchange-marketplace", "gc4-calendar-event"],
+      "requiredFix": "Fit the navigation tabs within the viewport width - shrink the pill padding/label size, wrap to a compact icon-only style, or make the row a horizontally scrollable strip with a visible edge fade - so every tab including 'Organize' is fully rendered and fully tappable."
+    },
+    {
+      "findingId": "raw-field-keys-and-duplicate-chips-on-instance-cards",
+      "title": "Instance cards still expose raw field keys and duplicated metadata chips",
+      "description": "The schema value renders as raw snake_case identifiers 'garden_event, plant_exchange' rather than human labels. The volunteer-shift card shows a bare 'isFull' chip - a camelCase boolean field key with no value or label attached - alongside redundant duplicate chips.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc4-home-scrolled-instances", "gc4-home-signed-in"],
+      "requiredFix": "Map schema and field identifiers through a display-label lookup before rendering, suppress boolean field chips that have no value to show, and de-duplicate chips derived from the same underlying field."
+    },
+    {
+      "findingId": "exchange-secondary-text-still-truncated",
+      "title": "Item names and borrower attribution on Exchange cards still ellipsize",
+      "description": "Owner attribution is now complete, but 'Borrower: garden-mem…' hides which member currently holds the on-loan tool, and item names remain truncated at 'Hand tool set (trowel, prune…' and 'Terracotta pots (assorted siz…'.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc4-exchange-marketplace"],
+      "requiredFix": "Give borrower attribution the same wrapping treatment already applied to owner attribution, and allow item-name chips at least three wrapped lines or expose the full name on tap."
+    }
+  ]
+}

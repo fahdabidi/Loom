@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/llm-vision-ux-review-phaseA-garden-club-4-1.json",
+  "expectedReviewRunId": "phaseA-garden-club-4",
+  "declaredReviewRunId": "phaseA-garden-club-4",
+  "expectedAppCommitSha": "b92ded64",
+  "declaredAppCommitSha": "b92ded64",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 5,
+  "reviewedScreenRowCount": 5,
+  "reviewedScreenshotHashCount": 5,
+  "reviewedScreenRowIds": [
+    "gc4-updated-card",
+    "gc4-home-signed-in",
+    "gc4-home-scrolled-instances",
+    "gc4-exchange-marketplace",
+    "gc4-calendar-event"
+  ],
+  "reviewedScreenshotHashes": [
+    "2eb02db3df36b21fc1a6e5018dba067fbd29ed51729077df505e8206fb03bc3e",
+    "11a88d28295c60d80c49cc22a5ceaf0442cf03d7141c845f69a6595720950176",
+    "9368ed10ccce7d9fde8f5286401b3defe50ee8f040e2441eff175d3768179c37",
+    "22ee2dd01e5789ca2d88a9b5f7d14da835aaaf9b775a0c9d3dd5b5fbccc66904",
+    "c530f650f92fb883265e64a5cea5166e2be18d5637e1994fabb48ddc1ef08d63"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

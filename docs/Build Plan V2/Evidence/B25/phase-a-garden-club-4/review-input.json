@@ -1,0 +1,62 @@
+{
+  "currentReviewRunId": "phaseA-garden-club-4",
+  "reviewInputEvidence": {
+    "appCommitSha": "b92ded64",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Fourth Garden Club walkthrough this session, and a targeted re-verification pass specifically checking whether the 5 major findings from walkthrough #3's judge review (phase-a-garden-club-3) are now resolved after CJM.10, CJM.10b, CJM.11, CJM.11c, CJM.12, and CJM.13 landed. Same real sideloaded package as walkthrough #3, freshly reinstalled over a freshly rebuilt app."
+  },
+  "priorFindingsBeingReverified": [
+    {"findingId": "raw-schema-ids-in-member-ui", "fixedBy": "CJM.10 (194fc3e6)"},
+    {"findingId": "unexplained-disabled-save", "fixedBy": "CJM.10 (194fc3e6)"},
+    {"findingId": "exchange-truncation-hides-owners", "fixedBy": "CJM.11 (632de44e) + CJM.11c (b92ded64)"},
+    {"findingId": "calendar-missing-weekday-header", "fixedBy": "CJM.12 (e64f44ea)"},
+    {"findingId": "fab-occludes-content", "fixedBy": "CJM.13 (de237cfb, 0d0309f7)"}
+  ],
+  "screenRows": [
+    {
+      "rowId": "gc4-updated-card",
+      "communityName": "Garden Club",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after tapping \"Validate and install\" for the real Garden Club package pair",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/updated-card.png",
+      "screenshotHash": "2eb02db3df36b21fc1a6e5018dba067fbd29ed51729077df505e8206fb03bc3e"
+    },
+    {
+      "rowId": "gc4-home-signed-in",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Walkthrough_Tester / Member",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/home-signed-in.png",
+      "screenshotHash": "11a88d28295c60d80c49cc22a5ceaf0442cf03d7141c845f69a6595720950176"
+    },
+    {
+      "rowId": "gc4-home-scrolled-instances",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-export-custom-schemas / garden-volunteer-shift",
+      "screenOrState": "Home tab scrolled to the schema-export instance card (checking CJM.10's raw-bracket-dump and disabled-Save-hint fixes) and the volunteer-shift instance below it",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/home-scrolled-instances.png",
+      "screenshotHash": "9368ed10ccce7d9fde8f5286401b3defe50ee8f040e2441eff175d3768179c37"
+    },
+    {
+      "rowId": "gc4-exchange-marketplace",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-tool-loan / garden-tool-giveaway",
+      "screenOrState": "Exchange tab scrolled to the tool-loan listing cards (checking CJM.11/CJM.11c's owner/item truncation and raw-enum-casing fixes)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/exchange-marketplace.png",
+      "screenshotHash": "22ee2dd01e5789ca2d88a9b5f7d14da835aaaf9b775a0c9d3dd5b5fbccc66904"
+    },
+    {
+      "rowId": "gc4-calendar-event",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "Calendar tab scrolled to the month grid's weekday header/today marker (CJM.12) and the fully-visible Spring Workshop agenda detail card clear of the bottom nav (CJM.13)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-event.png",
+      "screenshotHash": "c530f650f92fb883265e64a5cea5166e2be18d5637e1994fabb48ddc1ef08d63"
+    }
+  ]
+}

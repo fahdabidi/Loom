@@ -1,0 +1,32 @@
+{
+  "currentReviewRunId": "phaseA-garden-club-4-2",
+  "reviewInputEvidence": {
+    "appCommitSha": "b92ded64",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Follow-up to phaseA-garden-club-4-1, which confirmed findings #1/#2/#3 resolved but could not confirm #4 (calendar weekday header) or #5 (FAB/nav occlusion) because the single calendar screenshot supplied had scrolled past the weekday header and had not scrolled far enough to prove the Agenda card was fully clear of the bottom nav. This pass supplies two corrected calendar screenshots targeting exactly those two findings; the code did not change since the -1 pass (same commit b92ded64)."
+  },
+  "priorFindingsBeingReverified": [
+    {"findingId": "calendar-missing-weekday-header", "fixedBy": "CJM.12 (e64f44ea)", "priorPassResult": "fail -- evidence did not show it, not a code gap"},
+    {"findingId": "fab-occludes-content", "fixedBy": "CJM.13 (de237cfb, 0d0309f7)", "priorPassResult": "fail -- evidence scrolled short of full clearance, not a code gap"}
+  ],
+  "screenRows": [
+    {
+      "rowId": "gc4-calendar-header-today",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "Calendar tab, month view, showing the weekday header row and the 11th (today) cell",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-header-today.png",
+      "screenshotHash": "ec93edbe081b6a6eb4d2d5d43e678df8ae0400bcac0f39b6ffacadd48f55c770"
+    },
+    {
+      "rowId": "gc4-calendar-agenda-fully-clear",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "Calendar tab scrolled to maximum extent, showing the full Spring Workshop Agenda detail card's bottom edge and the 'Local package details' section below it, both clear of the bottom navigation bar",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-agenda-fully-clear.png",
+      "screenshotHash": "fc67ac296dfa978698122e8685fb236ec980b36aaa17bfd6e054f351d9951b30"
+    }
+  ]
+}

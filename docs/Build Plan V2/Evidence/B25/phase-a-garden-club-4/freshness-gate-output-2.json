@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/llm-vision-ux-review-phaseA-garden-club-4-2.json",
+  "expectedReviewRunId": "phaseA-garden-club-4-2",
+  "declaredReviewRunId": "phaseA-garden-club-4-2",
+  "expectedAppCommitSha": "b92ded64",
+  "declaredAppCommitSha": "b92ded64",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 2,
+  "reviewedScreenRowCount": 2,
+  "reviewedScreenshotHashCount": 2,
+  "reviewedScreenRowIds": [
+    "gc4-calendar-header-today",
+    "gc4-calendar-agenda-fully-clear"
+  ],
+  "reviewedScreenshotHashes": [
+    "ec93edbe081b6a6eb4d2d5d43e678df8ae0400bcac0f39b6ffacadd48f55c770",
+    "fc67ac296dfa978698122e8685fb236ec980b36aaa17bfd6e054f351d9951b30"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

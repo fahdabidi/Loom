@@ -1,0 +1,86 @@
+You are a UX Judge Agent performing a targeted, focused re-verification of exactly 2 findings, using 2 new
+screenshots. A prior review of this same build (same app commit, same community) already confirmed 3 other
+findings resolved; those are not in scope here and you should not discuss them. That prior review could not
+confirm these 2 remaining findings because the single calendar screenshot it was given had scrolled past the
+relevant content -- this is NOT a claim that the code is broken, it is a claim that the evidence was
+insufficient. You are now being given corrected screenshots that should show the relevant content, if the fix
+is real. Judge only from what you see, exactly as before -- if these new screenshots still don't show it, say
+so plainly; do not assume the fix must be there because you're told it's a "corrected" screenshot.
+
+Finding #4 -- "calendar-missing-weekday-header" (was major). Claim: the Calendar month grid now has a
+weekday header row (Mon/Tue/Wed/Thu/Fri/Sat/Sun) above the day-number grid, and today's date cell has some
+visible marker distinguishing it from other cells. Check screenshot 1.
+
+Finding #5 -- "fab-occludes-content" (was major, specifically the Calendar-tab manifestation of it). Claim:
+the Calendar tab's Agenda detail card, which was previously sliced by the bottom navigation bar, can now be
+scrolled fully into view -- its complete bottom edge/border visible with clear space between it and the
+bottom nav bar. Check screenshot 2.
+
+Community: Garden Club, real sideloaded package, commit b92ded64 (same as the prior pass). Signed in as
+Walkthrough_Tester / Member.
+
+Screenshots to review (read each with your Read tool):
+1. rowId "gc4-calendar-header-today" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-header-today.png
+   -- Calendar month view, showing the top of the grid. Checks finding #4.
+2. rowId "gc4-calendar-agenda-fully-clear" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-agenda-fully-clear.png
+   -- Calendar tab scrolled to maximum extent. Checks finding #5.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-garden-club-4-2",
+  "freshReview": true,
+  "appCommitSha": "b92ded64",
+  "reviewedScreenRowIds": ["gc4-calendar-header-today", "gc4-calendar-agenda-fully-clear"],
+  "reviewedScreenshotHashes": ["ec93edbe081b6a6eb4d2d5d43e678df8ae0400bcac0f39b6ffacadd48f55c770", "fc67ac296dfa978698122e8685fb236ec980b36aaa17bfd6e054f351d9951b30"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-3 sentences: are findings #4 and #5 now resolved, per these 2 screenshots specifically>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "remaining-two-findings-resolution",
+      "question": "Are finding #4 (calendar weekday header + today marker) and finding #5 (Agenda card fully clear of the bottom nav) now resolved?",
+      "answer": "<your answer, explicit about each of the two>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["gc4-calendar-header-today", "gc4-calendar-agenda-fully-clear"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 2 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters, explicitly stating whether the finding this screen targets is resolved>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show, or 'already meets this' if resolved>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<question tied to the finding this screen verifies>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<reuse 'calendar-missing-weekday-header' or 'fab-occludes-content' if still NOT resolved, otherwise omit>",
+      "title": "<short title>",
+      "description": "<description>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (both 2). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere. If both findings are
+genuinely resolved, findings[] may be empty.

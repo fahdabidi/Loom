@@ -1,0 +1,110 @@
+You are a UX Judge Agent performing a RE-VERIFICATION pass. A prior review of this same community (Garden
+Club) found 5 major findings on an earlier build. Five fix commits have since landed, each claiming to
+resolve exactly one of those findings. Your job is to determine, from fresh screenshots on the fixed build,
+whether each specific finding is now actually resolved -- not to conduct a new general review from scratch.
+
+You did not implement any of these fixes. Use only the 5 screenshots listed below and their metadata. If a
+screenshot does not show a finding is fixed, it is not fixed -- do not give credit based on the fix
+description, only based on what is visible in the pixels.
+
+The 5 prior findings, each with the specific claim you must verify:
+
+1. "raw-schema-ids-in-member-ui" (was major) -- claimed fixed by commit 194fc3e6. Claim: an instance card
+   that previously showed a raw Dart list dump like "[garden_event, plant_exchange]" now shows a
+   comma-joined, bracket-free string instead. Check screenshot 3.
+2. "unexplained-disabled-save" (was major) -- claimed fixed by commit 194fc3e6. Claim: a disabled "Save
+   changes" button that previously gave no explanation now shows explanatory text (e.g. "No changes to save
+   yet.") when disabled because there are no edits. Check screenshot 3.
+3. "exchange-truncation-hides-owners" (was major) -- claimed fixed by commits 632de44e and b92ded64. Claim:
+   item names and owner-attribution text on Exchange listing cards, previously truncated to roughly
+   12-15 characters (e.g. "Owner: garde..."), now show substantially more text, ideally the complete value.
+   Check screenshot 4.
+4. "calendar-missing-weekday-header" (was major) -- claimed fixed by commit e64f44ea. Claim: the Calendar
+   month grid, which previously had no weekday header row at all, now shows a row of weekday abbreviations
+   (Mon/Tue/Wed/Thu/Fri/Sat/Sun) above the day-number grid, and today's date cell carries some kind of
+   visible marker distinguishing it from other cells. Check screenshot 5.
+5. "fab-occludes-content" (was major) -- claimed fixed by commits de237cfb and 0d0309f7. Claim: content that
+   was previously covered by the floating action button or clipped by the bottom navigation bar (specifically
+   the Calendar tab's Agenda entry) can now be fully scrolled into view, clear of both. Check screenshot 5,
+   which is scrolled to the point where the previously-clipped Agenda detail card should now be fully visible
+   above the bottom nav.
+
+Community: Garden Club (community_garden_club, extensionId ext_garden_club), a real sideloaded package. The
+signed-in account for screens 2-5 is: display name "Walkthrough_Tester", persona "Member".
+
+Screenshots to review (read each with your Read tool):
+1. rowId "gc4-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/updated-card.png
+   -- community list right after install (not directly tied to a specific finding, included for context/
+   continuity with the prior review).
+2. rowId "gc4-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/home-signed-in.png
+   -- Home tab top, immediately after signing up (context, not directly tied to a specific finding).
+3. rowId "gc4-home-scrolled-instances" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/home-scrolled-instances.png
+   -- Home tab scrolled to the schema-export instance card. Checks findings 1 and 2.
+4. rowId "gc4-exchange-marketplace" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/exchange-marketplace.png
+   -- Exchange tab scrolled to the tool-loan listing cards. Checks finding 3.
+5. rowId "gc4-calendar-event" -- docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/screenshots/calendar-event.png
+   -- Calendar tab scrolled to show the month grid header/today-marker and the fully-scrolled Agenda detail
+   card. Checks findings 4 and 5.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-garden-club-4",
+  "freshReview": true,
+  "appCommitSha": "b92ded64",
+  "reviewedScreenRowIds": ["gc4-updated-card", "gc4-home-signed-in", "gc4-home-scrolled-instances", "gc4-exchange-marketplace", "gc4-calendar-event"],
+  "reviewedScreenshotHashes": ["2eb02db3df36b21fc1a6e5018dba067fbd29ed51729077df505e8206fb03bc3e", "11a88d28295c60d80c49cc22a5ceaf0442cf03d7141c845f69a6595720950176", "9368ed10ccce7d9fde8f5286401b3defe50ee8f040e2441eff175d3768179c37", "22ee2dd01e5789ca2d88a9b5f7d14da835aaaf9b775a0c9d3dd5b5fbccc66904", "c530f650f92fb883265e64a5cea5166e2be18d5637e1994fabb48ddc1ef08d63"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary: how many of the 5 prior findings are now genuinely resolved, and any that are not>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "prior-findings-resolution",
+      "question": "Of the 5 specific prior findings listed in the brief, how many are visibly resolved in these screenshots?",
+      "answer": "<your answer, explicitly stating a count out of 5 and which ones if not all>",
+      "score": <0-100 integer, where 100 means all 5 fully resolved>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters, citing which screen and which finding>"],
+      "affectedScreenRowIds": ["<rowIds this answer is based on>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 5 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique of this exact screen -- for screens 3/4/5, explicitly state whether the finding(s) it was meant to verify are resolved, citing exact visible text; at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade, or 'already meets this' if resolved>",
+      "visibleObservations": ["<specific things you actually saw on screen>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question tied to the finding(s) this screen is meant to verify>",
+          "visibleEvidence": "<at least 16 characters, citing exact visible content>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<the matching hash from the list above>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug -- reuse the original findingId if a prior finding is NOT resolved, or a new slug for any newly-observed issue>",
+      "title": "<short title>",
+      "description": "<full description of the issue, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+You must produce exactly one screenReviews[] entry per screenshot (all 5), with real per-screen critique. Do
+not include sourceReviewRunId, carriedForward, reusedPriorReview, usesPriorReview, or
+carriedFromPriorReview anywhere in your response. If all 5 prior findings are genuinely resolved and you spot
+no new blocker/major issues, the findings[] array may be empty -- do not invent findings to fill it. If you
+notice new issues while reviewing (not among the original 5), include them in findings[] with a new
+findingId, but do not let them distract from clearly answering whether the original 5 are resolved.

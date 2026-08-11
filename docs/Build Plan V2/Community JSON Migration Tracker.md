@@ -314,6 +314,95 @@ walking the remaining 8 communities — avoids rediscovering the same 9 findings
 output, freshness-gate/importer/production-judge output, and the review-input/judge-prompt artifacts are
 preserved under `docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/` for the tickets to reference directly.
 
+### 0.4 CJM.10–CJM.13: the 5 major findings fixed, independently re-verified live (2026-08-11)
+
+All 5 **major** findings from walkthrough #3 (§0.3) were dispatched as shared-code tickets, each following
+the full established discipline — dispatch → my own independent `flutter analyze`/full-suite re-run (never
+trusting the sandbox's self-report, which hit the known WSL vsock bug on every single one of these 4
+dispatches) → fix any real regression the dispatch itself introduced → commit:
+
+- **CJM.10** (`194fc3e6`) — `_editor()` in `part26_generic_instance_card.dart` had no `case 'list':`/
+  `'personaId[]':` branch, so those fields fell through to a plain `TextField` that stringified the raw Dart
+  `List` (`[garden_event, plant_exchange]`); fixed to comma-join for display and re-parse on save. Added a
+  "No changes to save yet." hint under the disabled Save button. **Follow-up regression caught and fixed**:
+  my own independent full-suite re-run found a genuine pre-existing test broken by this exact commit
+  (`v3_milestone_a6_generic_instance_card_test.dart`'s retry-tap test, passing on the parent commit,
+  confirmed via a throwaway `git worktree`) — root-caused and fixed as **CJM.10b** (`7cd86d33`).
+- **CJM.11** (`632de44e`) — added `maxLines` to `WorkflowFactPillFieldSchema` and wired it through
+  `WorkflowFactPillRow`/`_SurfaceFactPill`/`_WorkflowPersonaFact`; added a generic camelCase/snake_case →
+  Title Case humanizer for raw enum-like instance-data values. **My own independent verification caught two
+  real bugs the dispatch's broken sandbox never saw**: (1) the humanizer called `_humanizeFieldName`, a
+  *private instance method* scoped to an unrelated class in a different file — a genuine `undefined_function`
+  compile error; (2) the humanizer's title-casing mangled legitimate short-form values like `"TBD"` into
+  `"Tbd"`, breaking an existing calendar test. Both fixed directly, plus updated 4 pre-existing tests whose
+  hardcoded raw-enum-text assertions (`'onLoan'`/`'available'`) were superseded by the intended fix —
+  committed together as `bfa204cf`.
+- **CJM.12** (`e64f44ea`) — added a weekday header row and a "today" cell marker to
+  `_EngineNativeMonthGrid`, with a proper `currentDate` clock-injection point (avoiding a hardcoded
+  `DateTime.now()` that would have made the new tests date-dependent). Independently re-verified clean, no
+  fix-up needed.
+- **CJM.13** (`de237cfb`) — the community screen's `SingleChildScrollView` reserved bottom padding for the
+  bottom nav bar (`tabHeight + 48`) but never for the floating action button that floats above it; added FAB-
+  aware extra padding. **Follow-up bug caught and fixed**: the dispatch's own new geometry-assertion test hung
+  (`pumpAndSettle` never converged after a `dragUntilVisible`) — its own sandbox never caught this either
+  (same vsock blocker). Replaced with the bounded `pump()`-loop pattern already proven elsewhere this session
+  — **CJM.13's own fix-up**, `0d0309f7`.
+- **CJM.11c** (`b92ded64`, no separate ticket — small enough to fix directly after finding it live) — **the
+  single most important catch of this whole sequence**: re-testing CJM.11 live on Garden Club's *real*
+  sideloaded JSON (not the hardcoded default equipment-loan archetype the original ticket's test fixture used)
+  showed the Exchange "Owner:" pill was **still truncating identically to before the fix**. Root cause: two
+  separate gaps. `part26_generic_instance_card.dart`'s conversion from a community's own JSON-declared
+  `instanceDataSchema` into `WorkflowFactPillFieldSchema` never set `maxLines` at all (silent default of 1).
+  `part36_engine_native_marketplace_surface.dart`'s equivalent conversion *did* set `maxLines: 2`, but gated
+  it behind a hardcoded field-name allowlist (`'holderPersonaId'`, `'claimedByPersonaId'`) copied verbatim
+  from the hardcoded default archetype — Garden Club's own JSON names the same field `ownerPersonaId`, which
+  the allowlist never matched. This is a textbook instance of this session's own repeated lesson: **a fix
+  verified only against a synthetic/default fixture, never against a real community's own JSON, is not
+  verified.** Fixed both call sites to apply the default universally, not keyed to field names.
+
+**Independent verification, every one of the 4 dispatches, run by me from a real checkout, never trusted from
+self-report:** `flutter analyze` clean every time; full `loom_communities_app_shell` suite grew from 221→227
+tests across the four tickets, with the *only* failure at every single checkpoint being the one already-known,
+pre-existing, unrelated flaky test in `v3_milestone_a11_event_rsvp_archetype_test.dart`. Zero other
+regressions survived to the final state.
+
+**Live re-verification (the actual point of all of this): rebuilt the app fresh, re-sideloaded Garden Club's
+real package, and re-captured all 5 previously-failing screens.** Dispatched a fresh LLM Vision UX Judge
+(`Agent` tool, `Explore` subagent, `opus`, fresh context) against the new screenshots. First pass
+(`phaseA-garden-club-4-1`) confirmed 3 of 5 resolved (raw-schema-dump, disabled-Save-hint, owner-truncation)
+but could not confirm the other 2 (calendar header, FAB/nav clearance) — **not because the code was wrong,
+but because the single calendar screenshot supplied had scrolled past the weekday header and stopped short of
+full agenda-card clearance**. This is exactly the freshness/evidence discipline this pipeline exists to
+enforce: the judge correctly refused to credit a fix it couldn't see. Recaptured two corrected, further-
+scrolled screenshots and dispatched a second, focused judge pass (`phaseA-garden-club-4-2`), which confirmed
+both resolved: the weekday header (`MON TUE WED THU FRI SAT SUN`) is genuinely present and column-aligned,
+today's cell carries a real (if low-contrast) marker distinct from the selected-date styling, and the Agenda
+detail card now scrolls fully clear of the bottom nav with its complete rounded bottom edge visible. Both
+freshness-gate runs passed clean (`status=pass problems=0`). Evidence for both passes:
+`docs/Build Plan V2/Evidence/B25/phase-a-garden-club-4/`.
+
+**All 5 of walkthrough #3's major findings are now genuinely, independently, live-re-verified resolved.**
+
+**New findings surfaced during this re-verification pass** (not blocking — no critical-blockers, matching
+this session's own established precedent of documenting open findings rather than blocking indefinitely on
+every last polish item; tracked here for a future remediation pass, not yet ticketed):
+- `exchange-card-content-clipped` (major) — Exchange grid cards clip their own trailing content at a fixed
+  card height: the "Pickup:" chip is sliced mid-icon and the "Request"/"Join queue" CTA bleeds past the
+  card's bottom edge.
+- `bottom-nav-tab-row-overflows-viewport` (major) — the 4th bottom-nav tab ("Organize") is clipped by the
+  right screen edge on every in-community screen.
+- `raw-field-keys-and-duplicate-chips-on-instance-cards` (minor) — schema values still show raw snake_case
+  identifiers (`garden_event, plant_exchange`) rather than human labels; a bare `isFull` boolean-key chip with
+  no value; duplicated "Signed up: 1" / "2 schemas selected"+"2 schemas" chips.
+- `exchange-secondary-text-still-truncated` (minor) — `Borrower:` attribution and some item names still
+  ellipsize even after CJM.11/CJM.11c (owner attribution specifically is fixed; borrower is not).
+
+Garden Club's core sideload mechanism (CJM.9) and all 5 major shared-code UX findings from its first genuinely
+valid walkthrough are now closed. Not yet run for Garden Club: the §6 step 7 product-doc reconciliation gate.
+Given all 9 original findings and their fixes are shared App-Shell code, the remaining 8 communities' `§6`
+walkthroughs should now surface substantially fewer shared-code issues than Garden Club's did — proceeding to
+those next.
+
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
 Both approved by the user 2026-08-09. Both are field/display-level capabilities, deliberately **not** new
