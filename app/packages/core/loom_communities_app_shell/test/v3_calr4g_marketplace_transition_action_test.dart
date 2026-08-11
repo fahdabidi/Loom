@@ -102,6 +102,15 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
+Future<void> _openMarketplaceAsMember(WidgetTester tester) async {
+  await selectTestTabletopPersona(tester, 'tabletop-member');
+  final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
+  await _pumpUntil(tester, marketplace);
+  await tester.ensureVisible(marketplace);
+  await tester.tap(marketplace);
+  await _settle(tester);
+}
+
 Future<void> _openCatanAsMember(WidgetTester tester) async {
   await selectTestTabletopPersona(tester, 'tabletop-member');
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
@@ -149,11 +158,28 @@ void _addShareGameActorPrefill(Map<String, dynamic> source) {
   final definitions =
       (source['experience'] as Map<String, dynamic>)['workflowDefinitions']
           as Map<String, dynamic>;
-  final loan = Map<String, dynamic>.from(definitions['equipment-loan'] as Map);
-  final bindings = List<dynamic>.from(loan['renderBindings'] as List);
-  final marketplaceIndex = bindings.indexWhere(
-    (binding) => (binding as Map)['tabId'] == 'marketplace',
+  // The "Share a game" create action belongs to `tabletop-game-loan`, a separate workflow
+  // type from `equipment-loan` (which is what Catan/the borrow-FAB tests above use) -- both
+  // happen to render via the `equipment-loan` cardSurfaceFamily/archetype, which is a
+  // different thing from the JSON workflow *type* key.
+  final loan = Map<String, dynamic>.from(
+    definitions['tabletop-game-loan'] as Map,
   );
+  final bindings = List<dynamic>.from(loan['renderBindings'] as List);
+  // This type declares more than one `tabId: "marketplace"` binding (different
+  // states/presentations of the same card) -- find the one that actually carries the
+  // "Share a game" create action, not just the first binding on that tab.
+  final marketplaceIndex = bindings.indexWhere((binding) {
+    final map = binding as Map;
+    if (map['tabId'] != 'marketplace') return false;
+    final actions = map['actions'] as List<dynamic>?;
+    if (actions == null) return false;
+    return actions.any(
+      (action) =>
+          (action as Map)['kind'] == 'create' &&
+          action['label'] == 'Share a game',
+    );
+  });
   final marketplaceBinding = Map<String, dynamic>.from(
     bindings[marketplaceIndex] as Map,
   );
@@ -171,7 +197,7 @@ void _addShareGameActorPrefill(Map<String, dynamic> source) {
   marketplaceBinding['actions'] = actions;
   bindings[marketplaceIndex] = marketplaceBinding;
   loan['renderBindings'] = bindings;
-  definitions['equipment-loan'] = loan;
+  definitions['tabletop-game-loan'] = loan;
 }
 
 void main() {
@@ -313,22 +339,22 @@ void main() {
       );
       try {
         await tester.pumpWidget(_app(installed!));
-        await _openCatanAsMember(tester);
+        await _openMarketplaceAsMember(tester);
         await tester.tap(
-          find.byKey(const ValueKey('creatable-fab-game-listing')),
+          find.byKey(const ValueKey('creatable-fab-tabletop-game-loan')),
         );
         await _settle(tester);
         expect(find.byType(AlertDialog), findsOneWidget);
         await tester.enterText(
-          find.byKey(const ValueKey('new-game-listing-editor-title')),
+          find.byKey(const ValueKey('new-tabletop-game-loan-editor-title')),
           'Owner field smoke test',
         );
         await tester.enterText(
-          find.byKey(const ValueKey('new-game-listing-editor-category')),
+          find.byKey(const ValueKey('new-tabletop-game-loan-editor-category')),
           'Strategy',
         );
         await tester.tap(
-          find.byKey(const ValueKey('new-game-listing-submit')),
+          find.byKey(const ValueKey('new-tabletop-game-loan-submit')),
         );
         await _settle(tester);
 

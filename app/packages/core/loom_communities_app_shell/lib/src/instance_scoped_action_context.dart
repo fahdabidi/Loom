@@ -6,9 +6,9 @@ part of '../loom_communities_app_shell.dart';
 /// - `$actor` and `$timestamp` are resolved for both scopes.
 Map<String, dynamic> resolveInstanceScopedPrefill(
   Map<String, dynamic>? prefill,
-  WorkflowInstance instance,
-  {String? actorId},
-) {
+  WorkflowInstance instance, {
+  String? actorId,
+}) {
   if (prefill == null || prefill.isEmpty) return const {};
   return {
     for (final entry in prefill.entries)
