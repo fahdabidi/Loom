@@ -203,9 +203,6 @@
                              "displayIcon": "label_outlined", "hideWhenEmpty": true,
                              "displayContexts": ["detail"] },
 
-          "componentCount": { "type": "number", "formula": "size(includedComponents)",
-                             "displayIcon": "inventory_2_outlined", "labelTemplate": "{value} components",
-                             "displayContexts": ["tile", "detail"] },
           // ASSUMPTION: fileCount is modeled as one file per selected component (no real backend
           // packaging exists in this demo). This is a benign derived count, not a fabricated
           // checksum/ID -- see gaps section of the authoring report.
@@ -289,9 +286,6 @@
           "protectedComponents": { "type": "list", "required": false, "writableBy": "formEntry",
                            "displayIcon": "shield_outlined", "labelTemplate": "Protected: {value.length}",
                            "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "componentCount": { "type": "number", "formula": "size(components)",
-                           "displayIcon": "inventory_2_outlined", "labelTemplate": "{value} components",
-                           "displayContexts": ["detail"] },
           "protectedComponentCount": { "type": "number", "formula": "size(protectedComponents)",
                            "displayIcon": "shield_outlined", "labelTemplate": "{value} protected",
                            "displayContexts": ["detail"] }
