@@ -463,7 +463,7 @@ whole feature dead code for its intended shape; fixed with a one-line precedence
 (`itemSchema` present → skip the generic inference). Full suite green. **Unblocks:** Neighborhood Book Club
 (`book-search-ai-digest`), Masjid Nur (`mosque-search-ai-citation`).
 
-### Ticket CJM.5 — `event-rsvp` detail card hardcodes `'event-rsvp'`/`'event-rsvp-response'` instead of reading `responseTable` (found 2026-08-10, under investigation)
+### Ticket CJM.5 — `event-rsvp` detail card hardcodes `'event-rsvp'`/`'event-rsvp-response'` instead of reading `responseTable` (done, 2026-08-10)
 
 **Found while judging Riverside Youth Soccer's skill-authored output.** `_EventRsvpDetailCardState`
 (`app/packages/core/loom_communities_app_shell/lib/src/part28_engine_native_calendar_surface.dart`) — the
@@ -489,13 +489,67 @@ zero seeded response rows at all** (`part01_local_extension_screen.dart:404-425/
 literal). Ticket `data/v3_ticket_cjm5_event_rsvp_response_workflow_type.md` written covering all of these as
 one atomic fix (the report is explicit that fixing the response-table gate without also fixing the
 reminder/recurring call sites creates a new, different breakage) and dispatched via
-`call_implementation_agent.sh`. **Before this ticket is marked done:** independent verification (code diff
-read, `flutter analyze`/tests, A8/A11 Tabletop baseline preserved) plus a dedicated Regression Impact Judge
-dispatch (`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) covering every `event-rsvp`/
-`responseTable` consumer by name (Camera Club, Garden Club, Riverside Youth Soccer, Masjid Nur already
-merged; Neighborhood Book Club pending judge) confirming RSVP buttons actually populate and work — this is
-the first ticket in this section required to go through that step from the start, not retrofitted after the
-fact.
+`call_implementation_agent.sh`.
+
+**Done, 2026-08-10.** Fixed in commit `0259a54f`. Independent verification (mine, outside the dispatch's own
+vsock-blocked sandbox) found and fixed the dispatch's own diff was clean (`flutter analyze` 0 errors after 6
+real errors/warnings I fixed across `part28_engine_native_calendar_surface.dart` and the dispatch's new
+616-line regression test), but the new Garden-fixture regression tests it added surfaced **four further real,
+pre-existing bugs** the new tests were simply the first to exercise end-to-end, all fixed in the same commit:
+1. Every new test calling `_customResponseFor`/`_customResponseRowsForEvent` did so via a bare `await`
+   instead of `tester.runAsync(...)` (the established convention every other real-engine-query helper in the
+   same file already follows) — caused 5 of the new tests to hang for the full 10-minute per-test timeout
+   each (~50 minutes total) rather than fail fast. Fixed by wrapping all 8 call sites.
+2. `GenericWorkflowCreationCard._normalizedValue` (`part33_generic_creation_card.dart`) never parsed
+   `type: "number"` fields — a numeric text field's raw string went straight into `createInstance`, crashing
+   any widget that later does `... as num` on it (here, `_EventRsvpDetailCardState.build`'s capacity read).
+   Pre-existing, affects every community using the generic creation form for a numeric field; no prior test
+   exercised create-via-form-then-view-detail for one. Fixed with a `num.tryParse` pass.
+3. `resolveEffectValue` (`effect_evaluator.dart`) left a whole-string `"{field}"` template as literal
+   unsubstituted text when the referenced field was absent on the source instance, instead of resolving to
+   `null` (as its sibling `{input.X}` branch already correctly does) — crashed formula evaluation on any
+   `generateRecurringInstances`-created sibling whose optional field was unset on the anchor. Fixed with an
+   explicit null fallback, careful to exclude `{id}` (substituted later, by design) from that fallback after
+   an initial version of the fix broke 4 existing engine tests that rely on `{id}` falling through.
+4. Garden Club's own `make-recurring` effect never stamped `seriesId` onto its generated siblings (present
+   in Tabletop's equivalent effect, missing here) — recurring events never joined their series. A genuine
+   JSON-authoring gap in the merged Garden Club package, fixed directly in the `.jsonc` file (plus the
+   missing `seriesId` schema declaration) and re-validated (`status: pass`, 0 errors).
+Also fixed two test-only bugs (a stale `ensureVisible` before a facet-chip tap whose position shifted once
+CJM.5's own fix correctly renders more event-detail content; a hardcoded assumption that `respond-going`
+always shows an input dialog, false for Garden Club's undeclared-input transition) and one test logic bug
+(`count` passed as `2` but the poll expected 3 total series events — `count` is documented as the *total*
+occurrence count including the anchor, confirmed against a passing sibling test).
+
+**Verification:** `flutter analyze` clean on `loom_workflow_engine` and `loom_communities_app_shell`
+(4 harmless pre-existing `prefer_const_constructors` info-lints only). Full `loom_workflow_engine` suite:
+206/206 passing. Full `loom_communities_app_shell` suite: 214/215 passing — the one failure
+("organizer creates an event and one pending response per member") independently confirmed via `git stash`
+to reproduce identically against pre-CJM.5 code, i.e. genuinely pre-existing and unrelated to this change,
+not newly introduced or newly discovered-and-ignored.
+
+**Regression Impact Judge: dispatched and completed, 2026-08-10.** Independently re-ran both full test suites
+(206/206 `loom_workflow_engine`, 214/215 `loom_communities_app_shell` — same one pre-existing flaky test) and
+the validator across every community package (0 errors, `status: pass`). Traced every real `responseTable`
+consumer's own schema/`source` query against the fix's derivation logic and confirmed a match: Tabletop Club
+(directly tested, all pass), Garden Club (directly tested via the new regression suite, all pass), Camera
+Club, Riverside Youth Soccer, Masjid Nur, Neighborhood Book Club (traced, schema-confirmed, no dedicated
+widget-test coverage for any of these four — a **pre-existing** gap, not introduced by this fix). Confirmed
+Cedar Commons HOA's merged package and the legacy `part02_tab_shell.dart` fixture never engage the mechanism
+at all (no `responseTable` declared), unaffected before and after. Separately swept every community's own
+`effects`/`fields`/`recurrenceRule` blocks for the `resolveEffectValue` null-fallback's blast radius (the
+widest-reach change in this commit, since that function is used engine-wide, not just for event-rsvp) and
+found no other consumer has a comparable genuinely-optional-field-in-a-template pattern — Garden Club's
+`reminderOffsetHours` was the only real instance, already the fix's own target.
+
+**Two explicit, non-blocking follow-ups from the judge** (not gating this ticket, matching the CJM.6
+precedent of naming rather than silently dropping open items): (1) Camera Club/Riverside Youth
+Soccer/Masjid Nur/Neighborhood Book Club have no dedicated automated widget-test coverage of their own
+event-rsvp detail card — a good candidate for a future live/emulator RSVP-button spot-check on each,
+independent of this fix; (2) the judge observed the same pre-existing flaky-test failure signature but did
+not itself re-run the `git stash` before/after comparison that established its pre-existing status — that
+comparison was done directly by the orchestrating session (this fix's independent verification), not
+re-derived by the judge.
 
 ### Ticket CJM.6 — `create` action `prefill` never resolves `$actor` (either scope), `scope: "tab"` drops `prefill` entirely (done, 2026-08-10)
 
