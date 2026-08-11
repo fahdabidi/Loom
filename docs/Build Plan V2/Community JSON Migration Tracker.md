@@ -177,37 +177,50 @@ can be marked fully closed; all 6 previously-blocked communities' §6 walkthroug
    walkthroughs (Member Social Space install already proven working, walkthrough itself not yet run to
    completion; Ad-Free Community and Data Portability Community not yet started).
 
-**Garden Club re-walkthrough, 2026-08-10 (autonomous session) — CJM.7/CJM.8's fix confirmed genuinely
-working for Home and Calendar; a separate, real, NOT-yet-root-caused gap found on Marketplace.** Re-installed
-Garden Club's real package on a fresh emulator instance and confirmed, by direct visual inspection (not
-inference): the Home tab now renders the real engine-native list surface (a materially different structure
-from the pre-CJM.7 hardcoded fixture — "4 sections", "community-icon-badge", curated-surfaces framing) and
-the Calendar tab now renders through the real bespoke `EngineNativeCalendarSurface` (a genuine day-picker
-strip — Mon/Tue/Wed/Thu/Fri — matching the widget confirmed in the a8/a11 test suite, not the flat fact-pill
-card the first walkthrough saw). **However, the Exchange (marketplace) tab still shows the bare
-`_TabPlaceholderSurface` fallback** ("Exchange is coming to Garden Club... check back soon") despite the real
-JSON unambiguously declaring `tabId: "marketplace"` renderBindings on both `garden-tool-loan` and
-`garden-tool-giveaway` (confirmed via direct grep of the canonical `.jsonc`, 5 matches). `_hasEngineNativeBinding`
-(`part12_persona_and_tabs.dart:583-592`) is a purely structural check with no persona-gating, so it should
-have returned true. **Root cause not yet determined** — two live hypotheses, neither confirmed: (a) a stale
-in-memory `LoomExperienceDefinition`/`WorkflowDatabase` cache not refreshed after the "Update Garden Club
-from local packages" sideload action (Home/Calendar rendering correctly argues against a *total* staleness,
-but doesn't rule out a per-tab-family cache); (b) a genuine, separate logic gap specific to how the
-Marketplace case resolves for this JSON's specific binding shape, distinct from anything CJM.7/CJM.8 touched.
-Investigation was interrupted by an operator error (an `adb shell am force-stop` issued while `flutter run`
-was still attached killed the whole debug session and emulator connection, not just the app) before a
-force-restart re-check could confirm/refute the staleness hypothesis. **Also separately noted, lower
-priority, not yet assessed as blocking:** a static "In-focus product surface" preview panel (sourced from
-`part16_experience_catalog.dart`'s hardcoded `_experienceByExtensionId` catalog + `part08_garden_and_helpers.dart`,
-confirmed present for all 10 communities including Cedar Commons HOA, whose walkthrough already passed) shows
-canned illustrative content ("Spring Planting Workshop"/"Riverside Greenhouse") on the Calendar tab alongside
-the real day-picker — given Cedar Commons HOA's own successful walkthrough already coexisted with this same
-mechanism, treat as a likely-benign, pre-existing "capability showcase" pattern unless a future walkthrough
-finds otherwise, not a new regression. **Next step: relaunch the emulator cleanly (do not `am force-stop` an
-app while `flutter run` is attached — use the app's own back-navigation or `flutter run`'s own `q` uit
-command instead), re-verify whether Marketplace is still blank on a truly fresh app instance, and root-cause
-from there** (a Root Cause Agent dispatch is likely warranted if the fresh-instance re-check still shows the
-placeholder, mirroring the CJM.7→CJM.8 investigation pattern).
+**Garden Club re-walkthrough, 2026-08-10 (autonomous session) — real bug found (Exchange tab blank), but the
+live walkthrough's OTHER observations (Home/Calendar "looking fixed") turned out to be a misread — see CJM.9
+below for the actual root cause.** Re-installed Garden Club's real package on a fresh emulator instance.
+First impression: Home appeared to render the real engine-native list surface and Calendar appeared to
+render through the real `EngineNativeCalendarSurface` (a day-picker strip). **The Exchange (marketplace) tab
+showed the bare `_TabPlaceholderSurface` fallback** ("Exchange is coming to Garden Club... check back soon")
+despite the real JSON unambiguously declaring `tabId: "marketplace"` renderBindings on both `garden-tool-loan`
+and `garden-tool-giveaway` (confirmed via direct grep, 5 matches) — reproduced identically on a second,
+completely independent fresh emulator+app instance, ruling out a simple stale-process/cache explanation.
+
+**Root Cause Agent dispatch (CJM.9) found something much more foundational than a Marketplace-specific bug —
+and it retroactively overturns the "Home/Calendar confirmed working" read above.** The demo app preloads all
+10 example communities as empty-config catalog shells at every launch. Sideloading a real package over one of
+these shells hits an unconditional early-return in `LocalInAppBackend.importInitializationPackage`: any
+`communityId` already present in `_communities` (always true for a preloaded community) causes the entire
+incoming package to be silently discarded, returning the untouched empty shell — while the UI still shows
+"Updated Garden Club from local packages," a **misleading message that only proves the key existed, never
+that any data was applied**. Every community sideloaded and walked through this session was therefore never
+actually exercising the real JSON at all — what looked like "the real engine-native Home/Calendar pipeline"
+was the legacy hardcoded `_experienceByExtensionId` catalog rendering through generic, legacy-compatible
+paths (`_HomeTabSurfaceStack`, `_WeekDateStrip`) that merely *look* superficially similar to the real
+engine-native surfaces. The blank Exchange tab was simply the first tab whose legacy fallback has nothing to
+show, which is what exposed the whole chain. **CJM.7 and CJM.8's fixes are themselves still believed correct**
+(independently unit-tested and Regression-Impact-Judged) — but no live walkthrough this session has yet
+actually proven them on a real device, because sideload never took effect for any community tested so far.
+Full report: `data/root_cause_report_cjm9_marketplace_blank.md`.
+
+**Ticket CJM.9 dispatched, 2026-08-10** (`data/v3_ticket_cjm9_fix_sideload_noop_over_preloaded_shells.md`) —
+hydrate/replace a preloaded shell with the incoming package's real config instead of no-opping, discriminated
+by `existing.experienceConfiguration.isEmpty && experienceConfiguration.isNotEmpty`, while preserving today's
+genuinely-idempotent re-import behavior for already package-backed communities. **No community's §6 live
+walkthrough — including Garden Club's, and including anything this session previously marked as
+visually-confirmed working — can be trusted as real evidence until CJM.9 lands, is independently verified,
+and Garden Club's walkthrough is re-run a third time to confirm sideload genuinely takes effect this time.**
+
+Also separately noted, lower priority, not yet assessed as blocking: a static "In-focus product surface"
+preview panel (sourced from `part16_experience_catalog.dart`'s hardcoded `_experienceByExtensionId` catalog +
+`part08_garden_and_helpers.dart`) shows canned illustrative content ("Spring Planting Workshop"/"Riverside
+Greenhouse") on the Calendar tab — confirmed present for all 10 communities including Cedar Commons HOA,
+whose walkthrough already passed, so likely a benign, intentional "capability showcase" coexisting with real
+content rather than a new regression; re-assess once CJM.9 lands and a walkthrough can see real content
+alongside it. **Operational note for future walkthroughs:** never `adb shell am force-stop` the app while
+`flutter run` is attached — it kills the whole debug session and emulator connection, not just the app; use
+the app's own back-navigation or `flutter run`'s own `q` uit command instead.
 
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
