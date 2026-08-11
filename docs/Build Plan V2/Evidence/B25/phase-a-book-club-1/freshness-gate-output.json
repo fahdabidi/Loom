@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/llm-vision-ux-review-phaseA-book-club-1.json",
+  "expectedReviewRunId": "phaseA-book-club-1",
+  "declaredReviewRunId": "phaseA-book-club-1",
+  "expectedAppCommitSha": "b92ded64",
+  "declaredAppCommitSha": "b92ded64",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 5,
+  "reviewedScreenRowCount": 5,
+  "reviewedScreenshotHashCount": 5,
+  "reviewedScreenRowIds": [
+    "bc1-updated-card",
+    "bc1-home-signed-in",
+    "bc1-home-scrolled-instances",
+    "bc1-calendar",
+    "bc1-marketplace"
+  ],
+  "reviewedScreenshotHashes": [
+    "69b60882a81931989330d0d7d9d9d87ecf4ff53bf37cde2aa140956b9f653a1d",
+    "fe1154e84d4124a9f5d5a729f5b6d9fa710477a25ab74e2f037998071ab03127",
+    "b9ad2e3ee19e557eaedd459ef2836b88e2a362be490f6259e819862c087297da",
+    "38237bd144411b4298f8286c2c3a21fdb62fea56f10378cbcd0aa7e568a27f8b",
+    "fb534e481d218509df7f953862b0aa7c3ec977b8369f2741ab422295cf784dc3"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}

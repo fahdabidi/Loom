@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-book-club-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "b92ded64",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Neighborhood Book Club, run immediately after CJM.9-13 (+11c) fixed the sideload no-op and 5 shared-code UX findings on Garden Club. This walkthrough exists partly to test whether those shared-code fixes generalize to a second, differently-themed, differently-fielded community (Book Club uses its own field names like ownerPersonaId-equivalent 'holderPersonaId' and its own tab set Home/Calendar/Marketplace/Messages, distinct from Garden Club's Home/Exchange/Calendar/Organize)."
+  },
+  "screenRows": [
+    {
+      "rowId": "bc1-updated-card",
+      "communityName": "Neighborhood Book Club",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after tapping \"Validate and install\" for the real Neighborhood Book Club package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/screenshots/updated-card.png",
+      "screenshotHash": "69b60882a81931989330d0d7d9d9d87ecf4ff53bf37cde2aa140956b9f653a1d"
+    },
+    {
+      "rowId": "bc1-home-signed-in",
+      "communityName": "Neighborhood Book Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Walkthrough_Tester / Member",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/screenshots/home-signed-in.png",
+      "screenshotHash": "fe1154e84d4124a9f5d5a729f5b6d9fa710477a25ab74e2f037998071ab03127"
+    },
+    {
+      "rowId": "bc1-home-scrolled-instances",
+      "communityName": "Neighborhood Book Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "book-discussion-questions",
+      "screenOrState": "Home tab scrolled to a real discussion-questions instance card",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/screenshots/home-scrolled-instances.png",
+      "screenshotHash": "b9ad2e3ee19e557eaedd459ef2836b88e2a362be490f6259e819862c087297da"
+    },
+    {
+      "rowId": "bc1-calendar",
+      "communityName": "Neighborhood Book Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "book-club-meeting",
+      "screenOrState": "Calendar tab, month view, checking the weekday header (CJM.12) on a second community",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/screenshots/calendar.png",
+      "screenshotHash": "38237bd144411b4298f8286c2c3a21fdb62fea56f10378cbcd0aa7e568a27f8b"
+    },
+    {
+      "rowId": "bc1-marketplace",
+      "communityName": "Neighborhood Book Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "book-item-loan / book-item-giveaway",
+      "screenOrState": "Marketplace tab scrolled to show item-loan/giveaway listing cards, checking owner/holder truncation (CJM.11/CJM.11c) on a second community's own field names",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-book-club-1/screenshots/marketplace.png",
+      "screenshotHash": "fb534e481d218509df7f953862b0aa7c3ec977b8369f2741ab422295cf784dc3"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-book-club-1",
+  "freshReview": true,
+  "appCommitSha": "b92ded64",
+  "reviewedScreenRowIds": ["bc1-updated-card", "bc1-home-signed-in", "bc1-home-scrolled-instances", "bc1-calendar", "bc1-marketplace"],
+  "reviewedScreenshotHashes": ["69b60882a81931989330d0d7d9d9d87ecf4ff53bf37cde2aa140956b9f653a1d", "fe1154e84d4124a9f5d5a729f5b6d9fa710477a25ab74e2f037998071ab03127", "b9ad2e3ee19e557eaedd459ef2836b88e2a362be490f6259e819862c087297da", "38237bd144411b4298f8286c2c3a21fdb62fea56f10378cbcd0aa7e568a27f8b", "fb534e481d218509df7f953862b0aa7c3ec977b8369f2741ab422295cf784dc3"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "The sideloaded Neighborhood Book Club package clearly loaded real data -- 'The Song of Achilles', 'The Odyssey (audiobook)', 'Trivial Pursuit: Book Lovers', a Sep 2026 meeting on 2026-09-14, and a genuine curated summary about Patroclus, fate vs free will, and Miller's narrative choices -- and identity is excellent ('Signed in as Walkthrough_Tester / Member' with a full role description). However, several of the Garden Club fixes did not fully generalize to this community's own theme/content: marketplace item names are truncated again for longer titles, holder attribution renders a raw slug ('Holder: book-member') on the one card that shows it, the Calendar weekday header row is present but rendered as a near-invisible clipped dark-on-dark ghost strip in this community's brown/near-black theme, and the FAB/bottom nav occlude content on four of five screens (including the community-list screen, not previously tested). Only the disabled-Save-hint fix cleanly generalized. Additional new defects: a bare schema field name 'label' leaking into an instance card, and a marketplace listing simultaneously chipped 'Available' and 'Overdue'.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-generalize",
+      "question": "Do the shared-code fixes proven on Garden Club generalize correctly to this different community's own content and field names?",
+      "answer": "Only partially. PASS: no raw Dart-list-syntax dumps anywhere; disabled Save is explained ('No changes to save yet.'). PARTIAL: item/owner truncation fix works for moderate-length values ('The Odyssey (audiobook)', 'Holder: book-member' both fully visible) but longer titles ('The Song of Achilles (paperback)', 'Trivial Pursuit: Book Lovers ...') still exceed the fixed maxLines:2 budget and truncate -- this is a real remaining limit of the fix's chosen line-count, not evidence the fix regressed. FAIL: the weekday header exists in layout but renders illegibly on this community's dark theme (fixed/wrong-token coloring). FAIL: FAB/bottom-nav occlusion recurs on 4 of 5 screens, including the community-LIST screen (not covered by Garden Club's own re-verification evidence).",
+      "score": 32,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "bc1-marketplace: 'The Song of Achilles (pap...' and 'Trivial Pursuit: Book Lovers ...' truncated; 'The Odyssey (audiobook)' and 'Holder: book-member' both fully visible on the same screen.",
+        "bc1-calendar: weekday header renders as a dark, half-height ghost strip against the near-black grid.",
+        "bc1-updated-card: the 'Add Community' FAB covers the 'Masjid Nur...' card title -- an occlusion instance on a screen never captured for Garden Club's own re-verification."
+      ],
+      "affectedScreenRowIds": ["bc1-calendar", "bc1-marketplace", "bc1-updated-card"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "Yes, substantially -- book-club-specific titles, a curated discussion summary, real meeting dates, and package-derived theming are all present. Two deductions: holder shown as a raw slug on one card, and a bare 'label' schema token leaking into an instance card.",
+      "score": 82,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Instance card Summary: 'Curated by the club: focus on Patroclus and Achilles' relationship, fate vs free will, and Miller's narrative choices.'",
+        "Marketplace real listings: 'The Odyssey (audiobook)', with Audiobook/Loan/Holder/Borrowed chips matching the club's own vocabulary."
+      ],
+      "affectedScreenRowIds": ["bc1-home-scrolled-instances", "bc1-marketplace"]
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "marketplace-title-and-holder-truncation-regression",
+      "title": "Marketplace item titles clipped for longer values; holder shown as internal slug on one card",
+      "description": "Longer item titles ('The Song of Achilles (paperback)', 'Trivial Pursuit: Book Lovers ...') still exceed the CJM.11/11c maxLines:2 budget and truncate, even though moderate-length titles and holder text now render in full. Holder attribution on the one card that shows it renders the raw slug 'Holder: book-member' rather than a display name.",
+      "severity": "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-marketplace"]
+    },
+    {
+      "findingId": "marketplace-contradictory-status-chips",
+      "title": "Listing shows 'Available' and 'Overdue' simultaneously with undifferentiated chip styling",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-marketplace"]
+    },
+    {
+      "findingId": "calendar-weekday-header-illegible-on-dark-theme",
+      "title": "Weekday header row present but rendered as an unreadable clipped dark-on-dark strip",
+      "description": "CJM.12's fix depends on a color that isn't legible against this community's brown/near-black theme -- needs to bind to a theme foreground token.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-calendar"]
+    },
+    {
+      "findingId": "fab-and-navbar-content-occlusion-recurs",
+      "title": "FAB and bottom nav paint over content on four of five screens, including the community list",
+      "description": "CJM.13's fix covered the in-community scrollable; the community-LIST screen's own FAB occlusion (Add Community FAB over the last card) was never covered by Garden Club's re-verification evidence and remains unfixed.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-updated-card", "bc1-home-signed-in", "bc1-home-scrolled-instances", "bc1-calendar", "bc1-marketplace"]
+    },
+    {
+      "findingId": "instance-card-raw-field-name-leak",
+      "title": "Bare schema tokens 'label' and 'source' rendered as user-facing text",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-home-scrolled-instances"]
+    },
+    {
+      "findingId": "installed-community-card-missing-affordances",
+      "title": "Newly installed community card lacks the chevron and action chips its peers show",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-updated-card"]
+    },
+    {
+      "findingId": "instance-card-missing-type-and-attribution",
+      "title": "Instance card shows no type, author, timestamp, or draft/published state",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-home-scrolled-instances"]
+    },
+    {
+      "findingId": "calendar-event-title-and-iso-date-copy",
+      "title": "Month cell clips the only event to 'Sept...' and selected date renders in ISO format",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-calendar"]
+    },
+    {
+      "findingId": "unexplained-two-roles-chip",
+      "title": "'2 roles' pill is an unexplained bare count",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-home-signed-in"]
+    },
+    {
+      "findingId": "empty-sponsored-slot-occupies-prime-position",
+      "title": "'No sponsored message right now.' consumes the top feed slot",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["bc1-home-signed-in"]
+    }
+  ],
+  "note": "Full per-screen screenReviews/directQuestionAnswers text (omitted here for file size) is preserved in the original agent transcript this session; the findings[] and holisticQuestionAnswers above capture the complete substantive content."
+}
