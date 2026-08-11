@@ -204,8 +204,10 @@
           "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
                              "displayIcon": "event_seat", "labelTemplate": "{value} spots left",
                              "displayContexts": ["detail"] },
-          "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity",
+                     "displayIcon": "event_busy", "labelTemplate": "Full: {value}" },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0",
+                          "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist open: {value}" }
         }
       },
 
@@ -413,11 +415,13 @@
                    "searchable": true, "labelTemplate": "{value}", "displayIcon": "volunteer_activism",
                    "displayContexts": ["tile", "detail"] },
           "shiftDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true,
-                        "displayIcon": "calendar_today", "displayContexts": ["tile", "detail"] },
+                        "displayIcon": "calendar_today", "labelTemplate": "{value}",
+                        "displayContexts": ["tile", "detail"] },
           "shiftTime": { "type": "time", "required": true, "writableBy": "formEntry",
-                        "displayIcon": "schedule", "displayContexts": ["tile", "detail"] },
+                        "displayIcon": "schedule", "labelTemplate": "{value}",
+                        "displayContexts": ["tile", "detail"] },
           "location": { "type": "text", "writableBy": "formEntry", "displayIcon": "location_on_outlined",
-                       "displayContexts": ["detail"] },
+                       "labelTemplate": "{value}", "displayContexts": ["detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry",
                        "displayIcon": "groups_outlined", "labelTemplate": "{value} volunteers needed" },
           "coordinatorContact": { "type": "text", "writableBy": "formEntry", "displayIcon": "contact_phone",
@@ -430,7 +434,8 @@
                               "displayContexts": ["tile", "detail"] },
           "spotsRemaining": { "type": "number", "formula": "capacity - volunteerCount",
                              "displayIcon": "event_seat", "labelTemplate": "{value} spots left" },
-          "isFull": { "type": "bool", "formula": "volunteerCount >= capacity" }
+          "isFull": { "type": "bool", "formula": "volunteerCount >= capacity",
+                     "displayIcon": "event_busy", "labelTemplate": "Full: {value}" }
         }
       },
 

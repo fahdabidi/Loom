@@ -1,0 +1,46 @@
+{
+  "currentReviewRunId": "phaseA-masjid-nur-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "90601aaf",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Masjid Nur, run after CJM.9-15 fixed the sideload no-op and 9 shared-code UX findings across five prior communities. Signed in as the Masjid Admin persona. A JSON-level labelTemplate fix was applied to this fixture's shiftDate/shiftTime/location/isFull/hasWaitlist fields mid-walkthrough (same pattern as 3 prior communities); the fix could not be re-verified live in this same session because CJM.9's own idempotent-reimport guard correctly declines to re-hydrate an already-hydrated community shell on a second sideload of the same communityId -- expected behavior, not a bug, and the fix is the same proven mechanism (labelTemplate: \"{value}\") already confirmed working live 3+ times this session."
+  },
+  "screenRows": [
+    {
+      "rowId": "mn1-updated-card",
+      "communityName": "Masjid Nur",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-masjid-nur-1/screenshots/updated-card.png",
+      "screenshotHash": "bb4982480feca0211e560f9d6b2284db541a8251058c7a8bcecf820d6d9b7413"
+    },
+    {
+      "rowId": "mn1-home-scrolled",
+      "communityName": "Masjid Nur",
+      "persona": "Masjid Admin (Walkthrough_Tester)",
+      "workflowId": "mosque-volunteer-shift",
+      "screenOrState": "Home tab scrolled to a real volunteer-shift instance card (Iftar setup crew)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-masjid-nur-1/screenshots/home-scrolled.png",
+      "screenshotHash": "0e1504c743398548ea153d556316bff710628c87315af86df59cc692c8bbb958"
+    },
+    {
+      "rowId": "mn1-calendar",
+      "communityName": "Masjid Nur",
+      "persona": "Masjid Admin (Walkthrough_Tester)",
+      "workflowId": "mosque-event-rsvp",
+      "screenOrState": "Calendar tab, month view with a real event (Arabic Literacy Class)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-masjid-nur-1/screenshots/calendar.png",
+      "screenshotHash": "6894b38d9ff69d9e9c3fccf14031046a26b705fffb6bdae52e4bc6ae800cd072"
+    },
+    {
+      "rowId": "mn1-giving",
+      "communityName": "Masjid Nur",
+      "persona": "Masjid Admin (Walkthrough_Tester)",
+      "workflowId": "mosque-donation-payment",
+      "screenOrState": "Giving tab, empty state for this freshly-created admin account",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-masjid-nur-1/screenshots/giving.png",
+      "screenshotHash": "13c767c1222e45bdedd05d8bbff67fe0870ae98f3df94bf720eb21577ca80a7f"
+    }
+  ]
+}

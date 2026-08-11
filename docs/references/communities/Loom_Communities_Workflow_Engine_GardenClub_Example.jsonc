@@ -151,8 +151,10 @@
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
             "displayIcon": "event_seat", "labelTemplate": "{value} spots left", "displayContexts": ["detail"] },
-          "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" },
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity",
+            "displayIcon": "event_busy", "labelTemplate": "Full: {value}" },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0",
+            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist open: {value}" },
 
           "seriesId": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayContexts": [] }
@@ -721,7 +723,8 @@
           "openSpotsRemaining": { "type": "number", "formula": "capacity - size(signedUpPersonaIds)",
             "displayIcon": "event_seat", "labelTemplate": "{value} spots left",
             "displayContexts": ["tile", "detail"] },
-          "isFull": { "type": "bool", "formula": "size(signedUpPersonaIds) >= capacity" }
+          "isFull": { "type": "bool", "formula": "size(signedUpPersonaIds) >= capacity",
+            "displayIcon": "event_busy", "labelTemplate": "Full: {value}" }
         }
       }
     },

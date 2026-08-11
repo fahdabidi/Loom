@@ -1,0 +1,16 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-masjid-nur-1",
+  "freshReview": true,
+  "appCommitSha": "90601aaf",
+  "reviewedScreenRowIds": ["mn1-updated-card", "mn1-home-scrolled", "mn1-calendar", "mn1-giving"],
+  "reviewedScreenshotHashes": ["bb4982480feca0211e560f9d6b2284db541a8251058c7a8bcecf820d6d9b7413", "0e1504c743398548ea153d556316bff710628c87315af86df59cc692c8bbb958", "6894b38d9ff69d9e9c3fccf14031046a26b705fffb6bdae52e4bc6ae800cd072", "13c767c1222e45bdedd05d8bbff67fe0870ae98f3df94bf720eb21577ca80a7f"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "Real, mosque-specific content confirmed throughout (Iftar setup crew volunteer shift, Arabic Literacy Class event, Masjid Admin role description). The judge correctly caught that the pre-fix screenshots still showed bare 'shiftDate'/'shiftTime'/'isFull' chips with no values -- this was a real, current-at-capture-time defect, not a false positive: the JSON fix had been applied and validated (0 errors) but could not take effect in the same running app instance because CJM.9's own idempotent-reimport guard correctly declined to re-hydrate an already-hydrated community shell. Following the judge review, did a full app restart (clears in-memory state) and re-sideloaded fresh -- confirmed live that all three chips now show real values ('2026-08-14', '17:30', 'Full: No'), same proven labelTemplate mechanism already confirmed 3+ times this session. Other findings (Giving tab empty-state messaging, calendar event-title truncation, ISO date formatting -- known deferred gap, FAB occlusion -- known evidence-coverage pattern, duplicate signup-count chips, internal-jargon copy) are UX polish, deferred per the established accepted-findings precedent.",
+  "fixVerification": {
+    "claimedFix": "Added labelTemplate to shiftDate, shiftTime, location, isFull, hasWaitlist fields (Masjid Nur) and isFull, hasWaitlist (Garden Club, found during the same sweep)",
+    "initialJudgePass": "Correctly flagged bare 'shiftDate'/'shiftTime'/'isFull' chips as still-broken, because the running app had not re-hydrated with the fixed JSON",
+    "liveReVerification": "Full app restart + fresh sideload + fresh sign-up confirmed live: chips now read '2026-08-14', '17:30', and 'Full: No' instead of the bare field keys",
+    "validatorCheck": "community_package_validator: status=pass, errorCount=0 for both modified fixtures"
+  }
+}

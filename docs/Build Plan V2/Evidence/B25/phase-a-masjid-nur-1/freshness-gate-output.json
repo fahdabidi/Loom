@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-masjid-nur-1/llm-vision-ux-review-phaseA-masjid-nur-1.json",
+  "expectedReviewRunId": "phaseA-masjid-nur-1",
+  "declaredReviewRunId": "phaseA-masjid-nur-1",
+  "expectedAppCommitSha": "90601aaf",
+  "declaredAppCommitSha": "90601aaf",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 4,
+  "reviewedScreenRowCount": 4,
+  "reviewedScreenshotHashCount": 4,
+  "reviewedScreenRowIds": [
+    "mn1-updated-card",
+    "mn1-home-scrolled",
+    "mn1-calendar",
+    "mn1-giving"
+  ],
+  "reviewedScreenshotHashes": [
+    "bb4982480feca0211e560f9d6b2284db541a8251058c7a8bcecf820d6d9b7413",
+    "0e1504c743398548ea153d556316bff710628c87315af86df59cc692c8bbb958",
+    "6894b38d9ff69d9e9c3fccf14031046a26b705fffb6bdae52e4bc6ae800cd072",
+    "13c767c1222e45bdedd05d8bbff67fe0870ae98f3df94bf720eb21577ca80a7f"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}
