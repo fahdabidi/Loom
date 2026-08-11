@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-garden-club-3",
+  "reviewInputEvidence": {
+    "appCommitSha": "163e002d",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "Third live Garden Club walkthrough this session, and the first one run after CJM.9 fixed LocalInAppBackend.importInitializationPackage's no-op over preloaded demo shells. The first two attempts produced invalid evidence because sideload silently never took effect. This run re-sideloaded the real Garden Club package pair (ext_garden_club.loom-extension.zip / .loom-init.zip, built via app/packages/core/loom_communities_app_shell/tool/generate_garden_club_package.dart from the frozen fixture at docs/references/communities/Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc) over the preloaded shell, then manually navigated Home, Exchange, and Calendar tabs on the live emulator."
+  },
+  "screenRows": [
+    {
+      "rowId": "gc3-updated-card",
+      "communityName": "Garden Club",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after tapping \"Validate and install\" for the real Garden Club package pair",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/screenshots/updated-card.png",
+      "screenshotHash": "ecef9dc36d1b78acfc71d963547d3ea21bb8eaef09646100595250c5c9e67fe1"
+    },
+    {
+      "rowId": "gc3-home-signed-in",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Walkthrough_Tester / Member",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/screenshots/home-signed-in.png",
+      "screenshotHash": "46c3ef97d44cc860c4bce0cdedcbda75374e632c4daaad7c594249b36174b293"
+    },
+    {
+      "rowId": "gc3-home-scrolled-instances",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab scrolled down, showing pinned/unassigned surfaces including a schema-export card and a real volunteer-shift workflow instance",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/screenshots/home-scrolled-instances.png",
+      "screenshotHash": "5c0f99b899f075563daeab49698da0834263d09340f2607ac824ee89aeec88f8"
+    },
+    {
+      "rowId": "gc3-exchange-marketplace",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-tool-loan / garden-tool-giveaway",
+      "screenOrState": "Exchange tab (engine-native marketplace surface), showing real tool-loan/giveaway instances",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/screenshots/exchange-marketplace.png",
+      "screenshotHash": "9c17ebdcf1e838b9740a244d6e18fd325066c4b5b77eac13915e70af41e7bf55"
+    },
+    {
+      "rowId": "gc3-calendar-event",
+      "communityName": "Garden Club",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "garden-event-rsvp",
+      "screenOrState": "Calendar tab, month view scrolled to show a real event on the grid plus its Agenda entry below",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/screenshots/calendar-event.png",
+      "screenshotHash": "07132dd6b94d24f4ced51af5184b91c709edde9592dd52d991540b07f3026f7d"
+    }
+  ]
+}

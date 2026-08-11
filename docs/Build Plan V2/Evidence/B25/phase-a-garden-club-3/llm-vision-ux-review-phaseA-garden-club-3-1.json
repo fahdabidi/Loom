@@ -1,0 +1,328 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-garden-club-3",
+  "freshReview": true,
+  "appCommitSha": "163e002d",
+  "reviewedScreenRowIds": ["gc3-updated-card", "gc3-home-signed-in", "gc3-home-scrolled-instances", "gc3-exchange-marketplace", "gc3-calendar-event"],
+  "reviewedScreenshotHashes": ["ecef9dc36d1b78acfc71d963547d3ea21bb8eaef09646100595250c5c9e67fe1", "46c3ef97d44cc860c4bce0cdedcbda75374e632c4daaad7c594249b36174b293", "5c0f99b899f075563daeab49698da0834263d09340f2607ac824ee89aeec88f8", "9c17ebdcf1e838b9740a244d6e18fd325066c4b5b77eac13915e70af41e7bf55", "07132dd6b94d24f4ced51af5184b91c709edde9592dd52d991540b07f3026f7d"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "The central question of this review passes on the pixels: the sideloaded package's real content is visibly rendering, with community-specific records like 'Mulch delivery volunteer shift' dated '2026-08-16' with '6 spots', tool-loan items 'Hand tool set ...' and 'Steel wheelba...' carrying 'onLoan'/'available' states, and a 'Spring Worksho...' event on 2026-08-15 in an 'Aug 2026' grid — none of which reads like a generic hardcoded shell, and the Garden Club card description now reads 'RSVP to garden events, share plants, coordinate care, and keep club records portable.' However, the presentation of that real data is not production-grade on three of five screens. The Home instance card leaks raw developer identifiers ('[garden_event, plant_exchange]'), duplicates chips ('2 schemas selected' and '2 schemas'), carries no record title, and shows a greyed-out 'Save changes' with no stated reason; Exchange truncates both item names and owner names ('Owner: garde...') and shows a raw camelCase enum 'onLoan'; Calendar's month grid has no weekday header row and clips its Agenda entry behind the bottom nav. Overall status is fail on aggregate screen verdicts (3 of 5 screens fail with major severity), not on the data-source question, which passes.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "real-content-legibility",
+      "question": "Across this flow, does the UI show specific, sideloaded-package-derived content (not generic/legacy placeholder content) on the Home, Exchange, and Calendar surfaces?",
+      "answer": "Yes. All three surfaces show concrete, community-authored records with specific names, dates, owners, capacities and states rather than a generic shell. Home (scrolled) renders a volunteer-shift record titled 'Mulch delivery volunteer shift' with the date chip '2026-08-16' and a capacity chip '6 spots', plus a portability record addressed 'To / Neighborhood Association Archive'. Exchange renders real tool-loan inventory with per-item owner attribution and distinct lifecycle states 'onLoan' versus 'available'. Calendar renders a real dated event on the correct month, 'Aug 2026', with a 'Sprin...' title in the 15 cell and a 'SAT' agenda row for the selected day '2026-08-15'. These are Garden Club domain nouns (mulch delivery, hand tools, wheelbarrow, spring workshop) matching the package's stated scope of garden events, plant exchange, tool loans and volunteer shifts, and the schema names visible on Home ('[garden_event, plant_exchange]') are Garden Club schemas, not generic ones. The score is held below 90 because truncation prevents reading several of those real values in full — the Exchange item names and owner names are cut to 'Hand tool set ...' and 'Owner: garde...', and the calendar event never resolves past 'Sprin...' anywhere visible — so real data is present but partly unreadable, and the untitled schema-form card on Home presents real values in a developer-shaped wrapper.",
+      "score": 82,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "gc3-home-scrolled-instances: a record card with chips 'Mulch delivery volunteer shift', '2026-08-16' and '6 spots' — a specific Garden Club volunteer shift with a real future date and capacity, not placeholder text",
+        "gc3-exchange-marketplace: two distinct inventory cards, 'Hand tool set ...' with state chip 'onLoan' and 'Steel wheelba...' with state chip 'available', each carrying an 'Owner: garde...' attribution chip",
+        "gc3-calendar-event: month header 'Aug 2026' with an event title 'Sprin...' rendered inside the 15 cell, the selected-day chip '2026-08-15', and an 'Agenda' section whose first row is labelled 'SAT'",
+        "gc3-home-scrolled-instances: field label 'schemas selected' with value '[garden_event, plant_exchange]' and a 'To' field reading 'Neighborhood Association Archive' — package-specific schema names and a named destination",
+        "gc3-updated-card: the Garden Club card description now reads 'RSVP to garden events, share plants, coordinate care, and keep club recor...' matching the package's product doc rather than a stub description"
+      ],
+      "affectedScreenRowIds": ["gc3-home-scrolled-instances", "gc3-exchange-marketplace", "gc3-calendar-event", "gc3-updated-card"]
+    },
+    {
+      "questionId": "identity-legibility",
+      "question": "Across this flow, can the signed-in user always tell who they are (by name), not just which role they are using?",
+      "answer": "Only sometimes — identity is legible on two of the five screens and absent on the other three, because it lives in a scrollable header card rather than in persistent chrome. On Home (top) and on Exchange, the identity block is exemplary: it reads 'Signed in as' / 'Walkthrough_Tester' / 'Member' with the role explainer 'Member - RSVPs to garden events, exchanges plants, borrows or gives away tools, and signs up for volunteer shifts.' and a '2 roles' chip, so account name and acting role are both unambiguous and clearly distinguished from each other. But the moment the user scrolls Home, that block scrolls away — gc3-home-scrolled-instances retains only the orphaned tail '...and signs up for volunteer shifts.' with no name visible — and the Calendar tab shows no identity at all: its app bar contains only the title 'Garden Club' plus bell, chat and people icons, with no avatar, no account name and no role indicator. The persistent app bar is therefore the gap: it identifies the community but never the person. The 'people' icon in the app bar is not a recognisable account affordance and carries no name or initial. Score reflects that the name is well presented where shown but is not durably available across the flow.",
+      "score": 66,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "gc3-home-signed-in: an inset panel reading 'Signed in as' / 'Walkthrough_Tester' / 'Member' with the role description 'Member - RSVPs to garden events, exchanges plants, borrows or gives away tools, and signs up for volunteer shifts.' and a '2 roles' chip",
+        "gc3-exchange-marketplace: the same 'Signed in as Walkthrough_Tester' / 'Member' panel remains visible above the Exchange section, so identity survives the tab switch while unscrolled",
+        "gc3-calendar-event: the entire screen carries no account name — the app bar shows only 'Garden Club' with bell, speech-bubble and people icons, and the body starts at the 'Calendar' section header",
+        "gc3-home-scrolled-instances: after scrolling, the only remnant of the identity panel is the clipped line 'and signs up for volunteer shifts.' with the name 'Walkthrough_Tester' scrolled out of view"
+      ],
+      "affectedScreenRowIds": ["gc3-home-signed-in", "gc3-exchange-marketplace", "gc3-calendar-event", "gc3-home-scrolled-instances"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "gc3-updated-card",
+      "affectedScreenRowIds": ["gc3-updated-card"],
+      "critique": "The install outcome is legible but the copy is developer-facing and the card truncates its own payload. The status banner reads 'Updated Garden Club from local packages' with a check-circle icon — 'local packages' is build-harness vocabulary, and the banner names no version, no timestamp and no count of what actually landed, so a user cannot tell whether this replaced content or merely re-registered the shell. The Garden Club card is visually promoted (filled pale-green surface, drop shadow) against the flat white cards for 'Neighborhood Book Club', 'Riverside Youth Soccer' and 'Cedar Commons HOA', which correctly signals 'this is the one that just changed'. But its description is clipped mid-word at 'keep club recor...' where the sibling cards show complete sentences such as 'Nominate, vote, meet, discuss, and digest club selections.', so the very text that proves the new package applied is the text the user cannot finish reading. Actionability is also muddled: 'Open community' and 'Theme applied' are rendered as identical outlined green pill buttons, yet only the first is an action — 'Theme applied' is a past-tense status and invites a tap that does nothing. Finally the mint 'Add Community' FAB sits on top of the fifth card, covering the tail of the title 'Masjid Nur' and its description 'Coordinate an... events, volunteers, giving, and ca...'.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A post-install confirmation that states what changed in user terms — package name, version and what was imported (e.g. 'Garden Club updated to v2 - 3 events, 4 exchange items, 2 volunteer shifts') — with the community card showing its full description or an explicit expand affordance, status text ('Theme applied') visually differentiated from tappable actions, and the FAB offset so it never covers list content.",
+      "visibleObservations": [
+        "Screen title 'Loom Communities' on a pale header",
+        "Status banner with check-circle icon: 'Updated Garden Club from local packages'",
+        "Garden Club card with flower avatar, elevated pale-green surface and a right-chevron",
+        "Card description truncated mid-word: 'RSVP to garden events, share plants, coordinate care, and keep club recor...'",
+        "Two identically-styled outlined pills: 'Open community' and 'Theme applied'",
+        "Sibling cards 'Neighborhood Book Club', 'Riverside Youth Soccer', 'Cedar Commons HOA' with complete descriptions",
+        "Mint 'Add Community' FAB overlapping the 'Masjid Nur' card and its description text"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Copy accuracy: does the banner text sound like real product copy describing actual data?",
+          "visibleEvidence": "'Updated Garden Club from local packages'",
+          "why": "It is accurate about the mechanism but speaks in implementation terms. 'local packages' is a term from the install pipeline, not something a community member would recognise, and the sentence quantifies nothing — no version, no date, no count of imported records — so it confirms an event occurred without describing the data that arrived."
+        },
+        {
+          "question": "Actionability: are available actions clear, and is it clear why any are disabled or inert?",
+          "visibleEvidence": "'Open community' and 'Theme applied' pills",
+          "why": "Both use the same outlined-green pill treatment with a leading icon, so they read as a pair of buttons. 'Theme applied' is a completed-state label, not an action; giving it button affordance makes the card's interaction model ambiguous."
+        },
+        {
+          "question": "Data-source correctness: does the card content look like it came from the real sideloaded package?",
+          "visibleEvidence": "'RSVP to garden events, share plants, coordinate care, and keep club recor...'",
+          "why": "This description matches the package's own product framing (garden events, plant sharing, portable club records) and is specific to Garden Club rather than a neutral stub, which is consistent with the real package having been applied over the empty shell."
+        }
+      ],
+      "screenshotHash": "ecef9dc36d1b78acfc71d963547d3ea21bb8eaef09646100595250c5c9e67fe1"
+    },
+    {
+      "screenRowId": "gc3-home-signed-in",
+      "affectedScreenRowIds": ["gc3-home-signed-in"],
+      "critique": "This is the strongest screen in the set for identity and the weakest for prioritising the viewport. The identity panel is exactly right: 'Signed in as' / 'Walkthrough_Tester' / 'Member' with the plain-language role explainer 'Member - RSVPs to garden events, exchanges plants, borrows or gives away tools, and signs up for volunteer shifts.' — account name and acting role are separately readable, so the user knows both who they are and what they can do, and the description matches the Member persona (no admin/organizer language leaks in). The header card also shows the full, untruncated package description 'RSVP to garden events, share plants, coordinate care, and keep club records portable.', confirming the real content applied. The failure is that the first thing on the page, in the most valuable slot above the fold, is an empty state for an ad: a dark chip with a megaphone icon reading 'No sponsored message right now.' — real product copy would suppress an empty sponsorship slot entirely rather than announce its emptiness before any garden content. The '2 roles' chip is a bare count with no chevron, caret or 'switch' verb, so it is unclear whether it is a tappable role switcher or a static tally. Below, the 'Home' section header promises 'Pinned and unassigned community surfaces.' but the first card underneath is immediately covered by the mint 'Offer or request a plant' FAB, leaving only a partial '2 schemas selected' chip visible — so the screen's actual content payload is occluded at first render. The bottom nav also clips its fourth item to 'Organize' running off the right edge with no visible scroll or overflow cue.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "A Home tab whose first screenful is community content (next event, open plant requests, open shifts) with the identity panel condensed to a single line, no empty sponsorship placeholder rendered at all, the role chip labelled as an action ('Switch role - 2 available') if tappable, and the FAB positioned so it does not cover the first content card.",
+      "visibleObservations": [
+        "App bar 'Garden Club' with bell, speech-bubble and people icons on a green header",
+        "Top banner with megaphone icon: 'No sponsored message right now.'",
+        "Header card with full description ending 'keep club records portable.' and a close (X) control",
+        "Identity panel: 'Signed in as Walkthrough_Tester' / 'Member' plus the Member role description and a '2 roles' chip",
+        "Section header 'Home' with subtitle 'Pinned and unassigned community surfaces.'",
+        "Mint FAB labelled 'Offer or request a plant' covering the first content card, of which only '2 schemas selected' peeks out",
+        "Bottom nav: Home (selected, filled green), Exchange, Calendar, and a clipped 'Organize'"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Identity/context legibility: can the user tell their actual account name and their acting role?",
+          "visibleEvidence": "'Signed in as Walkthrough_Tester' above a bold 'Member' label",
+          "why": "Both facts are present and typographically separated — the display name is the account, the bold 'Member' plus its description is the role — so this screen fully satisfies the identity requirement rather than showing a persona type alone."
+        },
+        {
+          "question": "State legibility: is the current state of the top-of-page banner unambiguous?",
+          "visibleEvidence": "'No sponsored message right now.'",
+          "why": "The state is unambiguous but should not have been rendered. An empty advertising slot given banner-level prominence above all community content misallocates the most valuable region of the screen to a null result."
+        },
+        {
+          "question": "Actionability: is it clear what the '2 roles' chip does?",
+          "visibleEvidence": "chip reading '2 roles' beside the role description",
+          "why": "It carries no verb, chevron or disclosure indicator, so the user cannot tell whether tapping it switches role, lists roles, or nothing at all — a count rendered in a chip that looks interactive."
+        }
+      ],
+      "screenshotHash": "46c3ef97d44cc860c4bce0cdedcbda75374e632c4daaad7c594249b36174b293"
+    },
+    {
+      "screenRowId": "gc3-home-scrolled-instances",
+      "affectedScreenRowIds": ["gc3-home-scrolled-instances"],
+      "critique": "This screen proves the sideload worked and simultaneously shows the worst copy in the set. The proof is the second card: chips reading 'Mulch delivery volunteer shift', '2026-08-16' and '6 spots' — a named Garden Club shift with a real future date and a real capacity, which is precisely the specific, community-authored data a legacy hardcoded fallback would not produce. But the card above it is a raw schema form leaked to a Member. It has no title at all, so the user cannot tell what record they are looking at; it stacks two near-duplicate chips, '2 schemas selected' and '2 schemas', which restate the same fact twice in one card; it prints the field label 'schemas selected' a third time immediately below those chips; and its value is rendered as a literal code array, '[garden_event, plant_exchange]', complete with square brackets and snake_case identifiers that are internal schema IDs rather than the human labels 'Garden events' and 'Plant exchange'. The 'To' field reading 'Neighborhood Association Archive' is real data but has no explanation of what is being sent there or why. Beneath it sits a full-width 'Save changes' button in flat grey with grey text — visibly disabled — with no helper text, no validation message and no dirty-state hint, so the user is shown a form they apparently cannot submit and is told nothing about what would enable it. On a screen whose section header promised 'Pinned and unassigned community surfaces.', this reads as an unassigned surface dumped verbatim from its schema rather than designed.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A titled record card ('Export club records', or the record's real name) that renders schema references as human labels ('Garden events, Plant exchange'), states the single selection count once, explains the destination ('Send to Neighborhood Association Archive'), and either enables 'Save changes' or shows why it is disabled (e.g. 'No changes to save').",
+      "visibleObservations": [
+        "A card with no heading, opening straight into chips",
+        "Two stacked chips reading '2 schemas selected' and '2 schemas'",
+        "Field label 'schemas selected' with value '[garden_event, plant_exchange]' shown with brackets and snake_case",
+        "Field label 'To' with value 'Neighborhood Association Archive'",
+        "A full-width grey, visibly disabled 'Save changes' button with no accompanying explanation",
+        "A second card with chips 'Mulch delivery volunteer shift', '2026-08-16' and '6 spots'",
+        "Section header above: 'Home' / 'Pinned and unassigned community surfaces.'",
+        "The 'Offer or request a plant' FAB overlapping the volunteer-shift card's chips"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Copy accuracy: does the displayed text sound like real product copy, or like raw data structures?",
+          "visibleEvidence": "'[garden_event, plant_exchange]' printed under the label 'schemas selected'",
+          "why": "This is a serialized array of internal schema identifiers rendered directly into the UI. A Member persona has no reason to see bracket syntax or snake_case keys; production copy would read 'Garden events and Plant exchange'."
+        },
+        {
+          "question": "Actionability: is it clear why the disabled action is disabled?",
+          "visibleEvidence": "grey 'Save changes' button with grey label",
+          "why": "The button is unmistakably disabled but the card offers no reason — no 'no changes yet', no required-field marker, no error. The user is left with a dead primary action and no path to enabling it."
+        },
+        {
+          "question": "Data-source correctness: does the content look like real sideloaded package data?",
+          "visibleEvidence": "'Mulch delivery volunteer shift' with '2026-08-16' and '6 spots'",
+          "why": "A named shift with a specific date and a specific capacity is exactly the kind of authored record a real package carries; a generic legacy fallback would not name mulch delivery or a six-person capacity."
+        },
+        {
+          "question": "State legibility: is it unambiguous what this untitled card represents?",
+          "visibleEvidence": "card begins with '2 schemas selected' and has no heading",
+          "why": "With no title and no record-type label, the user cannot tell whether this is an export request, a sharing setting, or a draft — the state of the surface is undefined even though its field values are populated."
+        }
+      ],
+      "screenshotHash": "5c0f99b899f075563daeab49698da0834263d09340f2607ac824ee89aeec88f8"
+    },
+    {
+      "screenRowId": "gc3-exchange-marketplace",
+      "affectedScreenRowIds": ["gc3-exchange-marketplace"],
+      "critique": "The Exchange tab carries genuinely real package inventory but truncates almost every value that matters. The section header sets expectations well — 'Exchange' / 'Browse offers, plant claims, pickup windows, and handoff state.' — and identity carries over correctly, with 'Signed in as Walkthrough_Tester' / 'Member' still visible above the fold. The two visible listings are unmistakably real tool-loan records rather than legacy filler: 'Hand tool set ...' with state 'onLoan' and 'Steel wheelba...' with state 'available', each with an 'Owner: garde...' attribution. The problem is that in a two-column card grid every attribute is rendered as its own fixed-width pill, so item names, owner names and states are all clipped: the user can read neither the full item ('Hand tool set ...') nor who holds it ('Owner: garde...' on the left, 'Owner: garde' on the right cut off by the FAB), which defeats the entire point of an ownership-based lending marketplace. The state values are also raw enum casing — 'onLoan' next to 'available' is inconsistent even with itself; production copy is 'On loan' and 'Available'. Neither card exposes a claim, borrow or request action, and despite the header promising 'pickup windows, and handoff state', no pickup window or date appears on either listing. The bare mint '+' FAB, which on the Home tab carried the label 'Offer or request a plant', collapses to an unlabelled icon here and physically overlaps the right-hand card's owner chip. The search field placeholder 'Search available items' also conflicts with the visible inventory, since one of the two items shown is explicitly 'onLoan' and therefore not available.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A listings surface where each card shows the full item name, the full owner display name, a human-readable state ('On loan until Aug 20' / 'Available'), the pickup window promised by the section header, and a clear per-card action ('Request', 'Claim'), with the FAB clear of card content.",
+      "visibleObservations": [
+        "Section header 'Exchange' with subtitle 'Browse offers, plant claims, pickup windows, and handoff state.'",
+        "Identity panel still visible: 'Signed in as Walkthrough_Tester' / 'Member' with '2 roles' chip",
+        "Search field with placeholder 'Search available items'",
+        "Left card chips: 'Hand tool set ...', 'Owner: garde...', 'onLoan'",
+        "Right card chips: 'Steel wheelba...', 'Owner: garde' (clipped), 'available'",
+        "Unlabelled mint '+' FAB overlapping the right card's owner chip",
+        "No claim/borrow/request button on either card, and no pickup-window value shown",
+        "Bottom nav with Exchange selected (filled green)"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "Data-source correctness: does the inventory look like real sideloaded package content?",
+          "visibleEvidence": "'Hand tool set ...' with 'onLoan' and 'Steel wheelba...' with 'available'",
+          "why": "Two distinct physical tools with different lifecycle states and per-item owner attribution is authored inventory, matching Garden Club's stated tool-loan capability; a hardcoded shell would not carry a wheelbarrow on loan alongside an available hand tool set."
+        },
+        {
+          "question": "Copy accuracy: is the state text real product copy?",
+          "visibleEvidence": "chips reading 'onLoan' and 'available'",
+          "why": "'onLoan' is a raw camelCase enum surfaced verbatim, and it sits next to a lowercase 'available', so the two states are not even styled consistently with each other. Neither is sentence-cased product copy."
+        },
+        {
+          "question": "Actionability: are the available actions on a listing clear?",
+          "visibleEvidence": "cards contain only chips; the FAB is a bare '+'",
+          "why": "Nothing on a card indicates how to borrow, claim or request an item, and the FAB has lost the descriptive label it had on Home ('Offer or request a plant'), so the primary create action is now an unlabelled glyph that also occludes a listing."
+        },
+        {
+          "question": "Identity/context legibility: does the user still know who they are on this tab?",
+          "visibleEvidence": "'Signed in as Walkthrough_Tester' / 'Member'",
+          "why": "Identity persists across the tab switch at this scroll position, which matters here because ownership ('Owner: garde...') is the key relation on this screen and the user needs to know which listings are theirs."
+        }
+      ],
+      "screenshotHash": "9c17ebdcf1e838b9740a244d6e18fd325066c4b5b77eac13915e70af41e7bf55"
+    },
+    {
+      "screenRowId": "gc3-calendar-event",
+      "affectedScreenRowIds": ["gc3-calendar-event"],
+      "critique": "The calendar renders a real, correctly-dated package event but the grid itself is missing a fundamental affordance. The month grid has no weekday header row: the first row runs '27 28 29 30 31 1 2' straight under the 'Aug 2026' title with no Mon/Tue/Wed labels of any kind, so the user has to infer from the Agenda's 'SAT' badge that 15 is a Saturday and therefore that the week starts on Monday. Reading a month view requires knowing which column is which day, and this one never says. The event data itself is real and correct — the 15 cell carries an event chip and the selected-day pill reads '2026-08-15' with a check, and the 'Agenda' section below begins a 'SAT' row — but the event title is truncated to 'Sprin...' inside the cell, and the Agenda row that would have shown it in full ('Spring Worksho...') is cut off by the bottom navigation bar, so the community's event name never appears in full anywhere on this screen, and no capacity, time or RSVP action is visible despite the section header promising 'Events, schedules, capacity, and reminders.' The selected-day pill also uses raw ISO formatting, '2026-08-15', rather than a human date. Contrast is poor: the day cells are near-black tiles on a dark green field with thin separators, and no cell is marked as today even though the calendar is on the current month, so there is no anchor between 'now' and the selected day. Finally the segmented control mixes concepts — 'Day', 'Week', 'Month' are view modes but 'Pending' sitting in the same row is a filter, and only 'Month' carries the checkmark.",
+      "verdict": "fail",
+      "severity": "major",
+      "targetProductionSurface": "A month view with a persistent weekday header row, a visibly marked 'today', readable event titles (wrapped or elided only as a last resort), a human-formatted selected date ('Saturday, August 15'), and an agenda entry that clears the bottom nav and shows the event's time, capacity and RSVP action.",
+      "visibleObservations": [
+        "Section header 'Calendar' with subtitle 'Events, schedules, capacity, and reminders.'",
+        "Segmented row: 'Day', 'Week', 'Month' (selected, with checkmark), 'Pending'",
+        "Month title 'Aug 2026' with left/right chevrons",
+        "Grid rows starting '27 28 29 30 31 1 2' with no weekday header labels above them",
+        "Event chip truncated to 'Sprin...' inside the 15 cell",
+        "Selected-day pill with checkmark reading '2026-08-15'",
+        "'Agenda' heading with a 'SAT' badge and a green row reading 'Spring Worksho...' clipped by the bottom nav",
+        "Near-black day cells on a dark green background; no cell visually marked as today"
+      ],
+      "directQuestionAnswers": [
+        {
+          "question": "State legibility: is the month grid's structure unambiguous?",
+          "visibleEvidence": "first grid row reads '27 28 29 30 31 1 2' with nothing above it",
+          "why": "Without a weekday header the user cannot map columns to days, and cannot tell whether the week starts Sunday or Monday — the only clue is the 'SAT' badge in the Agenda below, which requires selecting a day first."
+        },
+        {
+          "question": "Copy accuracy: does the event content read as specific, real community data?",
+          "visibleEvidence": "'Sprin...' in the 15 cell and 'Spring Worksho...' in the Agenda",
+          "why": "The underlying record is clearly a real Garden Club spring workshop on a real date in the current month, but it is truncated in the cell and clipped by the nav bar in the agenda, so the authored title is never fully readable."
+        },
+        {
+          "question": "Actionability: can the user act on the selected event?",
+          "visibleEvidence": "Agenda row cut off behind the bottom nav bar",
+          "why": "The section header promises capacity and reminders, yet no RSVP control, time or spot count is visible — the one row that might contain them is occluded, so the surface offers no completable action."
+        },
+        {
+          "question": "Identity/context legibility: can the user tell who they are on this screen?",
+          "visibleEvidence": "app bar shows only 'Garden Club' with bell, chat and people icons",
+          "why": "No account name, avatar or role appears anywhere on the Calendar tab, so a user landing here directly has community context but no personal context — relevant since RSVPs are per-person."
+        }
+      ],
+      "screenshotHash": "07132dd6b94d24f4ced51af5184b91c709edde9592dd52d991540b07f3026f7d"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "raw-schema-ids-in-member-ui",
+      "title": "Internal schema identifiers rendered verbatim to a Member",
+      "description": "On the scrolled Home tab, an untitled card prints the value '[garden_event, plant_exchange]' under the label 'schemas selected' — a serialized array with square brackets and snake_case internal identifiers exposed directly to the 'Member' persona. The same card duplicates its own state across a chip reading '2 schemas selected', a second chip reading '2 schemas', and the field label 'schemas selected', restating one fact three times. The card carries no title, so the user cannot tell what record or operation this is, even though its 'To' value ('Neighborhood Association Archive') is real data.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-home-scrolled-instances"],
+      "requiredFix": "Give the card a real record title, map schema IDs to human labels ('Garden events', 'Plant exchange') without bracket syntax, and show the selection count once instead of three times."
+    },
+    {
+      "findingId": "unexplained-disabled-save",
+      "title": "Disabled 'Save changes' with no reason given",
+      "description": "The same untitled Home card ends with a full-width grey 'Save changes' button in a visibly disabled state, with no helper text, validation message, or dirty-state indicator explaining what would enable it. The rubric requires that disabled actions explain themselves; here the primary action of the card is dead and silent.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-home-scrolled-instances"],
+      "requiredFix": "Either enable the action or pair the disabled button with an explicit reason such as 'No changes to save' or a named missing field."
+    },
+    {
+      "findingId": "exchange-truncation-hides-owners",
+      "title": "Item names and owner names truncated on Exchange listings",
+      "description": "Exchange renders each listing attribute as a fixed-width pill inside a two-column grid, clipping the values the surface exists to communicate: 'Hand tool set ...', 'Steel wheelba...', 'Owner: garde...' on the left card and 'Owner: garde' cut short by the FAB on the right. In a lending marketplace where the header promises 'Browse offers, plant claims, pickup windows, and handoff state', the user can read neither the full item nor who currently holds it, and no pickup window or claim action is shown on either card.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-exchange-marketplace"],
+      "requiredFix": "Let item and owner text wrap to full length in a single-column or taller card layout, surface the pickup window and handoff state as labelled fields, and add a per-card claim/request action."
+    },
+    {
+      "findingId": "calendar-missing-weekday-header",
+      "title": "Month grid has no weekday header row and no 'today' marker",
+      "description": "The Aug 2026 month grid begins immediately with '27 28 29 30 31 1 2' and never labels its columns with weekday names, so the user cannot tell which column is which day or whether weeks start Monday or Sunday. No cell is marked as today despite the calendar sitting on the current month, and the day cells are near-black tiles on a dark green field with low separation. The selected-day pill also shows a raw ISO string, '2026-08-15', rather than a human-formatted date.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-calendar-event"],
+      "requiredFix": "Add a persistent weekday header row, visually mark today, raise day-cell contrast, and format the selected date as human copy such as 'Saturday, August 15'."
+    },
+    {
+      "findingId": "raw-enum-state-labels",
+      "title": "Lifecycle state shown as raw camelCase enum 'onLoan'",
+      "description": "The Exchange listing state chips read 'onLoan' and 'available' — the first is an unformatted camelCase enum value and the two are not even case-consistent with each other. This is machine vocabulary presented as user-facing status text on the surface whose entire job is communicating handoff state.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-exchange-marketplace"],
+      "requiredFix": "Map state values to display copy ('On loan', 'Available') with consistent casing and, ideally, distinct color treatment per state."
+    },
+    {
+      "findingId": "fab-occludes-content",
+      "title": "Floating action button covers content on four screens",
+      "description": "The FAB overlaps meaningful content on every screen where it appears: 'Add Community' covers the 'Masjid Nur' card title and description on the community list; 'Offer or request a plant' covers the first Home card, leaving only a partial '2 schemas selected' chip, and later overlaps the 'Mulch delivery volunteer shift' chips; and on Exchange it collapses to an unlabelled '+' that clips the right-hand card's 'Owner: garde' chip. On Calendar, the bottom navigation bar itself clips the Agenda row 'Spring Worksho...'.",
+      "severity": "major",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-updated-card", "gc3-home-signed-in", "gc3-home-scrolled-instances", "gc3-exchange-marketplace", "gc3-calendar-event"],
+      "requiredFix": "Add bottom content inset equal to the FAB and nav height so scrollable lists can clear them, and keep the FAB's descriptive label consistent across tabs."
+    },
+    {
+      "findingId": "identity-absent-off-scroll",
+      "title": "Signed-in name disappears when scrolled or on Calendar",
+      "description": "Account identity lives only in a scrollable header card. It reads clearly as 'Signed in as Walkthrough_Tester' / 'Member' on the Home top and Exchange screens, but scrolling Home leaves only the orphan line 'and signs up for volunteer shifts.' with no name, and the Calendar tab shows no identity at all — its app bar contains just 'Garden Club' plus bell, chat and people icons. On an RSVP and lending surface, the acting account should remain identifiable.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-home-scrolled-instances", "gc3-calendar-event"],
+      "requiredFix": "Persist a compact identity affordance (avatar or name plus role) in the app bar across all tabs and scroll positions."
+    },
+    {
+      "findingId": "empty-sponsorship-banner",
+      "title": "Empty sponsored-message slot occupies the top of Home",
+      "description": "The first element on the Home tab is a dark megaphone banner reading 'No sponsored message right now.' — an empty advertising slot announcing its own emptiness in the most valuable region of the screen, above all Garden Club content.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-home-signed-in"],
+      "requiredFix": "Suppress the sponsorship slot entirely when there is no message to show."
+    },
+    {
+      "findingId": "install-banner-developer-copy",
+      "title": "Install confirmation uses build-pipeline vocabulary and quantifies nothing",
+      "description": "The post-install banner reads 'Updated Garden Club from local packages'. 'local packages' is install-harness terminology rather than product language, and the message names no version, timestamp or count of what was imported, so a user cannot confirm from it that real content actually landed. The Garden Club card beneath it also truncates its description mid-word at 'keep club recor...' while sibling cards show complete sentences, and the status pill 'Theme applied' is styled identically to the actionable 'Open community' pill.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["gc3-updated-card"],
+      "requiredFix": "Rewrite the confirmation in product terms with a version and an import summary, let the card description render in full, and differentiate status chips from action buttons."
+    }
+  ]
+}

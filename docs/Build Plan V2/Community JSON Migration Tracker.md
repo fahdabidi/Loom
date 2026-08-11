@@ -251,6 +251,69 @@ alongside it. **Operational note for future walkthroughs:** never `adb shell am 
 `flutter run` is attached — it kills the whole debug session and emulator connection, not just the app; use
 the app's own back-navigation or `flutter run`'s own `q` uit command instead.
 
+### 0.3 Garden Club walkthrough #3 (2026-08-11) — first genuinely valid live evidence, CJM.9 confirmed working, 9 new shared-code UX findings
+
+**CJM.9 is now proven fixed on real hardware, not just in unit tests.** Rebuilt the real Garden Club package
+pair via the new `app/packages/core/loom_communities_app_shell/tool/generate_garden_club_package.dart`
+(mirrors the existing Cedar Commons HOA/Tabletop Club generators, using the real `extensionId: ext_garden_club`
+so it hydrates the same preloaded shell rather than creating a separate community), pushed it into the app's
+private storage, and sideloaded it via "Add local community" on the manual-review emulator (commit `163e002d`).
+Concrete, positive evidence the fix works, none of which was observable in the first two walkthroughs:
+- Post-install banner read **"Updated Garden Club from local packages"** (not "Loaded"), and the community
+  card's description text itself changed from the old preloaded-shell stub to the real package's copy
+  ("RSVP to garden events, share plants, coordinate care, and keep club records portable.").
+- **Home tab**: real workflow instances rendered — a `garden-volunteer-shift` instance ("Mulch delivery
+  volunteer shift", 2026-08-16, "6 spots") and a schema-export card referencing the real schema ids
+  `garden_event`/`plant_exchange`.
+- **Exchange tab (the tab CJM.9 specifically targeted)**: real `garden-tool-loan`/`garden-tool-giveaway`
+  instances rendered via the engine-native marketplace surface ("Hand tool set" — onLoan, "Steel wheelbarrow"
+  — available, each with a real owner attribution) — **zero trace of the old "Exchange is coming to Garden
+  Club" placeholder** that both prior walkthroughs and CJM.9's own regression test were built around.
+- **Calendar tab**: a real `garden-event-rsvp` instance ("Spring Workshop", 2026-08-15) rendered on the month
+  grid and in the Agenda list.
+- Sign-up correctly offered the real "Member" persona sourced from the package's own JSON (not a hardcoded
+  persona list — corroborates the unrelated AuthZ.P1 persona-picker fix still holding for a freshly-sideloaded
+  community).
+
+Full §6 gate run for real: 5 screenshots hand-captured and hashed, a genuine LLM Vision UX Judge dispatch (via
+the `Agent` tool, `subagent_type: Explore`, `model: opus`, fresh context, Read-only) against the canonical
+judge-prompt contract, both `b25_llm_review_freshness_gate.dart` (`status=pass problems=0`) and
+`b25_llm_ux_review_importer.dart` (`status=fail findings=9 screenReviews=5`, exit propagated correctly — not a
+tooling error) run for real, then `production_ux_judge.dart` run against the imported review. Evidence:
+`docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/`.
+
+`production_ux_judge.dart`'s `b25-c01-no-blocker-major` criterion reports **blocker=0, major=5** — i.e. the
+judge found zero critical-blockers. Its own `real-content-legibility` holistic question scored 82/100 and
+explicitly confirmed the data-source question this walkthrough exists to answer ("real, community-authored
+content... none of which reads like a generic hardcoded shell"). The remaining criteria fail only because
+this was an ad-hoc Phase-A precheck, not a canonical full-B25 pass (no `productDocCoverage`,
+`blueprintCoverage`, visual-inspection rows, workflow/persona scorecards, or schema-v4 markers were ever
+supplied) — the exact same, already-documented shape as the Apartment Events and Cedar Commons HOA Phase-A
+precedents.
+
+**The 9 real findings are shared-App-Shell-code issues, not Garden-Club-JSON issues** — every one of them
+will recur verbatim on the other 9 communities' walkthroughs unless fixed once in the shared rendering code
+first. Recorded here for tracking (severity per the judge; ticket dispatch is the very next step, see below):
+
+| Finding | Severity | Shared surface |
+| --- | --- | --- |
+| `raw-schema-ids-in-member-ui` — untitled export card prints `[garden_event, plant_exchange]` verbatim, plus a triplicated "N schemas" chip/label | major | generic instance/export card |
+| `unexplained-disabled-save` — same card's "Save changes" is greyed out with zero explanation | major | generic instance/export card |
+| `exchange-truncation-hides-owners` — item names and `Owner:` chips clipped mid-word on Exchange | major | engine-native marketplace surface |
+| `calendar-missing-weekday-header` — month grid has no weekday header row, no "today" marker, raw ISO selected-date pill | major | engine-native calendar surface |
+| `fab-occludes-content` — FAB/bottom-nav clips real content on all 5 screens reviewed | major | shared scaffold/tab-shell padding |
+| `raw-enum-state-labels` — Exchange state chips show raw `onLoan` (camelCase, inconsistent casing vs. `available`) | minor | engine-native marketplace surface |
+| `identity-absent-off-scroll` — signed-in name only lives in a scrollable header card; gone once scrolled or on Calendar | minor | shared identity/app-bar chrome |
+| `empty-sponsorship-banner` — "No sponsored message right now." rendered above the fold instead of suppressed | minor | Home tab sponsorship slot |
+| `install-banner-developer-copy` — "Updated Garden Club from local packages" uses install-harness vocabulary, no version/count | minor | install-confirmation banner |
+
+Per this tracker's own §6 gate (step 6: "Any real finding becomes a ticket... independently verified, then
+recaptured and re-judged"), these need to be bridged into CJM-numbered tickets and fixed before Garden Club
+(or any community) can be marked complete in §4. Given all 9 are shared code, fixing them now — before
+walking the remaining 8 communities — avoids rediscovering the same 9 findings 8 more times. Full raw judge
+output, freshness-gate/importer/production-judge output, and the review-input/judge-prompt artifacts are
+preserved under `docs/Build Plan V2/Evidence/B25/phase-a-garden-club-3/` for the tickets to reference directly.
+
 ## 1. Locked spec additions (both now in `docs/references/reference/field-types.md`, doc_version 1.2.0)
 
 Both approved by the user 2026-08-09. Both are field/display-level capabilities, deliberately **not** new
