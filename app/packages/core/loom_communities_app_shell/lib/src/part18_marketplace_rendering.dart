@@ -174,7 +174,11 @@ class WorkflowFactPillFieldSchema {
   final Map<String, WorkflowFactPillFieldSchema>? itemSchema;
 
   bool shouldDisplayInContext(String context) {
-    if (displayContexts == null || displayContexts!.isEmpty) return true;
+    // An empty list is an explicit author signal ("never render this field
+    // anywhere" -- used throughout community JSON for internal/formula-only
+    // fields like memberPersonaId), distinct from an omitted/null list
+    // ("no restriction, show everywhere"). Only null gets the default.
+    if (displayContexts == null) return true;
     return displayContexts!.contains(context);
   }
 }

@@ -392,8 +392,10 @@ class _GenericWorkflowInstanceCardState
     if (widget.visibleFieldKeys != null &&
         !widget.visibleFieldKeys!.contains(key))
       return false;
+    // An empty list means "never render this field anywhere" (used for
+    // internal/formula-only fields); only an omitted/null list means "no
+    // restriction, show in every context" -- the two must not be conflated.
     if (schema.displayContexts != null &&
-        schema.displayContexts!.isNotEmpty &&
         !schema.displayContexts!.contains(widget.displayContext)) {
       return false;
     }

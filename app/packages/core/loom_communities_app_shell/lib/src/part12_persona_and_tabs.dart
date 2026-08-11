@@ -561,7 +561,7 @@ List<LoomAppShellTabSpec> _generatedAppShellTabsFor({
       tabId: 'messages',
       label: 'Messages',
       icon: Icons.forum_outlined,
-      description: 'Shell-owned communication and connections.',
+      description: 'Messages and connections with other members.',
       rendererContractId: 'messages-inbox-thread-composer',
       pinningPolicy: 'none-declared-for-messages',
       pinningPolicyRationale:

@@ -523,8 +523,10 @@ class _EquipmentLoanArchetypeCardState
           field.formula?.trim().isNotEmpty == true &&
           !(field.labelTemplate?.trim().isNotEmpty ?? false);
       if (isUnlabeledComputedField) continue;
+      // An empty list means "never render this field anywhere" (used for
+      // internal/formula-only fields); only an omitted/null list means "no
+      // restriction, show in every context" -- the two must not be conflated.
       if (field.displayContexts != null &&
-          field.displayContexts!.isNotEmpty &&
           !field.displayContexts!.contains(widget.displayContext)) {
         continue;
       }
