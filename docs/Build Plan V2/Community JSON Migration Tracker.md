@@ -204,13 +204,42 @@ show, which is what exposed the whole chain. **CJM.7 and CJM.8's fixes are thems
 actually proven them on a real device, because sideload never took effect for any community tested so far.
 Full report: `data/root_cause_report_cjm9_marketplace_blank.md`.
 
-**Ticket CJM.9 dispatched, 2026-08-10** (`data/v3_ticket_cjm9_fix_sideload_noop_over_preloaded_shells.md`) —
-hydrate/replace a preloaded shell with the incoming package's real config instead of no-opping, discriminated
-by `existing.experienceConfiguration.isEmpty && experienceConfiguration.isNotEmpty`, while preserving today's
-genuinely-idempotent re-import behavior for already package-backed communities. **No community's §6 live
-walkthrough — including Garden Club's, and including anything this session previously marked as
-visually-confirmed working — can be trusted as real evidence until CJM.9 lands, is independently verified,
-and Garden Club's walkthrough is re-run a third time to confirm sideload genuinely takes effect this time.**
+**Ticket CJM.9 — done, 2026-08-10/11, commits `ec94308a` + `296f263d`.** Hydrates/replaces a preloaded shell
+with the incoming package's real config instead of no-opping, discriminated by
+`existing.experienceConfiguration.isEmpty && experienceConfiguration.isNotEmpty`, reusing the same
+`LocalInstalledCommunity` construction already used for brand-new installs. Preserves today's
+genuinely-idempotent re-import behavior for already package-backed communities unchanged (confirmed by the
+existing `vt_fake-backend_import-idempotent` test, still passing). Independent verification found and fixed
+two bugs in the dispatch's own new test file (`test/cjm9_preloaded_shell_hydration_test.dart`): a missing
+`loom_workflow_engine` import, and two missing `tester.runAsync` wrappers around real `dart:io` file
+operations — the second of which was masking the test's actual fast-passing result behind a 10-minute
+framework timeout, the exact same failure class as CJM.5 earlier this session.
+
+**A required Regression Impact Judge dispatch caught a real process error before this ticket could be
+trusted closed**: the two test-file fixes above were made to the working tree but a `git commit -m` run
+without a fresh `git add` only committed the dispatch's own stale staged version, silently dropping both
+fixes — confirmed by the judge's own clean-checkout repro (`ec94308a` alone fails to compile, "Type
+'LoomWorkflowStateMachine' not found"). Fixed in a follow-up commit (`296f263d`) landing exactly the same,
+already-verified fixes; re-confirmed via `git show HEAD:...` that both are now genuinely present at HEAD, and
+`flutter analyze` re-run clean on the committed state.
+
+**Final verification, all independently re-run by the judge from a real checkout, not trusted from
+self-report:** `loom_demo_local_backend` 14/14 passing; `loom_communities_app_shell` 221/222 passing (same
+one pre-existing named flaky test, zero other regressions). Discriminator logic traced for the one edge case
+worth checking (a package whose `experienceConfiguration` is itself legitimately empty) — falls back to the
+pre-fix short-circuit behavior, not a new regression, and confirmed moot for all 10 real communities (all
+declare non-empty `experience`/`workflowDefinitions`). Swept for other callers of
+`importInitializationPackage` — found one (`loom_skill_debug_harness`'s AI-skill-output validator), traced
+and confirmed unaffected (always installs against a fresh, unseeded backend, never hits the changed branch).
+Per-consumer sweep across all 10 preloaded communities: uniformly safe by source tracing (one shared
+construction loop, no per-community branching in the fixed code), Garden Club additionally confirmed via a
+real widget-level test asserting `engine-native-marketplace-root` renders and the placeholder text is absent.
+
+**CJM.9 is now genuinely fully closed. No community's §6 live walkthrough — including Garden Club's first two
+attempts, and anything this session previously marked as visually-confirmed working — can be trusted as real
+evidence, since sideload never took effect for any community tested before this fix. Garden Club's
+walkthrough must be re-run a third time next, followed by the remaining 8 communities, to produce the first
+actually-valid live evidence this migration effort has collected.**
 
 Also separately noted, lower priority, not yet assessed as blocking: a static "In-focus product surface"
 preview panel (sourced from `part16_experience_catalog.dart`'s hardcoded `_experienceByExtensionId` catalog +
