@@ -1,0 +1,93 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the five
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Apply this rubric to every screen: identity/context legibility, state legibility, copy accuracy,
+actionability, persona-scoping correctness, data-source correctness, truncation, and raw-value leaks
+(booleans/enums/field keys/ISO dates shown unhumanized -- a recurring bug class this session; most instances
+fixed, date/timestamp formatting specifically is known and deliberately deferred to a future pass -- still
+flag any instance precisely, no need to claim novelty).
+
+Community: Ad-Free Community (community_ad_off, extensionId ext_ad_off) -- "Understand your ad-off
+purchase, entitlement, and receipts at a glance." Real sideloaded package. Two persona types: Member (buys
+personal ad-off, views entitlement/receipt/suppression state) and Owner (funds community-wide ad-off). Only
+the Member persona was walked through this pass. Signed in as: display name "Walkthrough_Tester", resolved
+persona "Member". The walkthrough exercised the full checkout flow live: tapped "Buy ad-off", typed a
+payment method, tapped "Turn off ads", tapped "Confirm payment" -- all completed with no crash or exception,
+specifically re-verifying an earlier session fix (CJM.6's pattern-7 workaround for a $actor-in-prefill bug
+that used to break this exact checkout).
+
+Screenshots to review (read each with your Read tool):
+1. rowId "adfree1-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-01-updated-card.png
+2. rowId "adfree1-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-02-home-signed-in.png
+3. rowId "adfree1-giving-checkout" -- docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-03-giving-checkout.png
+4. rowId "adfree1-messages-empty" -- docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-04-messages-empty.png
+5. rowId "adfree1-humanized-payment" -- docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-05-humanized-payment.png
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-ad-free-1",
+  "freshReview": true,
+  "appCommitSha": "9a732506",
+  "reviewedScreenRowIds": ["adfree1-updated-card", "adfree1-home-signed-in", "adfree1-giving-checkout", "adfree1-messages-empty", "adfree1-humanized-payment"],
+  "reviewedScreenshotHashes": ["150edf0951f1d6748c231b22be81ebe55935d0541aadc1a04a46f2eb1333f3a2", "346c4e420e2193570b74f11008f352ac0cb268c2af4934155d7947e7968653b9", "7d8500b583c8de2dbfc900a261ddf92e3ae26f2ab9a4d4a7dacb35df6db5508d", "ccd660a0a91a14886bbfb03286fd4f6f928befc724ba4288e22b80679c6d2a16", "5c44eabd5b2c12c1ca8f65d068e225215f444514852c1e860bc02b01ff3e7d44"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on 7 prior communities hold on this eighth community?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 5 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (all 5). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere.

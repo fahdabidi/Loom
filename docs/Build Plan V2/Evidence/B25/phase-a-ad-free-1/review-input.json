@@ -1,0 +1,55 @@
+{
+  "currentReviewRunId": "phaseA-ad-free-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "9a732506",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Ad-Free Community, run after CJM.9-16 fixed the sideload no-op and 9 shared-code UX findings across seven prior communities. Signed in as the resolved Member persona and exercised the full checkout flow (Buy ad-off -> fill payment -> Turn off ads -> Confirm payment) to specifically re-verify CJM.6's earlier pattern-7 workaround for this fixture's $actor-in-prefill bug."
+  },
+  "screenRows": [
+    {
+      "rowId": "adfree1-updated-card",
+      "communityName": "Ad-Free Community",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-01-updated-card.png",
+      "screenshotHash": "150edf0951f1d6748c231b22be81ebe55935d0541aadc1a04a46f2eb1333f3a2"
+    },
+    {
+      "rowId": "adfree1-home-signed-in",
+      "communityName": "Ad-Free Community",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up, showing the debug identity/persona info panel",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-02-home-signed-in.png",
+      "screenshotHash": "346c4e420e2193570b74f11008f352ac0cb268c2af4934155d7947e7968653b9"
+    },
+    {
+      "rowId": "adfree1-giving-checkout",
+      "communityName": "Ad-Free Community",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "ad-off-member-checkout",
+      "screenOrState": "Giving tab showing the real community-wide funding record ($250.00 one-time, funded 2026-06-01) plus a live in-progress personal checkout ($4.99/month, Paying with Visa Ending 4242, awaiting Confirm payment)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-03-giving-checkout.png",
+      "screenshotHash": "7d8500b583c8de2dbfc900a261ddf92e3ae26f2ab9a4d4a7dacb35df6db5508d"
+    },
+    {
+      "rowId": "adfree1-messages-empty",
+      "communityName": "Ad-Free Community",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "member-messaging",
+      "screenOrState": "Messages tab empty state -- this community has no message threads defined at all",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-04-messages-empty.png",
+      "screenshotHash": "ccd660a0a91a14886bbfb03286fd4f6f928befc724ba4288e22b80679c6d2a16"
+    },
+    {
+      "rowId": "adfree1-humanized-payment",
+      "communityName": "Ad-Free Community",
+      "persona": "Member (Walkthrough_Tester)",
+      "workflowId": "ad-off-member-checkout",
+      "screenOrState": "Just-created checkout instance card, showing the raw-value humanizer (CJM.11/15) turning the typed 'Visa_ending_4242' into the fact pill 'Paying with Visa Ending 4242'",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-ad-free-1/screenshots/final-05-humanized-payment.png",
+      "screenshotHash": "5c44eabd5b2c12c1ca8f65d068e225215f444514852c1e860bc02b01ff3e7d44"
+    }
+  ]
+}

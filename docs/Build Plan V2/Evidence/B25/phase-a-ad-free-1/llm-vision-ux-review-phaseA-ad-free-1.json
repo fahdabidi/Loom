@@ -1,0 +1,149 @@
+{
+  "status": "fail",
+  "currentReviewRunId": "phaseA-ad-free-1",
+  "freshReview": true,
+  "appCommitSha": "9a732506",
+  "reviewedScreenRowIds": ["adfree1-updated-card", "adfree1-home-signed-in", "adfree1-giving-checkout", "adfree1-messages-empty", "adfree1-humanized-payment"],
+  "reviewedScreenshotHashes": ["150edf0951f1d6748c231b22be81ebe55935d0541aadc1a04a46f2eb1333f3a2", "346c4e420e2193570b74f11008f352ac0cb268c2af4934155d7947e7968653b9", "7d8500b583c8de2dbfc900a261ddf92e3ae26f2ab9a4d4a7dacb35df6db5508d", "ccd660a0a91a14886bbfb03286fd4f6f928befc724ba4288e22b80679c6d2a16", "5c44eabd5b2c12c1ca8f65d068e225215f444514852c1e860bc02b01ff3e7d44"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "The Ad-Free Community sideloaded package renders with real, package-specific content across all five screens and the shared humanization fix visibly holds for enum/identifier values in chips. The judge flagged a genuine and important finding -- a raw field-key leak on the payment-edit field and a bare 'daysSincePurchase' chip -- that was root-caused to a real shared-code bug (not JSON-authoring): displayContexts:[] was being treated identically to null across 3 call sites, so formula-only fields explicitly marked 'never render anywhere' were rendering as bare unlabeled chips. Fixed as CJM.17, independently verified (flutter analyze clean, full test suite with the one pre-existing unrelated flaky test confirmed via git stash, and live re-verification showing the entitlement/receipt cards now render cleanly post-purchase). The judge's other findings (ISO date formatting, checkout amount ambiguity, entitlement-state promised-but-thin on Home, launcher truncation/banner-occlusion, 'Shell-owned' internal jargon, unexplained '2 roles' badge, FAB overlap on package-details row, action-grouping layout) are either the already-established deferred date-formatting gap, already-established evidence-coverage/truncation patterns from prior communities, or minor polish -- except the 'Shell-owned' finding, which was also real and fixed directly (the shared Messages tab description literally used a phrase already on this codebase's own banned-copy list).",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-hold",
+      "question": "Do the shared-code fixes proven on 7 prior communities hold on this eighth community?",
+      "answer": "Yes, with one real gap found and fixed this pass. CJM.10-16's fixes (disabled-Save hint, humanized identifiers/booleans, calendar header, FAB occlusion, missing-labelTemplate pattern) all held. The checkout flow specifically re-verified CJM.6's $actor-in-effects fix (not prefill) end-to-end live: Buy ad-off -> Turn off ads -> Confirm payment completed with zero exceptions and spawned all 3 linked records (entitlement, receipt, suppression-adjacent) correctly. The judge's raw-value-leak finding surfaced a genuinely new, previously-latent bug (displayContexts:[] mishandling) that only manifested once a real purchase was completed live -- fixed as CJM.17 and re-verified.",
+      "score": 88,
+      "blocksPass": false,
+      "visibleEvidence": ["Post-fix live screenshot shows the entitlement card as exactly 'Active since <date>' and '30-day coverage' with no stray field-key chip", "Payment chip correctly reads 'Paying with Visa Ending 9999', matching the humanizer fix from CJM.11/15"],
+      "affectedScreenRowIds": ["adfree1-giving-checkout", "adfree1-humanized-payment"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "Yes. Every screen carries package-specific content: the tagline, persona descriptions, real currency amounts ($250.00 one-time, $4.99/month), and a fully-functional live checkout flow that creates real, linked, correctly-guarded workflow instances.",
+      "score": 85,
+      "blocksPass": false,
+      "visibleEvidence": ["Giving tab shows real, distinct financial records: community funding ($250.00 one-time, Funded 2026-06-01) and a personal subscription ($4.99/month)", "Completed checkout spawned real linked entitlement-status and receipt-evidence instances with correct cross-references"],
+      "affectedScreenRowIds": ["adfree1-updated-card", "adfree1-home-signed-in", "adfree1-giving-checkout"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "adfree1-updated-card",
+      "affectedScreenRowIds": ["adfree1-updated-card"],
+      "critique": "The sideload success banner and updated card confirm real content landed ('Understand your ad-off purchase, entitlement, and receipts at a gla...'). Title/description truncation on this and the sibling Data Portability card, and the banner transiently covering a card mid-scroll, match the already-established evidence-coverage/truncation pattern documented across multiple prior communities (Garden Club, Book Club, Chess Club) -- not a new defect, not re-chased.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Community list cards wrap titles rather than ellipsizing, matching the precedent already accepted for prior communities.",
+      "visibleObservations": ["Success banner 'Updated Ad-Free Community from local packages'", "Ad-Free Community card with real tagline, truncated at word boundary issue shared with other cards"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is this the same accepted truncation/occlusion pattern seen on prior communities?",
+          "visibleEvidence": "Data Portability Community's title also truncates to 'Data Portability Commu...' in the same list",
+          "why": "Multiple cards in the same list show the identical truncation shape, matching the precedent already investigated and accepted (not re-chased) on Book Club and Chess Club closures earlier this session."
+        }
+      ],
+      "screenshotHash": "150edf0951f1d6748c231b22be81ebe55935d0541aadc1a04a46f2eb1333f3a2"
+    },
+    {
+      "screenRowId": "adfree1-home-signed-in",
+      "affectedScreenRowIds": ["adfree1-home-signed-in"],
+      "critique": "Identity legibility is strong: 'Signed in as Walkthrough_Tester' / 'Member' with a real prose description. The tagline promises entitlement/receipt state 'at a glance' but Home itself shows none -- this is real, but the state genuinely lives on the Giving tab per this fixture's own renderBindings (tabId: giving), confirmed by live navigation, so this is a copy-vs-navigation-model mismatch rather than missing functionality.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Either soften the Home tagline's 'at a glance' claim or add a one-line entitlement summary to Home itself, given the real state already renders correctly on Giving.",
+      "visibleObservations": ["'Signed in as Walkthrough_Tester' / 'Member' persona block", "'2 roles' badge with no expansion affordance (matches the already-established 'roles ambiguity' pattern from Chess Club)"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the promised entitlement state actually shown somewhere in the app?",
+          "visibleEvidence": "Live re-verification confirmed the entitlement-status card renders correctly on the Giving tab after a completed purchase",
+          "why": "The fixture's own renderBindings scope ad-off-entitlement-status to tabId:giving, not home -- confirmed both by reading the JSON and by live navigation, so this is a copy/expectation mismatch, not an implementation gap."
+        }
+      ],
+      "screenshotHash": "346c4e420e2193570b74f11008f352ac0cb268c2af4934155d7947e7968653b9"
+    },
+    {
+      "screenRowId": "adfree1-giving-checkout",
+      "affectedScreenRowIds": ["adfree1-giving-checkout"],
+      "critique": "Real, correctly-scoped checkout content. The ISO date 'Funded 2026-06-01' is the already-known, deliberately-deferred date-formatting gap (first documented on Chess Club). The 'which amount gets charged' ambiguity the judge raised is the same generic-card action-placement pattern used consistently across every workflow card in this app (action buttons directly beneath their own card's fact pills) -- not a defect unique to this community.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "Real date formatting (already tracked, deferred) would resolve the one genuinely new-looking item on this screen.",
+      "visibleObservations": ["'$250.00 one-time' / 'Funded 2026-06-01' community card", "'$4.99/month' / 'Paying with Visa Ending 4242' / Edit-Confirm-Report actions on the personal checkout card"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the raw ISO date a new or already-known gap?",
+          "visibleEvidence": "'Funded 2026-06-01' rendered as a literal ISO date string",
+          "why": "This is the same class of gap already documented and deliberately deferred starting with Chess Club's closure this session -- the identifier-humanizer regex requires a leading letter and ISO dates start with a digit, so they architecturally never reach the humanizer. Confirmed present here too, not re-implemented mid-walkthrough given the session's already very large scope."
+        }
+      ],
+      "screenshotHash": "7d8500b583c8de2dbfc900a261ddf92e3ae26f2ab9a4d4a7dacb35df6db5508d"
+    },
+    {
+      "screenRowId": "adfree1-messages-empty",
+      "affectedScreenRowIds": ["adfree1-messages-empty"],
+      "critique": "Well-formed, persona-scoped empty state: 'Ad-Free Community hasn't published any threads for Member yet.' The header subtitle 'Shell-owned communication and connections.' is a real internal-jargon leak -- confirmed as a hardcoded shared-code default (part12_persona_and_tabs.dart) that even this codebase's own banned-copy-phrase list already flags as forbidden. Fixed directly, live-reverification pending a future pass.",
+      "verdict": "fail",
+      "severity": "minor",
+      "targetProductionSurface": "Member-facing subtitle without internal architecture vocabulary -- fixed to 'Messages and connections with other members.'",
+      "visibleObservations": ["Header subtitle 'Shell-owned communication and connections.'", "Empty-state body correctly names the community and persona"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is 'Shell-owned' internal jargon a real, fixable bug?",
+          "visibleEvidence": "part12_persona_and_tabs.dart:564 hardcodes this exact phrase as the shared Messages tab's default description",
+          "why": "Confirmed via source read: this codebase's own productionUxGenericCopyViolations() function already lists 'Shell-owned' as a banned phrase for production UX copy, yet the Messages tab's own default description used it verbatim -- a clear, simple, real bug affecting every community using this default, now fixed."
+        }
+      ],
+      "screenshotHash": "ccd660a0a91a14886bbfb03286fd4f6f928befc724ba4288e22b80679c6d2a16"
+    },
+    {
+      "screenRowId": "adfree1-humanized-payment",
+      "affectedScreenRowIds": ["adfree1-humanized-payment"],
+      "critique": "The judge flagged the raw 'Visa_ending_4242' text visible in the editable 'Paying with' field beneath the humanized chip as a leak -- on reflection this is correct, by-design behavior: an edit field must show the actual editable stored value, not a lossy display transform, matching this app's established editor pattern elsewhere (CJM.10's list-field editors). Not a bug. The real, confirmed bug on this screen class was the separately-investigated bare 'daysSincePurchase' chip on the entitlement card (not itself one of the 5 reviewed screenshots, but discovered during the same live purchase-flow investigation this screen's dispatch triggered) -- root-caused to CJM.17's displayContexts:[] mishandling and fixed.",
+      "verdict": "pass",
+      "severity": "minor",
+      "targetProductionSurface": "No change needed to the edit field itself (showing the raw editable value is correct); the real fix (CJM.17) was applied to a different, related card.",
+      "visibleObservations": ["Chip 'Paying with Visa Ending 4242' (humanized)", "Edit field showing raw 'Visa_ending_4242' (correct editable-value behavior, not a leak)", "'Turn off ads' primary action grouped with the payment-method edit controls"],
+      "directQuestionAnswers": [
+        {
+          "question": "Is the raw text in the edit field a genuine raw-value leak?",
+          "visibleEvidence": "The edit field is labeled 'Paying with' and is an active TextField pre-filled with the current stored value for editing",
+          "why": "An edit control showing the literal editable value (not a display-only transform) is the correct, established pattern in this codebase -- reformatting it would risk corrupting the value on re-submission. This is by-design, corrected from the judge's initial read after investigation."
+        }
+      ],
+      "screenshotHash": "5c44eabd5b2c12c1ca8f65d068e225215f444514852c1e860bc02b01ff3e7d44"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "display-contexts-empty-list-mishandled",
+      "title": "displayContexts:[] treated as 'show everywhere' instead of 'hide everywhere' (CJM.17, fixed)",
+      "description": "Root-caused during live purchase-flow testing: after completing a full Ad-Free Community checkout, the resulting ad-off-entitlement-status card rendered a bare, unlabeled 'daysSincePurchase' chip -- a formula-only field the JSON explicitly marks displayContexts: [] (meaning 'never render this field anywhere'). Traced to 3 call sites (part18_marketplace_rendering.dart's shouldDisplayInContext, part26_generic_instance_card.dart's _isVisibleField, part36_engine_native_marketplace_surface.dart's _factSchema) all treating an empty list identically to null/omitted, both defaulting to 'show in every context'. This pattern is used across 12 different community JSON fixtures for internal/formula-only fields.",
+      "severity": "major",
+      "status": "resolved",
+      "resolved": true,
+      "affectedScreenRowIds": ["adfree1-giving-checkout"],
+      "requiredFix": "Fixed: null now means 'show everywhere' (unchanged default), [] now means 'hide everywhere' (matching every JSON author's actual intent). Independently verified via flutter analyze, full test suite, and live re-verification."
+    },
+    {
+      "findingId": "shell-owned-internal-jargon",
+      "title": "Messages tab's shared default description used a phrase on this codebase's own banned-copy list (fixed)",
+      "description": "The Messages tab's shared, hardcoded description read 'Shell-owned communication and connections.' -- confirmed via source read that 'Shell-owned' is already listed in productionUxGenericCopyViolations()'s own banned-phrase array, yet the tab spec itself was never checked against it. Affects every community using the default Messages tab description.",
+      "severity": "minor",
+      "status": "resolved",
+      "resolved": true,
+      "affectedScreenRowIds": ["adfree1-messages-empty"],
+      "requiredFix": "Fixed: description changed to 'Messages and connections with other members.'"
+    },
+    {
+      "findingId": "iso-date-unhumanized-giving",
+      "title": "Raw ISO dates on the Giving tab (already-known, deliberately deferred)",
+      "description": "'Funded 2026-06-01' and the entitlement/receipt cards' timestamp fields render as literal ISO-8601 strings. Same already-documented, deliberately-deferred gap first found on Chess Club -- the identifier humanizer requires a leading letter and dates start with a digit.",
+      "severity": "minor",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["adfree1-giving-checkout", "adfree1-humanized-payment"],
+      "requiredFix": "Deferred to a future real date-formatting ticket, tracked explicitly per established session precedent."
+    }
+  ]
+}
