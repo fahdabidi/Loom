@@ -259,7 +259,10 @@ class LocalInAppBackend {
     Map<String, Object?> experienceConfiguration = const {},
   }) {
     final existing = _communities[package.communityId];
-    if (existing != null) {
+    final shouldHydratePreloadedShell = existing != null &&
+        existing.experienceConfiguration.isEmpty &&
+        experienceConfiguration.isNotEmpty;
+    if (existing != null && !shouldHydratePreloadedShell) {
       return LocalBackendImportReport(
         community: existing,
         created: false,
@@ -280,7 +283,7 @@ class LocalInAppBackend {
     _communities[community.communityId] = community;
     return LocalBackendImportReport(
       community: community,
-      created: true,
+      created: existing == null,
       importedSeedFiles: package.seedDataFiles,
     );
   }
