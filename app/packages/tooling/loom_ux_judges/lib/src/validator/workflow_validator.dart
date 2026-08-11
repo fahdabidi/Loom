@@ -77,6 +77,28 @@ class WorkflowValidator {
     'generateRecurringInstances',
   };
 
+  static final RegExp _availabilityLikeFieldPattern = RegExp(
+    r'^(availabilityState|availability|.*Status)$',
+    caseSensitive: false,
+  );
+  static final RegExp _destructiveTransitionIdPattern = RegExp(
+    r'(?:delist|remove|cancel|delete|archive|withdraw-listing)',
+    caseSensitive: false,
+  );
+
+  static const _fabricatedIdentifierKeys = <String>{
+    'checksum',
+    'hash',
+    'receiptid',
+    'receipt_id',
+    'transactionid',
+    'transaction_id',
+    'confirmationcode',
+    'confirmation_code',
+    'trackingnumber',
+    'tracking_number',
+  };
+
   static const _knownInputTypes = <String>{
     'text',
     'textarea',
@@ -135,6 +157,8 @@ class WorkflowValidator {
       _checkDanglingReferences(machine, workflows, findings);
       _checkRelatedAggregateGuards(machine, workflows, findings);
       _checkMissingLabels(machine, findings);
+      _checkDestructiveTransitionIgnoresAvailabilityField(machine, findings);
+      _checkPossibleFabricatedIdentifier(machine, findings);
       _checkBindingCap(machine, findings);
       _checkNoReadVisibilityDeclared(machine, findings);
       _checkNoRenderBindingForReachableState(machine, findings);
@@ -1362,15 +1386,17 @@ class WorkflowValidator {
       final type = entry.key;
       final machine = entry.value;
       if (everCreatedTypes.contains(type)) continue;
-      final hasFormEntryField = machine.instanceDataSchema.values.any(
-        (field) => field.writableBy == 'formEntry',
+      final hasWritableField = machine.instanceDataSchema.values.any(
+        (field) =>
+            field.writableBy == 'formEntry' || field.writableBy == 'effect',
       );
-      if (!hasFormEntryField) continue;
+      if (!hasWritableField) continue;
       findings.add(
         ValidationFinding(
           type: 'no_creation_path_for_editable_type',
           message:
-              'Workflow "$type" declares formEntry (user-authored) fields, '
+              'Workflow "$type" declares writable (formEntry- or effect-'
+              'authored) fields, '
               'but no create action targets it anywhere in this package '
               '(renderBindings[].actions[].kind: "create"), and no effect '
               '(createInstance / generateRecurringInstances) ever creates '
@@ -1383,6 +1409,136 @@ class WorkflowValidator {
           isWarning: true,
         ),
       );
+    }
+  }
+
+  void _checkDestructiveTransitionIgnoresAvailabilityField(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final availabilityFields = machine.instanceDataSchema.keys
+        .where(_availabilityLikeFieldPattern.hasMatch)
+        .toList();
+    if (availabilityFields.isEmpty) return;
+
+    String? matchingSiblingTransition(LoomWorkflowTransition target, String field) {
+      for (final transition in machine.transitions) {
+        if (transition.id == target.id) continue;
+        if (_isTransitionGuardCheckingAvailabilityField(transition.guard, field)) {
+          return transition.id;
+        }
+      }
+      return null;
+    }
+
+    for (final field in availabilityFields) {
+      final destructiveTransitions = machine.transitions.where((transition) {
+        final targetState = machine.states[transition.to];
+        return targetState?.isTerminal == true ||
+            _destructiveTransitionIdPattern.hasMatch(transition.id);
+      }).toList();
+
+      if (destructiveTransitions.isEmpty) continue;
+
+      for (final destructiveTransition in destructiveTransitions) {
+        if (_isTransitionGuardCheckingAvailabilityField(
+          destructiveTransition.guard,
+          field,
+        )) {
+          continue;
+        }
+        final siblingId = matchingSiblingTransition(
+          destructiveTransition,
+          field,
+        );
+        if (siblingId == null) continue;
+
+        findings.add(
+          ValidationFinding(
+            type: 'destructive_transition_ignores_availability_field',
+            message:
+                'Transition "${destructiveTransition.id}" is destructive on '
+                'workflow "${machine.workflowType}" but does not guard on '
+                'availability field "$field", while sibling transition '
+                '"$siblingId" on the same workflow does. This can allow '
+                'terminal paths to bypass availability gating.',
+            location:
+                '${machine.workflowType}/transitions/${destructiveTransition.id}',
+            isWarning: true,
+          ),
+        );
+      }
+    }
+  }
+
+  bool _isTransitionGuardCheckingAvailabilityField(
+    WorkflowGuard guard,
+    String field,
+  ) {
+    if (guard.instanceDataEquals != null &&
+        guard.instanceDataEquals!.key == field) {
+      return true;
+    }
+    final formula = guard.formula;
+    if (formula == null) return false;
+    final fieldInFormula = RegExp(
+      '\\b${RegExp.escape(field)}\\b',
+      caseSensitive: false,
+    );
+    return fieldInFormula.hasMatch(formula);
+  }
+
+  void _checkPossibleFabricatedIdentifier(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final transition in machine.transitions) {
+      void collectEffects(List<WorkflowEffect> effects, String path) {
+        for (var i = 0; i < effects.length; i++) {
+          final effect = effects[i];
+          final location =
+              '${machine.workflowType}/transitions/${transition.id}/$path[$i]';
+
+          if (effect.op == 'set' && effect.key != null) {
+            final key = effect.key!;
+            if (_fabricatedIdentifierKeys.contains(key.toLowerCase()) &&
+                effect.value is String) {
+              final value = effect.value as String;
+              final trimmedValue = value.trim();
+              final isTemplate =
+                  (trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) ||
+                      trimmedValue.contains('{');
+              if (!isTemplate &&
+                  trimmedValue != '\$actor' &&
+                  trimmedValue != '\$timestamp') {
+                findings.add(
+                  ValidationFinding(
+                    type: 'possible_fabricated_identifier',
+                    message:
+                        'Transition "${transition.id}" sets identifier-like field '
+                        '"$key" to a hardcoded string value "$trimmedValue", '
+                        'which may indicate a fabricated value instead of a '
+                        'platform-provided identifier. This pattern aligns with '
+                        'docs/references/reference/platform-services.md "Not implemented" '
+                        'and solved-patterns.md pattern 4.',
+                    location: location,
+                    isWarning: true,
+                  ),
+                );
+              }
+            }
+          }
+
+          collectEffects(effect.thenEffects, '$path[$i]/then');
+          collectEffects(effect.elseEffects, '$path[$i]/else');
+          final onSuccess = effect.onSuccessEffects;
+          if (onSuccess != null) {
+            collectEffects(onSuccess, '$path[$i]/onSuccessEffects');
+          }
+        }
+      }
+
+      collectEffects(transition.effects, 'effects');
     }
   }
 

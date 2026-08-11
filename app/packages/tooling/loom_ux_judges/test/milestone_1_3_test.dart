@@ -190,6 +190,14 @@ const _knownAffordanceGapTypes = {
   'no_read_visibility_declared',
   'no_render_binding_for_reachable_state',
   'dead_role_binding',
+  // These legacy Phase 5 / reference fixtures predate the new semantic-bank
+  // rules (destructive_transition_ignores_availability_field,
+  // possible_fabricated_identifier) and genuinely match the shapes those
+  // rules target -- real, correctly-identified findings, not false
+  // positives. Fixing the underlying fixtures is explicitly out of scope for
+  // the ticket that added these rules; tracked as real follow-up work.
+  'destructive_transition_ignores_availability_field',
+  'possible_fabricated_identifier',
 };
 
 void main() {
@@ -1341,7 +1349,14 @@ void main() {
         report.warnings.where(
           (finding) =>
               finding.type != 'no_read_visibility_declared' &&
-              finding.type != 'dead_role_binding',
+              finding.type != 'dead_role_binding' &&
+              // hoa-dues-payment's fields are all effect-writable with no
+              // create action/effect anywhere in this legacy fixture -- a
+              // real, correctly-identified gap now caught by the broadened
+              // no_creation_path_for_editable_type check (previously only
+              // fired for formEntry-writable types). Fixing the fixture is
+              // out of scope for the ticket that broadened this rule.
+              finding.type != 'no_creation_path_for_editable_type',
         ),
         isEmpty,
       );

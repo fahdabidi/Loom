@@ -364,7 +364,7 @@ void main() {
       expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isFalse);
     });
 
-    test('does not fire for a type with only effect-written fields (e.g. a response row)', () {
+    test('fires for a type with only effect-written fields and no creation path', () {
       final machine = _machine(
         'event-rsvp-response',
         states: {
@@ -385,7 +385,341 @@ void main() {
 
       final report = _validate({'event-rsvp-response': machine});
 
-      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isFalse);
+      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isTrue);
+    });
+
+    test('does not fire when fields are purely computed/formula', () {
+      final machine = _machine(
+        'event-rsvp-response',
+        states: {
+          'pending': {'label': 'Pending'},
+        },
+        transitions: [
+          {
+            'id': 'noop',
+            'label': 'Noop',
+            'from': ['pending'],
+            'to': null,
+          },
+        ],
+        schema: {
+          'computed': {'type': 'text', 'formula': '""'},
+        },
+        renderBindings: [
+          {
+            'states': ['pending'],
+            'role': 'any',
+            'tabId': 'calendar',
+            'cardSurfaceFamily': 'event-rsvp',
+            'bindingKind': 'summary',
+          },
+        ],
+      );
+
+      final report = _validate({'event-rsvp-response': machine});
+
+      expect(
+        _hasWarning(report, 'no_creation_path_for_editable_type'),
+        isFalse,
+      );
+    });
+  });
+
+  group('destructive_transition_ignores_availability_field', () {
+    LoomWorkflowStateMachine machine({
+      bool destructiveGuardsAvailability = false,
+      bool siblingGuardsAvailability = true,
+    }) =>
+        _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+            'delisted': {'label': 'Delisted', 'isTerminal': true},
+            'cancelled': {'label': 'Cancelled'},
+          },
+          transitions: [
+            {
+              'id': 'cancel',
+              'label': 'Cancel',
+              'from': ['open'],
+              'to': 'cancelled',
+              if (siblingGuardsAvailability)
+                'guard': {
+                  'instanceDataEquals': {
+                    'key': 'availabilityState',
+                    'value': 'listed',
+                  },
+                },
+            },
+            {
+              'id': 'delist',
+              'label': 'Delist',
+              'from': ['open'],
+              'to': 'delisted',
+              if (destructiveGuardsAvailability)
+                'guard': {
+                  'instanceDataEquals': {
+                    'key': 'availabilityState',
+                    'value': 'listed',
+                  },
+                },
+            },
+          ],
+          schema: {
+            'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
+          },
+          renderBindings: [
+            {
+              'states': ['open', 'cancelled', 'delisted'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'primary',
+            },
+            {
+              'states': ['open', 'cancelled', 'delisted'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'summary',
+              'actions': [
+                {
+                  'kind': 'create',
+                  'label': 'New event',
+                  'scope': 'tab',
+                  'presentation': 'fab',
+                },
+              ],
+            },
+          ],
+          visibility: {'default': 'public'},
+        );
+
+    test(
+      'fires when destructive terminal transition lacks availability guard on this workflow',
+      () {
+        final report = _validate({'event': machine()});
+
+        expect(
+          report.warnings.any(
+            (f) =>
+                f.type == 'destructive_transition_ignores_availability_field' &&
+                f.location == 'event/transitions/delist',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'does not fire when destructive transition checks availability like its sibling',
+      () {
+        final report = _validate({
+          'event': machine(destructiveGuardsAvailability: true),
+        });
+
+        expect(
+          report.warnings.any(
+            (f) => f.type == 'destructive_transition_ignores_availability_field',
+          ),
+          isFalse,
+        );
+      },
+    );
+
+    // Regression test: the sibling-match helper's formula check must actually
+    // substitute the field name into its word-boundary regex (a prior version
+    // built the pattern from a raw string literal, which cannot interpolate
+    // ${...} at all, so the formula branch silently never matched anything).
+    LoomWorkflowStateMachine formulaGuardedMachine({
+      bool destructiveGuardsAvailability = false,
+    }) =>
+        _machine(
+          'listing',
+          states: {
+            'open': {'label': 'Open'},
+            'delisted': {'label': 'Delisted', 'isTerminal': true},
+            'cancelled': {'label': 'Cancelled'},
+          },
+          transitions: [
+            {
+              'id': 'cancel',
+              'label': 'Cancel',
+              'from': ['open'],
+              'to': 'cancelled',
+              'guard': {'formula': 'availabilityState == "available"'},
+            },
+            {
+              'id': 'delist',
+              'label': 'Delist',
+              'from': ['open'],
+              'to': 'delisted',
+              if (destructiveGuardsAvailability)
+                'guard': {'formula': 'availabilityState == "available"'},
+            },
+          ],
+          schema: {
+            'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
+          },
+          renderBindings: [
+            {
+              'states': ['open', 'cancelled', 'delisted'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'primary',
+            },
+          ],
+          visibility: {'default': 'public'},
+        );
+
+    test(
+      'fires when the sibling guards availability via formula, not instanceDataEquals',
+      () {
+        final report = _validate({'listing': formulaGuardedMachine()});
+
+        expect(
+          report.warnings.any(
+            (f) =>
+                f.type == 'destructive_transition_ignores_availability_field' &&
+                f.location == 'listing/transitions/delist',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'does not fire when the destructive transition itself guards availability via formula',
+      () {
+        final report = _validate({
+          'listing': formulaGuardedMachine(destructiveGuardsAvailability: true),
+        });
+
+        expect(
+          report.warnings.any(
+            (f) => f.type == 'destructive_transition_ignores_availability_field',
+          ),
+          isFalse,
+        );
+      },
+    );
+  });
+
+  group('possible_fabricated_identifier', () {
+    test('fires when hardcoded identifier-like value is set by set effect', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+          },
+          transitions: [
+            {
+              'id': 'complete',
+              'label': 'Complete',
+              'from': ['open'],
+              'to': null,
+              'effects': [
+                {
+                  'op': 'branch',
+                  'if': 'true',
+                  'then': [
+                    {
+                      'op': 'set',
+                      'key': 'checksum',
+                      'value': 'sha256-chess-2026',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          schema: {
+            'checksum': {'type': 'text'},
+          },
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'primary',
+            },
+          ],
+          visibility: {'default': 'public'},
+        ),
+      });
+
+      expect(
+        report.warnings.where(
+          (f) => f.type == 'possible_fabricated_identifier',
+        ),
+        hasLength(1),
+      );
+      expect(
+        report.warnings.any(
+              (f) =>
+                  f.type == 'possible_fabricated_identifier' &&
+                  f.message.contains('sha256-chess-2026') &&
+              f.location.startsWith('event/'),
+        ),
+        isTrue,
+      );
+    });
+
+    test('does not fire when identifier fields are set from templates', () {
+      final report = _validate({
+        'event': _machine(
+          'event',
+          states: {
+            'open': {'label': 'Open'},
+          },
+          transitions: [
+            {
+              'id': 'complete',
+              'label': 'Complete',
+              'from': ['open'],
+              'to': null,
+              'effects': [
+                {
+                  'op': 'set',
+                  'key': 'checksum',
+                  'value': '{checksumValue}',
+                },
+              ],
+            },
+          ],
+          schema: {
+            'checksum': {'type': 'text'},
+          },
+          renderBindings: [
+            {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'primary',
+              'actions': [
+                {
+                  'kind': 'create',
+                  'label': 'New event',
+                  'scope': 'tab',
+                  'presentation': 'fab',
+                },
+              ],
+            },
+          ],
+          visibility: {'default': 'public'},
+        ),
+      });
+
+      expect(
+        report.warnings.any(
+          (f) => f.type == 'possible_fabricated_identifier',
+        ),
+        isFalse,
+      );
     });
   });
 
