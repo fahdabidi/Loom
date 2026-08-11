@@ -480,21 +480,22 @@ into `_actions`, and the `_RsvpActionChip` buttons a member needs to actually RS
 **Severity note:** if confirmed, this affects the already-merged Camera Club and Garden Club packages too,
 not just Riverside Youth Soccer — not a new-community-only gap.
 
-**Status:** a confident diagnosis with exact file:line citations was reached during the judge review, but
-before writing an implementation ticket this is being independently re-verified via the Root Cause Agent
-(`data/call_root_cause_agent.sh`, brief at `data/root_cause_brief_event_rsvp_response_hardcoded.md`) —
-specifically to confirm this is genuinely reachable in the shipped app (not superseded by some other
-construction path) and to nail down the correct generic fix (deriving `_usesResponseRows`/the response
-workflow type from the binding's own `responseTable` field, mirroring `_viewerResponseLookupFor`'s already-
-correct pattern, rather than a second hardcoded string). Once confirmed, becomes
-`data/v3_ticket_cjm5_event_rsvp_response_workflow_type.md`, dispatched via the same
-`call_implementation_agent.sh` pipeline as CJM.1/CJM.3/CJM.4, then independently verified (code diff read,
-`flutter analyze`/tests, live re-verification on Camera Club/Garden Club/Riverside Youth Soccer that RSVP
-buttons actually populate and work) — **plus a dedicated Regression Impact Judge dispatch**
-(`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) covering every `event-rsvp`/`responseTable`
-consumer by name (Camera Club, Garden Club, Riverside Youth Soccer already merged; Neighborhood Book Club,
-Masjid Nur pending at time of writing) before this ticket is marked done — this is the first ticket in this
-section required to go through that step from the start, not retrofitted after the fact.
+**Status: dispatched, 2026-08-10.** The Root Cause Agent confirmed the diagnosis with a full static
+reachability proof (`data/root_cause_report_event_rsvp_response_hardcoded.md`) and surfaced 2 additional
+reachable defects beyond the original finding: reminders (`part28...:933`) and recurring-series creation/
+deletion (`part28...:1912/1935/2004/2030`) both apply transitions to the hardcoded literal even when they
+correctly *find* the custom response row first; and, independently, **brand-new custom-named events receive
+zero seeded response rows at all** (`part01_local_extension_screen.dart:404-425/447-462`, gated on the same
+literal). Ticket `data/v3_ticket_cjm5_event_rsvp_response_workflow_type.md` written covering all of these as
+one atomic fix (the report is explicit that fixing the response-table gate without also fixing the
+reminder/recurring call sites creates a new, different breakage) and dispatched via
+`call_implementation_agent.sh`. **Before this ticket is marked done:** independent verification (code diff
+read, `flutter analyze`/tests, A8/A11 Tabletop baseline preserved) plus a dedicated Regression Impact Judge
+dispatch (`docs/Build Plan V2/Tools/regression-impact-judge-tool.md`) covering every `event-rsvp`/
+`responseTable` consumer by name (Camera Club, Garden Club, Riverside Youth Soccer, Masjid Nur already
+merged; Neighborhood Book Club pending judge) confirming RSVP buttons actually populate and work — this is
+the first ticket in this section required to go through that step from the start, not retrofitted after the
+fact.
 
 ### Ticket CJM.6 — `create` action `prefill` never resolves `$actor` (either scope), `scope: "tab"` drops `prefill` entirely (found 2026-08-10, highest blast radius so far)
 
