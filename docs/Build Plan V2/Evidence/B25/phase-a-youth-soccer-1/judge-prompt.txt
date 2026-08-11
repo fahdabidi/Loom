@@ -1,0 +1,100 @@
+You are a UX Judge Agent. You did not implement the UI. Use only the supplied artifacts: the six
+screenshots listed below and their metadata. Do not use worker implementation notes or intended behavior.
+If the screenshot does not show it, the UX did not pass.
+
+Inspect the actual screenshots as pixels and layout, not just labels. Apply this rubric to every screen:
+- Identity/context legibility: can the user tell who they are and what role they are acting as?
+- State legibility: is the current state (loading/empty/error/populated) unambiguous?
+- Copy accuracy: does displayed text sound like real product copy, or generic/placeholder-sounding?
+- Actionability: are available actions clear, and is it clear why any disabled/hidden ones are disabled?
+- Persona-scoping correctness: does what's shown match what this persona should see?
+- Data-source correctness: does content look like real sideloaded package data, not a legacy placeholder?
+- Truncation: are key facts fully readable, or clipped?
+
+Community: Riverside Youth Soccer (community_youth_soccer, extensionId ext_youth_soccer) -- "Roster,
+registration, schedule, and team communication for Riverside Youth Soccer." Real sideloaded package. Signed
+in as: display name "Walkthrough_Tester", persona "Guardian".
+
+Screenshots to review (read each with your Read tool):
+1. rowId "ys1-updated-card" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/updated-card.png
+2. rowId "ys1-home-signed-in" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/home-signed-in.png
+3. rowId "ys1-home-scrolled-instances" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/home-scrolled-instances.png
+   -- includes a "choice: Open https://..." pill with a link-off icon. This is DOCUMENTED, INTENTIONAL
+   behavior (ticket CJM.2 only implements type:"url" for openMode:"external"; openMode:"choice" is meant to
+   show as an explicitly unsupported/disabled pill, not a bug) -- do not flag this specific pill as a defect,
+   but do check whether it's at least legible and clearly marked as unsupported rather than just broken-looking.
+4. rowId "ys1-calendar-month" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/calendar-month.png
+5. rowId "ys1-calendar-event-detail" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/calendar-event-detail.png
+   -- checks whether a real event-RSVP workflow's attendee/response data renders correctly (this workflow
+   type previously had a hardcoded-elsewhere bug, since fixed; verify the fix from the pixels only).
+6. rowId "ys1-giving-empty" -- docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/giving-empty.png
+   -- the Giving tab appears to show no content for this freshly-created account. Assess whether this reads
+   as a legitimate empty state (e.g. "no player registered yet") or an ambiguous/broken-looking blank screen.
+
+You must return your entire response as a single JSON object (no prose outside the JSON) with exactly this
+shape:
+
+{
+  "status": "pass" | "fail",
+  "currentReviewRunId": "phaseA-youth-soccer-1",
+  "freshReview": true,
+  "appCommitSha": "159428c7",
+  "reviewedScreenRowIds": ["ys1-updated-card", "ys1-home-signed-in", "ys1-home-scrolled-instances", "ys1-calendar-month", "ys1-calendar-event-detail", "ys1-giving-empty"],
+  "reviewedScreenshotHashes": ["83a4ec92228ff863dd5fa1738633bfb10c89148b0686ff7b2cca55342f45aa73", "e5969e6dc0a8f40781545d382002887c5c0e18c705760a4825a1cb67601ba62e", "fbde3704303719385fb043b87fb4a843a76f858c996c80450c08c7be7d22e5af", "201910b4893776ecca09163379a5fb55c598b50686d809ea36b85a55fdf02260", "3a37b3360a4d7de4e91c6d3cf971e774c5889efdfc438f160c6181bf3ebae287", "1aa567fddaef26e68351298f4fd5e984512983ec337e71265ec6661548ca0b87"],
+  "reviewerType": "llm-vision-agent-tool",
+  "summary": "<2-4 sentence overall summary>",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "shared-fixes-generalize",
+      "question": "Do the shared-code fixes proven on prior communities (calendar weekday header legibility, no raw list dumps, explained disabled Save, real event-RSVP data) generalize correctly to this third community?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    },
+    {
+      "questionId": "real-content-legibility",
+      "question": "Does the UI show specific, sideloaded-package-derived content?",
+      "answer": "<your answer>",
+      "score": <0-100 integer>,
+      "blocksPass": <true|false>,
+      "visibleEvidence": ["<specific thing you saw, at least 24 characters>"],
+      "affectedScreenRowIds": ["<rowIds>"]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "<one of the 6 rowIds above>",
+      "affectedScreenRowIds": ["<same rowId>"],
+      "critique": "<specific, evidence-grounded critique, at least 80 characters>",
+      "verdict": "pass" | "fail",
+      "severity": "minor" | "major" | "critical-blocker",
+      "targetProductionSurface": "<what this screen should show to be production-grade>",
+      "visibleObservations": ["<specific things you actually saw>"],
+      "directQuestionAnswers": [
+        {
+          "question": "<a specific question about this screen from the rubric>",
+          "visibleEvidence": "<at least 16 characters>",
+          "why": "<your reasoning>"
+        }
+      ],
+      "screenshotHash": "<matching hash>"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "<short-kebab-slug>",
+      "title": "<short title>",
+      "description": "<full description, evidence-grounded>",
+      "severity": "minor" | "major" | "critical-blocker",
+      "status": "open",
+      "resolved": false,
+      "affectedScreenRowIds": ["<rowIds>"],
+      "requiredFix": "<what should change>"
+    }
+  ]
+}
+
+Produce exactly one screenReviews[] entry per screenshot (all 6). Do not include sourceReviewRunId,
+carriedForward, reusedPriorReview, usesPriorReview, or carriedFromPriorReview anywhere.

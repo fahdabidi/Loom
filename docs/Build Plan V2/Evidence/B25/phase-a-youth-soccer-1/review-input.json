@@ -1,0 +1,64 @@
+{
+  "currentReviewRunId": "phaseA-youth-soccer-1",
+  "reviewInputEvidence": {
+    "appCommitSha": "159428c7",
+    "captureMode": "manual-adb-phase-a-precheck",
+    "note": "First live walkthrough of Riverside Youth Soccer, run after CJM.9-14 fixed the sideload no-op and 6 shared-code UX findings across two prior communities (Garden Club, Neighborhood Book Club). This community is where CJM.5 (event-rsvp hardcoded workflow-type bug) was originally found; this walkthrough specifically checks its live fix. Signed in as the Guardian persona."
+  },
+  "screenRows": [
+    {
+      "rowId": "ys1-updated-card",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "anonymous",
+      "workflowId": "community-list-sideload-confirmation",
+      "screenOrState": "Community list immediately after installing the real package",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/updated-card.png",
+      "screenshotHash": "83a4ec92228ff863dd5fa1738633bfb10c89148b0686ff7b2cca55342f45aa73"
+    },
+    {
+      "rowId": "ys1-home-signed-in",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "Guardian (Walkthrough_Tester)",
+      "workflowId": "community-home",
+      "screenOrState": "Home tab immediately after signing up as Walkthrough_Tester / Guardian",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/home-signed-in.png",
+      "screenshotHash": "e5969e6dc0a8f40781545d382002887c5c0e18c705760a4825a1cb67601ba62e"
+    },
+    {
+      "rowId": "ys1-home-scrolled-instances",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "Guardian (Walkthrough_Tester)",
+      "workflowId": "soccer-waiver-acknowledgement",
+      "screenOrState": "Home tab scrolled to a real waiver instance card, including a type:url openMode:choice field (CJM.2's documented unsupported-fallback behavior)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/home-scrolled-instances.png",
+      "screenshotHash": "fbde3704303719385fb043b87fb4a843a76f858c996c80450c08c7be7d22e5af"
+    },
+    {
+      "rowId": "ys1-calendar-month",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "Guardian (Walkthrough_Tester)",
+      "workflowId": "soccer-event-rsvp",
+      "screenOrState": "Calendar tab, month view, checking weekday header legibility (CJM.12/14) on a third community/theme",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/calendar-month.png",
+      "screenshotHash": "201910b4893776ecca09163379a5fb55c598b50686d809ea36b85a55fdf02260"
+    },
+    {
+      "rowId": "ys1-calendar-event-detail",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "Guardian (Walkthrough_Tester)",
+      "workflowId": "soccer-event-rsvp",
+      "screenOrState": "Calendar day view for a real practice event, checking CJM.5's fix (event-rsvp reading its own responseTable instead of a hardcoded workflow type)",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/calendar-event-detail.png",
+      "screenshotHash": "3a37b3360a4d7de4e91c6d3cf971e774c5889efdfc438f160c6181bf3ebae287"
+    },
+    {
+      "rowId": "ys1-giving-empty",
+      "communityName": "Riverside Youth Soccer",
+      "persona": "Guardian (Walkthrough_Tester)",
+      "workflowId": "soccer-registration-payment",
+      "screenOrState": "Giving tab, appears empty for this freshly-created Guardian account with no registered player yet",
+      "screenshotPath": "docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/screenshots/giving-empty.png",
+      "screenshotHash": "1aa567fddaef26e68351298f4fd5e984512983ec337e71265ec6661548ca0b87"
+    }
+  ]
+}
