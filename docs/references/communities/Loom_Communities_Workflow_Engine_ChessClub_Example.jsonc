@@ -787,5 +787,21 @@
         }
       }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "calendar",
+        "label": "Calendar",
+        "iconKey": "calendar",
+        "description": "Confirmed ladder matches, club nights, tournaments, locations, and reminders."
+      },
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Organizer pairing queue, disputes, rankings publication, and export."
+      }
+    ]
   }
 }

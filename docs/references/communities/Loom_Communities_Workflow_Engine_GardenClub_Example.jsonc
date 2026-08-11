@@ -858,5 +858,27 @@
         }
       }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "calendar",
+        "label": "Calendar",
+        "iconKey": "calendar",
+        "description": "Events, schedules, capacity, and reminders."
+      },
+      {
+        "tabId": "marketplace",
+        "label": "Exchange",
+        "iconKey": "marketplace",
+        "description": "Browse offers, plant claims, pickup windows, and handoff state."
+      },
+      {
+        "tabId": "admin",
+        "label": "Organize",
+        "iconKey": "admin",
+        "description": "Role-specific publishing, approvals, and operations."
+      }
+    ]
   }
 }

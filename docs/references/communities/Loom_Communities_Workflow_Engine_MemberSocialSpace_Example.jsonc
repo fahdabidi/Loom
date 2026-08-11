@@ -687,5 +687,15 @@
         }
       }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Role-specific publishing, approvals, and operations."
+      }
+    ]
   }
 }

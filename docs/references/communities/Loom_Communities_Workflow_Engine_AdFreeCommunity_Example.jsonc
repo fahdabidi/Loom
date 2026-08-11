@@ -997,5 +997,21 @@
         }
       }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "giving",
+        "label": "Giving",
+        "iconKey": "payment",
+        "description": "Payments, dues, donations, receipts, and ad-off state."
+      },
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Role-specific publishing, approvals, and operations."
+      }
+    ]
   }
 }

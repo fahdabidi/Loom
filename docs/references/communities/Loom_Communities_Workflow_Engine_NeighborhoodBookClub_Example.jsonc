@@ -842,5 +842,27 @@
         "createdByPersonaId": "book-organizer",
         "instanceData": { "scope": "Meeting attendance, H1 2026", "receiptStatus": "complete", "exportedAt": "2026-06-30" } }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "calendar",
+        "label": "Calendar",
+        "iconKey": "calendar",
+        "description": "Events, schedules, capacity, and reminders."
+      },
+      {
+        "tabId": "marketplace",
+        "label": "Marketplace",
+        "iconKey": "marketplace",
+        "description": "Shared items, offers, claims, loans, and giveaways."
+      },
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Role-specific publishing, approvals, and operations."
+      }
+    ]
   }
 }

@@ -905,5 +905,27 @@
         }
       }
     ]
+  },
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "calendar",
+        "label": "Walks",
+        "iconKey": "calendar",
+        "description": "Photo walks, critique deadlines, reminders, and RSVPs."
+      },
+      {
+        "tabId": "marketplace",
+        "label": "Gear",
+        "iconKey": "gear",
+        "description": "Browse, request, loan, queue for, and return shared gear."
+      },
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Role-specific publishing, approvals, and operations."
+      }
+    ]
   }
 }
