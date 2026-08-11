@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "tool": "b25_llm_review_freshness_gate",
+  "status": "pass",
+  "llmReviewPath": "../docs/Build Plan V2/Evidence/B25/phase-a-youth-soccer-1/llm-vision-ux-review-phaseA-youth-soccer-1.json",
+  "expectedReviewRunId": "phaseA-youth-soccer-1",
+  "declaredReviewRunId": "phaseA-youth-soccer-1",
+  "expectedAppCommitSha": "159428c7",
+  "declaredAppCommitSha": "159428c7",
+  "freshReview": true,
+  "sourceReviewRunId": "",
+  "carriedForward": false,
+  "reusedPriorReview": false,
+  "currentScreenRowCount": 6,
+  "reviewedScreenRowCount": 6,
+  "reviewedScreenshotHashCount": 6,
+  "reviewedScreenRowIds": [
+    "ys1-updated-card",
+    "ys1-home-signed-in",
+    "ys1-home-scrolled-instances",
+    "ys1-calendar-month",
+    "ys1-calendar-event-detail",
+    "ys1-giving-empty"
+  ],
+  "reviewedScreenshotHashes": [
+    "83a4ec92228ff863dd5fa1738633bfb10c89148b0686ff7b2cca55342f45aa73",
+    "e5969e6dc0a8f40781545d382002887c5c0e18c705760a4825a1cb67601ba62e",
+    "fbde3704303719385fb043b87fb4a843a76f858c996c80450c08c7be7d22e5af",
+    "201910b4893776ecca09163379a5fb55c598b50686d809ea36b85a55fdf02260",
+    "3a37b3360a4d7de4e91c6d3cf971e774c5889efdfc438f160c6181bf3ebae287",
+    "1aa567fddaef26e68351298f4fd5e984512983ec337e71265ec6661548ca0b87"
+  ],
+  "requiredFields": [
+    "freshReview=true",
+    "currentReviewRunId",
+    "appCommitSha",
+    "reviewedScreenRowIds",
+    "reviewedScreenshotHashes"
+  ],
+  "disallowedFields": [
+    "sourceReviewRunId",
+    "carriedForward=true",
+    "reusedPriorReview=true",
+    "usesPriorReview=true",
+    "carriedFromPriorReview=true"
+  ],
+  "problems": []
+}
