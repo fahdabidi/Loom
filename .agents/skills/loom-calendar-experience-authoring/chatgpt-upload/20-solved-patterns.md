@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -338,6 +338,92 @@ for judging purposes*, not about identifiers that are already load-bearing, real
 must never appear for `ext_mosque`. Caught by an independent Skill Output Judge dispatch, not the validator
 (which reported the JSON as structurally clean) — this class of defect is invisible to any check that only
 inspects the candidate JSON in isolation.
+
+---
+
+## 10. A `documentLibrary` workflow defaults to `membersOnly` visibility with list-based access tracking — never a required singular `recipientPersonaId` behind a `guarded` default
+
+**Requirement shape:** a community's documents/resources need to be readable by the general membership, with
+only a minority genuinely access-restricted (e.g. a leadership-only policy doc). The product doc almost
+always names this as an anti-pattern to avoid directly ("hidden document link," "documents should be
+findable, not buried").
+
+**Looks plausible but is wrong:** modeling every document as a single-recipient row —
+`recipientPersonaId: { "type": "personaId", "required": true }` plus `"visibility": { "default": "guarded",
+"readGuard": { "formula": "$viewer == recipientPersonaId || ..." } }`. This looks like careful, privacy-
+conscious modeling, but a *required, singular* recipient field makes it structurally impossible to author a
+document instance visible to the general membership at all — every document, even a routine weekly notice,
+ends up hidden from everyone except one hand-picked persona. This is the exact anti-pattern the product doc
+warns against, reintroduced through the back door of "protecting" a field that was never meant to gate
+routine content.
+
+**Verified-correct shape:** default the workflow to `"visibility": { "default": "membersOnly" }` (the same
+default nearly every other workflow in this grammar uses), and track access/acknowledgement as **list**
+fields on one broadcast row, not a per-recipient gate on visibility itself:
+```jsonc
+"visibility": { "default": "membersOnly" },
+"instanceDataSchema": {
+  "acknowledgedPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
+  "accessRequestedPersonaIds": { "type": "personaId[]", "writableBy": "effect" }
+}
+```
+Reserve a `guarded`/`readGuard` visibility override only for the genuinely small minority of documents that
+need real access restriction (e.g. a board-only financial record), and even then prefer a role-based guard
+(`allowedPersonaIds`) over a single required recipient, so the common case — most documents, visible to most
+members — is never gated behind an easy-to-drop identity match.
+
+**Found in:** Masjid Nur, 2nd Milestone 1.5 dispatch (Codex GitHub-fetch channel, 2026-08-12) —
+`mosque-document-resource` used the required-singular-recipient shape above, confirmed by an independent
+Skill Output Judge to make every document invisible to the general membership by construction, contradicting
+the product doc's own stated anti-pattern. The currently-shipped fixture for the same community already
+proves the correct shape works (`membersOnly` default + `acknowledgedPersonaIds`/`accessRequestedPersonaIds`
+list fields) — the fresh dispatch regressed away from an already-working pattern it had no visibility into.
+
+---
+
+## 11. A `searchAiAnswer` (or any workflow with a real, unimplemented platform-service field) still needs at least one live, reachable path to its "complete" state — never leave every path to it gated on the missing service alone
+
+**Requirement shape:** a workflow's terminal/complete state (e.g. "answered," "verified," "exported") depends
+conceptually on a platform service that is honestly `❌ Not implemented` (an AI-generated answer, a checksum,
+a receipt ID) — see `platform-services.md`. The field the missing service would populate must never be
+seeded or effect-written (AP-6) — that part is already well understood and consistently done correctly.
+
+**Looks plausible but is wrong:** making the *only* transition into the complete state require that missing
+field to already be populated (e.g. a guard like `"formula": "if(answer == null, false, true)"`), with no
+other transition anywhere in the workflow that can set it. This correctly avoids fabricating the missing
+service's output, but it also makes the state **permanently unreachable by any live action** — not "honestly
+blocked pending a platform service" but a structural dead end no future platform-service launch alone would
+even fix, since nothing ever calls the transition that would consume it. A demo, a screenshot, or a B25
+UX-evidence pass can never show this state working, even in principle, until the JSON itself changes again.
+
+**Verified-correct shape:** give the workflow a second, real, honest path to the same terminal-ish state that
+doesn't depend on the missing service — typically an admin/coordinator-curated equivalent, clearly labeled as
+such, not disguised as the automated version:
+```jsonc
+{
+  "id": "answer-query", "label": "Provide answer",
+  "guard": { "allowedPersonaIds": ["<admin-persona>"] },
+  "inputs": {
+    "answerBody": { "type": "text", "required": true },
+    "citationLabel": { "type": "text", "required": true },
+    "citationUrl": { "type": "text", "required": true }
+  },
+  "effects": [
+    { "op": "set", "key": "answerBody", "value": "{input.answerBody}" },
+    { "op": "set", "key": "citations", "value": [{"label": "{input.citationLabel}", "url": "{input.citationUrl}"}] }
+  ]
+}
+```
+This is not a fabrication — the *value itself* is real, human-authored content, just not the AI-generated
+answer the field's name might suggest; label it as admin-curated in the UI copy if the grammar allows. Only
+the automated/AI computation path stays genuinely absent.
+
+**Found in:** Masjid Nur, 2nd Milestone 1.5 dispatch — `mosque-search-ai-citation`'s only path to "answered"
+required the never-written `answer` field to already be non-null, confirmed unreachable by grep (zero
+effects write `answer` or `citations` anywhere in the package) and by the candidate's own traceability row
+marking the requirement `not_implemented`. The currently-shipped fixture already had a working
+admin-curated-answer transition with real inputs/effects; the fresh dispatch regressed away from it without
+knowing it existed.
 
 ---
 
