@@ -1013,6 +1013,438 @@ class _DocumentLibraryArchetypeCardState
   }
 }
 
+/// Bespoke rendering for the exportWizard card family.
+class ExportWizardArchetypeCard extends StatefulWidget {
+  const ExportWizardArchetypeCard({
+    super.key,
+    required this.resolved,
+    required this.engine,
+    required this.personaId,
+    required this.accent,
+    required this.onInstanceChanged,
+    this.modernTheme,
+    this.displayContext = 'tile',
+    this.visibleFieldKeys,
+  }) : assert(displayContext == 'tile' || displayContext == 'detail');
+
+  final EngineNativeResolvedBinding resolved;
+  final WorkflowEngineApi engine;
+  final String personaId;
+  final Color accent;
+  final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final LoomCardTheme? modernTheme;
+  final String displayContext;
+  final Set<String>? visibleFieldKeys;
+
+  @override
+  State<ExportWizardArchetypeCard> createState() =>
+      _ExportWizardArchetypeCardState();
+}
+
+class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
+  static const _historyFieldHints = <String>[
+    'exportHistory',
+    'statusHistory',
+    'auditHistory',
+  ];
+
+  late WorkflowInstance _instance;
+  List<LoomWorkflowTransition> _actions = const [];
+  bool _loadingActions = true;
+  bool _mutating = false;
+  String? _error;
+  int _actionRequest = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = widget.resolved.instance;
+    _loadActions();
+  }
+
+  @override
+  void didUpdateWidget(covariant ExportWizardArchetypeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldInstance = oldWidget.resolved.instance;
+    final newInstance = widget.resolved.instance;
+    if (oldInstance.instanceId != newInstance.instanceId ||
+        oldInstance.currentState != newInstance.currentState ||
+        oldInstance.instanceData != newInstance.instanceData ||
+        oldWidget.personaId != widget.personaId ||
+        oldWidget.engine != widget.engine) {
+      _instance = newInstance;
+      _loadActions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _actionRequest++;
+    super.dispose();
+  }
+
+  Future<void> _loadActions() async {
+    final request = ++_actionRequest;
+    if (mounted) {
+      setState(() {
+        _loadingActions = true;
+        _error = null;
+      });
+    }
+    try {
+      final instance = _instance;
+      final actions = await widget.engine.availableTransitionsAsync(
+        workflowType: instance.workflowType,
+        instanceId: instance.instanceId,
+        currentState: instance.currentState,
+        instanceData: instance.instanceData,
+        personaId: widget.personaId,
+      );
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = actions;
+        _loadingActions = false;
+      });
+    } catch (_) {
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = const [];
+        _loadingActions = false;
+        _error = 'Could not load listing actions.';
+      });
+    }
+  }
+
+  Future<void> _applyTransition(LoomWorkflowTransition transition) async {
+    if (_mutating) return;
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      final result = await widget.engine.applyTransition(
+        workflowType: _instance.workflowType,
+        instanceId: _instance.instanceId,
+        transitionId: transition.id,
+        personaId: widget.personaId,
+      );
+      final next = WorkflowInstance(
+        instanceId: _instance.instanceId,
+        workflowType: _instance.workflowType,
+        currentState: result.newState,
+        instanceData: result.newInstanceData,
+        createdByPersonaId: _instance.createdByPersonaId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _instance = next;
+        _mutating = false;
+      });
+      widget.onInstanceChanged(next);
+      await _loadActions();
+      if (!mounted) return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Could not update this listing.';
+      });
+    }
+  }
+
+  Map<String, WorkflowFactPillFieldSchema> _supplementalFacts() {
+    final schema = <String, WorkflowFactPillFieldSchema>{};
+    final historyKey = _historyFieldKey();
+    for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
+      final key = entry.key;
+      final field = entry.value;
+      if (key == historyKey) continue;
+      if (widget.visibleFieldKeys != null &&
+          !widget.visibleFieldKeys!.contains(key)) {
+        continue;
+      }
+      final isUnlabeledComputedField =
+          field.formula?.trim().isNotEmpty == true &&
+          !(field.labelTemplate?.trim().isNotEmpty ?? false);
+      if (isUnlabeledComputedField) continue;
+      if (field.displayContexts != null &&
+          !field.displayContexts!.contains(widget.displayContext)) {
+        continue;
+      }
+      final value = _instance.instanceData[key];
+      if (field.hideWhenEmpty && _isEmpty(value)) continue;
+      if (_renderLabel(field.labelTemplate ?? key, value).trim().isEmpty) {
+        continue;
+      }
+      final itemSchema = field.itemSchema == null
+          ? null
+          : field.itemSchema!.map(
+              (itemKey, itemField) => MapEntry(
+                itemKey,
+                WorkflowFactPillFieldSchema(
+                  type: itemField.type == 'textarea'
+                      ? 'text'
+                      : itemField.type,
+                  maxLength: itemField.maxLength,
+                  maxLines: 2,
+                  displayIcon: itemField.displayIcon,
+                  labelTemplate: itemField.labelTemplate,
+                  hideWhenEmpty: itemField.hideWhenEmpty,
+                  displayContexts: itemField.displayContexts,
+                  openMode: itemField.openMode,
+                ),
+              ),
+            );
+      schema[key] = WorkflowFactPillFieldSchema(
+        type: field.type == 'textarea' ? 'text' : field.type,
+        maxLength: field.maxLength,
+        maxLines: 2,
+        displayIcon: field.displayIcon,
+        labelTemplate: field.labelTemplate ?? '{value}',
+        hideWhenEmpty: field.hideWhenEmpty,
+        displayContexts: field.displayContexts,
+        openMode: field.openMode,
+        itemSchema: itemSchema,
+      );
+    }
+    return schema;
+  }
+
+  List<WorkflowActionButtonTransition> get _buttonTransitions => [
+    for (final action in _actions)
+      WorkflowActionButtonTransition(
+        id: action.id,
+        label: action.label,
+        iconName: action.icon,
+        tone: _toneFor(action.tone),
+      ),
+  ];
+
+  WorkflowActionTone _toneFor(String? tone) => switch (tone) {
+    'secondary' => WorkflowActionTone.secondary,
+    'destructive' => WorkflowActionTone.destructive,
+    _ => WorkflowActionTone.primary,
+  };
+
+  Color _stateTint(LoomWorkflowState? state) {
+    final tone = (state?.tone ?? '').toLowerCase();
+    if (_isOffPathState(state)) {
+      return Colors.orange;
+    }
+    return switch (tone) {
+      'positive' => Colors.green,
+      'warning' => Colors.orange,
+      'negative' => Colors.red,
+      'info' => Colors.blue,
+      _ => widget.accent,
+    };
+  }
+
+  IconData _stateIcon(LoomWorkflowState? state) {
+    if (_isOffPathState(state)) {
+      return Icons.warning_amber_outlined;
+    }
+    return switch ((state?.tone ?? '').toLowerCase()) {
+      'positive' => Icons.check_circle_outline,
+      'warning' => Icons.hourglass_top,
+      'negative' => Icons.error_outline,
+      'info' => Icons.info_outline,
+      _ => Icons.auto_awesome,
+    };
+  }
+
+  bool _isOffPathState(LoomWorkflowState? state) {
+    final stateId = _instance.currentState.toLowerCase();
+    if (state?.isTerminal == true) {
+      return true;
+    }
+    if (stateId == 'failed' ||
+        stateId == 'rolled-back' ||
+        stateId == 'error' ||
+        stateId == 'cancelled') {
+      return true;
+    }
+    return false;
+  }
+
+  LoomWorkflowState? get _currentState =>
+      widget.resolved.machine.states[_instance.currentState];
+
+  String get _currentStateLabel => _currentState?.label ?? _instance.currentState;
+
+  String? _historyFieldKey() {
+    final schema = widget.resolved.machine.instanceDataSchema;
+    for (final key in _historyFieldHints) {
+      if (schema.containsKey(key)) return key;
+    }
+    for (final key in schema.keys) {
+      if (key.toLowerCase().endsWith('history') &&
+          schema[key]!.type.toLowerCase() == 'list') {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  List<dynamic> _historyEntries() {
+    final historyKey = _historyFieldKey();
+    if (historyKey == null) return const [];
+    final raw = _instance.instanceData[historyKey];
+    return raw is List<dynamic> ? raw : const [];
+  }
+
+  String _historyLabel(dynamic entry) {
+    if (entry == null) return '';
+    if (entry is String) return entry;
+    if (entry is Map) {
+      final status = entry['status']?.toString();
+      final event = entry['event']?.toString();
+      final actor = entry['actorPersonaId']?.toString() ??
+          entry['byPersonaId']?.toString() ??
+          entry['by']?.toString();
+      final at = entry['at']?.toString();
+      final note = entry['note']?.toString();
+      final detail = status ?? event;
+      final noteText = note == null || note.isEmpty ? '' : ' · $note';
+      final actorText = actor == null || actor.isEmpty ? '' : ' · $actor';
+      final atText = at == null || at.isEmpty ? '' : ' · $at';
+      if (detail != null && detail.isNotEmpty) {
+        return '$detail$noteText$actorText$atText';
+      }
+    }
+    return entry.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = widget.modernTheme?.resolvedHeading ??
+        _foregroundFor(widget.accent);
+    final facts = _supplementalFacts();
+    final historyKey = _historyFieldKey();
+    final historyEntries = _historyEntries();
+    final state = _currentState;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _StateBadge(
+                key: ValueKey(
+                  'export-wizard-state-badge-${_instance.instanceId}-${widget.displayContext}',
+                ),
+                icon: _stateIcon(state),
+                label: _currentStateLabel,
+                foreground: _stateTint(state),
+                accent: _isOffPathState(state)
+                    ? _stateTint(state).withValues(alpha: 0.20)
+                    : null,
+              ),
+              if (_isOffPathState(state))
+                Padding(
+                  key: ValueKey(
+                    'export-wizard-off-path-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'This is an off-path export state',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: _stateTint(state),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              if (facts.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                WorkflowFactPillRow(
+                  key: ValueKey(
+                    'export-wizard-facts-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  instanceData: _instance.instanceData,
+                  instanceDataSchema: facts,
+                  displayContext: widget.displayContext,
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+              ],
+              if (historyKey != null && historyEntries.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'History',
+                  key: ValueKey(
+                    'export-wizard-history-heading-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                for (var index = 0; index < historyEntries.length; index += 1)
+                  Padding(
+                    key: ValueKey(
+                      'export-wizard-history-${_instance.instanceId}-${widget.displayContext}-$index',
+                    ),
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 16,
+                          color: foreground.withValues(alpha: 0.68),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _historyLabel(historyEntries[index]),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(color: foreground),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+              if (_loadingActions || _mutating)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: LinearProgressIndicator(
+                    key: ValueKey('export-wizard-progress-${_instance.instanceId}'),
+                  ),
+                ),
+              if (_error != null)
+                Padding(
+                  key: Key('export-wizard-error-${_instance.instanceId}'),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(_error!),
+                ),
+              if (!_loadingActions)
+                WorkflowActionButtonRow(
+                  surface: widget.displayContext == 'detail'
+                      ? 'export-wizard'
+                      : 'export-wizard-${_instance.instanceId}',
+                  availableTransitions: _buttonTransitions,
+                  onTransitionPressed: _mutating
+                      ? null
+                      : (transitionId) {
+                          final transition = _actions.firstWhere(
+                            (candidate) => candidate.id == transitionId,
+                          );
+                          unawaited(_applyTransition(transition));
+                        },
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Bespoke rendering for the searchAiAnswer card family.
 class SearchAiAnswerArchetypeCard extends StatefulWidget {
   const SearchAiAnswerArchetypeCard({

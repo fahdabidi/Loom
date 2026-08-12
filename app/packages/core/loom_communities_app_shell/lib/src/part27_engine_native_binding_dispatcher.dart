@@ -416,6 +416,18 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           displayContext: displayContext,
           visibleFieldKeys: visibleFieldKeys,
         );
+      case 'exportWizard':
+        return ExportWizardArchetypeCard(
+          key: contentKey,
+          resolved: resolved,
+          engine: engine,
+          personaId: personaId,
+          accent: accent,
+          onInstanceChanged: onInstanceChanged,
+          modernTheme: modernTheme,
+          displayContext: displayContext,
+          visibleFieldKeys: visibleFieldKeys,
+        );
       default:
         return GenericWorkflowInstanceCard(
           key: contentKey,
