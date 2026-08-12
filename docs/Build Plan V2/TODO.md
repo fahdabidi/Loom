@@ -15,9 +15,8 @@ pipeline step 7.5.
 
 ## Open
 
-- [ ] `new-ticket` — Author and dispatch Milestone 1's tickets (registry + dispatch wiring + 4 widgets); tracker now grounded in real Milestone 1.5 fixture evidence, incl. an open `searchAiAnswer` field-naming decision — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `new-ticket` — Cedar Commons HOA fast-follow: dead-end document access-request flow, overclaimed traceability row — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
-- [ ] `blocked` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — blocked on Milestones 1+1.5 and explicit user approval — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
+- [ ] `blocked` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — Milestones 1+1.5 preconditions now both met (2026-08-12); still blocked on explicit user approval — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `needs-debug-agent` — CJM.16: Member Social Space Messages-tab identity-matching gap, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
 - [ ] `needs-debug-agent` — CJM.18: Data Portability Community cross-community sign-up state leak, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
 - [ ] `needs-live-validation` — §6 step 7 product-doc reconciliation gate: confirmed closed only for Cedar Commons HOA, status unconfirmed for the other 9 communities — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
@@ -31,4 +30,5 @@ Items not tied to a formal tracker doc — the fallback location when a `call_*.
 
 ## Recently closed
 
+- [x] `new-ticket` — Milestone 1 (registry + `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard` widgets) — all 5 sub-tickets done, closed 2026-08-12. 3 of 4 widget tickets caught real bugs in independent verification the dispatch's own checks missed (a rendering-breaking `if`/`else` bug, action-button key collisions, missing test infra). All 4 archetypes reached ✅ REAL. See [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md).
 - [x] `needs-skill-dispatch` — Milestone 1.5 (Skill-dispatched JSON authoring, 7 communities) — all 7 done, closed 2026-08-12. 6 durable Skill fixes landed (`solved-patterns.md` patterns 9-14); final validator sweep across all 11 real fixtures confirmed no collateral damage. See [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md).
