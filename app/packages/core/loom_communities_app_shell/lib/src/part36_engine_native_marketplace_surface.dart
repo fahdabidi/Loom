@@ -708,3 +708,307 @@ class _EquipmentLoanArchetypeCardState
     );
   }
 }
+
+/// Bespoke rendering for the document-library card family.
+///
+/// Like existing marketplace archetypes, this card uses real transition
+/// availability from the engine and only renders each action when both the
+/// transition and the expected persona-list field are declared for this
+/// workflow definition.
+class DocumentLibraryArchetypeCard extends StatefulWidget {
+  const DocumentLibraryArchetypeCard({
+    super.key,
+    required this.resolved,
+    required this.engine,
+    required this.personaId,
+    required this.accent,
+    required this.onInstanceChanged,
+    this.modernTheme,
+    this.displayContext = 'tile',
+    this.visibleFieldKeys,
+  }) : assert(displayContext == 'tile' || displayContext == 'detail');
+
+  final EngineNativeResolvedBinding resolved;
+  final WorkflowEngineApi engine;
+  final String personaId;
+  final Color accent;
+  final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final LoomCardTheme? modernTheme;
+  final String displayContext;
+  final Set<String>? visibleFieldKeys;
+
+  @override
+  State<DocumentLibraryArchetypeCard> createState() =>
+      _DocumentLibraryArchetypeCardState();
+}
+
+class _DocumentLibraryArchetypeCardState
+    extends State<DocumentLibraryArchetypeCard> {
+  static const _actionPersonaFields = <String, String>{
+    'record-resource-open': 'openedPersonaIds',
+    'acknowledge-resource': 'acknowledgedPersonaIds',
+    'mark-resource-unread': 'acknowledgedPersonaIds',
+    'request-resource-access': 'accessRequestedPersonaIds',
+    'save-resource': 'savedPersonaIds',
+    'record-resource-download': 'downloadedPersonaIds',
+    'request-resource-follow-up': 'followUpRequestedPersonaIds',
+  };
+
+  late WorkflowInstance _instance;
+  List<LoomWorkflowTransition> _actions = const [];
+  bool _loadingActions = true;
+  bool _mutating = false;
+  String? _error;
+  int _actionRequest = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = widget.resolved.instance;
+    _loadActions();
+  }
+
+  @override
+  void didUpdateWidget(covariant DocumentLibraryArchetypeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldInstance = oldWidget.resolved.instance;
+    final newInstance = widget.resolved.instance;
+    if (oldInstance.instanceId != newInstance.instanceId ||
+        oldInstance.currentState != newInstance.currentState ||
+        oldInstance.instanceData != newInstance.instanceData ||
+        oldWidget.personaId != widget.personaId ||
+        oldWidget.engine != widget.engine) {
+      _instance = newInstance;
+      _loadActions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _actionRequest++;
+    super.dispose();
+  }
+
+  Future<void> _loadActions() async {
+    final request = ++_actionRequest;
+    if (mounted) {
+      setState(() {
+        _loadingActions = true;
+        _error = null;
+      });
+    }
+    try {
+      final instance = _instance;
+      final actions = await widget.engine.availableTransitionsAsync(
+        workflowType: instance.workflowType,
+        instanceId: instance.instanceId,
+        currentState: instance.currentState,
+        instanceData: instance.instanceData,
+        personaId: widget.personaId,
+      );
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = actions;
+        _loadingActions = false;
+      });
+    } catch (_) {
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = const [];
+        _loadingActions = false;
+        _error = 'Could not load listing actions.';
+      });
+    }
+  }
+
+  String? _requiredPersonaField(String transitionId) =>
+      _actionPersonaFields[transitionId];
+
+  bool _isActionDeclared(LoomWorkflowTransition action) {
+    final personaField = _requiredPersonaField(action.id);
+    return personaField != null &&
+        widget.resolved.machine.instanceDataSchema.containsKey(personaField);
+  }
+
+  List<WorkflowActionButtonTransition> get _buttonTransitions {
+    final transitions = <WorkflowActionButtonTransition>[];
+    for (final action in _actions) {
+      if (!_isActionDeclared(action)) continue;
+      transitions.add(
+        WorkflowActionButtonTransition(
+          id: action.id,
+          label: action.label,
+          iconName: action.icon,
+          tone: _toneFor(action.tone),
+        ),
+      );
+    }
+    return transitions;
+  }
+
+  WorkflowActionTone _toneFor(String? tone) => switch (tone) {
+    'secondary' => WorkflowActionTone.secondary,
+    'destructive' => WorkflowActionTone.destructive,
+    _ => WorkflowActionTone.primary,
+  };
+
+  Map<String, WorkflowFactPillFieldSchema> _factSchema() {
+    final schema = <String, WorkflowFactPillFieldSchema>{};
+    for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
+      final key = entry.key;
+      final field = entry.value;
+      if (widget.visibleFieldKeys != null &&
+          !widget.visibleFieldKeys!.contains(key)) {
+        continue;
+      }
+      final isUnlabeledComputedField =
+          field.formula?.trim().isNotEmpty == true &&
+          !(field.labelTemplate?.trim().isNotEmpty ?? false);
+      if (isUnlabeledComputedField) continue;
+      if (field.displayContexts != null &&
+          !field.displayContexts!.contains(widget.displayContext)) {
+        continue;
+      }
+      final value = _instance.instanceData[key];
+      if (field.hideWhenEmpty && _isEmpty(value)) continue;
+      if (_renderLabel(field.labelTemplate ?? key, value).trim().isEmpty) {
+        continue;
+      }
+      final itemSchema = field.itemSchema == null
+          ? null
+          : field.itemSchema!.map(
+              (itemKey, itemField) => MapEntry(
+                itemKey,
+                WorkflowFactPillFieldSchema(
+                  type: itemField.type == 'textarea' ? 'text' : itemField.type,
+                  maxLength: itemField.maxLength,
+                  maxLines: 2,
+                  displayIcon: itemField.displayIcon,
+                  labelTemplate: itemField.labelTemplate,
+                  hideWhenEmpty: itemField.hideWhenEmpty,
+                  displayContexts: itemField.displayContexts,
+                  openMode: itemField.openMode,
+                ),
+              ),
+            );
+      schema[key] = WorkflowFactPillFieldSchema(
+        type: field.type == 'textarea' ? 'text' : field.type,
+        maxLength: field.maxLength,
+        maxLines: 2,
+        displayIcon: field.displayIcon,
+        labelTemplate: field.labelTemplate ?? '{value}',
+        hideWhenEmpty: field.hideWhenEmpty,
+        displayContexts: field.displayContexts,
+        openMode: field.openMode,
+        itemSchema: itemSchema,
+      );
+    }
+    return schema;
+  }
+
+  Future<void> _applyTransition(LoomWorkflowTransition transition) async {
+    if (_mutating) return;
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      final result = await widget.engine.applyTransition(
+        workflowType: _instance.workflowType,
+        instanceId: _instance.instanceId,
+        transitionId: transition.id,
+        personaId: widget.personaId,
+      );
+      final next = WorkflowInstance(
+        instanceId: _instance.instanceId,
+        workflowType: _instance.workflowType,
+        currentState: result.newState,
+        instanceData: result.newInstanceData,
+        createdByPersonaId: _instance.createdByPersonaId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _instance = next;
+        _mutating = false;
+      });
+      widget.onInstanceChanged(next);
+      await _loadActions();
+      if (!mounted) return;
+      if (transition.effects.any(
+            (effect) => effect.op == 'removeFromTileGrid',
+          ) &&
+          widget.displayContext == 'detail') {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Could not update this document.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    final facts = _factSchema();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              WorkflowFactPillRow(
+                key: ValueKey(
+                  'document-library-facts-${_instance.instanceId}-${widget.displayContext}',
+                ),
+                instanceData: _instance.instanceData,
+                instanceDataSchema: facts,
+                displayContext: widget.displayContext,
+                foreground: foreground,
+                accent: widget.accent,
+              ),
+              if (_loadingActions || _mutating)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: LinearProgressIndicator(
+                    key: ValueKey(
+                      'document-library-progress-${_instance.instanceId}',
+                    ),
+                  ),
+                ),
+              if (_error != null)
+                Padding(
+                  key: ValueKey(
+                    'document-library-error-${_instance.instanceId}',
+                  ),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(_error!),
+                ),
+              if (!_loadingActions)
+                WorkflowActionButtonRow(
+                  surface: widget.displayContext == 'detail'
+                      ? 'document-library'
+                      : 'document-library-${_instance.instanceId}',
+                  availableTransitions: _buttonTransitions,
+                  onTransitionPressed: _mutating
+                      ? null
+                      : (transitionId) {
+                          final transition = _actions.firstWhere(
+                            (candidate) => candidate.id == transitionId,
+                          );
+                          unawaited(_applyTransition(transition));
+                        },
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -810,6 +810,130 @@ void main() {
   );
 
   testWidgets(
+    'generic card renders choice url field with embedded and external controls',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'url-choice-test',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <dynamic>[],
+        'instanceDataSchema': {
+          'docsUrl': {
+            'type': 'url',
+            'openMode': 'choice',
+            'displayIcon': 'open_in_new',
+            'labelTemplate': 'Project docs',
+            'displayContexts': ['tile'],
+          },
+        },
+      }, 'url-choice-link');
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'url-choice-link',
+        personaId: 'person',
+        initialInstanceData: {'docsUrl': 'https://example.org/project'},
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowInstanceCard(
+            instance: instance,
+            machine: machine,
+            engine: api,
+            personaId: 'person',
+            displayContext: 'tile',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final embeddedControl = find.byKey(
+        const ValueKey('workflow-fact-url-docsUrl-open-embedded'),
+      );
+      final externalControl = find.byKey(
+        const ValueKey('workflow-fact-url-docsUrl-open-external'),
+      );
+      expect(embeddedControl, findsOneWidget);
+      expect(externalControl, findsOneWidget);
+      expect(tester.widget<InkWell>(embeddedControl).onTap, isNotNull);
+      expect(tester.widget<InkWell>(externalControl).onTap, isNotNull);
+      expect(find.text('Open embedded'), findsOneWidget);
+      expect(find.text('Open externally'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'generic card navigates to embedded viewer when Open embedded is tapped',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'url-choice-navigate-test',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <dynamic>[],
+        'instanceDataSchema': {
+          'docsUrl': {
+            'type': 'url',
+            'openMode': 'choice',
+            'displayIcon': 'open_in_new',
+            'labelTemplate': 'Project docs',
+            'displayContexts': ['tile'],
+          },
+        },
+      }, 'url-choice-link-nav');
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'url-choice-link-nav',
+        personaId: 'person',
+        initialInstanceData: {'docsUrl': 'https://example.org/project'},
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'person',
+      )).items.singleWhere((row) => row.instanceId == id);
+
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowInstanceCard(
+            instance: instance,
+            machine: machine,
+            engine: api,
+            personaId: 'person',
+            displayContext: 'tile',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final embeddedControl = find.byKey(
+        const ValueKey('workflow-fact-url-docsUrl-open-embedded'),
+      );
+      await tester.tap(embeddedControl);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('document-library-embedded-viewer')),
+        findsOneWidget,
+      );
+      expect(find.text('Project docs'), findsOneWidget);
+      expect(find.text('Embedded web view is unavailable.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'generic card renders citation list with text labels and tappable source urls',
     (tester) async {
       final api = LocalWorkflowEngineApi(
@@ -894,6 +1018,204 @@ void main() {
       expect(secondSource, findsOneWidget);
       expect(tester.widget<InkWell>(firstSource).onTap, isNotNull);
       expect(tester.widget<InkWell>(secondSource).onTap, isNotNull);
+    },
+  );
+
+  testWidgets(
+    'documentLibrary card omits controls for missing optional persona-id fields',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'document-library-shape-test',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': [
+          {
+            'id': 'record-resource-open',
+            'label': 'Open',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'acknowledge-resource',
+            'label': 'Acknowledge',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'mark-resource-unread',
+            'label': 'Mark unread',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'request-resource-access',
+            'label': 'Request access',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'save-resource',
+            'label': 'Save',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'record-resource-download',
+            'label': 'Download',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+          {
+            'id': 'request-resource-follow-up',
+            'label': 'Request follow-up',
+            'from': ['open'],
+            'to': null,
+            'byPersonaIds': ['member'],
+          },
+        ],
+        'instanceDataSchema': {
+          'title': {
+            'type': 'text',
+            'labelTemplate': '{value}',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'resourceUrl': {
+            'type': 'url',
+            'openMode': 'choice',
+            'labelTemplate': 'Resource',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'allowedPersonaIds': {
+            'type': 'personaId[]',
+            'labelTemplate': 'Allowed',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'readPersonaIds': {
+            'type': 'personaId[]',
+            'labelTemplate': 'Read',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'downloadedPersonaIds': {
+            'type': 'personaId[]',
+            'labelTemplate': 'Downloaded',
+            'displayContexts': ['tile', 'detail'],
+          },
+        },
+      }, 'document-library-shape');
+      api.registerDefinition(machine);
+      final id = await api.createInstance(
+        workflowType: 'document-library-shape',
+        personaId: 'member',
+        initialInstanceData: {
+          'title': 'Policy',
+          'resourceUrl': 'https://example.org/policy',
+          'allowedPersonaIds': ['member'],
+          'readPersonaIds': ['member'],
+          'downloadedPersonaIds': ['member'],
+        },
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        personaId: 'member',
+      )).items.singleWhere((row) => row.instanceId == id);
+      final resolved = EngineNativeResolvedBinding(
+        instance: instance,
+        machine: machine,
+        binding: RenderBinding(
+          states: const ['open'],
+          role: 'member',
+          tabId: 'documents',
+          cardSurfaceFamily: 'documentLibrary',
+          bindingKind: 'primary',
+        ),
+        definitionBindingIndex: 0,
+      );
+
+      await tester.pumpWidget(
+        _host(
+          EngineNativeArchetypeCard(
+            contentKey: ValueKey('document-library-${instance.instanceId}'),
+            resolved: resolved,
+            engine: api,
+            communityExtensionId: 'document-library',
+            personaId: 'member',
+            accent: Colors.grey,
+            onInstanceChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Policy'), findsOneWidget);
+      expect(find.text('Download'), findsOneWidget);
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-record-resource-download',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-record-resource-open',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-acknowledge-resource',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-mark-resource-unread',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-request-resource-access',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-save-resource',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          ValueKey(
+            'document-library-${instance.instanceId}-action-request-resource-follow-up',
+          ),
+        ),
+        findsNothing,
+      );
     },
   );
 

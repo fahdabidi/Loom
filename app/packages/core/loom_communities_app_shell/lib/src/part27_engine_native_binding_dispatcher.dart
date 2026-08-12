@@ -392,6 +392,18 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           visibleFieldKeys: visibleFieldKeys,
           onInstanceChanged: onInstanceChanged,
         );
+      case 'documentLibrary':
+        return DocumentLibraryArchetypeCard(
+          key: contentKey,
+          resolved: resolved,
+          engine: engine,
+          personaId: personaId,
+          accent: accent,
+          modernTheme: modernTheme,
+          displayContext: displayContext,
+          visibleFieldKeys: visibleFieldKeys,
+          onInstanceChanged: onInstanceChanged,
+        );
       default:
         return GenericWorkflowInstanceCard(
           key: contentKey,

@@ -582,23 +582,26 @@ class WorkflowFactPillRow extends StatelessWidget {
     }
     if (type == 'url') {
       if (schema.openMode == 'external') {
-        return InkWell(
+        return _externalUrlPill(
           key: ValueKey('workflow-fact-url-$field'),
-          onTap: value == null
-              ? null
-              : () async {
-                  await launchUrl(
-                    Uri.parse(value.toString()),
-                    mode: LaunchMode.externalApplication,
-                  );
-                },
-          child: _SurfaceFactPill(
-            icon: _iconForName(schema.displayIcon),
-            label: label,
-            foreground: foreground,
-            accent: accent,
-            maxLines: schema.maxLines,
-          ),
+          value: value,
+          label: label,
+          foreground: foreground,
+          iconName: schema.displayIcon,
+          maxLines: schema.maxLines,
+        );
+      }
+      if (schema.openMode == 'choice') {
+        return _choiceUrlPill(
+          context: context,
+          value: value,
+          embeddedLabel: 'Open embedded',
+          externalLabel: 'Open externally',
+          externalKey: ValueKey('workflow-fact-url-$field-open-external'),
+          embeddedKey: ValueKey('workflow-fact-url-$field-open-embedded'),
+          title: label,
+          externalIcon: schema.displayIcon,
+          foreground: foreground,
         );
       }
       return _SurfaceFactPill(
@@ -636,25 +639,33 @@ class WorkflowFactPillRow extends StatelessWidget {
           if (memberType == 'url') {
             if (member.value.openMode == 'external') {
               memberWidgets.add(
-                InkWell(
+                _externalUrlPill(
                   key: ValueKey(
                     'workflow-fact-list-url-$field-$index-${member.key}',
                   ),
-                  onTap: memberValue == null
-                      ? null
-                      : () async {
-                          await launchUrl(
-                            Uri.parse(memberValue.toString()),
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                  child: _SurfaceFactPill(
-                    icon: _iconForName(member.value.displayIcon),
-                    label: memberLabel,
-                    foreground: foreground,
-                    accent: accent,
-                    maxLines: member.value.maxLines,
+                  value: memberValue,
+                  label: memberLabel,
+                  foreground: foreground,
+                  iconName: member.value.displayIcon,
+                  maxLines: member.value.maxLines,
+                ),
+              );
+            } else if (member.value.openMode == 'choice') {
+              memberWidgets.add(
+                _choiceUrlPill(
+                  context: context,
+                  value: memberValue,
+                  embeddedLabel: 'Open embedded',
+                  externalLabel: 'Open externally',
+                  externalKey: ValueKey(
+                    'workflow-fact-list-url-$field-$index-${member.key}-open-external',
                   ),
+                  embeddedKey: ValueKey(
+                    'workflow-fact-list-url-$field-$index-${member.key}-open-embedded',
+                  ),
+                  title: memberLabel,
+                  externalIcon: member.value.displayIcon,
+                  foreground: foreground,
                 ),
               );
             } else {
@@ -714,6 +725,176 @@ class WorkflowFactPillRow extends StatelessWidget {
       foreground: foreground,
       accent: accent,
       maxLines: schema.maxLines,
+    );
+  }
+
+  Widget _externalUrlPill({
+    required Key key,
+    required dynamic value,
+    required String label,
+    required Color foreground,
+    String? iconName,
+    int? maxLines,
+  }) {
+    return InkWell(
+      key: key,
+      onTap: value == null
+          ? null
+          : () async {
+              await launchUrl(
+                Uri.parse(value.toString()),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+      child: _SurfaceFactPill(
+        icon: _iconForName(iconName),
+        label: label,
+        foreground: foreground,
+        accent: accent,
+        maxLines: maxLines ?? 1,
+      ),
+    );
+  }
+
+  Widget _choiceUrlPill({
+    required BuildContext context,
+    required dynamic value,
+    required String embeddedLabel,
+    required String externalLabel,
+    required Key externalKey,
+    required Key embeddedKey,
+    required String title,
+    required String? externalIcon,
+    required Color foreground,
+  }) {
+    final url = value?.toString();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        InkWell(
+          key: embeddedKey,
+          onTap: url == null
+              ? null
+              : () async => _openUrlInApp(
+                    context: context,
+                    url: url,
+                    title: title,
+                  ),
+          child: _SurfaceFactPill(
+            icon: Icons.open_in_new,
+            label: embeddedLabel,
+            foreground: foreground,
+            accent: accent,
+          ),
+        ),
+        _externalUrlPill(
+          key: externalKey,
+          value: url,
+          label: externalLabel,
+          foreground: foreground,
+          iconName: externalIcon,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openUrlInApp({
+    required BuildContext context,
+    required String url,
+    required String title,
+  }) {
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => _DocumentLibraryEmbeddedUrlViewer(url: url, title: title),
+      ),
+    );
+  }
+}
+
+class _DocumentLibraryEmbeddedUrlViewer extends StatefulWidget {
+  const _DocumentLibraryEmbeddedUrlViewer({
+    required this.url,
+    required this.title,
+  });
+
+  final String url;
+  final String title;
+
+  @override
+  State<_DocumentLibraryEmbeddedUrlViewer> createState() =>
+      _DocumentLibraryEmbeddedUrlViewerState();
+}
+
+class _DocumentLibraryEmbeddedUrlViewerState
+    extends State<_DocumentLibraryEmbeddedUrlViewer> {
+  WebViewController? _controller;
+  String? _error;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_initController());
+  }
+
+  Future<void> _initController() async {
+    final uri = Uri.tryParse(widget.url);
+    if (uri == null || uri.scheme.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'Invalid URL.';
+        });
+      }
+      return;
+    }
+    if (WebViewPlatform.instance == null) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'Embedded web view is unavailable.';
+        });
+      }
+      return;
+    }
+    try {
+      final controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..loadRequest(uri);
+      if (mounted) {
+        setState(() {
+          _controller = controller;
+          _loading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = '$error';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget content;
+    if (_loading) {
+      content = const Center(child: CircularProgressIndicator());
+    } else if (_error != null) {
+      content = Center(child: Text(_error!));
+    } else if (_controller == null) {
+      content = const Center(child: Text('Could not create embedded viewer.'));
+    } else {
+      content = WebViewWidget(controller: _controller!);
+    }
+    return Scaffold(
+      key: const ValueKey('document-library-embedded-viewer'),
+      appBar: AppBar(title: Text(widget.title)),
+      body: content,
     );
   }
 }

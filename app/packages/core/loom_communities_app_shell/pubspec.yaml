@@ -18,6 +18,7 @@ dependencies:
     path: ../loom_workflow_engine
   sqlite3_flutter_libs: ^0.5.42
   url_launcher: ^6.3.2
+  webview_flutter: ^4.13.1
 
 dev_dependencies:
   flutter_test:
