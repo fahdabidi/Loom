@@ -2622,8 +2622,8 @@
             ]
           },
           // NEEDS IMPLEMENTATION (platform service): checksum generation and transfer-ID generation.
-          // checksum and transferId are declared below and never written by any effect; these guards keep
-          // transfer/confirmation unavailable until a real service supplies them.
+          // checksum and transferId are declared below and never written by any effect. Per solved pattern
+          // 14, transfer progress is intentionally not gated on either unavailable platform-service value.
           {
             "id": "start-export-transfer",
             "label": "Start transfer",
@@ -2631,11 +2631,7 @@
             "tone": "primary",
             "from": ["ready"],
             "to": "transferring",
-            "guard": {
-              "allowedPersonaIds": ["hoa-board"],
-              "instanceDataEquals": { "key": "checksumStatus", "value": "passed" },
-              "formula": "if(checksum == null, false, true)"
-            },
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
             "effects": [
               { "op": "set", "key": "exportStatus", "value": "Transfer requested" },
               {
@@ -2652,10 +2648,7 @@
             "tone": "primary",
             "from": ["transferring"],
             "to": "transferred",
-            "guard": {
-              "allowedPersonaIds": ["hoa-board"],
-              "formula": "if(transferId == null, false, true)"
-            },
+            "guard": { "allowedPersonaIds": ["hoa-board"] },
             "effects": [
               { "op": "set", "key": "exportStatus", "value": "Transferred" },
               {
