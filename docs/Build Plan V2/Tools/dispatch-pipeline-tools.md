@@ -1,10 +1,10 @@
 # Dispatch pipeline — script-by-script reference
 
-The seven scripts in `code/`, in the order you actually touch them during one dispatch round. Each section
+The eight scripts in `code/`, in the order you actually touch them during one dispatch round. Each section
 covers: what it does, why it exists (the real incident, where applicable), usage, and the exact guard/exit
-behavior. See `README.md` for the end-to-end worked recipe that chains all seven together.
+behavior. See `README.md` for the end-to-end worked recipe that chains them together.
 
-All seven expect to live at `<repo-root>/data/<script>.sh` — they compute `REPO_ROOT` as
+All eight expect to live at `<repo-root>/data/<script>.sh` — they compute `REPO_ROOT` as
 `$(dirname "$0")/..`, so keep them one directory below your repo root (see `README.md` "Setup in a new
 project").
 
@@ -26,6 +26,17 @@ bash data/call_implementation_agent.sh <path-to-ticket-file> [--fresh]
 - `CODEX_IMPLEMENTATION_PROFILE=<name>` overrides the model profile for one call;
   `CODEX_IMPLEMENTATION_PROFILE=""` falls back to Codex's own built-in default model.
 - `CODEX_IMPLEMENTATION_SANDBOX=<mode>` overrides sandbox mode (default `workspace-write`).
+- `DISPATCH_TRACKER_FILE=<path>`/`DISPATCH_TODO_ITEM=<title>` (optional, shared identically by all three
+  agent-dispatch scripts — §1, §2, §3): names which tracker doc and which `reference-tracker-template.md`
+  §8 row this dispatch serves. When set: at dispatch start, appends a `DISPATCH_STARTED` line to
+  `.codex-logs/.dispatch_todo_log.log` and does a non-blocking grep for `DISPATCH_TODO_ITEM`'s text inside
+  `DISPATCH_TRACKER_FILE`, warning (not blocking) if it isn't found there yet. At dispatch completion,
+  always prints a fixed reminder banner (regardless of whether the two vars were set) pointing at README's
+  pipeline step 7.5 — fold the agent's `## Proposed next steps` into the tracker and `TODO.md` yourself; the
+  banner only makes that step impossible to forget, it never edits any tracker file itself. Omitting both
+  vars is fully supported (existing call sites/muscle memory keep working unchanged) — the script just
+  prints a one-line reminder that you're responsible for deciding whether `docs/Build Plan V2/TODO.md` needs
+  a new entry.
 
 **Model default:** `gpt5_3_spark_xhigh` (GPT-5.3-Codex-Spark @ `xhigh` reasoning effort). Full model history
 is kept in the script's own header for reference — every profile ever used stays configured and reachable
@@ -87,11 +98,55 @@ Same flags/env-override shape as the Implementation Agent script
 HEAD movement at all (not just a ≥20% file-count drop) prints a `VIOLATION: HEAD moved` banner, since this
 agent should never commit anything, ever. A clean run also prints nothing under "working tree dirty" — the
 report file itself is the only expected change, and the script prints every line of `git status --short` if
-the tree isn't clean so you can eyeball exactly what changed beyond the report.
+the tree isn't clean so you can eyeball exactly what changed beyond the report. **Not a difference:** the
+`DISPATCH_TRACKER_FILE`/`DISPATCH_TODO_ITEM` TODO-tracking hooks (§1) are identical here — a Root Cause Agent
+dispatch is exactly as TODO-trackable as an Implementation Agent one (`needs-debug-agent` items in a
+tracker's §8 queue are usually what this script resolves).
 
 ---
 
-## 3. `wsl_dispatch_tracker.sh` — track and clean up the WSL processes a dispatch spawns
+## 3. `call_skill_authoring_agent.sh` — dispatch the community-authoring Skill (zero-repo-access)
+
+**Role:** dispatches the `loom-calendar-experience-authoring` Skill (`community-authoring-skill-tool.md`)
+against a target product doc, emulating a zero-tool-access external provider (ChatGPT-equivalent) via Codex
+CLI instead of an actual external provider. Full brief:
+`.agents/skills/loom-calendar-experience-authoring/codex-dispatch/INSTRUCTIONS.md`.
+
+**Usage:**
+```bash
+bash data/call_skill_authoring_agent.sh <path-to-target-doc-file> [label]
+```
+No `--fresh`/resume option — every dispatch is a fresh, stateless session by design, matching the
+"zero-tool-access external provider" premise this channel emulates. `[label]` defaults to the target file's
+basename plus a timestamp.
+
+**Isolation mechanism (what makes this "zero-repo-access", not just zero-tools):** `-C <fresh scratch dir
+under $HOME, outside the repo>`, `--add-dir` never granted, `--skip-git-repo-check`, `--ephemeral` (no
+persisted session files). The dispatched agent has no local Loom repo content at all and must fetch every
+`docs/references/**` file it needs live from `fahdabidi/Loom`@`main` via Codex's built-in `github.fetch_file`
+tool. A mandatory preflight refuses to dispatch if local `HEAD` doesn't match `origin/main` (override with
+`ALLOW_STALE_PUSH=1`) — this channel's entire premise depends on `docs/references/**` being pushed and
+current, or the agent silently authors against stale docs.
+
+**No live validator in this channel** — confirmed by direct test that this sandbox's shell-level network
+access cannot reach arbitrary HTTPS endpoints; only the built-in GitHub-fetch tool reliably reaches the
+network. The agent runs a rigorous manual self-check instead and says so plainly; real validator confirmation
+is the dispatching session's job, immediately after the agent returns its JSON.
+
+**Model default:** `gpt5_6_sol_xhigh` (GPT-5.6-Sol @ `xhigh`), override via `CODEX_SKILL_AUTHORING_PROFILE`.
+
+**Output:** `.codex-logs/skill-authoring/<label>/` — `prompt.md` (what was sent), `events.jsonl` (the full
+JSONL event stream), `final_answer.md` (the agent's captured final message, via `--output-last-message`).
+Never touches git — its entire output is text for you to review and, per this repo's standing rule that
+community JSON is only ever produced by dispatching this Skill and never hand-authored, only turn into a real
+`docs/references/communities/*.jsonc` file with the user's fresh, explicit, per-instance approval.
+
+**Shares the same `DISPATCH_TRACKER_FILE`/`DISPATCH_TODO_ITEM` TODO-tracking hooks as §1** (see §1's own
+description) — identical start/finish logging and completion reminder banner.
+
+---
+
+## 4. `wsl_dispatch_tracker.sh` — track and clean up the WSL processes a dispatch spawns
 
 **Why it exists:** WSL2's own idle-timeout teardown has repeatedly failed to reclaim orphaned
 `wsl.exe`/`wslhost.exe` processes in this environment (observed surviving 5+ hours). This script tracks
@@ -124,7 +179,7 @@ explicitly excluded by name-match filtering; killing either would take down far 
 
 ---
 
-## 4. `watch_dispatch_log.sh` — self-terminating completion watcher
+## 5. `watch_dispatch_log.sh` — self-terminating completion watcher
 
 **Why it exists:** the naive pattern — a `Monitor`/`tail -F <log> | grep -E '...'` watch — never exits on its
 own. `grep` without `-m1` doesn't stop on the first match (intentionally: a mid-run vsock alert is noise you
@@ -148,7 +203,7 @@ ending the watch on its own, no separate stop call needed.
 
 ---
 
-## 5. `handoff_gate.sh` — pre-verification handoff gate
+## 6. `handoff_gate.sh` — pre-verification handoff gate
 
 **Why it exists:** a real incident cost three redundant dispatch rounds re-fixing a file that was *already*
 fixed, because it sat uncommitted (untracked, `??`) across multiple rounds — `git diff` shows nothing for an
@@ -176,7 +231,7 @@ checks and reports; you still run steps 1-2 above yourself if they're missing.
 
 ---
 
-## 6. `wsl_slot.sh` — concurrency gate for ad-hoc `wsl.exe` calls
+## 7. `wsl_slot.sh` — concurrency gate for ad-hoc `wsl.exe` calls
 
 **Why it exists:** WSL2 enforces a hard, non-tunable cap on total vsock connections (confirmed by WSL
 maintainers — no `.wslconfig` key, no registry setting reaches it). Each fresh `wsl.exe` invocation consumes
@@ -201,7 +256,7 @@ it works only as long as ad-hoc `wsl.exe` calls are consistently issued through 
 
 ---
 
-## 7. `verify_apk_freshness.sh` — stale-build guard (Flutter/Gradle-specific, generalizable)
+## 8. `verify_apk_freshness.sh` — stale-build guard (Flutter/Gradle-specific, generalizable)
 
 **Why it exists:** a real incident where `flutter build apk --debug` reported success but silently reused a
 9-day-old cached APK — Gradle's incremental up-to-date check was fooled, most likely because the repo lives

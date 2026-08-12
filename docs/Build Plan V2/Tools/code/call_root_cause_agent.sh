@@ -128,6 +128,26 @@ echo "===================================================="
 
 cd "$REPO_ROOT"
 
+# --- TODO-tracking hooks (optional; see docs/Build Plan V2/Tools/reference-tracker-
+# template.md's §8 "Live TODO / Next Steps Queue" -- see call_implementation_agent.sh's
+# own header comment for the full rationale, identical behavior here.
+mkdir -p "$REPO_ROOT/.codex-logs"
+TODO_LOG="$REPO_ROOT/.codex-logs/.dispatch_todo_log.log"
+echo "DISPATCH_STARTED $(date -u +%Y-%m-%dT%H:%M:%SZ) script=call_root_cause_agent.sh brief=\"$PROMPT_FILE\" tracker=\"${DISPATCH_TRACKER_FILE:-}\" item=\"${DISPATCH_TODO_ITEM:-}\"" >> "$TODO_LOG"
+if [ -n "${DISPATCH_TRACKER_FILE:-}" ]; then
+  if [ -f "$REPO_ROOT/$DISPATCH_TRACKER_FILE" ]; then
+    if [ -n "${DISPATCH_TODO_ITEM:-}" ] && ! grep -qF "$DISPATCH_TODO_ITEM" "$REPO_ROOT/$DISPATCH_TRACKER_FILE"; then
+      echo "WARNING: DISPATCH_TODO_ITEM text not found in $DISPATCH_TRACKER_FILE -- confirm it's already" >&2
+      echo "         queued in that tracker's §8 Live TODO / Next Steps Queue (wording may just differ)." >&2
+    fi
+  else
+    echo "WARNING: DISPATCH_TRACKER_FILE '$DISPATCH_TRACKER_FILE' not found relative to repo root." >&2
+  fi
+else
+  echo "NOTE: no DISPATCH_TRACKER_FILE set for this dispatch -- you decide whether" >&2
+  echo "      docs/Build Plan V2/TODO.md needs a new entry once this completes." >&2
+fi
+
 mkdir -p .codex-logs
 echo "$$" > .codex-logs/.last_dispatch.pid
 
@@ -181,3 +201,18 @@ if [ -n "$DIRTY" ]; then
   echo "not to silently commit or discard:"
   echo "$DIRTY" | sed 's/^/  /'
 fi
+
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS" >> "$TODO_LOG"
+echo "##################################################################"
+echo "# NEXT STEP: fold this dispatch's outcome into the TODO record. #"
+echo "##################################################################"
+if [ -n "${DISPATCH_TRACKER_FILE:-}" ]; then
+  echo "Review this agent's diagnosis/report against your own read, then update"
+  echo "'$DISPATCH_TRACKER_FILE''s §8 Live TODO / Next Steps Queue and docs/Build Plan V2/TODO.md's rollup"
+  echo "accordingly (typically: resolve the needs-debug-agent row, add a new-ticket row for the fix)."
+else
+  echo "No DISPATCH_TRACKER_FILE was set -- decide whether docs/Build Plan V2/TODO.md needs a new entry"
+  echo "for this dispatch's outcome."
+fi
+
+exit "$STATUS"

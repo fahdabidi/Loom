@@ -43,6 +43,9 @@ include, verbatim or adapted:
   `git commit -am`."
 - Any invariant that must survive unchanged (e.g. "do not change any existing `ValueKey`s — grep before and
   after, confirm the old key set is a subset of the new one").
+- "Never edit any tracker `.md` file (e.g. `docs/Build Plan V2/TODO.md`, or this ticket's own parent tracker)
+  — report proposed next steps in your STATUS.md's `## Proposed next steps` section instead. Tracker files
+  are orchestrator-owned; your job is to propose, not to promote your own proposal into the trusted record."
 
 ## Required verification
 
@@ -85,9 +88,23 @@ multiple. Naming it in advance keeps commit history consistent across many indep
 Tells the agent exactly what machine-checkable status file to write, and its exact shape — always
 `data/v3_ticket_<slug>_STATUS.md` (or your own naming convention), always covering: what was actually
 changed (file:line, and any judgment calls made — "state which shape you used and why"), the verification
-results (not just "passed" — the actual counts/output), and the commit outcome (hash, or "staged, not
-committed" + the exact blocker). This is what you read first when the dispatch completes — but never treat
-it as sufficient evidence on its own; see README's core discipline.
+results (not just "passed" — the actual counts/output), the commit outcome (hash, or "staged, not
+committed" + the exact blocker), and a mandatory `## Proposed next steps` block. This is what you read first
+when the dispatch completes — but never treat it as sufficient evidence on its own; see README's core
+discipline.
+
+The `## Proposed next steps` block is a **proposal, not a tracker edit** (the agent never writes to any
+tracker `.md` file itself — see "Do not do" above). Fixed shape, zero or more lines, each tagged from the
+taxonomy in `reference-tracker-template.md`'s §8 (`new-milestone` / `new-ticket` / `needs-verification` /
+`needs-debug-agent` / `needs-live-validation` / `needs-skill-dispatch` / `blocked` / `milestone-complete`):
+
+    ## Proposed next steps
+    - [<tag>] <one-line description of what should happen next and why>
+    (or, explicitly: "None — this ticket's scope is fully closed by the verification above.")
+
+You read this during your own independent-verification step and, for whatever you confirm, write it into the
+parent tracker's §8 queue and `docs/Build Plan V2/TODO.md`'s rollup yourself — see `reference-tracker-
+template.md`'s §8 "How entries get here" for the exact promotion flow.
 ```
 
 ## Worked example (real, shipped)
@@ -180,6 +197,11 @@ links (CJM.3)`.
 
     ## Commit
     Commit hash, or "staged, not committed" + exact blocker.
+
+    ## Proposed next steps
+    - [needs-verification] Independent flutter analyze/test re-run outside this sandbox, per README's core
+      discipline -- not yet done by this agent.
+    (no other items -- this ticket's own scope, CJM.3, is fully closed by the verification above)
 ```
 
 This ticket shipped cleanly on the first dispatch, independently re-verified, no follow-up round needed —

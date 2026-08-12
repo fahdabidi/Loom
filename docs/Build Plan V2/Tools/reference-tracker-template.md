@@ -76,6 +76,46 @@ aspiration, so it doesn't quietly get skipped once the ticket list empties out.
 The actual sequence you intend to dispatch in, and why (dependency order, risk order, or just the order that
 unblocks the most follow-on work fastest). Update this as reality diverges from the plan — a stale execution
 order is worse than none, since it actively misleads whoever reads it next.
+
+## 8. Live TODO / Next Steps Queue
+
+The one section every dispatch touches. A flat table, newest-relevant first — same "scan-first" shape as §4,
+for the same reason: the most common read pattern is "what's left," and prose buries that answer.
+
+| Status | Tag | Item | Source | Date |
+|---|---|---|---|---|
+| ⬜ Open | `<tag>` | <one-line item> | <ticket/dispatch label, or "user-identified"> | YYYY-MM-DD |
+
+**Tag taxonomy** (fixed — do not invent new tags; if none fit, that's a sign the item needs to be split or
+isn't actually actionable yet):
+
+| Tag | Meaning |
+|---|---|
+| `new-milestone` | A new milestone/phase should be added to this effort |
+| `new-ticket` | A new ticket needs to be authored and dispatched |
+| `needs-verification` | Code/JSON was produced but independent verification hasn't completed yet |
+| `needs-debug-agent` | Something is unexplained/resisting normal investigation; dispatch the Root Cause Agent |
+| `needs-live-validation` | Needs a real device/emulator (or live validator endpoint) walkthrough, not static checks alone |
+| `needs-skill-dispatch` | The community-authoring Skill needs to be invoked (any channel) against some target |
+| `blocked` | Can't proceed until a named external thing resolves |
+| `milestone-complete` | Every ticket in the current phase is done; the tracker should advance |
+
+**How entries get here** — propose-then-promote, never agent-written directly:
+1. A dispatched Implementation Agent's STATUS.md includes a `## Proposed next steps` block (see
+   `reference-ticket-template.md`) — a proposal, not a tracker edit. The agent never writes to this section
+   itself.
+2. During your own mandatory independent-verification step (README.md's core pipeline, step 7), review the
+   agent's proposal against what you actually found. Write the confirmed items here yourself, with today's
+   date and the ticket/dispatch label as `Source`.
+3. Add a matching one-line rollup entry to `docs/Build Plan V2/TODO.md`, linking back to this section.
+4. When an item is resolved, flip Status to `✅ Closed` (date it) rather than deleting the row — this table
+   is expand-only like §3, for the same reason: an honest running record beats a retroactively-tidied one.
+   Remove the closed row's rollup line from `TODO.md` once closed.
+
+Every `call_*.sh` dispatch script accepts optional `DISPATCH_TRACKER_FILE`/`DISPATCH_TODO_ITEM` environment
+variables naming which tracker and which row a given dispatch serves — this only logs and reminds (see
+`dispatch-pipeline-tools.md`), it does not write to this table for you. Filling the table in is still your
+job, every time.
 ```
 
 ## Why this shape, specifically
@@ -94,3 +134,15 @@ order is worse than none, since it actively misleads whoever reads it next.
 - **§5 (dispatch mechanics) is restated in full, not just linked**, because a tracker read cold at the start
   of a new session (the most common real read pattern in this project's actual history) shouldn't require
   cross-referencing a second doc just to remember how to run the very next command.
+- **§8 (Live TODO / Next Steps Queue) exists because nothing else in this pipeline forces a tracker to stay
+  current.** Every earlier section here is written once and read many times; §8 is the one section that must
+  change after every single dispatch, or the tracker silently drifts from reality — exactly the failure mode
+  that motivated adding it (a real dispatched agent's own recommended next step, or a real cross-effort
+  finding, going unrecorded because nothing structurally required writing it down). It is deliberately
+  **propose-then-promote, not agent-written directly**: an Implementation Agent proposing next steps in its
+  own STATUS.md and an orchestrator promoting the confirmed ones into this table are different levels of
+  trust, and collapsing them would mean an unverified claim could land in what's meant to be this effort's
+  trusted historical record — the same reasoning that already keeps community JSON and spec-doc edits each
+  restricted to exactly one authorized writer. It is a fixed, small tag taxonomy rather than free text so a
+  future scan (human or scripted) can answer "how many things are blocked on a debug agent right now" without
+  re-reading every row's prose.

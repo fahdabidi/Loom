@@ -321,6 +321,28 @@ echo "===================================================="
 
 cd "$REPO_ROOT"
 
+# --- TODO-tracking hooks (optional; see docs/Build Plan V2/Tools/reference-tracker-
+# template.md's §8 "Live TODO / Next Steps Queue" and reference-ticket-template.md's
+# "## Proposed next steps" -- this only logs and reminds, it never writes tracker
+# content itself; folding a dispatch's outcome into a tracker is always a manual,
+# orchestrator-owned step, done during independent verification, not automated here.
+mkdir -p "$REPO_ROOT/.codex-logs"
+TODO_LOG="$REPO_ROOT/.codex-logs/.dispatch_todo_log.log"
+echo "DISPATCH_STARTED $(date -u +%Y-%m-%dT%H:%M:%SZ) script=call_implementation_agent.sh ticket=\"$PROMPT_FILE\" tracker=\"${DISPATCH_TRACKER_FILE:-}\" item=\"${DISPATCH_TODO_ITEM:-}\"" >> "$TODO_LOG"
+if [ -n "${DISPATCH_TRACKER_FILE:-}" ]; then
+  if [ -f "$REPO_ROOT/$DISPATCH_TRACKER_FILE" ]; then
+    if [ -n "${DISPATCH_TODO_ITEM:-}" ] && ! grep -qF "$DISPATCH_TODO_ITEM" "$REPO_ROOT/$DISPATCH_TRACKER_FILE"; then
+      echo "WARNING: DISPATCH_TODO_ITEM text not found in $DISPATCH_TRACKER_FILE -- confirm it's already" >&2
+      echo "         queued in that tracker's §8 Live TODO / Next Steps Queue (wording may just differ)." >&2
+    fi
+  else
+    echo "WARNING: DISPATCH_TRACKER_FILE '$DISPATCH_TRACKER_FILE' not found relative to repo root." >&2
+  fi
+else
+  echo "NOTE: no DISPATCH_TRACKER_FILE set for this dispatch -- you decide whether" >&2
+  echo "      docs/Build Plan V2/TODO.md needs a new entry once this completes." >&2
+fi
+
 # Record this script's OWN pid so a caller that backgrounds this whole script
 # (setsid nohup bash call_implementation_agent.sh ... & disown) has a
 # reliable, repeatable way to poll for completion later -- `while kill -0
@@ -455,6 +477,19 @@ if [ "$POST_HEAD" != "$PRE_HEAD" ] && [ "$PRE_TRACKED_COUNT" -gt 0 ]; then
     echo "never --hard, so any genuinely new uncommitted work is preserved):"
     echo "  git.exe reset <last-good-commit>"
   fi
+fi
+
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS" >> "$TODO_LOG"
+echo "##################################################################"
+echo "# NEXT STEP: fold this dispatch's outcome into the TODO record. #"
+echo "##################################################################"
+if [ -n "${DISPATCH_TRACKER_FILE:-}" ]; then
+  echo "Review the agent's STATUS.md '## Proposed next steps' against what you actually verified, then"
+  echo "update '$DISPATCH_TRACKER_FILE''s §8 Live TODO / Next Steps Queue and docs/Build Plan V2/TODO.md's"
+  echo "rollup accordingly. Do this every time, even when nothing needs to change."
+else
+  echo "No DISPATCH_TRACKER_FILE was set -- decide whether docs/Build Plan V2/TODO.md needs a new entry"
+  echo "for this dispatch's outcome."
 fi
 
 exit "$STATUS"

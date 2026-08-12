@@ -37,7 +37,7 @@ cheap enough to actually follow every round instead of skipping it under time pr
 | **Skill Retrospective** | `SendMessage` resuming the *original* authoring agent (not a fresh one) | N/A — resumes existing session | Turns a judge-found defect into a durable prompting/doc fix, by asking the agent that made the mistake why | `skill-retrospective-tool.md` |
 | **Deterministic judge CLIs** (B11–B25) | Plain Dart CLI binaries, no LLM | N/A | Structural/grammar/evidence-completeness checks that don't need judgment calls | `ux-gate-judge-tools.md` |
 | **Community package validator** | Plain Dart CLI + optional HTTP server | N/A | JSON-grammar guard: catches invalid workflow shapes, missing guards, bad references | `validator-tool.md` |
-| **Community-authoring Skill** | Prompt bundle (`SKILL.md` + docs), dispatched via `Agent` tool or a zero-tool-access external channel (e.g. custom GPT) | Inherit dispatching session's model | Authors a new engine-native JSON package from a product doc, following a fixed procedure + a growing "solved patterns" bank | `community-authoring-skill-tool.md` |
+| **Community-authoring Skill** | Prompt bundle (`SKILL.md` + docs), dispatched via the `Agent` tool, a zero-tool-access external channel (e.g. custom GPT), or `call_skill_authoring_agent.sh` (Codex CLI, zero-repo-access, live GitHub fetch) | Inherit dispatching session's model, or GPT-5.6-Sol @ `xhigh` for the Codex channel | Authors a new engine-native JSON package from a product doc, following a fixed procedure + a growing "solved patterns" bank | `community-authoring-skill-tool.md` |
 
 Two roles here (Regression Impact Judge, Skill Output Judge, LLM Vision UX Judge Phase A, Skill Retrospective)
 are **prompt-defined, not code** — there is no registered custom subagent type file backing them (this repo
@@ -54,6 +54,7 @@ docs/Build Plan V2/Tools/
 ├── code/                                  <- actual, runnable scripts (copy to <repo>/data/)
 │   ├── call_implementation_agent.sh       <- dispatch the Implementation Agent
 │   ├── call_root_cause_agent.sh           <- dispatch the Root Cause Agent
+│   ├── call_skill_authoring_agent.sh      <- dispatch the community-authoring Skill (Codex, zero-repo-access)
 │   ├── wsl_dispatch_tracker.sh            <- baseline/capture/cleanup WSL process tracking
 │   ├── watch_dispatch_log.sh              <- self-terminating completion watcher
 │   ├── handoff_gate.sh                    <- pre-verification handoff gate (5 checks)
@@ -171,12 +172,20 @@ ticket; the only things that change per-round are `<ticket>` and `<label>`.
 ```bash
 # 0. Author the ticket file first (see reference-ticket-template.md for the exact section
 #    structure and a filled-out worked example). Save it as data/v3_ticket_<slug>.md.
+#    If this ticket serves a tracker doc (reference-tracker-template.md's §8 queue), the row for
+#    it should already exist there BEFORE you dispatch -- see step 2's env vars below.
 
 # 1. Baseline — snapshot the WSL process set before this dispatch starts
 bash data/wsl_dispatch_tracker.sh baseline <label>
 
 # 2. Dispatch, backgrounded — NEVER run call_implementation_agent.sh in the foreground; it
-#    blocks your session for the full dispatch duration (often 5-20+ minutes)
+#    blocks your session for the full dispatch duration (often 5-20+ minutes).
+#    DISPATCH_TRACKER_FILE/DISPATCH_TODO_ITEM (optional but recommended) name which tracker and
+#    which §8 queue row this dispatch serves -- every call_*.sh script logs a start/finish marker
+#    and prints a completion reminder for step 7.5 below when these are set. Omit only for a
+#    genuinely untracked, one-off dispatch.
+DISPATCH_TRACKER_FILE="docs/Build Plan V2/<Your Tracker>.md" \
+DISPATCH_TODO_ITEM="<the exact §8 row title>" \
 setsid nohup bash data/call_implementation_agent.sh data/v3_ticket_<slug>.md --fresh \
   < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown
 sleep 3   # let the dispatch's own WSL session actually establish before capturing
@@ -206,6 +215,14 @@ bash data/handoff_gate.sh <label>
 #    - for a shared-code change: a dedicated Regression Impact Judge dispatch
 #      (regression-impact-judge-tool.md) against every real consumer
 #    - for a UI-touching fix: live re-verification on a real device/emulator, not analyze/test alone
+
+# 7.5. Fold the outcome into the TODO record — do this every time, even when nothing changes.
+#      Read the dispatch's STATUS.md "## Proposed next steps" block (reference-ticket-template.md),
+#      weigh each item against what you actually verified in step 7, then write the confirmed ones
+#      into the tracker's §8 Live TODO / Next Steps Queue (reference-tracker-template.md) and add/
+#      remove the matching one-line rollup in docs/Build Plan V2/TODO.md. This is never automatic —
+#      the dispatch script's own completion banner (see the Guards table below) exists only to make
+#      this step impossible to silently forget, not to do it for you.
 ```
 
 **Session-wide WSL concurrency budget: cap total concurrent `wsl.exe` subprocesses at 4.** One dispatch (step
@@ -225,6 +242,8 @@ pattern exhausts).
 | APK freshness guard | A built debug APK actually contains a just-added symbol, not a stale cached build | `bash data/verify_apk_freshness.sh <apk> <must-contain-string>` | Every named string found ≥1 time in the compiled kernel |
 | JSON/grammar validator | A community/workflow JSON package is structurally valid (guards present, no dangling references, no destructive exits without a guard) | `dart run loom_ux_judges:community_package_validator --package <file>` | Zero errors (warnings are advisory) |
 | B25 evidence/UX gates | Screenshot coverage, persona coverage, interaction-model correctness, LLM-vision review freshness | see `ux-gate-judge-tools.md` for the full chain | `production_ux_judge.dart` exits 0 |
+| TODO-fold reminder | Every dispatch (`DISPATCH_TRACKER_FILE` set or not) prints a fixed completion banner naming step 7.5 above — never silently skippable | built into all three `call_*.sh` scripts, printed unconditionally right before exit | Not a pass/fail gate — a reminder; the real gate is you actually doing step 7.5 |
+| Tracker-queue consistency check | `DISPATCH_TODO_ITEM`'s text actually appears in `DISPATCH_TRACKER_FILE` before dispatch starts | built into all three `call_*.sh` scripts, a non-blocking grep at dispatch start | Warns only if not found — does not block the dispatch, since prose wording can legitimately differ |
 
 ## Recommended models
 

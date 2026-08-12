@@ -161,3 +161,13 @@ and the user has explicitly signed off on running this cleanup:
 4. Update `archetypes/README.md`'s status table: move `table`/`documentLibrary`/`searchAiAnswer`/
    `exportWizard` from 🔲 PENDING to their real final status (✅ REAL or 🟡 GENERIC, per what Milestone 1
    actually built) with real evidence citations, matching the existing table's format for the other 9.
+
+---
+
+## 8. Live TODO / Next Steps Queue
+
+| Status | Tag | Item | Source | Date |
+|---|---|---|---|---|
+| ⬜ Open | `new-ticket` | Author and dispatch Milestone 1's tickets (1a registry, 1b dispatch wiring, 1c the 4 widgets — likely 2-4 separate tickets given the per-archetype design-decision split) | user-identified | 2026-08-11 |
+| ⬜ Open | `blocked` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — blocked until Milestone 1 is independently verified complete | this tracker | 2026-08-11 |
+| ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |

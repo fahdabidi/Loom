@@ -1210,3 +1210,15 @@ dispatched/verified/committed, and both this walkthrough (steps 1-6) and the pro
    `part09_action_surfaces.dart`'s legacy paths, `part14_copy_helpers.dart`'s legacy paths) and the 6
    hybrid communities' bespoke per-community widgets (`_GardenClubEngineTabSurface` etc.) — explicit
    "scrap all the legacy code" directive, deferred until nothing still depends on them.
+
+---
+
+## 8. Live TODO / Next Steps Queue
+
+| Status | Tag | Item | Source | Date |
+|---|---|---|---|---|
+| ⬜ Open | `needs-debug-agent` | CJM.16 (Member Social Space): Messages tab shows zero conversations for a freshly-signed-up account — root-caused to an accountId/personaTypeId identity-matching gap in `LocalAuthApi.signUp` vs. seeded formula-guard comparands. Recommended as its own dedicated ticket with a Root Cause Agent dispatch first, not yet dispatched. | §4 row 8 | 2026-08-11 |
+| ⬜ Open | `needs-debug-agent` | CJM.18 (Data Portability Community): sign-up fails deterministically for any persona after prior in-session activity in another community — points to cross-community state leakage in `LocalAuthApi._resolvePersona`. Recommended as a Root Cause Agent dispatch before a fix ticket, not yet dispatched. | §4 row 10 | 2026-08-11 |
+| ⬜ Open | `needs-live-validation` | §6 step 7 (LLM Product Docs To Evidence Reconciliation gate) — confirmed run and closed only for Cedar Commons HOA (§4 row 1, combined-pass note). Status for the other 9 communities not confirmed in this table; re-check §4 per-row before assuming it's outstanding everywhere, then run/close per community. | §6 step 7 | 2026-08-11 |
+| ⬜ Open | `new-milestone` | §7 step 8: remove the legacy Dart catalog paths and the 6 hybrid communities' bespoke per-community widgets — now unblocked, all 10 §4 rows read complete. Not yet scoped into tickets. | §7 step 8 | 2026-08-11 |
+| ⬜ Open | `new-ticket` | Backlog of deferred, lower-severity polish findings accepted across multiple communities (ISO-8601 date/timestamp humanization — needs real date parsing, not a regex extension; `maxLines: 2` truncation on longer titles; contradictory chip-pair rendering) — tracked in §4's per-row notes, not yet consolidated into a ticket. | §4, multiple rows | 2026-08-11 |
