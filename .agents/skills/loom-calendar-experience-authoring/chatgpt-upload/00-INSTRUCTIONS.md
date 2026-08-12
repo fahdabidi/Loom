@@ -13,33 +13,58 @@ effects, formulas, and render bindings. The files in this bundle enumerate that 
 ## Scope — every real archetype, not just Calendar
 
 **Broadened 2026-08-09** (this bundle was Calendar/`event-rsvp`-only from 2026-08-04 through 2026-08-09).
-You may author a `workflowDefinitions` entry for **any** workflow whose correct `cardSurfaceFamily` is
-listed as real in `15-archetypes.md` (the live source of truth — always check it, this list is a summary,
-not a substitute):
+**Broadened again 2026-08-11, those 4 fully implemented 2026-08-12.** You may author a `workflowDefinitions`
+entry for **any** workflow whose correct `cardSurfaceFamily` is listed as real in `15-archetypes.md` (the
+live source of truth — always check it, this list is a summary, not a substitute):
 
-- **3 real bespoke archetypes**: `event-rsvp` (event/RSVP/reminder — see `17-worked-example-calendar.jsonc`
+- **7 real bespoke archetypes**: `event-rsvp` (event/RSVP/reminder — see `17-worked-example-calendar.jsonc`
   for the full worked pattern), `votePoll` (ballot/tally/eligibility/runoff), `equipment-loan` (loan/
-  reservation/giveaway with a queue).
+  reservation/giveaway with a queue), `table` (sortable/filterable grid — leaderboards, rosters, anything
+  browsed at scale rather than one card per item), `documentLibrary` (categorized document library —
+  browse/acknowledge/version/access-request), `searchAiAnswer` (query + cited answer — see the
+  platform-service caveat below), `exportWizard` (stepped export/transfer flow — see the platform-service
+  caveat below).
 - **6 generic-but-real archetypes** (rendered by the shared generic card, not a bespoke widget):
   `paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`,
   `notificationInbox`.
 - `02-common-patterns.md` (the full copy of Loom's canonical patterns file) has a ready-made pattern for
-  six of these nine: P1 RSVP, P2 ballot, P3 approval queue, P4 loan, P5 payment, P6 discussion thread.
+  six of the first nine: P1 RSVP, P2 ballot, P3 approval queue, P4 loan, P5 payment, P6 discussion thread.
   `formEntry`/`notificationInbox`/`statusTimeline` are simple enough to build directly from
-  `07-workflow-grammar.md` + `11-field-types.md` without a dedicated worked pattern.
+  `07-workflow-grammar.md` + `11-field-types.md` without a dedicated worked pattern. `table`/
+  `documentLibrary`/`searchAiAnswer`/`exportWizard` need no new grammar either — `table`/`documentLibrary`
+  consume ordinary `instanceDataSchema` flags (`sortable`/`searchable`/`labelTemplate`, and `type: "url"`
+  fields with `openMode: "choice"` for documents — this is the fully-implemented mode real communities use
+  for their primary document field); `searchAiAnswer` needs a `citations[]` list field shaped
+  `{label, source: {type:"url", openMode:"external"}}` (`11-field-types.md`'s "Citation lists"); `
+  exportWizard` is an ordinary state machine (scope → generate → verify → download, retry/rollback as
+  needed) — its widget derives progress from the state machine itself, no particular field name required.
 
 **Two workflow types sharing one render surface is normal, not scope-narrowing.** You may declare as many
 `workflowDefinitions` entries as a request genuinely needs. Two things that don't share the same states and
 transitions are two separate workflow types — that's `01-authoring-procedure.md` Step 2's ordinary test,
 not you inventing a second archetype.
 
+**searchAiAnswer/exportWizard's real platform-service gaps — still real, unchanged by the archetype now
+being implemented.** `searchAiAnswer`'s answer text and `exportWizard`'s checksum/transfer-id/receipt-id
+fields are real platform-service gaps (`14-platform-services.md`: "External search / AI answer" and
+"Checksum / integrity hash" are both `❌ Not implemented`), independent of the archetype itself. Declare
+the field, never write it from any effect, and mark it with a `NEEDS IMPLEMENTATION (platform service):
+...` comment exactly as `14-platform-services.md`'s own AP-6 guidance already requires for every other
+not-implemented service. Do not fabricate a value — a hardcoded-looking checksum/export-id/AI-answer is a
+hard antipattern, not a shortcut. Never gate an `exportWizard` transition's *completion* on the
+checksum/transfer-id field either (`20-solved-patterns.md` pattern 14) — a checksum has no honest
+human-curated substitute, unlike `searchAiAnswer`'s answer (pattern 11: a real admin-curated field is a
+legitimate substitute for the platform-owned answer field, as long as that platform field itself stays
+honestly unwritten).
+
 **What's actually out of scope**: a `cardSurfaceFamily` NOT listed as real in `15-archetypes.md` —
-currently `documentLibrary`, `exportWizard`, `audienceSelector`, `stateMachineGrid`/`table`,
-`volunteerRoster`, `searchAiAnswer`, `singleItem`. If a request genuinely needs one of those, say so
-explicitly (which part of the request, why, what family it would need) rather than approximating it with a
-real archetype it doesn't belong to. A `documentLibrary`-shaped need (a document with an open/download
-action) is usually expressible as `formEntry` + a `type:"url"` field instead — see `11-field-types.md` —
-check that before declaring the whole request out of scope.
+currently `audienceSelector`, `volunteerRoster`, `singleItem`, `protectedDetail`, `guidedProcess`,
+`dashboard`. If a request genuinely needs one of those, say so explicitly (which part of the request, why,
+what family it would need) rather than approximating it with a real archetype it doesn't belong to. Most of
+these needs are already expressible with an in-scope archetype — `formEntry` + a per-field `formula` for
+masking, `formEntry` + a `capacity`/count-formula for a roster's numbers, ordinary transitions for an
+exclusive choice — check `15-archetypes.md`'s "Considered and explicitly NOT promoted" table before
+declaring the whole request out of scope.
 
 **If a request is only partially in scope** (the common case for a real, multi-workflow community): author
 the in-scope part completely and validator-clean, and report everything else by name/section/needed-family
@@ -47,13 +72,13 @@ in the same response, rather than refusing the whole request or silently droppin
 
 ⚠️ **A trap to watch for, found 2026-08-09 authoring against a real product doc**: some product docs have
 their own "Card Surface Registry Mapping" table naming surfaces like `payment`, `documents`, `calendar`,
-`workflow-status`, `notification-inbox`, `portability` — **these are not real `cardSurfaceFamily` values**.
-Always translate through `15-archetypes.md`'s real names instead of copying a product doc's own table
-literally: `payment`→`paymentCheckout`, `documents`→`formEntry`+`type:"url"` (not `documentLibrary`, which
-isn't real), `calendar`→`event-rsvp`, `workflow-status`→`approvalQueueItem`/`statusTimeline`,
-`notification-inbox`→`notificationInbox`, `portability`→`formEntry` (not `exportWizard`, which isn't real —
-and never fabricate a checksum/export-id value; real checksum/ID generation are both unimplemented platform
-services per `14-platform-services.md`, so a hardcoded-looking hash is a hard antipattern, not a shortcut).
+`workflow-status`, `notification-inbox`, `portability`, `search`, `roster` — **these are not real
+`cardSurfaceFamily` values**. Always translate through `15-archetypes.md`'s real names instead of copying a
+product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`external-document-link`→
+`documentLibrary`, `calendar`→`event-rsvp`, `workflow-status`→`approvalQueueItem`/`statusTimeline`,
+`notification-inbox`→`notificationInbox`, `portability`→`exportWizard`, `search`→`searchAiAnswer`,
+`roster`/leaderboard-shaped browsing→`table` — see the platform-service caveat above for
+`portability`/`exportWizard` and `search`/`searchAiAnswer` specifically.
 
 ## Hard rules — never violate these
 

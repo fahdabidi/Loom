@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -33,7 +33,7 @@ editability, and computation. Every field a workflow touches MUST be declared he
   "maxLength": 500,
   "formula": "<expression>",       // makes the field COMPUTED (read-only)
   "source": "query(<type> where <foreignField> == <localField>)",  // makes the field QUERY-BACKED (read-only)
-  "openMode": "external"|"embedded"|"choice"  // type: "url" only — see below. "external" is REAL; "embedded"/"choice" still not implemented.
+  "openMode": "external"|"embedded"|"choice"  // type: "url" only — see below. "external" and "choice" are REAL; standalone "embedded" alone is not (no real fixture uses it).
 }
 ```
 
@@ -55,11 +55,11 @@ values below; an unrecognized type will parse but render unpredictably.
 | `personaId` | A single persona id | `personaId?` for nullable |
 | `personaId[]` | Array of persona ids | **The standard for member lists** |
 | `image` | Image reference | Use `storage: "reference"` |
-| `url` | An openable external or embedded link/document | `openMode: "external"` is ✅ REAL; `"embedded"`/`"choice"` are not yet implemented — see below. Use `url?` for nullable. |
+| `url` | An openable external or embedded link/document | `openMode: "external"` and `"choice"` are ✅ REAL; standalone `"embedded"` alone is not yet implemented — see below. Use `url?` for nullable. |
 
 **Nullable convention:** append `?` (e.g. `date?`, `personaId?`) for fields that are legitimately empty.
 
-## `type: "url"` — external/embedded document and link fields (`external`: ✅ REAL; `embedded`/`choice`: still proposed)
+## `type: "url"` — external/embedded document and link fields (`external`/`choice`: ✅ REAL; standalone `embedded`: still proposed)
 
 Proposed 2026-08-09; found while scoping Cedar Commons HOA's `hoa-member-document` and Riverside Youth
 Soccer's `soccer-waiver-document` on the v2 generic-archetype migration: both need a field whose value is a
@@ -71,15 +71,21 @@ just display as text.
 `url_launcher`) and `:612-671` (the citation-list `itemSchema` case below, same `external` handling
 per-item), fed by `InstanceDataField.fromJson`'s existing `openMode` parsing (`workflow_models.dart:786`).
 This doc previously stated the whole `type: "url"` mechanism did nothing — that was stale/wrong for
-`external` by the time of this correction; only `openMode: "embedded"` and `"choice"` remain genuinely
-unimplemented (both currently render a disabled-looking `Icons.link_off` "unsupported: <label>" pill,
-`part18_marketplace_rendering.dart:604-610`/`:660-671`, never opening anything). This matters concretely
-for real content: every real community fixture's *primary* document-open field (as opposed to a secondary
-`attachmentUrl`-style field, which several already declare as `external` and which already works)
-currently declares `openMode: "choice"`, not `external` — grep `docs/references/communities/*.jsonc` for
-`"openMode": "choice"` to confirm current instances. `GenericWorkflowInstanceCard` and every bespoke
-archetype (`EquipmentLoanArchetypeCard` included) render `instanceDataSchema` fields through the same
-shared fact-pill code described above.
+`external` by the time of this correction.
+
+**Correction, 2026-08-12 (later same day, `TabId-Archetype Gap Closure.md` Milestone 1's `documentLibrary`
+ticket):** `openMode: "choice"` is now also implemented — a real `_choiceUrlPill` helper renders both an
+"Open embedded" control (a genuine in-app `WebViewController`-backed viewer, new `webview_flutter`
+dependency) and an "Open externally" control (reusing the `external`-mode code path verbatim, not
+duplicated), for both top-level `type: "url"` fields and `itemSchema` list members. This is the mode every
+real fixture's *primary* document-open field actually declares (as opposed to a secondary
+`attachmentUrl`-style field, which several declare as plain `external`) — confirmed via
+`docs/references/communities/*.jsonc` grep for `"openMode": "choice"`. Only standalone `openMode:
+"embedded"` (used alone, not via `choice`) remains genuinely unimplemented — it still renders a
+disabled-looking `Icons.link_off` "unsupported: <label>" pill (`part18_marketplace_rendering.dart:604-610`/
+`:660-671`) — and no real fixture uses it standalone, so this is a low-priority gap.
+`GenericWorkflowInstanceCard` and every bespoke archetype (`EquipmentLoanArchetypeCard` included) render
+`instanceDataSchema` fields through the same shared fact-pill code described above.
 
 **This is deliberately a field-type/display capability, not a new archetype and not a new `effects.md`
 op.** Opening a link is a presentation action tied to one field's *value* — it has no bearing on workflow
@@ -121,13 +127,11 @@ requires the embedded-viewer platform capability to actually be present in the b
 without that capability wired is a build-time gap, not a JSON error (same category of honesty issue as
 `archetypes/README.md`'s `❌ NOT REAL` entries, not a new validator rule).
 
-**Known follow-on:** `openMode: "embedded"`/`"choice"` need an embedded viewer capability
-(`webview_flutter` is not currently a dependency of `loom_communities_app_shell` — confirmed by reading its
-`pubspec.yaml`, re-confirmed 2026-08-12). `openMode: "external"` needed `url_launcher`, which the same
-`pubspec.yaml` now lists as a real dependency (`^6.3.2`, confirmed 2026-08-12) — this increment has already
-landed (see the correction note above). `embedded`/`choice` remain a following increment — an
-implementation-sequencing decision, not a grammar change; the field-level contract above does not change
-based on which increments are built first.
+**Known follow-on, now closed:** `openMode: "embedded"`/`"choice"` needed an embedded viewer capability —
+`webview_flutter` is now a real dependency of `loom_communities_app_shell` (confirmed 2026-08-12, added by
+the `documentLibrary` ticket). `openMode: "external"` needed `url_launcher`, already a dependency. Both
+increments have landed (see the correction notes above); only standalone `openMode: "embedded"` (unused by
+any real fixture) remains unimplemented, and the field-level contract above does not depend on it landing.
 
 ## Citation lists — `type: "url"` items inside a `type: "list"` field (✅ REAL for `openMode: "external"`)
 
