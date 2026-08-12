@@ -24,6 +24,12 @@ by running a tool, because the whole point is testing whether documentation-as-i
   act as this Skill — reading only `docs/references/**` (plus the Skill's own bundle) and the target spec
   doc, explicitly forbidden from reading any existing hand-authored comparison artifact or other session
   context that would let it "cheat" by pattern-matching a known-good answer instead of actually deriving one.
+  **Narrow, deliberate exception (added 2026-08-12, `solved-patterns.md` pattern 9):** when the target is an
+  *update* to an already-shipped community, the dispatching session supplies that community's real
+  `personas[]`/`appShell.tabs[]` identifiers as an explicit fact appended to the target doc — not a
+  comparison artifact to pattern-match against, but load-bearing state a real Dart test may already hardcode.
+  Confirmed as a real, non-hypothetical gap: a Masjid Nur dispatch without this invented plausible-but-wrong
+  persona/tab identifiers that would have broken a real committed test.
 - **Zero-tool-access external channel** (e.g. a custom GPT): the portable export at
   `.agents/skills/loom-calendar-experience-authoring/chatgpt-upload/` (20 files, uploaded as-is), with a live
   HTTP validator wired in as a Custom GPT Action so the external agent can self-validate before returning an

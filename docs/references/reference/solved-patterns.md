@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -302,6 +302,42 @@ producing 15 `unknown_tab_id` errors on first validation. The currently-shipped 
 community already gets this right (`appShell.tabs[]` with 3 declared tabs), confirming the gap was in this
 one dispatch's output, not a documentation gap in `render-bindings.md` itself (which already documents the
 requirement correctly) — the missing piece was reinforcement at the point of final self-check.
+
+---
+
+## 9. When updating an existing, already-shipped community, reuse its real `personaId`/`tabId` values exactly — never re-derive plausible-looking ones from the product doc's own prose
+
+**Requirement shape:** the target is an update to a community that already has a real, committed JSON
+package — adding a new archetype, workflow, or field to something that already exists, not authoring a
+community from nothing. Every authoring channel of this Skill deliberately never sees the existing shipped
+file while drafting (the in-repo `Agent`-tool channel is explicitly forbidden from reading it, and the
+zero-tool-access/Codex channels have no mechanism to see it at all) — so the fresh draft has no way to know
+what identifiers the shipped file, or any real committed test that hardcodes those identifiers, already
+expect.
+
+**Looks plausible but is wrong:** deriving `personaId`/`tabId` values fresh from the product doc's own
+vocabulary — reasonable-sounding, internally consistent, and structurally valid, but silently different from
+the identifiers the currently-shipped file and its tests actually use. The JSON validates cleanly in
+isolation; the defect only surfaces as a broken Dart test, or a broken guard/formula reference, once the new
+file replaces the old one — something no JSON-only validator run or self-check can catch.
+
+**Verified-correct shape:** the dispatching session (never the authoring agent itself) reads the currently-
+shipped fixture directly and supplies its real `personas[]` and `appShell.tabs[]` values as an explicit
+`## Existing identifiers — preserve these exactly` section appended to the target product doc, listing each
+`personaId`/`label`/`roleLabel` and `tabId`/`label` pair. The authoring agent reuses every listed value
+exactly, and only introduces a genuinely new identifier when the requirements need one beyond what's listed
+— stated explicitly as such, not silently substituted for an existing one. This is supplying a fact about
+already-shipped state, not letting the agent "cheat" by reading a comparison artifact to copy an answer from
+— the distinction the original no-existing-file rule protects is about not reading the *comparison target
+for judging purposes*, not about identifiers that are already load-bearing, real, and non-negotiable.
+
+**Found in:** Masjid Nur, re-authored via the Codex GitHub-fetch dispatch channel 2026-08-12 (Milestone 1.5)
+— the fresh output invented `mosque-admin`/`mosque-member` (the real, shipped ones are `masjid-admin`/
+`community-member`) and added a `care` tab that
+`app/packages/core/loom_communities_app_shell/test/cjm8_engine_native_tabs_test.dart` explicitly asserts
+must never appear for `ext_mosque`. Caught by an independent Skill Output Judge dispatch, not the validator
+(which reported the JSON as structurally clean) — this class of defect is invisible to any check that only
+inspects the candidate JSON in isolation.
 
 ---
 

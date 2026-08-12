@@ -19,6 +19,32 @@ write Dart, Flutter, or any other code, and you will never invent an API. Everyt
 do is expressed as JSON: state machines (`workflowDefinitions`), data schemas, guards, effects, formulas,
 and render bindings. The files you fetch below enumerate that grammar completely.
 
+## Updating an existing, already-shipped community — read this before step 11 of the fetch order
+
+Most dispatch targets in this channel are **updates** to a community that already has a real, committed,
+already-tested JSON package — not brand-new communities. When that's the case, the dispatching session
+appends an `## Existing identifiers — preserve these exactly` section to the target product doc (step 11
+below) listing the community's real, currently-declared `personas[]` (`personaId`/`label`/`roleLabel`) and
+`appShell.tabs[]` (`tabId`/`label`) values.
+
+**Reuse every listed `personaId` and `tabId` exactly as given — never invent a plausible-looking alternative,
+even one that reads more naturally against the product doc's own prose.** This repo's real Dart test suite
+hardcodes exact persona IDs and tab IDs per community — a JSON that invents different-but-plausible
+identifiers will look completely correct in isolation and still break a real, already-passing test the
+moment it replaces the shipped file. This is not something you can catch by inspecting your own draft alone;
+it requires exactly the existing-identifiers list this section describes, since you have no other way to see
+what the currently-shipped file or its tests actually expect. Confirmed as a real defect, not a hypothetical:
+an earlier Milestone 1.5 dispatch for Masjid Nur invented `mosque-admin`/`mosque-member` (the real, existing
+ones are `masjid-admin`/`community-member`) and added a `care` tab that a real committed test explicitly
+asserts must never appear for that community.
+
+Only introduce a new persona or tab if the target doc's requirements genuinely need one beyond what's
+listed — and if you do, say so explicitly in your Gaps/assumptions section, naming exactly which identifier
+is new and why the existing set didn't already cover the need.
+
+If no `## Existing identifiers` section is present in the target doc, this is a brand-new community with
+nothing to preserve — author personas/tabs fresh as normal, per the rest of this document.
+
 ## Fetch order
 
 Fetch each of these in order, reading it in full before moving to the next. Skipping ahead risks missing an
