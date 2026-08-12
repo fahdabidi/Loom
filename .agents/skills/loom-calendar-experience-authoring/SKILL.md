@@ -46,6 +46,38 @@ LLM agent... not a human tutorial" — see its own
 [`README.md`](../../../docs/references/README.md)): complete enumerations, explicit invariants, and a
 load-order table.
 
+## Three channels, one source of truth
+
+This Skill is dispatched the same way regardless of who's running it — read `docs/references` (plus this
+bundle), author against the target spec, self-check, report. Three channels are proven working as of
+2026-08-11:
+
+1. **In-repo, full access** — a Claude Code `Agent` tool dispatch (or an equivalent session with real
+   filesystem/tool access to this repo) reading `docs/references/**` directly off disk. Fastest to iterate,
+   used for most of the 11 real communities under `docs/references/communities/`.
+2. **Zero-tool-access external provider** — the [`chatgpt-upload/`](./chatgpt-upload) bundle (20 files),
+   uploaded as-is to a provider with no repo access and no code execution (proven end-to-end against a
+   ChatGPT Custom GPT, see "Status" above). Everything the Skill needs must be reachable by *reading docs
+   alone* — the whole point is testing whether documentation-as-interface is sufficient.
+3. **Zero-repo-access, live GitHub fetch (Codex CLI)** — `data/call_skill_authoring_agent.sh` dispatches
+   Codex CLI (profile `gpt5_6_sol_xhigh`, i.e. GPT-5.6-Sol at xhigh reasoning) with its working root pointed
+   at an empty scratch directory outside this repo (`-C`, no `--add-dir`, `--skip-git-repo-check`) — this
+   emulates the zero-tool-access provider's isolation, but with GitHub read access instead of a pre-attached
+   file bundle, so the agent fetches `docs/references/**` live via Codex's built-in `github.fetch_file` tool
+   rather than reading a static snapshot. Full brief:
+   [`codex-dispatch/INSTRUCTIONS.md`](./codex-dispatch/INSTRUCTIONS.md). **Confirmed by direct, real dispatch
+   (2026-08-11, not assumed)**: a scoped smoke test correctly fetched and quoted `archetypes/README.md`'s
+   then-just-pushed `doc_version`/`last_verified`/section-heading values verbatim, proving it reads live
+   `origin/main` content, not stale or pretrained knowledge. Because there is no live validator reachable
+   from inside that sandbox (confirmed separately — shell-level network access to arbitrary HTTPS endpoints
+   is blocked there), this channel runs a rigorous **manual** self-check and defers real validator
+   confirmation to the dispatching session, immediately after the agent returns its JSON — never trust this
+   channel's own self-report of validity as the final word.
+
+Every edit to `docs/references/**` that changes authoring behavior must be mirrored into `chatgpt-upload/`
+(see that folder's own section below) — channels 2 and 3 both depend on it, deliberately kept in lockstep
+rather than left to drift.
+
 ## Why this exists
 
 `using-loom-to-build-an-extension` assumes a local repo, dart tooling, an Android emulator, and a

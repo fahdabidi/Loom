@@ -530,6 +530,15 @@ Dispatch mechanics: same as the LLM Vision UX Judge — a Claude Code subagent v
 Codex, not the headless `claude` CLI. First real dispatch happens once §1b's authoring run returns a result
 to judge.
 
+> **Scope note, added 2026-08-11, not a correction to the above:** this "not Codex" statement is specific to
+> the **judge** role and remains accurate — judging still only happens via the `Agent` tool. The **authoring**
+> side of this Skill gained a third channel the same day, which does use Codex CLI (zero-repo-access, live
+> GitHub fetch, `data/call_skill_authoring_agent.sh`) — see `docs/Build Plan V2/Tools/
+> community-authoring-skill-tool.md`'s "Three channels" section and `SKILL.md`'s own channel list for the
+> real, current mechanism. All 10 communities recorded in this tracker were authored via the in-repo `Agent`
+> tool channel (channel 1 there), not this newer channel — nothing here is retroactively changed by its
+> existence.
+
 ### First real verdict (2026-08-09, judged directly by this session against the returned output)
 
 The sandboxed authoring run (§1b) returned a genuinely strong result: a validator-clean (`0 errors, 0
