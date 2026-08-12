@@ -1,1043 +1,1960 @@
-// Masjid Nur — canonical JSON, authored 2026-08-10.
-//
-// Masjid Nur — engine-native Loom Communities package.
-// Authored fresh from docs/references + docs/references/communities/masjid-nur-product-experience.md
-// (including its 2026-08-10 correction blockquote). Covers exactly the 10 real workflows the doc
-// confirms: mosque-announcement, mosque-event-rsvp, mosque-document-resource (new, no legacy version),
-// mosque-volunteer-signup, mosque-donor-visibility, mosque-donation-payment, mosque-care-request,
-// mosque-neutral-notification, mosque-search-ai-citation, mosque-discussion-thread.
-//
-// One supporting type is also declared, following the exact pattern the Skill's own worked example
-// (17-worked-example-calendar.jsonc) uses: `mosque-event-rsvp-response` (one row per event per member,
-// needed for real per-member capacity + reminders). `mosque-neutral-notification` IS one of the 10 real
-// workflows AND doubles as the generic per-persona notice created by other workflows' effects (care
-// review outcomes, RSVP waitlist promotion) — surfaced via the community-level `notificationPresentation`
-// bell with `renderBindings: []`, exactly like the worked example's `notification` type.
-//
-// wf_demo-app-persona-picker / wf_community-persona-aware-ux / wf_multi-persona-workflow-evidence are
-// deliberately NOT authored here — the doc's own correction confirms these are Dart test names, not real
-// workflows.
-//
-// Privacy note (see final response's Gaps section for full honesty writeup): mosque-care-request,
-// mosque-donation-payment, mosque-donor-visibility, and mosque-neutral-notification all use a
-// `$viewer`-aware `formula` inside `visibility.readGuard` to approximate "owner + admin only" row
-// visibility (the grammar's guards are AND-only, so this composes an OR via `||` inside one formula
-// guard). mosque-care-request additionally masks its raw `protectedDetails` field behind a computed
-// `protectedDetailsView` proxy with the raw field's `displayContexts` emptied, per this task's explicit
-// guidance — a real, engine-evaluated masking of a computed value, not cryptographic protection.
-//
-// Payment honesty (AP-6 / platform-services.md): mosque-donation-payment never fabricates a receipt id,
-// transaction id, or gateway confirmation. `receiptStatus` is an internal workflow-status label (exactly
-// the P5 canonical pattern), not a payment-gateway artifact. `mark-failed` is admin-fired (there is no
-// real payment gateway to produce a failure webhook) — an honest approximation, not a hidden simulation.
-//
-// Independently judged after authoring and found to have 1 real issue, fixed here before merge:
-// `mosque-donor-visibility` had no creation path anywhere (no `kind:"create"` action, no `createInstance`
-// effect targeting it) — the doc's own "change path"/"save visibility, set anonymous, update donor
-// preference" requirement was undeliverable once the two seeded rows were gone. Fixed by wiring
-// `mosque-donation-payment`'s `pay` transition to `createInstance` a real `mosque-donor-visibility` row
-// (donorPersonaId/fund/amountLabel copied from the real donation just made) — a donor now always gets a
-// real, working visibility-preference record tied to their actual donation, not a placeholder.
-
 {
   "schemaVersion": 1,
-  "packageId": "init_masjid_nur_1",
-  "communityId": "community_masjid_nur",
+  "packageId": "init_masjid_nur_engine_native_2",
+  "communityId": "community_mosque",
   "communityHandle": "masjid-nur",
   "displayName": "Masjid Nur",
-  "extensionId": "ext_masjid_nur",
-  "branding": { "accentColor": "#1B5E3A" },
+  "extensionId": "ext_mosque",
+  "branding": { "accentColor": "#2E7D5B" },
   "seedDataFiles": [],
-  "idempotencyKey": "init-masjid-nur-v1",
+  "idempotencyKey": "masjid-nur-engine-native-v2-2026-08-11",
 
   "experience": {
     "experienceSchemaVersion": 2,
     "workflowGrammarVersion": 1,
-
     "displayName": "Masjid Nur",
-    "tagline": "Coordinating our community's prayers, events, giving, and care.",
-    "accentColor": "#1B5E3A",
-
-    "notificationPresentation": { "style": "bell" },
+    "tagline": "Announcements, worship, giving, volunteering, and private community care in one respectful hub.",
+    "accentColor": "#2E7D5B",
+    "theme": {
+      "accent": "#2E7D5B",
+      "tabThemes": {
+        "calendar": { "accent": "#26734D" },
+        "giving": { "accent": "#34785B" },
+        "admin": { "accent": "#245C45" },
+        "resources": { "accent": "#3B755C" }
+      }
+    },
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
 
     "personas": [
-      { "personaId": "masjid-admin", "label": "Masjid Admin", "roleLabel": "Admin",
-        "description": "Publishes announcements, coordinates events/volunteers, and reviews care requests." },
-      { "personaId": "community-member", "label": "Community Member", "roleLabel": "Member",
-        "description": "Reads updates, RSVPs, donates, volunteers, and requests care." }
+      {
+        "personaId": "masjid-admin",
+        "label": "Masjid Admin",
+        "roleLabel": "Admin",
+        "description": "Publishes trusted updates, coordinates events and volunteers, records donations, and reviews protected care requests."
+      },
+      {
+        "personaId": "community-member",
+        "label": "Community Member",
+        "roleLabel": "Member",
+        "description": "Reads updates, RSVPs, gives, volunteers, uses resources, joins discussions, and requests care."
+      }
     ],
 
     "workflowDefinitions": {
-
       "mosque-announcement": {
         "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "draft": {
-            "label": "Draft", "tone": "info",
-            "editableFields": ["title", "body", "audience", "sendAt"],
+            "label": "Draft",
+            "tone": "info",
+            "editableFields": ["title", "body", "audience", "channel", "scheduledFor"],
             "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
           },
-          "published": { "label": "Published", "tone": "positive" },
+          "previewed": { "label": "Previewed", "tone": "info" },
+          "scheduled": {
+            "label": "Scheduled",
+            "tone": "warning",
+            "editableFields": ["title", "body", "audience", "channel", "scheduledFor"],
+            "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
+          },
+          "sent": { "label": "Sent", "tone": "positive" },
           "archived": { "label": "Archived", "tone": "info", "isTerminal": true },
-          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "publish", "label": "Publish announcement", "icon": "campaign", "tone": "primary",
-            "from": ["draft"], "to": "published",
+          {
+            "id": "save-announcement-draft",
+            "label": "Save draft",
+            "icon": "save",
+            "tone": "secondary",
+            "from": ["draft"],
+            "to": null,
             "guard": { "allowedPersonaIds": ["masjid-admin"] },
             "effects": [
-              { "op": "set", "key": "publishedByPersonaId", "value": "$actor" },
-              { "op": "set", "key": "publishedAt", "value": "$timestamp" }
-            ] },
-          { "id": "withdraw-draft", "label": "Withdraw draft", "icon": "delete_outline", "tone": "destructive",
-            "from": ["draft"], "to": "withdrawn",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } },
-          { "id": "archive-announcement", "label": "Archive", "icon": "archive_outlined", "tone": "secondary",
-            "from": ["published"], "to": "archived",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } },
-          { "id": "mark-read", "label": "Mark read", "icon": "done", "tone": "secondary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["community-member"],
-                       "actorInList": { "key": "readByPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "readByPersonaIds", "value": "$actor" } ] }
+              { "op": "append", "key": "revisionHistory", "value": { "action": "draft-saved", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "preview-announcement",
+            "label": "Preview announcement",
+            "icon": "preview",
+            "tone": "secondary",
+            "from": ["draft"],
+            "to": "previewed",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "append", "key": "revisionHistory", "value": { "action": "previewed", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "return-to-announcement-draft",
+            "label": "Edit announcement",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["previewed", "scheduled"],
+            "to": "draft",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "append", "key": "revisionHistory", "value": { "action": "returned-to-draft", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "schedule-announcement",
+            "label": "Schedule announcement",
+            "icon": "schedule",
+            "tone": "primary",
+            "from": ["draft", "previewed"],
+            "to": "scheduled",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "deliveryState", "value": "scheduled" },
+              { "op": "append", "key": "deliveryHistory", "value": { "status": "scheduled", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "publish-announcement",
+            "label": "Publish announcement",
+            "icon": "campaign",
+            "tone": "primary",
+            "from": ["draft", "previewed", "scheduled"],
+            "to": "sent",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "deliveryState", "value": "sent" },
+              { "op": "set", "key": "sentAt", "value": "$timestamp" },
+              { "op": "append", "key": "deliveryHistory", "value": { "status": "sent", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "mark-announcement-read",
+            "label": "Mark read",
+            "icon": "mark_email_read",
+            "tone": "secondary",
+            "from": ["sent"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "readPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "readPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "deliveryHistory", "value": { "status": "read", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "archive-announcement",
+            "label": "Archive announcement",
+            "icon": "archive",
+            "tone": "secondary",
+            "from": ["sent"],
+            "to": "archived",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          },
+          {
+            "id": "cancel-announcement",
+            "label": "Cancel announcement",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft", "previewed", "scheduled"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["draft"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["draft", "previewed", "scheduled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New announcement", "byPersonaIds": ["masjid-admin"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["published", "archived", "withdrawn"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["published"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" },
-          { "states": ["archived"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New announcement",
+                "byPersonaIds": ["masjid-admin"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "senderPersonaId": "$actor",
+                  "deliveryState": "draft",
+                  "readPersonaIds": [],
+                  "deliveryHistory": [],
+                  "revisionHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["sent"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["sent"],
+            "role": "any",
+            "tabId": "messages",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["archived", "cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry",
-                     "searchable": true, "sortable": true, "labelTemplate": "{value}",
-                     "displayContexts": ["tile", "detail"] },
-          "body": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000,
-                    "displayContexts": ["detail"] },
-          "audience": { "type": "text", "required": true, "writableBy": "formEntry",
-                        "displayIcon": "groups_outlined", "labelTemplate": "Audience: {value}" },
-          "sendAt": { "type": "date?", "writableBy": "formEntry", "displayIcon": "schedule",
-                      "hideWhenEmpty": true },
-          "publishedByPersonaId": { "type": "personaId?", "writableBy": "effect",
-                                    "displayIcon": "person_outline", "hideWhenEmpty": true },
-          "publishedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
-                           "displayIcon": "calendar_today", "hideWhenEmpty": true },
-          "readByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "hideWhenEmpty": true,
-                                "labelTemplate": "Read by {value.length}" },
-          "readCount": { "type": "number", "formula": "size(readByPersonaIds)",
-                        "displayIcon": "visibility_outlined", "labelTemplate": "Read: {value}",
-                        "displayContexts": ["tile", "detail"] }
+          "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "body": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000, "displayIcon": "article", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "senderPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "From {value}", "displayContexts": ["tile", "detail"] },
+          "audience": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "Audience: {value}", "displayContexts": ["tile", "detail"] },
+          "channel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "campaign", "labelTemplate": "Channel: {value}", "displayContexts": ["detail"] },
+          "scheduledFor": { "type": "date?", "writableBy": "formEntry", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Scheduled {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "sentAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "send", "labelTemplate": "Sent {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "deliveryState": { "type": "text", "writableBy": "effect", "displayIcon": "outbox", "labelTemplate": "Delivery: {value}", "displayContexts": ["tile", "detail"] },
+          "readPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "mark_email_read", "labelTemplate": "Read by {value.length}", "displayContexts": ["tile", "detail"] },
+          "deliveryHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Delivery history: {value.length}", "displayContexts": ["detail"] },
+          "revisionHistory": { "type": "list", "writableBy": "effect", "displayIcon": "edit_note", "labelTemplate": "Revisions: {value.length}", "displayContexts": ["detail"] },
+          "readCount": { "type": "number", "formula": "size(readPersonaIds)", "displayIcon": "done_all", "labelTemplate": "Readers: {value}", "displayContexts": ["tile", "detail"] }
         }
       },
 
       "mosque-event-rsvp": {
-        "initialState": "open",
+        "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
         "states": {
+          "draft": {
+            "label": "Draft event",
+            "tone": "info",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "recurrence", "capacity"],
+            "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
+          },
           "open": {
-            "label": "RSVP open", "tone": "positive",
-            "editableFields": ["title", "eventDate", "eventTime", "location", "capacity",
-                               "recurrenceLabel", "reminderOffsetHours"],
+            "label": "RSVP open",
+            "tone": "positive",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "recurrence", "capacity"],
             "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "cancel-event", "label": "Cancel event", "icon": "cancel", "tone": "destructive",
-            "from": ["open"], "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } }
+          {
+            "id": "save-event-draft",
+            "label": "Save draft",
+            "icon": "save",
+            "tone": "secondary",
+            "from": ["draft"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          },
+          {
+            "id": "publish-event",
+            "label": "Publish event",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "open",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "publishedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "rsvp-going",
+            "label": "Going",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "goingPersonaIds", "present": false },
+              "formula": "size(goingPersonaIds) < capacity"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "goingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "rsvp-maybe",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["community-member"] },
+            "effects": [
+              { "op": "appendUnique", "key": "maybePersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "rsvp-not-going",
+            "label": "Not attending",
+            "icon": "event_busy",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["community-member"] },
+            "effects": [
+              { "op": "appendUnique", "key": "notGoingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "join-event-waitlist",
+            "label": "Join waitlist",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "waitlistPersonaIds", "present": false },
+              "formula": "size(goingPersonaIds) >= capacity"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "waitlistPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "cancel-rsvp",
+            "label": "Cancel RSVP",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["community-member"] },
+            "effects": [
+              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "maybePersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "notGoingPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "waitlistPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "add-event-reminder",
+            "label": "Add reminder",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "reminderPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "reminderPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "cancel-event",
+            "label": "Cancel event",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft", "open"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["open"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
-            "actions": [
-              { "kind": "create", "label": "New event", "byPersonaIds": ["masjid-admin"],
-                "scope": "tab", "presentation": "fab" }
-            ],
-            "responseTable": {
-              "workflowType": "mosque-event-rsvp-response",
-              "eventField": "eventId",
-              "pendingStates": ["pending"]
-            } },
-          { "states": ["cancelled"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
-        ],
-        "visibility": { "default": "membersOnly" },
-        "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry",
-                    "searchable": true, "sortable": true, "labelTemplate": "{value}",
-                    "displayContexts": ["tile", "detail"] },
-          "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true,
-                        "displayIcon": "calendar_today", "labelTemplate": "{value}",
-                        "displayContexts": ["tile", "detail"] },
-          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry",
-                        "displayIcon": "schedule", "labelTemplate": "{value}",
-                        "displayContexts": ["tile", "detail"] },
-          "location": { "type": "text", "required": true, "writableBy": "formEntry",
-                       "displayIcon": "location_on_outlined", "displayContexts": ["detail"] },
-          "capacity": { "type": "number", "required": true, "writableBy": "formEntry",
-                       "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
-          "recurrenceLabel": { "type": "text?", "writableBy": "formEntry",
-                               "displayIcon": "event_repeat", "hideWhenEmpty": true,
-                               "displayContexts": ["detail"] },
-          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "displayContexts": [] },
-          "reminderAt": {
-            "type": "date",
-            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))",
-            "displayContexts": []
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary"
           },
-          "responses": { "type": "list", "source": "query(mosque-event-rsvp-response where eventId == id)" },
-          "responseCounts": { "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": [] },
-          "goingCount": { "type": "number", "formula": "mapGet(responseCounts, 'going')",
-                          "displayIcon": "groups_outlined", "labelTemplate": "Going: {value}",
-                          "displayContexts": ["tile", "detail"] },
-          "waitlistedCount": { "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')",
-                               "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value}",
-                               "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
-                             "displayIcon": "event_seat", "labelTemplate": "{value} spots left",
-                             "displayContexts": ["detail"] },
-          "isFull": { "type": "bool", "formula": "goingCount >= capacity",
-                     "displayIcon": "event_busy", "labelTemplate": "Full: {value}" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0",
-                          "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist open: {value}" }
-        }
-      },
-
-      "mosque-event-rsvp-response": {
-        "initialState": "pending",
-        "states": {
-          "pending": { "label": "No response yet", "tone": "info" },
-          "going": { "label": "Going", "tone": "positive" },
-          "maybe": { "label": "Maybe", "tone": "info" },
-          "declined": { "label": "Can't make it", "tone": "negative" },
-          "waitlisted": { "label": "Waitlisted", "tone": "warning" }
-        },
-        "transitions": [
-          { "id": "respond-going", "label": "Going", "icon": "event_available", "tone": "primary",
-            "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
-            "guard": {
-              "allowedPersonaIds": ["community-member", "masjid-admin"],
-              "relatedAggregate": {
-                "workflowType": "mosque-event-rsvp-response",
-                "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "count", "comparator": "<",
-                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New event",
+                "byPersonaIds": ["masjid-admin"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "goingPersonaIds": [],
+                  "maybePersonaIds": [],
+                  "notGoingPersonaIds": [],
+                  "waitlistPersonaIds": [],
+                  "reminderPersonaIds": []
+                }
               }
-            } },
-          { "id": "respond-maybe", "label": "Maybe", "icon": "help_outline", "tone": "secondary",
-            "from": ["pending", "going", "declined", "waitlisted"], "to": "maybe",
-            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
-            "effects": [
-              { "op": "transitionRelated",
-                "relatedQuery": { "workflowType": "mosque-event-rsvp-response",
-                                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
-                                  "sortKey": "rsvpedAt", "limit": 1 },
-                "transitionId": "respond-going",
-                "onSuccessEffects": [
-                  { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                    "fields": { "recipientPersonaId": "{personaId}",
-                               "title": "You're off the waitlist",
-                               "body": "A seat opened up and you've been moved to Going.",
-                               "createdAt": "$timestamp" } }
-                ] }
-            ] },
-          { "id": "respond-declined", "label": "Can't make it", "icon": "event_busy", "tone": "destructive",
-            "from": ["pending", "going", "maybe", "waitlisted"], "to": "declined",
-            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
-            "effects": [
-              { "op": "transitionRelated",
-                "relatedQuery": { "workflowType": "mosque-event-rsvp-response",
-                                  "filter": { "eventId": "{eventId}", "$state": "waitlisted" },
-                                  "sortKey": "rsvpedAt", "limit": 1 },
-                "transitionId": "respond-going",
-                "onSuccessEffects": [
-                  { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                    "fields": { "recipientPersonaId": "{personaId}",
-                               "title": "You're off the waitlist",
-                               "body": "A seat opened up and you've been moved to Going.",
-                               "createdAt": "$timestamp" } }
-                ] }
-            ] },
-          { "id": "respond-waitlist", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
-            "from": ["pending", "maybe", "declined"], "to": "waitlisted",
-            "guard": {
-              "allowedPersonaIds": ["community-member", "masjid-admin"],
-              "relatedAggregate": {
-                "workflowType": "mosque-event-rsvp-response",
-                "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "count", "comparator": ">=",
-                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
-              }
-            },
-            "effects": [ { "op": "set", "key": "rsvpedAt", "value": "$timestamp" } ] },
-          { "id": "send-reminder", "label": "Send reminder",
-            "from": ["pending", "maybe", "going", "waitlisted"], "to": null,
-            "guard": { "actorEqualsField": { "key": "personaId" } },
-            "inputs": {
-              "notificationTitle": { "type": "text", "required": true },
-              "notificationBody": { "type": "text", "required": true },
-              "notificationCreatedAt": { "type": "text", "required": true }
-            },
-            "effects": [
-              { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                "fields": { "recipientPersonaId": "{personaId}",
-                           "title": "{input.notificationTitle}",
-                           "body": "{input.notificationBody}",
-                           "createdAt": "{input.notificationCreatedAt}" } },
-              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
-            ] }
+            ]
+          },
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
         ],
-        "renderBindings": [],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "eventId": { "type": "text", "required": true },
-          "personaId": { "type": "text", "required": true },
-          "rsvpedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
-          "reminderSentAt": { "type": "text", "writableBy": "effect", "hideWhenEmpty": true }
+          "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "location": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "recurrence": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "repeat", "labelTemplate": "Repeats: {value}", "displayContexts": ["tile", "detail"] },
+          "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "{value} seats", "displayContexts": ["tile", "detail"] },
+          "publishedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "Published {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
+          "maybePersonaIds": { "type": "personaId[]", "writableBy": "effect" },
+          "notGoingPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
+          "waitlistPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "hourglass_top", "labelTemplate": "Waitlist: {value.length}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "reminderPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "notifications_active", "labelTemplate": "Reminders: {value.length}", "displayContexts": ["detail"] },
+          "goingCount": { "type": "number", "formula": "size(goingPersonaIds)", "displayIcon": "how_to_reg", "labelTemplate": "Going: {value}", "displayContexts": ["tile", "detail"] },
+          "spotsRemaining": { "type": "number", "formula": "capacity - size(goingPersonaIds)", "displayIcon": "event_seat", "labelTemplate": "Open spots: {value}", "displayContexts": ["tile", "detail"] },
+          "isFull": { "type": "bool", "formula": "size(goingPersonaIds) >= capacity", "displayIcon": "block", "labelTemplate": "Full: {value}", "displayContexts": ["detail"] }
         }
       },
 
       "mosque-document-resource": {
-        "initialState": "published",
+        "initialState": "available",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "published": {
-            "label": "Available", "tone": "positive",
-            "editableFields": ["title", "source", "version", "docType", "acknowledgementRequired"],
+          "available": {
+            "label": "Available",
+            "tone": "positive",
+            "editableFields": ["title", "source", "version", "publishedDate", "resourceUrl", "accessLabel", "allowedPersonaIds"],
             "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
           },
           "archived": { "label": "Archived", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "acknowledge", "label": "Acknowledge", "icon": "check_circle_outline", "tone": "primary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["community-member"],
-                       "actorInList": { "key": "acknowledgedPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "acknowledgedPersonaIds", "value": "$actor" } ] },
-          { "id": "request-access", "label": "Request access", "icon": "lock_open", "tone": "secondary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["community-member"],
-                       "actorInList": { "key": "accessRequestedPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "accessRequestedPersonaIds", "value": "$actor" } ] },
-          { "id": "archive-document", "label": "Archive document", "icon": "archive_outlined", "tone": "destructive",
-            "from": ["published"], "to": "archived",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } }
+          {
+            "id": "record-resource-open",
+            "label": "Record as opened",
+            "icon": "open_in_new",
+            "tone": "primary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "formula": "size(allowedPersonaIds) == 0 || contains(allowedPersonaIds, $actor)"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "openedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "opened", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "acknowledge-resource",
+            "label": "Acknowledge",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "acknowledgedPersonaIds", "present": false },
+              "formula": "size(allowedPersonaIds) == 0 || contains(allowedPersonaIds, $actor)"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "acknowledgedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "acknowledged", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "mark-resource-unread",
+            "label": "Mark unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "acknowledgedPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "removeValue", "key": "acknowledgedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "marked-unread", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "request-resource-access",
+            "label": "Request access",
+            "icon": "lock_open",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "accessRequestedPersonaIds", "present": false },
+              "formula": "size(allowedPersonaIds) > 0 && !contains(allowedPersonaIds, $actor)"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "accessRequestedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "access-requested", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "save-resource",
+            "label": "Save resource",
+            "icon": "bookmark_add",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "savedPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "savedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "request-resource-follow-up",
+            "label": "Ask follow-up",
+            "icon": "question_answer",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": null,
+            "guard": { "allowedPersonaIds": ["community-member"] },
+            "effects": [
+              { "op": "appendUnique", "key": "followUpRequestedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "follow-up-requested", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-resource-download",
+            "label": "Record download",
+            "icon": "download",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "formula": "size(allowedPersonaIds) == 0 || contains(allowedPersonaIds, $actor)"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "downloadedPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "auditHistory", "value": { "action": "download-recorded", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "archive-resource",
+            "label": "Archive resource",
+            "icon": "archive",
+            "tone": "destructive",
+            "from": ["available"],
+            "to": "archived",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["published"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["available"],
+            "role": "any",
+            "tabId": "resources",
+            // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is canonical but not yet in the Dart registry.
+            "cardSurfaceFamily": "documentLibrary",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Add document", "byPersonaIds": ["masjid-admin"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["archived"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["published"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["archived"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "Add resource",
+                "byPersonaIds": ["masjid-admin"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "allowedPersonaIds": [],
+                  "openedPersonaIds": [],
+                  "acknowledgedPersonaIds": [],
+                  "accessRequestedPersonaIds": [],
+                  "savedPersonaIds": [],
+                  "downloadedPersonaIds": [],
+                  "followUpRequestedPersonaIds": [],
+                  "auditHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["archived"],
+            "role": "any",
+            "tabId": "resources",
+            // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is canonical but not yet in the Dart registry.
+            "cardSurfaceFamily": "documentLibrary",
+            "bindingKind": "summary"
+          }
         ],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry",
-                    "searchable": true, "sortable": true, "labelTemplate": "{value}",
-                    "displayContexts": ["tile", "detail"] },
-          "source": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
-                     "displayIcon": "description", "labelTemplate": "Open {value}",
-                     "displayContexts": ["detail"] },
-          "version": { "type": "text", "writableBy": "formEntry", "displayIcon": "verified_outlined",
-                      "displayContexts": ["detail"] },
-          "docType": { "type": "text", "writableBy": "formEntry", "displayIcon": "category",
-                      "displayContexts": ["tile", "detail"] },
-          "acknowledgementRequired": { "type": "bool", "writableBy": "formEntry", "displayContexts": [] },
-          "acknowledgedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "hideWhenEmpty": true,
-                                      "displayIcon": "check_circle_outline",
-                                      "labelTemplate": "Acknowledged: {value.length}" },
-          "accessRequestedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "hideWhenEmpty": true,
-                                         "displayIcon": "lock_outline",
-                                         "labelTemplate": "Access requests: {value.length}" },
-          "acknowledgedCount": { "type": "number", "formula": "size(acknowledgedPersonaIds)",
-                                 "displayIcon": "check_circle_outline", "labelTemplate": "Acknowledged: {value}",
-                                 "displayContexts": ["tile", "detail"] }
+          "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "sortable": true, "displayIcon": "description", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "source": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "account_balance", "labelTemplate": "Source: {value}", "displayContexts": ["tile", "detail"] },
+          "version": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "history", "labelTemplate": "Version {value}", "displayContexts": ["tile", "detail"] },
+          "publishedDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Published {value}", "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION: type:url/openMode rendering is proposed and not yet implemented.
+          "resourceUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayIcon": "open_in_new", "labelTemplate": "Open {value}", "displayContexts": ["tile", "detail"] },
+          "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified_user", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
+          "allowedPersonaIds": { "type": "personaId[]", "writableBy": "formEntry", "displayIcon": "lock", "labelTemplate": "Restricted to {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION: per-field/per-instance URL withholding for the protected-document minority.
+          // membersOnly keeps ordinary resources discoverable; allowedPersonaIds currently gates engagement transitions, not the URL field renderer itself.
+          "openedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "visibility", "labelTemplate": "Opened by {value.length}", "displayContexts": ["detail"] },
+          "acknowledgedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "task_alt", "labelTemplate": "Acknowledged by {value.length}", "displayContexts": ["tile", "detail"] },
+          "accessRequestedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "lock_open", "labelTemplate": "Access requests: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "savedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "bookmark", "labelTemplate": "Saved by {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "downloadedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Download records: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "followUpRequestedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "question_answer", "labelTemplate": "Follow-ups: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "policy", "labelTemplate": "Audit entries: {value.length}", "displayContexts": ["detail"] }
         }
       },
 
       "mosque-volunteer-signup": {
         "initialState": "open",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "open": {
-            "label": "Open", "tone": "positive",
-            "editableFields": ["role", "shiftDate", "shiftTime", "location", "capacity", "coordinatorContact"],
+            "label": "Volunteer signup open",
+            "tone": "positive",
+            "editableFields": ["title", "shiftRole", "shiftDate", "shiftTime", "location", "capacity", "contactSharingPolicy"],
             "editGuard": { "allowedPersonaIds": ["masjid-admin"] }
           },
-          "closed": { "label": "Closed", "tone": "negative", "isTerminal": true }
+          "closed": { "label": "Signup closed", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "sign-up", "label": "Volunteer", "icon": "volunteer_activism", "tone": "primary",
-            "from": ["open"], "to": null,
-            "guard": { "allowedPersonaIds": ["community-member"],
-                       "formula": "size(volunteerPersonaIds) < capacity",
-                       "actorInList": { "key": "volunteerPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "volunteerPersonaIds", "value": "$actor" } ] },
-          { "id": "cancel-signup", "label": "Cancel signup", "icon": "cancel", "tone": "secondary",
-            "from": ["open"], "to": null,
-            "guard": { "allowedPersonaIds": ["community-member"],
-                       "actorInList": { "key": "volunteerPersonaIds", "present": true } },
-            "effects": [ { "op": "removeValue", "key": "volunteerPersonaIds", "value": "$actor" } ] },
-          { "id": "close-shift", "label": "Close shift", "icon": "event_busy", "tone": "destructive",
-            "from": ["open"], "to": "closed",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } }
+          {
+            "id": "sign-up-volunteer",
+            "label": "Volunteer",
+            "icon": "volunteer_activism",
+            "tone": "primary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "signedUpPersonaIds", "present": false },
+              "formula": "size(signedUpPersonaIds) < capacity"
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "signedUpPersonaIds", "value": "$actor" },
+              { "op": "appendUnique", "key": "contactSharingPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "signupHistory", "value": { "action": "signed-up", "member": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "update-volunteer-availability",
+            "label": "Edit availability",
+            "icon": "edit_calendar",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "inputs": {
+              "availabilityNote": { "type": "text", "required": true }
+            },
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "signedUpPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "append", "key": "availabilityHistory", "value": { "member": "$actor", "note": "{input.availabilityNote}", "at": "$timestamp" } },
+              { "op": "append", "key": "signupHistory", "value": { "action": "availability-updated", "member": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-volunteer-signup",
+            "label": "Cancel signup",
+            "icon": "person_remove",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member"],
+              "actorInList": { "key": "signedUpPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "removeValue", "key": "signedUpPersonaIds", "value": "$actor" },
+              { "op": "removeValue", "key": "contactSharingPersonaIds", "value": "$actor" },
+              { "op": "append", "key": "signupHistory", "value": { "action": "cancelled", "member": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-coordinator-follow-up",
+            "label": "Record coordinator follow-up",
+            "icon": "contact_phone",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "inputs": {
+              "memberPersonaId": { "type": "text", "required": true },
+              "followUpNote": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "append", "key": "coordinatorFollowUpHistory", "value": { "member": "{input.memberPersonaId}", "note": "{input.followUpNote}", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "close-volunteer-shift",
+            "label": "Close signup",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "closed",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["open"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New volunteer shift", "byPersonaIds": ["masjid-admin"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["closed"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["open"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["closed"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New volunteer shift",
+                "byPersonaIds": ["masjid-admin"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "signedUpPersonaIds": [],
+                  "contactSharingPersonaIds": [],
+                  "signupHistory": [],
+                  "availabilityHistory": [],
+                  "coordinatorFollowUpHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["closed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "role": { "type": "text", "required": true, "writableBy": "formEntry",
-                   "searchable": true, "labelTemplate": "{value}", "displayIcon": "volunteer_activism",
-                   "displayContexts": ["tile", "detail"] },
-          "shiftDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true,
-                        "displayIcon": "calendar_today", "labelTemplate": "{value}",
-                        "displayContexts": ["tile", "detail"] },
-          "shiftTime": { "type": "time", "required": true, "writableBy": "formEntry",
-                        "displayIcon": "schedule", "labelTemplate": "{value}",
-                        "displayContexts": ["tile", "detail"] },
-          "location": { "type": "text", "writableBy": "formEntry", "displayIcon": "location_on_outlined",
-                       "labelTemplate": "{value}", "displayContexts": ["detail"] },
-          "capacity": { "type": "number", "required": true, "writableBy": "formEntry",
-                       "displayIcon": "groups_outlined", "labelTemplate": "{value} volunteers needed" },
-          "coordinatorContact": { "type": "text", "writableBy": "formEntry", "displayIcon": "contact_phone",
-                                  "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "volunteerPersonaIds": { "type": "personaId[]", "writableBy": "effect", "hideWhenEmpty": true,
-                                   "displayIcon": "groups_outlined",
-                                   "labelTemplate": "Signed up: {value.length}" },
-          "volunteerCount": { "type": "number", "formula": "size(volunteerPersonaIds)",
-                              "displayIcon": "groups_outlined", "labelTemplate": "{value} signed up",
-                              "displayContexts": ["tile", "detail"] },
-          "spotsRemaining": { "type": "number", "formula": "capacity - volunteerCount",
-                             "displayIcon": "event_seat", "labelTemplate": "{value} spots left" },
-          "isFull": { "type": "bool", "formula": "volunteerCount >= capacity",
-                     "displayIcon": "event_busy", "labelTemplate": "Full: {value}" }
+          "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "shiftRole": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "badge", "labelTemplate": "Role: {value}", "displayContexts": ["tile", "detail"] },
+          "shiftDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "shiftTime": { "type": "time", "required": true, "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "location": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
+          "contactSharingPolicy": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "Contact privacy: {value}", "displayContexts": ["detail"] },
+          "signedUpPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "how_to_reg", "labelTemplate": "Volunteers: {value.length}", "displayContexts": ["tile", "detail"] },
+          "contactSharingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "shield", "labelTemplate": "Protected contact consents: {value.length}", "displayContexts": ["detail"] },
+          "signupHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Signup history: {value.length}", "displayContexts": ["detail"] },
+          "availabilityHistory": { "type": "list", "writableBy": "effect", "displayIcon": "edit_note", "labelTemplate": "Availability updates: {value.length}", "displayContexts": ["detail"] },
+          "coordinatorFollowUpHistory": { "type": "list", "writableBy": "effect", "displayIcon": "contact_phone", "labelTemplate": "Coordinator follow-ups: {value.length}", "displayContexts": ["detail"] },
+          "signedUpCount": { "type": "number", "formula": "size(signedUpPersonaIds)", "displayIcon": "groups", "labelTemplate": "Signed up: {value}", "displayContexts": ["tile", "detail"] },
+          "spotsRemaining": { "type": "number", "formula": "capacity - size(signedUpPersonaIds)", "displayIcon": "event_seat", "labelTemplate": "Open spots: {value}", "displayContexts": ["tile", "detail"] },
+          "isFull": { "type": "bool", "formula": "size(signedUpPersonaIds) >= capacity", "displayIcon": "block", "labelTemplate": "Full: {value}", "displayContexts": ["detail"] }
         }
       },
 
       "mosque-donor-visibility": {
-        "initialState": "active",
+        "initialState": "restricted",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "formula": "$viewer == donorPersonaId" }
+        },
         "states": {
-          "active": { "label": "Active", "tone": "positive" }
+          "public": { "label": "Public donor", "tone": "positive" },
+          "anonymous": { "label": "Anonymous donor", "tone": "info" },
+          "restricted": { "label": "Restricted to donation records", "tone": "warning" }
         },
         "transitions": [
-          { "id": "set-public", "label": "Show my name publicly", "icon": "visibility", "tone": "primary",
-            "from": ["active"], "to": null,
-            "guard": { "actorEqualsField": { "key": "donorPersonaId" } },
-            "effects": [ { "op": "set", "key": "visibilityChoice", "value": "public" } ] },
-          { "id": "set-anonymous", "label": "Give anonymously", "icon": "visibility_off", "tone": "secondary",
-            "from": ["active"], "to": null,
-            "guard": { "actorEqualsField": { "key": "donorPersonaId" } },
-            "effects": [ { "op": "set", "key": "visibilityChoice", "value": "anonymous" } ] },
-          { "id": "set-restricted", "label": "Visible to admin only", "icon": "admin_panel_settings",
+          {
+            "id": "set-donor-public",
+            "label": "Reveal name",
+            "icon": "person",
             "tone": "secondary",
-            "from": ["active"], "to": null,
+            "from": ["anonymous", "restricted"],
+            "to": "public",
             "guard": { "actorEqualsField": { "key": "donorPersonaId" } },
-            "effects": [ { "op": "set", "key": "visibilityChoice", "value": "restricted" } ] }
+            "effects": [
+              { "op": "set", "key": "receiptVisibility", "value": "Name visible on donor-facing receipt and public roll" },
+              { "op": "append", "key": "visibilityHistory", "value": { "choice": "public", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "set-donor-anonymous",
+            "label": "Keep anonymous",
+            "icon": "visibility_off",
+            "tone": "primary",
+            "from": ["public", "restricted"],
+            "to": "anonymous",
+            "guard": { "actorEqualsField": { "key": "donorPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "receiptVisibility", "value": "Name hidden from public roll; visible on donor receipt" },
+              { "op": "append", "key": "visibilityHistory", "value": { "choice": "anonymous", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "set-donor-restricted",
+            "label": "Restrict name",
+            "icon": "lock",
+            "tone": "secondary",
+            "from": ["public", "anonymous"],
+            "to": "restricted",
+            "guard": { "actorEqualsField": { "key": "donorPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "receiptVisibility", "value": "Identity restricted to donor's private record" },
+              { "op": "append", "key": "visibilityHistory", "value": { "choice": "restricted", "by": "$actor", "at": "$timestamp" } }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["active"], "role": "actor", "tabId": "giving",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }
-        ],
-        "visibility": { "default": "guarded",
-                        "readGuard": { "formula": "$viewer == donorPersonaId || $viewer == 'masjid-admin'" } },
-        "instanceDataSchema": {
-          "donorPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "fund": { "type": "text", "required": true, "writableBy": "effect",
-                   "displayIcon": "volunteer_activism", "displayContexts": ["tile", "detail"] },
-          "amountLabel": { "type": "text", "required": true, "writableBy": "effect",
-                          "displayIcon": "payments_outlined", "labelTemplate": "{value}" },
-          "visibilityChoice": { "type": "text", "writableBy": "effect", "displayIcon": "visibility",
-                                "labelTemplate": "Preference: {value}" },
-          "receiptVisibility": {
-            "type": "text",
-            "formula": "if(visibilityChoice == 'anonymous', 'Hidden from public', if(visibilityChoice == 'restricted', 'Visible to admin only', 'Visible publicly'))",
-            "displayIcon": "receipt_long", "displayContexts": ["detail"]
+          {
+            "states": ["public", "anonymous", "restricted"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary"
           }
+        ],
+        "instanceDataSchema": {
+          "donorPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Donor: {value}", "displayContexts": ["detail"] },
+          "amount": { "type": "number", "required": true, "writableBy": "effect", "displayIcon": "payments_outlined", "labelTemplate": "Amount: $ {value}", "displayContexts": ["tile", "detail"] },
+          "fund": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "volunteer_activism", "labelTemplate": "Fund: {value}", "displayContexts": ["tile", "detail"] },
+          "receiptVisibility": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "visibilityHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Preference history: {value.length}", "displayContexts": ["detail"] }
         }
       },
 
       "mosque-donation-payment": {
-        "initialState": "pending",
+        // NEEDS IMPLEMENTATION (platform service): real online payment processing.
+        // This state machine records donation intent and honest admin-confirmed offline payments only.
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "formula": "$viewer == payerPersonaId || $viewer == 'masjid-admin'" }
+        },
         "states": {
-          "pending": {
-            "label": "Pending", "tone": "warning",
-            "editableFields": ["fund", "amountLabel", "donorVisibility"],
+          "draft": {
+            "label": "Donation draft",
+            "tone": "info",
+            "editableFields": ["amount", "fund", "privacyChoice", "recurringPreference"],
             "editGuard": { "allowedPersonaIds": ["community-member"] }
           },
-          "paid": { "label": "Paid", "tone": "positive", "isTerminal": true },
-          "failed": { "label": "Failed", "tone": "negative" },
-          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+          "pending": {
+            "label": "Pending recording",
+            "tone": "warning",
+            "editableFields": ["amount", "fund", "privacyChoice", "recurringPreference"],
+            "editGuard": { "allowedPersonaIds": ["community-member"] }
+          },
+          "failed": {
+            "label": "Payment failed",
+            "tone": "negative",
+            "editableFields": ["amount", "fund", "privacyChoice", "recurringPreference"],
+            "editGuard": { "allowedPersonaIds": ["community-member"] }
+          },
+          "paid": { "label": "Paid — manually recorded", "tone": "positive" },
+          "refundRequested": { "label": "Refund requested", "tone": "warning" },
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true },
+          "refunded": { "label": "Refunded — manually recorded", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "pay", "label": "Donate", "icon": "payments_outlined", "tone": "primary",
-            "from": ["pending", "failed"], "to": "paid",
-            "guard": { "allowedPersonaIds": ["community-member"] },
+          {
+            "id": "submit-donation-intent",
+            "label": "Submit donation",
+            "icon": "favorite",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "pending",
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
             "effects": [
-              { "op": "set", "key": "receiptStatus", "value": "complete" },
+              { "op": "set", "key": "requestedAt", "value": "$timestamp" },
+              { "op": "set", "key": "paymentStatus", "value": "pending" },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "intent-submitted", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "save-donation-changes",
+            "label": "Save changes",
+            "icon": "save",
+            "tone": "secondary",
+            "from": ["draft", "pending", "failed"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "append", "key": "paymentHistory", "value": { "status": "details-updated", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-payment-failure",
+            "label": "Record payment failure",
+            "icon": "error_outline",
+            "tone": "destructive",
+            "from": ["pending"],
+            "to": "failed",
+            "inputs": {
+              "failureReason": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "paymentStatus", "value": "failed" },
+              { "op": "set", "key": "failureReason", "value": "{input.failureReason}" },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "failed-recorded", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "retry-donation",
+            "label": "Retry payment",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "pending",
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "paymentStatus", "value": "pending" },
+              { "op": "set", "key": "failureReason", "value": null },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "retry-requested", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "confirm-offline-donation",
+            "label": "Record offline payment",
+            "icon": "verified",
+            "tone": "primary",
+            "from": ["pending"],
+            "to": "paid",
+            "inputs": {
+              "receiptSummary": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "paymentStatus", "value": "paid-manual" },
               { "op": "set", "key": "paidAt", "value": "$timestamp" },
-              { "op": "createInstance", "workflowType": "mosque-donor-visibility",
-                "fields": { "donorPersonaId": "{donorPersonaId}", "fund": "{fund}",
-                           "amountLabel": "{amountLabel}" } }
-            ] },
-          { "id": "mark-failed", "label": "Record payment failure", "icon": "error_outline", "tone": "destructive",
-            "from": ["pending"], "to": "failed",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } },
-          { "id": "cancel-donation", "label": "Cancel", "icon": "cancel", "tone": "destructive",
-            "from": ["pending"], "to": "cancelled",
-            "guard": { "actorEqualsField": { "key": "donorPersonaId" } } }
+              { "op": "set", "key": "receiptSummary", "value": "{input.receiptSummary}" },
+              { "op": "set", "key": "receiptStatus", "value": "recorded" },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "offline-payment-recorded", "by": "$actor", "at": "$timestamp" } },
+              {
+                "op": "createInstance",
+                "workflowType": "mosque-donor-visibility",
+                "fields": {
+                  "donorPersonaId": "{payerPersonaId}",
+                  "amount": "{amount}",
+                  "fund": "{fund}",
+                  "receiptVisibility": "Identity restricted to donor's private record",
+                  "visibilityHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "id": "open-donation-receipt",
+            "label": "View receipt",
+            "icon": "receipt_long",
+            "tone": "secondary",
+            "from": ["paid"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "receiptViewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "manage-recurring-preference",
+            "label": "Manage recurring preference",
+            "icon": "settings",
+            "tone": "secondary",
+            "from": ["paid"],
+            "to": null,
+            "inputs": {
+              "recurringPreference": { "type": "text", "required": true }
+            },
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "recurringPreference", "value": "{input.recurringPreference}" },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "recurring-preference-updated", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "request-donation-refund",
+            "label": "Request refund",
+            "icon": "currency_exchange",
+            "tone": "destructive",
+            "from": ["paid"],
+            "to": "refundRequested",
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "append", "key": "paymentHistory", "value": { "status": "refund-requested", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-donation-refund",
+            "label": "Record refund",
+            "icon": "done",
+            "tone": "primary",
+            "from": ["refundRequested"],
+            "to": "refunded",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "paymentStatus", "value": "refunded-manual" },
+              { "op": "append", "key": "paymentHistory", "value": { "status": "refund-recorded", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "decline-donation-refund",
+            "label": "Decline refund",
+            "icon": "close",
+            "tone": "secondary",
+            "from": ["refundRequested"],
+            "to": "paid",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "append", "key": "paymentHistory", "value": { "status": "refund-declined", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-donation",
+            "label": "Cancel donation",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft", "pending", "failed"],
+            "to": "cancelled",
+            "guard": { "actorEqualsField": { "key": "payerPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "paymentStatus", "value": "cancelled" }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["pending", "paid", "failed", "cancelled"], "role": "actor", "tabId": "giving",
-            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary",
+          {
+            "states": ["draft", "pending", "failed", "paid", "refundRequested"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Donate", "byPersonaIds": ["community-member"],
-                "scope": "tab", "presentation": "fab", "prefill": { "donorPersonaId": "$actor" } }
-            ] },
-          { "states": ["pending", "paid", "failed", "cancelled"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "Donate",
+                "byPersonaIds": ["community-member"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "payerPersonaId": "$actor",
+                  "paymentStatus": "draft",
+                  "paymentHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["pending", "refundRequested"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["paid"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["cancelled", "refunded"],
+            "role": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-        "visibility": { "default": "guarded",
-                        "readGuard": { "formula": "$viewer == donorPersonaId || $viewer == 'masjid-admin'" } },
         "instanceDataSchema": {
-          "donorPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "fund": { "type": "text", "required": true, "writableBy": "formEntry",
-                   "displayIcon": "volunteer_activism", "displayContexts": ["tile", "detail"] },
-          "amountLabel": { "type": "text", "required": true, "writableBy": "formEntry",
-                          "displayIcon": "payments_outlined", "labelTemplate": "{value}" },
-          "donorVisibility": { "type": "text", "writableBy": "formEntry", "displayIcon": "visibility",
-                               "hideWhenEmpty": true },
-          "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long",
-                             "hideWhenEmpty": true },
-          "paidAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true,
-                     "displayIcon": "calendar_today" }
+          "payerPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Payer: {value}", "displayContexts": ["detail"] },
+          "amount": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "payments_outlined", "labelTemplate": "Amount: $ {value}", "displayContexts": ["tile", "detail"] },
+          "fund": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "volunteer_activism", "labelTemplate": "Fund: {value}", "displayContexts": ["tile", "detail"] },
+          "privacyChoice": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "Privacy: {value}", "displayContexts": ["tile", "detail"] },
+          "recurringPreference": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "repeat", "labelTemplate": "Giving plan: {value}", "displayContexts": ["detail"] },
+          "requestedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Requested {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "paidAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "labelTemplate": "Recorded paid {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "paymentStatus": { "type": "text", "writableBy": "effect", "displayIcon": "account_balance_wallet", "labelTemplate": "Status: {value}", "displayContexts": ["tile", "detail"] },
+          "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error_outline", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "receiptSummary": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Receipt status: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "receiptViewedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "visibility", "labelTemplate": "Receipt viewed {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): opaque receipt-ID generation. Declared, never written or seeded.
+          "receiptId": { "type": "text?", "writableBy": "effect", "displayIcon": "tag", "labelTemplate": "Receipt ID: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "paymentHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Payment history: {value.length}", "displayContexts": ["detail"] }
         }
       },
 
       "mosque-care-request": {
         "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "formula": "$viewer == requesterPersonaId || $viewer == assignedReviewerPersonaId" }
+        },
         "states": {
           "draft": {
-            "label": "Draft", "tone": "info",
-            "editableFields": ["publicSummary", "protectedDetails", "urgency"],
-            "editGuard": { "actorEqualsField": { "key": "requesterPersonaId" } }
+            "label": "Draft care request",
+            "tone": "info",
+            "editableFields": ["publicSummary", "privateDetails", "privacyLabel", "contactPreference"],
+            "editGuard": { "allowedPersonaIds": ["community-member"] }
           },
-          "submitted": { "label": "Submitted", "tone": "info" },
-          "changes-requested": {
-            "label": "Changes requested", "tone": "warning",
-            "editableFields": ["publicSummary", "protectedDetails", "urgency"],
-            "editGuard": { "actorEqualsField": { "key": "requesterPersonaId" } }
+          "submitted": { "label": "Submitted for private review", "tone": "warning" },
+          "changesRequested": {
+            "label": "Changes requested",
+            "tone": "warning",
+            "editableFields": ["publicSummary", "privateDetails", "privacyLabel", "contactPreference"],
+            "editGuard": { "allowedPersonaIds": ["community-member"] }
           },
-          "assigned": { "label": "Assigned", "tone": "positive" },
+          "assigned": { "label": "Assigned to care reviewer", "tone": "info" },
+          "responded": { "label": "Private response sent", "tone": "positive" },
           "resolved": { "label": "Resolved", "tone": "positive", "isTerminal": true },
-          "rejected": { "label": "Rejected", "tone": "negative", "isTerminal": true },
-          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+          "rejected": { "label": "Unable to accept", "tone": "negative", "isTerminal": true },
+          "withdrawn": { "label": "Withdrawn", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "submit", "label": "Submit request", "icon": "send", "tone": "primary",
-            "from": ["draft", "changes-requested"], "to": "submitted",
+          {
+            "id": "submit-care-request",
+            "label": "Submit request",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "submitted",
             "guard": { "actorEqualsField": { "key": "requesterPersonaId" } },
-            "effects": [ { "op": "set", "key": "submittedAt", "value": "$timestamp" } ] },
-          { "id": "assign", "label": "Assign to care team", "icon": "assignment_ind", "tone": "primary",
-            "from": ["submitted"], "to": "assigned",
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "append", "key": "statusHistory", "value": { "status": "submitted", "by": "$actor", "at": "$timestamp" } },
+              {
+                "op": "createInstance",
+                "workflowType": "mosque-neutral-notification",
+                "fields": {
+                  "title": "Care request received",
+                  "senderPersonaId": "{assignedReviewerPersonaId}",
+                  "recipientPersonaId": "{requesterPersonaId}",
+                  "audience": "requester only",
+                  "messageBody": "Your request was received. A care reviewer will follow up privately; no protected details are included here.",
+                  "createdAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "request-care-changes",
+            "label": "Request changes",
+            "icon": "edit_note",
+            "tone": "secondary",
+            "from": ["submitted"],
+            "to": "changesRequested",
+            "inputs": {
+              "changeNote": { "type": "text", "required": true }
+            },
             "guard": { "allowedPersonaIds": ["masjid-admin"] },
             "effects": [
-              { "op": "set", "key": "assignedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "reviewNote", "value": "{input.changeNote}" },
+              { "op": "append", "key": "statusHistory", "value": { "status": "changes-requested", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "revise-care-request",
+            "label": "Revise and resubmit",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["changesRequested"],
+            "to": "submitted",
+            "guard": { "actorEqualsField": { "key": "requesterPersonaId" } },
+            "effects": [
+              { "op": "append", "key": "statusHistory", "value": { "status": "resubmitted", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "approve-and-assign-care-request",
+            "label": "Approve and assign",
+            "icon": "assignment_ind",
+            "tone": "primary",
+            "from": ["submitted"],
+            "to": "assigned",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "assignedReviewerPersonaId", "value": "$actor" },
               { "op": "set", "key": "assignedAt", "value": "$timestamp" },
-              { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                "fields": { "recipientPersonaId": "{requesterPersonaId}",
-                           "title": "Your care request has been assigned",
-                           "body": "A member of our care team is now reviewing your request.",
-                           "createdAt": "$timestamp" } }
-            ] },
-          { "id": "request-changes", "label": "Request changes", "icon": "undo", "tone": "secondary",
-            "from": ["submitted"], "to": "changes-requested",
+              { "op": "append", "key": "statusHistory", "value": { "status": "assigned", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "reject-care-request",
+            "label": "Reject request",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["submitted"],
+            "to": "rejected",
+            "inputs": {
+              "reviewNote": { "type": "text", "required": true }
+            },
             "guard": { "allowedPersonaIds": ["masjid-admin"] },
             "effects": [
-              { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                "fields": { "recipientPersonaId": "{requesterPersonaId}",
-                           "title": "More information needed",
-                           "body": "Please review and update your care request.",
-                           "createdAt": "$timestamp" } }
-            ] },
-          { "id": "reject", "label": "Reject", "icon": "block", "tone": "destructive",
-            "from": ["submitted"], "to": "rejected",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+              { "op": "set", "key": "reviewNote", "value": "{input.reviewNote}" },
+              { "op": "append", "key": "statusHistory", "value": { "status": "rejected", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "send-private-care-response",
+            "label": "Send private response",
+            "icon": "reply",
+            "tone": "primary",
+            "from": ["assigned"],
+            "to": "responded",
+            "inputs": {
+              "responseBody": { "type": "text", "required": true }
+            },
+            "guard": { "actorEqualsField": { "key": "assignedReviewerPersonaId" } },
             "effects": [
-              { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                "fields": { "recipientPersonaId": "{requesterPersonaId}",
-                           "title": "Update on your care request",
-                           "body": "Our care team was unable to proceed with your request at this time.",
-                           "createdAt": "$timestamp" } }
-            ] },
-          { "id": "resolve", "label": "Mark resolved", "icon": "check_circle", "tone": "primary",
-            "from": ["assigned"], "to": "resolved",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+              { "op": "set", "key": "responseSummary", "value": "{input.responseBody}" },
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" },
+              { "op": "append", "key": "statusHistory", "value": { "status": "responded", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "resolve-care-request",
+            "label": "Resolve request",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["responded"],
+            "to": "resolved",
+            "guard": { "actorEqualsField": { "key": "assignedReviewerPersonaId" } },
             "effects": [
-              { "op": "set", "key": "resolvedAt", "value": "$timestamp" },
-              { "op": "createInstance", "workflowType": "mosque-neutral-notification",
-                "fields": { "recipientPersonaId": "{requesterPersonaId}",
-                           "title": "Your care request has been resolved",
-                           "body": "Thank you — your request has been completed.",
-                           "createdAt": "$timestamp" } }
-            ] },
-          { "id": "withdraw", "label": "Withdraw request", "icon": "delete_outline", "tone": "destructive",
-            "from": ["draft", "submitted", "changes-requested", "assigned"], "to": "withdrawn",
-            "guard": { "actorEqualsField": { "key": "requesterPersonaId" } } }
+              { "op": "append", "key": "statusHistory", "value": { "status": "resolved", "by": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "withdraw-care-request",
+            "label": "Withdraw request",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["draft", "submitted", "changesRequested"],
+            "to": "withdrawn",
+            "guard": { "actorEqualsField": { "key": "requesterPersonaId" } },
+            "effects": [
+              { "op": "append", "key": "statusHistory", "value": { "status": "withdrawn", "by": "$actor", "at": "$timestamp" } }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["draft", "changes-requested"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["draft", "changesRequested"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Request care support", "byPersonaIds": ["community-member"],
-                "scope": "tab", "presentation": "fab", "prefill": { "requesterPersonaId": "$actor" } }
-            ] },
-          { "states": ["submitted", "assigned", "resolved", "rejected", "withdrawn"], "role": "actor",
-            "tabId": "home", "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["submitted"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
-          { "states": ["assigned", "resolved", "rejected", "withdrawn"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
-        ],
-        "visibility": { "default": "guarded",
-                        "readGuard": { "formula": "$viewer == requesterPersonaId || $viewer == 'masjid-admin'" } },
-        "instanceDataSchema": {
-          "requesterPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "publicSummary": { "type": "text", "required": true, "writableBy": "formEntry",
-                             "searchable": true, "displayIcon": "info_outline",
-                             "displayContexts": ["tile", "detail"] },
-          "protectedDetails": { "type": "textarea", "required": true, "writableBy": "formEntry",
-                                "maxLength": 1000, "displayContexts": [] },
-          "protectedDetailsView": {
-            "type": "text",
-            "formula": "if($viewer == requesterPersonaId || $viewer == 'masjid-admin', protectedDetails, 'Protected — visible to the requester and care team only')",
-            "displayIcon": "lock_outline", "labelTemplate": "{value}", "displayContexts": ["detail"]
+              {
+                "kind": "create",
+                "label": "Request care",
+                "byPersonaIds": ["community-member"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "requesterPersonaId": "$actor",
+                  "assignedReviewerPersonaId": "masjid-admin",
+                  "statusHistory": []
+                }
+              }
+            ]
           },
-          "urgency": { "type": "text", "writableBy": "formEntry", "displayIcon": "priority_high",
-                      "displayContexts": ["tile", "detail"] },
-          "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
-          "assignedByPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true },
-          "assignedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
-          "resolvedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true }
+          {
+            "states": ["submitted", "assigned", "responded", "resolved", "rejected", "withdrawn"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["submitted", "assigned", "responded"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem",
+            "bindingKind": "primary"
+          }
+        ],
+        "instanceDataSchema": {
+          "requesterPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Requester: {value}", "displayContexts": ["detail"] },
+          "assignedReviewerPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "admin_panel_settings", "labelTemplate": "Reviewer: {value}", "displayContexts": ["detail"] },
+          "publicSummary": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "description", "labelTemplate": "Public summary: {value}", "displayContexts": ["tile", "detail"] },
+          "privateDetails": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000, "displayIcon": "lock", "labelTemplate": "Protected details: {value}", "displayContexts": ["detail"] },
+          "privacyLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "Privacy: {value}", "displayContexts": ["tile", "detail"] },
+          "contactPreference": { "type": "text", "writableBy": "formEntry", "displayIcon": "contact_phone", "labelTemplate": "Contact: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "submittedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send", "labelTemplate": "Submitted {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "assignedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "assignment_ind", "labelTemplate": "Assigned {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "respondedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "reply", "labelTemplate": "Responded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "reviewNote": { "type": "text", "writableBy": "effect", "displayIcon": "rate_review", "labelTemplate": "Review note: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "responseSummary": { "type": "text", "writableBy": "effect", "displayIcon": "forum", "labelTemplate": "Private response: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "statusHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Status history: {value.length}", "displayContexts": ["tile", "detail"] }
         }
       },
 
       "mosque-neutral-notification": {
         "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "formula": "$viewer == recipientPersonaId || $viewer == senderPersonaId" }
+        },
         "states": {
-          "unread": { "label": "Unread", "tone": "info" },
-          "read": { "label": "Read", "isTerminal": true }
+          "unread": { "label": "Received — unread", "tone": "warning" },
+          "read": { "label": "Read", "tone": "positive" },
+          "archived": { "label": "Archived", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "mark-notification-read", "label": "Mark read", "icon": "done", "tone": "secondary",
-            "from": ["unread"], "to": "read",
-            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } } }
+          {
+            "id": "mark-notification-read",
+            "label": "Mark read",
+            "icon": "mark_email_read",
+            "tone": "primary",
+            "from": ["unread"],
+            "to": "read",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "keep-notification-unread",
+            "label": "Keep unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["unread"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+          },
+          {
+            "id": "mark-notification-unread",
+            "label": "Mark unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["read"],
+            "to": "unread",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": null }
+            ]
+          },
+          {
+            "id": "request-notification-follow-up",
+            "label": "Request follow-up",
+            "icon": "question_answer",
+            "tone": "secondary",
+            "from": ["unread", "read"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } },
+            "effects": [
+              { "op": "set", "key": "followUpRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "archive-notification",
+            "label": "Archive notice",
+            "icon": "archive",
+            "tone": "destructive",
+            "from": ["unread", "read"],
+            "to": "archived",
+            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+          }
         ],
-        "renderBindings": [],
-        "visibility": { "default": "guarded",
-                        "readGuard": { "formula": "$viewer == recipientPersonaId || $viewer == 'masjid-admin'" } },
+        "renderBindings": [
+          {
+            "states": ["unread", "read"],
+            "role": "any",
+            "tabId": "messages",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["unread"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["archived"],
+            "role": "any",
+            "tabId": "messages",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "summary"
+          }
+        ],
         "instanceDataSchema": {
-          "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "title": { "type": "text", "required": true, "writableBy": "effect" },
-          "body": { "type": "text", "required": true, "writableBy": "effect" },
-          "createdAt": { "type": "text", "required": true, "writableBy": "effect", "sortable": true }
+          "title": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "notifications", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "senderPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "From {value}", "displayContexts": ["tile", "detail"] },
+          "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_pin", "labelTemplate": "For {value}", "displayContexts": ["detail"] },
+          "audience": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "groups_outlined", "labelTemplate": "Audience: {value}", "displayContexts": ["detail"] },
+          "messageBody": { "type": "textarea", "required": true, "writableBy": "effect", "maxLength": 1000, "displayIcon": "article", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "createdAt": { "type": "date", "required": true, "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Received {value}", "displayContexts": ["tile", "detail"] },
+          "readAt": { "type": "date?", "writableBy": "effect", "displayIcon": "done_all", "labelTemplate": "Read {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "followUpRequestedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "question_answer", "labelTemplate": "Follow-up requested {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
 
       "mosque-search-ai-citation": {
-        "initialState": "pending",
+        "initialState": "asked",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "pending": {
-            "label": "Awaiting answer", "tone": "info",
+          "asked": {
+            "label": "Question asked",
+            "tone": "warning",
             "editableFields": ["query"],
-            "editGuard": { "allowedPersonaIds": ["community-member"] }
+            "editGuard": { "allowedPersonaIds": ["community-member", "masjid-admin"] }
           },
-          "answered": { "label": "Answered", "tone": "positive" },
-          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+          "answered": { "label": "Curated answer available", "tone": "positive" },
+          "reported": { "label": "Citation reported stale", "tone": "warning" }
         },
         "transitions": [
-          { "id": "answer-query", "label": "Answer", "icon": "question_answer", "tone": "primary",
-            "from": ["pending"], "to": "answered",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+          {
+            "id": "provide-curated-answer",
+            "label": "Provide curated answer",
+            "icon": "rate_review",
+            "tone": "primary",
+            "from": ["asked"],
+            "to": "answered",
             "inputs": {
               "answerBody": { "type": "text", "required": true },
               "citationLabel": { "type": "text", "required": true },
               "citationUrl": { "type": "text", "required": true }
             },
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
             "effects": [
-              { "op": "set", "key": "answerBody", "value": "{input.answerBody}" },
-              { "op": "append", "key": "citations",
-                "value": { "label": "{input.citationLabel}", "source": "{input.citationUrl}" } },
-              { "op": "set", "key": "answeredAt", "value": "$timestamp" }
-            ] },
-          { "id": "refine-query", "label": "Refine question", "icon": "edit", "tone": "secondary",
-            "from": ["answered"], "to": "pending",
-            "guard": { "actorEqualsField": { "key": "askedByPersonaId" } },
-            "inputs": { "newQuery": { "type": "text", "required": true } },
+              { "op": "set", "key": "curatedAnswerBody", "value": "{input.answerBody}" },
+              { "op": "set", "key": "citations", "value": [{ "label": "{input.citationLabel}", "source": "{input.citationUrl}" }] },
+              { "op": "set", "key": "answerSource", "value": "Masjid admin curated" },
+              { "op": "set", "key": "answeredAt", "value": "$timestamp" },
+              { "op": "set", "key": "citationStatus", "value": "current" }
+            ]
+          },
+          {
+            "id": "refine-search-query",
+            "label": "Refine query",
+            "icon": "search",
+            "tone": "primary",
+            "from": ["asked", "answered", "reported"],
+            "to": "asked",
+            "inputs": {
+              "query": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
             "effects": [
-              { "op": "set", "key": "query", "value": "{input.newQuery}" },
-              { "op": "set", "key": "answerBody", "value": "" },
-              { "op": "set", "key": "citations", "value": [] }
-            ] },
-          { "id": "withdraw-question", "label": "Withdraw question", "icon": "delete_outline", "tone": "destructive",
-            "from": ["pending"], "to": "withdrawn",
-            "guard": { "actorEqualsField": { "key": "askedByPersonaId" } } }
+              { "op": "set", "key": "query", "value": "{input.query}" },
+              { "op": "set", "key": "curatedAnswerBody", "value": null },
+              { "op": "set", "key": "citations", "value": [] },
+              { "op": "set", "key": "answerSource", "value": null },
+              { "op": "set", "key": "answeredAt", "value": null },
+              { "op": "set", "key": "citationStatus", "value": "awaiting-review" }
+            ]
+          },
+          {
+            "id": "save-search-answer",
+            "label": "Save answer",
+            "icon": "bookmark_add",
+            "tone": "secondary",
+            "from": ["answered"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "savedPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "savedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "hide-search-source",
+            "label": "Hide source",
+            "icon": "visibility_off",
+            "tone": "secondary",
+            "from": ["answered"],
+            "to": null,
+            "inputs": {
+              "citationUrl": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
+            "effects": [
+              { "op": "appendUnique", "key": "hiddenCitationUrls", "value": "{input.citationUrl}" }
+            ]
+          },
+          {
+            "id": "report-stale-citation",
+            "label": "Report stale citation",
+            "icon": "report",
+            "tone": "destructive",
+            "from": ["answered"],
+            "to": "reported",
+            "inputs": {
+              "reportReason": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "reportReason", "value": "{input.reportReason}" },
+              { "op": "set", "key": "citationStatus", "value": "reported-stale" }
+            ]
+          },
+          {
+            "id": "reopen-reported-question",
+            "label": "Reopen for new answer",
+            "icon": "refresh",
+            "tone": "secondary",
+            "from": ["reported"],
+            "to": "asked",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] },
+            "effects": [
+              { "op": "set", "key": "citationStatus", "value": "awaiting-review" }
+            ]
+          }
         ],
         "renderBindings": [
-          { "states": ["pending"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["asked", "answered", "reported"],
+            "role": "any",
+            "tabId": "resources",
+            // NEEDS IMPLEMENTATION (archetype pending): searchAiAnswer is canonical but not yet in the Dart registry.
+            "cardSurfaceFamily": "searchAiAnswer",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Ask a question", "byPersonaIds": ["community-member"],
-                "scope": "tab", "presentation": "fab", "prefill": { "askedByPersonaId": "$actor" } }
-            ] },
-          { "states": ["answered"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["withdrawn"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["pending"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" }
+              {
+                "kind": "create",
+                "label": "Ask Masjid Nur",
+                "byPersonaIds": ["community-member", "masjid-admin"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "askedByPersonaId": "$actor",
+                  "citations": [],
+                  "savedPersonaIds": [],
+                  "hiddenCitationUrls": [],
+                  "citationStatus": "awaiting-review"
+                }
+              }
+            ]
+          }
         ],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "query": { "type": "text", "required": true, "writableBy": "formEntry",
-                    "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "askedByPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "answerBody": { "type": "textarea", "writableBy": "effect", "maxLength": 1000,
-                         "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "query": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "search", "labelTemplate": "Query: {value}", "displayContexts": ["tile", "detail"] },
+          "askedByPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Asked by {value}", "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): external search / AI answer. Declared, never written or seeded.
+          "aiAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "auto_awesome", "labelTemplate": "AI answer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "curatedAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "rate_review", "labelTemplate": "Curated answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "displayAnswer": { "type": "textarea?", "formula": "if(curatedAnswerBody == null, aiAnswerBody, curatedAnswerBody)", "displayIcon": "article", "labelTemplate": "Answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION: citation-list itemSchema/type:url rendering is proposed and not yet implemented.
+          // NEEDS IMPLEMENTATION: per-citation permission/redaction rules are not expressible by itemSchema.
           "citations": {
-            "type": "list", "writableBy": "effect",
+            "type": "list",
+            "writableBy": "effect",
             "itemSchema": {
-              "label": { "type": "text", "labelTemplate": "{value}" },
-              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" }
+              "label": { "type": "text" },
+              "source": { "type": "url", "openMode": "external" }
             },
-            "displayIcon": "auto_stories", "labelTemplate": "{value.length} sources",
-            "hideWhenEmpty": true, "displayContexts": ["detail"]
+            "displayIcon": "auto_stories",
+            "labelTemplate": "Sources: {value.length}",
+            "displayContexts": ["tile", "detail"]
           },
-          "answeredAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
+          "answerSource": { "type": "text", "writableBy": "effect", "displayIcon": "verified_user", "labelTemplate": "Answer source: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "answeredAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Answered {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "citationStatus": { "type": "text", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Citation status: {value}", "displayContexts": ["tile", "detail"] },
+          "savedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "bookmark", "labelTemplate": "Saved by {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "hiddenCitationUrls": { "type": "list", "writableBy": "effect", "displayIcon": "visibility_off", "labelTemplate": "Hidden sources: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "reportReason": { "type": "text", "writableBy": "effect", "displayIcon": "report", "labelTemplate": "Report: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
 
       "mosque-discussion-thread": {
         "initialState": "open",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "open": {
-            "label": "Open", "tone": "positive",
-            "editableFields": ["subject", "pendingMessage"],
+            "label": "Open",
+            "tone": "positive",
+            "editableFields": ["threadTitle", "initialMessage"],
             "editGuard": { "allowedPersonaIds": ["community-member", "masjid-admin"] }
           },
-          "replied": {
-            "label": "Replied", "tone": "info",
-            "editableFields": ["pendingMessage"],
-            "editGuard": { "allowedPersonaIds": ["community-member", "masjid-admin"] }
-          },
-          "archived": { "label": "Archived", "tone": "negative", "isTerminal": true }
+          "replied": { "label": "Replied", "tone": "info" },
+          "archived": { "label": "Archived", "tone": "info", "isTerminal": true }
         },
         "transitions": [
-          { "id": "post-reply", "label": "Reply", "icon": "reply", "tone": "primary",
-            "from": ["open", "replied"], "to": "replied",
-            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"],
-                       "formula": "!($actor == creatorPersonaId)" },
+          {
+            "id": "reply-thread",
+            "label": "Reply",
+            "icon": "reply",
+            "tone": "primary",
+            "from": ["open"],
+            "to": "replied",
+            "inputs": {
+              "messageBody": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
             "effects": [
-              { "op": "append", "key": "messages",
-                "value": { "senderPersonaId": "$actor", "body": "{pendingMessage}", "timestamp": "$timestamp" } },
-              { "op": "set", "key": "pendingMessage", "value": "" }
-            ] },
-          { "id": "send-message", "label": "Send message", "icon": "send", "tone": "primary",
-            "from": ["open", "replied"], "to": "open",
-            "guard": { "actorEqualsField": { "key": "creatorPersonaId" } },
+              { "op": "append", "key": "messages", "value": { "senderPersonaId": "$actor", "body": "{input.messageBody}", "timestamp": "$timestamp" } },
+              { "op": "set", "key": "latestMessage", "value": "{input.messageBody}" },
+              { "op": "set", "key": "latestMessageAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "continue-thread",
+            "label": "Continue discussion",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["replied"],
+            "to": "open",
+            "inputs": {
+              "messageBody": { "type": "text", "required": true }
+            },
+            "guard": { "allowedPersonaIds": ["community-member", "masjid-admin"] },
             "effects": [
-              { "op": "append", "key": "messages",
-                "value": { "senderPersonaId": "$actor", "body": "{pendingMessage}", "timestamp": "$timestamp" } },
-              { "op": "set", "key": "pendingMessage", "value": "" }
-            ] },
-          { "id": "archive-thread", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
-            "from": ["open", "replied"], "to": "archived",
-            "guard": { "allowedPersonaIds": ["masjid-admin"] } }
+              { "op": "append", "key": "messages", "value": { "senderPersonaId": "$actor", "body": "{input.messageBody}", "timestamp": "$timestamp" } },
+              { "op": "set", "key": "latestMessage", "value": "{input.messageBody}" },
+              { "op": "set", "key": "latestMessageAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "mute-thread",
+            "label": "Mute thread",
+            "icon": "notifications_off",
+            "tone": "secondary",
+            "from": ["open", "replied"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "mutedPersonaIds", "present": false }
+            },
+            "effects": [
+              { "op": "appendUnique", "key": "mutedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "unmute-thread",
+            "label": "Unmute thread",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["open", "replied"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["community-member", "masjid-admin"],
+              "actorInList": { "key": "mutedPersonaIds", "present": true }
+            },
+            "effects": [
+              { "op": "removeValue", "key": "mutedPersonaIds", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "archive-thread",
+            "label": "Archive thread",
+            "icon": "archive",
+            "tone": "destructive",
+            "from": ["open", "replied"],
+            "to": "archived",
+            "guard": { "allowedPersonaIds": ["masjid-admin"] }
+          }
         ],
         "renderBindings": [
-          { "states": ["open", "replied"], "role": "any", "tabId": "messages",
-            "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
+          {
+            "states": ["open", "replied"],
+            "role": "any",
+            "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Start a discussion",
+              {
+                "kind": "create",
+                "label": "New discussion",
                 "byPersonaIds": ["community-member", "masjid-admin"],
-                "scope": "tab", "presentation": "fab", "prefill": { "creatorPersonaId": "$actor" } }
-            ] },
-          { "states": ["archived"], "role": "any", "tabId": "messages",
-            "cardSurfaceFamily": "discussionThread", "bindingKind": "summary" }
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "authorPersonaId": "$actor",
+                  "messages": [],
+                  "mutedPersonaIds": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["archived"],
+            "role": "any",
+            "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread",
+            "bindingKind": "summary"
+          }
         ],
-        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
-          "subject": { "type": "text", "required": true, "writableBy": "formEntry",
-                      "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "creatorPersonaId": { "type": "personaId", "required": true, "writableBy": "effect" },
-          "messages": { "type": "list", "writableBy": "effect" },
-          "pendingMessage": { "type": "text", "writableBy": "formEntry" },
-          "messageCount": { "type": "number", "formula": "size(messages)",
-                            "displayIcon": "forum", "labelTemplate": "{value}",
-                            "displayContexts": ["tile", "detail"] }
+          "threadTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "initialMessage": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "chat_bubble_outline", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "authorPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Started by {value}", "displayContexts": ["detail"] },
+          "messages": { "type": "list", "writableBy": "effect", "displayIcon": "forum", "labelTemplate": "Replies: {value.length}", "displayContexts": ["detail"] },
+          "latestMessage": { "type": "text", "writableBy": "effect", "displayIcon": "reply", "labelTemplate": "Latest: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "latestMessageAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Latest reply {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "mutedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "notifications_off", "labelTemplate": "Muted by {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "messageCount": { "type": "number", "formula": "size(messages)", "displayIcon": "mark_chat_read", "labelTemplate": "Replies: {value}", "displayContexts": ["tile", "detail"] }
         }
       }
     },
 
     "workflowInstances": [
-
-      { "instanceId": "ann-ramadan-schedule", "workflowType": "mosque-announcement",
-        "currentState": "published", "createdByPersonaId": "masjid-admin",
+      {
+        "instanceId": "masjid-announcement-ramadan-night",
+        "workflowType": "mosque-announcement",
+        "currentState": "sent",
+        "createdByPersonaId": "masjid-admin",
         "instanceData": {
-          "title": "Ramadan prayer schedule now posted",
-          "body": "Taraweeh begins nightly at 8:45pm starting this Friday. See the Calendar tab for the full month's schedule.",
-          "audience": "All members",
-          "publishedByPersonaId": "masjid-admin",
-          "publishedAt": "2026-08-05T10:00:00.000Z",
-          "readByPersonaIds": ["community-member"]
-        } },
-      { "instanceId": "ann-friday-reminder", "workflowType": "mosque-announcement",
-        "currentState": "draft", "createdByPersonaId": "masjid-admin",
+          "title": "Ramadan community night and iftar volunteers",
+          "body": "Join us Friday for community iftar. Volunteers are still needed for setup and cleanup, and the meal fund is open for giving.",
+          "senderPersonaId": "masjid-admin",
+          "audience": "All Masjid Nur members",
+          "channel": "Home and Messages",
+          "scheduledFor": "2026-08-14T17:00:00-07:00",
+          "sentAt": "2026-08-14T17:00:00-07:00",
+          "deliveryState": "sent",
+          "readPersonaIds": [],
+          "deliveryHistory": [
+            { "status": "sent", "by": "masjid-admin", "at": "2026-08-14T17:00:00-07:00" }
+          ],
+          "revisionHistory": [
+            { "action": "previewed", "by": "masjid-admin", "at": "2026-08-14T16:45:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "masjid-event-friday-iftar",
+        "workflowType": "mosque-event-rsvp",
+        "currentState": "open",
+        "createdByPersonaId": "masjid-admin",
         "instanceData": {
-          "title": "Jumu'ah parking reminder",
-          "body": "Overflow parking is available at the community center lot this Friday.",
-          "audience": "All members",
-          "sendAt": "2026-08-14"
-        } },
-      { "instanceId": "ann-old-notice", "workflowType": "mosque-announcement",
-        "currentState": "archived", "createdByPersonaId": "masjid-admin",
+          "title": "Friday service and community iftar",
+          "eventDate": "2026-08-14",
+          "eventTime": "19:00",
+          "location": "Masjid Nur Community Hall",
+          "recurrence": "Every Friday during Ramadan",
+          "capacity": 80,
+          "publishedAt": "2026-08-11T09:00:00-07:00",
+          "goingPersonaIds": ["community-member"],
+          "maybePersonaIds": [],
+          "notGoingPersonaIds": [],
+          "waitlistPersonaIds": [],
+          "reminderPersonaIds": ["community-member"]
+        }
+      },
+      {
+        "instanceId": "masjid-resource-khutbah-notes",
+        "workflowType": "mosque-document-resource",
+        "currentState": "available",
+        "createdByPersonaId": "masjid-admin",
         "instanceData": {
-          "title": "Summer camp registration closed",
-          "body": "Registration for the summer youth camp has closed. Thank you to everyone who signed up.",
-          "audience": "Families",
-          "publishedByPersonaId": "masjid-admin",
-          "publishedAt": "2026-07-01T09:00:00.000Z",
-          "readByPersonaIds": ["community-member"]
-        } },
-
-      { "instanceId": "evt-jumuah-khutbah", "workflowType": "mosque-event-rsvp",
-        "currentState": "open", "createdByPersonaId": "masjid-admin",
+          "title": "Friday khutbah notes — Mercy in community care",
+          "source": "Masjid Nur Imam's Office",
+          "version": "1.0",
+          "publishedDate": "2026-08-07",
+          "resourceUrl": "https://masjid.example.org/resources/khutbah-mercy-community-care",
+          "accessLabel": "Available to all signed-in Masjid Nur members",
+          "allowedPersonaIds": [],
+          "openedPersonaIds": ["community-member"],
+          "acknowledgedPersonaIds": [],
+          "accessRequestedPersonaIds": [],
+          "savedPersonaIds": ["community-member"],
+          "downloadedPersonaIds": [],
+          "followUpRequestedPersonaIds": [],
+          "auditHistory": [
+            { "action": "opened", "by": "community-member", "at": "2026-08-08T13:15:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "masjid-volunteer-iftar-setup",
+        "workflowType": "mosque-volunteer-signup",
+        "currentState": "open",
+        "createdByPersonaId": "masjid-admin",
         "instanceData": {
-          "title": "Jumu'ah Khutbah",
-          "eventDate": "2026-08-14", "eventTime": "13:15",
-          "location": "Main prayer hall", "capacity": 150,
-          "recurrenceLabel": "Weekly (Fridays)"
-        } },
-      { "instanceId": "evt-youth-halaqah", "workflowType": "mosque-event-rsvp",
-        "currentState": "open", "createdByPersonaId": "masjid-admin",
+          "title": "Community iftar setup team",
+          "shiftRole": "Tables, water, and welcome station",
+          "shiftDate": "2026-08-14",
+          "shiftTime": "17:30",
+          "location": "Masjid Nur Community Hall",
+          "capacity": 6,
+          "contactSharingPolicy": "Contact details are shared only with the coordinator after signup consent.",
+          "signedUpPersonaIds": ["community-member"],
+          "contactSharingPersonaIds": ["community-member"],
+          "signupHistory": [
+            { "action": "signed-up", "member": "community-member", "at": "2026-08-11T10:30:00-07:00" }
+          ],
+          "availabilityHistory": [],
+          "coordinatorFollowUpHistory": []
+        }
+      },
+      {
+        "instanceId": "masjid-donor-preference-iftar",
+        "workflowType": "mosque-donor-visibility",
+        "currentState": "restricted",
+        "createdByPersonaId": "community-member",
         "instanceData": {
-          "title": "Youth Qur'an Circle", "eventDate": "2026-08-16", "eventTime": "18:00",
-          "location": "Community room B", "capacity": 20, "reminderOffsetHours": 2
-        } },
-      { "instanceId": "evt-old-class", "workflowType": "mosque-event-rsvp",
-        "currentState": "cancelled", "createdByPersonaId": "masjid-admin",
+          "donorPersonaId": "community-member",
+          "amount": 50,
+          "fund": "Community iftar meals",
+          "receiptVisibility": "Identity restricted to donor's private record",
+          "visibilityHistory": [
+            { "choice": "restricted", "by": "community-member", "at": "2026-08-10T12:00:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "masjid-donation-iftar-offline",
+        "workflowType": "mosque-donation-payment",
+        "currentState": "paid",
+        "createdByPersonaId": "community-member",
         "instanceData": {
-          "title": "Arabic Literacy Class", "eventDate": "2026-07-20", "eventTime": "17:00",
-          "location": "Community room A", "capacity": 15
-        } },
-
-      { "instanceId": "resp-halaqah-admin", "workflowType": "mosque-event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "masjid-admin",
-        "instanceData": { "eventId": "evt-youth-halaqah", "personaId": "masjid-admin" } },
-      { "instanceId": "resp-halaqah-member", "workflowType": "mosque-event-rsvp-response",
-        "currentState": "pending", "createdByPersonaId": "masjid-admin",
-        "instanceData": { "eventId": "evt-youth-halaqah", "personaId": "community-member" } },
-
-      { "instanceId": "doc-khutbah-notes", "workflowType": "mosque-document-resource",
-        "currentState": "published", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "title": "This week's khutbah notes",
-          "source": "https://masjidnur.example.org/khutbah/2026-08-07.pdf",
-          "version": "2026-08-07", "docType": "Khutbah notes",
-          "acknowledgementRequired": false,
-          "acknowledgedPersonaIds": ["community-member"]
-        } },
-      { "instanceId": "doc-membership-form", "workflowType": "mosque-document-resource",
-        "currentState": "published", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "title": "Membership renewal form",
-          "source": "https://masjidnur.example.org/forms/membership-renewal.pdf",
-          "version": "2026", "docType": "Form",
-          "acknowledgementRequired": true
-        } },
-      { "instanceId": "doc-old-policy", "workflowType": "mosque-document-resource",
-        "currentState": "archived", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "title": "2025 Facility Use Policy (superseded)",
-          "source": "https://masjidnur.example.org/policies/facility-use-2025.pdf",
-          "version": "2025", "docType": "Policy",
-          "acknowledgementRequired": false
-        } },
-
-      { "instanceId": "vol-iftar-setup", "workflowType": "mosque-volunteer-signup",
-        "currentState": "open", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "role": "Iftar setup crew", "shiftDate": "2026-08-14", "shiftTime": "17:30",
-          "location": "Community hall kitchen", "capacity": 8,
-          "coordinatorContact": "Br. Yusuf, 555-0142",
-          "volunteerPersonaIds": ["community-member"]
-        } },
-      { "instanceId": "vol-parking-team", "workflowType": "mosque-volunteer-signup",
-        "currentState": "closed", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "role": "Eid parking team", "shiftDate": "2026-07-18", "shiftTime": "07:00",
-          "location": "North lot", "capacity": 6,
-          "volunteerPersonaIds": ["community-member"]
-        } },
-
-      { "instanceId": "pref-donor-one", "workflowType": "mosque-donor-visibility",
-        "currentState": "active", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "donorPersonaId": "community-member", "fund": "General Sadaqah",
-          "amountLabel": "$100", "visibilityChoice": "restricted"
-        } },
-      { "instanceId": "pref-donor-two", "workflowType": "mosque-donor-visibility",
-        "currentState": "active", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "donorPersonaId": "community-member", "fund": "Masjid Building Fund",
-          "amountLabel": "$500", "visibilityChoice": "anonymous"
-        } },
-
-      { "instanceId": "pay-ramadan-1", "workflowType": "mosque-donation-payment",
-        "currentState": "pending", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "donorPersonaId": "community-member", "fund": "Ramadan Food Drive",
-          "amountLabel": "$75", "donorVisibility": "public"
-        } },
-      { "instanceId": "pay-building-fund", "workflowType": "mosque-donation-payment",
-        "currentState": "paid", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "donorPersonaId": "community-member", "fund": "Masjid Building Fund",
-          "amountLabel": "$500", "donorVisibility": "anonymous",
-          "receiptStatus": "complete", "paidAt": "2026-07-28T15:20:00.000Z"
-        } },
-      { "instanceId": "pay-zakat-1", "workflowType": "mosque-donation-payment",
-        "currentState": "failed", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "donorPersonaId": "community-member", "fund": "Zakat",
-          "amountLabel": "$200", "donorVisibility": "restricted"
-        } },
-
-      { "instanceId": "care-1", "workflowType": "mosque-care-request",
-        "currentState": "submitted", "createdByPersonaId": "community-member",
+          "payerPersonaId": "community-member",
+          "amount": 50,
+          "fund": "Community iftar meals",
+          "privacyChoice": "Restricted",
+          "recurringPreference": "One-time gift",
+          "requestedAt": "2026-08-10T11:50:00-07:00",
+          "paidAt": "2026-08-10T12:00:00-07:00",
+          "paymentStatus": "paid-manual",
+          "receiptSummary": "Cash donation recorded by the Masjid office for the iftar meal fund.",
+          "receiptStatus": "recorded",
+          "paymentHistory": [
+            { "status": "intent-submitted", "by": "community-member", "at": "2026-08-10T11:50:00-07:00" },
+            { "status": "offline-payment-recorded", "by": "masjid-admin", "at": "2026-08-10T12:00:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "masjid-care-meal-support",
+        "workflowType": "mosque-care-request",
+        "currentState": "submitted",
+        "createdByPersonaId": "community-member",
         "instanceData": {
           "requesterPersonaId": "community-member",
-          "publicSummary": "Requesting support following a family hospitalization.",
-          "protectedDetails": "My father was admitted to Northside Hospital and our family needs help with meals and rides for the next two weeks.",
-          "urgency": "urgent",
-          "submittedAt": "2026-08-08T12:00:00.000Z"
-        } },
-      { "instanceId": "care-2", "workflowType": "mosque-care-request",
-        "currentState": "assigned", "createdByPersonaId": "community-member",
+          "assignedReviewerPersonaId": "masjid-admin",
+          "publicSummary": "Meal support requested after a recent illness",
+          "privateDetails": "Please call after Jummah. Dietary and household details are stored with this protected request.",
+          "privacyLabel": "Requester and assigned Masjid care reviewer only",
+          "contactPreference": "Phone call after Friday prayer",
+          "submittedAt": "2026-08-11T08:30:00-07:00",
+          "statusHistory": [
+            { "status": "submitted", "by": "community-member", "at": "2026-08-11T08:30:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "masjid-notice-care-received",
+        "workflowType": "mosque-neutral-notification",
+        "currentState": "unread",
+        "createdByPersonaId": "masjid-admin",
         "instanceData": {
-          "requesterPersonaId": "community-member",
-          "publicSummary": "New family in the community needs help finding furniture.",
-          "protectedDetails": "The Rahman family just relocated from out of state and are currently sleeping on the floor; they need beds and a table.",
-          "urgency": "standard",
-          "submittedAt": "2026-08-02T09:00:00.000Z",
-          "assignedByPersonaId": "masjid-admin",
-          "assignedAt": "2026-08-03T10:00:00.000Z"
-        } },
-      { "instanceId": "care-3", "workflowType": "mosque-care-request",
-        "currentState": "draft", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "requesterPersonaId": "community-member",
-          "publicSummary": "",
-          "protectedDetails": "",
-          "urgency": "standard"
-        } },
-
-      { "instanceId": "notif-care-update", "workflowType": "mosque-neutral-notification",
-        "currentState": "unread", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
+          "title": "Care request received",
+          "senderPersonaId": "masjid-admin",
           "recipientPersonaId": "community-member",
-          "title": "Your care request has been assigned",
-          "body": "A member of our care team is now reviewing your request.",
-          "createdAt": "2026-08-03T10:00:00.000Z"
-        } },
-
-      { "instanceId": "qna-1", "workflowType": "mosque-search-ai-citation",
-        "currentState": "answered", "createdByPersonaId": "community-member",
+          "audience": "Requester only",
+          "messageBody": "Your request was received. A care reviewer will follow up privately; no protected details are included in this notice.",
+          "createdAt": "2026-08-11T08:30:05-07:00"
+        }
+      },
+      {
+        "instanceId": "masjid-search-iftar-time",
+        "workflowType": "mosque-search-ai-citation",
+        "currentState": "answered",
+        "createdByPersonaId": "community-member",
         "instanceData": {
-          "query": "What time does Fajr prayer start this week?",
+          "query": "What time does Friday's community iftar begin?",
           "askedByPersonaId": "community-member",
-          "answerBody": "Fajr this week ranges from 5:12am to 5:20am — check the posted prayer schedule for the exact daily time.",
+          "curatedAnswerBody": "Community iftar begins at 7:00 PM on Friday in the Masjid Nur Community Hall.",
           "citations": [
-            { "label": "Masjid Nur prayer schedule", "source": "https://masjidnur.example.org/prayer-times" }
+            { "label": "Ramadan community night announcement", "source": "https://masjid.example.org/announcements/ramadan-community-night" }
           ],
-          "answeredAt": "2026-08-06T08:00:00.000Z"
-        } },
-      { "instanceId": "qna-2", "workflowType": "mosque-search-ai-citation",
-        "currentState": "pending", "createdByPersonaId": "community-member",
+          "answerSource": "Masjid admin curated",
+          "answeredAt": "2026-08-11T09:15:00-07:00",
+          "citationStatus": "current",
+          "savedPersonaIds": [],
+          "hiddenCitationUrls": []
+        }
+      },
+      {
+        "instanceId": "masjid-thread-iftar-logistics",
+        "workflowType": "mosque-discussion-thread",
+        "currentState": "open",
+        "createdByPersonaId": "community-member",
         "instanceData": {
-          "query": "Is childcare available during Jumu'ah?",
-          "askedByPersonaId": "community-member"
-        } },
-
-      { "instanceId": "thread-welcome", "workflowType": "mosque-discussion-thread",
-        "currentState": "open", "createdByPersonaId": "masjid-admin",
-        "instanceData": {
-          "creatorPersonaId": "masjid-admin",
-          "subject": "Welcome new members!",
+          "threadTitle": "Iftar logistics and food contributions",
+          "initialMessage": "May I bring dates for the welcome table?",
+          "authorPersonaId": "community-member",
           "messages": [
-            { "senderPersonaId": "masjid-admin", "body": "Welcome to everyone who joined us this month — introduce yourself here.",
-              "timestamp": "2026-08-01T12:00:00.000Z" }
+            { "senderPersonaId": "masjid-admin", "body": "Yes, please label the package and bring it by 6:15 PM.", "timestamp": "2026-08-11T10:45:00-07:00" }
           ],
-          "pendingMessage": ""
-        } },
-      { "instanceId": "thread-ramadan-prep", "workflowType": "mosque-discussion-thread",
-        "currentState": "replied", "createdByPersonaId": "community-member",
-        "instanceData": {
-          "creatorPersonaId": "community-member",
-          "subject": "Ramadan meal train sign-up",
-          "messages": [
-            { "senderPersonaId": "community-member", "body": "Should we start organizing a meal train for Ramadan iftars?",
-              "timestamp": "2026-08-04T09:00:00.000Z" },
-            { "senderPersonaId": "masjid-admin", "body": "Great idea — we'll link it from the Volunteer tab once it's set up.",
-              "timestamp": "2026-08-04T14:00:00.000Z" }
-          ],
-          "pendingMessage": ""
-        } }
+          "latestMessage": "Yes, please label the package and bring it by 6:15 PM.",
+          "latestMessageAt": "2026-08-11T10:45:00-07:00",
+          "mutedPersonaIds": []
+        }
+      }
     ]
   },
+
   "appShell": {
     "tabs": [
       {
         "tabId": "calendar",
         "label": "Calendar",
-        "iconKey": "calendar",
-        "description": "Events, schedules, capacity, and reminders."
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "calendar_today",
+        "description": "Prayer, classes, community events, RSVP capacity, reminders, and linked volunteer shifts."
       },
       {
         "tabId": "giving",
         "label": "Giving",
-        "iconKey": "payment",
-        "description": "Payments, dues, donations, receipts, and ad-off state."
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "volunteer_activism",
+        "description": "Donation intents, manually recorded payment status, receipts, privacy, and donor preferences."
       },
       {
         "tabId": "admin",
         "label": "Admin",
-        "iconKey": "admin",
-        "description": "Role-specific publishing, approvals, and operations."
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "admin_panel_settings",
+        "description": "Announcement composition, volunteer coordination, payment recording, and protected care review.",
+        "visiblePersonaIds": ["masjid-admin"]
+      },
+      {
+        "tabId": "resources",
+        "label": "Resources",
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "menu_book",
+        "description": "Khutbah notes, forms, policies, external resources, questions, curated answers, and citations."
       }
     ]
   }
