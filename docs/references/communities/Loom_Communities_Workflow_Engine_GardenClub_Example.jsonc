@@ -1834,7 +1834,7 @@
             "guard": {
               "allowedPersonaIds": ["garden-coordinator"],
               "actorEqualsField": { "key": "ownerPersonaId" },
-              "formula": "operationMode == 'export' && checksumVerified"
+              "formula": "operationMode == 'export'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
@@ -1851,7 +1851,7 @@
             "guard": {
               "allowedPersonaIds": ["garden-coordinator"],
               "actorEqualsField": { "key": "ownerPersonaId" },
-              "formula": "operationMode == 'transfer' && checksumVerified"
+              "formula": "operationMode == 'transfer'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
@@ -1868,7 +1868,7 @@
             "guard": {
               "allowedPersonaIds": ["garden-coordinator"],
               "actorEqualsField": { "key": "ownerPersonaId" },
-              "formula": "operationMode == 'import' && checksumVerified"
+              "formula": "operationMode == 'import'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
@@ -1921,8 +1921,7 @@
             "to": "ready",
             "guard": {
               "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
-              "formula": "checksumVerified"
+              "actorEqualsField": { "key": "ownerPersonaId" }
             },
             "effects": [
               { "op": "set", "key": "errorMessage", "value": null }
@@ -2664,3 +2663,4 @@
     // explicitly says per-persona pinned surfaces are not grammar-v1 behavior.
   }
 }
+
