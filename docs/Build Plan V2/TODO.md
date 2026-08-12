@@ -16,7 +16,7 @@ pipeline step 7.5.
 ## Open
 
 - [ ] `new-ticket` — Author and dispatch Milestone 1's tickets (registry + dispatch wiring + 4 widgets) — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
-- [ ] `needs-skill-dispatch` — Milestone 1.5 (Skill-dispatched JSON authoring, 7 communities) — 3 of 7 done (Garden Club, Chess Club, Cedar Commons HOA), in progress — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
+- [ ] `needs-skill-dispatch` — Milestone 1.5 (Skill-dispatched JSON authoring, 7 communities) — 4 of 7 done (Garden Club, Chess Club, Cedar Commons HOA, Masjid Nur), in progress — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `new-ticket` — Cedar Commons HOA fast-follow: dead-end document access-request flow, overclaimed traceability row — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `blocked` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — blocked on Milestones 1+1.5 and explicit user approval — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `needs-debug-agent` — CJM.16: Member Social Space Messages-tab identity-matching gap, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
