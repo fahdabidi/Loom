@@ -13,6 +13,7 @@ LoomWorkflowStateMachine _machine(
   String type,
   List<Map<String, dynamic>> bindings, {
   Map<String, dynamic>? transitions,
+  Map<String, dynamic>? instanceDataSchema,
 }) => LoomWorkflowStateMachine.fromJson({
   'initialState': 'open',
   'states': {
@@ -20,6 +21,7 @@ LoomWorkflowStateMachine _machine(
     'done': {'label': 'Done'},
   },
   'transitions': transitions == null ? <dynamic>[] : [transitions],
+  if (instanceDataSchema != null) 'instanceDataSchema': instanceDataSchema,
   'renderBindings': bindings,
 }, type);
 
@@ -27,12 +29,13 @@ Map<String, dynamic> _binding(
   String tabId, {
   String role = 'any',
   List<String> states = const ['open'],
+  String cardSurfaceFamily = 'event',
   String? audienceMemberField,
 }) => {
   'tabId': tabId,
   'states': states,
   'role': role,
-  'cardSurfaceFamily': 'event',
+  'cardSurfaceFamily': cardSurfaceFamily,
   'bindingKind': 'primary',
   if (audienceMemberField != null) 'audienceMemberField': audienceMemberField,
 };
@@ -722,6 +725,367 @@ void main() {
       expect(engine.queries, before);
       expect(find.text('count-0'), findsOneWidget);
       expect(publications, greaterThanOrEqualTo(3));
+    },
+  );
+
+  testWidgets(
+    '3+ table-bound instances with same workflow type render as one table grid',
+    (tester) async {
+      const tabId = 'home';
+      const workflowType = 'table-rankings';
+      final local = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'a7-table-bulk',
+      );
+      final tableMachine = _machine(
+        workflowType,
+        [_binding(tabId, cardSurfaceFamily: 'table')],
+        instanceDataSchema: {
+          'rank': {
+            'type': 'number',
+            'sortable': true,
+            'searchable': true,
+            'displayContexts': ['tile'],
+          },
+          'playerName': {
+            'type': 'text',
+            'sortable': true,
+            'searchable': true,
+            'displayContexts': ['tile'],
+            'labelTemplate': 'Player',
+          },
+          'score': {
+            'type': 'number',
+            'sortable': true,
+            'searchable': true,
+            'displayContexts': ['tile'],
+          },
+          'delta': {
+            'type': 'number',
+            'sortable': true,
+            'searchable': true,
+            'displayContexts': ['tile'],
+          },
+        },
+      );
+      local.registerDefinition(tableMachine);
+      final a = await local.createInstance(
+        workflowType: workflowType,
+        personaId: 'owner',
+        initialInstanceData: {
+          'rank': 1,
+          'playerName': 'Alice',
+          'score': 100,
+          'delta': 1,
+        },
+      );
+      final b = await local.createInstance(
+        workflowType: workflowType,
+        personaId: 'owner',
+        initialInstanceData: {
+          'rank': 2,
+          'playerName': 'Bob',
+          'score': 95,
+          'delta': 0,
+        },
+      );
+      final c = await local.createInstance(
+        workflowType: workflowType,
+        personaId: 'owner',
+        initialInstanceData: {
+          'rank': 3,
+          'playerName': 'Cara',
+          'score': 80,
+          'delta': -1,
+        },
+      );
+      local.registerDefinition(tableMachine);
+
+      final experience = experienceForExtensionId(
+        'ext-a7-table-bulk',
+        experienceConfiguration: {
+          'experienceSchemaVersion': 2,
+          'workflowGrammarVersion': 1,
+          'workflowDefinitions': {
+            workflowType: {
+              'workflowId': workflowType,
+              'initialState': 'open',
+              'states': {
+                'open': {'label': 'Open'},
+              },
+              'transitions': <dynamic>[],
+              'instanceDataSchema': {
+                'rank': {
+                  'type': 'number',
+                  'sortable': true,
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                },
+                'playerName': {
+                  'type': 'text',
+                  'sortable': true,
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                  'labelTemplate': 'Player',
+                },
+                'score': {
+                  'type': 'number',
+                  'sortable': true,
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                },
+                'delta': {
+                  'type': 'number',
+                  'sortable': true,
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                },
+              },
+              'renderBindings': [
+                _binding(tabId, cardSurfaceFamily: 'table'),
+              ],
+            },
+          },
+          'workflowInstances': [
+            {
+              'instanceId': a,
+              'workflowType': workflowType,
+              'currentState': 'open',
+              'instanceData': {
+                'rank': 1,
+                'playerName': 'Alice',
+                'score': 100,
+                'delta': 1,
+              },
+              'createdByPersonaId': 'owner',
+            },
+            {
+              'instanceId': b,
+              'workflowType': workflowType,
+              'currentState': 'open',
+              'instanceData': {
+                'rank': 2,
+                'playerName': 'Bob',
+                'score': 95,
+                'delta': 0,
+              },
+              'createdByPersonaId': 'owner',
+            },
+            {
+              'instanceId': c,
+              'workflowType': workflowType,
+              'currentState': 'open',
+              'instanceData': {
+                'rank': 3,
+                'playerName': 'Cara',
+                'score': 80,
+                'delta': -1,
+              },
+              'createdByPersonaId': 'owner',
+            },
+          ],
+        },
+      );
+      const persona = LoomPersonaDefinition(
+        personaId: 'local-member',
+        label: 'Member',
+        roleLabel: 'Member',
+        description: 'Test member',
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ActiveIdentityScope(
+            identity: ActiveIdentityContext(
+              accountId: null,
+              authApi: LocalAuthApi(),
+              personaId: persona.personaId,
+            ),
+            child: Scaffold(
+              body: EngineNativeListSurface(
+                experience: experience,
+                persona: persona,
+                tabId: tabId,
+                accent: Colors.teal,
+                modernTheme: null,
+                engine: local,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(ValueKey('engine-native-table-$tabId-$workflowType')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          ValueKey('workflow-table-row-$tabId-$workflowType-$a-0'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('workflow-table-row-$tabId-$workflowType-$b-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('workflow-table-row-$tabId-$workflowType-$c-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('engine-native-list-item-$tabId-$a-0')),
+        findsNothing,
+      );
+      expect(find.byType(WorkflowTableArchetypeCard), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'mixed table and non-table bindings on same tab render both table grid and cards',
+    (tester) async {
+      const tabId = 'home';
+      const tableType = 'table-rankings';
+      const eventType = 'calendar-announcement';
+      final local = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'a7-table-mixed',
+      );
+      final tableMachine = _machine(
+        tableType,
+        [_binding(tabId, cardSurfaceFamily: 'table')],
+        instanceDataSchema: {
+          'rank': {
+            'type': 'number',
+            'sortable': true,
+            'searchable': true,
+            'displayContexts': ['tile'],
+          },
+          'title': {'type': 'text', 'searchable': true, 'displayContexts': ['tile']},
+        },
+      );
+      final eventMachine = _machine(
+        eventType,
+        [_binding(tabId)],
+        instanceDataSchema: {
+          'title': {
+            'type': 'text',
+            'labelTemplate': 'Announcement',
+            'displayContexts': ['tile'],
+          },
+        },
+      );
+      local.registerDefinition(tableMachine);
+      local.registerDefinition(eventMachine);
+      await local.createInstance(
+        workflowType: tableType,
+        personaId: 'owner',
+        initialInstanceData: {'rank': 1, 'title': 'East'},
+      );
+      final nonTable = await local.createInstance(
+        workflowType: eventType,
+        personaId: 'owner',
+        initialInstanceData: {'title': 'General meeting'},
+      );
+      await local.createInstance(
+        workflowType: tableType,
+        personaId: 'owner',
+        initialInstanceData: {'rank': 2, 'title': 'West'},
+      );
+
+      final experience = experienceForExtensionId(
+        'ext-a7-table-mixed',
+        experienceConfiguration: {
+          'experienceSchemaVersion': 2,
+          'workflowGrammarVersion': 1,
+          'workflowDefinitions': {
+            tableType: {
+              'workflowId': tableType,
+              'initialState': 'open',
+              'states': {
+                'open': {'label': 'Open'},
+              },
+              'transitions': <dynamic>[],
+              'instanceDataSchema': {
+                'rank': {
+                  'type': 'number',
+                  'sortable': true,
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                },
+                'title': {
+                  'type': 'text',
+                  'searchable': true,
+                  'displayContexts': ['tile'],
+                },
+              },
+              'renderBindings': [
+                _binding(tabId, cardSurfaceFamily: 'table'),
+              ],
+            },
+            eventType: {
+              'workflowId': eventType,
+              'initialState': 'open',
+              'states': {
+                'open': {'label': 'Open'},
+              },
+              'transitions': <dynamic>[],
+              'instanceDataSchema': {
+                'title': {
+                  'type': 'text',
+                  'labelTemplate': 'Announcement',
+                  'displayContexts': ['tile'],
+                },
+              },
+              'renderBindings': [_binding(tabId)],
+            },
+          },
+        },
+      );
+      const persona = LoomPersonaDefinition(
+        personaId: 'local-member',
+        label: 'Member',
+        roleLabel: 'Member',
+        description: 'Test member',
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ActiveIdentityScope(
+            identity: ActiveIdentityContext(
+              accountId: null,
+              authApi: LocalAuthApi(),
+              personaId: persona.personaId,
+            ),
+            child: Scaffold(
+              body: EngineNativeListSurface(
+                experience: experience,
+                persona: persona,
+                tabId: tabId,
+                accent: Colors.teal,
+                modernTheme: null,
+                engine: local,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(ValueKey('engine-native-table-$tabId-$tableType')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('engine-native-list-item-$tabId-$nonTable-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byType(WorkflowTableArchetypeCard),
+        findsNWidgets(1),
+      );
+      expect(find.byType(EngineNativeArchetypeCard), findsOneWidget);
     },
   );
 }
