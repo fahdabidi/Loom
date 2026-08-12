@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
-last_verified: 2026-08-09
+last_verified: 2026-08-12
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -33,7 +33,7 @@ editability, and computation. Every field a workflow touches MUST be declared he
   "maxLength": 500,
   "formula": "<expression>",       // makes the field COMPUTED (read-only)
   "source": "query(<type> where <foreignField> == <localField>)",  // makes the field QUERY-BACKED (read-only)
-  "openMode": "external"|"embedded"|"choice"  // type: "url" only — see below. PROPOSED, not yet implemented.
+  "openMode": "external"|"embedded"|"choice"  // type: "url" only — see below. "external" is REAL; "embedded"/"choice" still not implemented.
 }
 ```
 
@@ -55,20 +55,31 @@ values below; an unrecognized type will parse but render unpredictably.
 | `personaId` | A single persona id | `personaId?` for nullable |
 | `personaId[]` | Array of persona ids | **The standard for member lists** |
 | `image` | Image reference | Use `storage: "reference"` |
-| `url` | An openable external or embedded link/document | ⚠️ PROPOSED, not yet implemented — see below. Use `url?` for nullable. |
+| `url` | An openable external or embedded link/document | `openMode: "external"` is ✅ REAL; `"embedded"`/`"choice"` are not yet implemented — see below. Use `url?` for nullable. |
 
 **Nullable convention:** append `?` (e.g. `date?`, `personaId?`) for fields that are legitimately empty.
 
-## `type: "url"` — external/embedded document and link fields (PROPOSED)
+## `type: "url"` — external/embedded document and link fields (`external`: ✅ REAL; `embedded`/`choice`: still proposed)
 
-⚠️ **PROPOSED 2026-08-09, not yet implemented.** Found while scoping Cedar Commons HOA's
-`hoa-member-document` and Riverside Youth Soccer's `soccer-waiver-document` on the v2 generic-archetype
-migration: both need a field whose value is a link the user can actually open (an embedded viewer, an
-external browser/app, or a choice of either), not just display as text. No existing mechanism does this —
-`GenericWorkflowInstanceCard` and every bespoke archetype (`EquipmentLoanArchetypeCard` included) render
-`instanceDataSchema` fields through the same shared fact-pill code, and that code only ever displays a
-field's value or fires an `applyTransition` call. Nothing today launches a URL or opens a webview as a
-side effect of anything.
+Proposed 2026-08-09; found while scoping Cedar Commons HOA's `hoa-member-document` and Riverside Youth
+Soccer's `soccer-waiver-document` on the v2 generic-archetype migration: both need a field whose value is a
+link the user can actually open (an embedded viewer, an external browser/app, or a choice of either), not
+just display as text.
+
+**Correction, 2026-08-12:** `openMode: "external"` is implemented, not proposed — confirmed live at
+`part18_marketplace_rendering.dart:583-611` (top-level `type: "url"` field, tappable, launches via
+`url_launcher`) and `:612-671` (the citation-list `itemSchema` case below, same `external` handling
+per-item), fed by `InstanceDataField.fromJson`'s existing `openMode` parsing (`workflow_models.dart:786`).
+This doc previously stated the whole `type: "url"` mechanism did nothing — that was stale/wrong for
+`external` by the time of this correction; only `openMode: "embedded"` and `"choice"` remain genuinely
+unimplemented (both currently render a disabled-looking `Icons.link_off` "unsupported: <label>" pill,
+`part18_marketplace_rendering.dart:604-610`/`:660-671`, never opening anything). This matters concretely
+for real content: every real community fixture's *primary* document-open field (as opposed to a secondary
+`attachmentUrl`-style field, which several already declare as `external` and which already works)
+currently declares `openMode: "choice"`, not `external` — grep `docs/references/communities/*.jsonc` for
+`"openMode": "choice"` to confirm current instances. `GenericWorkflowInstanceCard` and every bespoke
+archetype (`EquipmentLoanArchetypeCard` included) render `instanceDataSchema` fields through the same
+shared fact-pill code described above.
 
 **This is deliberately a field-type/display capability, not a new archetype and not a new `effects.md`
 op.** Opening a link is a presentation action tied to one field's *value* — it has no bearing on workflow
@@ -110,21 +121,23 @@ requires the embedded-viewer platform capability to actually be present in the b
 without that capability wired is a build-time gap, not a JSON error (same category of honesty issue as
 `archetypes/README.md`'s `❌ NOT REAL` entries, not a new validator rule).
 
-**Known follow-on, deliberately out of scope here:** `openMode: "embedded"`/`"choice"` need an embedded
-viewer capability (`webview_flutter` is not currently a dependency of `loom_communities_app_shell` —
-confirmed by reading its `pubspec.yaml`). `openMode: "external"` only needs `url_launcher`, not currently
-a dependency either, but a materially smaller addition. Implementation may reasonably land `external`
-first and treat `embedded`/`choice` as a following increment — that is an implementation-sequencing
-decision, not a grammar change; the field-level contract above does not change based on which increments
-are built first.
+**Known follow-on:** `openMode: "embedded"`/`"choice"` need an embedded viewer capability
+(`webview_flutter` is not currently a dependency of `loom_communities_app_shell` — confirmed by reading its
+`pubspec.yaml`, re-confirmed 2026-08-12). `openMode: "external"` needed `url_launcher`, which the same
+`pubspec.yaml` now lists as a real dependency (`^6.3.2`, confirmed 2026-08-12) — this increment has already
+landed (see the correction note above). `embedded`/`choice` remain a following increment — an
+implementation-sequencing decision, not a grammar change; the field-level contract above does not change
+based on which increments are built first.
 
-## Citation lists — `type: "url"` items inside a `type: "list"` field (PROPOSED)
+## Citation lists — `type: "url"` items inside a `type: "list"` field (✅ REAL for `openMode: "external"`)
 
-⚠️ **PROPOSED 2026-08-09, not yet implemented.** Found scoping Neighborhood Book Club's
-`book-search-ai-digest` and Masjid Nur's `mosque-search-ai-citation` workflows: both need a field that is a
-*list of citations* — each one a short label plus an openable source link — not a single link. The
-single-field `type: "url"` shape above covers "this one field is a link" but not "this field is a list, and
-each item in it is (label + link)."
+Proposed 2026-08-09; found scoping Neighborhood Book Club's `book-search-ai-digest` and Masjid Nur's
+`mosque-search-ai-citation` workflows: both need a field that is a *list of citations* — each one a short
+label plus an openable source link — not a single link. The single-field `type: "url"` shape above covers
+"this one field is a link" but not "this field is a list, and each item in it is (label + link)."
+**Correction, 2026-08-12:** implemented for `external`-mode citation members — see the correction note in
+the `type: "url"` section above; both real `searchAiAnswer`-relevant fixtures (Masjid Nur, Neighborhood
+Book Club) already declare their citation source as `openMode: "external"` and render correctly today.
 
 **This does not need a new field `type`.** A citation list is simply `type: "list"` whose items happen to be
 objects containing a `url`-shaped member, declared via an `itemSchema`:

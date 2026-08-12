@@ -40,12 +40,19 @@ not assumed uniform.
 
 ### 1a. Registry addition
 
-Add `table`, `documentLibrary`, `searchAiAnswer`, `exportWizard` to `knownWorkflowArchetypes`/
-`knownWorkflowArchetypeIds` in
+**Done, 2026-08-12 (Ticket GapClosure.1a, commit `d07f1059`).** Added `table`, `documentLibrary`,
+`searchAiAnswer`, `exportWizard` to `knownWorkflowArchetypes`/`knownWorkflowArchetypeIds` in
 `app/packages/core/loom_workflow_engine/lib/src/models/workflow_archetypes.dart` (the same registry
-`TabId-Archetype.1` built). Registry grows from 9 → 13. This alone does **not** make community JSON using
-these values render correctly — it only stops the validator rejecting them (`unknown_card_surface_family`).
-Dispatch wiring (1b) and widgets (1c) are separate, required steps.
+`TabId-Archetype.1` built), all `ArchetypeStatus.real`. Registry grew from 9 → 13. Independently verified:
+`flutter analyze` clean on `loom_workflow_engine`, full test suite 210/210 pass, and a real validator run
+against each of the 7 Milestone-1.5-touched fixtures individually confirms `unknown_card_surface_family`
+dropped to 0 for all 7 (was Chess Club 7, Cedar Commons HOA 4, Neighborhood Book Club 7, Masjid Nur 3,
+Garden Club 2, Riverside Youth Soccer 7, Data Portability Community 28 — all now 0 total errors). The
+dispatch agent's own sandbox hit the known WSL vsock error (`call_implementation_agent.sh`'s documented
+issue) mid-verification after the edit and commit had already landed cleanly — independent verification
+(this note) is what actually confirms the ticket, not the agent's own blocked self-report. This alone does
+**not** make community JSON using these values render correctly — it only stops the validator rejecting
+them. Dispatch wiring (1b) and widgets (1c) are separate, required steps, not yet started.
 
 ### 1b. Dispatch wiring
 
@@ -97,12 +104,30 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   degrade gracefully (e.g. no "Requested access" affordance rendered) when a role's field is simply absent
   from that workflow's schema. Real interaction gap otherwise unchanged (category grouping +
   acknowledgement/access-request state + version history is materially different from one field in a
-  generic card). Two real prerequisites, not one: (i) the widget itself, and (ii) `field-types.md`'s
-  `type: "url"` field is still `⚠️ PROPOSED, not yet implemented` at the field-renderer level
-  (`openMode: "external"/"embedded"/"choice"` currently does nothing) — this needs building regardless of
-  `documentLibrary`'s own widget, since every real document-shaped fixture already declares `type: "url"`
-  fields expecting it to work. Do this as part of the same ticket, not a separate one — a `documentLibrary`
-  widget that can't actually open its own documents isn't done.
+  generic card). Two real prerequisites, not one: (i) the widget itself, and (ii) a narrower gap than this
+  tracker previously stated — **correction, 2026-08-12:** direct code read found `type: "url"` is *not*
+  entirely unimplemented as `field-types.md` (still marked `⚠️ PROPOSED, not yet implemented` as of this
+  correction) and this tracker's own prior text both claimed. `openMode: "external"` and citation-list
+  (`itemSchema`) rendering are real today — confirmed live in `part18_marketplace_rendering.dart:583-611`
+  (top-level `type: "url"`, `openMode == 'external'` branch) and `:612-671` (`itemSchema` list members, same
+  `external` handling per-item), fed by `InstanceDataField.fromJson`'s existing `openMode`/`itemSchema`
+  parsing (`workflow_models.dart:786-790`). What's still genuinely missing is `openMode: "embedded"`/
+  `"choice"` — both fall through to a disabled-looking `Icons.link_off` "unsupported: <label>" pill
+  (`part18_marketplace_rendering.dart:604-610`, `:660-671`), never actually opening anything. This matters
+  concretely: every real fixture's *primary* document-open field (Cedar Commons HOA's, Chess Club's, and
+  Riverside Youth Soccer's `documentUrl`-equivalent, Masjid Nur's `resourceUrl`, Neighborhood Book Club's
+  `materialUrl`/`meetingUrl`) declares `openMode: "choice"`, each with its own `NEEDS IMPLEMENTATION`
+  comment correctly flagging it as not-yet-real — confirmed via `grep -B1 '"openMode": "choice"'` across
+  all 5 fixtures. So this ticket's real scope is narrower and more concrete than "build the url renderer
+  from scratch": implement `openMode: "choice"` (render both "Open embedded" and "Open externally"
+  controls, per `field-types.md`'s own spec) — `external` is already done, `embedded` alone is lower
+  priority since no real fixture uses it standalone. Do this as part of the same ticket, not a separate one
+  — a `documentLibrary` widget that can't actually open its own documents isn't done. `choice`/`embedded`
+  need an embedded-viewer capability: confirmed by direct read, `loom_communities_app_shell/pubspec.yaml`
+  depends on `url_launcher` (powers the already-working `external` mode) but not `webview_flutter` —
+  `field-types.md`'s existing note on this point is accurate. Adding that dependency is in scope for
+  `choice` (which needs both an embedded viewer and the external fallback), a real, non-trivial addition,
+  not just a rendering branch.
 - **`table`** — real interaction gap (browsing 20+ rows at scale is not what a card-per-item list is for).
   Build a genuine sortable/filterable grid widget consuming the existing `sortable`/`searchable`/
   `labelTemplate`/`displayIcon` `instanceDataSchema` flags every other archetype already reads — no new
