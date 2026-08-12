@@ -1012,3 +1012,447 @@ class _DocumentLibraryArchetypeCardState
     );
   }
 }
+
+/// Bespoke rendering for the searchAiAnswer card family.
+class SearchAiAnswerArchetypeCard extends StatefulWidget {
+  const SearchAiAnswerArchetypeCard({
+    super.key,
+    required this.resolved,
+    required this.engine,
+    required this.personaId,
+    required this.accent,
+    required this.onInstanceChanged,
+    this.modernTheme,
+    this.displayContext = 'tile',
+    this.visibleFieldKeys,
+  }) : assert(displayContext == 'tile' || displayContext == 'detail');
+
+  final EngineNativeResolvedBinding resolved;
+  final WorkflowEngineApi engine;
+  final String personaId;
+  final Color accent;
+  final ValueChanged<WorkflowInstance> onInstanceChanged;
+  final LoomCardTheme? modernTheme;
+  final String displayContext;
+  final Set<String>? visibleFieldKeys;
+
+  @override
+  State<SearchAiAnswerArchetypeCard> createState() =>
+      _SearchAiAnswerArchetypeCardState();
+}
+
+class _SearchAiAnswerArchetypeCardState
+    extends State<SearchAiAnswerArchetypeCard> {
+  late WorkflowInstance _instance;
+  List<LoomWorkflowTransition> _actions = const [];
+  bool _loadingActions = true;
+  bool _mutating = false;
+  String? _error;
+  int _actionRequest = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = widget.resolved.instance;
+    _loadActions();
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchAiAnswerArchetypeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldInstance = oldWidget.resolved.instance;
+    final newInstance = widget.resolved.instance;
+    if (oldInstance.instanceId != newInstance.instanceId ||
+        oldInstance.currentState != newInstance.currentState ||
+        oldInstance.instanceData != newInstance.instanceData ||
+        oldWidget.personaId != widget.personaId ||
+        oldWidget.engine != widget.engine) {
+      _instance = newInstance;
+      _loadActions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _actionRequest++;
+    super.dispose();
+  }
+
+  Future<void> _loadActions() async {
+    final request = ++_actionRequest;
+    if (mounted) {
+      setState(() {
+        _loadingActions = true;
+        _error = null;
+      });
+    }
+    try {
+      final instance = _instance;
+      final actions = await widget.engine.availableTransitionsAsync(
+        workflowType: instance.workflowType,
+        instanceId: instance.instanceId,
+        currentState: instance.currentState,
+        instanceData: instance.instanceData,
+        personaId: widget.personaId,
+      );
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = actions;
+        _loadingActions = false;
+      });
+    } catch (_) {
+      if (!mounted || request != _actionRequest) return;
+      setState(() {
+        _actions = const [];
+        _loadingActions = false;
+        _error = 'Could not load search answer actions.';
+      });
+    }
+  }
+
+  static String _baseType(String raw) {
+    final normalized = raw.toLowerCase();
+    if (normalized.endsWith('?')) return normalized.substring(0, normalized.length - 1);
+    return normalized;
+  }
+
+  bool _isAnswerTextField(String rawType) {
+    final type = _baseType(rawType);
+    return type == 'text' || type == 'textarea';
+  }
+
+  bool _isVisibleField(String key, InstanceDataField field) {
+    // query and citations each have their own dedicated rendering path
+    // (_resolvedQuery / _citationsFacts) -- they must never be candidates
+    // for the generic answer-field selection below, or a set-but-irrelevant
+    // query can get mislabeled as the answer once every real answer-shaped
+    // field is empty (confirmed: this exact bug made the "waiting for an
+    // answer" empty state unreachable whenever query was non-empty).
+    if (key == 'query' || key == 'citations') return false;
+    if (!_isAnswerTextField(field.type)) return false;
+    if (widget.visibleFieldKeys != null &&
+        !widget.visibleFieldKeys!.contains(key)) {
+      return false;
+    }
+    if (field.displayContexts != null &&
+        !field.displayContexts!.contains(widget.displayContext)) {
+      return false;
+    }
+    return true;
+  }
+
+  int _writablePriority(InstanceDataField field) {
+    switch (field.writableBy) {
+      case 'effect':
+        return 2;
+      case 'formEntry':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  String? _queryText;
+  String? get _resolvedQuery {
+    if (_queryText != null) return _queryText;
+    final queryField = widget.resolved.machine.instanceDataSchema['query'];
+    if (queryField == null) return null;
+    final value = _instance.instanceData['query'];
+    if (queryField.displayContexts != null &&
+        !queryField.displayContexts!.contains(widget.displayContext)) {
+      return null;
+    }
+    if (widget.visibleFieldKeys != null &&
+        !widget.visibleFieldKeys!.contains('query')) {
+      return null;
+    }
+    final label = _renderLabel(queryField.labelTemplate ?? '{value}', value);
+    _queryText = label;
+    return _queryText;
+  }
+
+  ({String key, InstanceDataField schema, dynamic value})? get _resolvedAnswerField {
+    final schema = widget.resolved.machine.instanceDataSchema;
+    ({String key, InstanceDataField schema, dynamic value})? formulaField;
+    ({String key, InstanceDataField schema, dynamic value})? fallback;
+    var fallbackPriority = -1;
+
+    for (final entry in schema.entries) {
+      final key = entry.key;
+      final field = entry.value;
+      if (!_isVisibleField(key, field)) continue;
+
+      final value = _instance.instanceData[key];
+      if (field.formula != null &&
+          field.formula!.trim().isNotEmpty) {
+        if (formulaField == null) {
+          formulaField = (key: key, schema: field, value: value);
+        }
+        continue;
+      }
+
+      if (_isEmpty(value)) {
+        continue;
+      }
+      final priority = _writablePriority(field);
+      if (fallback == null || priority > fallbackPriority) {
+        fallback = (key: key, schema: field, value: value);
+        fallbackPriority = priority;
+      }
+    }
+
+    return formulaField ?? fallback;
+  }
+
+  Map<String, WorkflowFactPillFieldSchema> _answerFacts() {
+    final selected = _resolvedAnswerField;
+    if (selected == null) return const {};
+    return {
+      selected.key: WorkflowFactPillFieldSchema(
+        type: 'text',
+        maxLength: selected.schema.maxLength,
+        maxLines: 2,
+        displayIcon: selected.schema.displayIcon,
+        labelTemplate: 'Answer: {value}',
+        hideWhenEmpty: selected.schema.hideWhenEmpty,
+        displayContexts: selected.schema.displayContexts,
+        openMode: selected.schema.openMode,
+      ),
+    };
+  }
+
+  Map<String, WorkflowFactPillFieldSchema> _citationsFacts() {
+    final schema = widget.resolved.machine.instanceDataSchema['citations'];
+    if (schema == null) return const {};
+    if (widget.visibleFieldKeys != null &&
+        !widget.visibleFieldKeys!.contains('citations')) {
+      return const {};
+    }
+    if (schema.displayContexts != null &&
+        !schema.displayContexts!.contains(widget.displayContext)) {
+      return const {};
+    }
+    final value = _instance.instanceData['citations'];
+    if (schema.hideWhenEmpty && _isEmpty(value)) {
+      return const {};
+    }
+    if (_isEmpty(value) && !_loadingActions) {
+      return const {};
+    }
+    final itemSchema = schema.itemSchema == null
+        ? null
+        : schema.itemSchema!.map(
+            (itemKey, itemField) => MapEntry(
+              itemKey,
+              WorkflowFactPillFieldSchema(
+                type: _baseType(itemField.type),
+                maxLength: itemField.maxLength,
+                maxLines: 2,
+                displayIcon: itemField.displayIcon,
+                labelTemplate: itemField.labelTemplate,
+                hideWhenEmpty: itemField.hideWhenEmpty,
+                displayContexts: itemField.displayContexts,
+                openMode: itemField.openMode,
+              ),
+            ),
+          );
+
+    return {
+      'citations': WorkflowFactPillFieldSchema(
+        type: _baseType(schema.type),
+        maxLength: schema.maxLength,
+        maxLines: 2,
+        displayIcon: schema.displayIcon,
+        labelTemplate: schema.labelTemplate ?? '{value.length} sources',
+        hideWhenEmpty: schema.hideWhenEmpty,
+        displayContexts: schema.displayContexts,
+        openMode: schema.openMode,
+        itemSchema: itemSchema,
+      ),
+    };
+  }
+
+  WorkflowActionTone _toneFor(String? tone) => switch (tone) {
+    'secondary' => WorkflowActionTone.secondary,
+    'destructive' => WorkflowActionTone.destructive,
+    _ => WorkflowActionTone.primary,
+  };
+
+  List<WorkflowActionButtonTransition> get _buttonTransitions => [
+    for (final action in _actions)
+      WorkflowActionButtonTransition(
+        id: action.id,
+        label: action.label,
+        iconName: action.icon,
+        tone: _toneFor(action.tone),
+      ),
+  ];
+
+  bool get _hasAnswer =>
+      _resolvedAnswerField != null &&
+      !_isEmpty(_resolvedAnswerField!.value);
+
+  Future<void> _applyTransition(LoomWorkflowTransition transition) async {
+    if (_mutating) return;
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      final result = await widget.engine.applyTransition(
+        workflowType: _instance.workflowType,
+        instanceId: _instance.instanceId,
+        transitionId: transition.id,
+        personaId: widget.personaId,
+      );
+      final next = WorkflowInstance(
+        instanceId: _instance.instanceId,
+        workflowType: _instance.workflowType,
+        currentState: result.newState,
+        instanceData: result.newInstanceData,
+        createdByPersonaId: _instance.createdByPersonaId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _instance = next;
+        _mutating = false;
+      });
+      widget.onInstanceChanged(next);
+      await _loadActions();
+      if (!mounted) return;
+      if (transition.effects.any((effect) => effect.op == 'removeFromTileGrid') &&
+          widget.displayContext == 'detail') {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Could not update this answer.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    final answerFacts = _answerFacts();
+    final citationFacts = _citationsFacts();
+    final query = _resolvedQuery;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (query != null && query.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Query',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.72),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        query,
+                        key: ValueKey(
+                          'search-ai-answer-query-${_instance.instanceId}-${widget.displayContext}',
+                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              if (_hasAnswer)
+                WorkflowFactPillRow(
+                  key: ValueKey(
+                    'search-ai-answer-answer-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  instanceData: _instance.instanceData,
+                  instanceDataSchema: answerFacts,
+                  displayContext: widget.displayContext,
+                  foreground: foreground,
+                  accent: widget.accent,
+                )
+              else
+                Text(
+                  'Waiting for an answer',
+                  key: ValueKey(
+                    'search-ai-answer-waiting-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              if (citationFacts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Sources',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: foreground.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                WorkflowFactPillRow(
+                  key: ValueKey(
+                    'search-ai-answer-sources-${_instance.instanceId}-${widget.displayContext}',
+                  ),
+                  instanceData: _instance.instanceData,
+                  instanceDataSchema: citationFacts,
+                  displayContext: widget.displayContext,
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+              ],
+              if (_loadingActions || _mutating)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: LinearProgressIndicator(
+                    key: ValueKey(
+                      'search-ai-answer-progress-${_instance.instanceId}',
+                    ),
+                  ),
+                ),
+              if (_error != null)
+                Padding(
+                  key: ValueKey(
+                    'search-ai-answer-error-${_instance.instanceId}',
+                  ),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(_error!),
+                ),
+              if (!_loadingActions)
+                WorkflowActionButtonRow(
+                  surface: widget.displayContext == 'detail'
+                      ? 'searchAiAnswer'
+                      : 'searchAiAnswer-${_instance.instanceId}',
+                  availableTransitions: _buttonTransitions,
+                  onTransitionPressed: _mutating
+                      ? null
+                      : (transitionId) {
+                          final transition = _actions.firstWhere(
+                            (candidate) => candidate.id == transitionId,
+                          );
+                          unawaited(_applyTransition(transition));
+                        },
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
