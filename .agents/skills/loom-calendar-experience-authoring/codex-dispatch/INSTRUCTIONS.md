@@ -58,7 +58,7 @@ invariant a later file assumes you already know.
 | 4 | `docs/references/guide/03-common-patterns.md` | Read the pattern(s) matching what the target needs: P1 RSVP, P2 ballot, P3 approval queue, P4 loan/giveaway, P5 payment, P6 discussion thread. |
 | 5 | `docs/references/reference/render-bindings.md` | Where each card appears and how it presents (tabs, roles, actions, FAB), for every workflow type in the target, not just calendar-bound ones. |
 | 6 | `docs/references/guide/07-actions-and-fabs.md` | When deciding whether a "create" affordance should be a FAB, and how response/decision actions should present. |
-| 7 | `docs/references/archetypes/README.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow, and which values are real, 🔲 pending-implementation, or not real — re-check for every workflow type, not once. This file is the live status; do not trust any archetype list embedded in this instructions file as more current than it. |
+| 7 | `docs/references/archetypes/README.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow, and which values are real vs. not real — re-check for every workflow type, not once. This file is the live status; do not trust any archetype list embedded in this instructions file as more current than it. |
 | 8 | `docs/references/guide/04-antipatterns.md`, `docs/references/guide/05-validation.md` | Self-check before emitting. |
 | 9 | `docs/references/reference/theming.md`, `docs/references/reference/platform-services.md` | `platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable — always check it before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer. Never fabricate one (AP-6). |
 | 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list before treating a shape as novel. |
@@ -66,31 +66,31 @@ invariant a later file assumes you already know.
 
 ## Scope
 
-Build any workflow whose required `cardSurfaceFamily` is confirmed real OR 🔲 pending-implementation in
+Build any workflow whose required `cardSurfaceFamily` is confirmed real in
 `docs/references/archetypes/README.md` (fetched at step 7 — that file is the live source of truth, always
 re-check it, never assume the list is frozen or matches an earlier session's memory of it):
 
 - 3 real bespoke archetypes: `event-rsvp`, `votePoll`, `equipment-loan`.
 - 6 🟡 GENERIC archetypes (real, rendered by the shared generic card): `paymentCheckout`,
   `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`, `notificationInbox`.
-- 4 🔲 PENDING archetypes (locked into the vocabulary, correct names, but not yet in the Dart registry —
-  see `archetypes/README.md`'s "Promoted archetypes — pending implementation" section, fetched at step 7,
-  for the current authoritative list and rationale; do not treat the 4 named here as fixed if that section
-  has changed): `table`, `documentLibrary`, `searchAiAnswer`, `exportWizard`. **Use these when the target
-  genuinely needs them — do not silently substitute a generic archetype to dodge a validator error.** The
-  validator will currently reject these 4 (`unknown_card_surface_family`) until the registry lands — that
-  is an expected, already-tracked result (`docs/Build Plan V2/TabId-Archetype Gap Closure.md`), not a
-  defect in your output. Report it plainly as such rather than treating it as a fix-loop failure. For
-  `searchAiAnswer`'s answer text and `exportWizard`'s checksum/transfer-id/receipt-id fields specifically:
-  declare the field, never write it from any effect, and mark it with a
-  `NEEDS IMPLEMENTATION (platform service): ...` comment — these are real, separate, `❌ Not implemented`
-  platform-services gaps (`platform-services.md`) independent of the archetype-registry gap.
+- 4 more real bespoke archetypes, promoted 2026-08-11 and fully implemented 2026-08-12 — see
+  `archetypes/README.md`'s "Promoted archetypes — closed 2026-08-12" section, fetched at step 7, for the
+  current authoritative status; do not treat the 4 named here as fixed if that section has changed):
+  `table`, `documentLibrary`, `searchAiAnswer`, `exportWizard`. **Use these when the target genuinely needs
+  them — do not silently substitute a generic archetype.** They validate cleanly like any other archetype
+  now — no `unknown_card_surface_family` caveat to report. For `searchAiAnswer`'s answer text and
+  `exportWizard`'s checksum/transfer-id/receipt-id fields specifically: declare the field, never write it
+  from any effect, and mark it with a `NEEDS IMPLEMENTATION (platform service): ...` comment — these are
+  real, separate, `❌ Not implemented` platform-services gaps (`platform-services.md`), unchanged by the
+  archetype itself now being implemented. Never gate an `exportWizard` transition's *completion* on the
+  checksum/transfer-id field either (`solved-patterns.md` pattern 14) — unlike `searchAiAnswer`'s answer
+  (pattern 11: a real admin-curated field is a legitimate substitute), a checksum has no honest
+  human-curated substitute.
 
 **Explicitly out of scope — say so per Hard Rule 7 below, never force-fit**: any `cardSurfaceFamily` still
 marked ❌ NOT REAL in `archetypes/README.md` as fetched. A target needing one of these gets a plain,
-specific refusal (which section, why it doesn't fit any real/pending family, what family it would actually
-need if it existed) — not an approximation with a real archetype it doesn't belong to, and not a silent
-drop.
+specific refusal (which section, why it doesn't fit any real family, what family it would actually need if
+it existed) — not an approximation with a real archetype it doesn't belong to, and not a silent drop.
 
 ⚠️ **The CardSurfaces vocabulary trap.** Product docs' own "Card Surface Registry Mapping" tables name
 surfaces like `payment`, `documents`, `calendar`, `workflow-status`, `notification-inbox`, `portability`,
@@ -112,7 +112,7 @@ real enum (fetched at step 7) instead.
    nothing at runtime.
 4. Never write Dart, or ask for Dart to be written.
 5. Never seed or effect-write a computed (`formula`) field.
-6. Never invent a `cardSurfaceFamily` value not listed in `archetypes/README.md`'s two real/pending tables.
+6. Never invent a `cardSurfaceFamily` value not listed in `archetypes/README.md`'s real-archetypes table.
 7. When the grammar genuinely cannot express something, say so. Never approximate, never silently drop a
    stated requirement, never substitute a hardcoded value for one that should be computed.
 8. Name event date/time fields literally `eventDate`/`eventTime` on any `event-rsvp`-bound workflow — never
@@ -167,10 +167,10 @@ run come back clean, via a rigorous **manual** self-check performed before you s
    hardcoded field-name reads, not your source product-doc prose, not which `role` values actually resolve
    to a real viewer per tab), so they need the same manual rigor regardless of channel.
 5. Re-read your own draft once more end to end, specifically hunting for: an unknown key (Hard Rule 3), a
-   fabricated platform-service value (`platform-services.md`), a `cardSurfaceFamily` not in
-   `archetypes/README.md`'s real/pending tables (Hard Rule 6), and a `unknown_card_surface_family` finding
-   you'd expect from one of the 4 🔲 PENDING archetypes (expected, per Scope above — note it, don't treat it
-   as something to fix).
+   fabricated platform-service value (`platform-services.md`), and a `cardSurfaceFamily` not in
+   `archetypes/README.md`'s real-archetypes table (Hard Rule 6). Any `unknown_card_surface_family` finding
+   at this point is a real defect to fix, not an expected result — all 13 archetypes, including
+   `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, validate cleanly as of 2026-08-12.
 6. **Do this as its own separate pass, not folded into step 5** (a whole-package omission is easy to miss
    while reviewing each `renderBindings` entry in isolation — this has happened in practice, see
    `solved-patterns.md` pattern 8): list every distinct non-`home`/`messages` `tabId` value used anywhere
@@ -202,9 +202,9 @@ run come back clean, via a rigorous **manual** self-check performed before you s
 2. The **requirement traceability table** (hard rule 11) — the real artifact, one object per workflow.
 3. A short **"Gaps / assumptions"** section: anything the grammar couldn't express, anything you weren't
    sure about, any judgment call worth double-checking, every `not_implemented`/`partial` traceability row
-   cross-referenced again, and every `NEEDS IMPLEMENTATION` comment you left in the JSON (both the
-   archetype-pending kind and the platform-service kind) listed explicitly so the reviewer doesn't have to
-   grep for them.
+   cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
+   listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
+   `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
 4. Your manual self-check results — plainly stated, per the "On validation" section above: which rules you
    checked, and an explicit statement that no live validator ran in this channel (the dispatching session
    runs the real validator against your JSON after you return it, and will follow up separately if it finds
