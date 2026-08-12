@@ -135,7 +135,30 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   `chess-rankings-table`, Riverside Youth Soccer's `soccer-team-roster`): both bind purely through those
   generic schema flags with no archetype-specific field names, so this archetype carries none of
   `searchAiAnswer`/`documentLibrary`'s naming-divergence risk by construction. ✅ REAL is the right bar
-  here, not 🟡 GENERIC.
+  here, not 🟡 GENERIC. **Real architectural finding, 2026-08-12 (changes 1b's scope for this archetype
+  specifically):** a `table`-family row is *one workflow instance per row* (confirmed: each
+  `chess-rankings-table`/`soccer-team-roster` instance is a single player's/row's own fields, not a single
+  instance holding an array) — so the grid must aggregate across *all* instances sharing a binding, not
+  render one instance as a table. That means `EngineNativeArchetypeCard.build()`'s per-instance switch
+  (`part27_engine_native_binding_dispatcher.dart:309-424`, the dispatch point 1b otherwise describes for
+  the other 3 archetypes) is the wrong insertion point for `table` — it only ever sees one resolved binding
+  at a time. The real insertion point is one level up, where a tab's full binding list is turned into
+  per-item cards: `EngineNativeListSurface.build()`'s `builder` callback
+  (`part32_engine_native_list_surface.dart:105-144`), which currently does `for (final resolved in
+  bindings) ... EngineNativeArchetypeCard(...)` unconditionally. Confirmed both real `table` usages route
+  through this exact surface (Chess Club's `chess-rankings-table` on `tabId: "home"`/`"admin"`, Youth
+  Soccer's `soccer-team-roster` on `tabId: "team"`/`"home"` — none use the calendar or marketplace surfaces,
+  `part28_engine_native_calendar_surface.dart`/`part36_engine_native_marketplace_surface.dart`, so those
+  need no change unless a future community binds `table` there). The fix: partition `bindings` by
+  `cardSurfaceFamily == 'table'` (further grouped by `binding.tabId` + `machine.workflowType`, since two
+  different table-bound workflow types on the same tab are still two separate grids) and hand each group to
+  one new grid widget instead of N separate `EngineNativeArchetypeCard`s; non-`table` bindings keep today's
+  per-item path unchanged. Both real fixtures also use `bindingKind: "summary"` alongside `"primary"` for
+  the same `table` workflow on a second tab (Chess Club's admin-tab summary row, Youth Soccer's home-tab
+  summary row) — the implementer must decide and document whether `summary` means a condensed
+  count/preview rather than the full grid, consistent with how `bindingKind` is used for every other
+  archetype (check `formEntry`/`statusTimeline`'s existing summary-vs-primary handling for the established
+  convention before inventing a new one).
 - **`searchAiAnswer`** (continued) — the widget (query display + `citations[]` list rendering, consuming
   the already-`⚠️ PROPOSED` "Citation lists" shape) is buildable and should be ✅ REAL for that part. The
   **answer computation itself is out of scope for this milestone** — `platform-services.md` lists "External
