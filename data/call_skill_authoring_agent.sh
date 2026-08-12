@@ -1,0 +1,211 @@
+#!/bin/bash
+# data/call_skill_authoring_agent.sh
+#
+# Dispatches the `loom-calendar-experience-authoring` Skill to a Codex CLI
+# agent running in a ChatGPT-equivalent emulation: zero local repo access,
+# zero shell/file tools beyond what Codex's own sandbox always grants, live
+# GitHub reads as the only way to see `docs/references/**`. This is the
+# THIRD channel the Skill is proven on (see SKILL.md's channel list), built
+# 2026-08-11 at explicit user request: "The tool emulates the chatgpt
+# envionment (including the AI model) using the codex cli."
+#
+# Community JSON (docs/references/communities/*.jsonc) must NEVER be
+# hand-authored directly -- see this repo's own standing rule (surfaced hard,
+# 2026-08-11, after a direct hand-authoring pass had to be fully reverted).
+# This script is the sanctioned in-repo-session mechanism for producing it:
+# dispatch this, review the agent's returned JSON, THEN (only with the
+# user's fresh, explicit, per-instance approval) it becomes a real file.
+#
+# Usage:
+#   bash data/call_skill_authoring_agent.sh <target-doc-file> [label]
+#
+#   <target-doc-file>  A local file whose full text becomes the "target
+#                       product doc" section of the prompt -- i.e. what the
+#                       agent is being asked to author against. Read locally
+#                       and embedded verbatim; the agent itself never fetches
+#                       this file (matches codex-dispatch/INSTRUCTIONS.md's
+#                       "given to you at dispatch time" framing -- everything
+#                       ELSE it needs, it fetches live from GitHub itself).
+#   [label]             Optional short slug for this run's log directory
+#                        (default: derived from the target file's basename +
+#                        a timestamp). Used only for .codex-logs/ naming.
+#
+# What this script does NOT do (by design, unlike call_implementation_agent.sh):
+#   - No git operations of any kind -- the dispatched agent never touches this
+#     repo's git state, so there is no git-safety preamble, no pre/post
+#     tracked-file-count integrity check, no commit. Its ENTIRE output is
+#     text (JSON + traceability table + gaps section), captured to a file for
+#     the calling session (you) to review and, if and when approved, turn
+#     into a real committed file yourself -- through the normal edit/commit
+#     path, never by this script.
+#   - No live validator call from inside the dispatch -- confirmed by direct
+#     testing (2026-08-11) that this sandbox's shell-level network access
+#     cannot reach arbitrary HTTPS endpoints (a plain curl to the validator's
+#     own health-check URL fails at DNS resolution). The only network path
+#     confirmed reliable from inside the sandbox is Codex's own built-in
+#     `github.fetch_file` tool. codex-dispatch/INSTRUCTIONS.md's validation
+#     section has the agent run a rigorous MANUAL self-check instead and say
+#     so plainly. Real validator confirmation is this script's caller's job,
+#     immediately after the dispatch returns: run the returned JSON through
+#     `dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`
+#     (or the community_package_validator CLI) yourself, from your own
+#     unsandboxed shell, before treating the output as validator-clean.
+#
+# Preflight (fatal if it fails, see below): confirms local HEAD matches
+# `origin/main`. This tool's entire premise is that the dispatched agent
+# reads live, current `docs/references/**` content via GitHub -- if local
+# has unpushed doc changes, the agent would author against stale docs
+# without anyone knowing. Push first (see loom_commit_push_authorization
+# memory -- spec-doc/skill-bundle pushes for this workflow are
+# pre-authorized) or pass ALLOW_STALE_PUSH=1 to bypass deliberately (e.g. a
+# throwaway mechanism smoke-test where doc currency doesn't matter).
+#
+# Model: gpt5_6_sol_xhigh ("GPT 5.6 Sol on High Reasoning",
+# ~/.codex/gpt5_6_sol_xhigh.config.toml -- model = "gpt-5.6-sol",
+# model_reasoning_effort = "xhigh"). This profile already existed (created
+# 2026-08-01, not by this script) -- confirmed by direct read, not assumed.
+# Override with CODEX_SKILL_AUTHORING_PROFILE=<name>.
+#
+# Isolation mechanism (the actual "turn off repo access" implementation):
+# `-C <fresh scratch dir under $HOME, OUTSIDE this repo entirely>` sets the
+# agent's working root to a directory with zero Loom content, `--add-dir` is
+# deliberately NEVER passed (nothing else becomes writable/visible), and
+# `--skip-git-repo-check` allows Codex to run outside a git repo at all
+# (the scratch dir isn't one). A fresh directory per dispatch, never reused,
+# so no output from a prior run can leak into a later one as unearned
+# context. `--ephemeral` additionally skips persisting Codex's own session
+# files, matching the "stateless external provider" premise -- no --resume
+# capability is offered by this script, deliberately: each dispatch should
+# stand on its own, exactly like a fresh ChatGPT conversation would.
+#
+# Same WSL vsock caveat as call_implementation_agent.sh applies here (see
+# that script's own header for the full explanation and upstream issue
+# links) -- detected and reported the same way below, retry-until-it-lands
+# is the correct response to a vsock-blocked run.
+
+set -euo pipefail
+
+TARGET_DOC="${1:?usage: call_skill_authoring_agent.sh <target-doc-file> [label]}"
+if [ ! -f "$TARGET_DOC" ]; then
+  echo "ERROR: target doc file not found: $TARGET_DOC" >&2
+  exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+LABEL="${2:-$(basename "$TARGET_DOC" | sed 's/\.[^.]*$//')-$(date +%Y%m%d-%H%M%S)}"
+PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-gpt5_6_sol_xhigh}"
+PROFILE_ARGS=()
+if [ -n "$PROFILE" ]; then
+  PROFILE_ARGS=(-p "$PROFILE")
+fi
+
+INSTRUCTIONS_FILE="$REPO_ROOT/.agents/skills/loom-calendar-experience-authoring/codex-dispatch/INSTRUCTIONS.md"
+if [ ! -f "$INSTRUCTIONS_FILE" ]; then
+  echo "ERROR: instructions file not found: $INSTRUCTIONS_FILE" >&2
+  exit 1
+fi
+
+# --- Preflight: local HEAD must match origin/main -----------------------
+CURRENT_HEAD="$(git.exe rev-parse HEAD)"
+git.exe fetch origin main --quiet
+ORIGIN_MAIN="$(git.exe rev-parse origin/main)"
+if [ "$CURRENT_HEAD" != "$ORIGIN_MAIN" ] && [ "${ALLOW_STALE_PUSH:-0}" != "1" ]; then
+  echo "ERROR: local HEAD ($CURRENT_HEAD) != origin/main ($ORIGIN_MAIN)." >&2
+  echo "       This dispatch's entire premise is reading LIVE docs/references/** via GitHub --" >&2
+  echo "       an unpushed local doc change would silently be invisible to the agent." >&2
+  echo "       Push first, or set ALLOW_STALE_PUSH=1 to bypass deliberately." >&2
+  exit 1
+fi
+if [ -n "$(git.exe status --porcelain -- docs/references .agents/skills/loom-calendar-experience-authoring)" ]; then
+  echo "WARNING: uncommitted changes under docs/references/ or the Skill bundle -- the dispatched" >&2
+  echo "         agent will NOT see these (it reads GitHub, not this working tree)." >&2
+fi
+
+# --- Scratch dir: fresh, outside the repo, never reused ------------------
+SCRATCH_ROOT="$HOME/.codex-skill-authoring-scratch"
+SCRATCH_DIR="$SCRATCH_ROOT/$LABEL"
+mkdir -p "$SCRATCH_DIR"
+
+LOG_DIR="$REPO_ROOT/.codex-logs/skill-authoring/$LABEL"
+mkdir -p "$LOG_DIR"
+JSON_LOG="$LOG_DIR/events.jsonl"
+LAST_MESSAGE_FILE="$LOG_DIR/final_answer.md"
+
+# --- Prompt assembly ------------------------------------------------------
+PROMPT_FILE="$LOG_DIR/prompt.md"
+{
+  cat "$INSTRUCTIONS_FILE"
+  echo
+  echo "---"
+  echo
+  echo "## Target product doc (supplied directly, do not attempt to fetch this one)"
+  echo
+  cat "$TARGET_DOC"
+} > "$PROMPT_FILE"
+
+echo "=== Invoking Skill-authoring Agent (codex exec, GitHub-fetch channel) ==="
+echo "Repo:            $REPO_ROOT (origin/main @ $ORIGIN_MAIN)"
+echo "Target doc:      $TARGET_DOC"
+echo "Prompt file:     $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
+echo "Scratch dir:     $SCRATCH_DIR (fresh, zero repo content, --add-dir never granted)"
+echo "Profile:         ${PROFILE:-<none -- Codex default model>}"
+echo "Label:           $LABEL"
+echo "Event log:       $JSON_LOG"
+echo "Final answer:    $LAST_MESSAGE_FILE"
+echo "============================================================================"
+
+mkdir -p "$REPO_ROOT/.codex-logs"
+echo "$$" > "$REPO_ROOT/.codex-logs/.last_skill_authoring_dispatch.pid"
+
+# Non-login shells don't always have nvm's node on PATH.
+NVM_NODE_BIN=""
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE_BIN="$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -n1)"
+fi
+if [ -n "$NVM_NODE_BIN" ]; then
+  export PATH="$NVM_NODE_BIN:$PATH"
+fi
+
+set +e
+npx --yes @openai/codex exec \
+  "${PROFILE_ARGS[@]}" \
+  --sandbox workspace-write \
+  -C "$SCRATCH_DIR" \
+  --skip-git-repo-check \
+  --ephemeral \
+  --json \
+  --output-last-message "$LAST_MESSAGE_FILE" \
+  - < "$PROMPT_FILE" | tee "$JSON_LOG"
+STATUS="${PIPESTATUS[0]}"
+set -e
+
+echo "============================================================================"
+echo "codex exec exited with status $STATUS"
+
+if grep -qE "UtilBindVsockAnyPort|UtilAcceptVsock|accept4 failed" "$JSON_LOG"; then
+  echo "##################################################################"
+  echo "# DISPATCH_HIT_VSOCK=1 -- WSL vsock error appeared this run.     #"
+  echo "##################################################################"
+  echo "No git state to salvage here (this dispatch never touches git) -- a fresh retry with a"
+  echo "new label is always safe. If this is the 2nd+ consecutive blocked attempt, run"
+  echo "'wsl.exe --shutdown' from PowerShell (never from inside this script) before retrying."
+  echo "See: https://github.com/openai/codex/issues/8322 and"
+  echo "     https://github.com/microsoft/WSL/issues/40650"
+fi
+
+if [ -f "$LAST_MESSAGE_FILE" ]; then
+  echo "Final answer captured: $LAST_MESSAGE_FILE ($(wc -l < "$LAST_MESSAGE_FILE") lines)"
+else
+  echo "WARNING: no final-answer file produced -- inspect $JSON_LOG directly."
+fi
+
+echo
+echo "NEXT STEP (this script does not do this for you): review $LAST_MESSAGE_FILE,"
+echo "run its JSON through the real validator from your OWN shell before trusting it, and only"
+echo "turn it into a real docs/references/communities/*.jsonc file with the user's explicit"
+echo "per-instance approval."
+
+exit "$STATUS"
