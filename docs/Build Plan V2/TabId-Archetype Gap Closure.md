@@ -102,7 +102,21 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   fallback would double-render Masjid Nur's `curatedAnswerBody` and `displayAnswer` side by side once both
   resolve non-null — so option (a) needs a real answer-selection heuristic, not just "read whatever's
   there," and that heuristic is genuinely undecided; still explicitly left to the ticket, not resolved here.
-- **`documentLibrary` — mostly consistent, bind by role not by a fixed required list.** Across the 4 real
+- **`documentLibrary` — Done, 2026-08-12 (Ticket GapClosure.1b1c-documentLibrary, commit `e83b4190`).** Added
+  `DocumentLibraryArchetypeCard` (dispatched from `EngineNativeArchetypeCard.build()`'s per-instance switch,
+  same as `event-rsvp`/`equipment-loan`/`votePoll`) plus real `openMode: "choice"` rendering in the shared
+  field renderer (embedded viewer via a new `webview_flutter` dependency + external via the existing
+  `url_launcher` code path, reused not duplicated). Every one of the 7 `*PersonaIds` affordances only
+  renders when both its transition is available and its backing field is declared — confirmed against
+  Chess Club's/Riverside Youth Soccer's narrower real schemas. One Codex dispatch round (hit the known WSL
+  vsock error before its own verification could run, real edits still landed) plus 2 real fixes caught only
+  during independent verification: a nullable-`int` `flutter analyze` error, and a `WorkflowActionButtonRow`
+  surface-key naming inconsistency (`documentLibrary-...` camelCase vs. the established `equipment-loan-...`
+  kebab-case precedent the ticket explicitly pointed at) that the ticket's own new test correctly caught.
+  Independently verified: `flutter analyze` clean, full `loom_communities_app_shell` suite back to exactly
+  the same 10 pre-existing baseline failures plus all new tests passing, validator 0
+  `unknown_card_surface_family` for Masjid Nur and Cedar Commons HOA. Live UX walkthrough not yet run.
+  Mostly consistent, bind by role not by a fixed required list. Across the 4 real
   communities (Masjid Nur, Cedar Commons HOA, Chess Club, Riverside Youth Soccer), the *names* used for each
   access-tracking role agree wherever the role is present (`readPersonaIds`, `acknowledgedPersonaIds`,
   `accessRequestedPersonaIds`, `allowedPersonaIds`, `downloadedPersonaIds`, `openedPersonaIds`,
@@ -335,7 +349,7 @@ and the user has explicitly signed off on running this cleanup:
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
-| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry) ✅ done; `table` ✅ done (2 real bugs caught in independent verification, not by the dispatch's own checks). Remaining: `documentLibrary`, `searchAiAnswer` (carry forward the answer-field-naming open decision explicitly, do not silently pick), `exportWizard` — all 3 authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
+| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry) ✅ done; `table` ✅ done; `documentLibrary` ✅ done (each caught 1-2 real bugs in independent verification the dispatch's own checks missed — see their own tracker entries above). Remaining: `searchAiAnswer` (carry forward the answer-field-naming open decision explicitly, do not silently pick), `exportWizard` — both authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
 | ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
