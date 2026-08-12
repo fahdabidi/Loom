@@ -1,92 +1,99 @@
-// Garden Club — canonical JSON, authored 2026-08-10.
+// Garden Club — engine-native community package.
+// Authored from the supplied Garden Club Product Experience using the live
+// fahdabidi/Loom main-branch references fetched on 2026-08-11.
 //
-// Garden Club community package, authored per
-// .agents/skills/loom-calendar-experience-authoring/SKILL.md against
-// docs/references/communities/garden-club-product-experience.md.
-//
-// Eight workflow types from the product doc's section 6 table:
-//   1. garden-event-rsvp            (event-rsvp archetype, calendar tab)
-//   2. garden-event-rsvp-response   (per-member response row, supports garden-event-rsvp)
-//   3. garden-notification          (per-persona notice, created by send-reminder/request-loan/claim/sign-up)
-//   4. plant-exchange-submission    (formEntry/statusTimeline/approvalQueueItem, home+admin)
-//   5. garden-tool-loan             (equipment-loan archetype, marketplace) -- LOAN half
-//   6. garden-tool-giveaway         (equipment-loan archetype, marketplace) -- GIVEAWAY half
-//      (split from the product doc's single "garden-tool-loan-giveaway" row -- see report)
-//   7. garden-export-custom-schemas (formEntry archetype, home+admin)
-//   8. garden-volunteer-shift       (formEntry + approvalQueueItem, home+admin)
-//
-// Independently judged after authoring (Community JSON Migration Tracker §1c) and found to have 3 real
-// issues, all fixed here before merge:
-//   1. `garden-tool-loan`/`garden-tool-giveaway`'s `delist` had no owner/availability guard — reachable
-//      while an item was on loan or claimed, stranding custody with no return path. Fixed: `delist` now
-//      requires `actorEqualsField: ownerPersonaId` + `availabilityState == "available"`.
-//   2. The doc's §6 "notifications" requirement for `garden-tool-loan-giveaway`/`garden-volunteer-shift`
-//      was never wired to any effect. Fixed: `request-loan`, `claim`, and `sign-up` each now create a real
-//      `garden-notification` instance.
-//   3. The doc's own B25 §9 semantic-interaction-model row for `plant-exchange-submission` required
-//      claim/reserve mechanics that contradicted the rest of the doc's draft→submitted→reviewed
-//      submission-for-review shape (a copy-paste artifact from the marketplace flow) — corrected in the
-//      product doc itself (see its §10 remediation log), not implemented here.
-//
-// See docs/references/communities/garden-club-product-experience.md §10 for the full review log.
+// Workflow split note: the product-doc umbrella "garden-tool-loan-giveaway"
+// becomes two types because a reversible loan/custody cycle and a terminal
+// giveaway transfer do not have the same states or transitions.
 
 {
   "schemaVersion": 1,
-  "packageId": "init_garden_club_1",
+  "packageId": "init_garden_club_2",
   "communityId": "community_garden_club",
   "communityHandle": "garden-club",
   "displayName": "Garden Club",
   "extensionId": "ext_garden_club",
   "branding": { "accentColor": "#3F7D4A" },
   "seedDataFiles": [],
-  "idempotencyKey": "init-garden-club-v1",
+  "idempotencyKey": "init-garden-club-v2",
 
   "experience": {
     "experienceSchemaVersion": 2,
     "workflowGrammarVersion": 1,
-
     "displayName": "Garden Club",
-    "tagline": "RSVP to garden events, share plants, coordinate care, and keep club records portable.",
+    "tagline": "RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable.",
     "accentColor": "#3F7D4A",
+    "theme": {
+      "accent": "#3F7D4A",
+      "tabThemes": {
+        "calendar": { "accent": "#4F8F57" },
+        "marketplace": { "accent": "#557A46" },
+        "care": { "accent": "#2F7D67" },
+        "documents": { "accent": "#356B5D" },
+        "organize": { "accent": "#315F3A" }
+      }
+    },
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
     "notificationPresentation": { "style": "bell" },
 
     "personas": [
-      { "personaId": "garden-member", "label": "Member", "roleLabel": "Member",
-        "description": "RSVPs to garden events, exchanges plants, borrows or gives away tools, and signs up for volunteer shifts." },
-      { "personaId": "garden-coordinator", "label": "Coordinator", "roleLabel": "Coordinator",
-        "description": "Organizes events, reviews plant exchange submissions, manages the shared tool marketplace, exports club records, and runs the volunteer roster." }
+      {
+        "personaId": "garden-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts."
+      },
+      {
+        "personaId": "garden-coordinator",
+        "label": "Coordinator",
+        "roleLabel": "Coordinator",
+        "description": "Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports."
+      }
     ],
 
     "workflowDefinitions": {
-
-      // =====================================================================
-      // 1. GARDEN-EVENT-RSVP -- the event itself. Row-per-member response
-      //    table (garden-event-rsvp-response) makes per-member reminders
-      //    possible, per the worked calendar example.
-      // =====================================================================
       "garden-event-rsvp": {
         "initialState": "open",
         "visibility": { "default": "public" },
         "states": {
           "open": {
-            "label": "RSVP open", "tone": "positive",
-            "editableFields": ["title", "eventDate", "eventTime", "location", "capacity", "reminderOffsetHours"],
+            "label": "RSVP open",
+            "tone": "positive",
+            "editableFields": [
+              "title",
+              "eventDate",
+              "eventTime",
+              "location",
+              "capacity",
+              "recurrenceLabel",
+              "reminderOffsetHours"
+            ],
             "editGuard": { "allowedPersonaIds": ["garden-coordinator"] }
           },
-          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+          "cancelled": {
+            "label": "Cancelled",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "cancel-event", "label": "Cancel event", "icon": "cancel", "tone": "destructive",
-            "from": ["open"], "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] }
-          },
-          {
-            "id": "make-recurring", "label": "Repeat this event", "icon": "event_repeat", "tone": "secondary",
-            "from": ["open"], "to": null,
+            "id": "make-recurring",
+            "label": "Repeat this event",
+            "icon": "event_repeat",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
             "guard": { "allowedPersonaIds": ["garden-coordinator"] },
             "inputs": {
-              "freq": { "type": "text", "required": true },
+              "freq": {
+                "type": "text",
+                "required": true,
+                "options": ["daily", "weekly", "monthly"]
+              },
               "count": { "type": "number", "required": true }
             },
             "effects": [
@@ -95,78 +102,214 @@
                 "workflowType": "garden-event-rsvp",
                 "anchorField": "eventDate",
                 "fields": {
-                  "title": "{title}", "eventDate": "{eventDate}", "eventTime": "{eventTime}",
-                  "location": "{location}", "capacity": "{capacity}",
-                  "reminderOffsetHours": "{reminderOffsetHours}", "seriesId": "$newSeriesId"
+                  "title": "{title}",
+                  "eventDate": "{eventDate}",
+                  "eventTime": "{eventTime}",
+                  "location": "{location}",
+                  "capacity": "{capacity}",
+                  "coordinatorPersonaId": "{coordinatorPersonaId}",
+                  "recurrenceLabel": "{recurrenceLabel}",
+                  "reminderOffsetHours": "{reminderOffsetHours}",
+                  "seriesId": "$newSeriesId"
                 },
-                "recurrenceRule": { "freq": "{input.freq}", "interval": 1, "count": "{input.count}" }
+                "recurrenceRule": {
+                  "freq": "{input.freq}",
+                  "interval": 1,
+                  "count": "{input.count}"
+                }
               }
             ]
+          },
+          {
+            "id": "cancel-event",
+            "label": "Cancel event",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["garden-coordinator"] }
           }
         ],
         "renderBindings": [
           {
-            "states": ["open"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+            "states": ["open"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New garden event", "byPersonaIds": ["garden-coordinator"],
-                "scope": "tab", "presentation": "fab" }
+              {
+                "kind": "create",
+                "label": "New garden event",
+                "byPersonaIds": ["garden-coordinator"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "coordinatorPersonaId": "$actor" }
+              }
             ],
+            // NEEDS IMPLEMENTATION (App Shell): solved-patterns.md CJM.5 says the
+            // event-rsvp detail card still hardcodes the literal type names
+            // event-rsvp/event-rsvp-response instead of consuming this declaration.
             "responseTable": {
               "workflowType": "garden-event-rsvp-response",
               "eventField": "eventId",
               "pendingStates": ["pending"]
             }
           },
-          { "states": ["cancelled"], "role": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["open", "cancelled"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
-            "searchable": true, "sortable": true, "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
-            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
-            "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "location": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
-            "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
-          "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
-            "displayIcon": "groups_outlined", "labelTemplate": "{value} spots" },
-
-          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
-            "displayContexts": [] },
-          "reminderAt": { "type": "date",
-            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))" },
-
-          "responses": { "type": "list",
-            "source": "query(garden-event-rsvp-response where eventId == id)" },
-          "responseCounts": { "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": [] },
-          "goingCount": { "type": "number", "formula": "mapGet(responseCounts, 'going')",
-            "displayIcon": "groups_outlined", "labelTemplate": "Going: {value}",
-            "displayContexts": ["tile", "detail"] },
-          "waitlistedCount": { "type": "number", "formula": "mapGet(responseCounts, 'waitlisted')",
-            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist: {value}",
-            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "seatsRemaining": { "type": "number", "formula": "capacity - goingCount",
-            "displayIcon": "event_seat", "labelTemplate": "{value} spots left", "displayContexts": ["detail"] },
-          "isFull": { "type": "bool", "formula": "goingCount >= capacity",
-            "displayIcon": "event_busy", "labelTemplate": "Full: {value}" },
-          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0",
-            "displayIcon": "hourglass_empty", "labelTemplate": "Waitlist open: {value}" },
-
-          "seriesId": { "type": "text", "writableBy": "effect", "storage": "inline",
-            "displayContexts": [] }
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "sortable": true,
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "calendar_today",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "schedule",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "location": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "location_on_outlined",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "capacity": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "{value} spots",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coordinatorPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayContexts": []
+          },
+          "recurrenceLabel": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "event_repeat",
+            "labelTemplate": "Repeats: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "reminderOffsetHours": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "notifications_active",
+            "labelTemplate": "Default reminder: {value} hours before",
+            "displayContexts": ["detail"]
+          },
+          "reminderAt": {
+            "type": "date",
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), reminderOffsetHours)",
+            "displayIcon": "alarm",
+            "labelTemplate": "Default reminder at {value}",
+            "displayContexts": ["detail"]
+          },
+          "responses": {
+            "type": "list",
+            "source": "query(garden-event-rsvp-response where eventId == id)",
+            "displayContexts": []
+          },
+          "coordinatorResponseRoster": {
+            "type": "list",
+            "formula": "if($viewer == coordinatorPersonaId, responses, null)",
+            "displayIcon": "groups_2",
+            "labelTemplate": "Attendance roster: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "responseCounts": {
+            "type": "map",
+            "formula": "groupCount(responses, '$state')",
+            "displayContexts": []
+          },
+          "goingCount": {
+            "type": "number",
+            "formula": "mapGet(responseCounts, 'going')",
+            "displayIcon": "how_to_reg",
+            "labelTemplate": "Going: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "waitlistedCount": {
+            "type": "number",
+            "formula": "mapGet(responseCounts, 'waitlisted')",
+            "displayIcon": "hourglass_empty",
+            "labelTemplate": "Waitlist: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "seatsRemaining": {
+            "type": "number",
+            "formula": "capacity - goingCount",
+            "displayIcon": "event_seat",
+            "labelTemplate": "{value} spots left",
+            "displayContexts": ["tile", "detail"]
+          },
+          "isFull": {
+            "type": "bool",
+            "formula": "goingCount >= capacity",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Full: {value}",
+            "displayContexts": ["detail"]
+          },
+          "seriesId": {
+            "type": "text",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayContexts": []
+          }
         }
       },
 
-      // =====================================================================
-      // 2. GARDEN-EVENT-RSVP-RESPONSE -- one row per (event, member).
-      // =====================================================================
       "garden-event-rsvp-response": {
         "initialState": "pending",
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "states": {
           "pending": { "label": "No response yet", "tone": "info" },
           "going": { "label": "Going", "tone": "positive" },
@@ -176,555 +319,2113 @@
         },
         "transitions": [
           {
-            "id": "respond-going", "label": "Going", "icon": "event_available", "tone": "primary",
-            "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
+            "id": "respond-going",
+            "label": "Going",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["pending", "maybe", "declined", "waitlisted"],
+            "to": "going",
             "guard": {
               "allowedPersonaIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "personaId" },
               "relatedAggregate": {
                 "workflowType": "garden-event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "count", "comparator": "<",
-                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+                "op": "count",
+                "comparator": "<",
+                "compareTo": {
+                  "relatedInstanceField": "eventId",
+                  "field": "capacity"
+                }
               }
-            }
-          },
-          {
-            "id": "respond-maybe", "label": "Maybe", "icon": "help_outline", "tone": "secondary",
-            "from": ["pending", "going", "declined", "waitlisted"], "to": "maybe",
-            "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"] }
-          },
-          {
-            "id": "respond-declined", "label": "Not attending", "icon": "event_busy", "tone": "destructive",
-            "from": ["pending", "going", "maybe", "waitlisted"], "to": "declined",
-            "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"] }
-          },
-          {
-            "id": "respond-waitlist", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
-            "from": ["pending", "maybe", "declined"], "to": "waitlisted",
-            "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "relatedAggregate": {
-                "workflowType": "garden-event-rsvp-response",
-                "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "count", "comparator": ">=",
-                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
-              }
-            }
-          },
-          {
-            "id": "send-reminder", "label": "Send reminder",
-            "from": ["pending", "maybe", "going", "waitlisted"], "to": null,
-            "guard": { "actorEqualsField": { "key": "personaId" } },
-            "inputs": {
-              "notificationTitle": { "type": "text", "required": true },
-              "notificationBody": { "type": "text", "required": true },
-              "notificationCreatedAt": { "type": "text", "required": true }
             },
             "effects": [
-              { "op": "createInstance", "workflowType": "garden-notification",
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "respond-maybe",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["pending", "going", "declined", "waitlisted"],
+            "to": "maybe",
+            "guard": {
+              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "personaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "respond-declined",
+            "label": "Not attending",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "waitlisted"],
+            "to": "declined",
+            "guard": {
+              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "personaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "respond-waitlist",
+            "label": "Join waitlist",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "declined"],
+            "to": "waitlisted",
+            "guard": {
+              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "personaId" },
+              "relatedAggregate": {
+                "workflowType": "garden-event-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": ">=",
+                "compareTo": {
+                  "relatedInstanceField": "eventId",
+                  "field": "capacity"
+                }
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "add-reminder",
+            "label": "Add reminder",
+            "icon": "add_alert",
+            "tone": "secondary",
+            "from": ["pending", "going", "maybe", "waitlisted"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "personaId" }
+            },
+            "inputs": {
+              "dueAt": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "reminderDueAt", "value": "{input.dueAt}" },
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
                 "fields": {
                   "recipientPersonaId": "{personaId}",
-                  "title": "{input.notificationTitle}",
-                  "body": "{input.notificationBody}",
-                  "createdAt": "{input.notificationCreatedAt}"
-                } },
-              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
+                  "title": "Garden event reminder",
+                  "body": "Your saved garden event is coming up. Open Calendar for the current date, place, capacity, and RSVP.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "{input.dueAt}",
+                  "sourceWorkflowType": "garden-event-rsvp-response"
+                }
+              }
             ]
           }
         ],
         "renderBindings": [],
         "instanceDataSchema": {
-          "eventId": { "type": "text", "required": true, "storage": "inline" },
-          "personaId": { "type": "text", "required": true, "storage": "inline" },
-          "reminderSentAt": { "type": "text", "writableBy": "effect", "storage": "inline" }
+          "eventId": {
+            "type": "text",
+            "required": true,
+            "storage": "inline"
+          },
+          "personaId": {
+            "type": "personaId",
+            "required": true,
+            "storage": "inline"
+          },
+          "respondedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline"
+          },
+          "reminderDueAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline"
+          }
         }
       },
 
-      // =====================================================================
-      // 3. GARDEN-NOTIFICATION -- generic per-persona notice.
-      // =====================================================================
       "garden-notification": {
         "initialState": "unread",
-        "visibility": { "default": "public" },
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "formula": "$viewer == recipientPersonaId"
+          }
+        },
         "states": {
           "unread": { "label": "Unread", "tone": "info" },
-          "read": { "label": "Read", "isTerminal": true }
+          "read": {
+            "label": "Read",
+            "tone": "positive",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "mark-read", "label": "Mark read", "icon": "done", "tone": "secondary",
-            "from": ["unread"], "to": "read",
-            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+            "id": "mark-read",
+            "label": "Mark read",
+            "icon": "done",
+            "tone": "secondary",
+            "from": ["unread"],
+            "to": "read",
+            "guard": {
+              "actorEqualsField": { "key": "recipientPersonaId" }
+            }
           }
         ],
         "renderBindings": [],
         "instanceDataSchema": {
-          "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "storage": "inline" },
-          "title": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
-          "body": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
-          "createdAt": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true }
+          "recipientPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline"
+          },
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "body": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayContexts": ["detail"]
+          },
+          "createdAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "schedule",
+            "labelTemplate": "Created {value}"
+          },
+          "dueAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "notifications_active",
+            "labelTemplate": "Due {value}"
+          },
+          "sourceWorkflowType": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "link",
+            "labelTemplate": "From {value}"
+          }
         }
       },
 
-      // =====================================================================
-      // 4. PLANT-EXCHANGE-SUBMISSION -- draft -> submitted -> reviewed,
-      //    P3 approval-queue shape (member composes on Home, coordinator
-      //    decides on Admin). Contact details masked until handoff approved.
-      // =====================================================================
       "plant-exchange-submission": {
         "initialState": "draft",
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "draft": { "label": "Draft", "tone": "info",
-            "editableFields": ["plantVariety", "offerType", "notes", "pickupWindow", "contactInfo", "privacyAcknowledged"],
-            "editGuard": { "actorEqualsField": { "key": "ownerPersonaId" } } },
-          "submitted": { "label": "Submitted for review", "tone": "warning" },
-          "reviewed": { "label": "Reviewed", "tone": "positive", "isTerminal": true },
-          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+          "draft": {
+            "label": "Draft",
+            "tone": "info",
+            "editableFields": [
+              "plantVariety",
+              "offerType",
+              "notes",
+              "pickupWindow",
+              "availabilityNote",
+              "contactInfo",
+              "privacyLabel",
+              "privacyAcknowledged"
+            ],
+            "editGuard": {
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          },
+          "submitted": {
+            "label": "Submitted for review",
+            "tone": "warning"
+          },
+          "reviewed": {
+            "label": "Reviewed for handoff",
+            "tone": "positive",
+            "isTerminal": true
+          },
+          "withdrawn": {
+            "label": "Withdrawn",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "submit", "label": "Submit", "icon": "send", "tone": "primary",
-            "from": ["draft"], "to": "submitted",
-            "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
-                       "instanceDataEquals": { "key": "privacyAcknowledged", "value": true } },
-            "effects": [ { "op": "set", "key": "submittedAt", "value": "$timestamp" } ]
-          },
-          {
-            "id": "review", "label": "Mark reviewed", "icon": "fact_check", "tone": "primary",
-            "from": ["submitted"], "to": "reviewed",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+            "id": "submit-exchange",
+            "label": "Submit exchange",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "submitted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "privacyAcknowledged",
+                "value": true
+              }
+            },
             "effects": [
-              { "op": "set", "key": "reviewedByPersonaId", "value": "$actor" },
-              { "op": "set", "key": "handoffApproved", "value": true }
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ]
           },
           {
-            "id": "withdraw", "label": "Withdraw", "icon": "undo", "tone": "destructive",
-            "from": ["draft", "submitted"], "to": "withdrawn",
-            "guard": { "actorEqualsField": { "key": "ownerPersonaId" } }
+            "id": "approve-handoff",
+            "label": "Approve handoff",
+            "icon": "fact_check",
+            "tone": "primary",
+            "from": ["submitted"],
+            "to": "reviewed",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"]
+            },
+            "inputs": {
+              "handoffRecipientPersonaId": {
+                "type": "text",
+                "required": true
+              }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "reviewedByPersonaId",
+                "value": "$actor"
+              },
+              {
+                "op": "set",
+                "key": "handoffRecipientPersonaId",
+                "value": "{input.handoffRecipientPersonaId}"
+              },
+              { "op": "set", "key": "reviewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "withdraw-submission",
+            "label": "Withdraw submission",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["draft", "submitted"],
+            "to": "withdrawn",
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
           }
         ],
         "renderBindings": [
-          { "states": ["draft"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["draft"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Offer or request a plant", "byPersonaIds": ["garden-member"],
-                "scope": "tab", "presentation": "fab", "prefill": { "ownerPersonaId": "$actor" } }
-            ] },
-          { "states": ["submitted"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["submitted"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
-          { "states": ["reviewed"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" },
-          { "states": ["withdrawn"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "Offer or request a plant",
+                "byPersonaIds": ["garden-member"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "ownerPersonaId": "$actor" }
+              }
+            ]
+          },
+          {
+            "states": ["submitted", "withdrawn"],
+            "role": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["reviewed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["submitted"],
+            "role": "any",
+            "tabId": "organize",
+            "cardSurfaceFamily": "approvalQueueItem",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["reviewed"],
+            "role": "any",
+            "tabId": "organize",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "plantVariety": { "type": "text", "required": true, "writableBy": "formEntry",
-            "searchable": true, "labelTemplate": "{value}", "displayIcon": "eco",
-            "displayContexts": ["tile", "detail"] },
-          "offerType": { "type": "text", "required": true, "writableBy": "formEntry",
-            "displayIcon": "swap_horiz", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "notes": { "type": "textarea", "writableBy": "formEntry", "maxLength": 500,
-            "displayContexts": ["detail"] },
-          "pickupWindow": { "type": "text", "writableBy": "formEntry",
-            "displayIcon": "schedule", "labelTemplate": "Pickup: {value}",
-            "displayContexts": ["tile", "detail"] },
-          "contactInfo": { "type": "text", "writableBy": "formEntry", "displayContexts": [] },
-          "privacyAcknowledged": { "type": "bool", "required": true, "writableBy": "formEntry",
-            "displayContexts": [] },
-
-          "ownerPersonaId": { "type": "personaId?", "writableBy": "effect",
-            "displayIcon": "person_outline", "labelTemplate": "From {value}", "hideWhenEmpty": true,
-            "displayContexts": ["detail"] },
-          "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
-          "reviewedByPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true },
-          "handoffApproved": { "type": "bool", "writableBy": "effect" },
-
-          "contactInfoDisplay": { "type": "text",
-            "formula": "if(handoffApproved || $viewer == ownerPersonaId, contactInfo, 'Hidden until approved')",
-            "displayIcon": "contact_mail", "labelTemplate": "Contact: {value}", "displayContexts": ["detail"] }
+          "plantVariety": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "searchable": true,
+            "sortable": true,
+            "displayIcon": "eco",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "offerType": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "swap_horiz",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "notes": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "notes",
+            "displayContexts": ["detail"]
+          },
+          "pickupWindow": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "schedule",
+            "labelTemplate": "Pickup: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "availabilityNote": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "inventory_2",
+            "labelTemplate": "Availability: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "contactInfo": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "privacyLabel": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "privacy_tip",
+            "labelTemplate": "Privacy: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "privacyAcknowledged": {
+            "type": "bool",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "ownerPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Submitted by {value}",
+            "displayContexts": ["detail"]
+          },
+          "submittedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "sortable": true,
+            "hideWhenEmpty": true,
+            "displayIcon": "outbox",
+            "labelTemplate": "Submitted {value}"
+          },
+          "reviewedByPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "handoffRecipientPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "reviewedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "sortable": true,
+            "hideWhenEmpty": true,
+            "displayIcon": "task_alt",
+            "labelTemplate": "Reviewed {value}"
+          },
+          "contactInfoDisplay": {
+            "type": "text",
+            "formula": "if($viewer == ownerPersonaId || $viewer == reviewedByPersonaId || $viewer == handoffRecipientPersonaId, contactInfo, 'Protected until approved handoff')",
+            "displayIcon": "contact_mail",
+            "labelTemplate": "Contact: {value}",
+            "displayContexts": ["detail"]
+          }
         }
       },
 
-      // =====================================================================
-      // 5. GARDEN-TOOL-LOAN -- lending half of the marketplace. Split from
-      //    GIVEAWAY (see report) because their states/transitions genuinely
-      //    differ (borrow/queue/return cycle vs. one-way claim).
-      // =====================================================================
       "garden-tool-loan": {
         "initialState": "published",
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "published": { "label": "In library", "tone": "positive",
-            "editableFields": ["title", "toolDescription"],
-            "editGuard": { "actorEqualsField": { "key": "ownerPersonaId" } } },
-          "delisted": { "label": "Delisted", "tone": "negative", "isTerminal": true }
+          "published": {
+            "label": "Listed for loan",
+            "tone": "positive",
+            "editableFields": ["title", "toolDescription", "coordinatorPersonaId", "ownerContactInfo", "conditionNote"],
+            "editGuard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            }
+          },
+          "delisted": {
+            "label": "Delisted",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "request-loan", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "instanceDataEquals": { "key": "availabilityState", "value": "available" } },
+            "id": "request-loan",
+            "label": "Request loan",
+            "icon": "arrow_forward",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              },
+              "formula": "if(ownerPersonaId == $actor, false, if(size(queuedPersonaIds) == 0, true, indexOf(queuedPersonaIds, $actor) == 0))"
+            },
             "inputs": {
               "pickupWindow": { "type": "text", "required": true },
-              "dueDate": { "type": "text", "required": true }
+              "dueDate": { "type": "text", "required": true },
+              "borrowerContactInfo": { "type": "text", "required": true }
             },
             "effects": [
-              { "op": "set", "key": "availabilityState", "value": "onLoan" },
-              { "op": "set", "key": "holderPersonaId", "value": "$actor" },
-              { "op": "set", "key": "pickupWindow", "value": "{input.pickupWindow}" },
-              { "op": "set", "key": "dueDate", "value": "{input.dueDate}" },
-              { "op": "set", "key": "borrowedAt", "value": "$timestamp" },
-              { "op": "createInstance", "workflowType": "garden-notification",
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "reserved"
+              },
+              {
+                "op": "set",
+                "key": "borrowerPersonaId",
+                "value": "$actor"
+              },
+              {
+                "op": "set",
+                "key": "pickupWindow",
+                "value": "{input.pickupWindow}"
+              },
+              {
+                "op": "set",
+                "key": "dueDate",
+                "value": "{input.dueDate}"
+              },
+              {
+                "op": "set",
+                "key": "borrowerContactInfo",
+                "value": "{input.borrowerContactInfo}"
+              },
+              {
+                "op": "set",
+                "key": "requestedAt",
+                "value": "$timestamp"
+              },
+              {
+                "op": "removeValue",
+                "key": "queuedPersonaIds",
+                "value": "$actor"
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
                 "fields": {
                   "recipientPersonaId": "{ownerPersonaId}",
-                  "title": "Loan requested",
-                  "body": "{title} was requested for pickup {input.pickupWindow}.",
-                  "createdAt": "$timestamp"
-                } }
+                  "title": "Tool loan requested",
+                  "body": "{title} was requested. Review the pickup and due terms in Marketplace.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-loan"
+                }
+              }
             ]
           },
           {
-            "id": "join-queue", "label": "Join queue", "tone": "secondary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "actorInList": { "key": "queuedPersonaIds", "present": false } },
-            "effects": [ { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" } ]
-          },
-          {
-            "id": "leave-queue", "label": "Leave queue", "tone": "secondary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "actorInList": { "key": "queuedPersonaIds", "present": true } },
-            "effects": [ { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" } ]
-          },
-          {
-            "id": "return-item", "label": "Return", "tone": "primary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-                       "instanceDataEquals": { "key": "availabilityState", "value": "onLoan" } },
+            "id": "join-queue",
+            "label": "Join queue",
+            "icon": "queue",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "actorInList": {
+                "key": "queuedPersonaIds",
+                "present": false
+              },
+              "formula": "if(ownerPersonaId == $actor, false, availabilityState == 'reserved' || availabilityState == 'onLoan')"
+            },
             "effects": [
-              { "op": "set", "key": "availabilityState", "value": "available" },
-              { "op": "set", "key": "holderPersonaId", "value": null },
-              { "op": "set", "key": "dueDate", "value": null },
-              { "op": "set", "key": "pickupWindow", "value": null }
+              {
+                "op": "appendUnique",
+                "key": "queuedPersonaIds",
+                "value": "$actor"
+              }
             ]
           },
           {
-            "id": "report-issue", "label": "Report issue", "icon": "report_problem", "tone": "secondary",
-            "from": ["published"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"] },
-            "inputs": { "issueNote": { "type": "text", "required": true } },
+            "id": "leave-queue",
+            "label": "Leave queue",
+            "icon": "remove_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "actorInList": {
+                "key": "queuedPersonaIds",
+                "present": true
+              }
+            },
             "effects": [
-              { "op": "set", "key": "conditionNote", "value": "{input.issueNote}" },
+              {
+                "op": "removeValue",
+                "key": "queuedPersonaIds",
+                "value": "$actor"
+              }
+            ]
+          },
+          {
+            "id": "confirm-pickup",
+            "label": "Confirm pickup",
+            "icon": "handshake",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "reserved"
+              }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "onLoan"
+              },
+              {
+                "op": "set",
+                "key": "currentHolderPersonaId",
+                "value": "{borrowerPersonaId}"
+              },
+              { "op": "set", "key": "borrowedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "decline-loan",
+            "label": "Decline request",
+            "icon": "cancel_presentation",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "reserved"
+              }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
+                "fields": {
+                  "recipientPersonaId": "{borrowerPersonaId}",
+                  "title": "Loan request declined",
+                  "body": "The owner declined the current request for {title}.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-loan"
+                }
+              },
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "available"
+              },
+              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerContactInfo", "value": null },
+              { "op": "set", "key": "pickupWindow", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-loan",
+            "label": "Cancel loan",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "borrowerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "reserved"
+              }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
+                "fields": {
+                  "recipientPersonaId": "{ownerPersonaId}",
+                  "title": "Loan request cancelled",
+                  "body": "The borrower cancelled the current request for {title}.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-loan"
+                }
+              },
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "available"
+              },
+              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerContactInfo", "value": null },
+              { "op": "set", "key": "pickupWindow", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+            ]
+          },
+          {
+            "id": "return-item",
+            "label": "Return item",
+            "icon": "assignment_return",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "onLoan"
+              }
+            },
+            "effects": [
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
+                "fields": {
+                  "recipientPersonaId": "{ownerPersonaId}",
+                  "title": "Tool returned",
+                  "body": "{title} was marked returned and is available again.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-loan"
+                }
+              },
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "available"
+              },
+              {
+                "op": "set",
+                "key": "conditionState",
+                "value": "returned"
+              },
+              { "op": "set", "key": "returnedAt", "value": "$timestamp" },
+              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerContactInfo", "value": null },
+              { "op": "set", "key": "currentHolderPersonaId", "value": null },
+              { "op": "set", "key": "pickupWindow", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+            ]
+          },
+          {
+            "id": "pause-listing",
+            "label": "Pause listing",
+            "icon": "pause_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "paused" }
+            ]
+          },
+          {
+            "id": "resume-listing",
+            "label": "Resume listing",
+            "icon": "play_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "paused"
+              }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "available"
+              }
+            ]
+          },
+          {
+            "id": "mark-damaged",
+            "label": "Mark damaged",
+            "icon": "build_circle",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "onLoan"
+              }
+            },
+            "inputs": {
+              "conditionNote": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "conditionState", "value": "damaged" },
+              {
+                "op": "set",
+                "key": "conditionNote",
+                "value": "{input.conditionNote}"
+              },
               { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" }
             ]
           },
           {
-            "id": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
-            "from": ["published"], "to": "delisted",
-            "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
-                       "instanceDataEquals": { "key": "availabilityState", "value": "available" } }
-          }
-        ],
-        "renderBindings": [
-          { "states": ["published"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
-            "actions": [
-              { "kind": "create", "label": "List a tool to loan", "byPersonaIds": ["garden-member"],
-                "scope": "tab", "presentation": "fab",
-                "prefill": { "ownerPersonaId": "$actor", "availabilityState": "available" } }
-            ] },
-          { "states": ["delisted"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
-        ],
-        "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry",
-            "searchable": true, "sortable": true, "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "toolDescription": { "type": "textarea", "writableBy": "formEntry",
-            "displayContexts": ["detail"] },
-          "ownerPersonaId": { "type": "personaId?", "writableBy": "effect",
-            "displayIcon": "person_outline", "labelTemplate": "Owner: {value}", "hideWhenEmpty": true },
-          "availabilityState": { "type": "text", "writableBy": "effect" },
-          "holderPersonaId": { "type": "personaId?", "writableBy": "effect",
-            "displayIcon": "person_outline", "labelTemplate": "Borrower: {value}", "hideWhenEmpty": true },
-          "queuedPersonaIds": { "type": "personaId[]", "writableBy": "effect",
-            "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}", "hideWhenEmpty": true },
-          "pickupWindow": { "type": "text?", "writableBy": "effect",
-            "displayIcon": "schedule", "labelTemplate": "Pickup: {value}", "hideWhenEmpty": true },
-          "dueDate": { "type": "date?", "writableBy": "effect",
-            "displayIcon": "event_busy", "labelTemplate": "Due back {value}", "hideWhenEmpty": true },
-          "borrowedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
-          "conditionNote": { "type": "text?", "writableBy": "effect",
-            "displayIcon": "verified_outlined", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "flaggedByPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true },
-
-          "queueLength": { "type": "number", "formula": "size(queuedPersonaIds)" },
-          "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" },
-          "isOverdue": { "type": "bool",
-            "formula": "if(availabilityState == 'onLoan', isPast(dueDate), false)" }
-        }
-      },
-
-      // =====================================================================
-      // 6. GARDEN-TOOL-GIVEAWAY -- one-way transfer half of the marketplace.
-      //    Declares a real "claim" transition (the mechanism the
-      //    equipment-loan widget branches on).
-      // =====================================================================
-      "garden-tool-giveaway": {
-        "initialState": "published",
-        "visibility": { "default": "public" },
-        "states": {
-          "published": { "label": "Available to claim", "tone": "positive",
-            "editableFields": ["title", "toolDescription"],
-            "editGuard": { "actorEqualsField": { "key": "ownerPersonaId" } } },
-          "given": { "label": "Given away", "tone": "positive", "isTerminal": true },
-          "delisted": { "label": "Delisted", "tone": "negative", "isTerminal": true }
-        },
-        "transitions": [
-          {
-            "id": "claim", "label": "Claim", "icon": "volunteer_activism", "tone": "primary",
-            "from": ["published"], "to": "given",
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "instanceDataEquals": { "key": "availabilityState", "value": "available" } },
-            "inputs": { "pickupWindow": { "type": "text", "required": true } },
+            "id": "report-lost",
+            "label": "Report lost",
+            "icon": "report_problem",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "onLoan"
+              }
+            },
             "effects": [
-              { "op": "set", "key": "availabilityState", "value": "given" },
-              { "op": "set", "key": "claimantPersonaId", "value": "$actor" },
-              { "op": "set", "key": "pickupWindow", "value": "{input.pickupWindow}" },
-              { "op": "set", "key": "claimedAt", "value": "$timestamp" },
-              { "op": "createInstance", "workflowType": "garden-notification",
+              { "op": "set", "key": "availabilityState", "value": "lost" },
+              { "op": "set", "key": "conditionState", "value": "lost" },
+              { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" },
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
                 "fields": {
                   "recipientPersonaId": "{ownerPersonaId}",
-                  "title": "Giveaway claimed",
-                  "body": "{title} was claimed for pickup {input.pickupWindow}.",
-                  "createdAt": "$timestamp"
-                } }
+                  "title": "Tool reported lost",
+                  "body": "The current holder reported {title} lost.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-loan"
+                }
+              }
             ]
           },
           {
-            "id": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
-            "from": ["published"], "to": "delisted",
-            "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
-                       "instanceDataEquals": { "key": "availabilityState", "value": "available" } }
+            "id": "report-issue",
+            "label": "Report issue",
+            "icon": "feedback",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "formula": "ownerPersonaId == $actor || currentHolderPersonaId == $actor"
+            },
+            "inputs": {
+              "issueNote": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "conditionNote",
+                "value": "{input.issueNote}"
+              },
+              { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "delist",
+            "label": "Delist",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": null }
+            ]
+          },
+          {
+            "id": "retire-lost-item",
+            "label": "Retire lost item",
+            "icon": "delete_forever",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "lost"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": null }
+            ]
           }
         ],
         "renderBindings": [
-          { "states": ["published"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
+          {
+            "states": ["published"],
+            "role": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Give away a tool", "byPersonaIds": ["garden-member"],
-                "scope": "tab", "presentation": "fab",
-                "prefill": { "ownerPersonaId": "$actor", "availabilityState": "available" } }
-            ] },
-          { "states": ["given"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" },
-          { "states": ["delisted"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "List a tool to loan",
+                "byPersonaIds": ["garden-member", "garden-coordinator"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "ownerPersonaId": "$actor",
+                  "mode": "loan",
+                  "availabilityState": "available",
+                  "conditionState": "good",
+                  "queuedPersonaIds": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["delisted"],
+            "role": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["published"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "title": { "type": "text", "required": true, "writableBy": "formEntry",
-            "searchable": true, "sortable": true, "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "toolDescription": { "type": "textarea", "writableBy": "formEntry",
-            "displayContexts": ["detail"] },
-          "ownerPersonaId": { "type": "personaId?", "writableBy": "effect",
-            "displayIcon": "person_outline", "labelTemplate": "Owner: {value}", "hideWhenEmpty": true },
-          "availabilityState": { "type": "text", "writableBy": "effect" },
-          "claimantPersonaId": { "type": "personaId?", "writableBy": "effect",
-            "displayIcon": "person_outline", "labelTemplate": "Claimed by: {value}", "hideWhenEmpty": true },
-          "pickupWindow": { "type": "text?", "writableBy": "effect",
-            "displayIcon": "schedule", "labelTemplate": "Pickup: {value}", "hideWhenEmpty": true },
-          "claimedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
-
-          "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "searchable": true,
+            "sortable": true,
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "toolDescription": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "yard",
+            "displayContexts": ["detail"]
+          },
+          "mode": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "swap_horiz",
+            "labelTemplate": "Mode: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "ownerPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Owner: {value}",
+            "displayContexts": ["detail"]
+          },
+          "coordinatorPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "ownerContactInfo": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "availabilityState": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "inventory_2",
+            "labelTemplate": "Availability: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "borrowerPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "borrowerContactInfo": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "currentHolderPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "queuedPersonaIds": {
+            "type": "personaId[]",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "Queue: {value.length}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "pickupWindow": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "schedule",
+            "labelTemplate": "Pickup: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "dueDate": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Due back {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "requestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "hideWhenEmpty": true,
+            "displayIcon": "outbox",
+            "labelTemplate": "Requested {value}"
+          },
+          "borrowedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "hideWhenEmpty": true,
+            "displayIcon": "login",
+            "labelTemplate": "Borrowed {value}"
+          },
+          "returnedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "hideWhenEmpty": true,
+            "displayIcon": "assignment_returned",
+            "labelTemplate": "Returned {value}"
+          },
+          "conditionState": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "verified_outlined",
+            "labelTemplate": "Condition: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "conditionNote": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "build",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "flaggedByPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "hideWhenEmpty": true,
+            "displayContexts": []
+          },
+          "queueLength": {
+            "type": "number",
+            "formula": "size(queuedPersonaIds)",
+            "displayIcon": "format_list_numbered",
+            "labelTemplate": "{value} waiting",
+            "displayContexts": ["detail"]
+          },
+          "myQueuePlace": {
+            "type": "number",
+            "formula": "indexOf(queuedPersonaIds, $viewer) + 1",
+            "displayIcon": "pin",
+            "labelTemplate": "Your queue position: {value}",
+            "displayContexts": ["detail"]
+          },
+          "isAvailable": {
+            "type": "bool",
+            "formula": "availabilityState == 'available'",
+            "displayIcon": "check_circle_outline",
+            "labelTemplate": "Available: {value}",
+            "displayContexts": ["detail"]
+          },
+          "isOverdue": {
+            "type": "bool",
+            "formula": "if(availabilityState == 'onLoan', isPast(dueDate), false)",
+            "displayIcon": "warning_amber",
+            "labelTemplate": "Overdue: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currentHolderDisplay": {
+            "type": "text",
+            "formula": "if(currentHolderPersonaId == null, 'No current holder', if($viewer == ownerPersonaId || $viewer == currentHolderPersonaId || $viewer == coordinatorPersonaId, currentHolderPersonaId, 'Checked out to a club member'))",
+            "displayIcon": "person_pin",
+            "labelTemplate": "Current holder: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "ownerContactDisplay": {
+            "type": "text",
+            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || (($viewer == borrowerPersonaId || $viewer == currentHolderPersonaId) && availabilityState == 'onLoan'), ownerContactInfo, 'Protected until approved pickup handoff')",
+            "displayIcon": "contact_mail",
+            "labelTemplate": "Owner contact: {value}",
+            "displayContexts": ["detail"]
+          },
+          "borrowerContactDisplay": {
+            "type": "text",
+            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == borrowerPersonaId || $viewer == currentHolderPersonaId, borrowerContactInfo, 'Protected until approved pickup handoff')",
+            "displayIcon": "contact_phone",
+            "labelTemplate": "Borrower contact: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
         }
       },
 
-      // =====================================================================
-      // 7. GARDEN-EXPORT-CUSTOM-SCHEMAS -- portability review surface.
-      //    Checksum is declared but NEVER computed (platform-services.md:
-      //    checksum/hash generation is Not implemented -- AP-6 forbids
-      //    fabricating it).
-      // =====================================================================
-      "garden-export-custom-schemas": {
-        "initialState": "ready",
+      "garden-tool-giveaway": {
+        "initialState": "published",
         "visibility": { "default": "membersOnly" },
         "states": {
-          "ready": { "label": "Ready to export", "tone": "info",
-            "editableFields": ["selectedSchemaIds", "destination"],
-            "editGuard": { "allowedPersonaIds": ["garden-coordinator"] } },
-          "exported": { "label": "Exported", "tone": "positive" },
-          "error": { "label": "Export failed", "tone": "negative" },
-          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+          "published": {
+            "label": "Available to claim",
+            "tone": "positive",
+            "editableFields": ["title", "itemDescription", "coordinatorPersonaId", "ownerContactInfo", "conditionNote"],
+            "editGuard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            }
+          },
+          "given": {
+            "label": "Ownership transferred",
+            "tone": "positive",
+            "isTerminal": true
+          },
+          "delisted": {
+            "label": "Delisted",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "verify-redaction", "label": "Verify redaction preview", "icon": "policy", "tone": "secondary",
-            "from": ["ready"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
-            "effects": [ { "op": "set", "key": "redactionPreviewReady", "value": true } ]
+            "id": "claim-giveaway",
+            "label": "Claim giveaway",
+            "icon": "volunteer_activism",
+            "tone": "primary",
+            "from": ["published"],
+            "to": "given",
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              },
+              "formula": "if(ownerPersonaId == $actor, false, true)"
+            },
+            "inputs": {
+              "pickupWindow": { "type": "text", "required": true },
+              "claimantContactInfo": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": null },
+              { "op": "set", "key": "claimantPersonaId", "value": "$actor" },
+              {
+                "op": "set",
+                "key": "pickupWindow",
+                "value": "{input.pickupWindow}"
+              },
+              {
+                "op": "set",
+                "key": "claimantContactInfo",
+                "value": "{input.claimantContactInfo}"
+              },
+              { "op": "set", "key": "claimedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
+                "fields": {
+                  "recipientPersonaId": "{ownerPersonaId}",
+                  "title": "Giveaway claimed",
+                  "body": "{title} was claimed. Review the pickup window in Marketplace.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-tool-giveaway"
+                }
+              }
+            ]
           },
           {
-            "id": "run-export", "label": "Export", "icon": "file_download", "tone": "primary",
-            "from": ["ready"], "to": "exported",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"],
-                       "formula": "size(selectedSchemaIds) > 0",
-                       "instanceDataEquals": { "key": "redactionPreviewReady", "value": true } },
+            "id": "pause-giveaway",
+            "label": "Pause listing",
+            "icon": "pause_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            },
             "effects": [
-              { "op": "set", "key": "exportedAt", "value": "$timestamp" },
+              { "op": "set", "key": "availabilityState", "value": "paused" }
+            ]
+          },
+          {
+            "id": "resume-giveaway",
+            "label": "Resume listing",
+            "icon": "play_circle_outline",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "paused"
+              }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "availabilityState",
+                "value": "available"
+              }
+            ]
+          },
+          {
+            "id": "delist-giveaway",
+            "label": "Delist",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": null }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["published"],
+            "role": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "Give away a garden item",
+                "byPersonaIds": ["garden-member", "garden-coordinator"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "ownerPersonaId": "$actor",
+                  "mode": "giveaway",
+                  "availabilityState": "available",
+                  "conditionState": "good"
+                }
+              }
+            ]
+          },
+          {
+            "states": ["given", "delisted"],
+            "role": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["published"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "searchable": true,
+            "sortable": true,
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "itemDescription": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "yard",
+            "displayContexts": ["detail"]
+          },
+          "mode": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "redeem",
+            "labelTemplate": "Mode: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "ownerPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Owner: {value}",
+            "displayContexts": ["detail"]
+          },
+          "coordinatorPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "ownerContactInfo": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayContexts": []
+          },
+          "availabilityState": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "inventory_2",
+            "labelTemplate": "Availability: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "conditionState": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "verified_outlined",
+            "labelTemplate": "Condition: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "conditionNote": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "build",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "claimantPersonaId": {
+            "type": "personaId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "claimantContactInfo": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "pickupWindow": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "schedule",
+            "labelTemplate": "Pickup: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "claimedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "task_alt",
+            "labelTemplate": "Claimed {value}",
+            "hideWhenEmpty": true
+          },
+          "claimantDisplay": {
+            "type": "text",
+            "formula": "if(claimantPersonaId == null, 'Not claimed', if($viewer == ownerPersonaId || $viewer == claimantPersonaId || $viewer == coordinatorPersonaId, claimantPersonaId, 'Claimed by a club member'))",
+            "displayIcon": "person_pin",
+            "labelTemplate": "Claim: {value}",
+            "displayContexts": ["detail"]
+          },
+          "ownerContactDisplay": {
+            "type": "text",
+            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == claimantPersonaId, ownerContactInfo, 'Protected until ownership handoff')",
+            "displayIcon": "contact_mail",
+            "labelTemplate": "Owner contact: {value}",
+            "displayContexts": ["detail"]
+          },
+          "claimantContactDisplay": {
+            "type": "text",
+            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == claimantPersonaId, claimantContactInfo, 'Protected until ownership handoff')",
+            "displayIcon": "contact_phone",
+            "labelTemplate": "Claimant contact: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      "garden-export-custom-schemas": {
+        "initialState": "scope-selection",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": ["garden-member", "garden-coordinator"]
+          }
+        },
+        "states": {
+          "scope-selection": {
+            "label": "Choose export scope",
+            "tone": "info",
+            "editableFields": [
+              "operationMode",
+              "selectedSchemaIds",
+              "destination",
+              "redactionPreview",
+              "exportableDataSummary"
+            ],
+            "editGuard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
+          },
+          "redaction-review": {
+            "label": "Review redaction",
+            "tone": "warning"
+          },
+          "ready": { "label": "Ready for verified export", "tone": "info" },
+          "processing": { "label": "Export operation in progress", "tone": "warning" },
+          "exported": { "label": "Exported", "tone": "positive" },
+          "error": { "label": "Export error", "tone": "negative" },
+          "cancelled": {
+            "label": "Cancelled",
+            "tone": "negative",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "open-redaction-preview",
+            "label": "Review redaction preview",
+            "icon": "policy",
+            "tone": "primary",
+            "from": ["scope-selection"],
+            "to": "redaction-review",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "size(selectedSchemaIds) > 0"
+            }
+          },
+          {
+            "id": "approve-redaction",
+            "label": "Approve redaction",
+            "icon": "verified_user",
+            "tone": "primary",
+            "from": ["redaction-review"],
+            "to": "ready",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "redactionApprovedAt",
+                "value": "$timestamp"
+              }
+            ]
+          },
+          {
+            "id": "start-export",
+            "label": "Export",
+            "icon": "file_download",
+            "tone": "primary",
+            "from": ["ready"],
+            "to": "processing",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "operationMode == 'export' && checksumVerified"
+            },
+            "effects": [
+              { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
               { "op": "set", "key": "errorMessage", "value": null }
             ]
           },
           {
-            "id": "report-export-failure", "label": "Report export failure", "icon": "error_outline", "tone": "secondary",
-            "from": ["ready"], "to": "error",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
-            "inputs": { "errorNote": { "type": "text", "required": true } },
-            "effects": [ { "op": "set", "key": "errorMessage", "value": "{input.errorNote}" } ]
-          },
-          {
-            "id": "retry", "label": "Retry export", "icon": "refresh", "tone": "primary",
-            "from": ["error"], "to": "ready",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
-            "effects": [ { "op": "set", "key": "errorMessage", "value": null } ]
-          },
-          {
-            "id": "rollback", "label": "Rollback", "icon": "settings_backup_restore", "tone": "secondary",
-            "from": ["exported"], "to": "ready",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+            "id": "start-transfer",
+            "label": "Start transfer",
+            "icon": "send_to_mobile",
+            "tone": "primary",
+            "from": ["ready"],
+            "to": "processing",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "operationMode == 'transfer' && checksumVerified"
+            },
             "effects": [
-              { "op": "set", "key": "exportedAt", "value": null },
-              { "op": "set", "key": "rolledBackAt", "value": "$timestamp" }
+              { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
+              { "op": "set", "key": "errorMessage", "value": null }
             ]
           },
           {
-            "id": "cancel-transfer", "label": "Cancel transfer", "icon": "cancel", "tone": "destructive",
-            "from": ["ready", "exported"], "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] }
+            "id": "start-import",
+            "label": "Import data",
+            "icon": "upload_file",
+            "tone": "primary",
+            "from": ["ready"],
+            "to": "processing",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "operationMode == 'import' && checksumVerified"
+            },
+            "effects": [
+              { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
+              { "op": "set", "key": "errorMessage", "value": null }
+            ]
+          },
+          {
+            "id": "complete-operation",
+            "label": "Confirm completion",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["processing"],
+            "to": "exported",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "exportedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "fail-operation",
+            "label": "Record export error",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["processing"],
+            "to": "error",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "inputs": {
+              "errorMessage": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "errorMessage",
+                "value": "{input.errorMessage}"
+              }
+            ]
+          },
+          {
+            "id": "retry-export",
+            "label": "Retry",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["error"],
+            "to": "ready",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "checksumVerified"
+            },
+            "effects": [
+              { "op": "set", "key": "errorMessage", "value": null }
+            ]
+          },
+          {
+            "id": "rollback-export",
+            "label": "Rollback",
+            "icon": "settings_backup_restore",
+            "tone": "secondary",
+            "from": ["exported"],
+            "to": "ready",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "rolledBackAt", "value": "$timestamp" },
+              { "op": "set", "key": "exportedAt", "value": null }
+            ]
+          },
+          {
+            "id": "change-scope",
+            "label": "Change scope",
+            "icon": "tune",
+            "tone": "secondary",
+            "from": ["redaction-review", "ready", "error", "exported"],
+            "to": "scope-selection",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            },
+            "effects": [
+              { "op": "set", "key": "errorMessage", "value": null }
+            ]
+          },
+          {
+            // NEEDS IMPLEMENTATION (archetype): exportWizard is pending. This
+            // transition records download intent; the pending widget must supply
+            // the real export/download control.
+            "id": "download-export",
+            "label": "Download export",
+            "icon": "download",
+            "tone": "primary",
+            "from": ["exported"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" },
+              "formula": "operationMode == 'export' && checksumVerified"
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "downloadRequestedAt",
+                "value": "$timestamp"
+              }
+            ]
+          },
+          {
+            "id": "cancel-transfer",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": [
+              "scope-selection",
+              "redaction-review",
+              "ready",
+              "processing",
+              "error"
+            ],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerPersonaId" }
+            }
           }
         ],
         "renderBindings": [
-          { "states": ["ready", "exported", "error", "cancelled"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" },
-          { "states": ["ready", "exported", "error", "cancelled"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": [
+              "scope-selection",
+              "redaction-review",
+              "ready",
+              "processing",
+              "exported",
+              "error",
+              "cancelled"
+            ],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": [
+              "scope-selection",
+              "redaction-review",
+              "ready",
+              "processing",
+              "exported",
+              "error",
+              "cancelled"
+            ],
+            "role": "any",
+            "tabId": "documents",
+            // NEEDS IMPLEMENTATION (archetype): exportWizard is a locked
+            // pending family and will currently produce the expected
+            // unknown_card_surface_family validator finding until registry work lands.
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New export package", "byPersonaIds": ["garden-coordinator"],
-                "scope": "tab", "presentation": "fab" }
-            ] }
+              {
+                "kind": "create",
+                "label": "New export package",
+                "byPersonaIds": ["garden-coordinator"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "ownerPersonaId": "$actor"
+                }
+              }
+            ]
+          }
         ],
         "instanceDataSchema": {
-          "selectedSchemaIds": { "type": "list", "required": true, "writableBy": "formEntry",
-            "displayIcon": "schema", "labelTemplate": "{value.length} schemas selected",
-            "displayContexts": ["tile", "detail"] },
-          "destination": { "type": "text", "required": true, "writableBy": "formEntry",
-            "displayIcon": "outbox", "labelTemplate": "To: {value}", "displayContexts": ["detail"] },
-          "redactionPreviewReady": { "type": "bool", "writableBy": "effect",
-            "displayIcon": "policy", "labelTemplate": "Redaction reviewed: {value}",
-            "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum/hash generation is a
-          // Not-implemented platform service (platform-services.md). This field is
-          // declared but never written by any effect -- present, never computed.
-          "checksum": { "type": "text?", "writableBy": "effect",
-            "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true,
-            "displayContexts": ["detail"] },
-          "exportedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true,
-            "displayContexts": ["detail"] },
-          "rolledBackAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true,
-            "displayContexts": ["detail"] },
-          "errorMessage": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
-            "displayIcon": "error_outline", "displayContexts": ["detail"] },
-
-          "scopeCount": { "type": "number", "formula": "size(selectedSchemaIds)",
-            "labelTemplate": "{value} schemas", "displayContexts": ["tile"] }
+          "operationMode": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "sync_alt",
+            "labelTemplate": "Mode: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "selectedSchemaIds": {
+            "type": "list",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "schema",
+            "labelTemplate": "{value.length} schemas selected",
+            "displayContexts": ["tile", "detail"]
+          },
+          "destination": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "outbox",
+            "labelTemplate": "Destination: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "redactionPreview": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 1000,
+            "displayIcon": "policy",
+            "labelTemplate": "Redaction preview: {value}",
+            "displayContexts": ["detail"]
+          },
+          "exportableDataSummary": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 1000,
+            "displayIcon": "dataset",
+            "labelTemplate": "Exportable data: {value}",
+            "displayContexts": ["detail"]
+          },
+          "ownerPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "admin_panel_settings",
+            "labelTemplate": "Export owner: {value}",
+            "displayContexts": ["detail"]
+          },
+          "redactionApprovedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "event_available",
+            "labelTemplate": "Redaction approved {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash
+          // generation is Not implemented. Declared and never written by an effect.
+          "checksum": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "fingerprint",
+            "labelTemplate": "Checksum: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): checksum verification is
+          // unavailable with the checksum service. Declared and never effect-written.
+          "checksumVerified": {
+            "type": "bool",
+            "writableBy": "effect",
+            "displayIcon": "verified",
+            "labelTemplate": "Checksum verified: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque export/transfer ID
+          // generation is Not implemented. Declared and never written by an effect.
+          "transferId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "tag",
+            "labelTemplate": "Transfer ID: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque receipt ID generation
+          // is Not implemented. Declared and never written by an effect.
+          "receiptId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "receipt_long",
+            "labelTemplate": "Receipt ID: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "operationStartedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "play_circle_outline",
+            "labelTemplate": "Started {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "exportedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "cloud_done",
+            "labelTemplate": "Completed {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "rolledBackAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "restore",
+            "labelTemplate": "Rolled back {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "downloadRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "download_done",
+            "labelTemplate": "Download requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "errorMessage": {
+            "type": "textarea",
+            "writableBy": "effect",
+            "displayIcon": "error_outline",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "scopeCount": {
+            "type": "number",
+            "formula": "size(selectedSchemaIds)",
+            "displayIcon": "format_list_numbered",
+            "labelTemplate": "{value} schemas",
+            "displayContexts": ["tile", "detail"]
+          }
         }
       },
 
-      // =====================================================================
-      // 8. GARDEN-VOLUNTEER-SHIFT -- open/closed shift; sign-up is data
-      //    (many members simultaneously), per Step 2/3's decision rule.
-      // =====================================================================
       "garden-volunteer-shift": {
         "initialState": "open",
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "open": { "label": "Open for sign-up", "tone": "positive",
-            "editableFields": ["shiftTitle", "shiftDate", "location", "capacity"],
-            "editGuard": { "allowedPersonaIds": ["garden-coordinator"] } },
-          "closed": { "label": "Closed", "tone": "negative", "isTerminal": true }
+          "open": {
+            "label": "Open for sign-up",
+            "tone": "positive",
+            "editableFields": [
+              "shiftTitle",
+              "shiftDate",
+              "shiftTime",
+              "location",
+              "capacity"
+            ],
+            "editGuard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "coordinatorPersonaId" }
+            }
+          },
+          "closed": {
+            "label": "Closed",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
-            "id": "sign-up", "label": "Sign up", "icon": "how_to_reg", "tone": "primary",
-            "from": ["open"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "formula": "size(signedUpPersonaIds) < capacity",
-                       "actorInList": { "key": "signedUpPersonaIds", "present": false } },
+            "id": "sign-up",
+            "label": "Sign up",
+            "icon": "how_to_reg",
+            "tone": "primary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "actorInList": {
+                "key": "signedUpPersonaIds",
+                "present": false
+              },
+              "formula": "size(signedUpPersonaIds) < capacity"
+            },
             "effects": [
-              { "op": "appendUnique", "key": "signedUpPersonaIds", "value": "$actor" },
-              { "op": "createInstance", "workflowType": "garden-notification",
+              {
+                "op": "appendUnique",
+                "key": "signedUpPersonaIds",
+                "value": "$actor"
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "garden-notification",
                 "fields": {
                   "recipientPersonaId": "$actor",
-                  "title": "Signed up",
-                  "body": "You're signed up for {shiftTitle} on {shiftDate}.",
-                  "createdAt": "$timestamp"
-                } }
+                  "title": "Volunteer shift confirmed",
+                  "body": "You're signed up for {shiftTitle}. Open Care for the current time, place, and remaining spots.",
+                  "createdAt": "$timestamp",
+                  "dueAt": "$timestamp",
+                  "sourceWorkflowType": "garden-volunteer-shift"
+                }
+              }
             ]
           },
           {
-            "id": "cancel-signup", "label": "Cancel sign-up", "icon": "event_busy", "tone": "secondary",
-            "from": ["open"], "to": null,
-            "guard": { "allowedPersonaIds": ["garden-member"],
-                       "actorInList": { "key": "signedUpPersonaIds", "present": true } },
-            "effects": [ { "op": "removeValue", "key": "signedUpPersonaIds", "value": "$actor" } ]
+            "id": "cancel-signup",
+            "label": "Cancel sign-up",
+            "icon": "event_busy",
+            "tone": "secondary",
+            "from": ["open"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["garden-member"],
+              "actorInList": {
+                "key": "signedUpPersonaIds",
+                "present": true
+              }
+            },
+            "effects": [
+              {
+                "op": "removeValue",
+                "key": "signedUpPersonaIds",
+                "value": "$actor"
+              }
+            ]
           },
           {
-            "id": "close-shift", "label": "Close shift", "icon": "lock_outline", "tone": "destructive",
-            "from": ["open"], "to": "closed",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] }
+            "id": "close-shift",
+            "label": "Close shift",
+            "icon": "lock_outline",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "closed",
+            "guard": {
+              "allowedPersonaIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "coordinatorPersonaId" }
+            }
           }
         ],
         "renderBindings": [
-          { "states": ["open"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "care",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["closed"],
+            "role": "any",
+            "tabId": "care",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "organize",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New volunteer shift", "byPersonaIds": ["garden-coordinator"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["closed"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" },
-          { "states": ["open"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
-          { "states": ["closed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New volunteer shift",
+                "byPersonaIds": ["garden-coordinator"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "coordinatorPersonaId": "$actor",
+                  "signedUpPersonaIds": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["closed"],
+            "role": "any",
+            "tabId": "organize",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["open"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "summary"
+          }
         ],
         "instanceDataSchema": {
-          "shiftTitle": { "type": "text", "required": true, "writableBy": "formEntry",
-            "searchable": true, "sortable": true, "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "shiftDate": { "type": "date", "required": true, "writableBy": "formEntry",
-            "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
-            "displayContexts": ["tile", "detail"] },
-          "location": { "type": "text", "writableBy": "formEntry",
-            "displayIcon": "location_on_outlined", "displayContexts": ["detail"] },
-          "capacity": { "type": "number", "required": true, "writableBy": "formEntry",
-            "displayIcon": "groups_outlined", "labelTemplate": "{value} spots" },
-          "signedUpPersonaIds": { "type": "personaId[]", "writableBy": "effect",
-            "displayIcon": "groups_outlined", "labelTemplate": "Signed up: {value.length}" },
-
-          "signedUpCount": { "type": "number", "formula": "size(signedUpPersonaIds)",
-            "labelTemplate": "Signed up: {value}", "displayContexts": ["tile", "detail"] },
-          "openSpotsRemaining": { "type": "number", "formula": "capacity - size(signedUpPersonaIds)",
-            "displayIcon": "event_seat", "labelTemplate": "{value} spots left",
-            "displayContexts": ["tile", "detail"] },
-          "isFull": { "type": "bool", "formula": "size(signedUpPersonaIds) >= capacity",
-            "displayIcon": "event_busy", "labelTemplate": "Full: {value}" }
+          "shiftTitle": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "searchable": true,
+            "sortable": true,
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "shiftDate": {
+            "type": "date",
+            "required": true,
+            "writableBy": "formEntry",
+            "sortable": true,
+            "displayIcon": "calendar_today",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "shiftTime": {
+            "type": "time",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "schedule",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "location": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "location_on_outlined",
+            "labelTemplate": "{value}",
+            "displayContexts": ["detail"]
+          },
+          "capacity": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "{value} spots",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coordinatorPersonaId": {
+            "type": "personaId",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "signedUpPersonaIds": {
+            "type": "personaId[]",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "signedUpCount": {
+            "type": "number",
+            "formula": "size(signedUpPersonaIds)",
+            "displayIcon": "how_to_reg",
+            "labelTemplate": "Signed up: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "openSpotsRemaining": {
+            "type": "number",
+            "formula": "capacity - size(signedUpPersonaIds)",
+            "displayIcon": "event_seat",
+            "labelTemplate": "{value} spots left",
+            "displayContexts": ["tile", "detail"]
+          },
+          "isFull": {
+            "type": "bool",
+            "formula": "size(signedUpPersonaIds) >= capacity",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Full: {value}",
+            "displayContexts": ["detail"]
+          },
+          "coordinatorRoster": {
+            "type": "list",
+            "formula": "if($viewer == coordinatorPersonaId, signedUpPersonaIds, null)",
+            "displayIcon": "groups_2",
+            "labelTemplate": "Roster: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
         }
       }
     },
@@ -736,101 +2437,145 @@
         "currentState": "open",
         "createdByPersonaId": "garden-coordinator",
         "instanceData": {
-          "title": "Spring Workshop",
+          "title": "Spring Workshop: Pollinator-Friendly Planting",
           "eventDate": "2026-08-15",
           "eventTime": "10:00",
-          "location": "Community Garden Plot A",
-          "capacity": 20,
+          "location": "Community Garden — Plot A",
+          "capacity": 2,
+          "coordinatorPersonaId": "garden-coordinator",
+          "recurrenceLabel": "Monthly on the second Saturday",
           "reminderOffsetHours": 24
         }
       },
       {
-        "instanceId": "resp-spring-workshop-coordinator",
+        "instanceId": "spring-workshop-response-coordinator",
         "workflowType": "garden-event-rsvp-response",
         "currentState": "going",
         "createdByPersonaId": "garden-coordinator",
-        "instanceData": { "eventId": "spring-workshop", "personaId": "garden-coordinator" }
+        "instanceData": {
+          "eventId": "spring-workshop",
+          "personaId": "garden-coordinator",
+          "respondedAt": "2026-08-05T09:00:00-07:00"
+        }
       },
       {
-        "instanceId": "resp-spring-workshop-member",
+        "instanceId": "spring-workshop-response-rina",
+        "workflowType": "garden-event-rsvp-response",
+        "currentState": "going",
+        "createdByPersonaId": "garden-coordinator",
+        "instanceData": {
+          "eventId": "spring-workshop",
+          "personaId": "garden-member-rina",
+          "respondedAt": "2026-08-06T17:45:00-07:00"
+        }
+      },
+      {
+        "instanceId": "spring-workshop-response-member",
         "workflowType": "garden-event-rsvp-response",
         "currentState": "pending",
         "createdByPersonaId": "garden-coordinator",
-        "instanceData": { "eventId": "spring-workshop", "personaId": "garden-member" }
+        "instanceData": {
+          "eventId": "spring-workshop",
+          "personaId": "garden-member-maya"
+        }
       },
       {
-        "instanceId": "plant-tomato-seedlings",
+        "instanceId": "tomato-seedling-offer",
         "workflowType": "plant-exchange-submission",
         "currentState": "reviewed",
         "createdByPersonaId": "garden-member",
         "instanceData": {
-          "plantVariety": "Tomato seedlings (Brandywine)",
+          "plantVariety": "Brandywine tomato seedlings",
           "offerType": "offer",
-          "notes": "Extra seedlings from spring planting, six available.",
-          "pickupWindow": "Saturdays 9-11am at the community shed",
-          "contactInfo": "Reach via club messages",
+          "notes": "Six sturdy seedlings from the spring sowing, ready for larger pots.",
+          "pickupWindow": "Saturday 9–11am at the community shed",
+          "availabilityNote": "Six available",
+          "contactInfo": "Use the private club-message handoff",
+          "privacyLabel": "Contact visible only to submitter, reviewer, and approved recipient",
           "privacyAcknowledged": true,
           "ownerPersonaId": "garden-member",
-          "submittedAt": "2026-08-05",
+          "submittedAt": "2026-08-05T13:00:00-07:00",
           "reviewedByPersonaId": "garden-coordinator",
-          "handoffApproved": true
+          "handoffRecipientPersonaId": "garden-member",
+          "reviewedAt": "2026-08-06T10:30:00-07:00"
         }
       },
       {
-        "instanceId": "plant-basil-request",
+        "instanceId": "basil-start-request",
         "workflowType": "plant-exchange-submission",
         "currentState": "submitted",
         "createdByPersonaId": "garden-member",
         "instanceData": {
-          "plantVariety": "Basil starts",
+          "plantVariety": "Genovese basil starts",
           "offerType": "request",
-          "notes": "Looking for Genovese basil starts for the herb bed.",
-          "pickupWindow": "Weekday evenings",
-          "contactInfo": "Reach via club messages",
+          "notes": "Seeking two starts for the shared herb bed.",
+          "pickupWindow": "Weekday evenings after 6pm",
+          "availabilityNote": "Request open",
+          "contactInfo": "Use the private club-message handoff",
+          "privacyLabel": "Contact protected until coordinator-approved handoff",
           "privacyAcknowledged": true,
           "ownerPersonaId": "garden-member",
-          "submittedAt": "2026-08-07",
-          "handoffApproved": false
+          "submittedAt": "2026-08-07T18:15:00-07:00"
         }
       },
       {
-        "instanceId": "wheelbarrow-loan",
+        "instanceId": "steel-wheelbarrow",
         "workflowType": "garden-tool-loan",
         "currentState": "published",
         "createdByPersonaId": "garden-member",
         "instanceData": {
           "title": "Steel wheelbarrow",
-          "toolDescription": "Sturdy steel wheelbarrow, good for hauling mulch and soil.",
+          "toolDescription": "Sturdy wheelbarrow for moving mulch and soil.",
+          "mode": "loan",
           "ownerPersonaId": "garden-member",
-          "availabilityState": "available"
+          "coordinatorPersonaId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to member Alex",
+          "availabilityState": "available",
+          "queuedPersonaIds": [],
+          "conditionState": "good",
+          "conditionNote": "Tire inflated and handles secure."
         }
       },
       {
-        "instanceId": "hand-tools-set",
+        "instanceId": "club-hand-tool-set",
         "workflowType": "garden-tool-loan",
         "currentState": "published",
         "createdByPersonaId": "garden-coordinator",
         "instanceData": {
-          "title": "Hand tool set (trowel, pruners, cultivator)",
-          "toolDescription": "Club-owned hand tool set for bed maintenance.",
+          "title": "Club hand-tool set",
+          "toolDescription": "Trowel, pruners, cultivator, and soil knife in a canvas tote.",
+          "mode": "loan",
           "ownerPersonaId": "garden-coordinator",
+          "coordinatorPersonaId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to the tool coordinator",
           "availabilityState": "onLoan",
-          "holderPersonaId": "garden-member",
+          "borrowerPersonaId": "garden-member-rina",
+          "borrowerContactInfo": "Private club message to Rina",
+          "currentHolderPersonaId": "garden-member-rina",
+          "queuedPersonaIds": ["garden-member-maya"],
           "pickupWindow": "Saturday mornings",
           "dueDate": "2026-08-20",
-          "borrowedAt": "2026-08-01"
+          "requestedAt": "2026-07-31T16:00:00-07:00",
+          "borrowedAt": "2026-08-01T09:30:00-07:00",
+          "conditionState": "good",
+          "conditionNote": "Pruners cleaned after last use."
         }
       },
       {
-        "instanceId": "extra-pots-giveaway",
+        "instanceId": "terracotta-pots-giveaway",
         "workflowType": "garden-tool-giveaway",
         "currentState": "published",
         "createdByPersonaId": "garden-member",
         "instanceData": {
-          "title": "Terracotta pots (assorted sizes)",
-          "toolDescription": "Twelve terracotta pots, various sizes, free to a good home.",
+          "title": "Terracotta pots — assorted sizes",
+          "itemDescription": "Twelve clean pots from 10cm to 25cm, free for reuse.",
+          "mode": "giveaway",
           "ownerPersonaId": "garden-member",
-          "availabilityState": "available"
+          "coordinatorPersonaId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to member Maya",
+          "availabilityState": "available",
+          "conditionState": "good",
+          "conditionNote": "No cracks; mineral marks remain on two pots."
         }
       },
       {
@@ -839,46 +2584,83 @@
         "currentState": "ready",
         "createdByPersonaId": "garden-coordinator",
         "instanceData": {
+          "operationMode": "export",
           "selectedSchemaIds": ["garden_event", "plant_exchange"],
-          "destination": "Neighborhood Association Archive",
-          "redactionPreviewReady": true
+          "destination": "Neighborhood Association archive",
+          "redactionPreview": "Private contact details removed; event attendance reduced to participation status and counts.",
+          "exportableDataSummary": "garden_event titles, dates, locations, capacity and attendance status; plant_exchange public summaries and review state.",
+          "ownerPersonaId": "garden-coordinator",
+          "redactionApprovedAt": "2026-08-08T14:00:00-07:00"
         }
       },
       {
-        "instanceId": "mulch-day-shift",
+        "instanceId": "mulch-delivery-shift",
         "workflowType": "garden-volunteer-shift",
         "currentState": "open",
         "createdByPersonaId": "garden-coordinator",
         "instanceData": {
-          "shiftTitle": "Mulch delivery volunteer shift",
+          "shiftTitle": "Mulch delivery and bed top-up",
           "shiftDate": "2026-08-16",
+          "shiftTime": "08:30",
           "location": "North garden beds",
-          "capacity": 6,
+          "capacity": 4,
+          "coordinatorPersonaId": "garden-coordinator",
           "signedUpPersonaIds": ["garden-member"]
         }
       }
     ]
   },
+
   "appShell": {
     "tabs": [
       {
+        "tabId": "home",
+        "label": "Home",
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "home",
+        "description": "This week's event, exchange and care needs, and read-only export status."
+      },
+      {
         "tabId": "calendar",
         "label": "Calendar",
-        "iconKey": "calendar",
-        "description": "Events, schedules, capacity, and reminders."
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "calendar_today",
+        "description": "Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders."
       },
       {
         "tabId": "marketplace",
-        "label": "Exchange",
-        "iconKey": "marketplace",
-        "description": "Browse offers, plant claims, pickup windows, and handoff state."
+        "label": "Marketplace",
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "yard",
+        "description": "Browse, list, borrow, queue for, return, or give away garden items."
       },
       {
-        "tabId": "admin",
+        "tabId": "care",
+        "label": "Care",
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "volunteer_activism",
+        "description": "Member volunteer shifts with remaining spots and sign-up state.",
+        "visiblePersonaIds": ["garden-member"]
+      },
+      {
+        "tabId": "documents",
+        "label": "Documents",
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "folder",
+        "description": "Coordinator-owned export scope, redaction, integrity, history, and portability state.",
+        "visiblePersonaIds": ["garden-coordinator"]
+      },
+      {
+        "tabId": "organize",
         "label": "Organize",
-        "iconKey": "admin",
-        "description": "Role-specific publishing, approvals, and operations."
+        "rendererContractId": "engine-native-generic-list",
+        "iconKey": "admin_panel_settings",
+        "description": "Coordinator review queues, approved handoffs, and volunteer roster management.",
+        "visiblePersonaIds": ["garden-coordinator"]
       }
     ]
+    // NEEDS IMPLEMENTATION (grammar/App Shell): the product doc asks for
+    // different persona-specific instance pins on structural Home. Guide 06
+    // explicitly says per-persona pinned surfaces are not grammar-v1 behavior.
   }
 }
