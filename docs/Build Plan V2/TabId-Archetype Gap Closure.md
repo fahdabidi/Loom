@@ -29,11 +29,14 @@ every other ticket this session (`TabId-Archetype.0`-`.4`).
 
 ## Milestone 1 — implementation (registry + dispatch + widgets)
 
-**Not started.** Scope: make the 4 promoted archetypes real, matching the bar already set by `event-rsvp`/
-`equipment-loan`/`votePoll` (a genuinely distinct widget, not a fallback to `GenericWorkflowInstanceCard`)
-where the audit found a real interaction gap, or explicitly matching the existing 🟡 GENERIC bar (functional
-via the shared template, cosmetically generic) where a full bespoke widget isn't warranted — that call is
-made per-archetype below, not assumed uniform.
+**Not started. Ready to dispatch — Milestone 1.5 now provides real, committed, judge-verified ground truth
+for every field this milestone's widgets need to bind to** (see "Real fixtures to design against" under
+1c, and the one real, previously-unknown design question 1c now flags explicitly). Scope: make the 4
+promoted archetypes real, matching the bar already set by `event-rsvp`/`equipment-loan`/`votePoll` (a
+genuinely distinct widget, not a fallback to `GenericWorkflowInstanceCard`) where the audit found a real
+interaction gap, or explicitly matching the existing 🟡 GENERIC bar (functional via the shared template,
+cosmetically generic) where a full bespoke widget isn't warranted — that call is made per-archetype below,
+not assumed uniform.
 
 ### 1a. Registry addition
 
@@ -55,30 +58,80 @@ honesty convention — do not silently skip a case without recording the decisio
 
 ### 1c. Widgets — one real design decision per archetype, not a uniform treatment
 
+**Real fixtures to design against (added 2026-08-12, post-Milestone 1.5).** Milestone 1c was originally
+written before any real community JSON existed for these 4 archetypes. Now that all 7 Milestone 1.5
+communities are committed, a direct grep across every real fixture surfaces one confirmed field-naming
+divergence and two areas that turned out more consistent than the original design notes assumed —
+concrete enough to change how the widgets should bind to data, not just cosmetic:
+
+- **`searchAiAnswer` — confirmed divergence, open design decision, not yet resolved.** The two real
+  communities using this archetype name their answer-body field differently: Masjid Nur's
+  `mosque-search-ai-citation` uses `curatedAnswerBody` (`Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc:1575`,
+  `"curatedAnswerBody": { "type": "textarea?", "writableBy": "effect", ... }`); Neighborhood Book Club's
+  `book-search-ai-digest` uses `answer` instead
+  (`Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc:808`,
+  `"answer": { "type": "textarea", "writableBy": "effect", "maxLength": 2000, ... }`). With only 2 real
+  instances and a 1-for-1 disagreement, there is no majority convention to default to. This is the exact
+  CJM.5 failure class (`event-rsvp`'s detail card once hardcoded literal type strings instead of reading
+  each community's own declared binding, silently breaking for every non-default name) — a widget that
+  hardcodes either literal field name will render one of these two communities' answers as permanently
+  empty. **Whoever picks up this ticket must resolve this explicitly, one of two ways, and say which in the
+  STATUS response — do not silently pick one:** (a) bind generically, reading the answer field via the
+  `citations[]`/answer role already expressed through `displayContexts` or `instanceDataSchema` metadata
+  rather than any single hardcoded literal, so either name (or a future third name) works without a widget
+  change; or (b) declare one canonical field name as a new Hard Rule (matching `event-rsvp`'s
+  `eventDate`/`eventTime` convention, Hard Rule 8) and fix the non-compliant community via a follow-up Skill
+  dispatch before or alongside this ticket. (a) is recommended — it doesn't require touching already-judged
+  community JSON to unblock Dart work — but this tracker is not the place to force that call silently.
+- **`documentLibrary` — mostly consistent, bind by role not by a fixed required list.** Across the 4 real
+  communities (Masjid Nur, Cedar Commons HOA, Chess Club, Riverside Youth Soccer), the *names* used for each
+  access-tracking role agree wherever the role is present (`readPersonaIds`, `acknowledgedPersonaIds`,
+  `accessRequestedPersonaIds`, `allowedPersonaIds`, `downloadedPersonaIds`, `openedPersonaIds`,
+  `savedPersonaIds` — confirmed via `grep -oE '"[a-zA-Z]*PersonaIds"'` against each fixture). What varies is
+  *which* of those roles each community's document workflow actually models: Chess Club's
+  `chess-rules-documents` only has `allowedPersonaIds`/`readPersonaIds`/`downloadedPersonaIds` (a simpler
+  doc with no access-request or save-for-later flow), Riverside Youth Soccer's `soccer-waiver-document` is
+  missing `openedPersonaIds`/`downloadedPersonaIds`/`savedPersonaIds` for the same reason. This is legitimate
+  per-community scope variation, not a naming bug — the widget must treat every one of these `*PersonaIds`
+  fields as optional (present-if-relevant), never assume all 7 exist on a given instance, and should still
+  degrade gracefully (e.g. no "Requested access" affordance rendered) when a role's field is simply absent
+  from that workflow's schema. Real interaction gap otherwise unchanged (category grouping +
+  acknowledgement/access-request state + version history is materially different from one field in a
+  generic card). Two real prerequisites, not one: (i) the widget itself, and (ii) `field-types.md`'s
+  `type: "url"` field is still `⚠️ PROPOSED, not yet implemented` at the field-renderer level
+  (`openMode: "external"/"embedded"/"choice"` currently does nothing) — this needs building regardless of
+  `documentLibrary`'s own widget, since every real document-shaped fixture already declares `type: "url"`
+  fields expecting it to work. Do this as part of the same ticket, not a separate one — a `documentLibrary`
+  widget that can't actually open its own documents isn't done.
 - **`table`** — real interaction gap (browsing 20+ rows at scale is not what a card-per-item list is for).
   Build a genuine sortable/filterable grid widget consuming the existing `sortable`/`searchable`/
   `labelTemplate`/`displayIcon` `instanceDataSchema` flags every other archetype already reads — no new
-  JSON grammar needed, this is pure Dart. ✅ REAL is the right bar here, not 🟡 GENERIC.
-- **`documentLibrary`** — real interaction gap (category grouping + acknowledgement/access-request state +
-  version history is materially different from one field in a generic card). Two real prerequisites, not
-  one: (i) the widget itself, and (ii) `field-types.md`'s `type: "url"` field is still `⚠️ PROPOSED, not yet
-  implemented` at the field-renderer level (`openMode: "external"/"embedded"/"choice"` currently does
-  nothing) — this needs building regardless of `documentLibrary`'s own widget, since every real
-  document-shaped fixture already declares `type: "url"` fields expecting it to work. Do this as part of
-  the same ticket, not a separate one — a `documentLibrary` widget that can't actually open its own
-  documents isn't done.
-- **`searchAiAnswer`** — the widget (query display + `citations[]` list rendering, consuming the already-
-  `⚠️ PROPOSED` "Citation lists" shape) is buildable and should be ✅ REAL for that part. The **answer
-  computation itself is out of scope for this milestone** — `platform-services.md` lists "External search /
-  AI answer" as `❌ Not implemented`, and that does not change here. The widget must render correctly
-  against an empty/unset answer field (real community JSON will have `answerBody`-equivalent fields marked
+  JSON grammar needed, this is pure Dart. Confirmed against both real fixtures (Chess Club's
+  `chess-rankings-table`, Riverside Youth Soccer's `soccer-team-roster`): both bind purely through those
+  generic schema flags with no archetype-specific field names, so this archetype carries none of
+  `searchAiAnswer`/`documentLibrary`'s naming-divergence risk by construction. ✅ REAL is the right bar
+  here, not 🟡 GENERIC.
+- **`searchAiAnswer`** (continued) — the widget (query display + `citations[]` list rendering, consuming
+  the already-`⚠️ PROPOSED` "Citation lists" shape) is buildable and should be ✅ REAL for that part. The
+  **answer computation itself is out of scope for this milestone** — `platform-services.md` lists "External
+  search / AI answer" as `❌ Not implemented`, and that does not change here. The widget must render
+  correctly against an empty/unset answer field (real community JSON will have the answer field marked
   `NEEDS IMPLEMENTATION` and never written) — do not build a fake/stub answer generator to make the widget
   look more finished than the platform actually is.
-- **`exportWizard`** — same split as `searchAiAnswer`. The stepped-flow widget (progress indicator across
-  the state machine's real states) is buildable now — every real fixture already models this correctly as
-  an ordinary state machine, confirmed during the audit. Checksum/integrity-hash and opaque-ID generation
-  remain `❌ Not implemented` platform services and are explicitly **not** part of this milestone — the
-  widget must render correctly with those fields perpetually unset, never fabricate a value to fill them in.
+- **`exportWizard`** — same platform-service split as `searchAiAnswer`, but the field-naming picture is
+  reassuringly consistent: a grep of `checksum`/`packageId`/`statusTimeline`/`transferId`/`receiptId` across
+  all 6 real fixtures (Chess Club, Cedar Commons HOA, Neighborhood Book Club, Riverside Youth Soccer,
+  Garden Club, Data Portability Community) shows `checksum`, `packageId`, and `statusTimeline` used
+  identically everywhere the archetype appears, and `transferId`/`receiptId` used identically wherever a
+  transfer step exists (Chess Club's simpler export has no transfer step and correctly omits both — not a
+  naming split). Safe to bind by these literal names for the common fields; still treat
+  `transferId`/`receiptId` as optional-if-relevant, same reasoning as `documentLibrary`'s roles above. The
+  stepped-flow widget (progress indicator across the state machine's real states) is buildable now — every
+  real fixture already models this correctly as an ordinary state machine, confirmed during the audit.
+  Checksum/integrity-hash and opaque-ID generation remain `❌ Not implemented` platform services and are
+  explicitly **not** part of this milestone — per `solved-patterns.md` pattern 14, every real fixture now
+  correctly never gates *completion* on these fields either, so the widget must render correctly with them
+  perpetually unset and must never fabricate a value to fill them in.
 
 ### Explicitly out of scope for Milestone 1
 
@@ -93,6 +146,11 @@ honesty convention — do not silently skip a case without recording the decisio
 
 ### Required verification (same discipline as every prior TabId-Archetype ticket)
 
+0. STATUS response explicitly states how `searchAiAnswer`'s answer-field binding was resolved (generic
+   role-based binding vs. a new canonical-name Hard Rule + community fix — see 1c above) and confirms the
+   `documentLibrary` widget treats every `*PersonaIds` role as optional-if-present, not a fixed required set.
+   Do not leave this undocumented — it is the one real open design question this milestone inherited from
+   Milestone 1.5's real fixtures.
 1. `flutter analyze` clean on `loom_workflow_engine` and `loom_communities_app_shell`.
 2. Full test suites, both packages — report baseline pass count and after-count.
 3. New tests: one per newly-real archetype proving the dispatch case is actually reached and renders real
@@ -187,7 +245,7 @@ and the user has explicitly signed off on running this cleanup:
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
-| ⬜ Open | `new-ticket` | Author and dispatch Milestone 1's tickets (1a registry, 1b dispatch wiring, 1c the 4 widgets — likely 2-4 separate tickets given the per-archetype design-decision split) | user-identified | 2026-08-11 |
+| ⬜ Open | `new-ticket` | Author and dispatch Milestone 1's tickets (1a registry, 1b dispatch wiring, 1c the 4 widgets — likely 2-4 separate tickets given the per-archetype design-decision split). Tracker now grounded in real Milestone 1.5 fixtures; ticket author must carry forward 1c's `searchAiAnswer` answer-field-naming open decision explicitly, not silently pick one. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
 | ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
