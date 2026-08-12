@@ -16,7 +16,6 @@ pipeline step 7.5.
 ## Open
 
 - [ ] `new-ticket` — Author and dispatch Milestone 1's tickets (registry + dispatch wiring + 4 widgets) — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
-- [ ] `needs-skill-dispatch` — Milestone 1.5 (Skill-dispatched JSON authoring, 7 communities) — 6 of 7 done, only Riverside Youth Soccer remaining (judge in progress) — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `new-ticket` — Cedar Commons HOA fast-follow: dead-end document access-request flow, overclaimed traceability row — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `blocked` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — blocked on Milestones 1+1.5 and explicit user approval — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `needs-debug-agent` — CJM.16: Member Social Space Messages-tab identity-matching gap, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
@@ -32,7 +31,4 @@ Items not tied to a formal tracker doc — the fallback location when a `call_*.
 
 ## Recently closed
 
-Nothing closed yet since this file was created (2026-08-11). When an item closes: flip its tracker §8 row to
-`✅ Closed` (dated) and move its one-line rollup here instead of deleting it outright, so a quick scan still
-shows recent throughput — trim entries here once they're no longer relevant context (the tracker's own §8
-keeps the permanent record either way).
+- [x] `needs-skill-dispatch` — Milestone 1.5 (Skill-dispatched JSON authoring, 7 communities) — all 7 done, closed 2026-08-12. 6 durable Skill fixes landed (`solved-patterns.md` patterns 9-14); final validator sweep across all 11 real fixtures confirmed no collateral damage. See [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md).

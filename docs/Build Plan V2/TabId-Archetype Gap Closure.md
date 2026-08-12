@@ -109,7 +109,18 @@ honesty convention — do not silently skip a case without recording the decisio
 
 ## Milestone 1.5 — community JSON authoring (Skill-only)
 
-**Unblocked ahead of Milestone 1 by explicit user decision (2026-08-12).** The default sequencing (wait for
+**All 7 communities done, 2026-08-12.** A final full validator sweep across all 11 real fixtures under
+`docs/references/communities/` confirms: the 7 communities touched here each show exactly their expected
+`unknown_card_surface_family` error count and nothing else (Chess Club 7, Cedar Commons HOA 4, Neighborhood
+Book Club 7, Masjid Nur 3, Garden Club 2, Riverside Youth Soccer 7, Data Portability Community 28 — matching
+28 real `exportWizard` bindings 1:1) — and all 4 untouched real communities (Ad-Free Community, Camera Club,
+Member Social Space, Tabletop Club) remain unaffected at 0 errors. No collateral damage anywhere. This work
+surfaced 6 durable Skill fixes along the way (`solved-patterns.md` patterns 9-14, all shared across every
+future dispatch of every channel), two of which (10, the hidden-document defect; 14, the checksum-completion
+dead end) were found to independently affect already-committed communities and were fixed there too, not
+just in the dispatch that first surfaced them. See each row below for the full round-by-round history.
+
+**Was unblocked ahead of Milestone 1 by explicit user decision (2026-08-12).** The default sequencing (wait for
 Milestone 1's registry/dispatch/widgets, then author JSON) is deliberately not followed here: the user chose
 to front-load this JSON/content work in parallel with Milestone 1's Dart work, with the known, accepted
 consequence spelled out and confirmed before dispatch — every workflow declaring `table`/`documentLibrary`/
@@ -177,6 +188,6 @@ and the user has explicitly signed off on running this cleanup:
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
 | ⬜ Open | `new-ticket` | Author and dispatch Milestone 1's tickets (1a registry, 1b dispatch wiring, 1c the 4 widgets — likely 2-4 separate tickets given the per-archetype design-decision split) | user-identified | 2026-08-11 |
-| ⬜ Open | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — 3 of 7 done (Garden Club, Chess Club, Cedar Commons HOA). Dispatching one community at a time, Codex CLI channel, judging each before commit. Remaining: Neighborhood Book Club, Riverside Youth Soccer, Masjid Nur, Data Portability Community. | this tracker | 2026-08-12 |
+| ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
 | ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
