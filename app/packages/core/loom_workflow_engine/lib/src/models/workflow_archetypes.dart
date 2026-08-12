@@ -63,6 +63,28 @@ const List<WorkflowArchetype> knownWorkflowArchetypes = <WorkflowArchetype>[
     purpose: 'A list of notices with unread/read state',
     status: ArchetypeStatus.generic,
   ),
+  WorkflowArchetype(
+    id: 'table',
+    purpose: 'Sortable/filterable grid for browsing many rows at scale',
+    status: ArchetypeStatus.real,
+  ),
+  WorkflowArchetype(
+    id: 'documentLibrary',
+    purpose:
+        'Categorized document browsing, version history, acknowledgement/access-request tracking',
+    status: ArchetypeStatus.real,
+  ),
+  WorkflowArchetype(
+    id: 'searchAiAnswer',
+    purpose: 'Query + AI-generated or curated answer + cited sources',
+    status: ArchetypeStatus.real,
+  ),
+  WorkflowArchetype(
+    id: 'exportWizard',
+    purpose:
+        'Stepped export/transfer flow (scope, redact, generate, verify, download), with retry/rollback',
+    status: ArchetypeStatus.real,
+  ),
 ];
 
 final Set<String> knownWorkflowArchetypeIds = <String>{
