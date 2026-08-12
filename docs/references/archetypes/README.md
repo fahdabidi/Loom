@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.4.0
+doc_version: 1.5.0
 status: current
-last_verified: 2026-08-09
+last_verified: 2026-08-11
 audience: llm-agent
 ---
 
@@ -13,11 +13,16 @@ instance.
 
 ## AGENT: hard rules
 
-1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values below exist, sourced from the single
-   canonical registry `loom_workflow_engine`'s `workflow_archetypes.dart` (`knownWorkflowArchetypeIds`).
-   **Enforced by the real validator** as of the tabId-open/archetype-closed migration: an unrecognized
-   `cardSurfaceFamily` is a hard validation error (`unknown_card_surface_family`), not a warning — a package
-   using one will not pass `community_package_validator.dart`.
+1. **MUST NOT invent a `cardSurfaceFamily`.** Only the values in the two tables below exist — the 9 in
+   "The archetypes" (implemented, enforced by the real validator today) plus the 4 in "Promoted archetypes
+   — pending implementation" (locked into the target vocabulary 2026-08-11, but **not yet** in the Dart
+   registry — see that section before using one). Community JSON declaring any of these 13 values is
+   correct; anything outside this list is not, regardless of how plausible it looks.
+   **Enforced by the real validator** as of the tabId-open/archetype-closed migration for the 9 implemented
+   values: an unrecognized `cardSurfaceFamily` is a hard validation error (`unknown_card_surface_family`),
+   not a warning. The 4 pending values will **currently** also trip this same error, until
+   `TabId-Archetype Gap Closure.md` (see below) lands the registry addition — that's expected, not a bug,
+   for any fixture using them before then.
 2. **Check the Status column.** A `🟡 GENERIC` archetype below still renders correctly — live
    transitions, live queries, creation, guards all genuinely work — it is just the shared
    icon+pills+buttons template, not a bespoke widget shaped like its name.
@@ -33,6 +38,7 @@ instance.
 |---|---|
 | ✅ REAL | A genuinely distinct widget with the interactions its name implies, reached purely by declaring the `cardSurfaceFamily` in JSON — no hardcoded per-community wiring |
 | 🟡 GENERIC | Reached purely by declaring the `cardSurfaceFamily` in JSON (no hardcoded wiring) — transitions/creation/live-query all genuinely work — but renders via the shared `GenericWorkflowInstanceCard` (icon + title + fact pills + buttons), not a distinct widget |
+| 🔲 PENDING | **Locked into the canonical vocabulary, not yet in the Dart registry.** This is the intended, correct name for the interaction it describes — but it is not yet in `knownWorkflowArchetypeIds`, so it currently fails validation. Tracked in `TabId-Archetype Gap Closure.md`. |
 | ❌ NOT REAL | Does not render or does not work as declared |
 
 **Re-verified 2026-08-05 against Dart source at commit `743395e0`** (tracker 3 Phases B-G, all closed
@@ -96,20 +102,45 @@ at all" axis that used to gate every one of these is fully resolved for Tabletop
 (`event-rsvp`, `equipment-loan`, `votePoll`) currently render a genuinely distinct bespoke widget; the
 other six are 🟡 GENERIC — functionally real, visually/interactionally generic.
 
-## Other archetypes (not used by Tabletop Club — unverified this pass, prior claims carried forward)
+## Promoted archetypes — pending implementation (locked 2026-08-11)
+
+Found while auditing the 7 non-Tabletop real communities for dropped/collapsed functionality after the
+tabId-open/archetype-closed migration: several communities' real product interactions had no home in the
+9-value registry above and were quietly rendering through a generic `formEntry`/`statusTimeline`
+substitute. Per the standing rule (`Community JSON Migration Tracker.md`: "only ever EXPAND — never remove
+a documented or implemented workflow/interaction"), these 4 are now locked into the canonical vocabulary.
+**Registry + dispatch + widget work is tracked in
+[`TabId-Archetype Gap Closure.md`](../../Build%20Plan%20V2/TabId-Archetype%20Gap%20Closure.md) — not done
+yet.** Until that lands, community JSON declaring these values is *correct content, currently failing
+validation* — expected, not a bug. **Community JSON is only ever authored by dispatching the
+[`loom-calendar-experience-authoring`](../../../.agents/skills/loom-calendar-experience-authoring/SKILL.md)
+Skill against the community's product doc — never hand-authored.** That Skill's own Scope section is the
+authoritative statement of which of the 4 below it will actually use and how; this table is the status
+summary, not authoring instructions.
+
+| `cardSurfaceFamily` | Purpose | Status | Grammar needed | Real usage found in audit |
+|---|---|---|---|---|
+| `table` | Sortable/filterable grid — browsing many rows at scale (leaderboards, rosters), not a card-per-item list | 🔲 PENDING | None new — consumes existing `sortable`/`searchable`/`labelTemplate`/`displayIcon` `instanceDataSchema` flags every other archetype already reads. | Chess Club's ranking table, Riverside Youth Soccer's dropped team roster |
+| `documentLibrary` | Categorized document browsing, version history, acknowledgement/access-request tracking | 🔲 PENDING | None new — consumes the `type: "url"` field (`field-types.md`, itself still ⚠️ PROPOSED/not-yet-implemented at the renderer level — this is a real prerequisite, not just a registry entry) | Cedar Commons HOA, Chess Club, Book Club, Youth Soccer, Masjid Nur document workflows |
+| `searchAiAnswer` | Query + AI-generated or curated answer + cited sources | 🔲 PENDING, **plus a real platform-service gap** | None new — consumes the `citations[]` list shape (`field-types.md`'s "Citation lists", also ⚠️ PROPOSED). The *widget* is buildable now; the *AI-answer computation itself* is `❌ Not implemented` per `platform-services.md` ("External search / AI answer") and stays that way after this milestone. | Masjid Nur's search citation workflow, Book Club's AI digest workflow |
+| `exportWizard` | Stepped export/transfer flow (scope → redact → generate → verify → download), with retry/rollback | 🔲 PENDING, **plus a real platform-service gap** | None new — the stepped flow is already a plain state machine in every real fixture. Checksum/integrity-hash and opaque-ID generation are `❌ Not implemented` platform services (`platform-services.md`) and stay that way after this milestone. | Data Portability Community's whole domain (5 workflows), plus one export workflow each in Chess Club, Garden Club, Book Club, Cedar Commons HOA, Youth Soccer |
+
+**Considered and explicitly NOT promoted** (same audit, different verdict — recorded so this isn't
+re-litigated per community):
+
+| `cardSurfaceFamily` | Why not |
+|---|---|
+| `volunteerRoster` | The capacity meter (`capacity`/`signedUpCount`/`spotsRemaining`/`isFull`) already computes and displays correctly today via `formEntry` — live proof in Garden Club's and Masjid Nur's volunteer-shift workflows. A dedicated archetype would only give it a nicer layout, not new capability. |
+| `singleItem` | Masjid Nur's donor-visibility workflow already implements its 3-way exclusive choice today as 3 real transitions/buttons. Cosmetic gap (a segmented control vs. 3 buttons), not functional. |
+| `protectedDetail` | Field masking by viewer is already solved, generically, via a `formula` field (`platform-services.md`: `if($viewer==owner, full, masked)`) — proven live in Riverside Youth Soccer's minor-redaction workflow. The current `protectedDetail` widget isn't reusable anyway (a single hardcoded demo instance, not `renderBindings`-driven). A real archetype would only add a lock-icon visual treatment. |
+| `guidedProcess` | No widget exists anywhere in the app shell (confirmed by direct grep, zero results) despite this doc's prior "✅ REAL" claim — that claim was wrong, carried forward unverified. Its one historical use case is already fully covered by a linear `statusTimeline` approval flow. |
+| `dashboard` | Not a per-workflow card archetype at all — it's Home's own tab-level section ordering, mislabeled in a prior version of this table. Removed below rather than promoted. |
+
+## Other archetypes still not real, not promoted
 
 | `cardSurfaceFamily` | Purpose | Status |
 |---|---|---|
-| `documentLibrary` | Categorised documents | ❌ NOT REAL (widget exists; no data ever populated it) |
-| `stateMachineGrid` / `table` | Browse many items, search/filter/sort | ❌ NOT REAL (except Marketplace's browse shell, now tracked above as `equipment-loan`) |
-| `volunteerRoster` | Shifts + capacity meter | ❌ NOT REAL |
-| `exportWizard` | Stepped export flow | ❌ NOT REAL |
-| `searchAiAnswer` | Query + cited answer | ❌ NOT REAL |
 | `audienceSelector` | Multi-select member picker | ❌ NOT REAL |
-| `protectedDetail` | Field-level masking by viewer | ⚠️ Permission logic REAL; visual treatment now also real for the masked branch (Phase G.2 fixed the hardcoded-black masking colors) |
-| `singleItem` | Exclusive choice (radio/segmented) | ❌ NOT REAL |
-| `guidedProcess` | Multi-step wizard with step indicator | ✅ REAL |
-| `dashboard` | The Home feed | ⚠️ Real, but section order is hardcoded, not data-driven |
 
 ## ⚠️ Honesty note — read this
 
@@ -128,6 +159,10 @@ interaction. Declaring `cardSurfaceFamily: "paymentCheckout"`
 (🟡 GENERIC) **does** get you a real, live, transition-capable card — just not a bespoke payment-shaped
 one. Do not tell the user an interaction doesn't work when it does (🟡 GENERIC is still fully
 functional), and do not tell the user a card is bespoke when it renders through the shared template.
+Declaring one of the 4 🔲 PENDING values (`table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`) is
+**correct content that currently fails validation** — a third, distinct case from the two above. Don't
+"fix" it by reverting to a generic archetype; the JSON is right, the Dart registry just hasn't caught up
+yet (`TabId-Archetype Gap Closure.md`).
 
 **Tabletop Club is now a finished reference community for the purposes of this rebuild** — every
 archetype it declares is genuinely reachable from JSON with no hardcoded per-community wiring, which is
@@ -150,3 +185,7 @@ Until then, also use:
   JSON; silent on which archetypes actually render richly today)
 - [`communities/tabletop-club.md`](../communities/tabletop-club.md) — a full worked community
 - **This README's status table above** — the current, honest source for what renders richly right now
+- [`TabId-Archetype Gap Closure.md`](../../Build%20Plan%20V2/TabId-Archetype%20Gap%20Closure.md) — the
+  implementation milestone for the 4 🔲 PENDING archetypes above, plus the cleanup milestone that updates
+  every `NEEDS IMPLEMENTATION` comment in real community JSON once that implementation is verified (gated
+  on explicit human approval — see that doc, do not run it unprompted)

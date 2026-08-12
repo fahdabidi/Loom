@@ -1,6 +1,6 @@
 ---
 name: loom-calendar-experience-authoring
-description: Author the JSON for a Loom Communities experience using only docs/references as source material, restricted to the archetypes confirmed real in docs/references/archetypes/README.md (event-rsvp, votePoll, equipment-loan, paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox). Originally scoped to Calendar/event-RSVP only (2026-08-04); broadened 2026-08-09 once every other real archetype was confirmed to already have a canonical pattern in docs/references/guide/03-common-patterns.md. A narrow, portable subset of the full using-loom-to-build-an-extension skill — deliberately does NOT use that skill's components/card-surfaces/* material, which uses a different, incompatible vocabulary from the real cardSurfaceFamily enum (see "CardSurfaces vocabulary trap" below). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
+description: Author the JSON for a Loom Communities experience using only docs/references as source material, restricted to the 9 archetypes confirmed real in docs/references/archetypes/README.md (event-rsvp, votePoll, equipment-loan, paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox) plus 4 more locked into the vocabulary but pending Dart implementation (table, documentLibrary, searchAiAnswer, exportWizard — see "Authoring a PENDING archetype" below). Originally scoped to Calendar/event-RSVP only (2026-08-04); broadened 2026-08-09 once every other real archetype was confirmed to already have a canonical pattern in docs/references/guide/03-common-patterns.md; broadened again 2026-08-11 for the 4 pending archetypes. This is the ONLY sanctioned way to author or edit real community JSON in this repo — never hand-author community *.jsonc content directly, even for a small, well-understood change. A narrow, portable subset of the full using-loom-to-build-an-extension skill — deliberately does NOT use that skill's components/card-surfaces/* material, which uses a different, incompatible vocabulary from the real cardSurfaceFamily enum (see "CardSurfaces vocabulary trap" below). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
 ---
 
 # Loom Calendar Experience Authoring
@@ -57,8 +57,9 @@ portable export used to test that directly against a provider with no filesystem
 
 ## Scope
 
-**Broadened 2026-08-09** (was Calendar/`event-rsvp`-only from 2026-08-04). Build any workflow whose
-required `cardSurfaceFamily` is confirmed real in
+**Broadened 2026-08-09** (was Calendar/`event-rsvp`-only from 2026-08-04). **Broadened again 2026-08-11**
+(archetype gap-closure audit — see `archetypes/README.md`'s "Promoted archetypes — pending implementation"
+section). Build any workflow whose required `cardSurfaceFamily` is confirmed real OR promoted-pending in
 [`docs/references/archetypes/README.md`](../../../docs/references/archetypes/README.md) — that file is the
 live source of truth, always re-check it, do not treat the list below as frozen:
 
@@ -73,13 +74,49 @@ live source of truth, always re-check it, do not treat the list below as frozen:
   P1 (RSVP), P2 (ballot), P3 (approval queue), P4 (loan), P5 (payment), P6 (discussion thread). `formEntry`
   and `notificationInbox` are simple enough (a field/button pair; a sender→recipient record) not to need a
   dedicated pattern — build them directly from `workflow-grammar.md` + `field-types.md`.
+- **4 🔲 PENDING archetypes** (locked into the vocabulary 2026-08-11, NOT yet in the Dart registry — see
+  "Authoring a 🔲 PENDING archetype" below before using any of these): `table` (sortable/filterable grid —
+  leaderboards, rosters, anything browsed at scale rather than one card per item), `documentLibrary`
+  (categorized document library — browse/acknowledge/version/access-request), `searchAiAnswer` (query +
+  cited answer — the citations/UI shape is buildable now, the actual answer computation is a platform-
+  service gap, see below), `exportWizard` (stepped export/transfer flow — checksum/ID generation is a
+  platform-service gap, see below).
 
-**Explicitly out of scope — say so per Hard Rule 7, never force-fit**: any `cardSurfaceFamily` marked
-❌ NOT REAL in `archetypes/README.md` as of this writing — `documentLibrary`, `exportWizard`,
-`audienceSelector`, `stateMachineGrid`/`table`, `volunteerRoster`, `searchAiAnswer`, `singleItem`. A request
-needing one of these gets a plain, specific refusal (which product-doc section, why it doesn't fit any real
-family, what family it would actually need if it existed) — not an approximation with a real archetype it
-doesn't belong to, and not a silent drop.
+**Explicitly out of scope — say so per Hard Rule 7, never force-fit**: any `cardSurfaceFamily` still marked
+❌ NOT REAL in `archetypes/README.md` as of this writing — `audienceSelector`, `volunteerRoster`,
+`singleItem`, `protectedDetail`, `guidedProcess`, `dashboard` (the last four were specifically audited and
+rejected for promotion 2026-08-11 — see `archetypes/README.md`'s "Considered and explicitly NOT promoted"
+table for why each one; the underlying capability those requests need is almost always already expressible
+with an in-scope archetype — `formEntry` + a per-field `formula` for masking, `formEntry` + the existing
+`capacity`/count-formula pattern for a roster's numbers, 3 ordinary transitions for an exclusive choice —
+check that table before refusing). A request needing one of the genuinely out-of-scope six gets a plain,
+specific refusal (which product-doc section, why it doesn't fit any real family, what family it would
+actually need if it existed) — not an approximation with a real archetype it doesn't belong to, and not a
+silent drop.
+
+### Authoring a 🔲 PENDING archetype (`table` / `documentLibrary` / `searchAiAnswer` / `exportWizard`)
+
+These 4 are the correct, intended `cardSurfaceFamily` for their described interaction — use the real name,
+not a generic substitute, even though the real validator will currently reject it with
+`unknown_card_surface_family` until the Dart registry implementation lands (`TabId-Archetype Gap
+Closure.md`). This is a different situation from "explicitly out of scope" above: do not refuse the
+request, and do not silently downgrade to `formEntry`/`statusTimeline` to make validation pass. Instead:
+
+1. Author the workflow's grammar exactly as it would be for any other archetype — no new grammar exists for
+   any of these 4; `table` and `documentLibrary` need nothing beyond ordinary `instanceDataSchema` flags
+   already in every pattern (`sortable`/`searchable`/`labelTemplate`, and `type: "url"` fields for
+   documents); `searchAiAnswer` needs a `citations[]` list field shaped `{label, source: {type:"url"}}`
+   (`field-types.md`'s "Citation lists"); `exportWizard` is an ordinary state machine (scope → generate →
+   verify → download, with error/retry/rollback states as needed).
+2. For `searchAiAnswer`'s answer text and `exportWizard`'s checksum/transfer-id/receipt-id fields
+   specifically — these are real platform-service gaps (`platform-services.md`: "External search / AI
+   answer" and "Checksum / integrity hash" are both `❌ Not implemented`), independent of the archetype
+   itself being pending. Declare the field, never write it from any effect, and mark it with a
+   `NEEDS IMPLEMENTATION (platform service): ...` comment exactly as `platform-services.md`'s own AP-6
+   guidance already requires for every other not-implemented service. Do not fabricate a value.
+3. Report the validator's `unknown_card_surface_family` finding for these 4 specifically as an *expected,
+   already-tracked* result in your response — cite `TabId-Archetype Gap Closure.md` — not as a defect in
+   your own output. Every other validator finding still needs the normal fix-and-recheck loop.
 
 **If a request is only partially in scope** (common — most real communities mix in-scope and out-of-scope
 workflows): author the in-scope part completely and validator-clean, and report the rest by product-doc
@@ -88,16 +125,23 @@ is out of scope, and do not silently ship an incomplete package with no explanat
 
 ⚠️ **The CardSurfaces vocabulary trap** — found 2026-08-09 while authoring against a real product doc.
 Product docs' own "### B25 Card Surface Registry Mapping" tables name surfaces like `payment`, `documents`,
-`calendar`, `workflow-status`, `notification-inbox`, `portability`, and link to
+`calendar`, `workflow-status`, `notification-inbox`, `portability`, `search`, `roster`, and link to
 `docs/CardSurfaces/*.md` — **none of those names are real `cardSurfaceFamily` values**, and that whole
 `docs/CardSurfaces/` folder is explicitly superseded (`archetypes/README.md`: "every file invents a
 nonexistent `CommunityXxxApi`. Nothing from it is promoted here"). Never copy a product doc's registry-table
 name directly into `cardSurfaceFamily`. Always translate through `archetypes/README.md`'s real enum:
-`payment`→`paymentCheckout`, `documents`/`external-document-link`→`documentLibrary` (❌ NOT REAL — use
-`formEntry` + a `type:"url"` field instead, see `field-types.md`), `calendar`→`event-rsvp`,
-`workflow-status`→`approvalQueueItem` or `statusTimeline`, `notification-inbox`→`notificationInbox`,
-`portability`→`exportWizard` (❌ NOT REAL — use `formEntry`, and never fabricate a `checksum`/export-id
-value; see `platform-services.md`'s ❌ Not implemented list — a hardcoded-looking hash is AP-6).
+`payment`→`paymentCheckout`, `calendar`→`event-rsvp`, `workflow-status`→`approvalQueueItem` or
+`statusTimeline`, `notification-inbox`→`notificationInbox`.
+
+**Updated 2026-08-11 — three of these translations changed direction.** `documents`/
+`external-document-link`→`documentLibrary`, `portability`→`exportWizard`, and (new) `search`→
+`searchAiAnswer`, `roster`/leaderboard-shaped browsing→`table` are now the **correct** translations, not a
+trap to route around — see "Authoring a 🔲 PENDING archetype" above for exactly how (each still fails
+validation today, that's expected; never silently substitute `formEntry` for one of these four instead of
+following that section). The platform-service caveat for `portability`/`exportWizard` and (new)
+`search`/`searchAiAnswer` is unchanged: never fabricate a `checksum`/export-id/AI-answer value — see
+`platform-services.md`'s ❌ Not implemented list, a hardcoded-looking value there is AP-6 regardless of
+which archetype it's attached to.
 
 This Skill deliberately never reads `using-loom-to-build-an-extension`'s
 `components/card-surfaces/*` material — that sibling Skill's own Operating Rule 15 points at the same

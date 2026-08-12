@@ -1,0 +1,165 @@
+# Authoring a Loom Community experience — Codex/GitHub-fetch channel
+
+**Read this file first.** You are running as a **zero-repo-access** authoring agent for the Loom
+Communities workflow engine. This is the third channel this Skill is proven on, alongside a full-repo-
+access in-repo run and the zero-tool-access `chatgpt-upload/` bundle uploaded to an external provider — see
+`SKILL.md`'s "Two channels" section (soon three) for how this fits together. **Your working directory has
+no Loom repository content in it at all — this is deliberate, not a mistake.** You must fetch every
+reference file you need from GitHub, using whatever fetch/web tool is available to you, exactly the way a
+zero-tool-access provider would need everything supplied externally, except here the supply mechanism is a
+live fetch instead of a pre-attached file.
+
+**Repository**: `fahdabidi/Loom`, branch `main`. Every path below is relative to the repo root. Fetch each
+file's full content before treating anything about it as known — do not guess or reconstruct a file's
+content from its name or from general Loom knowledge you might already have; the file's *actual current
+text* is the only authoritative source, and it changes over time.
+
+You are acting as an LLM agent that authors community JSON directly, not a human developer. You will never
+write Dart, Flutter, or any other code, and you will never invent an API. Everything a Loom community can
+do is expressed as JSON: state machines (`workflowDefinitions`), data schemas, guards, effects, formulas,
+and render bindings. The files you fetch below enumerate that grammar completely.
+
+## Fetch order
+
+Fetch each of these in order, reading it in full before moving to the next. Skipping ahead risks missing an
+invariant a later file assumes you already know.
+
+| Step | Path | When |
+|---|---|---|
+| 1 | `docs/references/guide/01-authoring-procedure.md` | Always — the algorithm: personas → workflow types → states-vs-data → states/transitions → data schema → guards → effects → render bindings → seed data → self-check → (validate). |
+| 2 | `docs/references/reference/workflow-grammar.md` | Always — the normative contract every workflow definition must satisfy. |
+| 3 | `docs/references/reference/guards.md`, `docs/references/reference/effects.md`, `docs/references/reference/formulas.md`, `docs/references/reference/field-types.md` | Always — you will reach for these four constantly, including `field-types.md`'s `type:"url"` section for any document/external-link field. |
+| 4 | `docs/references/guide/03-common-patterns.md` | Read the pattern(s) matching what the target needs: P1 RSVP, P2 ballot, P3 approval queue, P4 loan/giveaway, P5 payment, P6 discussion thread. |
+| 5 | `docs/references/reference/render-bindings.md` | Where each card appears and how it presents (tabs, roles, actions, FAB), for every workflow type in the target, not just calendar-bound ones. |
+| 6 | `docs/references/guide/07-actions-and-fabs.md` | When deciding whether a "create" affordance should be a FAB, and how response/decision actions should present. |
+| 7 | `docs/references/archetypes/README.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow, and which values are real, 🔲 pending-implementation, or not real — re-check for every workflow type, not once. This file is the live status; do not trust any archetype list embedded in this instructions file as more current than it. |
+| 8 | `docs/references/guide/04-antipatterns.md`, `docs/references/guide/05-validation.md` | Self-check before emitting. |
+| 9 | `docs/references/reference/theming.md`, `docs/references/reference/platform-services.md` | `platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable — always check it before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer. Never fabricate one (AP-6). |
+| 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list before treating a shape as novel. |
+| 11 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
+
+## Scope
+
+Build any workflow whose required `cardSurfaceFamily` is confirmed real OR 🔲 pending-implementation in
+`docs/references/archetypes/README.md` (fetched at step 7 — that file is the live source of truth, always
+re-check it, never assume the list is frozen or matches an earlier session's memory of it):
+
+- 3 real bespoke archetypes: `event-rsvp`, `votePoll`, `equipment-loan`.
+- 6 🟡 GENERIC archetypes (real, rendered by the shared generic card): `paymentCheckout`,
+  `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`, `notificationInbox`.
+- 4 🔲 PENDING archetypes (locked into the vocabulary, correct names, but not yet in the Dart registry —
+  see `archetypes/README.md`'s "Promoted archetypes — pending implementation" section, fetched at step 7,
+  for the current authoritative list and rationale; do not treat the 4 named here as fixed if that section
+  has changed): `table`, `documentLibrary`, `searchAiAnswer`, `exportWizard`. **Use these when the target
+  genuinely needs them — do not silently substitute a generic archetype to dodge a validator error.** The
+  validator will currently reject these 4 (`unknown_card_surface_family`) until the registry lands — that
+  is an expected, already-tracked result (`docs/Build Plan V2/TabId-Archetype Gap Closure.md`), not a
+  defect in your output. Report it plainly as such rather than treating it as a fix-loop failure. For
+  `searchAiAnswer`'s answer text and `exportWizard`'s checksum/transfer-id/receipt-id fields specifically:
+  declare the field, never write it from any effect, and mark it with a
+  `NEEDS IMPLEMENTATION (platform service): ...` comment — these are real, separate, `❌ Not implemented`
+  platform-services gaps (`platform-services.md`) independent of the archetype-registry gap.
+
+**Explicitly out of scope — say so per Hard Rule 7 below, never force-fit**: any `cardSurfaceFamily` still
+marked ❌ NOT REAL in `archetypes/README.md` as fetched. A target needing one of these gets a plain,
+specific refusal (which section, why it doesn't fit any real/pending family, what family it would actually
+need if it existed) — not an approximation with a real archetype it doesn't belong to, and not a silent
+drop.
+
+⚠️ **The CardSurfaces vocabulary trap.** Product docs' own "Card Surface Registry Mapping" tables name
+surfaces like `payment`, `documents`, `calendar`, `workflow-status`, `notification-inbox`, `portability`,
+`search`, `roster` — **none of those names are real `cardSurfaceFamily` values**. Never copy a product doc's
+registry-table name directly into `cardSurfaceFamily`. Always translate through `archetypes/README.md`'s
+real enum (fetched at step 7) instead.
+
+## Hard rules — never violate these
+
+1. Emit `experienceSchemaVersion: 2`.
+2. Stamp all three version fields: `schemaVersion`, `experienceSchemaVersion`, `workflowGrammarVersion`.
+3. Never emit a JSON key that isn't enumerated in the reference files you fetched. An unknown key is
+   silently ignored by the real parser — it produces a community that looks correct in the JSON but does
+   nothing at runtime.
+4. Never write Dart, or ask for Dart to be written.
+5. Never seed or effect-write a computed (`formula`) field.
+6. Never invent a `cardSurfaceFamily` value not listed in `archetypes/README.md`'s two real/pending tables.
+7. When the grammar genuinely cannot express something, say so. Never approximate, never silently drop a
+   stated requirement, never substitute a hardcoded value for one that should be computed.
+8. Name event date/time fields literally `eventDate`/`eventTime` on any `event-rsvp`-bound workflow — never
+   a synonym. Before finishing any `event-rsvp` workflow, check your own draft for this on that type's
+   `instanceDataSchema` and every guard/effect/formula/renderBinding that references it.
+9. Cross-reference repeat/retry language in the target product doc against your transition graph — if it
+   uses "retry", "resubmit", "try again", "reopen", "undo", or "re-request", confirm the transition(s) that
+   phrase implies actually cover every state a member could realistically be retrying from.
+10. On every tab except `admin`, `role: "receiver"` never resolves to anyone, and `role: "actor"` only ever
+    matches the literal instance creator — never assume otherwise (see `render-bindings.md`'s normative
+    table, fetched at step 5). For every `renderBinding` using `role: "actor"` or `"receiver"` on a
+    non-`admin` tab, confirm the persona it needs to reach really is always the instance creator; if not,
+    use `role: "any"` instead.
+11. Build the requirement traceability table (`01-authoring-procedure.md` Step 9.5) and include it as a
+    real artifact in your final answer, not a claim that you checked. One row per atomic product-doc
+    requirement per workflow, citing the exact JSON construct that satisfies it, or `not_implemented` with
+    reasoning grounded in a real, checked constraint — never a guessed persona/tab restriction.
+
+## Two valid RSVP shapes — pick deliberately
+
+- The plain `goingPersonaIds[]`/`maybePersonaIds[]`/`waitlistPersonaIds[]` list pattern (P1 in
+  `03-common-patterns.md`) for "members RSVP" with no per-member follow-up.
+- The `event-rsvp`/`event-rsvp-response` per-member-row pattern, required as soon as anything per-member
+  happens afterward — most importantly a reminder notification, since a notification's recipient must be
+  read off a real row's own field, not extracted from inside a shared list.
+
+Do not mix the two within one workflow type.
+
+## On validation — no live validator call in this channel; a mandatory manual self-check instead
+
+**Confirmed by direct testing (2026-08-11), not assumed:** this sandbox's shell-level network access is
+broken for arbitrary HTTPS endpoints — a plain `curl` to the validator's own health-check URL fails at DNS
+resolution before it ever reaches the tunnel. The only network path confirmed to work reliably from inside
+this sandbox is the built-in `github.fetch_file` tool (a first-party Codex "app," not a general-purpose HTTP
+client). There is no configured MCP server and no other fetch tool available (`codex mcp list` returns
+none). **Do not attempt to call the validator HTTP endpoint from inside this session** — a shell `curl`/
+`wget`/`fetch` to it will fail, and burning turns retrying it (proxies, DNS-over-HTTPS workarounds, browser-
+emulation tricks) wastes the dispatch budget for no benefit. This is a known, structural limitation of this
+channel, not something a cleverer request will route around.
+
+Real validator confirmation happens **outside this session, after you return your answer**: the dispatching
+session runs your JSON through the real validator (or the equivalent local `dart run
+community_package_validator.dart`) itself and reports the result back. Your job is to make that first real
+run come back clean, via a rigorous **manual** self-check performed before you show anything:
+
+1. Draft the complete package internally. Do not show it yet.
+2. Walk every detection rule in `04-antipatterns.md` by hand against your own draft, one rule at a time.
+3. Walk the error → fix table in `05-validation.md` by hand — for each row, check whether your draft could
+   trigger it, not just whether it obviously does.
+4. Run hard rules 8, 9, 10, and 11 explicitly — these never ran through the validator even in the channels
+   where a live validator is reachable (it only checks JSON grammar, not the Dart Calendar surface's
+   hardcoded field-name reads, not your source product-doc prose, not which `role` values actually resolve
+   to a real viewer per tab), so they need the same manual rigor regardless of channel.
+5. Re-read your own draft once more end to end, specifically hunting for: an unknown key (Hard Rule 3), a
+   fabricated platform-service value (`platform-services.md`), a `cardSurfaceFamily` not in
+   `archetypes/README.md`'s real/pending tables (Hard Rule 6), and a `unknown_card_surface_family` finding
+   you'd expect from one of the 4 🔲 PENDING archetypes (expected, per Scope above — note it, don't treat it
+   as something to fix).
+6. State clearly and plainly in your final answer that this was a **manual self-check, no live validator
+   ran in this channel** — never imply or fabricate a validator response you did not actually obtain. If you
+   are not fully confident a check passes, say so explicitly rather than asserting it does.
+
+## What to deliver
+
+1. **One JSON (or JSONC) file** — the complete package: `schemaVersion`, `packageId`, `communityId`,
+   `communityHandle`, `displayName`, `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, then the
+   `experience` block. Return it in a single fenced code block so it can be extracted and validated for
+   real.
+2. The **requirement traceability table** (hard rule 11) — the real artifact, one object per workflow.
+3. A short **"Gaps / assumptions"** section: anything the grammar couldn't express, anything you weren't
+   sure about, any judgment call worth double-checking, every `not_implemented`/`partial` traceability row
+   cross-referenced again, and every `NEEDS IMPLEMENTATION` comment you left in the JSON (both the
+   archetype-pending kind and the platform-service kind) listed explicitly so the reviewer doesn't have to
+   grep for them.
+4. Your manual self-check results — plainly stated, per the "On validation" section above: which rules you
+   checked, and an explicit statement that no live validator ran in this channel (the dispatching session
+   runs the real validator against your JSON after you return it, and will follow up separately if it finds
+   something your self-check missed).
+
+Do not attempt to build an installable `.loom-init.zip`/`.loom-extension.zip` pair — that is the dispatching
+session's job, not yours, for this channel.
