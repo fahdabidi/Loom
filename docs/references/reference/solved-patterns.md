@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.5.0
+doc_version: 1.6.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -424,6 +424,58 @@ effects write `answer` or `citations` anywhere in the package) and by the candid
 marking the requirement `not_implemented`. The currently-shipped fixture already had a working
 admin-curated-answer transition with real inputs/effects; the fresh dispatch regressed away from it without
 knowing it existed.
+
+---
+
+## 14. Pattern 11's fix does NOT apply to `checksum`/integrity-hash fields — there is no honest curated substitute for one, so `exportWizard` completion must never be gated on it at all
+
+**Requirement shape:** an `exportWizard` workflow's completion/transfer transitions (e.g. `confirm-export-
+ready`, `start-export`, `start-transfer`, `record-platform-verification`) conceptually depend on a checksum
+that verifies the export's integrity — `checksum`/`checksumVerified`/`checksumStatus` are honestly declared
+and correctly never seeded or effect-written per AP-6, matching pattern 4 and pattern 11's own first half.
+
+**Looks plausible but is wrong — this is a different failure shape from pattern 11's, not the same one:**
+applying pattern 11's fix literally, by reasoning "just add a second, admin-curated path to the gated
+field." **That fix does not work for a checksum the way it works for a search answer.** A search answer is
+legitimately human-authorable content — an admin genuinely can write a real answer by hand, so a
+`provide-curated-answer`-style transition produces a real, honest value. A checksum is a deterministic,
+verifiable computation over the actual export bytes — nothing in this grammar can compute one, and an admin
+typing an arbitrary string into `checksum` is not "curating" anything, it is fabricating exactly the value
+AP-6 forbids. There is no honest curated substitute. Confirmed as a real, recurring defect, not a one-off:
+**both Garden Club's and Cedar Commons HOA's already-committed Milestone 1.5 fixtures gate their export
+completion path on `checksumVerified`/`checksum == null → false`, making `ready`/`transferring`/`transferred`
+permanently unreachable** — the exact structural dead end pattern 11 warns about, but pattern 11's own
+suggested fix cannot close it here.
+
+**Verified-correct shape:** do not gate completion on the checksum field at all. The export flow should
+reach its real completion state (`generated`/`ready`/`transferred`, whatever the workflow calls it) purely
+on the conditions genuinely within the actor's control (e.g. `size(exportScope) > 0`, a required redaction-
+preview step, an organizer/owner guard) — leaving `checksum`/`checksumVerified` visibly, honestly unset
+forever, exactly like `receiptId`/`transferId` already are, rather than treated as a hard precondition:
+```jsonc
+{
+  "id": "generate-export", "from": ["ready"], "to": "generated",
+  "guard": { "allowedPersonaIds": ["<organizer-persona>"], "formula": "size(exportScope) > 0" },
+  "effects": [
+    { "op": "set", "key": "generatedAt", "value": "$timestamp" },
+    { "op": "set", "key": "statusMessage", "value": "Export generated; checksum pending platform verification" }
+  ]
+}
+```
+The status message honestly communicates the gap without blocking the actual capability. If a workflow
+*also* has a genuinely separate verification step (e.g. Cedar Commons HOA's `record-platform-verification`),
+that specific step may stay checksum-gated and simply remain unreachable — that's an honest, narrower gap on
+one optional sub-step, not the whole export capability.
+
+**Found in:** Chess Club's Milestone 1.5 dispatch got this right independently (`generate-export`'s guard has
+no checksum dependency) and was judged clean on exactly this point. Garden Club and Cedar Commons HOA (both
+Milestone 1.5, already committed before this pattern was identified) got it wrong — found via an independent
+Skill Output Judge reviewing Neighborhood Book Club's 2nd dispatch, which reproduced the same shape and
+correctly flagged it as a severe, validator-invisible defect (the `destructive_transition_ignores_
+availability_field` warning check only looks at destructive transitions skipping a guard a sibling
+transition has; it does not detect "this state is now permanently unreachable," a different failure entirely
+that no automated check in this pipeline catches). Garden Club and Cedar Commons HOA both need a follow-up
+fix.
 
 ---
 
