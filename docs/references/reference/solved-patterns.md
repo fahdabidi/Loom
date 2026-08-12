@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.4.0
+doc_version: 1.5.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -457,6 +457,43 @@ workflow, `mosque-donor-visibility`-equivalent for the export domain, is actuall
 own currently-shipped fixture, which never acted on the identical §7 phrase. Caught by an independent Skill
 Output Judge dispatch, which additionally confirmed the exact same phrase appears unchanged in Garden Club's
 and Neighborhood Book Club's product docs — establishing this as boilerplate, not a per-community signal.
+
+---
+
+## 13. Templated §7/§9 language can justify a whole unrequested *feature*, not just an unrequested persona — always cross-check against the workflow's own §5/§6 rows and against the currently-shipped fixture's own prior reasoning
+
+**Requirement shape:** a product doc's B25/§9 addendum row uses generic, evaluation-boilerplate phrasing
+for a workflow type — e.g. "member evaluates a concrete message, connection, or invite with sender/recipient
+context and accept/decline/block paths." Pattern 12 already covers this phrasing inventing an unrequested
+*persona*; this pattern covers the same root cause producing an unrequested *subsystem* on an existing
+workflow instead.
+
+**Looks plausible but is wrong:** building the full invite/accept/decline/cancel/block machinery the
+boilerplate describes onto a workflow whose own specific requirement rows (§5/§6/§7, in the workflow's own
+words) never ask for it — e.g. adding a connection-request system to what the doc's own prose describes as
+"a plain club discussion thread." The boilerplate phrasing appears **verbatim, unchanged, across multiple
+unrelated communities' product docs** (confirmed: the same B25 addendum sentence appears on four different
+workflow rows in Member Social Space's product doc alone), so its presence is not evidence of a
+community-specific requirement. Worse, this class of over-build is exactly what triggers
+`destructive_transition_ignores_availability_field`-style validator warnings on the new, unrequested
+transitions — masking the real defect (unrequested scope) behind what looks like a missing-guard bug.
+
+**Verified-correct shape:** before implementing a §7/§9 row's requirement literally, check two things: (1)
+does this workflow's own §5/§6 description (the community's specific, non-templated prose) actually ask for
+this capability, and (2) does the currently-shipped fixture already have reasoning — often left as an
+explicit code comment — for *not* building it. If the shipped fixture already declined this exact capability
+with a stated reason ("the B25 addendum's generic invite/connect/block phrasing does not match this
+workflow's own §5/§6/§7 rows"), that reasoning is a real, already-verified finding — reproduce the shipped
+fixture's simpler design rather than re-deriving and re-introducing the same over-build a prior authoring
+pass already caught and rejected.
+
+**Found in:** Neighborhood Book Club, 1st Milestone 1.5 dispatch (Codex GitHub-fetch channel, 2026-08-12) —
+`book-discussion-message` gained a full `send-invite`/`accept-invite`/`decline-invite`/`cancel-invite`
+subsystem with `invitationStatus`/`participantPersonaIds` fields, sourced from the same generic B25 addendum
+phrasing already confirmed as cross-community boilerplate. The currently-shipped fixture had already declined
+to build this, with an explicit comment stating why. Caught by an independent Skill Output Judge dispatch,
+which traced the two `destructive_transition_ignores_availability_field` validator warnings on this
+community back to the unrequested subsystem as their root cause, not a missing guard to patch.
 
 ---
 
