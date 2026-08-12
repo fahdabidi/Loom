@@ -71,7 +71,23 @@ communities are committed, a direct grep across every real fixture surfaces one 
 divergence and two areas that turned out more consistent than the original design notes assumed —
 concrete enough to change how the widgets should bind to data, not just cosmetic:
 
-- **`searchAiAnswer` — confirmed divergence, open design decision, not yet resolved.** The two real
+- **`searchAiAnswer` — Done, 2026-08-12 (Ticket GapClosure.1b1c-searchAiAnswer, commit `fa4fc0b0`).
+  Resolved: Option A.** Added `SearchAiAnswerArchetypeCard` (dispatched from
+  `EngineNativeArchetypeCard.build()`'s per-instance switch). The answer-field-binding decision below was
+  resolved by preferring a formula-typed field when present (matches Masjid Nur's `displayAnswer`), else
+  falling back to the highest writable-priority (`effect` > `formEntry`) non-empty text/textarea field
+  (matches Book Club's `curatedSummary` over the always-empty `answer`) — `query`/`citations` are never
+  candidates, they render through their own dedicated paths. One Codex dispatch round (hit the known WSL
+  vsock error before its own verification could run, real edits still landed) plus 3 real fixes caught only
+  during independent verification: its own new test tried to seed a formula (computed) field directly,
+  which the engine correctly rejects — fixed the test, not the engine; the query/citations exclusion logic
+  was inverted/dead code, letting a non-empty `query` leak through as a false "answer" whenever every real
+  answer field was empty, making the "waiting for an answer" state unreachable in exactly that case — fixed
+  to unconditionally exclude both; a minor test-file type-inference warning. Independently verified:
+  `flutter analyze` clean, full `loom_communities_app_shell` suite back to exactly the same 10 pre-existing
+  baseline failures plus all 3 new tests passing, validator 0 `unknown_card_surface_family` for Masjid Nur
+  and Neighborhood Book Club. Live UX walkthrough not yet run.
+  The two real
   communities using this archetype name their answer-body field differently: Masjid Nur's
   `mosque-search-ai-citation` uses `curatedAnswerBody` (`Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc:1575`,
   `"curatedAnswerBody": { "type": "textarea?", "writableBy": "effect", ... }`); Neighborhood Book Club's
@@ -349,7 +365,7 @@ and the user has explicitly signed off on running this cleanup:
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
-| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry) ✅ done; `table` ✅ done; `documentLibrary` ✅ done (each caught 1-2 real bugs in independent verification the dispatch's own checks missed — see their own tracker entries above). Remaining: `searchAiAnswer` (carry forward the answer-field-naming open decision explicitly, do not silently pick), `exportWizard` — both authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
+| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry), `table`, `documentLibrary`, `searchAiAnswer` all ✅ done (each caught 1-3 real bugs in independent verification the dispatch's own checks missed — see their own tracker entries above). Remaining: `exportWizard` — authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
 | ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
