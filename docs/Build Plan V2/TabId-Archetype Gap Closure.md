@@ -178,20 +178,35 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   correctly against an empty/unset answer field (real community JSON will have the answer field marked
   `NEEDS IMPLEMENTATION` and never written) — do not build a fake/stub answer generator to make the widget
   look more finished than the platform actually is.
-- **`exportWizard`** — same platform-service split as `searchAiAnswer`, but the field-naming picture is
-  reassuringly consistent: a grep of `checksum`/`packageId`/`statusTimeline`/`transferId`/`receiptId` across
-  all 6 real fixtures (Chess Club, Cedar Commons HOA, Neighborhood Book Club, Riverside Youth Soccer,
-  Garden Club, Data Portability Community) shows `checksum`, `packageId`, and `statusTimeline` used
-  identically everywhere the archetype appears, and `transferId`/`receiptId` used identically wherever a
-  transfer step exists (Chess Club's simpler export has no transfer step and correctly omits both — not a
-  naming split). Safe to bind by these literal names for the common fields; still treat
-  `transferId`/`receiptId` as optional-if-relevant, same reasoning as `documentLibrary`'s roles above. The
-  stepped-flow widget (progress indicator across the state machine's real states) is buildable now — every
-  real fixture already models this correctly as an ordinary state machine, confirmed during the audit.
-  Checksum/integrity-hash and opaque-ID generation remain `❌ Not implemented` platform services and are
-  explicitly **not** part of this milestone — per `solved-patterns.md` pattern 14, every real fixture now
-  correctly never gates *completion* on these fields either, so the widget must render correctly with them
-  perpetually unset and must never fabricate a value to fill them in.
+- **`exportWizard`** — same platform-service split as `searchAiAnswer`. **Correction, 2026-08-12:** this
+  tracker previously claimed the field-naming picture was "reassuringly consistent" based on a whole-file
+  grep across each fixture — that grep was **not scoped to the exportWizard workflow block itself** and
+  picked up matching substrings from unrelated workflows in the same file (e.g. Chess Club's `downloadUrl`
+  hit came from `chess-rules-documents`, a `documentLibrary` workflow, not the export one). Direct,
+  properly-scoped reads of the actual `instanceDataSchema` blocks tell a different story: Chess Club's
+  `chess-export-package` uses `exportScope`/`statusMessage`/`exportHistory`; Cedar Commons HOA's
+  `hoa-export-evidence` uses `scope`/`exportStatus`/`statusHistory` for the same three concepts — genuinely
+  different names, not a false alarm. Only `exportLabel` and `checksum` are confirmed literally consistent
+  across these two. **This does not need a field-naming decision the way `searchAiAnswer` does, though —
+  there's a cleaner path:** every workflow instance already carries a fully generic, always-present
+  `currentState` plus the machine's own declared `states[].label`/`.tone` (the same data every archetype's
+  fact-pill renderer already reads for tone/coloring). The widget's *core* progress UI should derive from
+  `currentState`/`states`, not from any named business field at all — sidesteps the naming-divergence
+  question entirely, since state-machine shape is universal while field names for supplementary detail
+  (status text, checksum, transfer id) are not. Real fixtures confirm this state machine is **not strictly
+  linear** — Cedar Commons HOA's real path is `draft → preview → generating → ready → transferring →
+  transferred`, with `failed`/`rolled-back`/`cancelled` as real side-exits, not just terminal cleanup states
+  — so a naive single-track linear stepper may misrepresent a failed/rolled-back instance. Whoever picks up
+  this ticket must decide and document how to represent this (a linear stepper that also shows a
+  visually-distinct "off-path" state for failed/rolled-back, vs. a status-badge-plus-history-list approach
+  closer to how the existing 🟡 GENERIC `statusTimeline` archetype already renders progression generically)
+  — flagged as an open design call, not resolved here. Supplementary fields (checksum, transfer/receipt ids,
+  status text) render via the ordinary generic schema-driven fact-pill approach, present-if-declared, same
+  reasoning as `documentLibrary`'s roles above — no hardcoded literal field names needed anywhere in this
+  widget. Checksum/integrity-hash and opaque-ID generation remain `❌ Not implemented` platform services and
+  are explicitly **not** part of this milestone — per `solved-patterns.md` pattern 14, every real fixture
+  now correctly never gates *completion* on these fields either, so the widget must render correctly with
+  them perpetually unset and must never fabricate a value to fill them in.
 
 ### Explicitly out of scope for Milestone 1
 
