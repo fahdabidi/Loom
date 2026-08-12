@@ -1,684 +1,2140 @@
-// Data Portability Community — canonical JSON, authored 2026-08-10.
+// Export and Migration — Data Portability Community engine-native experience v2.
 //
-// Engine-native Loom community package for "Data Portability Community" (product doc:
-// docs/references/communities/data-portability-community-product-experience.md). Built strictly
-// from docs/references per the loom-calendar-experience-authoring Skill; no legacy JSON/Dart for
-// this community existed to copy from.
+// All interactive portability workflows use the canonical exportWizard family.
+// NEEDS IMPLEMENTATION (archetype): exportWizard is a locked 🔲 PENDING family and
+// is not yet present in the Dart registry. unknown_card_surface_family is expected
+// until docs/Build Plan V2/TabId-Archetype Gap Closure.md lands.
 //
-// 5 workflow types cover the doc's 9 §6 rows: export-package merges 5 sequential-phase rows
-// (import-preview, protected-redaction, full-bundle, redacted-bundle, checksum-evidence) into one
-// lifecycle object per the type-vs-instance test; export-schema-listing, export-transfer,
-// export-transfer-rollback, and export-import-replay stay separate, genuinely distinct objects.
-//
-// Independently judged after authoring and found to have 1 real issue, fixed here before merge:
-// `export-package`'s `visibility` used `{"default": "membersOnly"}`, which leaked every instance to
-// the Receiving Provider persona — the doc explicitly requires this persona to see "only the
-// transfer's own scope/checksum, never the source community's unrelated internal data" (§2). Fixed
-// by switching to `{"default": "guarded", "readGuard": {"allowedPersonaIds": ["portability-owner",
-// "portability-member"]}}`, deliberately excluding the receiving-provider persona — mirroring the
-// pattern `export-transfer`/`export-transfer-rollback` already used correctly in the same package.
-// See docs/references/reference/solved-patterns.md pattern 6.
-//
-// No checksum, transfer ID, or other backend-computed identifier is ever fabricated (AP-6) — see
-// inline "NEEDS IMPLEMENTATION" comments.
+// Checksum and opaque-ID fields below are deliberately declared but never seeded,
+// edited, or effect-written. They require platform services and must not be faked.
 
 {
   "schemaVersion": 1,
   "packageId": "init_data_portability_community_1",
   "communityId": "community_data_portability",
   "communityHandle": "data-portability-community",
-  "displayName": "Data Portability Community",
+  "displayName": "Export and Migration",
   "extensionId": "ext_data_portability_community",
   "branding": { "accentColor": "#2563EB" },
   "seedDataFiles": [],
+  "idempotencyKey": "init-data-portability-community-v1",
 
   "experience": {
     "experienceSchemaVersion": 2,
     "workflowGrammarVersion": 1,
-
-    "displayName": "Data Portability Community",
-    "tagline": "Export, verify, migrate, and roll back your community's data with full transparency.",
+    "displayName": "Export and Migration",
+    "tagline": "Export, verify, migrate, and roll back community data with clear scope and status.",
     "accentColor": "#2563EB",
+    "theme": {
+      "accent": "#2563EB",
+      "tabThemes": { "admin": { "accent": "#1D4ED8" } }
+    },
 
     "personas": [
-      { "personaId": "portability-owner", "label": "Owner/Admin", "roleLabel": "Owner",
-        "description": "Exports, verifies, transfers, and rolls back community data safely." },
-      { "personaId": "portability-member", "label": "Member", "roleLabel": "Member",
-        "description": "Sees read-only notices about what is exported or redacted." },
-      { "personaId": "portability-receiving-provider", "label": "Receiving Provider", "roleLabel": "Receiving Provider",
-        "description": "Destination system for a provider transfer; verifies and accepts or rejects an incoming transfer." }
+      {
+        "personaId": "portability-owner",
+        "label": "Owner/Admin",
+        "roleLabel": "Owner",
+        "description": "Selects export scope, verifies packages, transfers data, and starts rollbacks."
+      },
+      {
+        "personaId": "portability-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "Reads applicable migration, redaction, and portability notices."
+      },
+      {
+        "personaId": "portability-receiving-provider",
+        "label": "Receiving Provider",
+        "roleLabel": "Receiving Provider",
+        "description": "Reviews only incoming transfer and rollback records and accepts or rejects a transfer."
+      }
     ],
 
     "workflowDefinitions": {
-
-      "export-package": {
+      "export-import-preview": {
         "initialState": "draft",
-
-        "visibility": { "default": "guarded",
-                        "readGuard": { "allowedPersonaIds": ["portability-owner", "portability-member"] } },
-
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": ["portability-owner", "portability-member"]
+          }
+        },
         "states": {
           "draft": {
-            "label": "Scope & redaction review", "tone": "info",
-            "editableFields": ["packageLabel", "includedComponents", "protectedFieldsToRedact", "redactionConfirmed", "destinationLabel"],
+            "label": "Choose scope",
+            "tone": "info",
+            "editableFields": [
+              "previewLabel",
+              "operationType",
+              "selectedScope",
+              "redactionPreview",
+              "protectedDataPolicy",
+              "destinationProvider",
+              "affectedMemberNotice"
+            ],
             "editGuard": { "allowedPersonaIds": ["portability-owner"] }
           },
-          "running": { "label": "Generating bundle", "tone": "warning" },
-          "error": { "label": "Generation failed", "tone": "negative" },
-          "ready": { "label": "Bundle ready", "tone": "positive" },
-          "checksum-verified": { "label": "Checksum verified", "tone": "positive" },
-          "checksum-failed": { "label": "Checksum failed", "tone": "negative" },
+          "previewed": { "label": "Preview ready", "tone": "info" },
+          "running": { "label": "Operation running", "tone": "warning" },
+          "complete": { "label": "Operation complete", "tone": "positive" },
+          "error": { "label": "Operation failed", "tone": "negative" },
+          "rolled-back": { "label": "Rolled back", "tone": "positive", "isTerminal": true },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
-
         "transitions": [
           {
-            "id": "start-export", "label": "Start export", "icon": "play_arrow", "tone": "primary",
-            "from": ["draft"], "to": "running",
+            "id": "preview-scope",
+            "label": "Preview scope",
+            "icon": "preview",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "previewed",
             "guard": {
               "allowedPersonaIds": ["portability-owner"],
-              "formula": "size(includedComponents) > 0 && redactionConfirmed == true"
+              "formula": "size(selectedScope) > 0"
             },
-            "effects": [ { "op": "set", "key": "generationStartedAt", "value": "$timestamp" } ]
+            "effects": [
+              { "op": "set", "key": "previewedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "previewed", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
           },
           {
-            "id": "cancel-export-draft", "label": "Cancel export", "icon": "cancel", "tone": "destructive",
-            "from": ["draft"], "to": "cancelled",
+            "id": "cancel-preview-draft",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "generation-complete", "label": "Mark bundle generated", "icon": "check_circle_outline", "tone": "primary",
-            "from": ["running"], "to": "ready",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" } ]
-          },
-          {
-            "id": "generation-failed", "label": "Record generation failure", "icon": "error_outline", "tone": "secondary",
-            "from": ["running"], "to": "error",
+            "id": "change-preview-scope",
+            "label": "Change scope",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["previewed"],
+            "to": "draft",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "revise-scope-running", "label": "Change scope", "icon": "undo", "tone": "secondary",
-            "from": ["running"], "to": "draft",
+            "id": "start-preview-export",
+            "label": "Export",
+            "icon": "download",
+            "tone": "primary",
+            "from": ["previewed"],
+            "to": "running",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(selectedScope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "operationType", "value": "export" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "export started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "start-preview-transfer",
+            "label": "Start transfer",
+            "icon": "swap_horiz",
+            "tone": "primary",
+            "from": ["previewed"],
+            "to": "running",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(selectedScope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "operationType", "value": "transfer" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "transfer started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "start-preview-import",
+            "label": "Import data",
+            "icon": "upload",
+            "tone": "primary",
+            "from": ["previewed"],
+            "to": "running",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(selectedScope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "operationType", "value": "import" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "import started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "cancel-preview-ready",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["previewed"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "cancel-export-running", "label": "Cancel export", "icon": "cancel", "tone": "destructive",
-            "from": ["running"], "to": "cancelled",
+            "id": "complete-preview-operation",
+            "label": "Confirm complete",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["running"],
+            "to": "complete",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "completedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "complete", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "fail-preview-operation",
+            "label": "Record error",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["running"],
+            "to": "error",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "errorExample", "value": "Provider rejected one selected component." }
+            ]
+          },
+          {
+            "id": "cancel-preview-running",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["running"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "retry-generation", "label": "Retry generation", "icon": "refresh", "tone": "primary",
-            "from": ["error"], "to": "running",
+            "id": "retry-preview-operation",
+            "label": "Retry",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["error"],
+            "to": "running",
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "generationStartedAt", "value": "$timestamp" } ]
+            "effects": [
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "statusHistory",
+                "value": { "status": "retry started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
           },
           {
-            "id": "cancel-export-error", "label": "Cancel export", "icon": "cancel", "tone": "destructive",
-            "from": ["error"], "to": "cancelled",
+            "id": "change-preview-scope-after-error",
+            "label": "Change scope",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["error"],
+            "to": "draft",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "verify-checksum-pass", "label": "Confirm checksum verified", "icon": "verified_outlined", "tone": "primary",
-            "from": ["ready"], "to": "checksum-verified",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "verificationStatus", "value": "verified" } ]
-          },
-          {
-            "id": "verify-checksum-fail", "label": "Record checksum failure", "icon": "error_outline", "tone": "secondary",
-            "from": ["ready"], "to": "checksum-failed",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "verificationStatus", "value": "failed" } ]
-          },
-          {
-            "id": "revise-scope-ready", "label": "Change scope", "icon": "undo", "tone": "secondary",
-            "from": ["ready"], "to": "draft",
+            "id": "cancel-preview-error",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["error"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "download-bundle", "label": "Download bundle", "icon": "download", "tone": "secondary",
-            "from": ["checksum-verified"], "to": null,
+            "id": "download-preview-export",
+            "label": "Download export",
+            "icon": "download",
+            "tone": "secondary",
+            "from": ["complete"],
+            "to": null,
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "downloadedAt", "value": "$timestamp" } ]
+            "effects": [{ "op": "set", "key": "downloadedAt", "value": "$timestamp" }]
           },
           {
-            "id": "retry-generation-after-checksum-failure", "label": "Retry generation", "icon": "refresh", "tone": "primary",
-            "from": ["checksum-failed"], "to": "running",
+            "id": "rollback-preview-operation",
+            "label": "Roll back",
+            "icon": "settings_backup_restore",
+            "tone": "destructive",
+            "from": ["complete"],
+            "to": "rolled-back",
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "generationStartedAt", "value": "$timestamp" } ]
+            "effects": [{ "op": "set", "key": "rolledBackAt", "value": "$timestamp" }]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New export or import preview",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "statusHistory": [] }
+              }
+            ]
           },
           {
-            "id": "cancel-export-checksum-failed", "label": "Cancel export", "icon": "cancel", "tone": "destructive",
-            "from": ["checksum-failed"], "to": "cancelled",
+            "states": ["previewed", "running", "complete", "error"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["rolled-back", "cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["running", "complete", "error", "rolled-back"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "previewLabel": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "searchable": true,
+            "displayIcon": "preview",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "operationType": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "sync_alt",
+            "labelTemplate": "Operation: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "selectedScope": {
+            "type": "list",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "checklist",
+            "labelTemplate": "{value.length} components selected",
+            "displayContexts": ["tile", "detail"]
+          },
+          "redactionPreview": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 1000,
+            "displayIcon": "visibility_off",
+            "displayContexts": ["tile", "detail"]
+          },
+          "protectedDataPolicy": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 1000,
+            "displayIcon": "shield",
+            "displayContexts": ["detail"]
+          },
+          "destinationProvider": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "flight_takeoff",
+            "labelTemplate": "Destination: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "affectedMemberNotice": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "campaign",
+            "displayContexts": ["tile", "detail"]
+          },
+          "statusHistory": {
+            "type": "list",
+            "writableBy": "effect",
+            "displayIcon": "history",
+            "labelTemplate": "{value.length} history entries",
+            "displayContexts": ["detail"]
+          },
+          "previewedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "hideWhenEmpty": true },
+          "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "hideWhenEmpty": true },
+          "rolledBackAt": { "type": "date?", "writableBy": "effect", "displayIcon": "restore", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-import-replay": {
+        "initialState": "prepared",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": [
+              "portability-owner",
+              "portability-member",
+              "portability-receiving-provider"
+            ]
+          }
+        },
+        "states": {
+          "prepared": {
+            "label": "Replay prepared",
+            "tone": "info",
+            "editableFields": [
+              "replayLabel",
+              "replaySource",
+              "destinationProvider",
+              "affectedMemberNotice"
+            ],
+            "editGuard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            }
+          },
+          "validating": { "label": "Validating replay", "tone": "warning" },
+          "replayed": { "label": "Replay verified", "tone": "positive", "isTerminal": true },
+          "failed": { "label": "Replay validation failed", "tone": "negative" },
+          "cancelled": { "label": "Replay cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "start-import-replay",
+            "label": "Import data",
+            "icon": "restore",
+            "tone": "primary",
+            "from": ["prepared"],
+            "to": "validating",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              { "op": "set", "key": "validationStatus", "value": "validating" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "validating", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "cancel-import-replay-prepared",
+            "label": "Cancel replay",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["prepared"],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            }
+          },
+          {
+            "id": "confirm-import-replay",
+            "label": "Confirm replay verified",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["validating"],
+            "to": "replayed",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "validationStatus", "value": "passed" },
+              { "op": "set", "key": "receiverState", "value": "replay accepted" },
+              { "op": "set", "key": "completedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "replayed", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "fail-import-replay",
+            "label": "Record validation failure",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["validating"],
+            "to": "failed",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "validationStatus", "value": "failed" },
+              { "op": "set", "key": "errorExample", "value": "One replayed record did not match the destination schema." }
+            ]
+          },
+          {
+            "id": "cancel-import-replay-running",
+            "label": "Cancel replay",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["validating"],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            }
+          },
+          {
+            "id": "retry-import-replay",
+            "label": "Retry replay",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "validating",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "validationStatus", "value": "validating" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              { "op": "set", "key": "errorExample", "value": null }
+            ]
+          },
+          {
+            "id": "change-replay-source",
+            "label": "Change source",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["failed"],
+            "to": "prepared",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "cancel-import-replay-failed",
+            "label": "Cancel replay",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["failed"],
+            "to": "cancelled",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"]
+            }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["prepared"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New import replay",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "auditHistory": [] }
+              }
+            ]
+          },
+          {
+            "states": ["validating", "failed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["replayed", "cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["validating", "replayed", "failed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "replayLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "restore", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "replaySource": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["tile", "detail"] },
+          "destinationProvider": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "flight_land", "labelTemplate": "Destination: {value}", "displayContexts": ["tile", "detail"] },
+          "affectedMemberNotice": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "campaign", "displayContexts": ["tile", "detail"] },
+          "validationStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Validation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "receiverState": { "type": "text?", "writableBy": "effect", "displayIcon": "move_to_inbox", "labelTemplate": "Receiver: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-protected-redaction": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": ["portability-owner", "portability-member"]
+          }
+        },
+        "states": {
+          "draft": {
+            "label": "Choose protected-data handling",
+            "tone": "info",
+            "editableFields": [
+              "reviewLabel",
+              "protectedFields",
+              "redactionChoices",
+              "previewSummary",
+              "protectedChoiceConfirmed",
+              "safeMemberNotice"
+            ],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "previewed": { "label": "Redaction preview ready", "tone": "info" },
+          "confirmed": { "label": "Redaction confirmed", "tone": "positive", "isTerminal": true },
+          "failed": { "label": "Redaction review failed", "tone": "negative" },
+          "cancelled": { "label": "Redaction review cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "preview-protected-redaction",
+            "label": "Preview redaction",
+            "icon": "visibility_off",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "previewed",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(protectedFields) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "auditState", "value": "previewed" },
+              { "op": "set", "key": "previewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-redaction-draft",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "confirm-protected-redaction",
+            "label": "Confirm redaction",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["previewed"],
+            "to": "confirmed",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "protectedChoiceConfirmed == true"
+            },
+            "effects": [
+              { "op": "set", "key": "auditState", "value": "confirmed" },
+              { "op": "set", "key": "confirmedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "fail-protected-redaction",
+            "label": "Record validation failure",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["previewed"],
+            "to": "failed",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [{ "op": "set", "key": "auditState", "value": "failed" }]
+          },
+          {
+            "id": "change-protected-redaction",
+            "label": "Change redaction",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["previewed", "failed"],
+            "to": "draft",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "retry-protected-redaction",
+            "label": "Retry preview",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "previewed",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "auditState", "value": "previewed" },
+              { "op": "set", "key": "previewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-protected-redaction-preview",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["previewed", "failed"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           }
         ],
-
         "renderBindings": [
-          { "states": ["draft"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New export", "byPersonaIds": ["portability-owner"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["running"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["error"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["ready"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["checksum-verified"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary",
-            "actions": [
-              { "kind": "create", "workflowType": "export-transfer", "label": "Start provider transfer",
-                "byPersonaIds": ["portability-owner"], "scope": "instance", "presentation": "button",
-                "prefill": {
-                  "exportPackageId": "{context.id}",
-                  "sourceProviderLabel": "Data Portability Community",
-                  "requestedAt": "$timestamp"
-                } }
-            ] },
-          { "states": ["checksum-failed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["cancelled"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["running", "ready", "checksum-verified", "checksum-failed"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New protected-data review",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["previewed", "failed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["confirmed", "cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["previewed", "confirmed", "failed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-
         "instanceDataSchema": {
-          "packageLabel": { "type": "text", "required": true, "writableBy": "formEntry",
-                             "searchable": true, "displayIcon": "folder_outlined",
-                             "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "includedComponents": { "type": "list", "required": true, "writableBy": "formEntry",
-                             "displayIcon": "inventory_2_outlined",
-                             "labelTemplate": "{value.length} components", "displayContexts": ["tile", "detail"] },
-          "protectedFieldsToRedact": { "type": "list", "required": true, "writableBy": "formEntry",
-                             "displayIcon": "visibility_off_outlined",
-                             "labelTemplate": "Redacted: {value.length}", "hideWhenEmpty": true,
-                             "displayContexts": ["detail"] },
-          "redactionConfirmed": { "type": "bool", "required": true, "writableBy": "formEntry",
-                             "displayIcon": "fact_check_outlined", "displayContexts": ["detail"] },
-          "destinationLabel": { "type": "text", "required": false, "writableBy": "formEntry",
-                             "displayIcon": "label_outlined", "hideWhenEmpty": true,
-                             "displayContexts": ["detail"] },
-
-          // ASSUMPTION: fileCount is modeled as one file per selected component (no real backend
-          // packaging exists in this demo). This is a benign derived count, not a fabricated
-          // checksum/ID -- see gaps section of the authoring report.
-          "fileCount": { "type": "number", "formula": "size(includedComponents)",
-                             "displayIcon": "description_outlined", "labelTemplate": "{value} files",
-                             "displayContexts": ["detail"] },
-          "hasProtectedRedactions": { "type": "bool", "formula": "size(protectedFieldsToRedact) > 0",
-                             "displayContexts": [] },
-
-          // NEEDS IMPLEMENTATION (platform service): real checksum/integrity-hash generation is a
-          // "Not implemented" platform service (platform-services.md). This field is intentionally
-          // never written by any formEntry input or effect anywhere in this package -- it stays
-          // unset. Do not fabricate a value here (AP-6).
-          "checksumValue": { "type": "text?", "required": false,
-                             "displayIcon": "verified_outlined", "labelTemplate": "Checksum: {value}",
-                             "hideWhenEmpty": true, "displayContexts": ["detail"] },
-
-          "verificationStatus": { "type": "text", "required": false, "writableBy": "effect",
-                             "displayIcon": "task_alt_outlined", "labelTemplate": "Verification: {value}",
-                             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "downloadedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                             "displayIcon": "download_outlined", "hideWhenEmpty": true,
-                             "displayContexts": ["detail"] },
-          "generationStartedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                             "displayIcon": "play_circle_outline", "hideWhenEmpty": true,
-                             "displayContexts": ["detail"] },
-          "generationCompletedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                             "displayIcon": "event_available", "hideWhenEmpty": true,
-                             "displayContexts": ["detail"] }
+          "reviewLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "shield", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "protectedFields": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "lock", "labelTemplate": "{value.length} protected fields", "displayContexts": ["detail"] },
+          "redactionChoices": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "rule", "labelTemplate": "{value.length} redaction choices", "displayContexts": ["detail"] },
+          "previewSummary": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "preview", "displayContexts": ["detail"] },
+          "protectedChoiceConfirmed": { "type": "bool", "required": true, "writableBy": "formEntry", "displayIcon": "check_box", "labelTemplate": "Choice confirmed: {value}", "displayContexts": ["detail"] },
+          "safeMemberNotice": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "campaign", "displayContexts": ["tile", "detail"] },
+          "auditState": { "type": "text?", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Audit: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "previewedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "hideWhenEmpty": true },
+          "confirmedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "verified", "hideWhenEmpty": true }
         }
       },
 
       "export-schema-listing": {
         "initialState": "editable",
-
-        "visibility": { "default": "guarded", "readGuard": { "allowedPersonaIds": ["portability-owner"] } },
-
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["portability-owner"] }
+        },
         "states": {
           "editable": {
-            "label": "Editable", "tone": "info",
-            "editableFields": ["schemaName", "components", "protectedComponents"],
+            "label": "Schema scope editable",
+            "tone": "info",
+            "editableFields": [
+              "listingLabel",
+              "schemaNames",
+              "includedComponents",
+              "excludedComponents",
+              "protectedDataLabels",
+              "nextStep"
+            ],
             "editGuard": { "allowedPersonaIds": ["portability-owner"] }
           },
-          "locked": { "label": "Locked", "tone": "positive" },
-          "retired": { "label": "Retired", "tone": "negative", "isTerminal": true }
+          "locked": { "label": "Schema scope locked", "tone": "positive" },
+          "retired": { "label": "Schema listing retired", "tone": "negative", "isTerminal": true }
         },
-
         "transitions": [
           {
-            "id": "lock-schema-listing", "label": "Lock listing", "icon": "lock_outline", "tone": "primary",
-            "from": ["editable"], "to": "locked",
+            "id": "lock-schema-listing",
+            "label": "Lock schema scope",
+            "icon": "lock",
+            "tone": "primary",
+            "from": ["editable"],
+            "to": "locked",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(schemaNames) > 0 && size(includedComponents) > 0"
+            },
+            "effects": [{ "op": "set", "key": "lockedAt", "value": "$timestamp" }]
+          },
+          {
+            "id": "retire-schema-listing-editable",
+            "label": "Retire listing",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["editable"],
+            "to": "retired",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "retire-schema-listing", "label": "Retire listing", "icon": "delete_outline", "tone": "destructive",
-            "from": ["editable", "locked"], "to": "retired",
+            "id": "mark-schema-package-generated",
+            "label": "Mark package generated",
+            "icon": "inventory_2",
+            "tone": "primary",
+            "from": ["locked"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "instanceDataEquals": { "key": "packageGenerated", "value": false }
+            },
+            "effects": [
+              { "op": "set", "key": "packageGenerated", "value": true },
+              { "op": "set", "key": "generatedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "retire-schema-listing-locked",
+            "label": "Retire listing",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["locked"],
+            "to": "retired",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           }
         ],
-
         "renderBindings": [
-          { "states": ["editable"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          {
+            "states": ["editable"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New schema listing", "byPersonaIds": ["portability-owner"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["locked"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["retired"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New schema listing",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "packageGenerated": false }
+              }
+            ]
+          },
+          {
+            "states": ["locked"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["retired"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          }
         ],
-
         "instanceDataSchema": {
-          "schemaName": { "type": "text", "required": true, "writableBy": "formEntry",
-                           "searchable": true, "displayIcon": "schema_outlined",
-                           "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "components": { "type": "list", "required": true, "writableBy": "formEntry",
-                           "displayIcon": "inventory_2_outlined",
-                           "labelTemplate": "{value.length} components", "displayContexts": ["tile", "detail"] },
-          "protectedComponents": { "type": "list", "required": false, "writableBy": "formEntry",
-                           "displayIcon": "shield_outlined", "labelTemplate": "Protected: {value.length}",
-                           "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "protectedComponentCount": { "type": "number", "formula": "size(protectedComponents)",
-                           "displayIcon": "shield_outlined", "labelTemplate": "{value} protected",
-                           "displayContexts": ["detail"] }
+          "listingLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "schema", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "schemaNames": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "account_tree", "labelTemplate": "{value.length} schemas", "displayContexts": ["tile", "detail"] },
+          "includedComponents": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "check_circle", "labelTemplate": "{value.length} included", "displayContexts": ["tile", "detail"] },
+          "excludedComponents": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "remove_circle", "labelTemplate": "{value.length} excluded", "displayContexts": ["tile", "detail"] },
+          "protectedDataLabels": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "shield", "labelTemplate": "{value.length} protected labels", "displayContexts": ["tile", "detail"] },
+          "nextStep": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "arrow_forward", "labelTemplate": "Next: {value}", "displayContexts": ["detail"] },
+          "packageGenerated": { "type": "bool", "writableBy": "effect", "displayIcon": "inventory_2", "labelTemplate": "Package generated: {value}", "displayContexts": ["detail"] },
+          "lockedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "lock_clock", "hideWhenEmpty": true },
+          "generatedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true }
         }
       },
 
-      "export-transfer": {
-        "initialState": "pending",
-
-        "visibility": { "default": "guarded",
-          "readGuard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] } },
-
+      "export-full-bundle": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": ["portability-owner", "portability-member"]
+          }
+        },
         "states": {
-          "pending": {
-            "label": "Pending verification", "tone": "info",
-            "editableFields": ["destinationProviderLabel"],
+          "draft": {
+            "label": "Full bundle scope",
+            "tone": "info",
+            "editableFields": ["bundleLabel", "scope", "destination", "memberNotice"],
             "editGuard": { "allowedPersonaIds": ["portability-owner"] }
           },
-          "verified": { "label": "Verified", "tone": "positive", "isTerminal": true },
-          "failed": { "label": "Verification failed", "tone": "negative" },
-          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+          "generating": { "label": "Generating full bundle", "tone": "warning" },
+          "complete": {
+            "label": "Full bundle complete",
+            "tone": "positive",
+            "editableFields": ["verificationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "error": {
+            "label": "Full bundle failed",
+            "tone": "negative",
+            "editableFields": ["verificationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "cancelled": { "label": "Full bundle cancelled", "tone": "negative", "isTerminal": true }
         },
-
         "transitions": [
           {
-            "id": "provider-verify-pass", "label": "Accept transfer", "icon": "check_circle_outline", "tone": "primary",
-            "from": ["pending"], "to": "verified",
-            "guard": { "allowedPersonaIds": ["portability-receiving-provider"] },
-            "effects": [ { "op": "set", "key": "verifiedAt", "value": "$timestamp" } ]
+            "id": "generate-full-bundle",
+            "label": "Generate full bundle",
+            "icon": "inventory_2",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "generating",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(scope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "running" },
+              { "op": "set", "key": "generationStartedAt", "value": "$timestamp" }
+            ]
           },
           {
-            "id": "provider-verify-fail", "label": "Reject transfer", "icon": "cancel_outlined", "tone": "secondary",
-            "from": ["pending"], "to": "failed",
-            "guard": { "allowedPersonaIds": ["portability-receiving-provider"] },
-            "effects": [ { "op": "set", "key": "failedAt", "value": "$timestamp" } ]
+            "id": "cancel-full-bundle-draft",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "cancel-transfer", "label": "Cancel transfer", "icon": "cancel", "tone": "destructive",
-            "from": ["pending"], "to": "cancelled",
+            "id": "complete-full-bundle",
+            "label": "Mark generation complete",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["generating"],
+            "to": "complete",
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "cancelledAt", "value": "$timestamp" } ]
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "complete" },
+              { "op": "set", "key": "downloadState", "value": "waiting for verification" },
+              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" }
+            ]
           },
           {
-            "id": "retry-transfer", "label": "Retry transfer", "icon": "refresh", "tone": "primary",
-            "from": ["failed"], "to": "pending",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] }
-          },
-          {
-            "id": "cancel-transfer-failed", "label": "Cancel transfer", "icon": "cancel", "tone": "destructive",
-            "from": ["failed"], "to": "cancelled",
+            "id": "fail-full-bundle",
+            "label": "Record generation error",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["generating"],
+            "to": "error",
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "cancelledAt", "value": "$timestamp" } ]
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "error" },
+              { "op": "set", "key": "errorExample", "value": "Document packaging timed out." }
+            ]
+          },
+          {
+            "id": "cancel-full-bundle-running",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["generating"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "download-full-bundle",
+            "label": "Download full bundle",
+            "icon": "download",
+            "tone": "primary",
+            "from": ["complete"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'passed'"
+            },
+            "effects": [
+              { "op": "set", "key": "downloadState", "value": "downloaded" },
+              { "op": "set", "key": "downloadedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "record-full-bundle-verification-failure",
+            "label": "Record verification failure",
+            "icon": "gpp_bad",
+            "tone": "secondary",
+            "from": ["complete"],
+            "to": "error",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'failed'"
+            },
+            "effects": [
+              { "op": "set", "key": "errorExample", "value": "Verification result did not pass." }
+            ]
+          },
+          {
+            "id": "change-full-bundle-scope",
+            "label": "Change scope",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["complete", "error"],
+            "to": "draft",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "retry-full-bundle",
+            "label": "Retry generation",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["error"],
+            "to": "generating",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "running" },
+              { "op": "set", "key": "generationStartedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-full-bundle-error",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["error"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
           }
         ],
-
         "renderBindings": [
-          { "states": ["pending"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["verified"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary",
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "workflowType": "export-transfer-rollback", "label": "Request rollback",
-                "byPersonaIds": ["portability-owner"], "scope": "instance", "presentation": "button",
-                "prefill": { "exportTransferId": "{context.id}", "requestedAt": "$timestamp" } }
-            ] },
-          { "states": ["failed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["cancelled"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+              {
+                "kind": "create",
+                "label": "New full bundle",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["generating", "complete", "error"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["generating", "complete", "error"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-
         "instanceDataSchema": {
-          "exportPackageId": { "type": "text", "required": true,
-                           "displayIcon": "link_outlined", "labelTemplate": "Source package: {value}",
-                           "displayContexts": ["detail"] },
-          "sourceProviderLabel": { "type": "text", "required": true,
-                           "displayIcon": "home_work_outlined", "labelTemplate": "From: {value}",
-                           "displayContexts": ["tile", "detail"] },
-          "destinationProviderLabel": { "type": "text", "required": true, "writableBy": "formEntry",
-                           "displayIcon": "flight_takeoff_outlined", "labelTemplate": "To: {value}",
-                           "displayContexts": ["tile", "detail"] },
-          "requestedAt": { "type": "date", "required": true,
-                           "displayIcon": "schedule_outlined", "displayContexts": ["detail"] },
-          "verifiedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "verified_outlined", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "failedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "error_outline", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "cancelledAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "block_outlined", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): a real, opaque transfer reference/ID cannot be
-          // generated as a formula (ID generation is a "Not implemented" platform service --
-          // platform-services.md). Intentionally never written by any effect in this package.
-          "transferReferenceId": { "type": "text?", "required": false,
-                           "displayIcon": "confirmation_number_outlined", "labelTemplate": "Transfer ref: {value}",
-                           "hideWhenEmpty": true, "displayContexts": ["detail"] }
+          "bundleLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "folder_zip", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "scope": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "checklist", "labelTemplate": "{value.length} components", "displayContexts": ["tile", "detail"] },
+          "destination": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "save_alt", "labelTemplate": "Destination: {value}", "displayContexts": ["detail"] },
+          "memberNotice": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "campaign", "displayContexts": ["tile", "detail"] },
+          "verificationResult": { "type": "text?", "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Verification: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "generationStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Generation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "downloadState": { "type": "text?", "writableBy": "effect", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // ASSUMPTION: one selected component produces one package file in this demo.
+          // A real packaging backend may report a different count.
+          "fileCount": { "type": "number", "formula": "size(scope)", "displayIcon": "description", "labelTemplate": "{value} files", "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
+          // Declared for the surface, never written by any effect or form entry.
+          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "generationStartedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "generationCompletedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-redacted-bundle": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": ["portability-owner", "portability-member"]
+          }
+        },
+        "states": {
+          "draft": {
+            "label": "Redacted bundle scope",
+            "tone": "info",
+            "editableFields": [
+              "bundleLabel",
+              "scope",
+              "redactionSummary",
+              "destination",
+              "memberNotice"
+            ],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "generating": { "label": "Generating redacted bundle", "tone": "warning" },
+          "complete": {
+            "label": "Redacted bundle complete",
+            "tone": "positive",
+            "editableFields": ["redactionValidationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "error": {
+            "label": "Redacted bundle failed",
+            "tone": "negative",
+            "editableFields": ["redactionValidationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "cancelled": { "label": "Redacted bundle cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "generate-redacted-bundle",
+            "label": "Generate redacted bundle",
+            "icon": "security",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "generating",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(scope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "running" },
+              { "op": "set", "key": "generationStartedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-redacted-bundle-draft",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "complete-redacted-bundle",
+            "label": "Mark generation complete",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["generating"],
+            "to": "complete",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "complete" },
+              { "op": "set", "key": "downloadState", "value": "waiting for redaction validation" },
+              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "fail-redacted-bundle",
+            "label": "Record generation error",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["generating"],
+            "to": "error",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "error" },
+              { "op": "set", "key": "errorExample", "value": "Protected-data validation found an unredacted field." }
+            ]
+          },
+          {
+            "id": "cancel-redacted-bundle-running",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["generating"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "download-redacted-bundle",
+            "label": "Download redacted bundle",
+            "icon": "download",
+            "tone": "primary",
+            "from": ["complete"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "redactionValidationResult == 'passed'"
+            },
+            "effects": [
+              { "op": "set", "key": "downloadState", "value": "downloaded" },
+              { "op": "set", "key": "downloadedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "record-redaction-validation-failure",
+            "label": "Record validation failure",
+            "icon": "gpp_bad",
+            "tone": "secondary",
+            "from": ["complete"],
+            "to": "error",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "redactionValidationResult == 'failed'"
+            },
+            "effects": [
+              { "op": "set", "key": "errorExample", "value": "Redaction validation did not pass." }
+            ]
+          },
+          {
+            "id": "change-redacted-bundle",
+            "label": "Change redaction",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["complete", "error"],
+            "to": "draft",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "retry-redacted-bundle",
+            "label": "Retry generation",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["error"],
+            "to": "generating",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "generationStatus", "value": "running" },
+              { "op": "set", "key": "generationStartedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-redacted-bundle-error",
+            "label": "Cancel",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["error"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New redacted bundle",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["generating", "complete", "error"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["generating", "complete", "error"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "bundleLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "folder_zip", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "scope": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "checklist", "labelTemplate": "{value.length} components", "displayContexts": ["tile", "detail"] },
+          "redactionSummary": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "visibility_off", "displayContexts": ["tile", "detail"] },
+          "destination": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "save_alt", "labelTemplate": "Destination: {value}", "displayContexts": ["detail"] },
+          "memberNotice": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "campaign", "displayContexts": ["tile", "detail"] },
+          "redactionValidationResult": { "type": "text?", "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Redaction validation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "generationStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Generation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "downloadState": { "type": "text?", "writableBy": "effect", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
+          // Declared for the surface, never written by any effect or form entry.
+          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "generationStartedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "generationCompletedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-checksum-evidence": {
+        "initialState": "pending",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["portability-owner"] }
+        },
+        "states": {
+          "pending": {
+            "label": "Checksum verification pending",
+            "tone": "info",
+            "editableFields": ["evidenceLabel", "scopeSummary", "verificationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "verified": { "label": "Checksum verification passed", "tone": "positive" },
+          "failed": {
+            "label": "Checksum verification failed",
+            "tone": "negative",
+            "editableFields": ["verificationResult"],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "cancelled": { "label": "Verification cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "record-checksum-pass",
+            "label": "Record verification pass",
+            "icon": "verified",
+            "tone": "primary",
+            "from": ["pending"],
+            "to": "verified",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'passed'"
+            },
+            "effects": [
+              { "op": "set", "key": "verifiedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "result": "passed", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "record-checksum-failure",
+            "label": "Record verification failure",
+            "icon": "gpp_bad",
+            "tone": "secondary",
+            "from": ["pending"],
+            "to": "failed",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'failed'"
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "result": "failed", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "cancel-checksum-verification",
+            "label": "Cancel verification",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["pending"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "enable-transfer",
+            "label": "Enable transfer",
+            "icon": "swap_horiz",
+            "tone": "primary",
+            "from": ["verified"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'passed'"
+            },
+            "effects": [
+              { "op": "set", "key": "transferEligibility", "value": "enabled" },
+              { "op": "set", "key": "transferEnabledAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "export-checksum-evidence-record",
+            "label": "Export verification record",
+            "icon": "file_download",
+            "tone": "secondary",
+            "from": ["verified"],
+            "to": null,
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "verificationResult == 'passed'"
+            },
+            "effects": [
+              { "op": "set", "key": "evidenceExportedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "retry-checksum-verification",
+            "label": "Retry verification",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "pending",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "cancel-checksum-verification-failed",
+            "label": "Cancel verification",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["failed"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["pending"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New checksum evidence",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "transferEligibility": "disabled",
+                  "auditHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["verified", "failed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["pending", "verified", "failed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "evidenceLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "verified_user", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "scopeSummary": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "checklist", "displayContexts": ["tile", "detail"] },
+          "verificationResult": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Verification: {value}", "displayContexts": ["tile", "detail"] },
+          "transferEligibility": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "displayContexts": ["tile", "detail"] },
+          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
+          // Declared for visible evidence, never written by any effect or form entry.
+          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "verifiedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "transferEnabledAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
+          "evidenceExportedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "file_download_done", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-transfer-verification": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": [
+              "portability-owner",
+              "portability-receiving-provider"
+            ]
+          }
+        },
+        "states": {
+          "draft": {
+            "label": "Transfer prepared",
+            "tone": "info",
+            "editableFields": [
+              "transferLabel",
+              "sourceProvider",
+              "destinationProvider",
+              "transferScope"
+            ],
+            "editGuard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          "transferring": { "label": "Transfer running", "tone": "warning" },
+          "awaiting-provider": { "label": "Awaiting provider verification", "tone": "info" },
+          "verified": { "label": "Transfer verified", "tone": "positive", "isTerminal": true },
+          "failed": { "label": "Transfer verification failed", "tone": "negative" },
+          "cancelled": { "label": "Transfer cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "start-provider-transfer",
+            "label": "Start transfer",
+            "icon": "swap_horiz",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "transferring",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "formula": "size(transferScope) > 0"
+            },
+            "effects": [
+              { "op": "set", "key": "transferStatus", "value": "transferring" },
+              { "op": "set", "key": "rollbackAvailability", "value": "available" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "transfer started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "cancel-provider-transfer-draft",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "submit-transfer-for-verification",
+            "label": "Send for provider verification",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["transferring"],
+            "to": "awaiting-provider",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "transferStatus", "value": "awaiting provider" },
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "fail-provider-transfer",
+            "label": "Record transfer error",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["transferring"],
+            "to": "failed",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "transferStatus", "value": "failed" },
+              { "op": "set", "key": "errorExample", "value": "Destination provider connection was interrupted." }
+            ]
+          },
+          {
+            "id": "cancel-provider-transfer-running",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["transferring"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "provider-accept-transfer",
+            "label": "Accept transfer",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["awaiting-provider"],
+            "to": "verified",
+            "guard": {
+              "allowedPersonaIds": ["portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "verificationResult", "value": "accepted" },
+              { "op": "set", "key": "transferStatus", "value": "verified" },
+              { "op": "set", "key": "verifiedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "accepted", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "provider-reject-transfer",
+            "label": "Reject transfer",
+            "icon": "cancel",
+            "tone": "secondary",
+            "from": ["awaiting-provider"],
+            "to": "failed",
+            "guard": {
+              "allowedPersonaIds": ["portability-receiving-provider"]
+            },
+            "effects": [
+              { "op": "set", "key": "verificationResult", "value": "rejected" },
+              { "op": "set", "key": "transferStatus", "value": "failed" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "rejected", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
+          },
+          {
+            "id": "cancel-provider-transfer-awaiting",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["awaiting-provider"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "retry-provider-transfer",
+            "label": "Retry transfer",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "transferring",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "transferStatus", "value": "transferring" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "change-provider-transfer",
+            "label": "Change transfer details",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["failed"],
+            "to": "draft",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "cancel-provider-transfer-failed",
+            "label": "Cancel transfer",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["failed"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New provider transfer",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": { "auditHistory": [] }
+              }
+            ]
+          },
+          {
+            "states": ["transferring", "awaiting-provider", "failed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "workflowType": "export-transfer-rollback",
+                "label": "Request rollback",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "instance",
+                "presentation": "button",
+                "prefill": {
+                  "sourceTransferInstanceId": "{context.id}",
+                  "sourceProvider": "{context.sourceProvider}",
+                  "destinationProvider": "{context.destinationProvider}",
+                  "rollbackAvailable": true
+                }
+              }
+            ]
+          },
+          {
+            "states": ["verified"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "workflowType": "export-transfer-rollback",
+                "label": "Request rollback",
+                "byPersonaIds": ["portability-owner"],
+                "scope": "instance",
+                "presentation": "button",
+                "prefill": {
+                  "sourceTransferInstanceId": "{context.id}",
+                  "sourceProvider": "{context.sourceProvider}",
+                  "destinationProvider": "{context.destinationProvider}",
+                  "rollbackAvailable": true
+                }
+              }
+            ]
+          },
+          {
+            "states": ["cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["transferring", "awaiting-provider", "verified", "failed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "transferLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "swap_horiz", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "sourceProvider": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "home_work", "labelTemplate": "From: {value}", "displayContexts": ["tile", "detail"] },
+          "destinationProvider": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "flight_takeoff", "labelTemplate": "To: {value}", "displayContexts": ["tile", "detail"] },
+          "transferScope": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "checklist", "labelTemplate": "{value.length} components", "displayContexts": ["tile", "detail"] },
+          "transferStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Status: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "verificationResult": { "type": "text?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Provider result: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "rollbackAvailability": { "type": "text?", "writableBy": "effect", "displayIcon": "restore", "labelTemplate": "Rollback: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): opaque transfer-ID generation.
+          // Declared for the receiver record, never written by any effect or form entry.
+          "transferId": { "type": "text?", "displayIcon": "confirmation_number", "labelTemplate": "Transfer ID: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "submittedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
+          "verifiedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
         }
       },
 
       "export-transfer-rollback": {
-        "initialState": "requested",
-
-        "visibility": { "default": "guarded",
-          "readGuard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] } },
-
+        "initialState": "available",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "allowedPersonaIds": [
+              "portability-owner",
+              "portability-receiving-provider"
+            ]
+          }
+        },
         "states": {
-          "requested": {
-            "label": "Rollback requested", "tone": "info",
-            "editableFields": ["rollbackReason"],
+          "available": {
+            "label": "Rollback available",
+            "tone": "info",
+            "editableFields": [
+              "rollbackLabel",
+              "sourceTransferInstanceId",
+              "sourceProvider",
+              "destinationProvider",
+              "rollbackReason",
+              "rollbackAvailable"
+            ],
             "editGuard": { "allowedPersonaIds": ["portability-owner"] }
           },
           "running": { "label": "Rollback running", "tone": "warning" },
-          "completed": { "label": "Rollback complete", "tone": "positive", "isTerminal": true },
+          "complete": { "label": "Rollback complete", "tone": "positive", "isTerminal": true },
           "failed": { "label": "Rollback failed", "tone": "negative" },
-          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
+          "unavailable": { "label": "Rollback unavailable", "tone": "warning", "isTerminal": true },
+          "cancelled": { "label": "Rollback cancelled", "tone": "negative", "isTerminal": true }
         },
-
         "transitions": [
           {
-            "id": "start-rollback", "label": "Start rollback", "icon": "settings_backup_restore", "tone": "primary",
-            "from": ["requested"], "to": "running",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "startedAt", "value": "$timestamp" } ]
+            "id": "start-transfer-rollback",
+            "label": "Roll back transfer",
+            "icon": "settings_backup_restore",
+            "tone": "primary",
+            "from": ["available"],
+            "to": "running",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "instanceDataEquals": { "key": "rollbackAvailable", "value": true }
+            },
+            "effects": [
+              { "op": "set", "key": "rollbackStatus", "value": "running" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "rollback started", "at": "$timestamp", "by": "$actor" }
+              }
+            ]
           },
           {
-            "id": "cancel-rollback-request", "label": "Cancel rollback request", "icon": "cancel", "tone": "destructive",
-            "from": ["requested"], "to": "cancelled",
+            "id": "mark-rollback-unavailable",
+            "label": "Mark unavailable",
+            "icon": "block",
+            "tone": "secondary",
+            "from": ["available"],
+            "to": "unavailable",
+            "guard": {
+              "allowedPersonaIds": ["portability-owner"],
+              "instanceDataEquals": { "key": "rollbackAvailable", "value": false }
+            },
+            "effects": [{ "op": "set", "key": "rollbackStatus", "value": "unavailable" }]
+          },
+          {
+            "id": "cancel-transfer-rollback",
+            "label": "Cancel rollback",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["available"],
+            "to": "cancelled",
             "guard": { "allowedPersonaIds": ["portability-owner"] }
           },
           {
-            "id": "complete-rollback", "label": "Mark rollback complete", "icon": "check_circle_outline", "tone": "primary",
-            "from": ["running"], "to": "completed",
+            "id": "complete-transfer-rollback",
+            "label": "Confirm rollback complete",
+            "icon": "task_alt",
+            "tone": "primary",
+            "from": ["running"],
+            "to": "complete",
             "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "completedAt", "value": "$timestamp" } ]
-          },
-          {
-            "id": "rollback-failed", "label": "Record rollback failure", "icon": "error_outline", "tone": "secondary",
-            "from": ["running"], "to": "failed",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "failedAt", "value": "$timestamp" } ]
-          },
-          {
-            "id": "retry-rollback", "label": "Retry rollback", "icon": "refresh", "tone": "primary",
-            "from": ["failed"], "to": "running",
-            "guard": { "allowedPersonaIds": ["portability-owner"] },
-            "effects": [ { "op": "set", "key": "startedAt", "value": "$timestamp" } ]
-          }
-        ],
-
-        "renderBindings": [
-          { "states": ["requested"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["running"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["completed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["failed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["cancelled"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
-        ],
-
-        "instanceDataSchema": {
-          "exportTransferId": { "type": "text", "required": true,
-                           "displayIcon": "link_outlined", "labelTemplate": "Transfer: {value}",
-                           "displayContexts": ["detail"] },
-          "rollbackReason": { "type": "textarea", "required": true, "writableBy": "formEntry",
-                           "maxLength": 500, "displayIcon": "notes_outlined",
-                           "displayContexts": ["tile", "detail"] },
-          "requestedAt": { "type": "date", "required": true,
-                           "displayIcon": "schedule_outlined", "displayContexts": ["detail"] },
-          "startedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "play_circle_outline", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "completedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "event_available", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "failedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "error_outline", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] }
-        }
-      },
-
-      "export-import-replay": {
-        "initialState": "pending-replay",
-
-        "visibility": { "default": "membersOnly" },
-
-        "states": {
-          "pending-replay": {
-            "label": "Pending replay", "tone": "info",
-            "editableFields": ["replaySourceLabel"],
-            "editGuard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] }
-          },
-          "validating": { "label": "Validating", "tone": "warning" },
-          "replayed": { "label": "Replayed", "tone": "positive", "isTerminal": true },
-          "replay-failed": { "label": "Replay failed", "tone": "negative" },
-          "replay-cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
-        },
-
-        "transitions": [
-          {
-            "id": "start-replay", "label": "Start replay", "icon": "play_arrow", "tone": "primary",
-            "from": ["pending-replay"], "to": "validating",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] },
-            "effects": [ { "op": "set", "key": "startedAt", "value": "$timestamp" } ]
-          },
-          {
-            "id": "cancel-replay", "label": "Cancel replay", "icon": "cancel", "tone": "destructive",
-            "from": ["pending-replay", "validating"], "to": "replay-cancelled",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] }
-          },
-          {
-            "id": "replay-succeeded", "label": "Mark replay verified", "icon": "check_circle_outline", "tone": "primary",
-            "from": ["validating"], "to": "replayed",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] },
             "effects": [
+              { "op": "set", "key": "rollbackStatus", "value": "restored" },
               { "op": "set", "key": "completedAt", "value": "$timestamp" },
-              { "op": "set", "key": "validationSummary", "value": "Validation passed" }
+              {
+                "op": "append",
+                "key": "auditHistory",
+                "value": { "status": "restored", "at": "$timestamp", "by": "$actor" }
+              }
             ]
           },
           {
-            "id": "replay-failed-transition", "label": "Record validation failure", "icon": "error_outline", "tone": "secondary",
-            "from": ["validating"], "to": "replay-failed",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] },
-            "effects": [ { "op": "set", "key": "validationSummary", "value": "Validation failed" } ]
-          },
-          {
-            "id": "retry-replay", "label": "Retry replay", "icon": "refresh", "tone": "primary",
-            "from": ["replay-failed"], "to": "validating",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] },
+            "id": "fail-transfer-rollback",
+            "label": "Record rollback failure",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["running"],
+            "to": "failed",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
             "effects": [
-              { "op": "set", "key": "startedAt", "value": "$timestamp" },
-              { "op": "set", "key": "validationSummary", "value": null }
+              { "op": "set", "key": "rollbackStatus", "value": "failed" },
+              { "op": "set", "key": "errorExample", "value": "Destination restoration acknowledgement timed out." }
             ]
           },
           {
-            "id": "cancel-replay-failed", "label": "Cancel replay", "icon": "cancel", "tone": "destructive",
-            "from": ["replay-failed"], "to": "replay-cancelled",
-            "guard": { "allowedPersonaIds": ["portability-owner", "portability-receiving-provider"] }
+            "id": "cancel-transfer-rollback-running",
+            "label": "Cancel rollback",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["running"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
+          },
+          {
+            "id": "retry-transfer-rollback",
+            "label": "Retry rollback",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["failed"],
+            "to": "running",
+            "guard": { "allowedPersonaIds": ["portability-owner"] },
+            "effects": [
+              { "op": "set", "key": "rollbackStatus", "value": "running" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-transfer-rollback-failed",
+            "label": "Cancel rollback",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["failed"],
+            "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["portability-owner"] }
           }
         ],
-
         "renderBindings": [
-          { "states": ["pending-replay"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
-            "actions": [
-              { "kind": "create", "label": "Start import replay",
-                "byPersonaIds": ["portability-owner", "portability-receiving-provider"],
-                "scope": "tab", "presentation": "fab" }
-            ] },
-          { "states": ["validating"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["replayed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["replay-failed"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" },
-          { "states": ["replay-cancelled"], "role": "any", "tabId": "admin",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
-          { "states": ["validating", "replayed", "replay-failed"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+          {
+            "states": ["available"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["running", "failed"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["complete", "unavailable", "cancelled"],
+            "role": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["running", "complete", "failed"],
+            "role": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
         ],
-
         "instanceDataSchema": {
-          "replaySourceLabel": { "type": "text", "required": true, "writableBy": "formEntry",
-                           "searchable": true, "displayIcon": "restore_outlined",
-                           "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "exportPackageId": { "type": "text?", "required": false,
-                           "displayIcon": "link_outlined", "labelTemplate": "Source package: {value}",
-                           "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "startedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "play_circle_outline", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "completedAt": { "type": "date?", "required": false, "writableBy": "effect",
-                           "displayIcon": "event_available", "hideWhenEmpty": true,
-                           "displayContexts": ["detail"] },
-          "validationSummary": { "type": "text?", "required": false, "writableBy": "effect",
-                           "displayIcon": "fact_check_outlined", "labelTemplate": "{value}",
-                           "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] }
+          "rollbackLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "restore", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "sourceTransferInstanceId": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "link", "labelTemplate": "Transfer: {value}", "displayContexts": ["detail"] },
+          "sourceProvider": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "home_work", "labelTemplate": "From: {value}", "displayContexts": ["tile", "detail"] },
+          "destinationProvider": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "flight_takeoff", "labelTemplate": "To: {value}", "displayContexts": ["tile", "detail"] },
+          "rollbackReason": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "notes", "displayContexts": ["tile", "detail"] },
+          "rollbackAvailable": { "type": "bool", "required": true, "writableBy": "formEntry", "displayIcon": "restore_page", "labelTemplate": "Available: {value}", "displayContexts": ["tile", "detail"] },
+          "rollbackStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Status: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
+          "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
+          "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
         }
       }
     },
 
     "workflowInstances": [
       {
-        "instanceId": "export-pkg-full-backup",
-        "workflowType": "export-package",
-        "currentState": "checksum-verified",
+        "instanceId": "preview-partner-transfer",
+        "workflowType": "export-import-preview",
+        "currentState": "previewed",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "packageLabel": "Full community backup",
-          "includedComponents": ["members", "events", "messages", "documents"],
-          "protectedFieldsToRedact": [],
-          "redactionConfirmed": true,
-          "destinationLabel": "Full backup archive",
-          "verificationStatus": "verified",
-          "generationStartedAt": "2026-08-01T09:00:00Z",
-          "generationCompletedAt": "2026-08-01T09:05:00Z"
+          "previewLabel": "Partner provider transfer preview",
+          "operationType": "transfer",
+          "selectedScope": ["members", "events", "documents"],
+          "redactionPreview": "Phone numbers are excluded; member IDs are pseudonymized.",
+          "protectedDataPolicy": "Secrets, payment details, and private moderation notes never leave the source.",
+          "destinationProvider": "Northstar Community Cloud",
+          "affectedMemberNotice": "Your profile and event participation are included; private contact details are redacted.",
+          "statusHistory": [
+            { "status": "previewed", "at": "2026-08-09T09:00:00Z", "by": "portability-owner" }
+          ],
+          "previewedAt": "2026-08-09T09:00:00Z"
         }
       },
       {
-        "instanceId": "export-pkg-partner-handoff",
-        "workflowType": "export-package",
-        "currentState": "draft",
+        "instanceId": "replay-northstar-validation",
+        "workflowType": "export-import-replay",
+        "currentState": "failed",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "packageLabel": "Partner community handoff",
-          "includedComponents": ["members", "events"],
-          "protectedFieldsToRedact": ["memberPhoneNumbers", "memberEmailAddresses"],
-          "redactionConfirmed": false,
-          "destinationLabel": "Neighboring HOA partner"
+          "replayLabel": "Northstar import replay",
+          "replaySource": "2026-08-09 partner export",
+          "destinationProvider": "Northstar Community Cloud",
+          "affectedMemberNotice": "The migration replay is being checked; no member action is required.",
+          "validationStatus": "failed",
+          "receiverState": "awaiting corrected replay",
+          "auditHistory": [
+            { "status": "failed", "at": "2026-08-09T10:30:00Z", "by": "portability-receiving-provider" }
+          ],
+          "startedAt": "2026-08-09T10:00:00Z",
+          "errorExample": "One replayed record did not match the destination schema."
         }
       },
       {
-        "instanceId": "schema-listing-core",
+        "instanceId": "redaction-protected-member-fields",
+        "workflowType": "export-protected-redaction",
+        "currentState": "previewed",
+        "createdByPersonaId": "portability-owner",
+        "instanceData": {
+          "reviewLabel": "Protected member-field redaction",
+          "protectedFields": ["phoneNumber", "paymentToken", "moderationNotes"],
+          "redactionChoices": ["remove phoneNumber", "remove paymentToken", "exclude moderationNotes"],
+          "previewSummary": "The exported member record keeps display name and participation history only.",
+          "protectedChoiceConfirmed": true,
+          "safeMemberNotice": "Protected contact, payment, and moderation data are excluded.",
+          "auditState": "previewed",
+          "previewedAt": "2026-08-09T11:00:00Z"
+        }
+      },
+      {
+        "instanceId": "schema-listing-community-core",
         "workflowType": "export-schema-listing",
         "currentState": "editable",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "schemaName": "Core community schema",
-          "components": ["members", "events", "messages", "documents"],
-          "protectedComponents": ["memberPhoneNumbers", "memberEmailAddresses"]
+          "listingLabel": "Community core schema",
+          "schemaNames": ["members.v2", "events.v1", "documents.v3"],
+          "includedComponents": ["members", "events", "documents"],
+          "excludedComponents": ["paymentTokens", "moderationNotes"],
+          "protectedDataLabels": ["protected-contact", "secret", "internal-only"],
+          "nextStep": "Lock scope before generating a package.",
+          "packageGenerated": false
         }
       },
       {
-        "instanceId": "schema-listing-v1",
-        "workflowType": "export-schema-listing",
-        "currentState": "locked",
+        "instanceId": "full-bundle-quarterly-backup",
+        "workflowType": "export-full-bundle",
+        "currentState": "complete",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "schemaName": "Schema v1 (frozen)",
-          "components": ["members", "events"],
-          "protectedComponents": ["memberPhoneNumbers"]
+          "bundleLabel": "Quarterly full backup",
+          "scope": ["members", "events", "messages", "documents"],
+          "destination": "Owner-controlled archive",
+          "memberNotice": "This backup contains community records under the protected-data policy.",
+          "verificationResult": "passed",
+          "generationStatus": "complete",
+          "downloadState": "waiting for verification",
+          "generationStartedAt": "2026-08-10T08:00:00Z",
+          "generationCompletedAt": "2026-08-10T08:07:00Z"
         }
       },
       {
-        "instanceId": "transfer-to-neighboring-hoa",
-        "workflowType": "export-transfer",
+        "instanceId": "redacted-bundle-provider-copy",
+        "workflowType": "export-redacted-bundle",
+        "currentState": "complete",
+        "createdByPersonaId": "portability-owner",
+        "instanceData": {
+          "bundleLabel": "Provider-safe redacted bundle",
+          "scope": ["members", "events", "documents"],
+          "redactionSummary": "Removed contact details, payment data, moderation notes, and document access tokens.",
+          "destination": "Northstar Community Cloud",
+          "memberNotice": "Only provider-required records are included; protected fields are removed.",
+          "redactionValidationResult": "passed",
+          "generationStatus": "complete",
+          "downloadState": "waiting for redaction validation",
+          "generationStartedAt": "2026-08-10T09:00:00Z",
+          "generationCompletedAt": "2026-08-10T09:05:00Z"
+        }
+      },
+      {
+        "instanceId": "checksum-evidence-quarterly-backup",
+        "workflowType": "export-checksum-evidence",
         "currentState": "verified",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "exportPackageId": "export-pkg-full-backup",
-          "sourceProviderLabel": "Data Portability Community",
-          "destinationProviderLabel": "Neighboring HOA Community",
-          "requestedAt": "2026-08-01T10:00:00Z",
-          "verifiedAt": "2026-08-01T10:15:00Z"
+          "evidenceLabel": "Quarterly backup verification",
+          "scopeSummary": "Four files covering members, events, messages, and documents.",
+          "verificationResult": "passed",
+          "transferEligibility": "disabled",
+          "auditHistory": [
+            { "result": "passed", "at": "2026-08-10T08:12:00Z", "by": "portability-owner" }
+          ],
+          "verifiedAt": "2026-08-10T08:12:00Z"
         }
       },
       {
-        "instanceId": "transfer-to-partner-app",
-        "workflowType": "export-transfer",
-        "currentState": "pending",
+        "instanceId": "transfer-northstar-provider",
+        "workflowType": "export-transfer-verification",
+        "currentState": "awaiting-provider",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "exportPackageId": "export-pkg-full-backup",
-          "sourceProviderLabel": "Data Portability Community",
-          "destinationProviderLabel": "Partner Scheduling App",
-          "requestedAt": "2026-08-05T12:00:00Z"
+          "transferLabel": "Northstar provider migration",
+          "sourceProvider": "Data Portability Community",
+          "destinationProvider": "Northstar Community Cloud",
+          "transferScope": ["members", "events", "documents"],
+          "transferStatus": "awaiting provider",
+          "rollbackAvailability": "available",
+          "auditHistory": [
+            { "status": "transfer started", "at": "2026-08-10T10:00:00Z", "by": "portability-owner" }
+          ],
+          "startedAt": "2026-08-10T10:00:00Z",
+          "submittedAt": "2026-08-10T10:08:00Z"
         }
       },
       {
-        "instanceId": "rollback-request-1",
+        "instanceId": "rollback-northstar-transfer",
         "workflowType": "export-transfer-rollback",
-        "currentState": "requested",
+        "currentState": "available",
         "createdByPersonaId": "portability-owner",
         "instanceData": {
-          "exportTransferId": "transfer-to-neighboring-hoa",
-          "rollbackReason": "Neighboring HOA reported a mismatched member count after import.",
-          "requestedAt": "2026-08-02T08:00:00Z"
-        }
-      },
-      {
-        "instanceId": "replay-restore-test",
-        "workflowType": "export-import-replay",
-        "currentState": "validating",
-        "createdByPersonaId": "portability-owner",
-        "instanceData": {
-          "replaySourceLabel": "Restore test from full community backup",
-          "exportPackageId": "export-pkg-full-backup",
-          "startedAt": "2026-08-03T14:00:00Z"
+          "rollbackLabel": "Northstar rollback request",
+          "sourceTransferInstanceId": "transfer-northstar-provider",
+          "sourceProvider": "Data Portability Community",
+          "destinationProvider": "Northstar Community Cloud",
+          "rollbackReason": "Destination validation found an unexpected document count.",
+          "rollbackAvailable": true,
+          "rollbackStatus": "available",
+          "auditHistory": []
         }
       }
     ]
   },
+
   "appShell": {
     "tabs": [
+      {
+        "tabId": "home",
+        "label": "Home",
+        "iconKey": "home",
+        "description": "Migration dashboard for scope, redaction, verification, transfer, and rollback status.",
+        "pinnedWorkflowIds": [
+          "export-import-preview",
+          "export-protected-redaction",
+          "export-checksum-evidence",
+          "export-transfer-verification",
+          "export-transfer-rollback"
+        ]
+      },
       {
         "tabId": "admin",
         "label": "Admin",
         "iconKey": "admin",
-        "description": "Role-specific publishing, approvals, and operations."
+        "description": "Export scope, verification, provider transfer, rollback, and audit operations."
       }
     ]
   }
