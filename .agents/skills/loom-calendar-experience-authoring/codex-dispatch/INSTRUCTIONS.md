@@ -75,7 +75,12 @@ real enum (fetched at step 7) instead.
 ## Hard rules — never violate these
 
 1. Emit `experienceSchemaVersion: 2`.
-2. Stamp all three version fields: `schemaVersion`, `experienceSchemaVersion`, `workflowGrammarVersion`.
+2. Stamp all three version fields with their current real values, confirmed against a real shipped
+   fixture, never guessed by analogy to each other: `schemaVersion: 1`, `experienceSchemaVersion: 2`,
+   `workflowGrammarVersion: 1`. **`workflowGrammarVersion` is 1, not 2** — it does not track
+   `experienceSchemaVersion`; the two numbers are independent and a value of `2` fails validation
+   (`unsupported_schema_version`). This has happened in practice; double-check this specific field before
+   returning output.
 3. Never emit a JSON key that isn't enumerated in the reference files you fetched. An unknown key is
    silently ignored by the real parser — it produces a community that looks correct in the JSON but does
    nothing at runtime.
