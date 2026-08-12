@@ -140,7 +140,22 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   `field-types.md`'s existing note on this point is accurate. Adding that dependency is in scope for
   `choice` (which needs both an embedded viewer and the external fallback), a real, non-trivial addition,
   not just a rendering branch.
-- **`table`** — real interaction gap (browsing 20+ rows at scale is not what a card-per-item list is for).
+- **`table` — Done, 2026-08-12 (Ticket GapClosure.1b1c-table, commit `b451c388`).** Added
+  `WorkflowTableArchetypeCard` + `(tabId, workflowType)` grouping in `EngineNativeListSurface`, per the
+  architectural finding below. Took 2 Codex dispatch rounds (both hit the known WSL vsock error before
+  their own verification could run, real edits still landed each time) plus independent-verification-caught
+  fixes for 2 real bugs the dispatch itself didn't catch: (1) a Column-children `if`/`else` construct where
+  `else` bound to the wrong (inner) `if`, silently dropping every non-table binding on any tab using this
+  surface — caught by a 12-test regression spanning unrelated features (event-rsvp, votePoll, messages,
+  giving, home announcements), confirmed via a stashed-diff baseline comparison, not by `flutter analyze`;
+  (2) `DataRow.key` doesn't propagate to any discoverable `Widget` (confirmed by reading Flutter SDK's own
+  `data_table.dart` — it becomes a `TableRow.key`, consumed only by `Table`'s internal row-diffing), so the
+  ticket's own row-key convention was unfindable via `find.byKey` regardless of naming — fixed by giving
+  row identity to a `KeyedSubtree` wrapping the first cell instead. Independently verified: `flutter
+  analyze` clean, full `loom_communities_app_shell` suite back to exactly the same 10 pre-existing baseline
+  failures (unrelated to this ticket) plus both new table tests passing, validator 0
+  `unknown_card_surface_family` for Chess Club and Riverside Youth Soccer. Live UX walkthrough not yet run.
+  Real interaction gap (browsing 20+ rows at scale is not what a card-per-item list is for).
   Build a genuine sortable/filterable grid widget consuming the existing `sortable`/`searchable`/
   `labelTemplate`/`displayIcon` `instanceDataSchema` flags every other archetype already reads — no new
   JSON grammar needed, this is pure Dart. Confirmed against both real fixtures (Chess Club's
@@ -320,7 +335,7 @@ and the user has explicitly signed off on running this cleanup:
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
-| ⬜ Open | `new-ticket` | Author and dispatch Milestone 1's tickets (1a registry, 1b dispatch wiring, 1c the 4 widgets — likely 2-4 separate tickets given the per-archetype design-decision split). Tracker now grounded in real Milestone 1.5 fixtures; ticket author must carry forward 1c's `searchAiAnswer` answer-field-naming open decision explicitly, not silently pick one. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
+| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry) ✅ done; `table` ✅ done (2 real bugs caught in independent verification, not by the dispatch's own checks). Remaining: `documentLibrary`, `searchAiAnswer` (carry forward the answer-field-naming open decision explicitly, do not silently pick), `exportWizard` — all 3 authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
 | ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
