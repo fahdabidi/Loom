@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
 last_verified: 2026-08-12
 audience: llm-agent
@@ -424,6 +424,39 @@ effects write `answer` or `citations` anywhere in the package) and by the candid
 marking the requirement `not_implemented`. The currently-shipped fixture already had a working
 admin-curated-answer transition with real inputs/effects; the fresh dispatch regressed away from it without
 knowing it existed.
+
+---
+
+## 12. Don't add a "provider/import reviewer" (or similar) persona from §7 prose alone — that phrase is templated boilerplate shared across multiple, unrelated communities' product docs, not a per-community requirement
+
+**Requirement shape:** a community's export/portability workflow (`exportWizard`) has a §7 requirements row
+containing prose like *"provider/import reviewer sees status and a real (non-fabricated) verification
+value"* or *"...sees checksum and redaction status."*
+
+**Looks plausible but is wrong:** treating that sentence as evidence this specific community needs a new,
+dedicated reviewer/provider persona, and adding one (e.g. `chess-export-reviewer`, `garden-import-reviewer`)
+not present in the community's own `## Existing identifiers` list or its §2 persona table. This phrase is
+**boilerplate carried over from the Data Portability Community template**, which genuinely does have a
+distinct "Receiving Provider" persona (`portability-receiving-provider`) — but it appears **verbatim,
+unchanged**, in at least Garden Club's, Neighborhood Book Club's, and Chess Club's product docs too, none of
+which have any such persona in their own §2 table or existing shipped fixture. Confirmed twice independently
+(Garden Club's 1st Milestone 1.5 dispatch, Chess Club's 2nd) — both added an unrequested reviewer persona
+from this exact phrase, in each case contradicted by that community's own §2 persona list and by the
+explicit "only add a new persona if the existing set doesn't already cover the need" instruction.
+
+**Verified-correct shape:** check whether §2's own persona table already names a distinct provider/reviewer
+role before adding one. If it doesn't, the export/transfer status is meant to be visible to the community's
+existing member persona (e.g. `chess-member`, `garden-member`) — a `readGuard`/`visibility` scoped to that
+existing persona (plus the owning admin/coordinator) is correct, no new persona needed. Only add a dedicated
+reviewer/provider persona for a community whose §2 table genuinely lists one — Data Portability Community is
+the one real, confirmed case (`portability-receiving-provider`, a distinct destination-system role its own
+workflow, `mosque-donor-visibility`-equivalent for the export domain, is actually built around).
+
+**Found in:** Chess Club, 2nd Milestone 1.5 dispatch (Codex GitHub-fetch channel, 2026-08-12) — added
+`chess-export-reviewer`, contradicted by the community's own §2 table (Organizer, Player only) and by its
+own currently-shipped fixture, which never acted on the identical §7 phrase. Caught by an independent Skill
+Output Judge dispatch, which additionally confirmed the exact same phrase appears unchanged in Garden Club's
+and Neighborhood Book Club's product docs — establishing this as boilerplate, not a per-community signal.
 
 ---
 
