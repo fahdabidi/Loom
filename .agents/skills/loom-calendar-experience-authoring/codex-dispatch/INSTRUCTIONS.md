@@ -140,16 +140,34 @@ run come back clean, via a rigorous **manual** self-check performed before you s
    `archetypes/README.md`'s real/pending tables (Hard Rule 6), and a `unknown_card_surface_family` finding
    you'd expect from one of the 4 🔲 PENDING archetypes (expected, per Scope above — note it, don't treat it
    as something to fix).
-6. State clearly and plainly in your final answer that this was a **manual self-check, no live validator
+6. **Do this as its own separate pass, not folded into step 5** (a whole-package omission is easy to miss
+   while reviewing each `renderBindings` entry in isolation — this has happened in practice, see
+   `solved-patterns.md` pattern 8): list every distinct non-`home`/`messages` `tabId` value used anywhere
+   across the whole package, then confirm each one has a matching `appShell.tabs[]`/`personaTabs[]` entry.
+   Missing this produces `unknown_tab_id` findings, one per undeclared tab.
+7. State clearly and plainly in your final answer that this was a **manual self-check, no live validator
    ran in this channel** — never imply or fabricate a validator response you did not actually obtain. If you
    are not fully confident a check passes, say so explicitly rather than asserting it does.
 
 ## What to deliver
 
 1. **One JSON (or JSONC) file** — the complete package: `schemaVersion`, `packageId`, `communityId`,
-   `communityHandle`, `displayName`, `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, then the
-   `experience` block. Return it in a single fenced code block so it can be extracted and validated for
-   real.
+   `communityHandle`, `displayName`, `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, the
+   `experience` block, **and a top-level `appShell` block** (see below — required whenever any workflow uses
+   a `tabId` other than `home`/`messages`, which is nearly always). Return it in a single fenced code block
+   so it can be extracted and validated for real; if the package is too large for one reply to be practical,
+   write it to a file in your own scratch working directory and say so explicitly, naming the exact path —
+   never truncate or summarize the package itself in place of the real content.
+
+   **`appShell.tabs[]` is easy to drop entirely — check for it as an explicit, separate step, not as part of
+   reviewing each `renderBindings` entry.** After drafting every workflow, collect the full set of distinct
+   non-`home`/`messages` `tabId` values used anywhere across the package, then confirm every one of them has
+   a matching entry in `appShell.tabs[]` (or `personaTabs[]` for a persona-scoped tab) — see
+   `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]` — tab declaration shape` section (fetched at
+   step 5) for the exact field shape, and `solved-patterns.md` pattern 8 (fetched at step 10) for a full
+   worked example of this exact omission and its fix. A package whose workflows are otherwise perfect but
+   has no `appShell` block will fail validation with an `unknown_tab_id` finding per undeclared tab — this
+   has happened in practice and is not a hypothetical risk.
 2. The **requirement traceability table** (hard rule 11) — the real artifact, one object per workflow.
 3. A short **"Gaps / assumptions"** section: anything the grammar couldn't express, anything you weren't
    sure about, any judgment call worth double-checking, every `not_implemented`/`partial` traceability row

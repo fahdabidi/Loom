@@ -1,8 +1,8 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-08-10
+last_verified: 2026-08-12
 audience: llm-agent
 ---
 
@@ -255,6 +255,53 @@ just-created, not-yet-stamped instance if the workflow-level `visibility` is `gu
 Skill Retrospective while CJM.6 (above) was still an open engine bug; the same authoring agent worked out
 this fix itself when asked what it could have done differently. Kept in this bank as a valid alternative
 even after CJM.6 landed — both mechanisms work today, use whichever fits the workflow's shape better.
+
+---
+
+## 8. Every non-`home`/`messages` `tabId` used anywhere in `renderBindings` needs a matching `appShell.tabs[]`/`personaTabs[]` declaration — omitting it entirely is easy when focused on workflow content
+
+**Requirement shape:** a workflow's `renderBindings[].tabId` names a tab (e.g. `"calendar"`, `"organize"`,
+`"documents"`) that isn't `home`/`messages`. `tabId` is an open vocabulary — any name is valid — but every
+value used anywhere in the package must have a corresponding entry in the top-level `appShell.tabs[]`
+array (or `personaTabs[]` for a persona-scoped tab), or the validator rejects it with `unknown_tab_id`.
+
+**Looks plausible but is wrong:** authoring every workflow's `renderBindings` correctly, including
+well-chosen custom `tabId` values that match the product doc's own vocabulary, and then simply never
+emitting a top-level `appShell` block at all. Nothing about drafting the workflows themselves prompts you to
+come back and declare the tabs they reference — this is a whole-package omission, not a per-field mistake,
+so a field-by-field self-check of each `renderBindings` entry will not catch it. Confirmed in practice: a
+full self-check pass (all antipattern rules, all `05-validation.md` rows, every `role`/guard check) still
+missed this, because none of those checks are phrased as "does a top-level key exist."
+
+**Verified-correct shape:** after drafting every workflow, collect the full set of distinct non-`home`/
+`messages` `tabId` values used anywhere in the package, then emit exactly one `appShell.tabs[]` entry per
+value:
+```jsonc
+"appShell": {
+  "tabs": [
+    { "tabId": "calendar", "label": "Calendar", "iconKey": "calendar_today",
+      "description": "Events, schedules, capacity, and reminders." },
+    { "tabId": "documents", "label": "Documents", "iconKey": "folder",
+      "description": "Shared files and export records." }
+  ]
+}
+```
+`rendererContractId` may be omitted (defaults to the generic list surface) unless the tab genuinely needs a
+bespoke renderer. See `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]` — tab declaration shape`
+section for the complete field list.
+
+**Self-check step to add, explicitly:** before finishing, grep your own draft for every distinct
+`renderBindings[].tabId` value across every workflow, then confirm each one (other than `home`/`messages`)
+has a matching `appShell.tabs[]`/`personaTabs[]` entry. Do this as a literal list-comparison step, separate
+from validating each `renderBindings` entry in isolation — the two checks catch different failure modes.
+
+**Found in:** Garden Club, re-authored via the Codex GitHub-fetch dispatch channel 2026-08-12 (Milestone
+1.5 of `TabId-Archetype Gap Closure.md`) — the fresh output correctly used `calendar`/`marketplace`/
+`organize`/`documents`/`care` as tabIds across its workflows, but emitted no `appShell` block at all,
+producing 15 `unknown_tab_id` errors on first validation. The currently-shipped fixture for the same
+community already gets this right (`appShell.tabs[]` with 3 declared tabs), confirming the gap was in this
+one dispatch's output, not a documentation gap in `render-bindings.md` itself (which already documents the
+requirement correctly) — the missing piece was reinforcement at the point of final self-check.
 
 ---
 
