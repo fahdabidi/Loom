@@ -90,6 +90,18 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   `eventDate`/`eventTime` convention, Hard Rule 8) and fix the non-compliant community via a follow-up Skill
   dispatch before or alongside this ticket. (a) is recommended — it doesn't require touching already-judged
   community JSON to unblock Dart work — but this tracker is not the place to force that call silently.
+  **Refinement, 2026-08-12:** `query` and `citations` themselves are consistently named across both real
+  fixtures (both use exactly `query` and `citations` — confirmed, no divergence on those two), so a widget
+  can safely bind those two by literal name; only the free-text "answer" concept diverges, and it's worse
+  than a simple two-name split — Masjid Nur's own schema declares *three* overlapping fields for it
+  (`aiAnswerBody`, `curatedAnswerBody`, and a computed `displayAnswer` formula field,
+  `"formula": "if(curatedAnswerBody == null, aiAnswerBody, curatedAnswerBody)"`, all three with overlapping
+  `tile`/`detail` visibility), while Book Club has a structurally different pair (`answer`, always-empty
+  platform-service field; `curatedSummary`, the real human-authored substitute, pattern-11-style) with no
+  unifying computed field at all. A naive "render every visible non-query/non-citations field generically"
+  fallback would double-render Masjid Nur's `curatedAnswerBody` and `displayAnswer` side by side once both
+  resolve non-null — so option (a) needs a real answer-selection heuristic, not just "read whatever's
+  there," and that heuristic is genuinely undecided; still explicitly left to the ticket, not resolved here.
 - **`documentLibrary` — mostly consistent, bind by role not by a fixed required list.** Across the 4 real
   communities (Masjid Nur, Cedar Commons HOA, Chess Club, Riverside Youth Soccer), the *names* used for each
   access-tracking role agree wherever the role is present (`readPersonaIds`, `acknowledgedPersonaIds`,
@@ -155,10 +167,10 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   one new grid widget instead of N separate `EngineNativeArchetypeCard`s; non-`table` bindings keep today's
   per-item path unchanged. Both real fixtures also use `bindingKind: "summary"` alongside `"primary"` for
   the same `table` workflow on a second tab (Chess Club's admin-tab summary row, Youth Soccer's home-tab
-  summary row) — the implementer must decide and document whether `summary` means a condensed
-  count/preview rather than the full grid, consistent with how `bindingKind` is used for every other
-  archetype (check `formEntry`/`statusTimeline`'s existing summary-vs-primary handling for the established
-  convention before inventing a new one).
+  summary row) — **checked, resolved:** `bindingKind` is grep-confirmed never read anywhere in the render
+  pipeline (`part27`/`part32`/`part28`/`part36`), only ever written in JSON/test fixtures — so no special
+  summary-vs-primary handling is needed; each grouped binding (regardless of `bindingKind`) simply renders
+  its own grid on its own tab, same as every other archetype already treats it.
 - **`searchAiAnswer`** (continued) — the widget (query display + `citations[]` list rendering, consuming
   the already-`⚠️ PROPOSED` "Citation lists" shape) is buildable and should be ✅ REAL for that part. The
   **answer computation itself is out of scope for this milestone** — `platform-services.md` lists "External
