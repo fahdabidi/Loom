@@ -29,14 +29,21 @@ every other ticket this session (`TabId-Archetype.0`-`.4`).
 
 ## Milestone 1 — implementation (registry + dispatch + widgets)
 
-**Not started. Ready to dispatch — Milestone 1.5 now provides real, committed, judge-verified ground truth
-for every field this milestone's widgets need to bind to** (see "Real fixtures to design against" under
-1c, and the one real, previously-unknown design question 1c now flags explicitly). Scope: make the 4
-promoted archetypes real, matching the bar already set by `event-rsvp`/`equipment-loan`/`votePoll` (a
-genuinely distinct widget, not a fallback to `GenericWorkflowInstanceCard`) where the audit found a real
-interaction gap, or explicitly matching the existing 🟡 GENERIC bar (functional via the shared template,
-cosmetically generic) where a full bespoke widget isn't warranted — that call is made per-archetype below,
-not assumed uniform.
+**Done, 2026-08-12.** All 5 sub-tickets (1a registry, plus one widget ticket each for `table`,
+`documentLibrary`, `searchAiAnswer`, `exportWizard`) landed, each independently verified: `flutter analyze`
+clean, full `loom_communities_app_shell`/`loom_workflow_engine` suites at their established pre-existing
+baseline (no regressions), and the validator confirms 0 `unknown_card_surface_family` findings across every
+real fixture. All 4 promoted archetypes reached ✅ REAL — matching the bar already set by
+`event-rsvp`/`equipment-loan`/`votePoll` (a genuinely distinct widget, not a fallback to
+`GenericWorkflowInstanceCard`) — none needed to fall back to the 🟡 GENERIC bar. Every ticket's dispatch hit
+the known WSL vsock sandbox error at least once before its own verification could complete; in every case
+the real code edits had already landed and independent verification (run directly by this session, not
+trusted from the dispatch's own self-report) is what actually confirms each ticket — and in 3 of the 4
+widget tickets, independent verification caught real bugs (ranging from a Column `if`/`else` binding
+mistake that silently broke unrelated rendering, to inconsistent action-button key scoping that risked
+real key collisions, to missing test infrastructure) that the dispatch's own analyze/test attempt never
+had the chance to catch. See each archetype's own entry below for the full account. Live UX walkthrough
+beyond what each ticket's own tests exercise has not been run.
 
 ### 1a. Registry addition
 
@@ -223,7 +230,33 @@ concrete enough to change how the widgets should bind to data, not just cosmetic
   correctly against an empty/unset answer field (real community JSON will have the answer field marked
   `NEEDS IMPLEMENTATION` and never written) — do not build a fake/stub answer generator to make the widget
   look more finished than the platform actually is.
-- **`exportWizard`** — same platform-service split as `searchAiAnswer`. **Correction, 2026-08-12:** this
+- **`exportWizard` — Done, 2026-08-12 (Ticket GapClosure.1b1c-exportWizard, commit `837dd911`). Resolved:
+  Option B (state-badge + history-list).** Added `ExportWizardArchetypeCard`, driving its core progress
+  display off the workflow's always-generic `currentState`/`states` data (never a named business field) —
+  correctly distinguishing Cedar Commons HOA's real side-exit states (`failed`/`rolled-back`/`cancelled`)
+  from its happy path via a literal state-name check plus `isTerminal`, confirmed against both real
+  fixtures' actual state declarations (neither marks a success state `isTerminal`, only failure/cancel
+  states). Supplementary fields render via the ordinary schema-driven fact-pill approach, present-if-
+  declared, reading whichever `*History` field a workflow actually names. The dispatch reused this
+  project's pre-existing, unrelated V3 Milestone 1.10 export-wizard test file, upgrading it into a real
+  end-to-end test against the actual Chess Club/Cedar Commons HOA fixtures via `LocalExtensionScreen` —
+  materially stronger than a mocked unit test, kept rather than replaced. One Codex dispatch round (hit the
+  known WSL vsock error before its own verification could run, real edits still landed) plus 5 real fixes
+  caught only during independent verification: the same non-instance-scoped `surface:` bug found in
+  `documentLibrary` (fixed to match the `equipment-loan-${instanceId}` precedent — a real collision risk
+  given Chess Club's admin tab can show multiple export instances at once); the reused test's install
+  helper was missing a required `experienceForExtensionId(...)` registration call; a plain `tester.pump()`
+  loop never lets the real sqlite-backed local-demo engine's own async work complete (confirmed by directly
+  dumping the widget tree — stuck indefinitely on a `community-entry-checking` gate) — fixed by interleaving
+  a real `tester.runAsync` yield into every wait/tap; and several test assertions expected raw field values
+  where the shared fact-pill renderer's existing behavior (a `labelTemplate` prefix, or its
+  identifier-humanization logic turning `manual-review` into `Manual Review`) was actually correct — fixed
+  the test expectations, not the renderer. Independently verified: `flutter analyze` clean, full
+  `loom_communities_app_shell` suite back to exactly the same 10 pre-existing baseline failures plus both
+  real end-to-end tests passing, validator 0 `unknown_card_surface_family` for Chess Club and Cedar Commons
+  HOA. Live UX walkthrough not yet run (though this ticket's own tests already exercise real navigation +
+  real transitions end-to-end, closer to a live walkthrough than any other archetype's tests this session).
+  Same platform-service split as `searchAiAnswer`. **Correction, 2026-08-12:** this
   tracker previously claimed the field-naming picture was "reassuringly consistent" based on a whole-file
   grep across each fixture — that grep was **not scoped to the exportWizard workflow block itself** and
   picked up matching substrings from unrelated workflows in the same file (e.g. Chess Club's `downloadUrl`
@@ -365,7 +398,7 @@ and the user has explicitly signed off on running this cleanup:
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
-| ⬜ Open | `new-ticket` | Milestone 1 tickets in progress: 1a (registry), `table`, `documentLibrary`, `searchAiAnswer` all ✅ done (each caught 1-3 real bugs in independent verification the dispatch's own checks missed — see their own tracker entries above). Remaining: `exportWizard` — authored, ready to dispatch. | user-identified | 2026-08-11 (refreshed 2026-08-12) |
+| ✅ Closed | `new-ticket` | Milestone 1 (registry + `table` + `documentLibrary` + `searchAiAnswer` + `exportWizard`) — all 5 sub-tickets done, each independently verified. 3 of the 4 widget tickets caught real bugs in independent verification the dispatch's own checks missed — see each archetype's own tracker entry above for the full account. | user-identified | 2026-08-11 (closed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
-| ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — blocked on Milestones 1+1.5 AND on the user's fresh, explicit, per-instance approval at the time it actually runs | this tracker | 2026-08-11 |
+| ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — Milestones 1+1.5 preconditions now both met (2026-08-12); still blocked on the user's fresh, explicit, per-instance approval at the time it actually runs — do not infer approval from precondition completion | this tracker | 2026-08-11 (refreshed 2026-08-12) |
