@@ -1,4 +1,4 @@
-// Neighborhood Book Club — canonical JSON, authored 2026-08-10.
+// Neighborhood Book Club — canonical JSONC, updated 2026-08-12.
 // Engine-native Loom community package for "Neighborhood Book Club".
 // Authored from docs/references only, per the loom-calendar-experience-authoring Skill.
 //
@@ -15,7 +15,8 @@
 //      create their own response rows via the tab-scoped action, not true when the only creation
 //      path was an inert button.
 //
-// See docs/references/communities/neighborhood-book-club-product-experience.md §10 for the review log.
+// Milestone 1.5 pending-archetype update. The export flow follows solved-patterns.md pattern 14:
+// checksum and transfer identifiers remain visibly unset and never gate real export capability.
 {
   "schemaVersion": 1,
   "packageId": "init_neighborhood_book_club_1",
@@ -49,7 +50,7 @@
         "initialState": "draft",
         "states": {
           "draft": { "label": "Draft", "tone": "info",
-            "editableFields": ["title", "author", "reason", "genre"],
+            "editableFields": ["title", "author", "reason", "genre", "meetingCycle"],
             "editGuard": { "allowedPersonaIds": ["book-member"] } },
           "submitted": { "label": "Submitted", "tone": "warning" },
           "selected": { "label": "Selected for ballot", "tone": "positive", "isTerminal": true },
@@ -58,7 +59,10 @@
         "transitions": [
           { "id": "submit-nomination", "label": "Submit nomination", "icon": "send", "tone": "primary",
             "from": ["draft"], "to": "submitted",
-            "guard": { "allowedPersonaIds": ["book-member"] },
+            "guard": { "allowedPersonaIds": ["book-member"],
+              "relatedAggregate": { "workflowType": "book-nomination",
+                "filter": { "title": "{title}", "author": "{author}", "$state": "submitted" },
+                "op": "count", "comparator": "<", "compareTo": 1 } },
             "effects": [
               { "op": "set", "key": "nominatorPersonaId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
@@ -83,7 +87,7 @@
           { "states": ["submitted"], "role": "receiver", "tabId": "admin",
             "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "menu_book", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
@@ -93,6 +97,9 @@
             "displayIcon": "chat_bubble_outline", "displayContexts": ["detail"] },
           "genre": { "type": "text", "writableBy": "formEntry",
             "displayIcon": "sell_outlined", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "meetingCycle": { "type": "text", "required": true, "writableBy": "formEntry",
+            "displayIcon": "date_range", "labelTemplate": "Cycle: {value}",
+            "displayContexts": ["tile", "detail"] },
           "nominatorPersonaId": { "type": "personaId?", "writableBy": "effect",
             "displayIcon": "badge_outlined", "labelTemplate": "Nominated by {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -104,7 +111,7 @@
         "initialState": "open",
         "states": {
           "open": { "label": "Voting open", "tone": "positive",
-            "editableFields": ["prompt", "candidates", "deadline"],
+            "editableFields": ["prompt", "candidates", "deadline", "meetingContext"],
             "editGuard": { "allowedPersonaIds": ["book-organizer"] } },
           "closed": { "label": "Closed", "tone": "info", "isTerminal": true },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
@@ -136,6 +143,9 @@
           "deadline": { "type": "date", "required": true, "writableBy": "formEntry",
             "sortable": true, "displayIcon": "event_busy", "labelTemplate": "Closes {value}",
             "displayContexts": ["tile", "detail"] },
+          "meetingContext": { "type": "text", "required": true, "writableBy": "formEntry",
+            "displayIcon": "groups_outlined", "labelTemplate": "For {value}",
+            "displayContexts": ["tile", "detail"] },
 
           "responses": { "type": "list", "source": "query(book-vote-response where ballotId == id)" },
           "voteCounts": { "type": "map", "formula": "groupCount(responses, choice)" },
@@ -160,9 +170,17 @@
         "transitions": [
           { "id": "confirm-vote", "label": "Vote", "icon": "how_to_vote", "tone": "primary",
             "from": ["pending"], "to": "voted",
+            // NEEDS IMPLEMENTATION (guard vocabulary): grammar v1 has no cross-instance guard that
+            // asserts the linked parent ballot's current state/deadline. The parent close/cancel paths
+            // are real, but a direct child-row transition call cannot yet re-check that parent state.
             "guard": { "allowedPersonaIds": ["book-member"],
                        "formula": "if(choice == null, false, true)" },
             "effects": [ { "op": "set", "key": "voterPersonaId", "value": "$actor" } ] },
+          { "id": "change-vote", "label": "Change vote", "icon": "swap_horiz", "tone": "primary",
+            "from": ["voted"], "to": null,
+            "guard": { "actorEqualsField": { "key": "voterPersonaId" } },
+            "inputs": { "choice": { "type": "text", "required": true } },
+            "effects": [ { "op": "set", "key": "choice", "value": "{input.choice}" } ] },
           { "id": "clear-vote", "label": "Clear vote", "icon": "undo", "tone": "secondary",
             "from": ["voted"], "to": "pending",
             "guard": { "actorEqualsField": { "key": "voterPersonaId" } },
@@ -185,11 +203,11 @@
                 "byPersonaIds": ["book-member"], "scope": "tab", "presentation": "fab" }
             ] }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "ballotId": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "how_to_vote", "labelTemplate": "Ballot: {value}", "displayContexts": ["detail"] },
-          "choice": { "type": "text", "required": true, "writableBy": "formEntry",
+          "choice": { "type": "text", "writableBy": "formEntry",
             "displayIcon": "menu_book", "labelTemplate": "Voted for {value}", "displayContexts": ["tile", "detail"] },
           "voterPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true }
         }
@@ -199,7 +217,7 @@
         "initialState": "open",
         "states": {
           "open": { "label": "RSVP open", "tone": "positive",
-            "editableFields": ["title", "eventDate", "eventTime", "location", "capacity", "reminderOffsetHours"],
+            "editableFields": ["title", "eventDate", "eventTime", "location", "meetingUrl", "capacity", "reminderOffsetHours"],
             "editGuard": { "allowedPersonaIds": ["book-organizer"] } },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
@@ -218,7 +236,9 @@
               { "op": "generateRecurringInstances", "workflowType": "book-meeting-rsvp",
                 "anchorField": "eventDate",
                 "fields": { "title": "{title}", "eventDate": "{eventDate}", "eventTime": "{eventTime}",
-                            "location": "{location}", "capacity": "{capacity}" },
+                            "location": "{location}", "meetingUrl": "{meetingUrl}",
+                            "capacity": "{capacity}", "reminderOffsetHours": "{reminderOffsetHours}",
+                            "seriesId": "$newSeriesId" },
                 "recurrenceRule": { "freq": "{input.freq}", "count": "{input.count}" } }
             ] }
         ],
@@ -243,11 +263,21 @@
             "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "location": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (renderer): type:url/openMode is documented but still proposed.
+          "meetingUrl": { "type": "url?", "writableBy": "formEntry", "openMode": "choice",
+            "displayIcon": "link", "labelTemplate": "Join online: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry",
             "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
-          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "displayContexts": [] },
+          "reminderOffsetHours": { "type": "number", "writableBy": "formEntry",
+            "displayIcon": "notifications_active", "labelTemplate": "Reminder {value} hours before",
+            "displayContexts": ["detail"] },
+          "seriesId": { "type": "text", "writableBy": "effect",
+            "displayIcon": "repeat", "labelTemplate": "Recurring series {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "reminderAt": { "type": "date",
-            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))" },
+            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))",
+            "displayIcon": "alarm", "labelTemplate": "Reminder due {value}", "displayContexts": ["detail"] },
 
           "responses": { "type": "list", "source": "query(book-meeting-rsvp-response where eventId == id)" },
           "responseCounts": { "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": [] },
@@ -296,18 +326,17 @@
             "guard": { "actorEqualsField": { "key": "personaId" } },
             "inputs": {
               "notificationTitle": { "type": "text", "required": true },
-              "notificationBody": { "type": "text", "required": true },
-              "notificationCreatedAt": { "type": "text", "required": true }
+              "notificationBody": { "type": "text", "required": true }
             },
             "effects": [
               { "op": "createInstance", "workflowType": "book-notification",
                 "fields": { "recipientPersonaId": "{personaId}", "title": "{input.notificationTitle}",
-                            "body": "{input.notificationBody}", "createdAt": "{input.notificationCreatedAt}" } },
+                            "body": "{input.notificationBody}", "createdAt": "$timestamp" } },
               { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
             ] }
         ],
         "renderBindings": [],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "eventId": { "type": "text", "required": true, "storage": "inline" },
           "personaId": { "type": "text", "required": true, "storage": "inline" },
@@ -327,7 +356,8 @@
             "guard": { "actorEqualsField": { "key": "recipientPersonaId" } } }
         ],
         "renderBindings": [],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "guarded",
+          "readGuard": { "formula": "$viewer == recipientPersonaId || $viewer == 'book-organizer'" } },
         "instanceDataSchema": {
           "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "storage": "inline" },
           "title": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
@@ -340,7 +370,7 @@
         "initialState": "active",
         "states": {
           "active": { "label": "Available", "tone": "positive",
-            "editableFields": ["title", "source", "version", "accessType", "materialUrl"],
+            "editableFields": ["title", "author", "source", "version", "publicationDate", "accessType", "materialUrl"],
             "editGuard": { "allowedPersonaIds": ["book-organizer"] } },
           "archived": { "label": "Archived", "tone": "negative", "isTerminal": true }
         },
@@ -371,30 +401,50 @@
               { "op": "appendUnique", "key": "approvedPersonaIds", "value": "{input.member}" },
               { "op": "removeValue", "key": "accessRequestedPersonaIds", "value": "{input.member}" }
             ] },
+          { "id": "share-within-club", "label": "Share within club", "icon": "group_add", "tone": "secondary",
+            "from": ["active"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "inputs": { "member": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "appendUnique", "key": "approvedPersonaIds", "value": "{input.member}" }
+            ] },
           { "id": "archive-material", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
             "from": ["active"], "to": "archived",
             "guard": { "allowedPersonaIds": ["book-organizer"] } }
         ],
         "renderBindings": [
+          // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is locked into the canonical
+          // vocabulary but is not yet in the Dart registry (archetypes/README.md).
           { "states": ["active"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+            "cardSurfaceFamily": "documentLibrary", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Add reading material",
               "byPersonaIds": ["book-organizer"], "scope": "tab", "presentation": "fab" } ] },
           { "states": ["archived"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" }
+            "cardSurfaceFamily": "documentLibrary", "bindingKind": "summary" }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "auto_stories", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "author": { "type": "text", "writableBy": "formEntry",
+            "displayIcon": "person_outline", "labelTemplate": "Author: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "source": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "source_outlined", "labelTemplate": "Source: {value}", "displayContexts": ["detail"] },
           "version": { "type": "text", "writableBy": "formEntry",
             "displayIcon": "history", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "publicationDate": { "type": "date?", "writableBy": "formEntry", "sortable": true,
+            "displayIcon": "event_note", "labelTemplate": "Dated {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "accessType": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "visibility_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (renderer): type:url/openMode is documented but still proposed.
           "materialUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
-            "displayIcon": "description", "labelTemplate": "Open {value}", "displayContexts": ["tile", "detail"] },
+            "displayContexts": [] },
+          "openableMaterialUrl": { "type": "url?", "openMode": "choice",
+            "formula": "if(accessType == 'public', materialUrl, if($viewer == 'book-organizer', materialUrl, if(contains(approvedPersonaIds, $viewer), materialUrl, null)))",
+            "displayIcon": "description", "labelTemplate": "Open {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "acknowledgedByPersonaIds": { "type": "personaId[]", "writableBy": "effect",
             "displayIcon": "task_alt", "labelTemplate": "Acknowledged: {value.length}", "hideWhenEmpty": true },
           "savedByPersonaIds": { "type": "personaId[]", "writableBy": "effect", "hideWhenEmpty": true },
@@ -425,16 +475,41 @@
               { "op": "set", "key": "ownerPersonaId", "value": "$actor" },
               { "op": "set", "key": "availabilityState", "value": "available" }
             ] },
-          { "id": "borrow-item", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
+          { "id": "request-loan", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
             "from": ["published"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member"],
                        "instanceDataEquals": { "key": "availabilityState", "value": "available" },
                        "formula": "if(listingMode == 'loan', if(ownerPersonaId == $actor, false, true), false)" },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "requested" },
+              { "op": "set", "key": "pendingBorrowerPersonaId", "value": "$actor" }
+            ] },
+          { "id": "approve-loan", "label": "Approve loan", "icon": "check_circle", "tone": "primary",
+            "from": ["published"], "to": null,
+            "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
+                       "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
             "inputs": { "dueDate": { "type": "text", "required": true } },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "borrowed" },
-              { "op": "set", "key": "currentHolderPersonaId", "value": "$actor" },
+              { "op": "set", "key": "currentHolderPersonaId", "value": "{pendingBorrowerPersonaId}" },
+              { "op": "set", "key": "pendingBorrowerPersonaId", "value": null },
               { "op": "set", "key": "dueDate", "value": "{input.dueDate}" }
+            ] },
+          { "id": "decline-loan", "label": "Decline loan", "icon": "cancel_outlined", "tone": "secondary",
+            "from": ["published"], "to": null,
+            "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
+                       "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "pendingBorrowerPersonaId", "value": null }
+            ] },
+          { "id": "cancel-loan-request", "label": "Cancel request", "icon": "undo", "tone": "secondary",
+            "from": ["published"], "to": null,
+            "guard": { "actorEqualsField": { "key": "pendingBorrowerPersonaId" },
+                       "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "pendingBorrowerPersonaId", "value": null }
             ] },
           { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "redeem", "tone": "primary",
             "from": ["published"], "to": "given",
@@ -449,7 +524,7 @@
             "from": ["published"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member"],
                        "actorInList": { "key": "queuedPersonaIds", "present": false },
-                       "formula": "if(ownerPersonaId == $actor, false, true)" },
+                       "formula": "if(ownerPersonaId == $actor, false, if(availabilityState == 'available', false, true))" },
             "effects": [ { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" } ] },
           { "id": "leave-queue", "label": "Leave queue", "icon": "remove_circle_outline", "tone": "secondary",
             "from": ["published"], "to": null,
@@ -462,7 +537,8 @@
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "available" },
               { "op": "set", "key": "currentHolderPersonaId", "value": null },
-              { "op": "set", "key": "dueDate", "value": null }
+              { "op": "set", "key": "dueDate", "value": null },
+              { "op": "set", "key": "lastReturnedAt", "value": "$timestamp" }
             ] },
           { "id": "cancel-loan", "label": "Cancel loan", "icon": "cancel_outlined", "tone": "secondary",
             "from": ["published"], "to": null,
@@ -481,7 +557,8 @@
             "effects": [ { "op": "set", "key": "dueDate", "value": "{input.dueDate}" } ] },
           { "id": "report-lost", "label": "Report lost", "icon": "report_problem_outlined", "tone": "destructive",
             "from": ["published"], "to": "lost",
-            "guard": { "formula": "if(currentHolderPersonaId == $actor, true, if(ownerPersonaId == $actor, true, false))" } },
+            "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
+                       "formula": "if(currentHolderPersonaId == $actor, true, if(ownerPersonaId == $actor, true, false))" } },
           { "id": "delist-item", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
             "from": ["published"], "to": "delisted",
             "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
@@ -497,7 +574,7 @@
           { "states": ["given", "delisted", "lost"], "role": "any", "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry",
             "searchable": true, "sortable": true, "displayIcon": "menu_book",
@@ -511,21 +588,31 @@
           "ownerPersonaId": { "type": "personaId?", "writableBy": "effect",
             "displayIcon": "person_outline", "labelTemplate": "Owner: {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "pendingBorrowerPersonaId": { "type": "personaId?", "writableBy": "effect",
+            "displayIcon": "hourglass_top", "labelTemplate": "Loan requested by {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "currentHolderPersonaId": { "type": "personaId?", "writableBy": "effect",
+            "hideWhenEmpty": true, "displayContexts": [] },
+          "currentHolderDisplay": { "type": "text",
+            "formula": "if(currentHolderPersonaId == null, 'Available', if($viewer == ownerPersonaId, currentHolderPersonaId, if($viewer == currentHolderPersonaId, currentHolderPersonaId, 'Checked out')))" ,
             "displayIcon": "person_pin_circle_outlined", "labelTemplate": "Holder: {value}",
-            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+            "displayContexts": ["tile", "detail"] },
           "availabilityState": { "type": "text", "writableBy": "effect",
             "displayIcon": "info_outline", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "dueDate": { "type": "date?", "writableBy": "effect",
             "displayIcon": "event_available", "labelTemplate": "Due back {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "lastReturnedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
+            "displayIcon": "assignment_return", "labelTemplate": "Returned {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "queuedPersonaIds": { "type": "personaId[]", "writableBy": "effect",
             "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}", "hideWhenEmpty": true },
 
           "isOverdue": { "type": "bool", "formula": "if(dueDate == null, false, isPast(dueDate))",
             "displayIcon": "warning_amber_outlined", "labelTemplate": "Overdue", "displayContexts": ["tile", "detail"] },
           "queueLength": { "type": "number", "formula": "size(queuedPersonaIds)" },
-          "myQueuePosition": { "type": "number", "formula": "indexOf(queuedPersonaIds, $viewer)",
+          "myQueuePosition": { "type": "number",
+            "formula": "if(indexOf(queuedPersonaIds, $viewer) < 0, 0, indexOf(queuedPersonaIds, $viewer) + 1)",
             "displayIcon": "format_list_numbered", "labelTemplate": "Your position: {value}", "displayContexts": ["detail"] },
           "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
         }
@@ -545,11 +632,31 @@
             "inputs": { "body": { "type": "text", "required": true } },
             "effects": [
               { "op": "append", "key": "messages",
-                "value": { "senderPersonaId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } }
+                "value": { "senderPersonaId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } },
+              { "op": "appendUnique", "key": "readByPersonaIds", "value": "$actor" }
             ] },
-          // NEEDS IMPLEMENTATION: the B25 addendum's generic invite/connect/block phrasing does not match
-          // this workflow's own §5/§6/§7 rows (a plain club discussion thread) - see traceability notes;
-          // only archive is modeled as an alternate/durable path.
+          { "id": "mark-thread-read", "label": "Mark read", "icon": "done_all", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
+                       "actorInList": { "key": "readByPersonaIds", "present": false } },
+            "effects": [ { "op": "appendUnique", "key": "readByPersonaIds", "value": "$actor" } ] },
+          { "id": "mark-thread-unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
+                       "actorInList": { "key": "readByPersonaIds", "present": true } },
+            "effects": [ { "op": "removeValue", "key": "readByPersonaIds", "value": "$actor" } ] },
+          { "id": "mute-thread", "label": "Mute", "icon": "notifications_off", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
+                       "actorInList": { "key": "mutedByPersonaIds", "present": false } },
+            "effects": [ { "op": "appendUnique", "key": "mutedByPersonaIds", "value": "$actor" } ] },
+          { "id": "unmute-thread", "label": "Unmute", "icon": "notifications_active", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
+                       "actorInList": { "key": "mutedByPersonaIds", "present": true } },
+            "effects": [ { "op": "removeValue", "key": "mutedByPersonaIds", "value": "$actor" } ] },
+          // Intentionally no invite/connection subsystem: solved-patterns.md pattern 13 confirms the
+          // B25 invite/connect wording is cross-community boilerplate, not a Book Club requirement.
           { "id": "archive-thread", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
             "from": ["open"], "to": "archived",
             "guard": { "allowedPersonaIds": ["book-organizer"] } }
@@ -562,12 +669,18 @@
           { "states": ["archived"], "role": "any", "tabId": "messages",
             "cardSurfaceFamily": "discussionThread", "bindingKind": "summary" }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "prompt": { "type": "text", "required": true, "writableBy": "formEntry",
             "searchable": true, "displayIcon": "chat_bubble_outline",
             "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "messages": { "type": "list", "writableBy": "effect" },
+          "readByPersonaIds": { "type": "personaId[]", "writableBy": "effect",
+            "displayIcon": "done_all", "labelTemplate": "Read by {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "mutedByPersonaIds": { "type": "personaId[]", "writableBy": "effect",
+            "displayIcon": "notifications_off", "labelTemplate": "Muted by {value.length}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "messageCount": { "type": "number", "formula": "size(messages)",
             "displayIcon": "forum_outlined", "labelTemplate": "{value} replies", "displayContexts": ["tile", "detail"] }
         }
@@ -585,12 +698,20 @@
           "published": { "label": "Published", "tone": "positive", "isTerminal": true }
         },
         "transitions": [
+          { "id": "preview-announcement", "label": "Preview announcement", "icon": "preview", "tone": "secondary",
+            "from": ["draft", "scheduled"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "effects": [ { "op": "set", "key": "previewedAt", "value": "$timestamp" } ] },
           { "id": "schedule-announcement", "label": "Schedule later", "icon": "schedule_send", "tone": "secondary",
             "from": ["draft"], "to": "scheduled",
             "guard": { "allowedPersonaIds": ["book-organizer"] } },
           { "id": "revise-announcement", "label": "Edit announcement", "icon": "edit", "tone": "secondary",
             "from": ["scheduled"], "to": "draft",
             "guard": { "allowedPersonaIds": ["book-organizer"] } },
+          { "id": "cancel-scheduled-announcement", "label": "Cancel schedule", "icon": "event_busy", "tone": "destructive",
+            "from": ["scheduled"], "to": "draft",
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "effects": [ { "op": "set", "key": "scheduledAt", "value": null } ] },
           { "id": "publish-announcement", "label": "Publish announcement", "icon": "campaign", "tone": "primary",
             "from": ["draft", "scheduled"], "to": "published",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
@@ -616,6 +737,8 @@
             "displayIcon": "schedule", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "message": { "type": "textarea", "writableBy": "formEntry", "maxLength": 500,
             "displayContexts": ["detail"] },
+          "previewedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "publishedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
         }
       },
@@ -625,10 +748,13 @@
         "states": {
           "draft": { "label": "Draft query", "tone": "info",
             "editableFields": ["query"], "editGuard": { "allowedPersonaIds": ["book-member"] } },
-          "open": { "label": "Open", "tone": "positive",
-            "editableFields": ["summary"],
+          "open": { "label": "Digest open", "tone": "positive",
+            "editableFields": ["query", "curatedSummary"],
             "editGuard": { "allowedPersonaIds": ["book-member", "book-organizer"] } },
-          "archived": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
+          "saved": { "label": "Saved digest", "tone": "positive",
+            "editableFields": ["curatedSummary"],
+            "editGuard": { "allowedPersonaIds": ["book-member", "book-organizer"] } },
+          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           { "id": "submit-query", "label": "Submit", "icon": "search", "tone": "primary",
@@ -638,44 +764,60 @@
               { "op": "set", "key": "submitterPersonaId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ] },
-          // NEEDS IMPLEMENTATION (platform service): automatic AI-generated summary/citations are a
-          // not-implemented platform service (platform-services.md: External search/AI answer). The
-          // summary/citations fields below are genuinely user-curated, never a fabricated canned answer.
+          { "id": "save-digest", "label": "Save digest", "icon": "bookmark", "tone": "primary",
+            "from": ["open"], "to": "saved",
+            "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] },
+            "effects": [ { "op": "set", "key": "savedAt", "value": "$timestamp" } ] },
+          { "id": "edit-digest", "label": "Edit query", "icon": "edit", "tone": "secondary",
+            "from": ["open", "saved"], "to": "draft",
+            "guard": { "actorEqualsField": { "key": "submitterPersonaId" } },
+            "effects": [ { "op": "set", "key": "savedAt", "value": null } ] },
+          // NEEDS IMPLEMENTATION (platform service): automatic AI-generated answer text and citation
+          // retrieval require External search / AI answer, which platform-services.md marks not implemented.
+          // Citations added below and curatedSummary edits are honest human-authored alternatives; the
+          // platform-owned `answer` field remains unset and is never written by any effect.
           { "id": "add-citation", "label": "Add citation", "icon": "auto_stories", "tone": "secondary",
-            "from": ["open"], "to": null,
+            "from": ["open", "saved"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] },
             "inputs": { "label": { "type": "text", "required": true }, "url": { "type": "text", "required": true } },
             "effects": [ { "op": "append", "key": "citations",
-              "value": { "label": "{input.label}", "source": "{input.url}" } } ] },
+              "value": { "label": "{input.label}", "source": "{input.url}", "addedAt": "$timestamp" } } ] },
           { "id": "withdraw-query", "label": "Withdraw", "icon": "undo", "tone": "destructive",
-            "from": ["open"], "to": "archived",
+            "from": ["open", "saved"], "to": "withdrawn",
             "guard": { "actorEqualsField": { "key": "submitterPersonaId" } } }
         ],
         "renderBindings": [
+          // NEEDS IMPLEMENTATION (archetype pending): searchAiAnswer is canonical but not yet registered.
           { "states": ["draft"], "role": "actor", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+            "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Ask the club",
               "byPersonaIds": ["book-member"], "scope": "tab", "presentation": "fab" } ] },
           { "states": ["open"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["archived"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" }
+            "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary" },
+          { "states": ["saved", "withdrawn"], "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "summary" }
         ],
-        "visibility": { "default": "public" },
+        "visibility": { "default": "membersOnly" },
         "instanceDataSchema": {
           "query": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "search", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "summary": { "type": "textarea", "writableBy": "formEntry", "maxLength": 1000,
+          "curatedSummary": { "type": "textarea", "writableBy": "formEntry", "maxLength": 1000,
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): AI answer generation. Declared for the pending
+          // searchAiAnswer surface, never seeded and never written by an effect.
+          "answer": { "type": "textarea", "writableBy": "effect", "maxLength": 2000,
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "citations": { "type": "list", "writableBy": "effect",
             "itemSchema": {
               "label": { "type": "text", "labelTemplate": "{value}" },
-              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" }
+              "source": { "type": "url", "openMode": "external", "labelTemplate": "{value}" },
+              "addedAt": { "type": "date", "labelTemplate": "Added {value}" }
             },
             "displayIcon": "auto_stories", "labelTemplate": "{value.length} sources",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "submitterPersonaId": { "type": "personaId?", "writableBy": "effect", "hideWhenEmpty": true },
-          "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
+          "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "savedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
         }
       },
 
@@ -685,56 +827,136 @@
           "draft": { "label": "Draft", "tone": "info",
             "editableFields": ["scope", "redactionNotes"],
             "editGuard": { "allowedPersonaIds": ["book-organizer"] } },
-          "exported": { "label": "Exported", "tone": "positive" },
+          "redaction-previewed": { "label": "Redaction previewed", "tone": "warning" },
+          "ready": { "label": "Ready to export", "tone": "positive" },
+          "transferring": { "label": "Transfer in progress", "tone": "warning" },
+          "transferred": { "label": "Transferred", "tone": "positive" },
+          "rolled-back": { "label": "Rolled back", "tone": "warning" },
           "cancelled": { "label": "Cancelled", "tone": "negative" }
         },
         "transitions": [
-          { "id": "export-metadata", "label": "Export", "icon": "download", "tone": "primary",
-            "from": ["draft"], "to": "exported",
+          { "id": "preview-redaction", "label": "Preview redaction", "icon": "preview", "tone": "primary",
+            "from": ["draft"], "to": "redaction-previewed",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "inputs": {
+              "redactionStatus": { "type": "text", "required": true,
+                "options": ["passed", "needs-changes"] }
+            },
             "effects": [
-              { "op": "set", "key": "receiptStatus", "value": "complete" },
-              { "op": "set", "key": "exportedAt", "value": "$timestamp" }
+              { "op": "set", "key": "redactionStatus", "value": "{input.redactionStatus}" },
+              { "op": "set", "key": "previewedAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Redaction preview recorded" }
             ] },
-          // NEEDS IMPLEMENTATION (platform service): checksum generation is a not-implemented platform
-          // service (platform-services.md: Checksum / integrity hash). The `checksum` field above is
-          // declared but never written by any effect - see solved-patterns.md pattern 4.
-          { "id": "cancel-export", "label": "Cancel", "icon": "cancel", "tone": "destructive",
-            "from": ["draft"], "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["book-organizer"] } },
-          { "id": "retry-export", "label": "Retry", "icon": "refresh", "tone": "secondary",
-            "from": ["cancelled"], "to": "draft",
-            "guard": { "allowedPersonaIds": ["book-organizer"] } },
-          { "id": "rollback-export", "label": "Rollback", "icon": "restore", "tone": "secondary",
-            "from": ["exported"], "to": "draft",
+          { "id": "confirm-export-ready", "label": "Confirm export ready", "icon": "task_alt", "tone": "primary",
+            "from": ["redaction-previewed"], "to": "ready",
+            "guard": { "allowedPersonaIds": ["book-organizer"],
+                       "formula": "redactionStatus == 'passed'" },
+            "effects": [
+              { "op": "set", "key": "readyAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Export ready; checksum pending platform service" }
+            ] },
+          { "id": "change-export-scope", "label": "Change scope", "icon": "edit", "tone": "secondary",
+            "from": ["redaction-previewed", "ready"], "to": "draft",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "effects": [
-              { "op": "set", "key": "receiptStatus", "value": null },
-              { "op": "set", "key": "exportedAt", "value": null }
+              { "op": "set", "key": "redactionStatus", "value": null },
+              { "op": "set", "key": "previewedAt", "value": null },
+              { "op": "set", "key": "readyAt", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Scope changed; review redaction again" }
+            ] },
+          { "id": "download-export", "label": "Download export", "icon": "download", "tone": "primary",
+            "from": ["ready"], "to": null,
+            "guard": { "allowedPersonaIds": ["book-organizer"],
+                       "formula": "redactionStatus == 'passed'" },
+            "effects": [
+              { "op": "set", "key": "downloadedAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Download requested; checksum remains pending" }
+            ] },
+          { "id": "start-transfer", "label": "Start transfer", "icon": "send", "tone": "primary",
+            "from": ["ready"], "to": "transferring",
+            "guard": { "allowedPersonaIds": ["book-organizer"],
+                       "formula": "redactionStatus == 'passed'" },
+            "effects": [
+              { "op": "set", "key": "transferStartedAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Organizer confirmed transfer start" }
+            ] },
+          { "id": "confirm-transfer", "label": "Confirm transferred", "icon": "check_circle", "tone": "primary",
+            "from": ["transferring"], "to": "transferred",
+            "guard": { "allowedPersonaIds": ["book-organizer"],
+                       "formula": "redactionStatus == 'passed'" },
+            "effects": [
+              { "op": "set", "key": "transferredAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Transfer confirmed; platform identifiers pending" }
+            ] },
+          { "id": "cancel-export", "label": "Cancel", "icon": "cancel", "tone": "destructive",
+            "from": ["draft", "redaction-previewed", "ready", "transferring"], "to": "cancelled",
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Export cancelled" }
+            ] },
+          { "id": "retry-export", "label": "Retry", "icon": "refresh", "tone": "secondary",
+            "from": ["cancelled", "rolled-back"], "to": "draft",
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "effects": [
+              { "op": "set", "key": "redactionStatus", "value": null },
+              { "op": "set", "key": "previewedAt", "value": null },
+              { "op": "set", "key": "readyAt", "value": null },
+              { "op": "set", "key": "downloadedAt", "value": null },
+              { "op": "set", "key": "transferStartedAt", "value": null },
+              { "op": "set", "key": "transferredAt", "value": null },
+              { "op": "set", "key": "rolledBackAt", "value": null },
+              { "op": "set", "key": "cancelledAt", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Retry started" }
+            ] },
+          { "id": "rollback-transfer", "label": "Rollback transfer", "icon": "restore", "tone": "destructive",
+            "from": ["transferred"], "to": "rolled-back",
+            "guard": { "allowedPersonaIds": ["book-organizer"] },
+            "effects": [
+              { "op": "set", "key": "rolledBackAt", "value": "$timestamp" },
+              { "op": "set", "key": "statusMessage", "value": "Transfer rolled back" }
             ] }
         ],
         "renderBindings": [
-          { "states": ["draft", "cancelled"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+          // NEEDS IMPLEMENTATION (archetype pending): exportWizard is canonical but not yet registered.
+          { "states": ["draft", "redaction-previewed", "ready", "transferring", "transferred", "rolled-back", "cancelled"],
+            "role": "actor", "tabId": "admin",
+            "cardSurfaceFamily": "exportWizard", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "New export",
               "byPersonaIds": ["book-organizer"], "scope": "tab", "presentation": "fab" } ] },
-          { "states": ["exported"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "summary" },
-          { "states": ["exported"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
+          { "states": ["ready", "transferring", "transferred", "rolled-back", "cancelled"],
+            "role": "any", "tabId": "home",
+            "cardSurfaceFamily": "exportWizard", "bindingKind": "summary" }
         ],
-        "visibility": { "default": "membersOnly" },
+        "visibility": { "default": "guarded",
+          "readGuard": { "allowedPersonaIds": ["book-member", "book-organizer"] } },
         "instanceDataSchema": {
           "scope": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "filter_alt_outlined", "labelTemplate": "Scope: {value}", "displayContexts": ["tile", "detail"] },
           "redactionNotes": { "type": "textarea", "writableBy": "formEntry", "maxLength": 500,
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "redactionStatus": { "type": "text?", "writableBy": "effect",
+            "displayIcon": "policy", "labelTemplate": "Redaction: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): checksum / integrity hash generation.
+          // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
           "checksum": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
             "displayIcon": "fingerprint", "displayContexts": ["detail"] },
-          "receiptStatus": { "type": "text?", "writableBy": "effect",
-            "displayIcon": "receipt_long", "labelTemplate": "{value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "exportedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
-          "redactionPreviewReady": { "type": "bool", "formula": "if(scope == null, false, true)" }
+          // NEEDS IMPLEMENTATION (platform service): opaque transfer-ID generation.
+          // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
+          "transferId": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
+            "displayIcon": "key", "displayContexts": ["detail"] },
+          "statusMessage": { "type": "text?", "writableBy": "effect",
+            "displayIcon": "receipt_long", "labelTemplate": "{value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "previewedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "readyAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "downloadedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "transferStartedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "transferredAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "rolledBackAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "cancelledAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
+          "redactionPreviewReady": { "type": "bool", "formula": "redactionStatus == 'passed'" }
         }
       }
     },
@@ -743,27 +965,28 @@
       { "instanceId": "nom-draft-1", "workflowType": "book-nomination", "currentState": "draft",
         "createdByPersonaId": "book-member",
         "instanceData": { "title": "The Night Watchman", "author": "Louise Erdrich",
-          "reason": "Great discussion potential and a strong local-history angle.", "genre": "Historical fiction" } },
+          "reason": "Great discussion potential and a strong local-history angle.", "genre": "Historical fiction",
+          "meetingCycle": "October 2026" } },
       { "instanceId": "nom-submitted-1", "workflowType": "book-nomination", "currentState": "submitted",
         "createdByPersonaId": "book-member",
         "instanceData": { "title": "Circe", "author": "Madeline Miller",
           "reason": "Beautiful prose, a mythology retelling with a strong central voice.", "genre": "Fantasy",
-          "nominatorPersonaId": "book-member", "submittedAt": "2026-07-20" } },
+          "meetingCycle": "September 2026", "nominatorPersonaId": "book-member", "submittedAt": "2026-07-20" } },
       { "instanceId": "nom-selected-1", "workflowType": "book-nomination", "currentState": "selected",
         "createdByPersonaId": "book-member",
         "instanceData": { "title": "The Song of Achilles", "author": "Madeline Miller",
           "reason": "Companion book to Circe, same author's earlier retelling.", "genre": "Fantasy",
-          "nominatorPersonaId": "book-member", "submittedAt": "2026-07-15" } },
+          "meetingCycle": "September 2026", "nominatorPersonaId": "book-member", "submittedAt": "2026-07-15" } },
 
       { "instanceId": "vote-august", "workflowType": "book-vote", "currentState": "open",
         "createdByPersonaId": "book-organizer",
         "instanceData": { "prompt": "Pick September's book", "candidates": ["The Song of Achilles", "Circe"],
-          "deadline": "2026-08-20" } },
+          "deadline": "2026-08-20", "meetingContext": "September 14 discussion" } },
       { "instanceId": "vresp-1", "workflowType": "book-vote-response", "currentState": "voted",
         "createdByPersonaId": "book-member",
         "instanceData": { "ballotId": "vote-august", "choice": "Circe", "voterPersonaId": "book-member" } },
       { "instanceId": "vresp-2", "workflowType": "book-vote-response", "currentState": "pending",
-        "createdByPersonaId": "book-organizer",
+        "createdByPersonaId": "book-member",
         "instanceData": { "ballotId": "vote-august", "choice": "The Song of Achilles" } },
 
       { "instanceId": "meeting-sept", "workflowType": "book-meeting-rsvp", "currentState": "open",
@@ -779,15 +1002,20 @@
 
       { "instanceId": "material-public", "workflowType": "book-reading-material", "currentState": "active",
         "createdByPersonaId": "book-organizer",
-        "instanceData": { "title": "Circe Reading Guide", "source": "Publisher discussion guide",
-          "version": "2023 edition", "accessType": "public",
-          "materialUrl": "https://www.hachettebookgroup.com/titles/madeline-miller/circe/9780316556347/reading-group-guide/" } },
+        "instanceData": { "title": "Circe Reading Guide", "author": "Madeline Miller",
+          "source": "Little, Brown and Company", "version": "2023 edition",
+          "publicationDate": "2023-01-01", "accessType": "public",
+          "materialUrl": "https://www.hachettebookgroup.com/titles/madeline-miller/circe/9780316556347/reading-group-guide/",
+          "acknowledgedByPersonaIds": [], "savedByPersonaIds": [],
+          "accessRequestedPersonaIds": [], "approvedPersonaIds": [] } },
       { "instanceId": "material-private", "workflowType": "book-reading-material", "currentState": "active",
         "createdByPersonaId": "book-organizer",
-        "instanceData": { "title": "Author interview transcript (members only)", "source": "Club archive",
-          "version": "v1", "accessType": "private",
-          "materialUrl": "https://example.org/club-archive/circe-interview",
-          "accessRequestedPersonaIds": ["book-member"] } },
+        "instanceData": { "title": "Circe author background (members only)", "author": "Madeline Miller",
+          "source": "Madeline Miller official site", "version": "v1",
+          "publicationDate": "2026-07-01", "accessType": "private",
+          "materialUrl": "https://www.madelinemiller.com/circe/",
+          "acknowledgedByPersonaIds": [], "savedByPersonaIds": [],
+          "accessRequestedPersonaIds": ["book-member"], "approvedPersonaIds": [] } },
 
       { "instanceId": "item-draft", "workflowType": "book-shared-library-item", "currentState": "draft",
         "createdByPersonaId": "book-member",
@@ -831,16 +1059,19 @@
       { "instanceId": "digest-open", "workflowType": "book-search-ai-digest", "currentState": "open",
         "createdByPersonaId": "book-member",
         "instanceData": { "query": "Best discussion questions for The Song of Achilles?",
-          "summary": "Curated by the club: focus on Patroclus and Achilles' relationship, fate vs free will, and Miller's narrative choices.",
-          "citations": [ { "label": "Madeline Miller official reading guide", "source": "https://www.madelinemiller.com/song-achilles/" } ],
+          "curatedSummary": "Curated by the club: focus on Patroclus and Achilles' relationship, fate vs free will, and Miller's narrative choices.",
+          "citations": [ { "label": "Madeline Miller official reading guide",
+            "source": "https://www.madelinemiller.com/song-achilles/", "addedAt": "2026-07-18" } ],
           "submitterPersonaId": "book-member", "submittedAt": "2026-07-18" } },
 
       { "instanceId": "export-draft", "workflowType": "book-export-metadata", "currentState": "draft",
         "createdByPersonaId": "book-organizer",
         "instanceData": { "scope": "Nominations and vote history, Q3 2026", "redactionNotes": "Exclude member emails" } },
-      { "instanceId": "export-done", "workflowType": "book-export-metadata", "currentState": "exported",
+      { "instanceId": "export-done", "workflowType": "book-export-metadata", "currentState": "transferred",
         "createdByPersonaId": "book-organizer",
-        "instanceData": { "scope": "Meeting attendance, H1 2026", "receiptStatus": "complete", "exportedAt": "2026-06-30" } }
+        "instanceData": { "scope": "Meeting attendance, H1 2026", "redactionStatus": "passed",
+          "statusMessage": "Transfer confirmed; platform identifiers pending",
+          "previewedAt": "2026-06-29", "readyAt": "2026-06-30", "transferredAt": "2026-06-30" } }
     ]
   },
   "appShell": {
