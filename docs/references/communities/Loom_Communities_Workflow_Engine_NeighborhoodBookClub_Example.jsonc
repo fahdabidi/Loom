@@ -263,7 +263,6 @@
             "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "location": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (renderer): type:url/openMode is documented but still proposed.
           "meetingUrl": { "type": "url?", "writableBy": "formEntry", "openMode": "choice",
             "displayIcon": "link", "labelTemplate": "Join online: {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -413,8 +412,6 @@
             "guard": { "allowedPersonaIds": ["book-organizer"] } }
         ],
         "renderBindings": [
-          // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is locked into the canonical
-          // vocabulary but is not yet in the Dart registry (archetypes/README.md).
           { "states": ["active"], "role": "any", "tabId": "home",
             "cardSurfaceFamily": "documentLibrary", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Add reading material",
@@ -438,7 +435,6 @@
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "accessType": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "visibility_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (renderer): type:url/openMode is documented but still proposed.
           "materialUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
             "displayContexts": [] },
           "openableMaterialUrl": { "type": "url?", "openMode": "choice",
@@ -787,7 +783,6 @@
             "guard": { "actorEqualsField": { "key": "submitterPersonaId" } } }
         ],
         "renderBindings": [
-          // NEEDS IMPLEMENTATION (archetype pending): searchAiAnswer is canonical but not yet registered.
           { "states": ["draft"], "role": "actor", "tabId": "home",
             "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Ask the club",
@@ -918,7 +913,6 @@
             ] }
         ],
         "renderBindings": [
-          // NEEDS IMPLEMENTATION (archetype pending): exportWizard is canonical but not yet registered.
           { "states": ["draft", "redaction-previewed", "ready", "transferring", "transferred", "rolled-back", "cancelled"],
             "role": "actor", "tabId": "admin",
             "cardSurfaceFamily": "exportWizard", "bindingKind": "primary",
