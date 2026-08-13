@@ -1,9 +1,6 @@
 // Export and Migration — Data Portability Community engine-native experience v2.
 //
 // All interactive portability workflows use the canonical exportWizard family.
-// NEEDS IMPLEMENTATION (archetype): exportWizard is a locked 🔲 PENDING family and
-// is not yet present in the Dart registry. unknown_card_surface_family is expected
-// until docs/Build Plan V2/TabId-Archetype Gap Closure.md lands.
 //
 // Checksum and opaque-ID fields below are deliberately declared but never seeded,
 // edited, or effect-written. They require platform services and must not be faked.
