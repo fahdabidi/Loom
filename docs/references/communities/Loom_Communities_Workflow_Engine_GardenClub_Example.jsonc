@@ -1959,9 +1959,6 @@
             ]
           },
           {
-            // NEEDS IMPLEMENTATION (archetype): exportWizard is pending. This
-            // transition records download intent; the pending widget must supply
-            // the real export/download control.
             "id": "download-export",
             "label": "Download export",
             "icon": "download",
@@ -2028,9 +2025,6 @@
             ],
             "role": "any",
             "tabId": "documents",
-            // NEEDS IMPLEMENTATION (archetype): exportWizard is a locked
-            // pending family and will currently produce the expected
-            // unknown_card_surface_family validator finding until registry work lands.
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "primary",
             "actions": [
