@@ -1,0 +1,102 @@
+{
+  "_comment": [
+    "Loom Communities permission catalog — the request body for",
+    "PUT /v1/apps/loom_communities/permissions (App Access API, replacePermissionCatalog).",
+    "",
+    "Granularity: one permission per archetype action. `category` is the archetype's",
+    "cardSurfaceFamily as declared in docs/references/archetypes/README.md, so the catalog",
+    "stays aligned with the JSON grammar's own vocabulary rather than inventing a parallel one.",
+    "",
+    "The `community.*` block is the only non-archetype category: those are app-level community",
+    "administration actions that exist above any single workflow archetype.",
+    "",
+    "Every id is <archetype_snake_case>.<action>. Ids are stable contract surface — renaming one",
+    "orphans every role grant that references it (the API reports these rather than silently",
+    "revoking them), so treat additions as cheap and renames as breaking."
+  ],
+  "catalogVersion": "2026-08-13.1",
+  "permissions": [
+    { "permissionId": "community.view", "displayName": "View community", "category": "community", "description": "Open the community and see its public surfaces." },
+    { "permissionId": "community.manage_settings", "displayName": "Manage community settings", "category": "community", "description": "Edit community profile, branding, and tab configuration." },
+    { "permissionId": "community.manage_members", "displayName": "Manage members", "category": "community", "description": "Add, suspend, or remove members of this community." },
+    { "permissionId": "community.manage_roles", "displayName": "Manage roles", "category": "community", "description": "Assign or revoke roles held by members of this community." },
+    { "permissionId": "community.invite", "displayName": "Invite members", "category": "community", "description": "Issue invitations to join this community." },
+
+    { "permissionId": "event_rsvp.view", "displayName": "View events", "category": "event-rsvp", "description": "See events, dates, capacity, and attendance." },
+    { "permissionId": "event_rsvp.create", "displayName": "Create event", "category": "event-rsvp", "description": "Create a new event." },
+    { "permissionId": "event_rsvp.edit", "displayName": "Edit event", "category": "event-rsvp", "description": "Change an existing event's details." },
+    { "permissionId": "event_rsvp.cancel", "displayName": "Cancel event", "category": "event-rsvp", "description": "Cancel an event for all attendees." },
+    { "permissionId": "event_rsvp.respond", "displayName": "RSVP to event", "category": "event-rsvp", "description": "Respond going, maybe, or declined on one's own behalf." },
+    { "permissionId": "event_rsvp.join_waitlist", "displayName": "Join event waitlist", "category": "event-rsvp", "description": "Join the waitlist once an event is at capacity." },
+    { "permissionId": "event_rsvp.manage_attendees", "displayName": "Manage attendees", "category": "event-rsvp", "description": "Promote, remove, or override other members' attendance." },
+
+    { "permissionId": "equipment_loan.view", "displayName": "Browse items", "category": "equipment-loan", "description": "Browse loanable and giveaway items." },
+    { "permissionId": "equipment_loan.list_item", "displayName": "List item", "category": "equipment-loan", "description": "Offer an item for loan or giveaway." },
+    { "permissionId": "equipment_loan.delist", "displayName": "Delist item", "category": "equipment-loan", "description": "Withdraw an item from the marketplace." },
+    { "permissionId": "equipment_loan.borrow", "displayName": "Borrow item", "category": "equipment-loan", "description": "Request or take custody of an available item." },
+    { "permissionId": "equipment_loan.return", "displayName": "Return item", "category": "equipment-loan", "description": "Return a borrowed item to its owner." },
+    { "permissionId": "equipment_loan.join_queue", "displayName": "Join item queue", "category": "equipment-loan", "description": "Join or leave the waiting queue for a held item." },
+    { "permissionId": "equipment_loan.claim", "displayName": "Claim giveaway", "category": "equipment-loan", "description": "Claim an item offered as a giveaway." },
+
+    { "permissionId": "vote_poll.view", "displayName": "View ballots", "category": "votePoll", "description": "See ballots, candidates, and published tallies." },
+    { "permissionId": "vote_poll.create", "displayName": "Create ballot", "category": "votePoll", "description": "Open a new ballot." },
+    { "permissionId": "vote_poll.vote", "displayName": "Cast vote", "category": "votePoll", "description": "Cast or change one's own vote." },
+    { "permissionId": "vote_poll.close", "displayName": "Close ballot", "category": "votePoll", "description": "Close voting and publish the result." },
+
+    { "permissionId": "table.view", "displayName": "View tables", "category": "table", "description": "View sortable, filterable record grids such as rosters and leaderboards." },
+    { "permissionId": "table.publish", "displayName": "Publish table rows", "category": "table", "description": "Publish or update the rows backing a table surface." },
+
+    { "permissionId": "document_library.view", "displayName": "View documents", "category": "documentLibrary", "description": "Browse the document library and open permitted documents." },
+    { "permissionId": "document_library.upload", "displayName": "Upload document", "category": "documentLibrary", "description": "Add a new document or version." },
+    { "permissionId": "document_library.edit", "displayName": "Edit document", "category": "documentLibrary", "description": "Change document metadata or replace its contents." },
+    { "permissionId": "document_library.archive", "displayName": "Archive document", "category": "documentLibrary", "description": "Retire a document from the active library." },
+    { "permissionId": "document_library.download", "displayName": "Download document", "category": "documentLibrary", "description": "Download a document rather than viewing it in place." },
+    { "permissionId": "document_library.acknowledge", "displayName": "Acknowledge document", "category": "documentLibrary", "description": "Record that one has read and acknowledged a document." },
+    { "permissionId": "document_library.request_access", "displayName": "Request document access", "category": "documentLibrary", "description": "Request access to a restricted document." },
+    { "permissionId": "document_library.grant_access", "displayName": "Grant document access", "category": "documentLibrary", "description": "Approve or deny another member's access request." },
+
+    { "permissionId": "search_ai_answer.view", "displayName": "View answers", "category": "searchAiAnswer", "description": "See questions, answers, and their cited sources." },
+    { "permissionId": "search_ai_answer.ask", "displayName": "Ask question", "category": "searchAiAnswer", "description": "Submit a new question to the community." },
+    { "permissionId": "search_ai_answer.curate", "displayName": "Curate answer", "category": "searchAiAnswer", "description": "Author or edit the human-curated answer text." },
+    { "permissionId": "search_ai_answer.add_citation", "displayName": "Add citation", "category": "searchAiAnswer", "description": "Attach a cited source to an answer." },
+
+    { "permissionId": "export_wizard.view", "displayName": "View exports", "category": "exportWizard", "description": "See export jobs and their progress." },
+    { "permissionId": "export_wizard.configure_scope", "displayName": "Configure export scope", "category": "exportWizard", "description": "Choose what an export includes and how it is redacted." },
+    { "permissionId": "export_wizard.run", "displayName": "Run export", "category": "exportWizard", "description": "Generate an export or transfer." },
+    { "permissionId": "export_wizard.download", "displayName": "Download export", "category": "exportWizard", "description": "Download a generated export archive." },
+    { "permissionId": "export_wizard.rollback", "displayName": "Roll back export", "category": "exportWizard", "description": "Roll back a completed export or transfer." },
+    { "permissionId": "export_wizard.cancel", "displayName": "Cancel export", "category": "exportWizard", "description": "Cancel an in-flight export." },
+
+    { "permissionId": "payment_checkout.view", "displayName": "View charges", "category": "paymentCheckout", "description": "See dues, donations, and amounts owed." },
+    { "permissionId": "payment_checkout.pay", "displayName": "Pay", "category": "paymentCheckout", "description": "Pay dues or make a donation." },
+    { "permissionId": "payment_checkout.view_receipt", "displayName": "View receipt", "category": "paymentCheckout", "description": "See the receipt for a completed payment." },
+    { "permissionId": "payment_checkout.refund", "displayName": "Refund payment", "category": "paymentCheckout", "description": "Issue a refund against a completed payment." },
+
+    { "permissionId": "approval_queue.view", "displayName": "View queue", "category": "approvalQueueItem", "description": "See items awaiting decision." },
+    { "permissionId": "approval_queue.submit", "displayName": "Submit request", "category": "approvalQueueItem", "description": "Submit an item into the approval queue." },
+    { "permissionId": "approval_queue.approve", "displayName": "Approve request", "category": "approvalQueueItem", "description": "Approve a queued item." },
+    { "permissionId": "approval_queue.reject", "displayName": "Reject request", "category": "approvalQueueItem", "description": "Reject a queued item." },
+    { "permissionId": "approval_queue.request_changes", "displayName": "Request changes", "category": "approvalQueueItem", "description": "Send a queued item back to its author for revision." },
+    { "permissionId": "approval_queue.reopen", "displayName": "Reopen decision", "category": "approvalQueueItem", "description": "Reopen an item after a decision was recorded." },
+
+    { "permissionId": "form_entry.view", "displayName": "View records", "category": "formEntry", "description": "View authored records." },
+    { "permissionId": "form_entry.create", "displayName": "Create record", "category": "formEntry", "description": "Author a new record." },
+    { "permissionId": "form_entry.edit", "displayName": "Edit record", "category": "formEntry", "description": "Edit an existing record." },
+    { "permissionId": "form_entry.delete", "displayName": "Delete record", "category": "formEntry", "description": "Withdraw or delete a record." },
+
+    { "permissionId": "discussion_thread.view", "displayName": "View discussions", "category": "discussionThread", "description": "Read threads and their messages." },
+    { "permissionId": "discussion_thread.create", "displayName": "Start thread", "category": "discussionThread", "description": "Start a new discussion thread." },
+    { "permissionId": "discussion_thread.reply", "displayName": "Reply", "category": "discussionThread", "description": "Post a message in a thread." },
+    { "permissionId": "discussion_thread.archive", "displayName": "Archive thread", "category": "discussionThread", "description": "Archive a thread so it accepts no further replies." },
+    { "permissionId": "discussion_thread.mute", "displayName": "Mute thread", "category": "discussionThread", "description": "Mute notifications for a thread on one's own behalf." },
+    { "permissionId": "discussion_thread.moderate", "displayName": "Moderate discussion", "category": "discussionThread", "description": "Remove or edit other members' messages." },
+
+    { "permissionId": "status_timeline.view", "displayName": "View status", "category": "statusTimeline", "description": "See an item's timestamped progression." },
+    { "permissionId": "status_timeline.advance", "displayName": "Advance status", "category": "statusTimeline", "description": "Move an item to its next step." },
+
+    { "permissionId": "notification_inbox.view", "displayName": "View notifications", "category": "notificationInbox", "description": "See notices addressed to oneself." },
+    { "permissionId": "notification_inbox.mark_read", "displayName": "Mark notification read", "category": "notificationInbox", "description": "Mark one's own notification read or unread." },
+    { "permissionId": "notification_inbox.dismiss", "displayName": "Dismiss notification", "category": "notificationInbox", "description": "Dismiss one's own notification." },
+    { "permissionId": "notification_inbox.send", "displayName": "Send notification", "category": "notificationInbox", "description": "Send a notice to other members." }
+  ]
+}
