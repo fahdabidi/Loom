@@ -70,7 +70,8 @@ docs/Build Plan V2/Tools/
 ├── validator-tool.md                      <- community_package_validator.dart / validator_server.dart
 ├── community-authoring-skill-tool.md      <- the loom-calendar-experience-authoring Skill, as a tool
 ├── reference-ticket-template.md           <- the lightweight `## Context/## Scope/...` ticket format + example
-└── reference-tracker-template.md          <- the tracker-doc format used to sequence a batch of tickets
+├── reference-tracker-template.md          <- the tracker-doc format used to sequence a batch of tickets
+└── wsl-to-virtualbox-migration.md         <- moving this toolkit off WSL2 onto a VirtualBox Ubuntu VM
 ```
 
 Everything under `code/` is copied verbatim from this repo's own (gitignored) `data/` directory — see
@@ -276,3 +277,6 @@ pattern exhausts).
 - Reviewing rendered UI, not just code: `ux-gate-judge-tools.md`
 - Validating a JSON/config package before it ships: `validator-tool.md`
 - Authoring a new artifact from a spec doc, not just fixing one: `community-authoring-skill-tool.md`
+- Moving this toolkit off WSL2 onto a VirtualBox Ubuntu VM: `wsl-to-virtualbox-migration.md` —
+  note that roughly half the scripts in `code/` exist only to work around WSL2/OneDrive
+  pathologies and are **deleted rather than ported** in that environment
