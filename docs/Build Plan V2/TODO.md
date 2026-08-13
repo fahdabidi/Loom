@@ -16,7 +16,8 @@ pipeline step 7.5.
 ## Open
 
 - [ ] `new-ticket` — Cedar Commons HOA fast-follow: dead-end document access-request flow, overclaimed traceability row — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
-- [ ] `blocked` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — Milestones 1+1.5 preconditions now both met (2026-08-12); still blocked on explicit user approval — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
+- [ ] `needs-skill-dispatch` — Milestone 2 (retire archetype-pending `NEEDS IMPLEMENTATION` comments) — approved and started 2026-08-12, reference-doc prep done, Chess Club dispatch paused mid-flight (WSL vsock exhaustion), 6 communities not yet attempted — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
+- [ ] `blocked` — WSL2 dispatch pipeline unreliable (vsock exhaustion, zombie wslhost process) after ~5hrs continuous use — `wsl-to-virtualbox-migration.md` committed as the durable fix, not yet executed — see [TabId-Archetype Gap Closure.md §8](TabId-Archetype%20Gap%20Closure.md)
 - [ ] `needs-debug-agent` — CJM.16: Member Social Space Messages-tab identity-matching gap, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
 - [ ] `needs-debug-agent` — CJM.18: Data Portability Community cross-community sign-up state leak, Root Cause Agent dispatch recommended, not yet run — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
 - [ ] `needs-live-validation` — §6 step 7 product-doc reconciliation gate: confirmed closed only for Cedar Commons HOA, status unconfirmed for the other 9 communities — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md)
