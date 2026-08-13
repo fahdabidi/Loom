@@ -724,8 +724,6 @@
           }
         ],
         "renderBindings": [
-          // NEEDS IMPLEMENTATION (pending archetype): documentLibrary is locked vocabulary but is not
-          // yet in the Dart registry; unknown_card_surface_family is expected until that registry lands.
           {
             "states": ["published"],
             "role": "any",
@@ -816,8 +814,6 @@
             "labelTemplate": "Source: {value}",
             "displayContexts": ["detail"]
           },
-          // NEEDS IMPLEMENTATION: type:url/openMode is the correct declared shape, but its shared
-          // external/embedded renderer is still proposed in field-types.md.
           "documentUrl": {
             "type": "url",
             "required": true,
@@ -1642,8 +1638,6 @@
             "labelTemplate": "Change: {value}",
             "displayContexts": ["detail"]
           },
-          // NEEDS IMPLEMENTATION: type:url external opening is the correct document-attachment shape,
-          // but the shared URL renderer remains proposed in field-types.md.
           "attachmentUrl": {
             "type": "url",
             "writableBy": "formEntry",
@@ -2699,8 +2693,6 @@
           }
         ],
         "renderBindings": [
-          // NEEDS IMPLEMENTATION (pending archetype): exportWizard is locked vocabulary but is not yet
-          // in the Dart registry; unknown_card_surface_family is expected until that registry lands.
           {
             "states": [
               "draft",
@@ -3177,3 +3169,4 @@
     ]
   }
 }
+
