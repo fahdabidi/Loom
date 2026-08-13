@@ -1,1 +1,0 @@
-VM migration smoke test OK
