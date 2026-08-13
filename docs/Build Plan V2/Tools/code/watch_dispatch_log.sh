@@ -1,35 +1,30 @@
 #!/bin/bash
 # data/watch_dispatch_log.sh <label> [post-completion-sleep-seconds]
 #
-# Self-terminating replacement for the old inline `tail -F <log> | grep -E
-# '...vsock-patterns...|^codex exec exited with status'` Monitor command.
+# Self-terminating completion watcher. A plain `tail -F <log> | grep ...`
+# never exits on its own -- `tail -F` never stops by itself, and a watch
+# tool that fires a notification on a matching line does not necessarily
+# kill the underlying process when it matches. This script is itself
+# responsible for ending the watch: the moment it sees the real completion
+# line ("codex exec exited with status"), it prints that line, waits a few
+# seconds for any trailing buffered output to flush, then kills its own
+# `tail -F` and exits.
 #
-# Why this exists (found 2026-07-22, mid CALR.5a): that old pattern never
-# exits on its own -- grep has no -m1 (would wrongly stop on the FIRST vsock
-# alert, which is only a transient noise signal we want to keep watching
-# past), and `tail -F` never exits by itself. The Monitor tool fires a
-# notification on every matching line but does NOT kill the underlying
-# process when a match occurs -- only a real timeout or explicit TaskStop
-# does. Result: every dispatch-watching Monitor that ever matched the real
-# "codex exec exited with status" completion line kept its `tail -F` (and
-# the wsl.exe/wslhost.exe process backing it) alive indefinitely afterward,
-# for up to the full 30-minute Monitor timeout, silently holding a WSL
-# session open. Across a long session with many dispatch rounds (9 in one
-# evening, CALR.4b + CALR.5a combined) these accumulate and were a real,
-# confirmed contributor to WSL2 vsock-port exhaustion -- stopping ONE leaked
-# Monitor pipeline dropped the live wsl.exe count from 6 to 2 immediately.
+# HISTORICAL NOTE (resolved by the WSL2->VirtualBox migration, kept for
+# context): under WSL2, this script also watched for vsock-exhaustion alert
+# lines, since a leaked `tail -F | grep` Monitor pipeline held a live
+# wsl.exe/wslhost.exe session open for up to 30 minutes past real
+# completion -- a real, confirmed contributor to vsock exhaustion (stopping
+# ONE leaked pipeline dropped the live wsl.exe count from 6 to 2
+# immediately, found 2026-07-22). Over SSH there is no equivalent process-
+# leak failure mode (an unclosed SSH channel is not scarce the way vsock
+# ports were), but self-termination still matters: an unbounded `tail -F`
+# holds the SSH channel open indefinitely, wasting a watcher slot for no
+# reason once the dispatch is done. See
+# docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md.
 #
-# This script watches for the same signals but is itself responsible for
-# ending the watch: it keeps emitting vsock alert lines as they occur (so
-# the verification agent still sees them as noise/progress signals), but the
-# moment it sees the REAL completion line ("codex exec exited with status"),
-# it prints that line, waits a few seconds (letting any trailing buffered
-# output flush -- Monitor batches stdout arriving within 200ms of each
-# other), then kills its own `tail -F` and exits -- ending the Monitor watch
-# on its own, with no separate TaskStop call required.
-#
-# Usage (as a Monitor `command`, replacing the old raw tail|grep):
-#   wsl.exe -e bash -lc 'cd "<repo>" && bash data/watch_dispatch_log.sh <label>'
+# Usage:
+#   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
 #
 # <label> must match the label used for this dispatch's
 # .codex-logs/<label>_dispatch.out.log (the file call_implementation_agent.sh
@@ -58,11 +53,7 @@ cleanup() {
 trap cleanup EXIT
 
 while IFS= read -r line <&3; do
-  if [[ "$line" =~ UtilBindVsockAnyPort:[0-9]+:\ socket\ failed ]] \
-    || [[ "$line" =~ UtilAcceptVsock:[0-9]+.*socket\ failed ]] \
-    || [[ "$line" =~ accept4\ failed\ [0-9] ]]; then
-    echo "$line"
-  elif [[ "$line" =~ ^codex\ exec\ exited\ with\ status ]]; then
+  if [[ "$line" =~ ^codex\ exec\ exited\ with\ status ]]; then
     echo "$line"
     sleep "$POST_SLEEP"
     break

@@ -1,12 +1,18 @@
 #!/bin/bash
 # data/call_root_cause_agent.sh
 #
-# Direct invocation of the Root Cause Agent (Codex CLI, WSL, profile
-# gpt5_6_sol_xhigh -- model gpt-5.6-sol at reasoning_effort=xhigh). Added
-# 2026-08-01 after CAL.Notify2.9's own regression investigation exhausted the
-# verification agent's own hypothesis-and-test budget without pinning the
-# exact mechanism (systematically ruled out five candidate causes, each
-# confirmed NOT responsible, with the true mechanism still unidentified).
+# Direct invocation of the Root Cause Agent (Codex CLI, VirtualBox VM,
+# profile gpt5_6_sol_xhigh -- model gpt-5.6-sol at reasoning_effort=xhigh).
+# Added 2026-08-01 after CAL.Notify2.9's own regression investigation
+# exhausted the verification agent's own hypothesis-and-test budget without
+# pinning the exact mechanism (systematically ruled out five candidate
+# causes, each confirmed NOT responsible, with the true mechanism still
+# unidentified).
+#
+# Migrated off WSL2 onto a VirtualBox Ubuntu VM 2026-08-12 -- see
+# docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md. Runs INSIDE the
+# guest (~/Loom/data/), invoked from the host via
+# `ssh loom-vm '. ~/.loom-env.sh && ...'`, not via `wsl.exe`.
 #
 # ROLE, not a variant of the implementation agent: this agent NEVER writes or
 # modifies implementation code, never runs `apply_patch` against source
@@ -34,10 +40,9 @@
 #   bash data/call_root_cause_agent.sh <path-to-brief-file> [--fresh]
 #
 # Same dispatch-and-watch recipe as data/call_implementation_agent.sh
-# (wsl_dispatch_tracker.sh baseline/capture/cleanup, watch_dispatch_log.sh or
-# a grep-based poll loop if tail -F proves unreliable on a given host) --
-# reuse that recipe verbatim, this script only differs in role/profile/sandbox
-# scope, not in dispatch mechanics.
+# (dispatch over ssh loom-vm, watch via watch_dispatch_log.sh) -- reuse that
+# recipe verbatim, this script only differs in role/profile/sandbox scope,
+# not in dispatch mechanics.
 #
 # The brief file you pass in should include: the current diff/commit(s) under
 # investigation, the full ruled-in/ruled-out matrix so far (do not make the
@@ -63,16 +68,9 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-NVM_NODE_BIN=""
-if [ -d "$HOME/.nvm/versions/node" ]; then
-  NVM_NODE_BIN="$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -n1)"
-fi
-if [ -n "$NVM_NODE_BIN" ]; then
-  export PATH="$NVM_NODE_BIN:$PATH"
-fi
-if [ -x "$HOME/.codex-git-shim/git" ]; then
-  export PATH="$HOME/.codex-git-shim:$PATH"
-fi
+# Non-interactive shells (via `ssh loom-vm 'cmd'`) skip ~/.bashrc entirely --
+# resolve the toolchain PATH explicitly. Never substitute `bash -l`.
+. "$HOME/.loom-env.sh"
 
 ROLE_PREAMBLE='# ROLE: Root Cause Agent -- read this before anything else
 
@@ -115,8 +113,8 @@ a weaker version of outcome 1.
 
 PROMPT="$ROLE_PREAMBLE$(cat "$PROMPT_FILE")"
 
-PRE_TRACKED_COUNT="$(git.exe ls-files | wc -l)"
-PRE_HEAD="$(git.exe rev-parse HEAD)"
+PRE_TRACKED_COUNT="$(git ls-files | wc -l)"
+PRE_HEAD="$(git rev-parse HEAD)"
 
 echo "=== Invoking Root Cause Agent (codex exec) ==="
 echo "Repo: $REPO_ROOT"
@@ -172,17 +170,10 @@ set -e
 echo "===================================================="
 echo "codex exec exited with status $STATUS"
 
-if grep -qE "UtilBindVsockAnyPort|UtilAcceptVsock|accept4 failed" "$CODEX_OUTPUT_CAPTURE"; then
-  echo "##################################################################"
-  echo "# DISPATCH_HIT_VSOCK=1 -- WSL vsock error appeared this run.     #"
-  echo "##################################################################"
-  echo "Same known issue as the implementation agent's own dispatch script. A fresh retry is safe --"
-  echo "this agent never commits, and its own report file (if any) is easy to check for completeness."
-fi
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
-POST_TRACKED_COUNT="$(git.exe ls-files | wc -l)"
-POST_HEAD="$(git.exe rev-parse HEAD)"
+POST_TRACKED_COUNT="$(git ls-files | wc -l)"
+POST_HEAD="$(git rev-parse HEAD)"
 if [ "$POST_HEAD" != "$PRE_HEAD" ]; then
   echo "##################################################################"
   echo "# VIOLATION: HEAD moved ($PRE_HEAD -> $POST_HEAD). The Root Cause Agent must never commit. #"
@@ -194,7 +185,7 @@ if [ "$POST_TRACKED_COUNT" -lt "$PRE_TRACKED_COUNT" ]; then
   echo "##################################################################"
 fi
 
-DIRTY="$(git.exe status --short)"
+DIRTY="$(git status --short)"
 if [ -n "$DIRTY" ]; then
   echo "WARNING: working tree is not clean after this run -- review every line below. Only the"
   echo "designated report file should appear here; anything else is a role violation to investigate,"

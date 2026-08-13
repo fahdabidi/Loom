@@ -1,5 +1,11 @@
 # Dispatch pipeline — script-by-script reference
 
+> **Historical note:** this doc describes the pipeline as it ran on WSL2, including two scripts
+> (`wsl_dispatch_tracker.sh`, `wsl_slot.sh`) that no longer exist — this repo's pipeline migrated to a
+> VirtualBox VM on 2026-08-12. The incident history below is preserved for context, not current
+> operating instructions. See `wsl-to-virtualbox-migration.md` for what changed and why, and
+> `README.md` for the current worked recipe and the live 6-script inventory.
+
 The eight scripts in `code/`, in the order you actually touch them during one dispatch round. Each section
 covers: what it does, why it exists (the real incident, where applicable), usage, and the exact guard/exit
 behavior. See `README.md` for the end-to-end worked recipe that chains them together.
@@ -32,7 +38,7 @@ bash data/call_implementation_agent.sh <path-to-ticket-file> [--fresh]
   `.codex-logs/.dispatch_todo_log.log` and does a non-blocking grep for `DISPATCH_TODO_ITEM`'s text inside
   `DISPATCH_TRACKER_FILE`, warning (not blocking) if it isn't found there yet. At dispatch completion,
   always prints a fixed reminder banner (regardless of whether the two vars were set) pointing at README's
-  pipeline step 7.5 — fold the agent's `## Proposed next steps` into the tracker and `TODO.md` yourself; the
+  pipeline step 5.5 — fold the agent's `## Proposed next steps` into the tracker and `TODO.md` yourself; the
   banner only makes that step impossible to forget, it never edits any tracker file itself. Omitting both
   vars is fully supported (existing call sites/muscle memory keep working unchanged) — the script just
   prints a one-line reminder that you're responsible for deciding whether `docs/Build Plan V2/TODO.md` needs

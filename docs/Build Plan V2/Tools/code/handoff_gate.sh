@@ -2,7 +2,7 @@
 # data/handoff_gate.sh
 #
 # Pre-validation gate: checks that the implementation-to-verification handoff
-# for a given dispatch `<label>` is actually complete and clean BEFORE
+# for the most recent dispatch is actually complete and clean BEFORE
 # `flutter analyze`/the test suite runs. Built 2026-07-22 at explicit user
 # request, after CALR.4g round 5 wasted three redundant dispatch rounds
 # re-fixing an already-fixed file because it sat uncommitted (untracked, `??`)
@@ -10,17 +10,18 @@
 # content changes no matter how many times it's edited, so nobody noticed the
 # fix had already landed. See codex_dispatch_reliability memory, Failure 8,
 # and the V3 tracker's §6 "Committed handoff, every time" rule (corrected the
-# same day) for the full story.
+# same day) for the full story. This failure mode is a git property, not a
+# WSL one, and survives the WSL2->VirtualBox migration completely intact --
+# see docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md.
 #
 # This script does not itself commit or clean up anything -- it only CHECKS
-# and reports. The verification agent is still the one who runs
-# `wsl_dispatch_tracker.sh cleanup <label>` and `git commit` themselves; this
-# gate exists to catch it if either step was skipped or only partially done,
-# rather than silently proceeding to verification on a dirty/incomplete
-# handoff.
+# and reports. The verification agent is still the one who commits the
+# round's edits themselves; this gate exists to catch it if that step was
+# skipped or only partially done, rather than silently proceeding to
+# verification on a dirty/incomplete handoff.
 #
 # Usage:
-#   bash data/handoff_gate.sh <label>
+#   bash data/handoff_gate.sh
 #
 # Exit 0 and prints "READY FOR VALIDATION" only if every check below passes.
 # Exit 1 and prints exactly what's missing otherwise -- fix that first, then
@@ -33,17 +34,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT" || exit 1
 
-LABEL="${1:-}"
 FAILURES=0
 
 pass() { echo "  [OK]   $1"; }
 fail() { echo "  [FAIL] $1"; FAILURES=$((FAILURES + 1)); }
 info() { echo "  [INFO] $1"; }
 
-echo "=== Handoff gate: label='${LABEL:-<none given>}' ==="
+echo "=== Handoff gate ==="
 
-# 1. Dispatch completion (only checked if a label was given and its pidfile-era
-#    marker exists; this repo's dispatches write a shared .last_dispatch.pid,
+# 1. Dispatch completion (only checked if a prior dispatch has run this
+#    session; this repo's dispatches write a shared .last_dispatch.pid,
 #    which only reflects the MOST RECENT dispatch -- so this check is a
 #    same-turn convenience, not a durable per-label record).
 if [ -f ".codex-logs/.last_dispatch.pid" ]; then
@@ -57,27 +57,9 @@ else
   info "No .codex-logs/.last_dispatch.pid found (no dispatch has run yet this session, or logs were cleared)."
 fi
 
-# 2. WSL session cleanup confirmed for this label.
-if [ -n "$LABEL" ]; then
-  TRACKER=".codex-logs/.dispatch_wsl_tracker.log"
-  if [ -f "$TRACKER" ]; then
-    LAST_EVENT_FOR_LABEL="$(grep " LABEL=$LABEL " "$TRACKER" | tail -1)"
-    if [ -z "$LAST_EVENT_FOR_LABEL" ]; then
-      fail "No wsl_dispatch_tracker.sh events found for label '$LABEL' -- did you run baseline/capture/cleanup for it?"
-    elif echo "$LAST_EVENT_FOR_LABEL" | grep -q "EVENT=wsl_session_closed_confirmed"; then
-      pass "WSL session cleanup confirmed closed for label '$LABEL'."
-    else
-      fail "Label '$LABEL's last tracker event is NOT a confirmed close: $LAST_EVENT_FOR_LABEL -- run 'bash data/wsl_dispatch_tracker.sh cleanup $LABEL'."
-    fi
-  else
-    fail "No $TRACKER found at all -- WSL cleanup has never been run this session."
-  fi
-else
-  info "No label given -- skipping per-dispatch WSL cleanup check."
-fi
-
-# 3. Git working tree is clean (everything from this round has been committed
+# 2. Git working tree is clean (everything from this round has been committed
 #    already -- the corrected rule: commit BEFORE verifying, not after).
+#    This is the check that mattered most -- see the header note above.
 DIRTY="$(git status --short)"
 if [ -z "$DIRTY" ]; then
   pass "Working tree is clean -- this round's edits are already committed."
@@ -86,18 +68,19 @@ else
   echo "$DIRTY" | sed 's/^/         /'
 fi
 
-# 4. Tracked-file count sanity (catches the OneDrive git-index-corruption
-#    failure mode: a collapsed tree still reports a bad `git status` as
-#    "clean" if everything happens to already be committed in that collapsed
-#    state, so this is a genuinely separate check, not redundant with #3).
+# 3. Tracked-file count sanity (a cheap guard against ordinary accidents --
+#    e.g. an accidental `git rm -r`/reset that collapsed the tree while
+#    `git status` still reports clean, since a bad commit over a collapsed
+#    tree still reports clean -- genuinely separate from check #2, not
+#    redundant with it).
 TRACKED_COUNT="$(git ls-files | wc -l)"
 if [ "$TRACKED_COUNT" -lt 100 ]; then
-  fail "git ls-files reports only $TRACKED_COUNT tracked files -- expected thousands. Possible index corruption (see onedrive_git_corruption memory). STOP, do not proceed, investigate before validating anything."
+  fail "git ls-files reports only $TRACKED_COUNT tracked files -- expected thousands. STOP, do not proceed, investigate before validating anything."
 else
   pass "Tracked-file count looks sane ($TRACKED_COUNT files)."
 fi
 
-# 5. HEAD is a real, resolvable commit.
+# 4. HEAD is a real, resolvable commit.
 HEAD_SHA="$(git rev-parse HEAD 2>/dev/null || true)"
 if [ -n "$HEAD_SHA" ]; then
   pass "HEAD resolves cleanly: $HEAD_SHA"

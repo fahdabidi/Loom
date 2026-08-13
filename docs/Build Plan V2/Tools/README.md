@@ -29,8 +29,8 @@ cheap enough to actually follow every round instead of skipping it under time pr
 
 | Role | Mechanism | Model (recommended) | Purpose | Doc |
 |---|---|---|---|---|
-| **Implementation Agent** | Codex CLI, WSL, backgrounded | GPT-5.3-Codex-Spark @ `xhigh` reasoning | Writes and commits real code/JSON changes against a ticket | `dispatch-pipeline-tools.md` |
-| **Root Cause Agent** | Codex CLI, WSL, backgrounded, read-only by contract | GPT-5.6-Sol @ `xhigh` reasoning | Diagnoses a bug that has resisted your own hypothesis-and-test budget; never edits code | `root-cause-agent-tool.md` |
+| **Implementation Agent** | Codex CLI, VirtualBox VM (`ssh loom-vm`), backgrounded | GPT-5.3-Codex-Spark @ `xhigh` reasoning | Writes and commits real code/JSON changes against a ticket | `dispatch-pipeline-tools.md` |
+| **Root Cause Agent** | Codex CLI, VirtualBox VM (`ssh loom-vm`), backgrounded, read-only by contract | GPT-5.6-Sol @ `xhigh` reasoning | Diagnoses a bug that has resisted your own hypothesis-and-test budget; never edits code | `root-cause-agent-tool.md` |
 | **Regression Impact Judge** | Claude Code `Agent` tool (`general-purpose`), in-session | Inherit orchestrator model (Sonnet/Opus 5) | Verifies a shared-code fix against *every* real consumer, not just the ticket's own test | `regression-impact-judge-tool.md` |
 | **Skill Output Judge** | Claude Code `Agent` tool (`general-purpose`), in-session | Inherit orchestrator model | Independently reviews one authored artifact (e.g. a community JSON package) against its source spec | see `Community JSON Migration Tracker.md` §1c for the worked pattern |
 | **LLM Vision UX Judge** | Claude Code `Agent` tool, in-session (Phase A) / headless `claude` CLI (Phase B, planned) | Inherit orchestrator model (Phase A); Sonnet/Opus via CLI (Phase B) | Reviews rendered UI screenshots against a rubric + product doc | `ux-gate-judge-tools.md` |
@@ -55,14 +55,12 @@ docs/Build Plan V2/Tools/
 │   ├── call_implementation_agent.sh       <- dispatch the Implementation Agent
 │   ├── call_root_cause_agent.sh           <- dispatch the Root Cause Agent
 │   ├── call_skill_authoring_agent.sh      <- dispatch the community-authoring Skill (Codex, zero-repo-access)
-│   ├── wsl_dispatch_tracker.sh            <- baseline/capture/cleanup WSL process tracking
 │   ├── watch_dispatch_log.sh              <- self-terminating completion watcher
-│   ├── handoff_gate.sh                    <- pre-verification handoff gate (5 checks)
-│   ├── wsl_slot.sh                        <- concurrency gate for ad-hoc wsl.exe calls
+│   ├── handoff_gate.sh                    <- pre-verification handoff gate (4 checks)
 │   ├── verify_apk_freshness.sh            <- stale-build guard for Flutter/Gradle debug APKs
-│   └── loom-vm.ps1                        <- (VirtualBox env only) host-side VM control: power,
-│                                             config, console screenshots, and in-guest commands
-│                                             with no SSH -- wsl-to-virtualbox-migration.md §8
+│   └── loom-vm.ps1                        <- host-side VM control: power, config, console
+│                                             screenshots, and in-guest commands with no SSH
+│                                             needed -- wsl-to-virtualbox-migration.md §8
 ├── dispatch-pipeline-tools.md             <- full doc for every script in code/, with setup + guards
 ├── root-cause-agent-tool.md               <- Root Cause Agent role doc
 ├── regression-impact-judge-tool.md        <- Regression Impact Judge role doc
@@ -100,16 +98,18 @@ Similarly, `b25_workflow_lifecycle_judge.dart` is kept in the Dart judge suite o
 
 ## Setup in a new project
 
-1. **Install Codex CLI inside WSL** (this pipeline assumes Windows host + WSL2 + OneDrive/cloud-synced repo
-   path — if your project isn't on that exact stack, most of the guards below are irrelevant and you can
-   skip straight to the dispatch scripts' core logic):
+1. **Install Codex CLI on the machine that will actually run dispatches.** This repo's own pipeline runs
+   inside a VirtualBox Ubuntu VM reached over SSH (`ssh loom-vm '. ~/.loom-env.sh && ...'` — see
+   `wsl-to-virtualbox-migration.md` for the full setup, including the `~/.loom-env.sh` non-interactive-shell
+   trap that every script sources explicitly). If your project runs Codex somewhere else entirely (a plain
+   Linux host, a different VM, WSL2 if you haven't migrated), most of the guards below still apply — only
+   the specific WSL2 workarounds noted in `wsl-to-virtualbox-migration.md` §4 are environment-specific:
    ```bash
-   # inside WSL
    npm install -g @openai/codex   # or use `npx --yes @openai/codex` per-call, as the scripts already do
    ```
-2. **Mark your repo trusted**, one time, in `~/.codex/config.toml` (WSL side):
+2. **Mark your repo trusted**, one time, in `~/.codex/config.toml` (on whatever machine runs `codex exec`):
    ```toml
-   [projects."/mnt/c/Users/<you>/path/to/your-repo"]
+   [projects."/home/<you>/path/to/your-repo"]
    trust_level = "trusted"
    ```
 3. **Add model profiles** you intend to use. Minimum viable set (the two this pipeline defaults to):
@@ -131,17 +131,20 @@ Similarly, `b25_workflow_lifecycle_judge.dart` is kept in the Dart judge suite o
    ```bash
    codex exec -p gpt5_3_spark_xhigh --sandbox read-only "Reply with exactly: PROFILE_OK"
    ```
-4. **If your repo sits on a OneDrive-synced Windows path accessed from WSL** (the exact combination that
-   caused every git-index-corruption incident behind the guards in `call_implementation_agent.sh`): install
-   a native-git shim so dispatched agents use `git.exe`, not WSL's own git, for every git operation:
+4. **If your repo sits on a OneDrive-synced Windows path accessed from WSL2** (the exact combination that
+   caused every git-index-corruption incident this pipeline originally worked around — see
+   `wsl-to-virtualbox-migration.md` §4.3 for the full root-cause writeup): install a native-git shim so
+   dispatched agents use `git.exe`, not WSL's own git, for every git operation:
    ```bash
    mkdir -p ~/.codex-git-shim
    printf '#!/bin/bash\nexec git.exe "$@"\n' > ~/.codex-git-shim/git
    chmod +x ~/.codex-git-shim/git
    ```
-   `call_implementation_agent.sh`/`call_root_cause_agent.sh` already prepend this shim to `PATH` if present
-   — nothing else to wire up. If your repo is *not* on OneDrive/a cloud-sync path, you can skip this; the
-   scripts degrade gracefully (the `if [ -x ... ]` check just no-ops).
+   This repo's own scripts no longer reference this shim — they run on a VirtualBox VM with a native ext4
+   filesystem and no cloud-sync driver, where this failure mode does not exist. If you're on WSL2 + OneDrive
+   and haven't migrated, you'll need to reintroduce the shim-prepend lines yourself (see git history for the
+   pre-migration version of `call_implementation_agent.sh`/`call_root_cause_agent.sh`, or the migration
+   spec's §4.3 for the exact block).
 5. **Copy the scripts** into your own repo's `data/` directory (the scripts compute their own repo root as
    `$(dirname "$0")/..`, so they must live exactly one directory below repo root — `data/` is the convention
    used here, but any single-level subdirectory name works as long as you're consistent):
@@ -177,76 +180,66 @@ ticket; the only things that change per-round are `<ticket>` and `<label>`.
 # 0. Author the ticket file first (see reference-ticket-template.md for the exact section
 #    structure and a filled-out worked example). Save it as data/v3_ticket_<slug>.md.
 #    If this ticket serves a tracker doc (reference-tracker-template.md's §8 queue), the row for
-#    it should already exist there BEFORE you dispatch -- see step 2's env vars below.
+#    it should already exist there BEFORE you dispatch -- see step 1's env vars below.
 
-# 1. Baseline — snapshot the WSL process set before this dispatch starts
-bash data/wsl_dispatch_tracker.sh baseline <label>
-
-# 2. Dispatch, backgrounded — NEVER run call_implementation_agent.sh in the foreground; it
+# 1. Dispatch, backgrounded — NEVER run call_implementation_agent.sh in the foreground; it
 #    blocks your session for the full dispatch duration (often 5-20+ minutes).
 #    DISPATCH_TRACKER_FILE/DISPATCH_TODO_ITEM (optional but recommended) name which tracker and
 #    which §8 queue row this dispatch serves -- every call_*.sh script logs a start/finish marker
-#    and prints a completion reminder for step 7.5 below when these are set. Omit only for a
+#    and prints a completion reminder for step 6.5 below when these are set. Omit only for a
 #    genuinely untracked, one-off dispatch.
-DISPATCH_TRACKER_FILE="docs/Build Plan V2/<Your Tracker>.md" \
-DISPATCH_TODO_ITEM="<the exact §8 row title>" \
-setsid nohup bash data/call_implementation_agent.sh data/v3_ticket_<slug>.md --fresh \
-  < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown
-sleep 3   # let the dispatch's own WSL session actually establish before capturing
+ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && \
+  DISPATCH_TRACKER_FILE="docs/Build Plan V2/<Your Tracker>.md" \
+  DISPATCH_TODO_ITEM="<the exact §8 row title>" \
+  setsid nohup bash data/call_implementation_agent.sh data/v3_ticket_<slug>.md --fresh \
+  < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown'
 
-# 3. Capture — diff the process set to identify exactly what THIS dispatch spawned
-bash data/wsl_dispatch_tracker.sh capture <label>
+# 2. Watch for genuine completion (NOT a raw `tail -F | grep` — see watch_dispatch_log.sh's own
+#    header for why a self-terminating watcher matters)
+ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
 
-# 4. Watch for genuine completion (NOT a raw `tail -F | grep` — see watch_dispatch_log.sh's own
-#    header for why that leaks WSL sessions indefinitely)
-wsl.exe -e bash -lc 'cd "/path/to/your-repo" && bash data/watch_dispatch_log.sh <label>'
+# 3. Once genuinely complete (the watcher fired on "codex exec exited with status") — confirm +
+#    commit the round's real edits (git status/git diff first) immediately, BEFORE running any
+#    analyze/test command. Do not defer the commit until after your own verification passes — an
+#    uncommitted, untracked (`??`) file makes every later `git diff` show nothing for its content
+#    changes no matter how many times it's edited, which has cost entire wasted re-fix rounds in
+#    practice.
+ssh loom-vm 'cd ~/Loom && git status --short && git diff --stat'
 
-# 5. Once genuinely complete (the watcher fired on "codex exec exited with status", not just a
-#    mid-run vsock alert) -- do BOTH of the following together, as one paired step, BEFORE
-#    running any analyze/test command:
-bash data/wsl_dispatch_tracker.sh cleanup <label>
-#    ...and confirm + commit the round's real edits (git status/git diff first) right alongside
-#    cleanup. Do not defer the commit until after your own verification passes — an uncommitted,
-#    untracked (`??`) file makes every later `git diff` show nothing for its content changes no
-#    matter how many times it's edited, which has cost entire wasted re-fix rounds in practice.
+# 4. Gate check — must print "READY FOR VALIDATION" before you touch anything else
+ssh loom-vm 'cd ~/Loom && bash data/handoff_gate.sh'
 
-# 6. Gate check — must print "READY FOR VALIDATION" before you touch anything else
-bash data/handoff_gate.sh <label>
-
-# 7. Independent verification (yours, never the dispatch's own self-report):
-#    - `flutter analyze` (or your stack's equivalent) clean on every touched package
+# 5. Independent verification (yours, never the dispatch's own self-report):
+#    - `flutter analyze`/`melos run analyze` (or your stack's equivalent) clean on every touched package
 #    - full test suite, no unexplained pass-count drop from baseline
 #    - for a shared-code change: a dedicated Regression Impact Judge dispatch
 #      (regression-impact-judge-tool.md) against every real consumer
 #    - for a UI-touching fix: live re-verification on a real device/emulator, not analyze/test alone
 
-# 7.5. Fold the outcome into the TODO record — do this every time, even when nothing changes.
+# 5.5. Fold the outcome into the TODO record — do this every time, even when nothing changes.
 #      Read the dispatch's STATUS.md "## Proposed next steps" block (reference-ticket-template.md),
-#      weigh each item against what you actually verified in step 7, then write the confirmed ones
+#      weigh each item against what you actually verified in step 5, then write the confirmed ones
 #      into the tracker's §8 Live TODO / Next Steps Queue (reference-tracker-template.md) and add/
 #      remove the matching one-line rollup in docs/Build Plan V2/TODO.md. This is never automatic —
 #      the dispatch script's own completion banner (see the Guards table below) exists only to make
 #      this step impossible to silently forget, not to do it for you.
 ```
 
-**Session-wide WSL concurrency budget: cap total concurrent `wsl.exe` subprocesses at 4.** One dispatch (step
-2) + one watcher (step 4) = 2 already-reserved slots. Route any *additional* ad-hoc `wsl.exe` calls (status
-checks, log reads, one-off git commands) through `data/wsl_slot.sh` rather than firing them unbounded — see
-`dispatch-pipeline-tools.md` for why (a hard, non-tunable WSL2 vsock connection cap that this exact usage
-pattern exhausts).
+**No concurrency budget applies here** (the old "cap total concurrent `wsl.exe` subprocesses at 4" rule was
+specific to WSL2's hard, non-tunable vsock connection cap — see `wsl-to-virtualbox-migration.md` §4.2 for
+the full story). SSH's own `MaxSessions`/`MaxStartups` limits are far higher and tunable if you ever need
+them.
 
 ## Guards and CLI checks — what clears each gate
 
 | Guard | What it checks | Command | Clears when |
 |---|---|---|---|
-| Handoff gate | Dispatch finished, WSL cleaned up, tree committed, tracked-file count sane, HEAD resolves | `bash data/handoff_gate.sh <label>` | Prints `READY FOR VALIDATION`, exit 0 |
-| Vsock exhaustion detector | Codex's own transcript for the known WSL2 vsock-exhaustion signature | built into `call_implementation_agent.sh`/`call_root_cause_agent.sh`, greps their own output | Absence of a `DISPATCH_HIT_VSOCK=1` banner in the dispatch log |
+| Handoff gate | Dispatch finished, tree committed, tracked-file count sane, HEAD resolves | `bash data/handoff_gate.sh` | Prints `READY FOR VALIDATION`, exit 0 |
 | Git integrity guard | Tracked-file count didn't collapse (silent tree-corruption signature) | built into `call_implementation_agent.sh`, pre/post `git ls-files \| wc -l` diff | No `GIT INTEGRITY ALERT` banner |
-| WSL concurrency slot | Ad-hoc `wsl.exe` call count under the session cap | `bash data/wsl_slot.sh "<command>"` | Acquires a slot within `WSL_SLOT_TIMEOUT` (default 120s) |
 | APK freshness guard | A built debug APK actually contains a just-added symbol, not a stale cached build | `bash data/verify_apk_freshness.sh <apk> <must-contain-string>` | Every named string found ≥1 time in the compiled kernel |
 | JSON/grammar validator | A community/workflow JSON package is structurally valid (guards present, no dangling references, no destructive exits without a guard) | `dart run loom_ux_judges:community_package_validator --package <file>` | Zero errors (warnings are advisory) |
 | B25 evidence/UX gates | Screenshot coverage, persona coverage, interaction-model correctness, LLM-vision review freshness | see `ux-gate-judge-tools.md` for the full chain | `production_ux_judge.dart` exits 0 |
-| TODO-fold reminder | Every dispatch (`DISPATCH_TRACKER_FILE` set or not) prints a fixed completion banner naming step 7.5 above — never silently skippable | built into all three `call_*.sh` scripts, printed unconditionally right before exit | Not a pass/fail gate — a reminder; the real gate is you actually doing step 7.5 |
+| TODO-fold reminder | Every dispatch (`DISPATCH_TRACKER_FILE` set or not) prints a fixed completion banner naming step 5.5 above — never silently skippable | built into all three `call_*.sh` scripts, printed unconditionally right before exit | Not a pass/fail gate — a reminder; the real gate is you actually doing step 5.5 |
 | Tracker-queue consistency check | `DISPATCH_TODO_ITEM`'s text actually appears in `DISPATCH_TRACKER_FILE` before dispatch starts | built into all three `call_*.sh` scripts, a non-blocking grep at dispatch start | Warns only if not found — does not block the dispatch, since prose wording can legitimately differ |
 
 ## Recommended models
@@ -280,6 +273,7 @@ pattern exhausts).
 - Reviewing rendered UI, not just code: `ux-gate-judge-tools.md`
 - Validating a JSON/config package before it ships: `validator-tool.md`
 - Authoring a new artifact from a spec doc, not just fixing one: `community-authoring-skill-tool.md`
-- Moving this toolkit off WSL2 onto a VirtualBox Ubuntu VM: `wsl-to-virtualbox-migration.md` —
-  note that roughly half the scripts in `code/` exist only to work around WSL2/OneDrive
-  pathologies and are **deleted rather than ported** in that environment
+- This repo's own pipeline now runs on a VirtualBox VM, not WSL2 — see `wsl-to-virtualbox-migration.md`
+  for the full migration record; two WSL-only scripts (`wsl_dispatch_tracker.sh`, `wsl_slot.sh`) were
+  deleted outright rather than ported, since they solved problems specific to WSL2's vsock cap and
+  orphaned-process behavior that don't exist on a VM reached over SSH

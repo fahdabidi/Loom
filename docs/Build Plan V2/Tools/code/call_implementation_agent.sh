@@ -1,44 +1,38 @@
 #!/bin/bash
 # data/call_implementation_agent.sh
 #
-# Direct invocation of the Implementation Agent (Codex CLI, WSL) from the
-# Verification Agent's own session -- replaces the old mailbox+manually-
+# Direct invocation of the Implementation Agent (Codex CLI, VirtualBox VM) from
+# the Verification Agent's own session -- replaces the old mailbox+manually-
 # resumed-session handoff. Adapted from the "Running an unattended
 # Implementation/Verification agent loop" reference guide (2026-07-11),
 # stripped of the Task Scheduler/overnight-nudge parts since this script is
 # meant to be invoked directly, once per turn, not on a timer.
+#
+# Migrated off WSL2 onto a VirtualBox Ubuntu VM 2026-08-12 -- see
+# docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md for the full
+# migration record and rationale (vsock exhaustion, orphaned wslhost.exe
+# processes, and OneDrive/v9fs git index corruption all stop applying once
+# this runs on native ext4 with no cloud-sync driver underneath). This script
+# now runs INSIDE the guest (~/Loom/data/), invoked from the host via
+# `ssh loom-vm '. ~/.loom-env.sh && ...'`, not via `wsl.exe`.
 #
 # Usage:
 #   bash data/call_implementation_agent.sh <path-to-prompt-file> [--fresh]
 #
 # Canonical dispatch-and-watch recipe (run each half from the verification
 # agent's own shell, NOT from inside this script):
-#   bash data/wsl_dispatch_tracker.sh baseline <label>
-#   setsid nohup bash data/call_implementation_agent.sh <ticket> --fresh \
-#     < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown
-#   sleep 3   # let the dispatch's own WSL session actually establish first
-#   bash data/wsl_dispatch_tracker.sh capture <label>
-#   # ... then attach ONE Monitor to the log via watch_dispatch_log.sh, NOT a
-#   # raw `tail -F | grep` -- that old pattern never exited on its own (grep
-#   # had no -m1, since a vsock alert mid-run must NOT end the watch, only
-#   # genuine completion should) and leaked a live wsl.exe/wslhost.exe session
-#   # for up to the full 30-minute Monitor timeout every time it matched.
-#   # Found 2026-07-22 after CALR.5a burned 4 consecutive vsock-blocked
-#   # rounds: one leaked Monitor pipeline alone accounted for most of that
-#   # session's live wsl.exe count. watch_dispatch_log.sh emits the same
-#   # vsock-alert/completion signals but kills its own `tail -F` and exits
-#   # itself a few seconds after the real completion line, so no separate
-#   # TaskStop call is needed and nothing lingers:
-#   wsl.exe -e bash -lc 'cd "<repo>" && bash data/watch_dispatch_log.sh <label>'
-#   # ... once the dispatch has genuinely completed (Monitor fired on
-#   # "codex exec exited with status", not just a vsock alert mid-run), do
-#   # BOTH of the following as one paired step (either order), BEFORE running
-#   # `flutter analyze`/the test suite, not after:
-#   bash data/wsl_dispatch_tracker.sh cleanup <label>
-#   # ... AND commit the round's real edits (once confirmed present via
-#   # `git status`/`git diff`) immediately, right alongside cleanup -- not
-#   # deferred until independent verification passes. Only after BOTH commit
-#   # and cleanup are done does independent verification start. See
+#   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && \
+#     setsid nohup bash data/call_implementation_agent.sh <ticket> --fresh \
+#     < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown'
+#   # ... then watch for genuine completion, NOT a raw `tail -F | grep` --
+#   # that old pattern never exited on its own (grep had no -m1). Use
+#   # watch_dispatch_log.sh, which kills its own `tail -F` and exits itself a
+#   # few seconds after the real completion line:
+#   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
+#   # ... once the dispatch has genuinely completed (watcher fired on
+#   # "codex exec exited with status"), commit the round's real edits (once
+#   # confirmed present via `git status`/`git diff`) immediately -- not
+#   # deferred until independent verification passes. See
 #   # codex_dispatch_reliability memory, Failure 8: holding a brand-new
 #   # (untracked, `??`) file uncommitted across multiple fix-rounds means
 #   # `git diff` shows NOTHING for its content changes no matter how many
@@ -47,42 +41,16 @@
 #   # CALR.4g round 5, re-fixing a file that had already been fixed.
 #   # Committing each round immediately keeps the file tracked from then on,
 #   # so every later `git diff` is trustworthy.
-#   bash data/handoff_gate.sh <label>   # verifies all of the above before
-#   # you proceed -- checks the dispatch actually finished, WSL cleanup is
-#   # confirmed closed for this label, the working tree is clean (already
-#   # committed), and the tracked-file count looks sane (OneDrive corruption
-#   # check). Exits nonzero with exactly what's missing if not truly ready;
-#   # only run flutter analyze/the test suite after this prints "READY FOR
-#   # VALIDATION".
+#   ssh loom-vm 'cd ~/Loom && bash data/handoff_gate.sh'   # verifies all of
+#   # the above before you proceed -- checks the dispatch actually finished,
+#   # the working tree is clean (already committed), and the tracked-file
+#   # count looks sane. Exits nonzero with exactly what's missing if not truly
+#   # ready; only run flutter analyze/the test suite after this prints
+#   # "READY FOR VALIDATION".
 # This script writes its own PID to .codex-logs/.last_dispatch.pid on every
 # run (kept for `kill -0` checks if ever needed) -- do not substitute a
 # `pgrep -f "codex exec"`-style check; see the comment at the `mkdir -p
 # .codex-logs` line below for why that has failed twice in practice.
-#
-# `wsl_dispatch_tracker.sh`'s `cleanup` step is the proactive counterpart to
-# the reactive `wsl.exe --shutdown` mitigation used after repeated vsock
-# blocks: it diffs the wsl.exe/wslhost.exe process set before vs. after this
-# specific dispatch to identify exactly which new processes it caused (never
-# a single PID followed through the launcher chain -- the launcher itself
-# exits in seconds on its own and isn't what lingers), kills any that are
-# still alive once the dispatch has finished, and RE-VERIFIES via another
-# process-set check that they are actually gone before logging the session
-# as closed in `.codex-logs/.dispatch_wsl_tracker.log` -- never assume a kill
-# succeeded without confirming it. Never targets `wslservice.exe` (the
-# persistent Windows-side management service) or `vmmemWSL` (the shared VM
-# hosting ALL concurrent WSL activity, including any other agentic session
-# on this machine) -- both are explicitly excluded, killing either would take
-# down far more than just this one dispatch.
-#
-# Session-wide WSL concurrency budget (user-requested, 2026-07-22): this
-# dispatch = 1 session, the Monitor watch above = 1 session, and the
-# verification agent's OWN ad-hoc wsl.exe calls (status checks, log reads,
-# git commands) should be routed through `data/wsl_slot.sh` to cap them at 2
-# concurrent -- e.g. `bash data/wsl_slot.sh "wsl.exe -e bash -lc '...'"` --
-# keeping total concurrent WSL sessions across all categories bounded (<=4)
-# instead of growing unboundedly, which is itself a contributor to vsock
-# exhaustion (see the memory note this script's own history is tracked in:
-# codex_dispatch_reliability, Failure 6).
 #
 # By default this resumes the most recent Codex session for this repo
 # (`resume --last`), so context/continuity builds across calls the same way
@@ -91,7 +59,8 @@
 # resuming stale context would do more harm than good).
 #
 # Requires: `trust_level = "trusted"` for this repo path already set in
-# ~/.codex/config.toml (WSL side) -- done once, not by this script.
+# ~/.codex/config.toml (guest side, `/home/fahd/Loom`) -- done once, not by
+# this script.
 #
 # Model: defaults to GPT-5.3-Codex-Spark at XHIGH reasoning effort (switched
 # 2026-08-07 per user direction). Config: ~/.codex/gpt5_3_spark_xhigh.config.toml
@@ -100,8 +69,7 @@
 # Codex/OpenAI model, no gateway dependency, no preflight health check needed.
 # Smoke-tested 2026-08-07 (`codex exec -p gpt5_3_spark_xhigh --sandbox
 # read-only "Reply with exactly: PROFILE_OK"` -> correct reply, exit 0)
-# before being made the default -- not yet proven on a real ticket-length
-# dispatch.
+# before being made the default.
 #
 # Model history, for reference (all still fully set up and usable via
 # CODEX_IMPLEMENTATION_PROFILE=<name>, none removed):
@@ -122,7 +90,8 @@
 #     defaulted to, untested for ticket-length prompts.
 #
 # DeepSeek setup, kept intact for a future switch back (config files,
-# gateway, WSL key all still in place -- nothing was torn down):
+# gateway, key all still in place -- nothing was torn down). This block is
+# INERT unless a deepseek_* profile is revived:
 #   - served through a local Codex<->DeepSeek gateway
 #     (C:\Users\fahd_\OneDrive\Documents\Codex-DeepSeek-V4-Gateway-1.0.0-windows,
 #     a Windows process) -- MUST be running (`.\start-gateway.cmd` from that
@@ -134,21 +103,22 @@
 #     gateway.pid)`) before assuming a past "started successfully" still
 #     holds hours later.
 #   - the gateway runs on the Windows side, bound to 0.0.0.0 (not the default
-#     127.0.0.1) with GATEWAY_API_KEY set in its .env -- WSL2 here is
-#     NAT-mode, not mirrored, so `localhost` does NOT bridge Windows<->WSL2; a
-#     loopback-only bind is unreachable from WSL no matter what.
+#     127.0.0.1) with GATEWAY_API_KEY set in its .env. On the VM, the gateway
+#     is reachable at the HOST's LAN IP (not a WSL default-route IP -- that
+#     address was WSL-specific and is meaningless from the guest), e.g.
+#     http://192.168.50.x:8787/health, plus a Windows Firewall rule allowing
+#     8787 from the LAN (not just from WSL).
 #   - a Windows Firewall inbound-allow rule for TCP 8787 (the box's existing
 #     "Node.js JavaScript Runtime" rules include a conflicting Block that
 #     otherwise wins).
-#   - the shared gateway token saved at ~/.deepseek_gateway_key (WSL side,
+#   - the shared gateway token saved at ~/.deepseek_gateway_key (guest side,
 #     chmod 600, outside the repo -- never commit this) -- matches
 #     GATEWAY_API_KEY in the gateway's own .env.
 #   - ~/.codex/deepseek_v4_pro_medium.config.toml / deepseek_v4_pro_high.config.toml /
 #     deepseek_v4_pro.config.toml (xhigh) / deepseek_v4_flash.config.toml
 #     (lighter model, high) plus a [model_providers.deepseek_v4_gateway]
-#     block (base_url pointed at the WSL default-route IP, e.g. 172.31.16.1,
-#     not 127.0.0.1; env_key = "DEEPSEEK_GATEWAY_KEY") in the main
-#     config.toml.
+#     block (base_url pointed at the host's LAN IP; env_key =
+#     "DEEPSEEK_GATEWAY_KEY") in the main config.toml.
 #   - BUG FIXED 2026-07-20/21 in that gateway's own scripts\Start-Gateway.ps1:
 #     its Wait-ForGateway health-check polled /health with no Authorization
 #     header, but /health requires the same Bearer GATEWAY_API_KEY real
@@ -163,36 +133,15 @@
 # Override with CODEX_IMPLEMENTATION_PROFILE="" to fall back to Codex's own
 # built-in default model (e.g. for a quick one-off without any profile).
 #
-# KNOWN ISSUE (root-caused 2026-07-21, real, cited, not a local misconfiguration):
-# codex exec inside this WSL distro intermittently fails its very first shell command with
-# `WSL (N - ) ERROR: UtilBindVsockAnyPort:NNN: socket failed 1` and then exits 0 having done
-# nothing (no file changes, no commit) -- indistinguishable from success in exit code alone,
-# only visible by reading its own transcript. This is an EXACT match for a still-open upstream
-# bug against this exact tool: https://github.com/openai/codex/issues/8322. The underlying WSL2
-# mechanism is documented separately: each WSL "session" (roughly, each fresh wsl.exe/interop
-# invocation chain) consumes ~9 vsock connections (7 for a Relay process + 2 for SessionLeader),
-# WSL2's own relay enforces a hard, NOT-user-tunable cap on total vsock connections (confirmed by
-# WSL maintainers -- no .wslconfig key, no kernel module parameter, nothing in the Windows
-# registry), and heavy/sustained concurrent WSL usage exhausts it, causing new session attempts to
-# time out: https://github.com/microsoft/WSL/issues/40650. A long verification session like this
-# one (many `wsl.exe -e bash -lc` calls for dispatch + polling + independent test/analyze runs,
-# often overlapping) is exactly the usage pattern that triggers it -- confirmed directly in this
-# repo's own environment: 11 wsl.exe/wslhost.exe processes were still alive and growing after
-# several hours of a single session, several clearly orphaned (5+ hours old). Ruled out as the
-# cause: systemd's `RestrictAddressFamilies` (a different, unrelated trigger for the same error
-# message, reported elsewhere) -- confirmed absent from anything in this invocation path, since
-# `codex exec` here runs as a plain foreground/background script, never as a systemd unit.
-#
-# No permanent fix exists upstream as of this writing. Practical mitigation, evidenced but
-# partial (reduces, does not eliminate, the stale wsl.exe/wslhost.exe process count in this
-# environment -- something else here re-establishes a session within seconds): run
-# `wsl.exe --shutdown` from PowerShell/cmd (NOT from inside this script -- it would kill the very
-# WSL session running the dispatch) between ticket phases, or after two consecutive vsock-blocked
-# rounds, before retrying. This has zero effect on committed work (nothing persistent lives only
-# in the WSL VM's memory) -- it only resets the relay/session state. The retry-until-it-lands
-# pattern already used throughout this cycle (a blocked round makes zero file changes and is
-# always safe to just retry) remains the correct default; reach for `wsl --shutdown` when retries
-# alone stop working.
+# HISTORICAL NOTE (resolved by this migration, kept for context): under WSL2,
+# `codex exec` intermittently failed its very first shell command with
+# `WSL ERROR: UtilBindVsockAnyPort:NNN: socket failed 1` and exited 0 having
+# done nothing -- a hard, non-tunable WSL2 vsock connection-count cap
+# (openai/codex#8322, microsoft/WSL#40650). This does not apply on a
+# VirtualBox VM reached over SSH; the detector and its `wsl.exe --shutdown`
+# mitigation have been removed from this script. See
+# docs/Build Plan V2/Tools/dispatch-pipeline-tools.md for the full incident
+# history if ever relevant again in a different environment.
 
 set -euo pipefail
 
@@ -210,7 +159,7 @@ GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://172.31.16.1:8787/health}"
 if [[ "$PROFILE" == deepseek_* ]]; then
   if [ ! -f "$GATEWAY_KEY_FILE" ]; then
     echo "ERROR: profile '$PROFILE' selected but $GATEWAY_KEY_FILE is missing." >&2
-    echo "       (the shared WSL<->gateway bridge token; not the DeepSeek API key itself)" >&2
+    echo "       (the shared guest<->gateway bridge token; not the DeepSeek API key itself)" >&2
     exit 1
   fi
   DEEPSEEK_GATEWAY_KEY="$(cat "$GATEWAY_KEY_FILE")"
@@ -220,8 +169,8 @@ if [[ "$PROFILE" == deepseek_* ]]; then
   if [ "$HEALTH_STATUS" != "200" ]; then
     echo "ERROR: DeepSeek gateway not reachable/healthy at $GATEWAY_HEALTH_URL (HTTP $HEALTH_STATUS)." >&2
     echo "       Check: gateway running on Windows (Start-Gateway.ps1), bound to 0.0.0.0," >&2
-    echo "       firewall rule for 8787 still present, and the WSL default-route IP hasn't" >&2
-    echo "       changed (ip route show | grep default)." >&2
+    echo "       firewall rule for 8787 still present, and CODEX_GATEWAY_HEALTH_URL points at" >&2
+    echo "       the host's current LAN IP (this default is a stale WSL-era address)." >&2
     echo "       To bypass and use Codex's default model instead: CODEX_IMPLEMENTATION_PROFILE=\"\"" >&2
     exit 1
   fi
@@ -235,81 +184,27 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Non-login shells (this one included, when invoked via `wsl bash -lc`) don't
-# always have nvm's node on PATH -- resolve it explicitly rather than assume.
-NVM_NODE_BIN=""
-if [ -d "$HOME/.nvm/versions/node" ]; then
-  NVM_NODE_BIN="$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -n1)"
-fi
-if [ -n "$NVM_NODE_BIN" ]; then
-  export PATH="$NVM_NODE_BIN:$PATH"
-fi
+# Non-interactive shells (this one included, when invoked via `ssh loom-vm
+# 'cmd'`) skip ~/.bashrc entirely (Ubuntu's stock .bashrc returns early for
+# non-interactive shells) -- resolve the toolchain PATH explicitly via the
+# guest's own env file rather than assume it's already on PATH. Do not
+# substitute `bash -l`: a login shell reads .profile, whose PATH ordering
+# differs and omits the Android SDK.
+. "$HOME/.loom-env.sh"
 
-# Force every `git` call the implementation agent makes inside its own
-# sandbox (not just this wrapper script's own pre/post checks below, which
-# already used git.exe) onto native Windows git.exe rather than WSL's git.
-# Root cause this closes: this repo's .git lives under OneDrive's Files-
-# On-Demand cloud filter driver AND is accessed from WSL through the v9fs
-# translation layer for /mnt/c -- that combination breaks git's atomic
-# index-rename guarantee under load, confirmed twice (2026-07-20) as
-# `fatal: .git/index: index file smaller than expected` mid-dispatch.
-# Native git.exe on NTFS removes the v9fs half of that combination. The
-# shim is a thin `exec git.exe "$@"` wrapper at ~/.codex-git-shim/git,
-# prepended to PATH so it resolves ahead of WSL's own /usr/bin/git.
-if [ -x "$HOME/.codex-git-shim/git" ]; then
-  export PATH="$HOME/.codex-git-shim:$PATH"
-fi
-
-# Prepended to every dispatch's actual prompt (not something the ticket author
-# has to remember to include). Root cause: this repo lives inside OneDrive
-# (Files On-Demand), whose sync engine races with git's own atomic index
-# rewrites -- confirmed cause of "fatal: unable to write new index file" and
-# similar errors, twice now (2026-07-15/16). The error itself is transient and
-# harmless if handled correctly; the actual damage both times came from an
-# agent improvising a "fix" (wiping/resetting the index, a broad `git rm
-# --cached`-style recovery) that then got committed, collapsing the tracked
-# tree to almost nothing while `git status` still reported clean.
-GIT_SAFETY_PREAMBLE='# Git safety (read before any git operation -- this repo lives on OneDrive, which intermittently causes git index errors)
-
-This repository is on a OneDrive-synced path. OneDrive'"'"'s background sync occasionally races with
-git'"'"'s own atomic index writes, producing errors like `fatal: unable to write new index file` or a
-stale/stuck `.git/index.lock`. This is a KNOWN, TRANSIENT environment quirk -- it is not a sign that
-anything is actually broken, and it does not require -- and must never receive -- any creative recovery.
-
-If you hit an index-lock or "unable to write new index file" error on `git add`/`git commit`:
-1. `rm -f .git/index.lock` (only the lock file, nothing else), wait ~2 seconds, retry the SAME command
-   once.
-2. If it fails again, STOP. Do not try anything else. In particular, NEVER run any of: `git reset --hard`,
-   `git rm -r --cached .` (or any broad `--cached` unstage), deleting/recreating `.git/index` by hand, or
-   `git init`/re-adding the whole tree "to be safe". Every one of these can silently collapse the tracked
-   tree if run while the index is already in a bad state -- exactly the failure mode this note exists to
-   prevent. Report the exact error in your status file and leave the working tree as-is; the verification
-   agent (running outside this sandbox, on the real filesystem) will resolve it.
-3. Before your FINAL commit of this ticket, sanity-check with `git ls-files | wc -l` and confirm the
-   count is in the same ballpark as before you started (thousands of files, not a handful) -- if it
-   collapsed, you have hit this bug; stop and report rather than committing over it.
-
----
-
-'
-
-PROMPT="$GIT_SAFETY_PREAMBLE$(cat "$PROMPT_FILE")"
+PROMPT="$(cat "$PROMPT_FILE")"
 
 # --- Git integrity guard -----------------------------------------------
-# This repo lives inside OneDrive (Files On-Demand), which actively syncs
-# and re-uploads `.git/index`/`.git/HEAD` etc. while WSL-side git tries to
-# rewrite them atomically. Confirmed root cause (2026-07-15/16, second
-# occurrence) of "fatal: unable to write new index file" mid-dispatch. The
-# real damage isn't that error itself (transient, retriable) -- it's an
-# implementation-agent session reacting to it by improvising further git
-# surgery (an index wipe, a bogus `git rm -r --cached`-style operation)
-# that then gets COMMITTED, silently collapsing the tracked tree to almost
-# nothing. `git status` alone can't catch this after the fact -- a bad
-# commit that matches a bad working tree still reports "clean". So: snapshot
-# the tracked-file count now, and hard-fail loudly after the run if it
-# collapsed, rather than relying on the dirty-tree check below to notice.
-PRE_TRACKED_COUNT="$(git.exe ls-files | wc -l)"
-PRE_HEAD="$(git.exe rev-parse HEAD)"
+# Snapshot the tracked-file count and HEAD now, and hard-fail loudly after
+# the run if it collapsed, rather than relying on the dirty-tree check below
+# to notice -- a bad commit that matches a bad working tree still reports
+# "clean" via plain `git status`. Not a git.exe/native-git distinction here:
+# the guest's own git on native ext4 has no index-corruption failure mode to
+# guard against, but this collapsed-tree check is still cheap, general
+# insurance against any bad automated git surgery, not just an OneDrive-
+# specific one, so it stays.
+PRE_TRACKED_COUNT="$(git ls-files | wc -l)"
+PRE_HEAD="$(git rev-parse HEAD)"
 
 echo "=== Invoking Implementation Agent (codex exec) ==="
 echo "Repo: $REPO_ROOT"
@@ -376,15 +271,15 @@ echo "$$" > .codex-logs/.last_dispatch.pid
 PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
 FLUTTER_CONFIG_DIR="$HOME/.config/flutter"
 
-# Captured to a side file (via `tee`) so it can be greeped for the vsock
-# failure signature below WITHOUT losing the live streaming to stdout that
-# callers tail for progress. `${PIPESTATUS[0]}` (not `$?`, which would be
-# tee's exit status) preserves codex's own real exit code through the pipe.
+# Captured to a side file (via `tee`) so a transcript survives for post-
+# mortems without losing the live streaming to stdout that callers tail for
+# progress. `${PIPESTATUS[0]}` (not `$?`, which would be tee's exit status)
+# preserves codex's own real exit code through the pipe.
 CODEX_OUTPUT_CAPTURE="$(mktemp)"
 # Disabled around the pipeline itself: with `set -e -o pipefail` active, a
 # non-zero exit from EITHER half of `codex exec | tee` would abort the script
-# right here, before STATUS is even captured -- silently skipping the vsock
-# detector and the git-integrity guard below exactly when they matter most.
+# right here, before STATUS is even captured -- silently skipping the git-
+# integrity guard below exactly when it matters most.
 set +e
 if [ "$MODE" = "--fresh" ]; then
   npx --yes @openai/codex exec \
@@ -409,41 +304,9 @@ set -e
 echo "===================================================="
 echo "codex exec exited with status $STATUS"
 
-# --- WSL vsock exhaustion detector --------------------------------------
-# See the KNOWN ISSUE note above this script's header. This failure mode
-# exits 0, indistinguishable from "ran and found nothing to do" by exit code
-# alone -- so detect it explicitly by grepping the actual transcript, and say
-# so loudly rather than letting a caller assume a real attempt happened.
-# NOTE: the error can appear at TWO different points, confirmed both ways in
-# this repo's own history -- (a) on the agent's very first shell command,
-# before any edit (the common case: zero file changes, fully safe to retry),
-# or (b) later, if the agent already made real edits and only its OWN
-# post-edit verification/commit attempt then hit the wall (real changes may
-# already be sitting uncommitted in the working tree -- check `git status`/
-# `git diff` before assuming there is nothing to salvage). This detector
-# cannot tell which case occurred from the transcript alone.
-if grep -qE "UtilBindVsockAnyPort|UtilAcceptVsock|accept4 failed" "$CODEX_OUTPUT_CAPTURE"; then
-  echo "##################################################################"
-  echo "# DISPATCH_HIT_VSOCK=1 -- WSL vsock error appeared this run.     #"
-  echo "##################################################################"
-  echo "Check 'git status'/'git diff' before assuming nothing happened -- this"
-  echo "error can strike either before any edit (nothing to salvage, just"
-  echo "retry) or after real edits, if only this run's OWN post-edit"
-  echo "verification/commit attempt hit it (real changes may already be"
-  echo "sitting uncommitted -- review and finish verifying/committing those"
-  echo "yourself rather than discarding them). Either way, a fresh retry for"
-  echo "whatever remains is safe. If this is the 2nd+ consecutive blocked"
-  echo "attempt, run 'wsl.exe --shutdown' from PowerShell (never from inside"
-  echo "this script) before retrying again."
-  echo "See: https://github.com/openai/codex/issues/8322 and"
-  echo "     https://github.com/microsoft/WSL/issues/40650"
-fi
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
-# This repository lives on a Windows OneDrive path. Keep all repository
-# operations on Windows Git; WSL Git is used neither for commits nor for this
-# final visibility check.
-DIRTY="$(git.exe status --porcelain)"
+DIRTY="$(git status --porcelain)"
 if [ -n "$DIRTY" ]; then
   echo "WARNING: working tree left dirty after this run (visibility only, not auto-fixing):"
   echo "$DIRTY"
@@ -458,9 +321,9 @@ fi
 # or via improvised git surgery) and then committed over. This is separate
 # from, and more serious than, the plain dirty-tree warning above: a
 # collapsed-and-recommitted tree reports CLEAN, so the check above alone
-# would miss it silently -- exactly what happened 2026-07-15/16.
-POST_TRACKED_COUNT="$(git.exe ls-files | wc -l)"
-POST_HEAD="$(git.exe rev-parse HEAD)"
+# would miss it silently.
+POST_TRACKED_COUNT="$(git ls-files | wc -l)"
+POST_HEAD="$(git rev-parse HEAD)"
 if [ "$POST_HEAD" != "$PRE_HEAD" ] && [ "$PRE_TRACKED_COUNT" -gt 0 ]; then
   DROP_PCT=$(( (PRE_TRACKED_COUNT - POST_TRACKED_COUNT) * 100 / PRE_TRACKED_COUNT ))
   if [ "$DROP_PCT" -ge 20 ]; then
@@ -470,12 +333,12 @@ if [ "$POST_HEAD" != "$PRE_HEAD" ] && [ "$PRE_TRACKED_COUNT" -gt 0 ]; then
     echo "Before: $PRE_TRACKED_COUNT files tracked at $PRE_HEAD"
     echo "After:  $POST_TRACKED_COUNT files tracked at $POST_HEAD  (-$DROP_PCT%)"
     echo "Do NOT trust this run's commit(s) as-is. Before doing anything else:"
-    echo "  git.exe log --oneline -5"
-    echo "  git.exe diff --stat $PRE_HEAD $POST_HEAD"
+    echo "  git log --oneline -5"
+    echo "  git diff --stat $PRE_HEAD $POST_HEAD"
     echo "Identify the last commit whose tree size is consistent with"
     echo "$PRE_TRACKED_COUNT files, then reset main to it (mixed reset only,"
     echo "never --hard, so any genuinely new uncommitted work is preserved):"
-    echo "  git.exe reset <last-good-commit>"
+    echo "  git reset <last-good-commit>"
   fi
 fi
 

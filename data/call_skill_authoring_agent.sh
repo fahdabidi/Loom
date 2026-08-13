@@ -78,10 +78,12 @@
 # capability is offered by this script, deliberately: each dispatch should
 # stand on its own, exactly like a fresh ChatGPT conversation would.
 #
-# Same WSL vsock caveat as call_implementation_agent.sh applies here (see
-# that script's own header for the full explanation and upstream issue
-# links) -- detected and reported the same way below, retry-until-it-lands
-# is the correct response to a vsock-blocked run.
+# Migrated off WSL2 onto a VirtualBox Ubuntu VM 2026-08-12 -- see
+# docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md. Runs INSIDE the
+# guest (~/Loom/data/), invoked from the host via
+# `ssh loom-vm '. ~/.loom-env.sh && ...'`. This channel already had zero git
+# operations of its own beyond the HEAD==origin/main preflight below, and no
+# git-shim/vsock-detector code to strip -- the smallest port of the three.
 
 set -euo pipefail
 
@@ -109,9 +111,9 @@ if [ ! -f "$INSTRUCTIONS_FILE" ]; then
 fi
 
 # --- Preflight: local HEAD must match origin/main -----------------------
-CURRENT_HEAD="$(git.exe rev-parse HEAD)"
-git.exe fetch origin main --quiet
-ORIGIN_MAIN="$(git.exe rev-parse origin/main)"
+CURRENT_HEAD="$(git rev-parse HEAD)"
+git fetch origin main --quiet
+ORIGIN_MAIN="$(git rev-parse origin/main)"
 if [ "$CURRENT_HEAD" != "$ORIGIN_MAIN" ] && [ "${ALLOW_STALE_PUSH:-0}" != "1" ]; then
   echo "ERROR: local HEAD ($CURRENT_HEAD) != origin/main ($ORIGIN_MAIN)." >&2
   echo "       This dispatch's entire premise is reading LIVE docs/references/** via GitHub --" >&2
@@ -119,7 +121,7 @@ if [ "$CURRENT_HEAD" != "$ORIGIN_MAIN" ] && [ "${ALLOW_STALE_PUSH:-0}" != "1" ];
   echo "       Push first, or set ALLOW_STALE_PUSH=1 to bypass deliberately." >&2
   exit 1
 fi
-if [ -n "$(git.exe status --porcelain -- docs/references .agents/skills/loom-calendar-experience-authoring)" ]; then
+if [ -n "$(git status --porcelain -- docs/references .agents/skills/loom-calendar-experience-authoring)" ]; then
   echo "WARNING: uncommitted changes under docs/references/ or the Skill bundle -- the dispatched" >&2
   echo "         agent will NOT see these (it reads GitHub, not this working tree)." >&2
 fi
@@ -179,14 +181,9 @@ else
   echo "      docs/Build Plan V2/TODO.md needs a new entry once this completes." >&2
 fi
 
-# Non-login shells don't always have nvm's node on PATH.
-NVM_NODE_BIN=""
-if [ -d "$HOME/.nvm/versions/node" ]; then
-  NVM_NODE_BIN="$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -n1)"
-fi
-if [ -n "$NVM_NODE_BIN" ]; then
-  export PATH="$NVM_NODE_BIN:$PATH"
-fi
+# Non-interactive shells (via `ssh loom-vm 'cmd'`) skip ~/.bashrc entirely --
+# resolve the toolchain PATH explicitly. Never substitute `bash -l`.
+. "$HOME/.loom-env.sh"
 
 set +e
 npx --yes @openai/codex exec \
@@ -203,17 +200,6 @@ set -e
 
 echo "============================================================================"
 echo "codex exec exited with status $STATUS"
-
-if grep -qE "UtilBindVsockAnyPort|UtilAcceptVsock|accept4 failed" "$JSON_LOG"; then
-  echo "##################################################################"
-  echo "# DISPATCH_HIT_VSOCK=1 -- WSL vsock error appeared this run.     #"
-  echo "##################################################################"
-  echo "No git state to salvage here (this dispatch never touches git) -- a fresh retry with a"
-  echo "new label is always safe. If this is the 2nd+ consecutive blocked attempt, run"
-  echo "'wsl.exe --shutdown' from PowerShell (never from inside this script) before retrying."
-  echo "See: https://github.com/openai/codex/issues/8322 and"
-  echo "     https://github.com/microsoft/WSL/issues/40650"
-fi
 
 if [ -f "$LAST_MESSAGE_FILE" ]; then
   echo "Final answer captured: $LAST_MESSAGE_FILE ($(wc -l < "$LAST_MESSAGE_FILE") lines)"
