@@ -340,6 +340,57 @@ model history: **a profile that passes a one-line smoke test can still fail a ti
 ssh loom-vm '. ~/.loom-env.sh && codex exec -p gpt5_3_spark_xhigh --sandbox read-only "Reply with exactly: PROFILE_OK"'
 ```
 
+**This smoke test alone is not sufficient** — see §5.5 immediately below. `--sandbox read-only`
+happens to skip the exact codepath that broke on this VM; only a `--sandbox workspace-write` call
+(what every real dispatch actually uses) exercises it.
+
+### 5.5 Required fix: AppArmor blocks bubblewrap's sandbox network namespace
+
+Found 2026-08-12 while running the first real end-to-end dispatch through the migrated pipeline — a
+`--sandbox read-only` smoke test passes cleanly, but every `--sandbox workspace-write` call (i.e.
+every real Implementation/Root Cause Agent dispatch) fails immediately with:
+
+```
+bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted
+```
+
+**Root cause:** Ubuntu 24.04 ("noble") ships `kernel.apparmor_restrict_unprivileged_userns=1` by
+default (the same hardening that broke Chrome/Electron/Flatpak sandboxing for many people on
+23.10+). Codex's sandbox (bubblewrap) needs an unprivileged user namespace to set up its own
+loopback interface; with the restriction on and no AppArmor profile permitting it, the kernel
+refuses. `bwrap --unshare-net --dev-bind / / echo hello` reproduces this directly, with no Codex
+involved — confirms this is a VM/kernel-policy issue, not a Codex or dispatch-script bug.
+
+**Fix applied (targeted, not a blanket sysctl disable):** install a local AppArmor profile that
+grants `userns` specifically to `/usr/bin/bwrap`, leaving the restriction in place for every other
+process on the VM.
+
+```bash
+ssh loom-vm 'sudo tee /etc/apparmor.d/bwrap > /dev/null << "EOF"
+abi <abi/4.0>,
+include <tunables/global>
+
+profile bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/bwrap>
+}
+EOF
+sudo apparmor_parser -r /etc/apparmor.d/bwrap'
+```
+
+This is a one-time fix per VM (survives reboots — it's a normal AppArmor profile file under
+`/etc/apparmor.d/`, loaded automatically by the `apparmor` service at boot; no need to re-run
+`apparmor_parser` after a restart). Verify it took with `sudo aa-status | grep bwrap` (should list
+`bwrap`) and by re-running the direct `bwrap --unshare-net ...` repro above (should print `hello`,
+not the RTM_NEWADDR error).
+
+A broader alternative — `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0`, persisted
+via `/etc/sysctl.d/` — was considered and explicitly rejected: it disables the restriction for every
+unprivileged process on the VM, not just bwrap, which is a materially larger security-posture change
+for no extra benefit here.
+
 ---
 
 ## 6. Moving the repo and its untracked state
@@ -745,7 +796,7 @@ ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom/app && melos run test'
 #    - shared-code change -> Regression Impact Judge (regression-impact-judge-tool.md)
 #    - UI-touching change -> live device re-verification (§9.2), not analyze/test alone
 
-# 6. Fold the outcome into the TODO record (README step 7.5). Still manual, still every time.
+# 6. Fold the outcome into the TODO record (README step 5.5). Still manual, still every time.
 ```
 
 **No concurrency budget applies any more.** The "cap total concurrent sessions at 4" rule existed
@@ -774,8 +825,13 @@ ssh loom-vm '. ~/.loom-env.sh && codex login status'
 ssh loom-vm 'grep -A1 "projects." ~/.codex/config.toml'
 ssh loom-vm '. ~/.loom-env.sh && codex exec -p gpt5_3_spark_xhigh --sandbox read-only "Reply with exactly: PROFILE_OK"'
 
-# Repo builds
+# Not sufficient on its own -- read-only skips the bwrap loopback codepath (§5.5). Confirm
+# workspace-write (what every real dispatch uses) also works, post-AppArmor-fix:
+ssh loom-vm '. ~/.loom-env.sh && codex exec -p gpt5_3_spark_xhigh --sandbox workspace-write "Run the shell command: echo hello"'
+
+# Repo builds (run from app/, the actual melos workspace root -- not the repo root)
 ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom/app && melos bootstrap && melos run analyze'
+ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom/app && melos run test'
 
 # Ported scripts are present and executable
 ssh loom-vm 'ls -l ~/Loom/data/*.sh'
@@ -783,6 +839,14 @@ ssh loom-vm 'ls -l ~/Loom/data/*.sh'
 # Deleted things are actually gone
 ssh loom-vm 'ls ~/.codex-git-shim 2>&1'                      # expect: No such file or directory
 ssh loom-vm 'ls ~/Loom/data/wsl_*.sh 2>&1'                   # expect: No such file or directory
+
+# The real proof: one throwaway ticket through dispatch -> watch -> commit -> gate, then confirm
+# nothing was left running (this is what actually retires wsl_dispatch_tracker.sh -- not an
+# assumption that sshd cleans up, an observed empty process list right after a real dispatch)
+ssh loom-vm 'pgrep -af "codex|node" | grep -v pgrep'          # expect: no genuine codex/node hits
+                                                                # (a "nodev" mount-option substring
+                                                                # match is a known harmless false
+                                                                # positive, not a real process)
 
 # Emulator acceleration -- expected to FAIL until §9.3 is done
 ssh loom-vm 'sudo /usr/sbin/kvm-ok'
@@ -816,6 +880,9 @@ cd "docs/Build Plan V2/Tools/code"
 | VM lost its IP on reboot | **Closed** | Host-only static IP + infinite DHCP retry + `loom-net-watchdog.timer`; verified across repeated unattended reboots (§7) |
 | No way to drive the VM when SSH is down | **Closed** | `code/loom-vm.ps1` — power, config, screenshots, in-guest commands, none requiring SSH (§8) |
 | Guest RCU stall / boot hang | Seen once, transient | Recovered by a clean power-cycle. If it recurs, reduce vCPU count (§8, last subsection) |
+| Dispatch pipeline not yet run end to end on the VM | **Closed 2026-08-12** | A real throwaway ticket ran the full pipeline (dispatch → watch → commit → `handoff_gate.sh`, all 4 checks passed) end to end; commit reverted immediately after (§10 recipe, proof captured in this migration's closing session) |
+| AppArmor (`kernel.apparmor_restrict_unprivileged_userns=1`, Ubuntu 24.04 default) blocks bubblewrap's sandbox loopback setup under `--sandbox workspace-write` | **Closed 2026-08-12** | Local AppArmor profile at `/etc/apparmor.d/bwrap` granting only `bwrap` the `userns` permission (§5.5) — found via the throwaway ticket above, which failed until this was applied |
+| `melos run analyze`/`melos run test` surfaced 2 pre-existing, migration-unrelated failures (a `directives_ordering` lint in `loom_api_contracts.dart`, a widget-finder assertion failure in `v3_milestone_phasee_purchase_proposal_test.dart` under `loom_communities_app_shell`) | **Open, out of scope for this migration** | Both predate this work (last touched by unrelated feature commits, identical on host and guest at the same commit) and live under `app/`, which this migration explicitly does not touch. Worth a real ticket separately — not filed as part of this task |
 | `~/.config/loom-vm/secrets.env` is scaffolded but empty | Open, low priority | Only needed if you install `opencode`; nothing in the Loom repo reads `GEMINI_API_KEY`/`OPENAI_API_KEY`/`GOOGLE_API_KEY`. Rotate the old values first — they were exposed in a terminal transcript during the WSL inventory. |
 | USB passthrough not yet exercised end to end | Open | Needs a physical device present; §9.2 |
 | Dispatch pipeline not yet run end to end on the VM | Open | Do one low-stakes ticket before trusting it for a real round |
