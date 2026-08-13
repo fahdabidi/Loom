@@ -367,6 +367,12 @@ Youth Soccer roster restoration, since it's genuinely new content, not a rename.
 
 ## Milestone 2 — cleanup: retire the `NEEDS IMPLEMENTATION` comments
 
+**✅ CLOSED, 2026-08-13.** All 7 communities done — see the completion section at the end of this
+milestone for the full round-by-round account. The narrative below (approval, the step-4-out-of-order
+Skill-instructions fix, the WSL-era pause) is kept as the historical record of how this milestone
+started; read it top-to-bottom for context, or skip to "Resumed and closed, 2026-08-13" at the end for
+just the outcome.
+
 **IN PROGRESS, 2026-08-12 — explicit approval received.** The user's original hard gate ("once all
 implementation is completed, write a cleanup milestone to go back and update the JSON comment as completed
 which requires explicit approval from me") is satisfied: Milestone 1 closed, and the user explicitly
@@ -424,6 +430,60 @@ Remaining steps, unchanged from the original plan:
    warnings.
 4. ~~Update `archetypes/README.md`'s status table~~ — **done early, 2026-08-12, see above.**
 
+### Resumed and closed, 2026-08-13
+
+Resumed once the WSL2→VirtualBox dispatch-pipeline migration
+([`wsl-to-virtualbox-migration.md`](Tools/wsl-to-virtualbox-migration.md)) landed and was verified working
+end to end. All 7 communities done in one session: Chess Club (re-dispatched from scratch — the WSL-era
+attempt had produced zero output, nothing to build on), Cedar Commons HOA, Neighborhood Book Club,
+Riverside Youth Soccer, Masjid Nur, Garden Club, Data Portability Community.
+
+**Deviation from the original plan worth recording:** step 1 above says "remove or update them via a new
+Skill dispatch against the same product docs, same as any other JSON content change" — read literally,
+this means a full blind re-authoring run per community, the same mechanism Milestone 1.5 used. That
+turned out to be the wrong mechanism here, caught before any dispatch ran: several of the 7 communities'
+product docs (confirmed directly, e.g. Chess Club's own "§B25 Card Surface Registry Mapping" table) still
+told the authoring Skill to pick **fallback** archetypes (`formEntry`, `statusTimeline`,
+`approvalQueueItem`) for workflows that already correctly use the newly-real `exportWizard`/`table`/
+`documentLibrary` in the shipped JSON — because those doc sections predate the 2026-08-12 promotion and
+were never in scope for updating (product docs are "expand-only," not something this milestone touches).
+A blind full re-authoring dispatch against those docs risked silently reverting already-correct archetype
+choices back to stale fallbacks — a much larger, wrong-direction diff than "retire some comments."
+
+**What ran instead, for all 7:** a narrow, surgical edit dispatch — still through
+`call_skill_authoring_agent.sh` (never hand-edited, per the standing rule), still fetching
+`archetypes/README.md`/`field-types.md` live to independently confirm the promotion — but given the
+**complete already-shipped JSON file** as its literal starting point, with an exact, pre-computed list of
+which specific `NEEDS IMPLEMENTATION` comment lines to delete and which to leave untouched (built by
+grep-enumerating every comment per community first, then classifying each one by hand before any dispatch
+ran), and an explicit instruction to return the complete file with *only* those lines changed — no
+regeneration, no reformatting, no second-guessing the product doc's stale guidance. Two per-community
+edge cases needed explicit handling in the brief and were both confirmed correct in the resulting diff:
+Masjid Nur's `citations` field carries two adjacent `NEEDS IMPLEMENTATION` comments on consecutive lines
+(one about citation-list rendering — resolved; one about per-citation permission/redaction
+expressiveness — a real, separate, still-open grammar gap) that had to be disambiguated without merging
+or dropping either; Data Portability Community's `exportWizard`-pending notice is a single consolidated
+file-header comment covering all 28 `exportWizard` renderBindings at once (not per-instance), mixed with
+an unrelated checksum/opaque-ID platform-service warning in the same comment block, requiring a split
+rather than a deletion.
+
+**Verification, every round:** the dispatch's returned file was diffed line-by-line against the
+currently-committed fixture before being trusted — every one of the 7 diffs contained *exactly* the
+pre-computed set of comment-line deletions and nothing else (confirmed via `diff -u`, not the dispatch's
+own self-report). The real validator (`community_package_validator`) was then run against both the new
+and the original file for comparison — all 7 came back with either identical output to the original or a
+strict improvement (Chess Club and Masjid Nur: 0 errors/0 warnings; the rest: 0 errors, same warning
+count and content as before, confirming no regression). Final full-repo sweep, 2026-08-13: all 11 real
+community fixtures individually validate at 0 errors (`AdFreeCommunity`, `CameraClub` 0/7 warnings,
+`CedarCommonsHOA` 0/1, `ChessClub` 0/0, `DataPortabilityCommunity` 0/0, `GardenClub` 0/8, `MasjidNur`
+0/0, `MemberSocialSpace` 0/3, `NeighborhoodBookClub` 0/10, `Phase1_TabletopClub` 0/39,
+`RiversideYouthSoccer` 0/6). A directory-wide sweep separately shows 12 errors, all traced to the two
+known non-canonical Cedar Commons HOA sibling files (`.HAND-AUTHORED-BACKUP.jsonc`,
+`.SKILL-AUTHORED-CALENDAR-SLICE.jsonc`) — pre-existing, out of scope, not touched by this milestone.
+
+Each community committed and pushed separately (7 commits, `c5e4bc76`..`118ac7a3`), matching this
+project's own established one-commit-per-verified-round discipline.
+
 ---
 
 ## 8. Live TODO / Next Steps Queue
@@ -433,5 +493,5 @@ Remaining steps, unchanged from the original plan:
 | ✅ Closed | `new-ticket` | Milestone 1 (registry + `table` + `documentLibrary` + `searchAiAnswer` + `exportWizard`) — all 5 sub-tickets done, each independently verified. 3 of the 4 widget tickets caught real bugs in independent verification the dispatch's own checks missed — see each archetype's own tracker entry above for the full account. | user-identified | 2026-08-11 (closed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
-| ⬜ Open | `needs-skill-dispatch` | Milestone 2 — approved and started 2026-08-12. Reference-doc prep (all 3 Skill instruction copies + archetypes/README.md + field-types.md) done. Comment cleanup: Chess Club dispatch attempted, failed with zero output (WSL2 vsock exhaustion, zombie wslhost process — see tracker body). Was paused pending `wsl-to-virtualbox-migration.md`; that migration is now done and verified (see the closed `blocked` row below), so this can resume. 6 communities not yet attempted: Cedar Commons HOA, Neighborhood Book Club, Riverside Youth Soccer, Masjid Nur, Garden Club, Data Portability Community. | this tracker | 2026-08-12 |
+| ✅ Closed | `needs-skill-dispatch` | Milestone 2 (retire resolved `NEEDS IMPLEMENTATION` comments) — all 7 communities done: Chess Club, Cedar Commons HOA, Neighborhood Book Club, Riverside Youth Soccer, Masjid Nur, Garden Club, Data Portability Community. Each Skill-dispatched as a narrow, surgical edit (not a full re-authoring — see "Resumed and closed" section above for why), diffed line-by-line against the committed fixture before trusting (exactly the intended comments removed every time, nothing else), and validator-confirmed 0 errors with no new warnings. Final sweep: all 11 real community fixtures individually validate at 0 errors. | this tracker | 2026-08-12 (closed 2026-08-13) |
 | ✅ Closed | `blocked` | WSL2 dispatch pipeline unreliable after ~5hrs continuous use this session — vsock exhaustion, a zombie wslhost process unkillable across 5 cleanup attempts. `wsl.exe --shutdown` run as immediate remediation. `wsl-to-virtualbox-migration.md` migrated the whole pipeline to a VirtualBox VM with no vsock cap — verified 2026-08-12 with a real throwaway ticket run end to end (dispatch → watch → commit → `handoff_gate.sh`, all 4 checks passed, no orphaned processes after). Along the way, found and fixed a real blocker the migration spec hadn't anticipated: Ubuntu 24.04's default AppArmor policy blocked bubblewrap's sandbox under `--sandbox workspace-write` (`bwrap: loopback: Failed RTM_NEWADDR`) — fixed with a targeted AppArmor profile scoped to just `bwrap`, documented in `wsl-to-virtualbox-migration.md` §5.5. | this session | 2026-08-12 (closed 2026-08-13) |
