@@ -578,7 +578,6 @@
             "states": ["available"],
             "role": "any",
             "tabId": "resources",
-            // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is canonical but not yet in the Dart registry.
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "primary",
             "actions": [
@@ -605,7 +604,6 @@
             "states": ["archived"],
             "role": "any",
             "tabId": "resources",
-            // NEEDS IMPLEMENTATION (archetype pending): documentLibrary is canonical but not yet in the Dart registry.
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "summary"
           }
@@ -615,7 +613,6 @@
           "source": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "account_balance", "labelTemplate": "Source: {value}", "displayContexts": ["tile", "detail"] },
           "version": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "history", "labelTemplate": "Version {value}", "displayContexts": ["tile", "detail"] },
           "publishedDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Published {value}", "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION: type:url/openMode rendering is proposed and not yet implemented.
           "resourceUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayIcon": "open_in_new", "labelTemplate": "Open {value}", "displayContexts": ["tile", "detail"] },
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified_user", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
           "allowedPersonaIds": { "type": "personaId[]", "writableBy": "formEntry", "displayIcon": "lock", "labelTemplate": "Restricted to {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -1546,7 +1543,6 @@
             "states": ["asked", "answered", "reported"],
             "role": "any",
             "tabId": "resources",
-            // NEEDS IMPLEMENTATION (archetype pending): searchAiAnswer is canonical but not yet in the Dart registry.
             "cardSurfaceFamily": "searchAiAnswer",
             "bindingKind": "primary",
             "actions": [
@@ -1574,7 +1570,6 @@
           "aiAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "auto_awesome", "labelTemplate": "AI answer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "curatedAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "rate_review", "labelTemplate": "Curated answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "displayAnswer": { "type": "textarea?", "formula": "if(curatedAnswerBody == null, aiAnswerBody, curatedAnswerBody)", "displayIcon": "article", "labelTemplate": "Answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION: citation-list itemSchema/type:url rendering is proposed and not yet implemented.
           // NEEDS IMPLEMENTATION: per-citation permission/redaction rules are not expressible by itemSchema.
           "citations": {
             "type": "list",
