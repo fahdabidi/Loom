@@ -1,0 +1,943 @@
+openapi: 3.1.0
+info:
+  title: Loom App Access API
+  version: 0.1.0
+  summary: Generic app registry, groups, permissions, roles, and fan access assignments.
+  description: >-
+    Defines the owned API surface for multi-tenant authorization on top of Fan Passport identity.
+    Fan Passport answers "who is this user, and are they authenticated"; this API answers "which
+    apps may they use, which groups are they in, which roles do they hold there, and what may those
+    roles do". The model is deliberately app-agnostic: an app (for example `loom_communities`)
+    registers its own permission catalog, defines groups (one per community), defines roles that map
+    to permissions, and assigns fans to apps, groups, and roles. Loom Communities is the first
+    consumer but no Loom-Communities concept appears in this contract.
+servers:
+  - url: https://identity.loom.example
+security:
+  - LoomUserOAuth:
+      - app.access
+  - LoomServiceAuth: []
+x-loom-api-owner: identity/app-access
+x-loom-architecture-docs:
+  - ../../../Architecture/03-identity-fan-data-wallets-and-fan-app-shell.md
+x-loom-downstream-apis:
+  - ./fan-passport-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+paths:
+
+  # ── Apps ────────────────────────────────────────────────────────────────
+  /v1/apps:
+    get:
+      operationId: listApps
+      summary: List registered apps.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Registered apps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAppsResponse'
+    post:
+      operationId: registerApp
+      summary: Register an app that will own a permission catalog and groups.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAppRequest'
+      responses:
+        '201':
+          description: App registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+
+  /v1/apps/{appId}:
+    get:
+      operationId: getApp
+      summary: Read one app.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+      responses:
+        '200':
+          description: App.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  # ── Permission catalog (the "permissions builder") ──────────────────────
+  /v1/apps/{appId}/permissions:
+    get:
+      operationId: listPermissions
+      summary: List an app's declared permission catalog.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter to one catalog category, for example an archetype name.
+      responses:
+        '200':
+          description: Permission catalog.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPermissionsResponse'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    put:
+      operationId: replacePermissionCatalog
+      summary: Replace an app's entire permission catalog in one call.
+      description: >-
+        The bulk catalog builder. An app publishes its full permission set — for Loom Communities,
+        every archetype action — as a single versioned document. Replacing the catalog never
+        implicitly revokes role grants; permissions removed from the catalog are reported in
+        `orphanedRoleGrants` so the caller can reconcile them deliberately.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplacePermissionCatalogRequest'
+      responses:
+        '200':
+          description: Catalog replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCatalog'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  # ── Groups ──────────────────────────────────────────────────────────────
+  /v1/apps/{appId}/groups:
+    get:
+      operationId: listGroups
+      summary: List an app's groups.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Groups.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGroupsResponse'
+    post:
+      operationId: createGroup
+      summary: Create a group inside an app.
+      description: >-
+        A group is the app's own tenancy unit. Loom Communities creates one group per community,
+        for example `loom_communities_cedar_commons_hoa`.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Group created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+
+  /v1/apps/{appId}/groups/{groupId}:
+    get:
+      operationId: getGroup
+      summary: Read one group.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: Group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  # ── Roles, and role → permission mapping ────────────────────────────────
+  /v1/apps/{appId}/roles:
+    get:
+      operationId: listRoles
+      summary: List roles, optionally scoped to one group.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Return roles bound to this group. Omit to list every role in the app, including
+            app-level template roles that carry no `groupId`.
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Roles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRolesResponse'
+    post:
+      operationId: createRole
+      summary: Create a role and map it to permissions.
+      description: >-
+        A role with `groupId` set belongs to that group — the group-to-roles mapping, for example
+        `cedar_commons_hoa_admin` in `loom_communities_cedar_commons_hoa`. A role with `groupId`
+        null is an app-level template assignable in any group of that app.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+
+  /v1/apps/{appId}/roles/{roleId}:
+    get:
+      operationId: getRole
+      summary: Read one role and its permissions.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '200':
+          description: Role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/apps/{appId}/roles/{roleId}/permissions:
+    put:
+      operationId: setRolePermissions
+      summary: Replace the permission set a role grants.
+      description: >-
+        The role-to-permissions mapping tool. Every `permissionId` must already exist in the app's
+        catalog; unknown ids are rejected rather than silently created.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetRolePermissionsRequest'
+      responses:
+        '200':
+          description: Role permissions replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  # ── Fan → app access ────────────────────────────────────────────────────
+  /v1/apps/{appId}/access/{fanId}:
+    get:
+      operationId: getAppAccess
+      summary: Read one fan's access to an app.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/FanId'
+      responses:
+        '200':
+          description: App access record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppAccess'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    put:
+      operationId: setAppAccess
+      summary: Grant or update a fan's access to an app, with app-level roles.
+      description: >-
+        The fan-to-app mapping tool, for example "this fan has access to `loom_communities` as
+        `platform_admin`". App-level roles apply across every group in the app; group-scoped roles
+        are assigned through group membership instead.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/FanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetAppAccessRequest'
+      responses:
+        '200':
+          description: App access granted or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppAccess'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    delete:
+      operationId: revokeAppAccess
+      summary: Revoke a fan's access to an app.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/FanId'
+      responses:
+        '204':
+          description: Access revoked.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/fans/{fanId}/apps:
+    get:
+      operationId: listFanApps
+      summary: List every app one fan has access to.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/FanId'
+      responses:
+        '200':
+          description: App access records for this fan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAppAccessResponse'
+
+  # ── Fan → group membership (carries group-scoped roles) ─────────────────
+  /v1/apps/{appId}/groups/{groupId}/members:
+    get:
+      operationId: listGroupMembers
+      summary: List a group's members and their roles.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Group members.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGroupMembershipsResponse'
+
+  /v1/apps/{appId}/groups/{groupId}/members/{fanId}:
+    get:
+      operationId: getGroupMembership
+      summary: Read one fan's membership in a group.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/FanId'
+      responses:
+        '200':
+          description: Group membership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    put:
+      operationId: setGroupMembership
+      summary: Add a fan to a group, or update the roles they hold there.
+      description: >-
+        The fan-to-group mapping tool, and the group-scoped role assignment in the same record —
+        "this fan is in `loom_communities_cedar_commons_hoa`, holding `cedar_commons_hoa_admin`".
+        Every `roleId` must be either a role bound to this group or an app-level template role.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/FanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetGroupMembershipRequest'
+      responses:
+        '200':
+          description: Membership created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    delete:
+      operationId: removeGroupMember
+      summary: Remove a fan from a group.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/FanId'
+      responses:
+        '204':
+          description: Membership removed.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/fans/{fanId}/groups:
+    get:
+      operationId: listFanGroups
+      summary: List every group one fan belongs to, across apps.
+      description: >-
+        Backs cross-app and cross-community surfaces — for example a unified Messages tab that must
+        span every community the fan is a member of.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/FanId'
+        - name: appId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Restrict to one app.
+      responses:
+        '200':
+          description: Group memberships for this fan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGroupMembershipsResponse'
+
+  # ── Runtime authorization ───────────────────────────────────────────────
+  /v1/access-decisions:
+    post:
+      operationId: checkAccess
+      summary: Decide whether a fan holds a permission, optionally within a group.
+      description: >-
+        The runtime authorization call. Resolves app-level roles and group-scoped roles together and
+        returns a shared `PolicyDecision`, including the roles that produced the outcome so a denial
+        is explainable rather than opaque.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessDecisionRequest'
+      responses:
+        '200':
+          description: Access decision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessDecision'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+
+  /v1/apps/{appId}/effective-permissions/{fanId}:
+    get:
+      operationId: getEffectivePermissions
+      summary: Resolve every permission a fan effectively holds.
+      description: >-
+        Returns the full resolved permission set in one call so a client can render an entire
+        surface without issuing one decision request per control.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/FanId'
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Resolve within this group. Omit for app-level permissions only.
+      responses:
+        '200':
+          description: Effective permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EffectivePermissions'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+components:
+
+  parameters:
+    AppId:
+      name: appId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Registered app id, for example `loom_communities`.
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Group id, for example `loom_communities_cedar_commons_hoa`.
+    RoleId:
+      name: roleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Role id, for example `cedar_commons_hoa_admin`.
+    FanId:
+      name: fanId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Fan Passport `fanId` — the identity subject of every assignment in this API.
+
+  schemas:
+
+    App:
+      type: object
+      required: [appId, displayName, status, createdAt]
+      properties:
+        appId:
+          type: string
+          description: Stable app id, for example `loom_communities`.
+        displayName:
+          type: string
+        description:
+          type: [string, 'null']
+        status:
+          $ref: '#/components/schemas/AppStatus'
+        permissionCatalogVersion:
+          type: [string, 'null']
+          description: Version of the currently published permission catalog.
+        createdAt:
+          type: string
+          format: date-time
+
+    AppStatus:
+      type: string
+      enum: [active, suspended, retired]
+
+    RegisterAppRequest:
+      type: object
+      required: [appId, displayName]
+      properties:
+        appId:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: [string, 'null']
+
+    ListAppsResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/App'
+        pageInfo:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    Permission:
+      type: object
+      required: [permissionId, displayName]
+      properties:
+        permissionId:
+          type: string
+          description: App-unique permission id, for example `create_events`.
+        displayName:
+          type: string
+        description:
+          type: [string, 'null']
+        category:
+          type: [string, 'null']
+          description: >-
+            Optional grouping for catalog organization — Loom Communities uses the archetype name,
+            for example `event-rsvp` or `documentLibrary`.
+
+    PermissionCatalog:
+      type: object
+      required: [appId, catalogVersion, permissions, publishedAt]
+      properties:
+        appId:
+          type: string
+        catalogVersion:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+        orphanedRoleGrants:
+          type: array
+          description: >-
+            Role grants that referenced a permission no longer present in the catalog. Reported, not
+            auto-revoked, so removal is always a deliberate act.
+          items:
+            $ref: '#/components/schemas/OrphanedRoleGrant'
+        publishedAt:
+          type: string
+          format: date-time
+
+    OrphanedRoleGrant:
+      type: object
+      required: [roleId, permissionId]
+      properties:
+        roleId:
+          type: string
+        permissionId:
+          type: string
+
+    ReplacePermissionCatalogRequest:
+      type: object
+      required: [catalogVersion, permissions]
+      properties:
+        catalogVersion:
+          type: string
+          description: Caller-supplied version for the catalog being published.
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+
+    ListPermissionsResponse:
+      type: object
+      required: [appId, items]
+      properties:
+        appId:
+          type: string
+        catalogVersion:
+          type: [string, 'null']
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+
+    Group:
+      type: object
+      required: [appId, groupId, displayName, createdAt]
+      properties:
+        appId:
+          type: string
+        groupId:
+          type: string
+        displayName:
+          type: string
+        parentGroupId:
+          type: [string, 'null']
+          description: Optional parent for nested group hierarchies.
+        externalRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateGroupRequest:
+      type: object
+      required: [groupId, displayName]
+      properties:
+        groupId:
+          type: string
+        displayName:
+          type: string
+        parentGroupId:
+          type: [string, 'null']
+        externalRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+
+    ListGroupsResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        pageInfo:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    Role:
+      type: object
+      required: [appId, roleId, displayName, permissionIds]
+      properties:
+        appId:
+          type: string
+        roleId:
+          type: string
+        groupId:
+          type: [string, 'null']
+          description: >-
+            The group this role belongs to. Null means an app-level template role, assignable in any
+            group of this app.
+        displayName:
+          type: string
+        description:
+          type: [string, 'null']
+        permissionIds:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateRoleRequest:
+      type: object
+      required: [roleId, displayName]
+      properties:
+        roleId:
+          type: string
+        groupId:
+          type: [string, 'null']
+        displayName:
+          type: string
+        description:
+          type: [string, 'null']
+        permissionIds:
+          type: array
+          items:
+            type: string
+
+    SetRolePermissionsRequest:
+      type: object
+      required: [permissionIds]
+      properties:
+        permissionIds:
+          type: array
+          items:
+            type: string
+
+    ListRolesResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        pageInfo:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    AssignmentState:
+      type: string
+      enum: [active, suspended, revoked]
+
+    AppAccess:
+      type: object
+      required: [appId, fanId, roleIds, state, grantedAt]
+      properties:
+        appId:
+          type: string
+        fanId:
+          type: string
+        roleIds:
+          type: array
+          description: App-level roles, applying across every group in this app.
+          items:
+            type: string
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+        grantedAt:
+          type: string
+          format: date-time
+
+    SetAppAccessRequest:
+      type: object
+      required: [roleIds]
+      properties:
+        roleIds:
+          type: array
+          items:
+            type: string
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+
+    ListAppAccessResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppAccess'
+
+    GroupMembership:
+      type: object
+      required: [appId, groupId, fanId, roleIds, state, joinedAt]
+      properties:
+        appId:
+          type: string
+        groupId:
+          type: string
+        fanId:
+          type: string
+        roleIds:
+          type: array
+          description: Roles this fan holds within this group.
+          items:
+            type: string
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+        joinedAt:
+          type: string
+          format: date-time
+
+    SetGroupMembershipRequest:
+      type: object
+      required: [roleIds]
+      properties:
+        roleIds:
+          type: array
+          items:
+            type: string
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+
+    ListGroupMembershipsResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMembership'
+        pageInfo:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    AccessDecisionRequest:
+      type: object
+      required: [fanId, appId, permissionId]
+      properties:
+        fanId:
+          type: string
+        appId:
+          type: string
+        permissionId:
+          type: string
+        groupId:
+          type: [string, 'null']
+          description: Evaluate within this group. Omit to evaluate app-level roles only.
+
+    AccessDecision:
+      type: object
+      required: [fanId, appId, permissionId, allowed, policy]
+      properties:
+        fanId:
+          type: string
+        appId:
+          type: string
+        groupId:
+          type: [string, 'null']
+        permissionId:
+          type: string
+        allowed:
+          type: boolean
+        grantingRoleIds:
+          type: array
+          description: Roles that granted the permission. Empty when `allowed` is false.
+          items:
+            type: string
+        policy:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+
+    EffectivePermissions:
+      type: object
+      required: [fanId, appId, permissionIds, roleIds]
+      properties:
+        fanId:
+          type: string
+        appId:
+          type: string
+        groupId:
+          type: [string, 'null']
+        permissionIds:
+          type: array
+          description: Union of every permission granted by the fan's app-level and group-scoped roles.
+          items:
+            type: string
+        roleIds:
+          type: array
+          items:
+            type: string
+        catalogVersion:
+          type: [string, 'null']
+        resolvedAt:
+          type: string
+          format: date-time

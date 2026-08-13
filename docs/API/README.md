@@ -39,7 +39,7 @@ Shared schemas live in `OpenAPI/_shared/`. API specs should reference shared sch
 
 The initial spec set mirrors the system components named by the architecture docs:
 
-- Identity: Fan Passport, Fan Vault, Fan Wallet.
+- Identity: Fan Passport, Fan Vault, Fan Wallet, App Access.
 - Creator: Creator Channel Registry, Creator Metadata, Creator Audience.
 - Content: Content Host, Playback Authorization.
 - Monetization: Entitlement Ledger, Receipt Ledger, Settlement Engine.

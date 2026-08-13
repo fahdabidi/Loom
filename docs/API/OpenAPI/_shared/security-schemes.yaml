@@ -11,6 +11,8 @@ components:
             fan.passport: Read and manage fan passport state.
             fan.vault: Read and manage fan vault state.
             fan.wallet: Read and manage wallet and entitlement purchases.
+            app.access: Read app access, group membership, and effective permissions for the signed-in fan.
+            app.access.admin: Administer app registration, permission catalogs, groups, roles, and assignments.
             creator.channel: Manage creator channel and metadata.
             creator.audience: Access creator audience tools.
             content.host: Manage content host objects.

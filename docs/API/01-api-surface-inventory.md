@@ -11,6 +11,7 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Fan Passport API | `OpenAPI/identity/fan-passport-api.openapi.yaml` | Fan identity, follows, pairwise creator identity, consent grants, creator interest-data grant requests, creator-category permission policies, relationship visibility. | Creator Audience, Creator Metadata, Receipt Ledger |
 | Fan Vault API | `OpenAPI/identity/fan-vault-api.openapi.yaml` | Fan-owned vault records, explicit interests, disliked interests, liked/disliked creators, muted providers, ad preferences, private events, memory bundles, vault export. | Fan Passport, Receipt Ledger, AI Gateway, Recommendation and Referral |
 | Fan Wallet API | `OpenAPI/identity/fan-wallet-api.openapi.yaml` | Wallet state, payment intents, subscriptions, boosts, refunds. | Fan Passport, Entitlement Ledger, Receipt Ledger, Settlement Engine |
+| App Access API | `OpenAPI/identity/app-access-api.openapi.yaml` | App registration, per-app permission catalogs, groups, roles and their permission mappings, fan-to-app access, fan-to-group membership with group-scoped roles, runtime access decisions and effective-permission resolution. | Fan Passport, Audit |
 
 ## 2. Creator
 
