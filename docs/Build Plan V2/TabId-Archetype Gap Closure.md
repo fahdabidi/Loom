@@ -367,30 +367,62 @@ Youth Soccer roster restoration, since it's genuinely new content, not a rename.
 
 ## Milestone 2 — cleanup: retire the `NEEDS IMPLEMENTATION` comments
 
-**BLOCKED — do not start without the user's explicit approval, checked at the time this milestone actually
-runs, not inferred from Milestone 1/1.5 being complete.** This is a hard gate, not a formality: the user's
-own words authoring this tracker were "once all implementation is completed, write a cleanup milestone to
-go back and update the JSON comment as completed which requires explicit approval from me." Milestone 1 and
-1.5 being verified complete is a **precondition** for asking, not a substitute for asking.
+**IN PROGRESS, 2026-08-12 — explicit approval received.** The user's original hard gate ("once all
+implementation is completed, write a cleanup milestone to go back and update the JSON comment as completed
+which requires explicit approval from me") is satisfied: Milestone 1 closed, and the user explicitly
+approved starting Milestone 2 in this same session.
 
-Once Milestone 1 (Dart) and Milestone 1.5 (JSON, via the Skill) are both independently verified complete,
-and the user has explicitly signed off on running this cleanup:
+**Step 4 done first, out of order — a real dependency the original step order missed.** Before any Skill
+dispatch could safely touch community JSON, the community-authoring Skill's own reference material had to
+stop saying these 4 archetypes were pending — otherwise every dispatch would keep re-adding the exact
+`NEEDS IMPLEMENTATION (archetype pending)` comments this milestone exists to remove. Found and fixed
+2026-08-12: **three separate copies** of the Skill's instructions all still described the 4 archetypes as
+pending/not-real, and one (`codex-dispatch/INSTRUCTIONS.md`, embedded directly into
+`call_skill_authoring_agent.sh`'s dispatch prompt, not fetched live) explicitly told the authoring agent to
+treat a real `unknown_card_surface_family` finding on these 4 as "expected" and *not fix it*. Corrected,
+committed, pushed: `archetypes/README.md` (status table moved to ✅ REAL + evidence, dispatch-mechanism
+section updated with the 3 new `part27` cases and `table`'s separate list-level mechanism), `field-types.md`
+(`openMode: "choice"` now real, not just `"external"`), `SKILL.md`, `chatgpt-upload/00-INSTRUCTIONS.md`
+(needed a full rewrite — it predated even the 2026-08-11 promotion decision), `codex-dispatch/
+INSTRUCTIONS.md`, and the `chatgpt-upload` mirrors of `field-types.md`/`archetypes/README.md`.
 
-1. For every `NEEDS IMPLEMENTATION (archetype pending)` comment added by Milestone 1.5's Skill dispatches —
-   these are now resolved (the archetype is real) — remove or update them via a **new Skill dispatch**
-   against the same product docs, same as any other JSON content change. Do not hand-edit these comments
-   out directly, for the same reason JSON is never hand-authored anywhere else in this process.
+**Steps 1-3 (the actual comment cleanup) — started, paused mid-flight.** Full enumeration of every real
+`NEEDS IMPLEMENTATION` comment across all 7 Milestone-1.5-touched fixtures done (grep, all ~40+ comments
+categorized: archetype-pending + `type:url`/`openMode`/citation-list renderer-prerequisite comments are
+resolved and need a Skill dispatch to remove/update; platform-service comments — checksum, transfer/
+receipt-id, payment, AI-answer — and unrelated grammar/asset/guard-vocabulary notes must stay untouched,
+per this milestone's own step 2 warning). First dispatch (Chess Club) attempted via
+`call_skill_authoring_agent.sh` and **failed with zero output** — empty `events.jsonl`, no live `codex`
+process, no further log lines after the startup banner. Root-caused: a zombie `wslhost` process (confirmed
+via `.dispatch_wsl_tracker.log`) had survived, unkillable, since 09:22 across five consecutive dispatch
+cleanups earlier this session — WSL2 vsock exhaustion, the same known failure class documented throughout
+this project's tooling. `wsl.exe --shutdown` run as remediation; no community JSON was touched by the
+failed attempt, nothing to revert. **Paused here, deliberately** — see
+[`wsl-to-virtualbox-migration.md`](Tools/wsl-to-virtualbox-migration.md), committed the same session, which
+migrates this whole dispatch pipeline off WSL2 (eliminating vsock exhaustion as a failure class entirely)
+onto an already-built-and-validated VirtualBox VM. Resume the remaining 6 communities (Cedar Commons HOA,
+Neighborhood Book Club, Riverside Youth Soccer, Masjid Nur, Garden Club, Data Portability Community) either
+after that migration lands, or via a fresh WSL retry if the migration isn't ready yet — either is fine, the
+dispatch mechanism itself (`call_skill_authoring_agent.sh`) is unchanged either way.
+
+Remaining steps, unchanged from the original plan:
+
+1. For every `NEEDS IMPLEMENTATION (archetype pending)` comment (and the now-also-resolved `type:url`/
+   `openMode`/citation-list renderer-prerequisite comments) added by Milestone 1.5's Skill dispatches —
+   remove or update them via a **new Skill dispatch** against the same product docs, same as any other JSON
+   content change. Do not hand-edit these comments out directly. Review each dispatch's diff carefully
+   before applying — a full regeneration risks touching more than just comments; confirm the rest of the
+   file is stable before treating it as ready to commit, matching Milestone 1.5's own established
+   narrow-diff discipline.
 2. For every `NEEDS IMPLEMENTATION (platform service)` comment on `searchAiAnswer`'s answer field or
    `exportWizard`'s checksum/id fields — these are **not** resolved by Milestone 1 (which explicitly
    excluded the platform-service work). Leave these exactly as they are. Confirm this distinction explicitly
-   in the STATUS response for this milestone — accidentally clearing a platform-service marker because it
-   looked similar to an archetype-pending one would silently reintroduce the AP-6 fabrication risk this
-   comment convention exists to prevent.
+   in each dispatch's own review — accidentally clearing a platform-service marker because it looked similar
+   to an archetype-pending one would silently reintroduce the AP-6 fabrication risk this comment convention
+   exists to prevent.
 3. Re-run the full validator smoke test across all touched fixtures, confirm 0 errors, 0 unexpected new
    warnings.
-4. Update `archetypes/README.md`'s status table: move `table`/`documentLibrary`/`searchAiAnswer`/
-   `exportWizard` from 🔲 PENDING to their real final status (✅ REAL or 🟡 GENERIC, per what Milestone 1
-   actually built) with real evidence citations, matching the existing table's format for the other 9.
+4. ~~Update `archetypes/README.md`'s status table~~ — **done early, 2026-08-12, see above.**
 
 ---
 
@@ -401,4 +433,5 @@ and the user has explicitly signed off on running this cleanup:
 | ✅ Closed | `new-ticket` | Milestone 1 (registry + `table` + `documentLibrary` + `searchAiAnswer` + `exportWizard`) — all 5 sub-tickets done, each independently verified. 3 of the 4 widget tickets caught real bugs in independent verification the dispatch's own checks missed — see each archetype's own tracker entry above for the full account. | user-identified | 2026-08-11 (closed 2026-08-12) |
 | ✅ Closed | `needs-skill-dispatch` | Milestone 1.5 (Skill-dispatched JSON authoring for the 7 affected communities) — all 7 done, each independently validated + judged PASS. See per-community rows above for full round-by-round history. | this tracker | 2026-08-12 |
 | ⬜ Open | `new-ticket` | Cedar Commons HOA: `hoa-member-document` access-request flow has no board-side grant/deny resolution (dead end once requested); traceability overclaims "board sees document access audit" — 5 audit list fields have no display config and render nowhere. Non-blocking fast-follow, judge-identified. | m15-cedarhoa-r2 judge | 2026-08-12 |
-| ⬜ Open | `blocked` | Milestone 2 (retire `NEEDS IMPLEMENTATION` archetype-pending comments) — Milestones 1+1.5 preconditions now both met (2026-08-12); still blocked on the user's fresh, explicit, per-instance approval at the time it actually runs — do not infer approval from precondition completion | this tracker | 2026-08-11 (refreshed 2026-08-12) |
+| ⬜ Open | `needs-skill-dispatch` | Milestone 2 — approved and started 2026-08-12. Reference-doc prep (all 3 Skill instruction copies + archetypes/README.md + field-types.md) done. Comment cleanup: Chess Club dispatch attempted, failed with zero output (WSL2 vsock exhaustion, zombie wslhost process — see tracker body). Paused pending `wsl-to-virtualbox-migration.md`. 6 communities not yet attempted: Cedar Commons HOA, Neighborhood Book Club, Riverside Youth Soccer, Masjid Nur, Garden Club, Data Portability Community. | this tracker | 2026-08-12 |
+| ⬜ Open | `blocked` | WSL2 dispatch pipeline unreliable after ~5hrs continuous use this session — vsock exhaustion, a zombie wslhost process unkillable across 5 cleanup attempts. `wsl.exe --shutdown` run as immediate remediation. `wsl-to-virtualbox-migration.md` (committed 2026-08-12) is the durable fix — migrates the whole pipeline to a VirtualBox VM with no vsock cap. Not yet executed. | this session | 2026-08-12 |
