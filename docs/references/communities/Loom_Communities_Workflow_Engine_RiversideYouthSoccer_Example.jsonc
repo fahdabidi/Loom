@@ -971,8 +971,6 @@
             "states": ["active"],
             "role": "any",
             "tabId": "team",
-            // NEEDS IMPLEMENTATION (archetype registry): table is locked/pending and currently
-            // produces expected unknown_card_surface_family until the tracked registry work lands.
             "cardSurfaceFamily": "table",
             "bindingKind": "primary"
           },
@@ -2580,8 +2578,6 @@
             "states": ["unread", "read", "acknowledged", "access-requested"],
             "role": "any",
             "tabId": "documents",
-            // NEEDS IMPLEMENTATION (archetype registry): documentLibrary is locked/pending.
-            // The type:url field renderer below is also proposed and not yet implemented.
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "primary",
             "actions": [
@@ -2632,8 +2628,6 @@
             "labelTemplate": "Version: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          // NEEDS IMPLEMENTATION (field renderer): type:url/openMode choice is proposed in
-          // field-types.md; it is the correct embedded/external open declaration, not a text substitute.
           "documentUrl": {
             "type": "url",
             "required": true,
@@ -3222,8 +3216,6 @@
             ],
             "role": "any",
             "tabId": "admin",
-            // NEEDS IMPLEMENTATION (archetype registry): exportWizard is locked/pending and currently
-            // produces expected unknown_card_surface_family until the tracked registry work lands.
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "primary",
             "actions": [
@@ -3283,7 +3275,6 @@
             "labelTemplate": "Redaction confirmed: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          // NEEDS IMPLEMENTATION (field renderer): type:url/openMode external is proposed.
           "downloadUrl": {
             "type": "url?",
             "writableBy": "effect",
@@ -3802,3 +3793,4 @@
     ]
   }
 }
+
