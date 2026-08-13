@@ -816,6 +816,40 @@ components:
             $ref: '#/components/schemas/CreatorDataGrantRequest'
         page:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    CreatorCategoryPermissionPolicyInput:
+      type: object
+      description: >-
+        Write shape for a creator-category policy. Identical to
+        CreatorCategoryPermissionPolicy except that it omits updatedAt, which is
+        server-managed. The response model required it, so reusing that model for
+        writes forced clients to invent a timestamp on every call.
+      required:
+        - policyId
+        - creatorCategoryId
+        - defaultDecision
+      properties:
+        policyId:
+          type: string
+        creatorCategoryId:
+          type: string
+        creatorCategoryLabel:
+          type: string
+          nullable: true
+        defaultDecision:
+          type: string
+          enum:
+            - ask_each_time
+            - auto_approve
+            - auto_deny
+        approvedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        adUseAllowed:
+          type: boolean
+        maxRetentionDays:
+          type: integer
+          nullable: true
     UpdateCreatorCategoryPermissionPoliciesRequest:
       type: object
       required:
@@ -824,7 +858,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/CreatorCategoryPermissionPolicy'
+            $ref: '#/components/schemas/CreatorCategoryPermissionPolicyInput'
     ListCreatorCategoryPermissionPoliciesResponse:
       type: object
       required:
