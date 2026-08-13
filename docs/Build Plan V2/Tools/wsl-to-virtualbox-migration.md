@@ -2,7 +2,19 @@
 
 This guide moves the Loom agent tooling (`docs/Build Plan V2/Tools/`) off WSL2 and onto a
 VirtualBox Ubuntu 24.04 VM. It is written against the VM that was actually built and validated for
-this purpose — hostname `fahd-VirtualBox`, user `fahd`, bridged IP `192.168.50.86`.
+this purpose — VirtualBox VM name **`ubuntu-24.04.4-loom`**, guest hostname `fahd-VirtualBox`,
+user `fahd`.
+
+> **There are two Ubuntu VMs on this host.** `ubuntu-24.04.4-loom` is Loom's.
+> `Ubuntu-24.04.4` belongs to an unrelated project — **never touch it**. They are easy to confuse
+> (near-identical names, both Ubuntu 24.04, both bridged); a VM operation aimed at the wrong one has
+> already happened once. Distinguish by MAC: Loom's is `08:00:27:3F:05:F1`. `loom-vm.ps1` (§8) is
+> hard-locked to the correct VM name for exactly this reason — prefer it over raw `VBoxManage`.
+
+**Addressing:** the VM has two NICs — a bridged NIC for internet/LAN (DHCP, currently
+`192.168.50.86`) and a host-only NIC with the **static** address **`192.168.56.10`**, which is what
+`ssh loom-vm` targets. The static address is deliberate: it does not depend on your router's DHCP,
+so it survives lease changes, router reboots, and the LAN being down entirely. See §7.
 
 **Read this first — the migration is not a port, it is a deletion.** Roughly half the tooling in
 `code/` exists solely to work around WSL2 and OneDrive pathologies that do not exist in a VM. The
@@ -20,7 +32,7 @@ important section; §5–§6 are mechanical.
 | How the orchestrator reaches the agent | `wsl.exe -e bash -lc '...'` from the Windows host | `ssh loom-vm '...'` |
 | Session cost | Each `wsl.exe` call consumes ~9 vsock connections against a hard, non-tunable cap | An SSH channel; `MaxSessions` defaults to 10 and *is* tunable |
 | Process cleanup | Manual PID-set diffing + kill + re-verify (WSL2 leaked sessions for 5+ hours) | `sshd` reaps its own children on channel close |
-| Android emulator | Ran on the Windows host | Inside the guest — **needs the Hyper-V decision in §7** |
+| Android emulator | Ran on the Windows host | Inside the guest — **needs the Hyper-V decision in §9** |
 
 The single most important consequence: **the repo no longer lives on OneDrive, and no longer
 crosses a filesystem translation layer.** Every guard built for that combination becomes dead code.
@@ -39,7 +51,8 @@ Expected: Flutter 3.41.7 (revision `cc0734ac71`, matching `app/apps/loom_demo/.m
 melos 7.8.1, Codex CLI, Claude Code CLI, and `gh` logged in as `fahdabidi`.
 
 Also in place:
-- **SSH key access** — `~/.ssh/loom_vm_ed25519` on the Windows host, aliased as `loom-vm` in
+- **SSH key access** — `~/.ssh/loom_vm_ed25519` on the Windows host, aliased as `loom-vm`
+  (→ `192.168.56.10`, host-only static) and `loom-vm-lan` (→ the bridged DHCP address) in
   `~/.ssh/config`. No password needed.
 - **Passwordless sudo** — `/etc/sudoers.d/fahd-nopasswd`.
 - **`~/.loom-env.sh`** — see §3, this is load-bearing for every script.
@@ -124,7 +137,7 @@ reuse one TCP connection instead of paying a fresh handshake each time. Add to `
 
 ```
 Host loom-vm
-    HostName 192.168.50.86
+    HostName 192.168.56.10          # host-only static -- see §7
     User fahd
     IdentityFile ~/.ssh/loom_vm_ed25519
     StrictHostKeyChecking accept-new
@@ -364,31 +377,242 @@ preflight already catches it — do not reflexively set `ALLOW_STALE_PUSH=1`.
 
 ---
 
-## 7. Hyper-V, WSL2, and emulator acceleration
+## 7. Networking: why the VM used to come up with no IP, and what fixes it
+
+**Symptom:** after a reboot the VM had no IPv4 address at all and was unreachable over SSH, while
+the console showed `enp0s3` `UP,LOWER_UP` with working IPv6.
+
+**Root cause**, from `journalctl -u NetworkManager`:
+
+```
+dhcp4 (enp0s3): activation: beginning transaction (timeout in 45 seconds)
+dhcp4 (enp0s3): state changed no lease
+```
+
+The VirtualBox bridged adapter's link is not yet forwarding when NetworkManager sends its first
+DHCP DISCOVER at boot. The transaction times out, NetworkManager **gives up rather than retrying**,
+and the VM sits with no IPv4 address indefinitely. It is not a router or DHCP-pool problem — a
+manual `nmcli con up netplan-enp0s3` acquires a lease in under a second, every time.
+
+Three independent layers now prevent this, deliberately overlapping:
+
+**1. A static host-only address (the important one).** A second NIC on VirtualBox's host-only
+network carries a static `192.168.56.10`, configured with `ipv4.never-default yes` so it can never
+hijack the default route away from the bridged NIC. `ssh loom-vm` targets this address, so host↔VM
+access no longer depends on your LAN, your router, or DHCP at all.
+
+```bash
+ssh loom-vm 'ip -4 -br addr; ip route show default'
+# enp0s3  UP  192.168.50.86/24     <- bridged, DHCP, carries the default route
+# enp0s8  UP  192.168.56.10/24     <- host-only, static, management only
+# default via 192.168.50.1 dev enp0s3
+```
+
+**2. NetworkManager retries instead of giving up** — `/etc/NetworkManager/conf.d/99-loom-dhcp.conf`:
+
+```ini
+[connection]
+ipv4.dhcp-timeout=90
+connection.autoconnect-retries=0
+```
+
+`autoconnect-retries=0` means infinite retries. The per-attempt timeout is deliberately **bounded**
+rather than `infinity`: `NetworkManager-wait-online.service` is enabled, and an unbounded DHCP
+transaction gives it something it can never finish waiting for.
+
+**3. A watchdog, as the backstop.** `/usr/local/sbin/loom-net-watchdog`, run by
+`loom-net-watchdog.timer` at boot+30s and every 30s thereafter, activates any ethernet interface
+that has been without an IPv4 address for a **grace period**.
+
+> **The grace period is the whole design, and it was learned the hard way.** The first version of
+> this watchdog called `nmcli con up` the moment it saw a missing address. That *cancels* any
+> in-flight DHCP transaction — visible in the log as `disconnecting for new activation request`
+> then `canceled DHCP transaction` — and restarts the clock. DHCP plus Address Conflict Detection
+> needs only ~1–2 seconds here, but the interface sits in `connecting` for a while first, so a 60s
+> watchdog interrupted it *every single time* and the interface never got an address at all. The
+> watchdog caused a worse outage than the bug it was written for, and the host-only NIC masked it:
+> SSH worked fine while the VM had no route to the internet. Always give NetworkManager first
+> refusal.
+
+Grace is per-method, because the two cases are not alike:
+
+| `ipv4.method` | Grace | Rationale |
+|---|---|---|
+| `auto` (DHCP) | 5 checks ≈ 150s | Must outlast NetworkManager's own `ipv4.dhcp-timeout` (90s) |
+| `manual` (static) | 2 checks ≈ 60s | Nothing to wait for — a static address absent after a minute is not coming |
+
+That distinction is not academic: with a single 150s grace for both, boot-to-SSH was 206s; splitting
+it cut that to **53s**, because the host-only NIC no longer waits out a DHCP timeout it never had.
+
+Both paths are exercised in practice. A healthy boot, where the watchdog correctly stands down:
+
+```
+loom-net-watchdog: enp0s3 no IPv4 (check 1/5, method=auto,
+                   state='connecting (checking IP connectivity)') -- letting NetworkManager finish
+```
+
+And a boot where NetworkManager genuinely failed and the watchdog earned its place:
+
+```
+loom-net-watchdog: enp0s3 still no IPv4 after 5 checks (method=auto,
+                   state='connecting (getting IP configuration)') -- activating 'netplan-enp0s3'
+```
+
+Verify all of it the only way that counts — reboot and don't touch anything:
+
+```powershell
+.\loom-vm.ps1 restart
+.\loom-vm.ps1 wait-ready 300      # -> "SSH ready at 192.168.56.10", ~53s
+```
+
+**Do not stop at "SSH ready".** That only proves the host-only NIC is up. The bridged NIC — and
+therefore all internet access, `git fetch`, `pub get`, and every dispatch — is a separate question:
+
+```bash
+ssh loom-vm 'ip -4 -br addr; ip route show default; curl -sS -o /dev/null -w "%{http_code}\n" https://github.com'
+```
+
+Expect an address on both interfaces, a default route via `enp0s3`, and `200`.
+
+---
+
+## 8. Driving the VM from the host (`loom-vm.ps1`)
+
+`code/loom-vm.ps1` is host-side control for the VM: power state, configuration, console
+screenshots, and command execution **inside** the guest — none of which need SSH or a working
+guest network. This is what you use when the VM is off, mid-boot-hang, or has no IP.
+
+It is hard-locked to the VM named `ubuntu-24.04.4-loom` so it cannot act on the unrelated VM.
+
+### One-time setup
+
+In-guest execution needs the guest login. Store it once, DPAPI-encrypted and tied to your Windows
+account, so it never appears in a transcript, a script, or a command line:
+
+```powershell
+Get-Credential -UserName fahd -Message "Loom VM guest login" |
+  Export-Clixml "$env:USERPROFILE\.loom-vm-cred.xml"
+```
+
+The script passes it to VBoxManage via `--passwordfile` (a temp file it deletes afterwards), never
+`--password`, which would expose it in the host's process list.
+
+### Commands
+
+| Command | Needs SSH? | Needs creds? | Purpose |
+|---|---|---|---|
+| `status` | no | no | State, all guest IPs, Guest Additions version, SSH reachability |
+| `start` / `start-headless` | no | no | Boot the VM |
+| `stop` | no | no | Graceful ACPI shutdown, waits for poweroff |
+| `poweroff` | no | no | Hard power cut — only after `stop` has failed |
+| `restart` | no | no | Graceful stop, falling back to force, then start |
+| `screenshot [path]` | no | no | **PNG of the console — how you diagnose a boot hang** |
+| `run "<cmd>"` | no | yes | Run a shell command in the guest via Guest Additions |
+| `net-restart` | no | yes | Bounce NetworkManager |
+| `fix-network` | no | yes | Re-assert the host-only static IP and renew bridged DHCP |
+| `wait-ready [sec]` | — | no | Poll until SSH answers |
+| `config-get [regex]` | no | no | Read VM settings |
+| `config-set --opt val` | no | no | Change VM settings (requires powered off) |
+| `snapshot-take/list/restore` | no | no | Snapshots |
+| `ssh-config` | no | no | Print the `~/.ssh/config` block |
+
+### Worked example — the VM is unreachable
+
+```powershell
+.\loom-vm.ps1 status          # running? does it have an IP at all?
+.\loom-vm.ps1 screenshot      # then read the PNG -- boot hang? login screen? kernel panic?
+.\loom-vm.ps1 run "ip -4 -br addr; systemctl is-active ssh"
+.\loom-vm.ps1 fix-network     # re-assert addressing
+.\loom-vm.ps1 wait-ready 180
+```
+
+If `run` fails with *"The specified user was not able to logon on guest"*, the guest is usually
+still booting — Guest Additions answers before PAM can authenticate. Screenshot instead; it works
+at every stage of boot, including the GRUB menu and a kernel panic.
+
+To see boot messages when the Ubuntu splash is hiding them, inject an ESC keypress (no credentials
+needed):
+
+```powershell
+& "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" `
+  controlvm "ubuntu-24.04.4-loom" keyboardputscancode 01 81
+```
+
+### Known quirk this script works around
+
+VirtualBox reports `VMState=poweroff` a moment **before** it releases the machine's session lock, so
+a `modifyvm`/`startvm` issued immediately after a shutdown fails with *"already locked for a
+session"*. No lock field is exposed in `showvminfo --machinereadable` to poll, so the script retries
+those operations with backoff. If you drive `VBoxManage` directly, expect this and retry.
+
+### If the guest hangs at boot with RCU stalls
+
+Observed once during this migration — the console showed:
+
+```
+rcu: INFO: rcu_preempt detected expedited stalls on CPUs/tasks: { 3-...D } 444555 jiffies
+NMI backtrace for cpu 3 ... Comm: swapper/3
+[FAILED] polkit.service / accounts-daemon.service / systemd-logind.service
+```
+
+A kernel RCU stall on an idle vCPU, cascading into core service failures and a boot that never
+completed. The host was not under load (38 GB free, 1% CPU), and a clean power-cycle booted
+normally in 52 seconds — so treat it as transient:
+
+```powershell
+.\loom-vm.ps1 poweroff
+.\loom-vm.ps1 start-headless
+.\loom-vm.ps1 wait-ready 300
+```
+
+If it becomes repeatable rather than one-off, reduce the VM's vCPU count (currently 8) before
+investigating further — VirtualBox RCU stalls commonly track vCPU over-allocation.
+
+---
+
+## 9. Hyper-V, WSL2, and emulator acceleration
 
 **This is the one genuinely unresolved item, and it is deferred by decision, not oversight.**
 
-### 7.1 The conflict
+### 9.1 The conflict
 
 Windows can only have one thing owning the CPU's virtualization extensions at a time. WSL2 requires
 the Hyper-V hypervisor. When that hypervisor is running, VirtualBox is demoted to running *on top of*
 it (via the Windows Hypervisor Platform API), and in that mode it cannot reliably expose nested
 AMD-V/SVM to its own guests.
 
-Measured on this machine, with `nested-hw-virt` already set to `on` and CPU profile `host`:
+Measured on `ubuntu-24.04.4-loom` with `nested-hw-virt=on` (verified set on **this** VM) and CPU
+profile `host`:
 
 ```bash
-$ ssh loom-vm 'grep -oE "svm|vmx" /proc/cpuinfo | sort -u'      # -> empty
+$ ssh loom-vm 'grep -oE "svm|vmx" /proc/cpuinfo | sort -u'   # -> empty
+$ ssh loom-vm 'ls -l /dev/kvm'                               # -> No such file or directory
 $ ssh loom-vm 'sudo /usr/sbin/kvm-ok'
 INFO: Your CPU does not support KVM extensions
 KVM acceleration can NOT be used
 ```
 
-The guest sees no virtualization flags at all. This is not a guest misconfiguration — the flags are
-not being passed down. The practical cost is that the Android emulator inside the VM falls back to
-pure software rendering, which is slow enough to make emulator-based integration testing impractical.
+Host side, confirming a hypervisor owns the virtualization extensions:
 
-### 7.2 Current decision: leave Hyper-V enabled, test on a physical device
+```powershell
+PS> (Get-CimInstance Win32_ComputerSystem).HypervisorPresent
+True
+PS> Get-Service vmcompute,hvhost | Select Name,Status
+vmcompute Running ; hvhost Running
+```
+
+The guest sees no virtualization flags at all, on an AMD Ryzen 9 7900X that certainly has them. The
+practical cost is that the Android emulator inside the VM falls back to pure software rendering,
+slow enough to make emulator-based integration testing impractical.
+
+> **Correction, recorded deliberately.** An earlier revision of this section drew the same
+> conclusion from an *invalid* test: `nested-hw-virt` had been enabled on the wrong VM
+> (`Ubuntu-24.04.4`, the unrelated one), so the Loom VM was tested with nested virt still `off` —
+> which proves nothing. The setting has since been applied to `ubuntu-24.04.4-loom` and the test
+> re-run; the numbers above are from that valid run, and they reach the same conclusion. Kept as a
+> reminder to check *which* VM a `VBoxManage` command actually targeted before trusting its result.
+
+### 9.2 Current decision: leave Hyper-V enabled, test on a physical device
 
 Until WSL is fully retired, the host keeps Hyper-V and the emulator stays unaccelerated. For
 integration tests, use a real Android device over VirtualBox USB passthrough:
@@ -409,7 +633,7 @@ integration tests, use a real Android device over VirtualBox USB passthrough:
    ```
    (`melos.yaml` defaults `LOOM_EMULATOR` to `emulator-5554`; any adb serial works.)
 
-### 7.3 When WSL is retired: disabling Hyper-V
+### 9.3 When WSL is retired: disabling Hyper-V
 
 **Do this only after confirming nothing else on the host needs Hyper-V** — WSL2 itself, Docker
 Desktop's WSL2 backend, Windows Sandbox, WSA, and Windows Defender's Credential Guard / Memory
@@ -462,11 +686,12 @@ ssh loom-vm 'sudo /usr/sbin/kvm-ok'                        # expect: KVM acceler
 ssh loom-vm 'groups | tr " " "\n" | grep -x kvm'           # expect: kvm
 ```
 
-`nested-hw-virt` is already `on` for this VM, so no VirtualBox-side change is needed — but if you
-rebuild the VM, set it while the VM is **powered off**:
+`nested-hw-virt` is already `on` for `ubuntu-24.04.4-loom`, so no VirtualBox-side change is needed —
+but if you rebuild the VM, set it while the VM is **powered off**:
 
 ```powershell
-& "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "Ubuntu-24.04.4" --nested-hw-virt on
+.\loom-vm.ps1 stop
+.\loom-vm.ps1 config-set --nested-hw-virt on
 ```
 
 Then the emulator becomes usable:
@@ -476,7 +701,7 @@ ssh loom-vm '. ~/.loom-env.sh && nohup emulator -avd loom_demo -no-window -gpu s
 ssh loom-vm '. ~/.loom-env.sh && adb wait-for-device && adb devices'
 ```
 
-### 7.4 Reversing it, if you need WSL back
+### 9.4 Reversing it, if you need WSL back
 
 ```powershell
 Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
@@ -488,7 +713,7 @@ Restart-Computer
 
 ---
 
-## 8. The dispatch pipeline, post-migration
+## 10. The dispatch pipeline, post-migration
 
 The recipe from `README.md`, with WSL steps removed. Steps 1, 3, and 5's cleanup half are gone;
 what remains is what was ever actually about correctness.
@@ -518,7 +743,7 @@ ssh loom-vm 'cd ~/Loom && bash data/handoff_gate.sh'
 ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom/app && melos run analyze'
 ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom/app && melos run test'
 #    - shared-code change -> Regression Impact Judge (regression-impact-judge-tool.md)
-#    - UI-touching change -> live device re-verification (§7.2), not analyze/test alone
+#    - UI-touching change -> live device re-verification (§9.2), not analyze/test alone
 
 # 6. Fold the outcome into the TODO record (README step 7.5). Still manual, still every time.
 ```
@@ -528,7 +753,7 @@ solely because of the vsock cap. Delete it from your working memory along with `
 
 ---
 
-## 9. Verification checklist
+## 11. Verification checklist
 
 Run this after completing the migration. Every line should succeed.
 
@@ -559,25 +784,46 @@ ssh loom-vm 'ls -l ~/Loom/data/*.sh'
 ssh loom-vm 'ls ~/.codex-git-shim 2>&1'                      # expect: No such file or directory
 ssh loom-vm 'ls ~/Loom/data/wsl_*.sh 2>&1'                   # expect: No such file or directory
 
-# Emulator acceleration -- expected to FAIL until §7.3 is done
+# Emulator acceleration -- expected to FAIL until §9.3 is done
 ssh loom-vm 'sudo /usr/sbin/kvm-ok'
+
+# --- Networking + host-side control (§7, §8) ---
+
+# Both NICs addressed, default route on the bridged one
+ssh loom-vm 'ip -4 -br addr; ip route show default'
+
+# The watchdog is installed and fires when needed
+ssh loom-vm 'systemctl is-enabled loom-net-watchdog.timer; journalctl -t loom-net-watchdog -b --no-pager | tail -3'
+
+# The real test: reboot and touch nothing
+cd "docs/Build Plan V2/Tools/code"
+.\loom-vm.ps1 restart
+.\loom-vm.ps1 wait-ready 300      # -> "SSH ready at 192.168.56.10"
+
+# Host-side control works without SSH
+.\loom-vm.ps1 status
+.\loom-vm.ps1 screenshot
+.\loom-vm.ps1 run "uptime"
 ```
 
 ---
 
-## 10. Known gaps
+## 12. Known gaps
 
 | Gap | Status | Action |
 |---|---|---|
-| Android emulator has no hardware acceleration | **Open, deferred by decision** | §7.3, once WSL is retired |
+| Android emulator has no hardware acceleration | **Open, deferred by decision.** Now confirmed by a *valid* test (`nested-hw-virt=on` on the correct VM, `HypervisorPresent=True` on the host) | §9.3, once WSL is retired |
+| VM lost its IP on reboot | **Closed** | Host-only static IP + infinite DHCP retry + `loom-net-watchdog.timer`; verified across repeated unattended reboots (§7) |
+| No way to drive the VM when SSH is down | **Closed** | `code/loom-vm.ps1` — power, config, screenshots, in-guest commands, none requiring SSH (§8) |
+| Guest RCU stall / boot hang | Seen once, transient | Recovered by a clean power-cycle. If it recurs, reduce vCPU count (§8, last subsection) |
 | `~/.config/loom-vm/secrets.env` is scaffolded but empty | Open, low priority | Only needed if you install `opencode`; nothing in the Loom repo reads `GEMINI_API_KEY`/`OPENAI_API_KEY`/`GOOGLE_API_KEY`. Rotate the old values first — they were exposed in a terminal transcript during the WSL inventory. |
-| USB passthrough not yet exercised end to end | Open | Needs a physical device present; §7.2 |
+| USB passthrough not yet exercised end to end | Open | Needs a physical device present; §9.2 |
 | Dispatch pipeline not yet run end to end on the VM | Open | Do one low-stakes ticket before trusting it for a real round |
 | DeepSeek gateway URL still points at a WSL IP | Inert | Only matters if a `deepseek_*` profile is revived; §5.1 note |
 
 ---
 
-## 11. Why this is worth doing
+## 13. Why this is worth doing
 
 Beyond the emulator, the migration deletes an entire class of failure this project spent real time
 fighting — every one of these is a documented incident from `dispatch-pipeline-tools.md`:

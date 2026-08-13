@@ -59,7 +59,10 @@ docs/Build Plan V2/Tools/
 │   ├── watch_dispatch_log.sh              <- self-terminating completion watcher
 │   ├── handoff_gate.sh                    <- pre-verification handoff gate (5 checks)
 │   ├── wsl_slot.sh                        <- concurrency gate for ad-hoc wsl.exe calls
-│   └── verify_apk_freshness.sh            <- stale-build guard for Flutter/Gradle debug APKs
+│   ├── verify_apk_freshness.sh            <- stale-build guard for Flutter/Gradle debug APKs
+│   └── loom-vm.ps1                        <- (VirtualBox env only) host-side VM control: power,
+│                                             config, console screenshots, and in-guest commands
+│                                             with no SSH -- wsl-to-virtualbox-migration.md §8
 ├── dispatch-pipeline-tools.md             <- full doc for every script in code/, with setup + guards
 ├── root-cause-agent-tool.md               <- Root Cause Agent role doc
 ├── regression-impact-judge-tool.md        <- Regression Impact Judge role doc
