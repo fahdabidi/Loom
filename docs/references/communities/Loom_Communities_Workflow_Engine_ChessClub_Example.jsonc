@@ -887,7 +887,6 @@
             "states": ["ready", "generated", "rolled-back"],
             "role": "any",
             "tabId": "admin",
-            // NEEDS IMPLEMENTATION (archetype): exportWizard is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "primary",
             "actions": [
@@ -905,7 +904,6 @@
             "states": ["generated", "rolled-back"],
             "role": "any",
             "tabId": "home",
-            // NEEDS IMPLEMENTATION (archetype): exportWizard is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "summary"
           },
@@ -913,7 +911,6 @@
             "states": ["cancelled"],
             "role": "any",
             "tabId": "admin",
-            // NEEDS IMPLEMENTATION (archetype): exportWizard is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "summary"
           }
@@ -1140,7 +1137,6 @@
             "states": ["current"],
             "role": "any",
             "tabId": "home",
-            // NEEDS IMPLEMENTATION (archetype): table is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "table",
             "bindingKind": "primary"
           },
@@ -1148,7 +1144,6 @@
             "states": ["current", "retired"],
             "role": "any",
             "tabId": "admin",
-            // NEEDS IMPLEMENTATION (archetype): table is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "table",
             "bindingKind": "summary"
           }
@@ -1239,7 +1234,6 @@
             "states": ["available", "embedded-opened", "external-opened", "downloaded"],
             "role": "any",
             "tabId": "home",
-            // NEEDS IMPLEMENTATION (archetype): documentLibrary is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "primary",
             "actions": [
@@ -1257,7 +1251,6 @@
             "states": ["archived"],
             "role": "any",
             "tabId": "admin",
-            // NEEDS IMPLEMENTATION (archetype): documentLibrary is a locked pending family and is not yet in the Dart registry.
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "summary"
           }
@@ -1266,9 +1259,7 @@
           "documentTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "sortable": true, "displayIcon": "description", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "versionLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "history_edu", "labelTemplate": "Version {value}", "displayContexts": ["tile", "detail"] },
           "sourceLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (field renderer prerequisite): type:url/openMode is proposed and not yet consumed by the shared renderer; declared in its forward-compatible shape.
           "documentUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayIcon": "open_in_browser", "labelTemplate": "Open {value}", "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (field renderer prerequisite): external URL launching is proposed and not yet consumed by the shared renderer.
           "downloadUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download {value}", "displayContexts": ["detail"] },
           "openHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Open history: {value.length}", "displayContexts": ["tile", "detail"] },
           "downloadedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Downloaded by: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -1475,3 +1466,4 @@
     ]
   }
 }
+
