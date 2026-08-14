@@ -45,9 +45,23 @@ actions.
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Dues | amount, due date, payer, receipt | due/paid/failed | pay, view receipt | generic payment chip |
-| Documents | title, version/date, access, provider/source, embedded/external open choices | available/read/acknowledged/access-requested | open embedded, open external, download, acknowledge, request access | metadata card only |
+| Documents | title, version/date, access, provider/source, embedded/external open choices | draft/published/read/acknowledged/access-requested/archived | board: edit, publish, delete, archive, restore · member: open embedded, open external, download, acknowledge, request access | metadata card only; drafts visible to members |
 | Facility reservation | facility, date, time, status | open/reserved/conflict | reserve, cancel | checklist modal |
 | Workflow status / review queue | request, requester, current step, reviewer, payment/document checkpoints, comments, audit | submitted/under-review/changes-needed/approved/denied/reopened | approve, reject, request changes, attach document, reopen | single rigid approval card |
+
+**Document lifecycle.** A governing document is drafted before it is published. The Board writes and
+revises it privately, publishes it when it is ready, and may delete a draft that was never published
+or archive a published one that has been superseded.
+
+Only the Board may edit, publish, delete, archive or restore. **An unpublished document is visible to
+the Board alone** — a draft policy circulating before the Board has agreed it is worse than no policy,
+because members act on what they read. Once published, every member may open, download and acknowledge
+it.
+
+Archiving and deleting are different and both are needed. Archiving retires a superseded document that
+still exists and can be restored — the HOA keeps a record of what its rules used to be. Deleting removes
+a draft that should never have existed. The Board should not have to keep a mistaken draft forever in
+order to keep its real history.
 
 ## 6. Workflow-To-Surface Mapping
 
@@ -66,7 +80,7 @@ actions.
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member pays quarterly dues | HOA ledger records paid/receipt state | receipt read-only after pay | pay disabled after paid; retry shown on failure | non-member hidden |
-| hoa-member-document | member opens governing document | board/admin sees access audit | document metadata/read state visible | download disabled without permission | non-member denied |
+| hoa-member-document | board drafts, publishes and retires; member opens published document | board/admin sees access audit | document metadata/read state visible | download disabled without permission; publish/delete hidden from members; drafts hidden entirely from members | non-member denied |
 | hoa-facility-reservation | member reserves facility | owner/board sees reservation status | confirmed reservation readable | reserve disabled on conflict | non-member denied |
 | hoa-architectural-request | owner submits exterior request | committee sees requester/details | owner sees status history | approve hidden for owner | non-owner denied |
 | hoa-committee-decision | owner/committee reviews request | homeowner receives approved/rejected/changes state | decision history readable | duplicate decision disabled | non-committee denied |
