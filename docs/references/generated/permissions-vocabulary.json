@@ -1,0 +1,318 @@
+{
+  "_comment": [
+    "GENERATED — do not edit by hand.",
+    "Source: app/packages/tooling/loom_ux_judges/lib/src/permissions/archetype_resolver.dart",
+    "Regenerate: dart run bin/generate_permissions_vocabulary.dart",
+    "",
+    "Consumed by the community-package validator (Dart) and the App Access",
+    "installer (Java), so that the derivation rules defined in",
+    "docs/references/reference/permissions.md exist in exactly one place."
+  ],
+  "specVersion": {
+    "envelope": 1,
+    "experience": 2,
+    "grammar": 3
+  },
+  "bespokeArchetypes": {
+    "documentLibrary": {
+      "permissionPrefix": "document_library",
+      "actions": [
+        "acknowledge",
+        "archive",
+        "download",
+        "grant_access",
+        "mark_read",
+        "mark_unread",
+        "open",
+        "request_access",
+        "request_follow_up",
+        "restore",
+        "save",
+        "share",
+        "unsave",
+        "upload",
+        "view",
+        "withdraw_access_request"
+      ],
+      "permissions": [
+        "document_library.acknowledge",
+        "document_library.archive",
+        "document_library.download",
+        "document_library.grant_access",
+        "document_library.mark_read",
+        "document_library.mark_unread",
+        "document_library.open",
+        "document_library.request_access",
+        "document_library.request_follow_up",
+        "document_library.restore",
+        "document_library.save",
+        "document_library.share",
+        "document_library.unsave",
+        "document_library.upload",
+        "document_library.view",
+        "document_library.withdraw_access_request"
+      ]
+    },
+    "equipment-loan": {
+      "permissionPrefix": "equipment_loan",
+      "actions": [
+        "claim",
+        "decide_request",
+        "delist",
+        "join_queue",
+        "leave_queue",
+        "list_item",
+        "pause_listing",
+        "renew",
+        "report_issue",
+        "request",
+        "return",
+        "take_custody",
+        "view",
+        "withdraw_request"
+      ],
+      "permissions": [
+        "equipment_loan.claim",
+        "equipment_loan.decide_request",
+        "equipment_loan.delist",
+        "equipment_loan.join_queue",
+        "equipment_loan.leave_queue",
+        "equipment_loan.list_item",
+        "equipment_loan.pause_listing",
+        "equipment_loan.renew",
+        "equipment_loan.report_issue",
+        "equipment_loan.request",
+        "equipment_loan.return",
+        "equipment_loan.take_custody",
+        "equipment_loan.view",
+        "equipment_loan.withdraw_request"
+      ]
+    },
+    "event-rsvp": {
+      "permissionPrefix": "event_rsvp",
+      "actions": [
+        "cancel",
+        "create",
+        "edit",
+        "join_waitlist",
+        "propose_change",
+        "record_outcome",
+        "reopen",
+        "respond",
+        "set_reminder",
+        "view",
+        "withdraw_response"
+      ],
+      "permissions": [
+        "event_rsvp.cancel",
+        "event_rsvp.create",
+        "event_rsvp.edit",
+        "event_rsvp.join_waitlist",
+        "event_rsvp.propose_change",
+        "event_rsvp.record_outcome",
+        "event_rsvp.reopen",
+        "event_rsvp.respond",
+        "event_rsvp.set_reminder",
+        "event_rsvp.view",
+        "event_rsvp.withdraw_response"
+      ]
+    },
+    "exportWizard": {
+      "permissionPrefix": "export_wizard",
+      "actions": [
+        "approve_redaction",
+        "cancel",
+        "configure_scope",
+        "decide_transfer",
+        "download",
+        "preview",
+        "record_outcome",
+        "retry",
+        "rollback",
+        "run",
+        "view"
+      ],
+      "permissions": [
+        "export_wizard.approve_redaction",
+        "export_wizard.cancel",
+        "export_wizard.configure_scope",
+        "export_wizard.decide_transfer",
+        "export_wizard.download",
+        "export_wizard.preview",
+        "export_wizard.record_outcome",
+        "export_wizard.retry",
+        "export_wizard.rollback",
+        "export_wizard.run",
+        "export_wizard.view"
+      ]
+    },
+    "searchAiAnswer": {
+      "permissionPrefix": "search_ai_answer",
+      "actions": [
+        "add_citation",
+        "ask",
+        "curate",
+        "moderate",
+        "report",
+        "view",
+        "withdraw_query"
+      ],
+      "permissions": [
+        "search_ai_answer.add_citation",
+        "search_ai_answer.ask",
+        "search_ai_answer.curate",
+        "search_ai_answer.moderate",
+        "search_ai_answer.report",
+        "search_ai_answer.view",
+        "search_ai_answer.withdraw_query"
+      ]
+    },
+    "votePoll": {
+      "permissionPrefix": "vote_poll",
+      "actions": [
+        "change_vote",
+        "close",
+        "create",
+        "publish_result",
+        "view",
+        "vote"
+      ],
+      "permissions": [
+        "vote_poll.change_vote",
+        "vote_poll.close",
+        "vote_poll.create",
+        "vote_poll.publish_result",
+        "vote_poll.view",
+        "vote_poll.vote"
+      ]
+    }
+  },
+  "genericArchetypes": {
+    "approvalQueueItem": {
+      "permissionPrefix": "approval_queue_item",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "approval_queue_item.advance",
+        "approval_queue_item.create",
+        "approval_queue_item.terminate",
+        "approval_queue_item.view"
+      ]
+    },
+    "discussionThread": {
+      "permissionPrefix": "discussion_thread",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "discussion_thread.advance",
+        "discussion_thread.create",
+        "discussion_thread.terminate",
+        "discussion_thread.view"
+      ]
+    },
+    "formEntry": {
+      "permissionPrefix": "form_entry",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "form_entry.advance",
+        "form_entry.create",
+        "form_entry.terminate",
+        "form_entry.view"
+      ]
+    },
+    "notificationInbox": {
+      "permissionPrefix": "notification_inbox",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "notification_inbox.advance",
+        "notification_inbox.create",
+        "notification_inbox.terminate",
+        "notification_inbox.view"
+      ]
+    },
+    "paymentCheckout": {
+      "permissionPrefix": "payment_checkout",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "payment_checkout.advance",
+        "payment_checkout.create",
+        "payment_checkout.terminate",
+        "payment_checkout.view"
+      ]
+    },
+    "statusTimeline": {
+      "permissionPrefix": "status_timeline",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "status_timeline.advance",
+        "status_timeline.create",
+        "status_timeline.terminate",
+        "status_timeline.view"
+      ]
+    },
+    "table": {
+      "permissionPrefix": "table",
+      "actions": [
+        "advance",
+        "create",
+        "terminate",
+        "view"
+      ],
+      "permissions": [
+        "table.advance",
+        "table.create",
+        "table.terminate",
+        "table.view"
+      ]
+    }
+  },
+  "genericDerivation": {
+    "_comment": "permissions.md §5. Generic families declare no action; it is derived from structure the transition already carries.",
+    "rules": [
+      {
+        "when": "a create action on a renderBinding",
+        "action": "create"
+      },
+      {
+        "when": "tone == \"destructive\", or the target state isTerminal",
+        "action": "terminate"
+      },
+      {
+        "when": "any other state-changing transition",
+        "action": "advance"
+      },
+      {
+        "when": "a read-only binding with no transition",
+        "action": "view"
+      }
+    ]
+  }
+}
