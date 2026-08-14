@@ -312,7 +312,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../_shared/errors.yaml#/components/schemas/Error'
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
   /v1/fan-passports/{fanId}/grants:
     get:
       operationId: listConsentGrants

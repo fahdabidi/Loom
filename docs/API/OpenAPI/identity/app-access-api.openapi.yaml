@@ -446,7 +446,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../_shared/errors.yaml#/components/schemas/Error'
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
 
   /v1/apps/{appId}/groups/{groupId}/membership-requests/{fanId}/decision:
     post:
@@ -487,7 +487,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../_shared/errors.yaml#/components/schemas/Error'
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
 
   /v1/apps/{appId}/groups/{groupId}/members/{fanId}:
     get:
