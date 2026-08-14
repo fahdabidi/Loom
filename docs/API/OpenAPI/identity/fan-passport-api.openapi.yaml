@@ -178,6 +178,141 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PairwiseCreatorIdentity'
+  /v1/external-identities/resolve:
+    post:
+      operationId: resolveExternalIdentity
+      summary: Resolve an external IdP subject to a fan passport, creating one on first sight.
+      description: >-
+        The sign-in entry point. Given a verified `(issuer, subject)` pair from an upstream identity
+        provider -- Google, Apple, Facebook -- return the linked fan passport, or create one and link it
+        if this is the first time this subject has been seen.
+
+
+        The caller MUST have already verified the provider's token; this endpoint trusts `issuer` and
+        `subject` and is therefore service-authenticated only, never called directly by a client.
+
+
+        Idempotent on `(issuer, subject)`: repeated calls return the same `fanId`, which is what makes a
+        person who signs in with Google today and Apple tomorrow land on the same passport once both are
+        linked.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalIdentityResolveInput'
+      responses:
+        '200':
+          description: Existing link resolved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalIdentityResolution'
+        '201':
+          description: A new passport was created and linked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalIdentityResolution'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/fan-passports/{fanId}/external-identities:
+    get:
+      operationId: listExternalIdentities
+      summary: List the external provider identities linked to this passport.
+      description: >-
+        Never returns provider access or refresh tokens -- only which providers are linked, and when.
+        A fan uses this to see, and then revoke, the sign-in methods attached to their passport.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Linked external identities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalIdentity'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    post:
+      operationId: linkExternalIdentity
+      summary: Link an additional provider identity to an existing passport.
+      description: >-
+        Adds a second or subsequent sign-in method to a passport the fan is already signed in to. The
+        `(issuer, subject)` pair is globally unique, so linking a subject already attached to a
+        different passport is a conflict rather than a silent move -- merging two passports is a
+        separate, deliberate operation and not something a sign-in flow may do implicitly.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalIdentityLinkInput'
+      responses:
+        '201':
+          description: Linked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalIdentity'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/fan-passports/{fanId}/external-identities/{issuer}/{subject}:
+    delete:
+      operationId: unlinkExternalIdentity
+      summary: Unlink a provider identity from this passport.
+      description: >-
+        Refuses to remove the last remaining identity: a passport with no linked provider could never be
+        signed into again, and the fan would silently lose access to every community they belong to.
+        Deleting the passport itself is the deliberate way to do that.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subject
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Unlinked.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          description: Refused -- this is the passport's only remaining sign-in method.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/Error'
   /v1/fan-passports/{fanId}/grants:
     get:
       operationId: listConsentGrants
@@ -387,6 +522,81 @@ components:
         - free_personalized
         - premium_no_ads
         - premium_private
+    ExternalIdentityIssuer:
+      type: string
+      description: >-
+        The upstream identity provider. Loom does not run its own user directory; these are the only
+        ways a person signs in. Values are the providers themselves, not the broker in front of them,
+        so swapping brokers does not invalidate existing links.
+      enum:
+        - google
+        - apple
+        - facebook
+    ExternalIdentity:
+      type: object
+      description: >-
+        One provider identity linked to a fan passport. Deliberately carries no tokens, no email, and no
+        profile: this record answers only "which provider subject is this passport", so a breach of it
+        discloses nothing about the person beyond that they use a given provider.
+      required:
+        - issuer
+        - subject
+        - fanId
+        - linkedAt
+      properties:
+        issuer:
+          $ref: '#/components/schemas/ExternalIdentityIssuer'
+        subject:
+          type: string
+          description: The provider's stable subject identifier for this person (the `sub` claim).
+        fanId:
+          type: string
+        linkedAt:
+          type: string
+          format: date-time
+        lastAuthenticatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ExternalIdentityLinkInput:
+      type: object
+      required:
+        - issuer
+        - subject
+      properties:
+        issuer:
+          $ref: '#/components/schemas/ExternalIdentityIssuer'
+        subject:
+          type: string
+    ExternalIdentityResolveInput:
+      type: object
+      required:
+        - issuer
+        - subject
+      properties:
+        issuer:
+          $ref: '#/components/schemas/ExternalIdentityIssuer'
+        subject:
+          type: string
+        displayName:
+          type: string
+          description: >-
+            Used only when creating a passport on first sight, and ignored otherwise. A returning fan's
+            own chosen display name is never overwritten by whatever the provider currently reports.
+    ExternalIdentityResolution:
+      type: object
+      required:
+        - fanId
+        - created
+        - identity
+      properties:
+        fanId:
+          type: string
+        created:
+          type: boolean
+          description: True when this call created the passport rather than resolving an existing link.
+        identity:
+          $ref: '#/components/schemas/ExternalIdentity'
     FollowVisibility:
       type: string
       enum:

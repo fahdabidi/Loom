@@ -385,6 +385,14 @@ paths:
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
         - $ref: '#/components/parameters/AppId'
         - $ref: '#/components/parameters/GroupId'
+        - name: state
+          in: query
+          required: false
+          description: >-
+            Filter by membership state. `state=requested` is the pending-approvals queue an admin works
+            from; omitting it returns every membership regardless of state.
+          schema:
+            $ref: '#/components/schemas/AssignmentState'
         - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
         - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
@@ -394,6 +402,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListGroupMembershipsResponse'
+
+  /v1/apps/{appId}/groups/{groupId}/membership-requests:
+    post:
+      operationId: requestGroupMembership
+      summary: Ask to join a group.
+      description: >-
+        Called by the signed-in fan for themselves, so the fan is taken from the token rather than the
+        path -- a fan cannot file a request on someone else's behalf. Creates the membership in
+        `requested`, which grants nothing until an admin approves it.
+
+
+        Idempotent: requesting again while a request is already pending returns the existing one rather
+        than queueing a duplicate for the admin to wade through.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestGroupMembershipRequest'
+      responses:
+        '200':
+          description: A request was already pending; it is returned unchanged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '201':
+          description: Request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          description: The fan is already an active member of this group.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/Error'
+
+  /v1/apps/{appId}/groups/{groupId}/membership-requests/{fanId}/decision:
+    post:
+      operationId: decideGroupMembership
+      summary: Approve or reject a pending membership request.
+      description: >-
+        Requires `app.access.admin`. Approving moves the membership to `active` and grants the roles
+        supplied here; rejecting moves it to `rejected` and grants nothing.
+
+
+        Deciding a request that is not `requested` is a conflict rather than a no-op, so two admins
+        acting on the same queue entry do not silently overwrite each other's decision.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/FanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideGroupMembershipRequest'
+      responses:
+        '200':
+          description: Decision applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          description: This membership is not in `requested`, so there is nothing to decide.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/Error'
 
   /v1/apps/{appId}/groups/{groupId}/members/{fanId}:
     get:
@@ -483,6 +577,61 @@ paths:
                 $ref: '#/components/schemas/ListGroupMembershipsResponse'
 
   # ── Runtime authorization ───────────────────────────────────────────────
+  /v1/apps/{appId}/community-installations:
+    post:
+      operationId: installCommunityPackage
+      summary: Derive and register a community's group, roles, and permission grants from its package.
+      description: >-
+        The provisioning step that turns a community package into access control. The caller submits the
+        package's derivation inputs; the service creates the community's group, registers each declared
+        role, ensures the permission catalog contains every permission the package's actions imply, and
+        sets each role's grants.
+
+
+        **Derivation runs here, not in the client.** The rules -- archetype resolution, the closed action
+        vocabularies, the structural rules for generic archetypes -- are defined in
+        `docs/references/reference/permissions.md` and shared with the community-package validator as a
+        generated vocabulary artifact, so the two cannot drift apart.
+
+
+        **Idempotent by construction.** Re-installing the same package produces exactly the same grants:
+        roles and permissions are reconciled to the submitted set rather than appended to. A role that
+        disappears from a package is reported in `removedRoleIds` and its grants are withdrawn, because
+        leaving a retired role holding live permissions is how stale access accumulates.
+
+
+        The platform `admin` role is provisioned automatically and is never declared in a package -- see
+        `permissions.md` §7.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallCommunityPackageRequest'
+      responses:
+        '200':
+          description: Installation reconciled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityInstallationResult'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '422':
+          description: >-
+            The package is structurally valid but not derivable -- an action outside its archetype's
+            closed vocabulary, a guard naming an undeclared role, or an ambiguous archetype.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityInstallationResult'
+
   /v1/access-decisions:
     post:
       operationId: checkAccess
@@ -797,7 +946,17 @@ components:
 
     AssignmentState:
       type: string
-      enum: [active, suspended, revoked]
+      description: >-
+        `requested` is a membership a fan has asked for but an admin has not yet decided on. It is
+        deliberately a state on the membership row rather than a separate request entity: the alternative
+        duplicates fan, group, and requested-roles into a parallel table that then has to be kept in step
+        with the membership it becomes. A `requested` row grants nothing -- only `active` does -- so an
+        undecided request is inert rather than partially privileged.
+
+
+        `rejected` is kept rather than deleted so a repeat request is visible as a repeat, and so an
+        admin can see that a decision was made.
+      enum: [requested, active, suspended, revoked, rejected]
 
     AppAccess:
       type: object
@@ -858,6 +1017,25 @@ components:
         joinedAt:
           type: string
           format: date-time
+        requestedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the fan asked to join. Null for memberships an admin created directly.
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decidedByFanId:
+          type: string
+          nullable: true
+          description: The admin who approved or rejected. Null while still `requested`.
+        requestNote:
+          type: string
+          nullable: true
+          description: >-
+            Optional free text from the fan with their request. Never rendered as anything but plain
+            text, and never used in a decision automatically.
 
     SetGroupMembershipRequest:
       type: object
@@ -869,6 +1047,172 @@ components:
             type: string
         state:
           $ref: '#/components/schemas/AssignmentState'
+
+    InstallCommunityPackageRequest:
+      type: object
+      description: >-
+        The derivation inputs extracted from one community package. This is deliberately not the whole
+        package: App Access has no business parsing render bindings, theming, or seed instance data, and
+        accepting them would make it a second consumer of the full grammar.
+      required: [communityHandle, grammarVersion, roles, workflows]
+      properties:
+        communityHandle:
+          type: string
+          description: Becomes the group id, as `loom_communities_<communityHandle>`.
+        displayName:
+          type: string
+        grammarVersion:
+          type: integer
+          description: >-
+            The package's `experience.workflowGrammarVersion`. Rejected if the service does not
+            implement that version's identity model, rather than guessed at.
+        roles:
+          type: array
+          description: The package's declared `roles[]`. Each becomes a group-scoped role.
+          items:
+            $ref: '#/components/schemas/DerivedRoleInput'
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/DerivedWorkflowInput'
+
+    DerivedRoleInput:
+      type: object
+      required: [roleId]
+      properties:
+        roleId:
+          type: string
+        label:
+          type: string
+
+    DerivedWorkflowInput:
+      type: object
+      description: One workflow, reduced to what derivation actually needs.
+      required: [workflowType, cardSurfaceFamily, transitions]
+      properties:
+        workflowType:
+          type: string
+        cardSurfaceFamily:
+          type: string
+          description: >-
+            The archetype resolved by the caller per `permissions.md` §6 step 3, including
+            `responseTable` inheritance. Null when the workflow derives nothing.
+          nullable: true
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DerivedTransitionInput'
+        createRoleIds:
+          type: array
+          description: Union of `byRoleIds` across this workflow's create actions.
+          items:
+            type: string
+
+    DerivedTransitionInput:
+      type: object
+      required: [transitionId, allowedRoleIds]
+      properties:
+        transitionId:
+          type: string
+        action:
+          type: string
+          nullable: true
+          description: >-
+            Declared for bespoke archetypes, absent for generic ones. Where absent, the service applies
+            the structural rule using `tone` and `isTerminal`.
+        tone:
+          type: string
+          nullable: true
+        isTerminal:
+          type: boolean
+          nullable: true
+          description: Whether this transition's target state is terminal.
+        allowedRoleIds:
+          type: array
+          description: >-
+            From `guard.allowedRoleIds`. An empty list means the transition is gated per-instance by the
+            workflow engine instead, and derives no role grant -- that is expected, not an error.
+          items:
+            type: string
+
+    CommunityInstallationResult:
+      type: object
+      required: [appId, groupId, rolesRegistered, permissionsGranted, findings]
+      properties:
+        appId:
+          type: string
+        groupId:
+          type: string
+        rolesRegistered:
+          type: array
+          items:
+            type: string
+        removedRoleIds:
+          type: array
+          description: Roles previously registered for this community that the package no longer declares.
+          items:
+            type: string
+        permissionsGranted:
+          type: integer
+          description: Total role-to-permission grants after reconciliation.
+        rolesWithNoPermissions:
+          type: array
+          description: >-
+            Registered roles that ended up granting nothing. Not fatal, but almost always an authoring
+            mistake -- a role nobody can act as.
+          items:
+            type: string
+        findings:
+          type: array
+          description: Empty on success. Populated with the reasons on a 422.
+          items:
+            $ref: '#/components/schemas/DerivationFinding'
+
+    DerivationFinding:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - unknown_action_for_archetype
+            - missing_action_on_bespoke_transition
+            - action_on_generic_transition
+            - undeclared_role_in_guard
+            - ambiguous_archetype
+            - unsupported_grammar_version
+        message:
+          type: string
+        workflowType:
+          type: string
+          nullable: true
+        transitionId:
+          type: string
+          nullable: true
+
+    RequestGroupMembershipRequest:
+      type: object
+      description: >-
+        A fan asking to join a group. Deliberately carries no `roleIds`: what a joiner may become is the
+        admin's decision, not the requester's. Roles are supplied on approval.
+      properties:
+        requestNote:
+          type: string
+
+    DecideGroupMembershipRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        roleIds:
+          type: array
+          description: >-
+            Roles to grant on approval. Required when approving -- a member with no role can do nothing,
+            so approving without one is almost always a mistake rather than a deliberate choice.
+          items:
+            type: string
 
     ListGroupMembershipsResponse:
       type: object

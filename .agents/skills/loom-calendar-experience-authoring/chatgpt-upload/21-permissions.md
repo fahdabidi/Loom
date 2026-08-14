@@ -349,6 +349,26 @@ Run at community **install** time, not build time, because communities install d
 
 Idempotent: re-installing the same package produces the same grants.
 
+### Where this runs
+
+In the **App Access service**, via `POST /v1/apps/{appId}/community-installations`
+(`app-access-api.openapi.yaml`). Not in the client, and not in the authoring toolchain.
+
+The caller submits only the derivation inputs — roles, and per workflow the resolved archetype plus each
+transition's `action`, `tone`, `isTerminal` and `allowedRoleIds`. It does not submit the whole package:
+App Access has no business parsing render bindings, theming, or seed data, and accepting them would make
+it a second consumer of the full grammar.
+
+The rules themselves — archetype resolution, the closed vocabularies, §5's structural rule — are shared
+with the community-package validator as a generated vocabulary artifact rather than implemented twice.
+That matters more than it sounds: this repo has twice been broken by the same rules living in two places
+and drifting, and a derivation that disagreed with the validator would grant permissions for a package
+the validator had already passed.
+
+Reconciliation is by replacement, not by append. A role that disappears from a package has its grants
+withdrawn and is reported in `removedRoleIds`, because a retired role left holding live permissions is
+exactly how stale access accumulates unnoticed.
+
 ### Why step 3b exists
 
 Without it, responding to an event derives no permission in five of the eleven communities.
