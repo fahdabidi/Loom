@@ -1,0 +1,401 @@
+openapi: 3.1.0
+info:
+  title: Loom Workflow Engine API
+  version: 0.1.0
+  summary: Server-authoritative execution of community workflow definitions.
+  description: >-
+    Runs a community's state machines: which instances a viewer may read, which transitions they may
+    invoke, and what happens when they do.
+
+
+    **This service is the authority. The client engine is a cache and a renderer.**
+    `LocalWorkflowEngineApi` stays on the device for offline rendering, but it no longer decides
+    anything: every guard, read filter and effect is evaluated here. Before this service existed those
+    rules ran only on the device, which made them correct for the UI and not a security boundary --
+    `guards.md` had already warned that "a direct API call would bypass it".
+
+
+    **The same engine runs on both sides.** This service embeds the `loom_workflow_engine` package
+    rather than reimplementing it. A second implementation would have to agree with the first on every
+    input of a 23-function expression language, and no test can prove that. The store is
+    dialect-agnostic: SQLite on the device, PostgreSQL here.
+
+
+    **Identity comes from the token, never from the request.** The caller's `fanId` is taken from the
+    authenticated principal, and their roles are resolved from App Access. A client cannot name its own
+    roles, because a client that could claim `hoa-board` has no access control at all. Effective
+    permissions are cached briefly per `(fanId, communityId)` so guard evaluation does not make a
+    network hop per transition.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.workflow
+  - LoomServiceAuth: []
+x-loom-api-owner: community-surfaces/workflow-engine
+x-loom-architecture-docs:
+  - ../../../references/reference/permissions.md
+  - ../../../references/archetypes/CONTRACTS.md
+x-loom-upstream-apis:
+  - ../identity/app-access-api.openapi.yaml
+paths:
+  /v1/communities/{communityId}/workflow-definitions:
+    put:
+      operationId: replaceWorkflowDefinitions
+      summary: Install or replace a community's workflow definitions.
+      description: >-
+        Called at community install time, alongside App Access's
+        `installCommunityPackage`. Definitions are replaced wholesale rather than merged: a workflow
+        dropped from a package must stop existing, and merging would leave a retired state machine
+        quietly executable.
+
+
+        Rejects a package whose `specVersion` this service does not implement, rather than
+        best-effort-parsing it. Silently ignoring a construct it does not understand is how a community
+        ships a guard that never fires -- the most dangerous failure mode in this system, because a
+        guard that silently does not run looks exactly like a guard that passes.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CommunityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceWorkflowDefinitionsRequest'
+      responses:
+        '200':
+          description: Definitions installed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDefinitionsSummary'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '422':
+          description: Structurally valid but not executable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDefinitionsSummary'
+
+  /v1/communities/{communityId}/instances:
+    get:
+      operationId: queryInstances
+      summary: List instances the caller may read.
+      description: >-
+        **Read filtering happens here, not on the client.** Every returned instance has passed its
+        workflow's `visibility` rule -- the state's `readGuard` if it declares one, otherwise the
+        workflow's -- evaluated against the caller's `fanId` and resolved roles.
+
+
+        Guards fail closed. An identity field that is unset matches nobody, so an instance belonging to
+        no one is returned to no one. That is deliberate: seed data carrying no identity renders
+        nothing rather than leaking.
+
+
+        An instance the caller may not read is **absent**, not marked inaccessible. Returning a
+        redacted stub would disclose that it exists.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - name: workflowType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sortKey
+          in: query
+          required: false
+          description: An `instanceDataSchema` field name to sort by.
+          schema:
+            type: string
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Readable instances.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListInstancesResponse'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    post:
+      operationId: createInstance
+      summary: Create an instance of a workflow type.
+      description: >-
+        Permitted only if the caller holds the archetype's `create` permission for this workflow, as
+        derived by App Access from the package's `byRoleIds`.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CommunityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstanceRequest'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+
+  /v1/communities/{communityId}/instances/{instanceId}/available-transitions:
+    get:
+      operationId: availableTransitions
+      summary: The transitions this caller may invoke on this instance, right now.
+      description: >-
+        **This is what the client renders buttons from.** It is server-computed for the same reason the
+        service exists: a client deciding for itself shows buttons the server will reject, which reads
+        to a member as the app being broken.
+
+
+        Each entry has passed its guard for this caller and this instance's current state. A transition
+        the caller cannot invoke is absent rather than returned disabled -- a disabled button still
+        discloses that the action exists.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+      responses:
+        '200':
+          description: Invocable transitions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableTransitionsResponse'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/communities/{communityId}/instances/{instanceId}/transitions:
+    post:
+      operationId: applyTransition
+      summary: Invoke a transition.
+      description: >-
+        Re-evaluates the guard at execution time rather than trusting that `availableTransitions` said
+        yes: the two calls are separated by network time, during which state can change. The listing is
+        advice for rendering; this is the decision.
+
+
+        Applies the transition's effects, including archetype-owned bookkeeping -- a per-person action
+        such as `open` or `acknowledge` records the caller once, without the package declaring the
+        field or writing an `actorInList` guard against it.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyTransitionRequest'
+      responses:
+        '200':
+          description: Applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          description: >-
+            The guard refused. Deliberately does not say which clause failed: a caller learning that
+            they failed `actorEqualsField` rather than `allowedRoleIds` learns something about the
+            instance they cannot read.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          description: The instance is no longer in a state this transition leaves from.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
+
+components:
+  parameters:
+    CommunityId:
+      name: communityId
+      in: path
+      required: true
+      schema:
+        type: string
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    ReplaceWorkflowDefinitionsRequest:
+      type: object
+      required: [specVersion, definitions]
+      properties:
+        specVersion:
+          type: integer
+          description: The package's `specVersion`. Rejected if this service does not implement it.
+        definitions:
+          type: object
+          description: >-
+            The package's `experience.workflowDefinitions`, verbatim. Passed to the same engine the
+            client runs, so no translation step can introduce a divergence.
+          additionalProperties: true
+
+    WorkflowDefinitionsSummary:
+      type: object
+      required: [communityId, workflowTypes, findings]
+      properties:
+        communityId:
+          type: string
+        specVersion:
+          type: integer
+        workflowTypes:
+          type: array
+          items:
+            type: string
+        removedWorkflowTypes:
+          type: array
+          description: Types present before this call and absent from it. Their instances become unreachable.
+          items:
+            type: string
+        findings:
+          type: array
+          description: Empty on success; the reasons on a 422.
+          items:
+            $ref: '#/components/schemas/DefinitionFinding'
+
+    DefinitionFinding:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - unsupported_spec_version
+            - unknown_card_surface_family
+            - unknown_action_for_archetype
+            - undeclared_role_in_guard
+            - unparseable_formula
+            - unknown_effect_op
+        message:
+          type: string
+        workflowType:
+          type: string
+          nullable: true
+        transitionId:
+          type: string
+          nullable: true
+
+    CreateInstanceRequest:
+      type: object
+      required: [workflowType]
+      properties:
+        workflowType:
+          type: string
+        instanceData:
+          type: object
+          description: >-
+            Seed values for this instance's declared fields. Fields the archetype owns are rejected --
+            bookkeeping is maintained by the engine, never supplied by a caller.
+          additionalProperties: true
+
+    ApplyTransitionRequest:
+      type: object
+      required: [transitionId]
+      properties:
+        transitionId:
+          type: string
+        inputs:
+          type: object
+          description: Values for the transition's declared `inputs`.
+          additionalProperties: true
+
+    WorkflowInstance:
+      type: object
+      required: [instanceId, workflowType, currentState, instanceData]
+      properties:
+        instanceId:
+          type: string
+        workflowType:
+          type: string
+        currentState:
+          type: string
+        instanceData:
+          type: object
+          description: >-
+            Stored fields plus computed ones. Computed fields are evaluated per caller, because a
+            formula may reference `$viewer`.
+          additionalProperties: true
+        updatedAt:
+          type: string
+          format: date-time
+
+    AvailableTransition:
+      type: object
+      required: [transitionId, label]
+      properties:
+        transitionId:
+          type: string
+        label:
+          type: string
+        action:
+          type: string
+          nullable: true
+          description: The archetype action, when the transition declares one.
+        tone:
+          type: string
+          nullable: true
+        inputs:
+          type: object
+          nullable: true
+          description: The transition's declared input specs, for rendering a form.
+          additionalProperties: true
+
+    AvailableTransitionsResponse:
+      type: object
+      required: [instanceId, currentState, transitions]
+      properties:
+        instanceId:
+          type: string
+        currentState:
+          type: string
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailableTransition'
+
+    ListInstancesResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowInstance'
+        pageInfo:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
