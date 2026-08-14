@@ -51,6 +51,16 @@
       "derivedFrom": []
     },
     {
+      "path": "archetypes/CONTRACTS.md",
+      "title": "Archetype contracts",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart",
+        "app/packages/core/loom_communities_app_shell/lib/src/part36_engine_native_marketplace_surface.dart"
+      ]
+    },
+    {
       "path": "archetypes/README.md",
       "title": "Archetype index + status",
       "syncedTo": 4,
