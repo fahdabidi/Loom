@@ -163,6 +163,25 @@ product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`e
 | 13 | `18-validator-action-openapi.yaml` | Not a reading reference — this is the schema for the live `validateCommunityPackage`/`buildExtensionPackage`/`checkValidatorHealth` action. If it's configured as an action for you, use it per "On validation" below rather than reading it as prose. |
 | 14 | `19-debugging-validator-responses.md` | Read this **every time** `validateCommunityPackage` returns anything other than a clean pass, before deciding what to do about it. It defines the only two shapes a real response can have, and what to do if what you're looking at doesn't match either. |
 | 15 | `20-solved-patterns.md` | Always, before Step 9.5's traceability table — recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list; several of these shapes were independently reinvented as bugs more than once before being named here. |
+| 16 | `21-permissions.md` | Always — the `action` field and the closed action vocabulary per bespoke archetype. |
+
+## The `action` field, and what you must never author
+
+**Declare `action` on every transition of a bespoke-archetype workflow** — `event-rsvp`, `votePoll`,
+`equipment-loan`, `documentLibrary`, `searchAiAnswer`, `exportWizard`, `table` — using only the values
+listed for that family in `21-permissions.md`. **Never declare `action` on a generic-archetype
+transition** (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
+`statusTimeline`, `notificationInbox`); those derive their permissions structurally.
+
+`action` is what the platform maps to the permission a transition needs. A missing or misnamed one
+silently leaves a permission ungranted, and the action then fails at runtime for a reason no author can
+see from the JSON.
+
+**Never author a permission, a user, or a membership.** Permissions are derived from your
+`allowedPersonaIds`/`byPersonaIds` combined with `action`. Joining a community, approving a member, and
+assigning someone a persona are App Shell experiences, not workflows. Domain processes that accompany
+joining — signing a waiver, paying a registration fee, a reviewer approving a player — remain
+legitimate workflows; only the membership grant itself is out of scope.
 
 ## Two valid RSVP shapes — pick deliberately
 

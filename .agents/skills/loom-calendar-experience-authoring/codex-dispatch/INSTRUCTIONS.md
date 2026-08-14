@@ -62,7 +62,8 @@ invariant a later file assumes you already know.
 | 8 | `docs/references/guide/04-antipatterns.md`, `docs/references/guide/05-validation.md` | Self-check before emitting. |
 | 9 | `docs/references/reference/theming.md`, `docs/references/reference/platform-services.md` | `platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable — always check it before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer. Never fabricate one (AP-6). |
 | 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list before treating a shape as novel. |
-| 11 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
+| 11 | `docs/references/reference/permissions.md` | Always — defines the `action` field, which archetypes require it, and the closed action vocabulary for each. Permissions are **derived** from what you author; you never write one. |
+| 12 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
 
 ## Scope
 
@@ -130,6 +131,20 @@ real enum (fetched at step 7) instead.
     real artifact in your final answer, not a claim that you checked. One row per atomic product-doc
     requirement per workflow, citing the exact JSON construct that satisfies it, or `not_implemented` with
     reasoning grounded in a real, checked constraint — never a guessed persona/tab restriction.
+12. **Declare `action` on every transition of a bespoke-archetype workflow, and never on a generic one.**
+    The seven bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
+    `searchAiAnswer`, `exportWizard`, `table`) each have a **closed** action vocabulary — see
+    `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The six
+    generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
+    `statusTimeline`, `notificationInbox`) derive their permissions structurally and must carry **no**
+    `action` field at all. `action` is what the platform maps to the permission a transition needs, so an
+    unmapped or misnamed one silently leaves a permission ungranted and the action fails at runtime.
+13. **Never author a permission, a user, or a membership.** Permissions are derived from your
+    `allowedPersonaIds`/`byPersonaIds` plus `action` — writing one is always wrong. Likewise never model
+    joining a community, approving a member, or assigning someone a persona as a workflow: that is an App
+    Shell experience backed by the App Access service. Domain processes that *accompany* joining (signing a
+    waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
+    membership grant itself that must not be one.
 
 ## Two valid RSVP shapes — pick deliberately
 
