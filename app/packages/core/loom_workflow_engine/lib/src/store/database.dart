@@ -8,41 +8,80 @@ import 'package:drift/drift.dart' show OpeningDetails;
 import 'package:drift/native.dart';
 import 'package:ffi/ffi.dart';
 
-/// Thin wrapper around a SQLite connection with the two-table schema from §3d.
+/// Which SQL dialect the underlying executor speaks.
 ///
-/// Uses drift's [NativeDatabase] as the SQLite connection boundary so the same
-/// storage path works under Dart tests and Flutter runtime tests with
-/// `sqlite3_flutter_libs`. There is intentionally no alternate Dart `Map`
-/// storage path: if SQLite cannot open, callers should see the real failure.
+/// The engine's SQL is almost entirely portable — every query goes through
+/// drift's [QueryExecutor], not a SQLite-specific API. Three things are not:
+/// the WAL pragma, JSON extraction for sort keys, and the version probe. This
+/// enum exists so those three can branch, rather than forcing a second copy of
+/// the whole store.
+enum WorkflowSqlDialect {
+  sqlite,
+  postgres;
+
+  bool get isSqlite => this == WorkflowSqlDialect.sqlite;
+}
+
+/// Thin wrapper around a SQL connection with the two-table schema from §3d.
+///
+/// Runs on SQLite on the device and on PostgreSQL server-side, over the same
+/// code. That is the point: the workflow engine is one implementation of the
+/// guard, formula and effect semantics, executed in both places. A second
+/// implementation for the server would have to agree with this one on every
+/// input of a 23-function expression language, and nothing could prove that it
+/// did.
 class WorkflowDatabase {
   static bool _sqliteProcessSymbolsLoaded = false;
 
-  final NativeDatabase _db;
+  final QueryExecutor _db;
+  final WorkflowSqlDialect _dialect;
   final _WorkflowDatabaseUser _user = _WorkflowDatabaseUser();
   Future<void>? _openAndMigrated;
 
-  WorkflowDatabase._(this._db);
+  WorkflowDatabase._(this._db, this._dialect);
 
   /// Opens an in-memory SQLite database for tests and ephemeral demo state.
   factory WorkflowDatabase.memory() {
     _loadSqliteProcessSymbols();
-    return WorkflowDatabase._(NativeDatabase.memory());
+    return WorkflowDatabase._(
+      NativeDatabase.memory(),
+      WorkflowSqlDialect.sqlite,
+    );
   }
 
   /// Opens a file-backed SQLite database.
   factory WorkflowDatabase.file(String path) {
     _loadSqliteProcessSymbols();
-    return WorkflowDatabase._(NativeDatabase(File(path)));
+    return WorkflowDatabase._(
+      NativeDatabase(File(path)),
+      WorkflowSqlDialect.sqlite,
+    );
   }
 
-  bool get isSqliteBacked => true;
+  /// Wraps an externally-created executor — the server passes a PostgreSQL one.
+  ///
+  /// Kept dependency-free on purpose: this package does not depend on
+  /// `drift_postgres`, so the service supplies the executor and the engine
+  /// stays usable on-device without pulling a Postgres driver into the app.
+  factory WorkflowDatabase.withExecutor(
+    QueryExecutor executor, {
+    required WorkflowSqlDialect dialect,
+  }) {
+    return WorkflowDatabase._(executor, dialect);
+  }
 
-  String get storageBackend => 'drift-native-sqlite';
+  bool get isSqliteBacked => _dialect.isSqlite;
+
+  String get storageBackend =>
+      _dialect.isSqlite ? 'drift-native-sqlite' : 'drift-postgres';
 
   Future<void> _ensureOpenAndMigrated() {
     return _openAndMigrated ??= () async {
       await _db.ensureOpen(_user);
-      await _db.runCustom('PRAGMA journal_mode=WAL;');
+      if (_dialect.isSqlite) {
+        // WAL is a SQLite concept; PostgreSQL is already write-ahead logged.
+        await _db.runCustom('PRAGMA journal_mode=WAL;');
+      }
       await _migrate();
     }();
   }
@@ -196,12 +235,23 @@ class WorkflowDatabase {
     required String sortKey,
   }) async {
     await _ensureOpenAndMigrated();
-    final allRowsResult = await _db.runSelect(
-      'SELECT * FROM workflow_instances '
-      'WHERE community_id = ? '
-      'ORDER BY json_extract(instance_data, ?) ASC, instance_id ASC',
-      [communityId, '\$.$sortKey'],
-    );
+    // JSON extraction is the one query shape the two dialects spell
+    // differently. The sort key is a declared instanceDataSchema field name,
+    // never caller-supplied text, so interpolating it into the Postgres path
+    // expression cannot carry untrusted input.
+    final allRowsResult = _dialect.isSqlite
+        ? await _db.runSelect(
+            'SELECT * FROM workflow_instances '
+            'WHERE community_id = ? '
+            'ORDER BY json_extract(instance_data, ?) ASC, instance_id ASC',
+            [communityId, '\$.$sortKey'],
+          )
+        : await _db.runSelect(
+            'SELECT * FROM workflow_instances '
+            'WHERE community_id = ? '
+            "ORDER BY instance_data::jsonb #>> ? ASC, instance_id ASC",
+            [communityId, '{$sortKey}'],
+          );
 
     final allRows = allRowsResult
         .map((r) => WorkflowInstanceRow.fromRow(r))
@@ -304,10 +354,13 @@ class WorkflowDatabase {
     await _db.runCustom(sql);
   }
 
+  /// Diagnostic only — reports the underlying engine's version string.
   Future<String> sqliteVersion() async {
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
-      'SELECT sqlite_version() AS version',
+      _dialect.isSqlite
+          ? 'SELECT sqlite_version() AS version'
+          : 'SELECT version() AS version',
       [],
     );
     return result.first['version'] as String;
