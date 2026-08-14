@@ -181,6 +181,9 @@ to `edit` would grant every suggester the power to actually move the event.
 |---|---|---|
 | `view` | `document_library.view` | read-only bindings |
 | `upload` | `document_library.upload` | creation actions, `prepare-new-document-version` |
+| `edit` | `document_library.edit` | revising a document's own content or metadata |
+| `publish` | `document_library.publish` | moving a document out of an unpublished state |
+| `delete` | `document_library.delete` | removing a document outright, as distinct from `archive` |
 | `archive` | `document_library.archive` | `archive-document`, `archive-material`, `archive-resource` |
 | `restore` | `document_library.restore` | `restore-document` |
 | `acknowledge` | `document_library.acknowledge` | `acknowledge-document`, `acknowledge-latest-version`, `acknowledge-material`, `acknowledge-resource` |

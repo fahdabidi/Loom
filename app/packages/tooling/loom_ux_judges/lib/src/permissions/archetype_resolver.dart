@@ -124,6 +124,13 @@ class ArchetypeResolver {
     'documentLibrary': {
       'view',
       'upload',
+      // A document has a life before it is published. Without these three, an
+      // ordinary policy -- "only the Board may edit, publish or delete;
+      // unpublished documents are Board-only" -- cannot be expressed at all,
+      // because a document has no unpublished state and no way to leave one.
+      'edit',
+      'publish',
+      'delete',
       'archive',
       'restore',
       'acknowledge',

@@ -96,6 +96,15 @@
       ]
     },
     {
+      "path": "archetypes/document-library.md",
+      "title": "documentLibrary archetype",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
       "path": "archetypes/equipment-loan.md",
       "title": "equipment-loan / stateMachineGrid",
       "syncedTo": 4,
