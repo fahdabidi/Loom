@@ -71,7 +71,10 @@ void main() {
       '1 minimal valid v2 package passes',
       () => expect(CommunityPackageValidator().validate(pkg()).passed, isTrue),
     );
-    test('2 missing root schemaVersion', () {
+    test('2 missing root version stamp', () {
+      // Points at specVersion, not the legacy schemaVersion it replaced:
+      // a package with no stamp at all should be told to add the field it
+      // ought to have, not the deprecated one.
       final package = pkg()..remove('schemaVersion');
       final report = CommunityPackageValidator().validate(package);
       final missingVersions = report.findings
@@ -79,7 +82,7 @@ void main() {
           .toList();
 
       expect(missingVersions, hasLength(1));
-      expect(missingVersions.single.location, 'schemaVersion');
+      expect(missingVersions.single.location, 'specVersion');
     });
     test(
       '3 unsupported experience schema version',

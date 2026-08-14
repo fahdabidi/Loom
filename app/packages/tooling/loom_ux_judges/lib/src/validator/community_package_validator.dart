@@ -3,29 +3,94 @@ import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 class CommunityPackageValidator {
+  /// The current single-number specification version.
+  ///
+  /// One number versions the whole package. The three legacy stamps below are
+  /// still accepted while `spec-version.json` → `pendingMigration` lists the
+  /// fixtures, and the legacy branch is deleted once that list is empty.
+  static const supportedSpecVersions = <int>{4};
+
   static const supportedEnvelopeVersions = <int>{1};
   static const supportedExperienceVersions = <int>{1, 2};
   static const supportedGrammarVersions = <int>{1};
 
   ValidationReport validate(Map<String, dynamic> package) {
     final findings = <ValidationFinding>[];
-    final envelopeVersion = package['schemaVersion'];
-    if (envelopeVersion is! int) {
-      findings.add(
-        _finding(
-          'missing_schema_version',
-          'schemaVersion must be present and an int.',
-          'schemaVersion',
-        ),
-      );
-    } else if (!supportedEnvelopeVersions.contains(envelopeVersion)) {
-      findings.add(
-        _finding(
-          'unsupported_schema_version',
-          'Unsupported schemaVersion "$envelopeVersion".',
-          'schemaVersion',
-        ),
-      );
+
+    // A package declares either the single `specVersion` or the legacy triple,
+    // never a mixture. Which one it uses selects the rule set: identity types
+    // and `audience` are only enforced from specVersion 4 onward, because a
+    // legacy package legitimately still says `personaId` and `role`.
+    final specVersion = package['specVersion'];
+    final isSpecVersioned = specVersion != null;
+
+    if (isSpecVersioned) {
+      if (specVersion is! int) {
+        findings.add(
+          _finding(
+            'missing_schema_version',
+            'specVersion must be an int.',
+            'specVersion',
+          ),
+        );
+        return ValidationReport(findings);
+      }
+      if (!supportedSpecVersions.contains(specVersion)) {
+        findings.add(
+          _finding(
+            'unsupported_schema_version',
+            'Unsupported specVersion "$specVersion". A loader that meets a '
+                'version it does not implement must fail rather than '
+                'best-effort-parse: silently ignoring a construct is how a '
+                'community ships a guard that never fires.',
+            'specVersion',
+          ),
+        );
+        return ValidationReport(findings);
+      }
+      // The legacy stamps must be gone, not merely ignored. Leaving one behind
+      // is how a package ends up declaring two different versions of itself --
+      // which is precisely the drift that produced this collapse.
+      for (final legacy in const [
+        ['schemaVersion', 'schemaVersion'],
+        ['experience.experienceSchemaVersion', 'experienceSchemaVersion'],
+        ['experience.workflowGrammarVersion', 'workflowGrammarVersion'],
+      ]) {
+        final present = legacy[0].startsWith('experience.')
+            ? (package['experience'] is Map &&
+                (package['experience'] as Map).containsKey(legacy[1]))
+            : package.containsKey(legacy[1]);
+        if (present) {
+          findings.add(
+            _finding(
+              'legacy_version_stamp',
+              'A package declaring specVersion must not also carry '
+                  '"${legacy[1]}". One number versions the whole package.',
+              legacy[0].replaceAll('.', '/'),
+            ),
+          );
+        }
+      }
+    } else {
+      final envelopeVersion = package['schemaVersion'];
+      if (envelopeVersion is! int) {
+        findings.add(
+          _finding(
+            'missing_schema_version',
+            'Package must declare specVersion (or, until the migration '
+                'completes, the legacy schemaVersion).',
+            'specVersion',
+          ),
+        );
+      } else if (!supportedEnvelopeVersions.contains(envelopeVersion)) {
+        findings.add(
+          _finding(
+            'unsupported_schema_version',
+            'Unsupported schemaVersion "$envelopeVersion".',
+            'schemaVersion',
+          ),
+        );
+      }
     }
     final rawExperience = package['experience'];
     if (rawExperience is! Map) {
@@ -39,59 +104,82 @@ class CommunityPackageValidator {
       return ValidationReport(findings);
     }
     final experience = Map<String, dynamic>.from(rawExperience);
+
+    // The legacy stamps only gate a legacy package. A specVersion package has
+    // already been version-checked once, by the single number that governs all
+    // of it.
+    if (!isSpecVersioned) {
+      final legacyGate = _validateLegacyStamps(experience);
+      if (legacyGate != null) {
+        findings.addAll(legacyGate);
+        return ValidationReport(findings);
+      }
+    }
+    findings.addAll(_validateIdentityKeys(package, experience, isSpecVersioned));
+    return _validateBody(package, experience, findings);
+  }
+
+  /// The three legacy version checks, unchanged. Returns the findings that must
+  /// terminate validation, or null to continue.
+  List<ValidationFinding>? _validateLegacyStamps(
+    Map<String, dynamic> experience,
+  ) {
     final experienceVersion = experience['experienceSchemaVersion'];
     if (experienceVersion is! int) {
-      findings.add(
+      return [
         _finding(
           'missing_schema_version',
           'experience.experienceSchemaVersion must be stamped as an int.',
           'experience/experienceSchemaVersion',
         ),
-      );
-      return ValidationReport(findings);
+      ];
     }
     if (!supportedExperienceVersions.contains(experienceVersion)) {
-      findings.add(
+      return [
         _finding(
           'unsupported_schema_version',
           'Unsupported experienceSchemaVersion "$experienceVersion".',
           'experience/experienceSchemaVersion',
         ),
-      );
-      return ValidationReport(findings);
+      ];
     }
     if (experienceVersion == 1) {
-      findings.add(
+      return [
         _finding(
           'legacy_experience_schema',
           'Experience schema v1 is legacy and cannot express state machines; engine-native validation was skipped.',
           'experience/experienceSchemaVersion',
           warning: true,
         ),
-      );
-      return ValidationReport(findings);
+      ];
     }
     final grammarVersion = experience['workflowGrammarVersion'];
     if (grammarVersion is! int) {
-      findings.add(
+      return [
         _finding(
           'missing_schema_version',
           'experience.workflowGrammarVersion must be stamped as an int.',
           'experience/workflowGrammarVersion',
         ),
-      );
-      return ValidationReport(findings);
+      ];
     }
     if (!supportedGrammarVersions.contains(grammarVersion)) {
-      findings.add(
+      return [
         _finding(
           'unsupported_schema_version',
           'Unsupported workflowGrammarVersion "$grammarVersion".',
           'experience/workflowGrammarVersion',
         ),
-      );
-      return ValidationReport(findings);
+      ];
     }
+    return null;
+  }
+
+  ValidationReport _validateBody(
+    Map<String, dynamic> package,
+    Map<String, dynamic> experience,
+    List<ValidationFinding> findings,
+  ) {
     final rawDefinitions = experience['workflowDefinitions'];
     if (rawDefinitions is! Map || rawDefinitions.isEmpty) {
       findings.add(
@@ -383,6 +471,119 @@ class CommunityPackageValidator {
 
   Map<String, Object?>? _objectMap(Object? value) {
     return value is Map<String, Object?> ? value : null;
+  }
+
+  /// identity-types.md — the `roleId` / `fanId` split, enforced from
+  /// specVersion 4.
+  ///
+  /// A legacy package legitimately still says `personaId` and `role`, so none
+  /// of this applies to one. What makes the split worth having is the last
+  /// check: comparing `$viewer` to a declared role is a type error rather than
+  /// a silent false, and three formulas in the corpus are broken by exactly
+  /// that today while producing no diagnostic at all.
+  List<ValidationFinding> _validateIdentityKeys(
+    Map<String, dynamic> package,
+    Map<String, dynamic> experience,
+    bool isSpecVersioned,
+  ) {
+    if (!isSpecVersioned) return const [];
+    final findings = <ValidationFinding>[];
+
+    // Renamed keys. Their continued presence means a package was hand-edited
+    // to the new version without being regenerated.
+    const renamed = {
+      'allowedPersonaIds': 'allowedRoleIds',
+      'byPersonaIds': 'byRoleIds',
+      'visiblePersonaIds': 'visibleRoleIds',
+      'personaTabs': 'roleTabs',
+      'personas': 'roles',
+    };
+    void walk(Object? node, String path) {
+      if (node is Map) {
+        for (final entry in node.entries) {
+          final key = entry.key.toString();
+          final replacement = renamed[key];
+          if (replacement != null) {
+            findings.add(
+              _finding(
+                'legacy_identity_key',
+                'specVersion 4 renamed "$key" to "$replacement". '
+                    'See identity-types.md.',
+                '$path/$key',
+              ),
+            );
+          }
+          if (key == 'role' && node.containsKey('cardSurfaceFamily')) {
+            findings.add(
+              _finding(
+                'legacy_identity_key',
+                'specVersion 4 renamed renderBindings[].role to "audience". It '
+                    'never meant a community role — its values are '
+                    'actor/receiver/any, the viewer\'s relationship to an '
+                    'instance.',
+                '$path/role',
+              ),
+            );
+          }
+          walk(entry.value, '$path/$key');
+        }
+      } else if (node is List) {
+        for (var i = 0; i < node.length; i++) {
+          walk(node[i], '$path[$i]');
+        }
+      }
+    }
+
+    walk(experience, 'experience');
+    walk(package['appShell'], 'appShell');
+
+    // Comparing an identity to a declared role literal. `$actor`/`$viewer` are
+    // fanIds; a roleId on the other side can never match, which in a v1
+    // package failed silently.
+    final roleIds = <String>{
+      for (final role in (experience['roles'] as List? ?? const []))
+        if (role is Map && role['roleId'] is String) role['roleId'] as String,
+    };
+    if (roleIds.isNotEmpty) {
+      final comparison = RegExp(
+        r'''\$(?:actor|viewer)\s*==\s*['"]([^'"]+)['"]|['"]([^'"]+)['"]\s*==\s*\$(?:actor|viewer)''',
+      );
+      void scanFormulas(Object? node, String path) {
+        if (node is Map) {
+          for (final entry in node.entries) {
+            final key = entry.key.toString();
+            final value = entry.value;
+            if (value is String &&
+                (key == 'formula' || key == 'if' || key.endsWith('Formula'))) {
+              for (final match in comparison.allMatches(value)) {
+                final literal = match.group(1) ?? match.group(2);
+                if (literal != null && roleIds.contains(literal)) {
+                  findings.add(
+                    _finding(
+                      'identity_compared_to_role',
+                      'Compares \$actor/\$viewer (a fanId) against "$literal", '
+                          'which is a declared roleId. This can never be true. '
+                          '"This person, or anyone with this role" is a fanId '
+                          'comparison plus an allowedRoleIds guard — they are '
+                          'different layers.',
+                      '$path/$key',
+                    ),
+                  );
+                }
+              }
+            }
+            scanFormulas(value, '$path/$key');
+          }
+        } else if (node is List) {
+          for (var i = 0; i < node.length; i++) {
+            scanFormulas(node[i], '$path[$i]');
+          }
+        }
+      }
+
+      scanFormulas(experience, 'experience');
+    }
+    return findings;
   }
 
   /// permissions.md §8's rules for the `action` field.
