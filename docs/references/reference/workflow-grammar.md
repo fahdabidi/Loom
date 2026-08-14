@@ -145,6 +145,10 @@ plumbing.
 ```jsonc
 {
   "id": "rsvp-going",              // REQUIRED, unique within this workflow
+  "action": "respond",             // PROPOSED — REQUIRED on bespoke-archetype workflows,
+                                   // and absent on generic ones. Names which archetype
+                                   // action this transition is, which is what derives the
+                                   // permission it needs. See reference/permissions.md.
   "label": "I'm going",            // REQUIRED, non-empty — this is the button text
   "icon": "event_available",       // optional, Material icon name
   "tone": "primary",               // optional: primary | secondary | destructive

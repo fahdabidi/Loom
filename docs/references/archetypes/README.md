@@ -46,6 +46,12 @@ forward from a prior doc claim.
 
 ## The dispatch mechanism (read this before the table)
 
+> **This bespoke-vs-generic split is also what decides how permissions are derived.** A family with a
+> dispatcher case has a **closed action vocabulary** and its transitions must declare `action`; a family
+> that falls through to the generic card has an **open** one, declares no `action`, and derives its
+> permissions structurally instead. See [`reference/permissions.md`](../reference/permissions.md) —
+> which is also why community JSON never contains a permission.
+
 `EngineNativeArchetypeCard.build()` (`part27_engine_native_binding_dispatcher.dart`) is the **single**
 per-instance dispatch point `cardSurfaceFamily` is switched on. Six branches route to a bespoke widget;
 every other value falls to the generic card:
