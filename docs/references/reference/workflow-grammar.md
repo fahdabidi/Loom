@@ -1,12 +1,12 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: { envelope: 1, experience: 2, grammar: 3 }
 doc_version: 1.6.0
 status: current
 last_verified: 2026-08-09
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
-# Workflow grammar (normative) — grammar v2
+# Workflow grammar (normative) — grammar v3
 
 **The contract.** Every key here is one the engine's parser genuinely reads
 (`LoomWorkflowStateMachine.fromJson`, `workflow_models.dart:341-371`) and the engine genuinely executes.

@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: { envelope: 1, experience: 2, grammar: 3 }
 doc_version: 1.0.0
 status: proposed
 last_verified: 2026-08-13
@@ -12,12 +12,12 @@ derived_from:
 
 # Identity types — `roleId` and `fanId`
 
-**Status: PROPOSED.** This defines `workflowGrammarVersion: 2`. Packages stamped `1` keep the old
+**Status: PROPOSED.** This defines `workflowGrammarVersion: 3`. Packages stamped `1` or `2` keep the old
 rules unchanged; the two versions are not mixed within a package.
 
 ## 1. The defect this fixes
 
-Grammar v1 has exactly one identity type, `personaId`, and uses it for two incompatible things:
+Grammar v1 and v2 have exactly one identity type, `personaId`, and use it for two incompatible things:
 
 - **what kind of member is this** — `hoa-board`, `garden-coordinator`, shared by many people
 - **which specific person is this** — the one individual who may read this private thread
@@ -32,7 +32,7 @@ and seven have live guards checking such values. It went unnoticed through eight
 role-gated communities never exercise the second meaning.
 
 **The fix is a type split**, and its real payoff is not the rename. It is that comparing a person to a
-role becomes a **validator error at authoring time**. Grammar v1 cannot express that mistake *as* a
+role becomes a **validator error at authoring time**. Grammar v1 and v2 cannot express that mistake *as* a
 mistake, because both sides are nominally the same type.
 
 ## 2. The two types
@@ -47,11 +47,11 @@ someone is.** Roles never appear as instance data values. People never appear in
 
 Nullable and array forms follow the existing convention: `fanId?`, `fanId[]`, `fanId[]?`.
 
-## 3. What changes from v1
+## 3. What changes from v2
 
 ### 3.1 Declarations
 
-| v1 | v2 |
+| v1 and v2 | v3 |
 |---|---|
 | `experience.personas[]` | `experience.roles[]` |
 | `personas[].personaId` | `roles[].roleId` |
@@ -59,7 +59,7 @@ Nullable and array forms follow the existing convention: `fanId?`, `fanId[]`, `f
 
 ### 3.2 Access control keys
 
-| v1 | v2 | Occurrences in the corpus |
+| v1 and v2 | v3 | Occurrences in the corpus |
 |---|---|---|
 | `guard.allowedPersonaIds` | `guard.allowedRoleIds` | 582 |
 | `actions[].byPersonaIds` | `actions[].byRoleIds` | 70 |
@@ -69,7 +69,7 @@ These were always role-based. The rename makes them say so.
 
 ### 3.3 Instance data field types
 
-| v1 | v2 |
+| v1 and v2 | v3 |
 |---|---|
 | `"type": "personaId"` | `"type": "fanId"` |
 | `"type": "personaId[]"` | `"type": "fanId[]"` |
@@ -93,10 +93,10 @@ file, one of them now a real type. Renamed to `audience`; the three values are u
 a silent no-op:
 
 ```jsonc
-// v1 — parses, never matches, no diagnostic
+// before v3 — parses, never matches, no diagnostic
 "formula": "$viewer == payerPersonaId || $viewer == 'masjid-admin'"
 
-// v2 — the left comparison is fanId == fanId, fine.
+// v3 — the left comparison is fanId == fanId, fine.
 //      the right compares a fanId to a declared roleId: ERROR.
 "formula": "$viewer == payerFanId"
 "guard": { "allowedRoleIds": ["masjid-admin"] }
@@ -105,7 +105,7 @@ a silent no-op:
 An author who wants "this person, or anyone with this role" writes the person check as a formula and
 the role check as `allowedRoleIds`. They are different layers — see `permissions.md` §2.
 
-## 4. Validator rules added in v2
+## 4. Validator rules added in v3
 
 | Rule | Severity |
 |---|---|
@@ -114,8 +114,8 @@ the role check as `allowedRoleIds`. They are different layers — see `permissio
 | `actorEqualsField.key` names a field typed `fanId` (or `fanId?`) | error |
 | `actorInList.key` names a field typed `fanId[]` | error |
 | `$actor` / `$viewer` compared against a string literal that is a declared `roleId` | error |
-| a v1 key (`allowedPersonaIds`, `byPersonaIds`, `visiblePersonaIds`, `renderBindings[].role`) in a v2 package | error |
-| field `type` outside the known set | error — v1 left this unchecked, which is how the split stayed invisible |
+| a v1/v2 key (`allowedPersonaIds`, `byPersonaIds`, `visiblePersonaIds`, `renderBindings[].role`) in a v3 package | error |
+| field `type` outside the known set | error — v1 and v2 left this unchecked, which is how the split stayed invisible |
 
 The fifth rule is the one that earns the migration. Three formulas in the current corpus are broken by
 exactly this mechanism and produce no diagnostic today:

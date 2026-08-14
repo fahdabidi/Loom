@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: { envelope: 1, experience: 2, grammar: 3 }
 doc_version: 1.9.0
 status: current
 last_verified: 2026-08-09
@@ -9,7 +9,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
 ---
 
-# Guards (normative) — grammar v2
+# Guards (normative) — grammar v3
 
 A guard decides **who may fire a transition, and when**.
 
@@ -42,7 +42,7 @@ default-when-absent semantics deliberately differ from `editGuard`'s.
 
 ## 1. `allowedRoleIds` — role allowlist
 
-> **Grammar v2 rename.** This key is `allowedRoleIds` in v1 and `allowedRoleIds` in v2. It was always
+> **Grammar v3 rename.** This key is `allowedRoleIds` in v1 and `allowedRoleIds` in v2. It was always
 > role-based; the rename makes it say so. See [`identity-types.md`](./identity-types.md).
 
 ```jsonc
@@ -78,7 +78,7 @@ role." See
 
 | Field | Type | Meaning |
 |---|---|---|
-| `key` | string | A list-valued field on **this** instance, **typed `fanId[]`** in grammar v2. MUST be declared. |
+| `key` | string | A list-valued field on **this** instance, **typed `fanId[]`** in grammar v3. MUST be declared. |
 | `present` | bool | `true` = actor MUST be in the list · `false` = actor MUST NOT be |
 
 **Use for:** the classic paired transitions — show *Join queue* only to those not queued, and *Leave
@@ -378,10 +378,10 @@ frozen fixture, gating `notification`'s own `mark-read` transition (CAL.Notify.3
 
 | Field | Type | Meaning |
 |---|---|---|
-| `key` | string | A scalar (non-list) field on **this** instance, **typed `fanId`** in grammar v2. MUST be declared. The guard passes only if `$actor == instanceData[key]`. |
+| `key` | string | A scalar (non-list) field on **this** instance, **typed `fanId`** in grammar v3. MUST be declared. The guard passes only if `$actor == instanceData[key]`. |
 
-> **Grammar v2:** the field named here must be typed `fanId` (or `fanId?`), because `$actor` is a
-> `fanId`. Pointing it at a `roleId` field is an error — that comparison is the v1 defect that made
+> **Grammar v3:** the field named here must be typed `fanId` (or `fanId?`), because `$actor` is a
+> `fanId`. Pointing it at a `roleId` field is an error — that comparison is the pre-v3 defect that made
 > per-individual guards silently unsatisfiable. See [`identity-types.md`](./identity-types.md).
 
 **Use for:** "only the recipient may mark their own notification read" — the alternative (relying on the

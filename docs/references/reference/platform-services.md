@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: { envelope: 1, experience: 2, grammar: 3 }
 doc_version: 1.0.0
 status: current
 last_verified: 2026-07-14

@@ -1,8 +1,8 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.2.0
+spec: { envelope: 1, experience: 2, grammar: 3 }
+doc_version: 1.3.0
 status: current
-last_verified: 2026-07-21
+last_verified: 2026-08-13
 ---
 
 # Specification changelog
@@ -11,6 +11,44 @@ Every change to the Loom community-JSON specification. Newest first.
 
 Format per entry: **what changed · breaking or additive · what an author must do about it.**
 See [_meta/versioning-policy.md](./_meta/versioning-policy.md) for what "breaking" means.
+
+---
+
+## grammar 3 (breaking) — 2026-08-13 — `personaId` splits into `roleId` and `fanId`
+
+**Breaking.** The single identity type `personaId` did two incompatible jobs: naming a *kind of member*
+(shared by many) and naming a *specific person*. Guards needing the second meaning were given values that
+only ever satisfy the first, so per-individual guards were silently unsatisfiable — Member Social Space's
+Messages tab is empty because of it, and ten of eleven fixtures carry the same latent defect.
+
+Full definition and rationale: [`reference/identity-types.md`](./reference/identity-types.md).
+
+| Was (v1/v2) | Now (v3) | Occurrences |
+|---|---|---|
+| `experience.personas[]` → `personaId` | `experience.roles[]` → `roleId` | — |
+| `guard.allowedPersonaIds` | `guard.allowedRoleIds` | 582 |
+| `actions[].byPersonaIds` | `actions[].byRoleIds` | 70 |
+| `tabs[].visiblePersonaIds` | `tabs[].visibleRoleIds` | 15 |
+| `personaTabs` | `roleTabs` | — |
+| field type `personaId` / `personaId[]` | `fanId` / `fanId[]` | ~857 keys |
+| `renderBindings[].role` | `renderBindings[].audience` | 247 |
+
+`$actor` and `$viewer` are now `fanId`-typed. Comparing either to a declared `roleId` is an **error**,
+which is the point of the change: three formulas in the corpus are broken by exactly that mechanism today
+and produce no diagnostic. They are fixed by this migration rather than hand-patched, so the type split is
+demonstrated to catch them.
+
+`renderBindings[].role` is renamed because it never meant a community role — its values are
+`actor`/`receiver`/`any`, the viewer's relationship to an instance. Leaving two unrelated meanings of
+"role" in one file, one of them now a real type, was untenable.
+
+**What an author must do:** nothing by hand. Packages are regenerated through the authoring Skill. The
+validator rejects a v1/v2 key in a v3 package, and rejects an identity field whose type is not `fanId`
+or `roleId`.
+
+**Also fixed here:** every fixture declared `workflowGrammarVersion: 1` while carrying grammar-2 content
+(`actions[]`, no `creatable`). `supportedGrammarVersions` was `{1}`, so the validator only ever accepted
+the stale value and the drift was invisible. v3 packages declare 3 and the validator gates on it.
 
 ---
 

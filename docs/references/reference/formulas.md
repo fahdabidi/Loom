@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: { envelope: 1, experience: 2, grammar: 3 }
 doc_version: 1.2.0
 status: current
 last_verified: 2026-07-31
@@ -7,7 +7,7 @@ audience: llm-agent
 derived_from: app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart
 ---
 
-# Formulas (normative) — grammar v2
+# Formulas (normative) — grammar v3
 
 A formula is a **pure expression** evaluated at read time. It never mutates anything.
 
@@ -131,8 +131,8 @@ vocabulary out of the interpreter, the same principle every other formula in thi
 | `$viewer` | The **person** currently reading/querying, as a `fanId` (set on every `queryInstances`/`availableTransitionsAsync` call) |
 | `$state` | **(PROPOSED)** A row's own current FSM state, usable as the `column` argument to `groupCount`/`sum`/etc. — e.g. `groupCount(responses, '$state')` tallies rows by their real workflow state, not a duplicated status field. Only meaningful inside a `source: query(...)`-backed list's aggregate functions; not a bare field reference. |
 
-> **Grammar v2: `$actor` and `$viewer` are `fanId`-typed.** Comparing either against a declared `roleId`
-> is a validator error, not a silent false. This is the single most common v1 authoring mistake —
+> **Grammar v3: `$actor` and `$viewer` are `fanId`-typed.** Comparing either against a declared `roleId`
+> is a validator error, not a silent false. This is the single most common pre-v3 authoring mistake —
 > `$viewer == 'masjid-admin'` parses, never matches, and produces no diagnostic. "This person, or anyone
 > with this role" is written as a `fanId` comparison in the formula **plus** an `allowedRoleIds` guard;
 > they are different layers. See [`identity-types.md`](./identity-types.md) and

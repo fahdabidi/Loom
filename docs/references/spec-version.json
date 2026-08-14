@@ -12,8 +12,19 @@
   "current": {
     "envelope": 1,
     "experience": 2,
-    "grammar": 2
+    "grammar": 3
   },
+
+  "$grammarVersionWarning": [
+    "KNOWN INCONSISTENCY, found 2026-08-13 while scoping grammar 3. `current.grammar` has been 2 since",
+    "the actions[]-replaces-creatable bump (CHANGELOG, 2026-07-21), and every fixture was migrated to",
+    "the grammar-2 CONTENT -- 68 `actions` occurrences, zero `creatable`. But no fixture's own",
+    "`experience.workflowGrammarVersion` field was ever updated: all 13 still declare 1. The validator",
+    "did not catch it because `supportedGrammarVersions` is {1}, so it only ever accepted the stale value.",
+    "",
+    "The field is therefore not currently load-bearing, which is exactly why the drift went unnoticed.",
+    "Grammar 3 fixes this: the regenerated packages declare 3, and the validator gates on it."
+  ],
 
   "status": "provisional",
   "statusReason": [
