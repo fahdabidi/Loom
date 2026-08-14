@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: current
 last_verified: 2026-08-09
 audience: llm-agent
@@ -24,8 +24,8 @@ dart run loom_ux_judges:community_package_validator \
 
 Exit codes: `0` = pass · `1` = errors found · `64` = usage error.
 
-> **Status:** the community-package validator is being built (tracker-3 milestones A.1-A.2). Until it
-> lands, the definition-level validator exists and covers most checks:
+> **Status:** the community-package validator has shipped and is the gate. `--package` accepts a single
+> `.jsonc` or a directory. The definition-level validator still exists for narrower checks:
 > `dart run loom_ux_judges:workflow_state_machine_validator --definitions <file>`
 
 ## The repair loop
@@ -48,9 +48,9 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 
 | Code | Meaning | Fix |
 |---|---|---|
-| `missing_schema_version` | A version stamp is absent | Add all three: `schemaVersion`, `experienceSchemaVersion`, `workflowGrammarVersion` |
+| `missing_schema_version` | The version stamp is absent or not an int | Add a single package-root `specVersion: 4`. **Not** the legacy triple — a package declaring `specVersion` must not also carry `schemaVersion` / `experienceSchemaVersion` / `workflowGrammarVersion`, and doing so is its own error. |
 | `unsupported_schema_version` | Version higher than the build supports | Author against the current spec ([`spec-version.json`](../spec-version.json)) |
-| `legacy_experience_schema` (warning) | `experienceSchemaVersion: 1` | Re-author at v2. v1 cannot express state machines. |
+| `legacy_experience_schema` (warning) | The package uses the pre-4 version triple | Re-author at `specVersion: 4`. The triple's v1 could not express state machines at all; v4 folds all three into one package-root stamp. |
 
 ### States
 
