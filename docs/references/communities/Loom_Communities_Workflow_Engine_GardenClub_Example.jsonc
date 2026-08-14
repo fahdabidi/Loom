@@ -322,6 +322,7 @@
         "transitions": [
           {
             "id": "respond-going",
+            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
@@ -347,6 +348,7 @@
           },
           {
             "id": "respond-maybe",
+            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
@@ -362,6 +364,7 @@
           },
           {
             "id": "respond-declined",
+            "action": "respond",
             "label": "Not attending",
             "icon": "event_busy",
             "tone": "destructive",
@@ -377,6 +380,7 @@
           },
           {
             "id": "respond-waitlist",
+            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
@@ -402,6 +406,7 @@
           },
           {
             "id": "add-reminder",
+            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "add_alert",
             "tone": "secondary",

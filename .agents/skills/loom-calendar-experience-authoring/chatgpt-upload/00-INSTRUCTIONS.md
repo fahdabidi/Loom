@@ -175,6 +175,20 @@ dispatcher case: `event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`, 
 structurally. `table` is the trap: it renders as a grid and reads as bespoke, but that is list layout
 only — it has no dispatcher case and takes no `action`.
 
+Three further points, each of which has already caused a real defect:
+
+- A workflow with `"renderBindings": []` that is named by some binding's `responseTable.workflowType`
+  **inherits that binding's archetype**, so an RSVP response workflow is bespoke and its transitions do
+  need `action`. A workflow with no bindings and no `responseTable` owner derives nothing.
+- The "Observed transitions" column is a **lookup aid, not authority**. Where it disagrees with what the
+  transition's `guard`/`from`/`to`/`effects` actually do, the transition wins: `cancel-loan` means
+  `withdraw_request` in one community and `return` in another.
+- A workflow may mix one bespoke family with generic bindings — normal, and the bespoke family is the
+  archetype. Only two or more *bespoke* families is an error.
+
+Guards are keyed `allowedPersonaIds` / `byPersonaIds`, never `allowedRoleIds` / `byRoleIds`. Personas
+become roles at install time; the JSON only ever says persona.
+
 `action` is what the platform maps to the permission a transition needs. A missing or misnamed one
 silently leaves a permission ungranted, and the action then fails at runtime for a reason no author can
 see from the JSON.

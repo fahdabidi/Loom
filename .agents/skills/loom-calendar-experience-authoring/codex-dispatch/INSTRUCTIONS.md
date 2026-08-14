@@ -140,6 +140,16 @@ real enum (fetched at step 7) instead.
     **no** `action` field at all. `table` is the one to watch: it renders as a grid and reads as bespoke,
     but that is list layout only — it has no dispatcher case, so it takes no `action`. `action` is what the platform maps to the permission a transition needs, so an
     unmapped or misnamed one silently leaves a permission ungranted and the action fails at runtime.
+    Three further points, each of which has already caused a real defect:
+    (a) A workflow with `"renderBindings": []` that is named by some binding's `responseTable.workflowType`
+    **inherits that binding's archetype** (§6 step 3b) — so an RSVP response workflow is bespoke and its
+    transitions do need `action`. A workflow with no bindings and no `responseTable` owner derives nothing.
+    (b) The "Observed transitions" column is a **lookup aid, not authority**. When it disagrees with what
+    the transition's `guard`/`from`/`to`/`effects` actually do, the transition wins — `cancel-loan` means
+    `withdraw_request` in one community and `return` in another. Resolve from the column, then confirm
+    against the transition, and say so when they diverge.
+    (c) A workflow may mix one bespoke family with generic bindings; that is normal and the bespoke family
+    is the archetype. Only two or more *bespoke* families is an error.
 13. **Never author a permission, a user, or a membership.** Permissions are derived from your
     `allowedPersonaIds`/`byPersonaIds` plus `action` — writing one is always wrong. Likewise never model
     joining a community, approving a member, or assigning someone a persona as a workflow: that is an App

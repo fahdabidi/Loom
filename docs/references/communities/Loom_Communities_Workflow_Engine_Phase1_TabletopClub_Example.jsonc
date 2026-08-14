@@ -413,6 +413,7 @@
         "transitions": [
           {
             "id": "respond-going",
+            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
@@ -458,6 +459,7 @@
           },
           {
             "id": "respond-maybe",
+            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
@@ -496,6 +498,7 @@
           },
           {
             "id": "respond-declined",
+            "action": "respond",
             "label": "Can't go",
             "icon": "event_busy",
             "tone": "destructive",
@@ -530,6 +533,7 @@
             // button cannot appear (or fire) while seats remain. Same intent as the old formula guard,
             // now evaluated against the live row count instead of a stored list's size.
             "id": "respond-waitlist",
+            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
@@ -564,6 +568,7 @@
             // "declined" is deliberately excluded from "from" -- a member who declined doesn't want a
             // reminder for an event they're not attending.
             "id": "send-reminder",
+            "action": "set_reminder",
             "label": "Send reminder",
             "from": ["pending", "maybe", "going", "waitlisted"],
             "to": null,
