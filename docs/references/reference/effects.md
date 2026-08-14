@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.7.0
 status: current
 last_verified: 2026-07-31
@@ -11,7 +11,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/recurrence_evaluator.dart
 ---
 
-# Effects (normative) — grammar v3
+# Effects (normative) — specVersion 4
 
 An effect is what **changes** when a transition fires. Effects run after guards pass, inside the same
 transaction as the state change.

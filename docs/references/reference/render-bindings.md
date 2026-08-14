@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.8.0
 status: current
 last_verified: 2026-08-09
@@ -13,7 +13,7 @@ derived_from:
   - app/packages/core/loom_communities_app_shell/lib/src/part28_engine_native_calendar_surface.dart
 ---
 
-# Render bindings (normative) — grammar v3
+# Render bindings (normative) — specVersion 4
 
 A render binding answers: **where does an instance of this workflow appear, in this state, for this
 role?**
@@ -43,7 +43,7 @@ drafts).
 | Key | Type | Required | Meaning |
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to. Each MUST be declared. |
-| `audience` | string | **yes** | `any` · `actor` · `receiver` — grammar v3 rename of v1/v2's `role` |
+| `audience` | string | **yes** | `any` · `actor` · `receiver` — specVersion 4 rename of v1/v2's `role` |
 | `tabId` | string | **yes** | Which tab — `home`/`messages`, or any id declared in `appShell.tabs[]` (rule below) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` · `summary` |

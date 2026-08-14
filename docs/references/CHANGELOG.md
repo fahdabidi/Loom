@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.3.0
 status: current
 last_verified: 2026-08-13
@@ -14,7 +14,7 @@ See [_meta/versioning-policy.md](./_meta/versioning-policy.md) for what "breakin
 
 ---
 
-## grammar 3 (breaking) — 2026-08-13 — `personaId` splits into `roleId` and `fanId`
+## specVersion 4 (breaking) — 2026-08-14 — `personaId` splits into `roleId` and `fanId`
 
 **Breaking.** The single identity type `personaId` did two incompatible jobs: naming a *kind of member*
 (shared by many) and naming a *specific person*. Guards needing the second meaning were given values that
@@ -23,7 +23,7 @@ Messages tab is empty because of it, and ten of eleven fixtures carry the same l
 
 Full definition and rationale: [`reference/identity-types.md`](./reference/identity-types.md).
 
-| Was (v1/v2) | Now (v3) | Occurrences |
+| Was (before specVersion 4) | Now | Occurrences |
 |---|---|---|
 | `experience.personas[]` → `personaId` | `experience.roles[]` → `roleId` | — |
 | `guard.allowedPersonaIds` | `guard.allowedRoleIds` | 582 |
@@ -43,12 +43,12 @@ demonstrated to catch them.
 "role" in one file, one of them now a real type, was untenable.
 
 **What an author must do:** nothing by hand. Packages are regenerated through the authoring Skill. The
-validator rejects a v1/v2 key in a v3 package, and rejects an identity field whose type is not `fanId`
+validator rejects a legacy key in a specVersion 4 package, and rejects an identity field whose type is not `fanId`
 or `roleId`.
 
 **Also fixed here:** every fixture declared `workflowGrammarVersion: 1` while carrying grammar-2 content
 (`actions[]`, no `creatable`). `supportedGrammarVersions` was `{1}`, so the validator only ever accepted
-the stale value and the drift was invisible. v3 packages declare 3 and the validator gates on it.
+the stale value and the drift was invisible. specVersion 4 packages declare 4 and the validator gates on it.
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.0.0
 status: proposed
 last_verified: 2026-08-13
@@ -12,7 +12,7 @@ derived_from:
 
 # Identity types — `roleId` and `fanId`
 
-**Status: PROPOSED.** This defines `workflowGrammarVersion: 3`. Packages stamped `1` or `2` keep the old
+**Status: PROPOSED.** This defines `specVersion: 4`. Packages stamped `1` or `2` keep the old
 rules unchanged; the two versions are not mixed within a package.
 
 ## 1. The defect this fixes
@@ -105,7 +105,7 @@ a silent no-op:
 An author who wants "this person, or anyone with this role" writes the person check as a formula and
 the role check as `allowedRoleIds`. They are different layers — see `permissions.md` §2.
 
-## 4. Validator rules added in v3
+## 4. Validator rules added in specVersion 4
 
 | Rule | Severity |
 |---|---|
@@ -114,7 +114,7 @@ the role check as `allowedRoleIds`. They are different layers — see `permissio
 | `actorEqualsField.key` names a field typed `fanId` (or `fanId?`) | error |
 | `actorInList.key` names a field typed `fanId[]` | error |
 | `$actor` / `$viewer` compared against a string literal that is a declared `roleId` | error |
-| a v1/v2 key (`allowedPersonaIds`, `byPersonaIds`, `visiblePersonaIds`, `renderBindings[].role`) in a v3 package | error |
+| a legacy key (`allowedPersonaIds`, `byPersonaIds`, `visiblePersonaIds`, `renderBindings[].role`) in a specVersion 4 package | error |
 | field `type` outside the known set | error — v1 and v2 left this unchecked, which is how the split stayed invisible |
 
 The fifth rule is the one that earns the migration. Three formulas in the current corpus are broken by

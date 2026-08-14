@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.4.0
 status: proposed
 last_verified: 2026-08-13
@@ -46,15 +46,15 @@ pre-granted as a permission. Measured across the eleven real fixtures:
 | `allowedRoleIds` (transition guards, 582), `byRoleIds` (create actions, 70) | **652** | **App Access** — pre-granted permissions |
 | `actorEqualsField` (190), `actorInList` (53) | **243** | **Workflow engine** — per-instance, at runtime |
 
-**A note on naming.** These keys are `allowedPersonaIds` and `byPersonaIds` in **grammar v1**, and
-`allowedRoleIds` / `byRoleIds` in **v3**. This document describes v3; see
+**A note on naming.** These keys were `allowedPersonaIds` and `byPersonaIds` before **specVersion 4**, and are
+`allowedRoleIds` / `byRoleIds` from 4 onward. This document describes 4; see
 [`identity-types.md`](./identity-types.md) for the full migration.
 
 The rename is worth a sentence of history, because getting it wrong once already cost something. An
-earlier draft of this document wrote `allowedRoleIds` while every fixture was still v1 — so the keys it
+earlier draft of this document wrote `allowedRoleIds` while every fixture still used the old keys — so the keys it
 named appeared **zero** times in any package, and a derivation built literally from that text would have
 found no guards at all, in any community, and silently derived nothing. It was corrected to match the
-fixtures, and v3 has now moved the fixtures instead. The lesson is the same either way: this document
+fixtures, and specVersion 4 has now moved the fixtures instead. The lesson is the same either way: this document
 and the packages must name the same key, and the spec-sync test exists so they cannot drift apart
 unnoticed.
 

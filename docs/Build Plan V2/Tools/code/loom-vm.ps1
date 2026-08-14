@@ -266,17 +266,17 @@ set -e
 echo '--- interfaces ---'
 ip -br link
 echo '--- ensuring host-only static address ---'
-HOSTONLY_DEV="\$(ls /sys/class/net | grep -E '^en' | sed -n 2p)"
-if [ -n "\$HOSTONLY_DEV" ]; then
-  sudo nmcli con add type ethernet ifname "\$HOSTONLY_DEV" con-name loom-hostonly \
+HOSTONLY_DEV="`$(ls /sys/class/net | grep -E '^en' | sed -n 2p)"
+if [ -n "`$HOSTONLY_DEV" ]; then
+  sudo nmcli con add type ethernet ifname "`$HOSTONLY_DEV" con-name loom-hostonly \
     ip4 $HOSTONLY_CIDR 2>/dev/null || sudo nmcli con mod loom-hostonly ip4 $HOSTONLY_CIDR
   sudo nmcli con up loom-hostonly || true
 else
   echo 'No second interface found -- host-only NIC not attached yet.'
 fi
 echo '--- renewing bridged DHCP ---'
-BRIDGED_DEV="\$(ls /sys/class/net | grep -E '^en' | sed -n 1p)"
-sudo nmcli device reapply "\$BRIDGED_DEV" 2>/dev/null || sudo dhclient -v "\$BRIDGED_DEV" || true
+BRIDGED_DEV="`$(ls /sys/class/net | grep -E '^en' | sed -n 1p)"
+sudo nmcli device reapply "`$BRIDGED_DEV" 2>/dev/null || sudo dhclient -v "`$BRIDGED_DEV" || true
 echo '--- result ---'
 ip -4 addr show
 "@ | Out-Null

@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 3 }
+spec: 4
 doc_version: 1.4.0
 status: current
 last_verified: 2026-08-12
@@ -10,7 +10,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
 ---
 
-# `instanceDataSchema` field types (normative) — grammar v3
+# `instanceDataSchema` field types (normative) — specVersion 4
 
 `instanceDataSchema` is the **single source of truth** for a workflow's data: validation, display,
 editability, and computation. Every field a workflow touches MUST be declared here.
@@ -38,10 +38,10 @@ editability, and computation. Every field a workflow touches MUST be declared he
 ```
 
 ⚠️ **In grammar v1 `type` is a free-form string in the parser** — not validated against an enum, so an
-unrecognized type parses but renders unpredictably. **Grammar v3 validates it**, which is what makes the
+unrecognized type parses but renders unpredictably. **specVersion 4 validates it**, which is what makes the
 `fanId` / `roleId` split enforceable rather than advisory. Use only the values below.
 
-> **Identity fields:** `fanId` and `roleId` are two distinct types in grammar v3, replacing v1's single
+> **Identity fields:** `fanId` and `roleId` are two distinct types in specVersion 4, replacing v1's single
 > overloaded `personaId`. A `roleId` says what someone is allowed to be; a `fanId` says who they are.
 > See [`identity-types.md`](./identity-types.md) before typing any identity-valued field.
 
@@ -57,9 +57,9 @@ unrecognized type parses but renders unpredictably. **Grammar v3 validates it**,
 | `time` | Time of day | |
 | `list` | Array of anything (incl. objects) | e.g. `ballots`, `candidates`, `messages` |
 | `map` | Key→value | Typically a `groupCount` result |
-| `fanId` | One specific person | `fanId?` for nullable. **Grammar v3** — replaces v1/v2's `personaId` |
-| `fanId[]` | Array of people | **The standard for member lists.** Grammar v3 — replaces `fanId[]` |
-| `roleId` | A kind of member, held by many | Grammar v3. Legal but rare as instance data; roles normally appear only in guards |
+| `fanId` | One specific person | `fanId?` for nullable. **specVersion 4** — replaces v1/v2's `personaId` |
+| `fanId[]` | Array of people | **The standard for member lists.** specVersion 4 — replaces `fanId[]` |
+| `roleId` | A kind of member, held by many | specVersion 4. Legal but rare as instance data; roles normally appear only in guards |
 | `image` | Image reference | Use `storage: "reference"` |
 | `url` | An openable external or embedded link/document | `openMode: "external"` and `"choice"` are ✅ REAL; standalone `"embedded"` alone is not yet implemented — see below. Use `url?` for nullable. |
 
