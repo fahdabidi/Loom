@@ -573,6 +573,7 @@ components:
       required:
         - issuer
         - subject
+        - displayName
       properties:
         issuer:
           $ref: '#/components/schemas/ExternalIdentityIssuer'
@@ -580,9 +581,17 @@ components:
           type: string
         displayName:
           type: string
+          minLength: 1
           description: >-
-            Used only when creating a passport on first sight, and ignored otherwise. A returning fan's
+            Used only when creating a passport on first sight, and ignored otherwise -- a returning fan's
             own chosen display name is never overwritten by whatever the provider currently reports.
+
+
+            Required, even though it is consumed on one branch only. A passport's display name is
+            NOT NULL, so an optional field here forces this service to invent one, and every fan whose
+            caller omitted it would share the same placeholder name with no way to tell a defaulted name
+            from a chosen one. The caller is better placed to decide: it has just completed the provider
+            handshake, and Google, Apple and Facebook all supply a name at first authorization.
     ExternalIdentityResolution:
       type: object
       required:
