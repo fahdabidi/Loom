@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: proposed
 last_verified: 2026-08-13
 audience: llm-agent
@@ -392,8 +392,9 @@ cannot enumerate or discover users.
 | `action` is in that archetype's closed vocabulary | error |
 | `action` present on a generic-archetype transition | error — generic families derive structurally |
 | every `allowedPersonaIds` / `byPersonaIds` entry is a declared persona | error |
-| a workflow's `renderBindings` name **two or more bespoke** families | error — the archetype is ambiguous |
 | a workflow's `renderBindings` mix one bespoke family with generic ones | allowed — the bespoke family is the archetype |
+| two or more bespoke families, and the declared actions fit only one of them | allowed — that family is the archetype |
+| two or more bespoke families, and the declared actions fit none or several | error — the archetype is genuinely undecidable |
 | a role ends up with zero permissions | warning — probably a role nothing can do |
 
 An unmapped transition is an **error, not a warning**: it would leave a permission ungranted, and the
@@ -410,14 +411,23 @@ summary on another. Data Portability alone has eight workflows that pair `export
 is the archetype.
 
 Exactly **one** workflow in the corpus names two bespoke families: Tabletop Club's `tournament-event`
-(`event-rsvp` plus a `votePoll` attendance/quorum summary). Even that one resolves in practice, because
-all three of its transitions are `event-rsvp` semantics and the `votePoll` binding contributes a view
-with no transitions of its own. It is still flagged, because a workflow whose transitions could belong
-to either vocabulary is genuinely undecidable and should be rewritten rather than guessed at.
+(`event-rsvp` plus a `votePoll` attendance/quorum summary).
+
+An earlier draft of this rule made that an error too, on the reasoning that two bespoke families are
+inherently ambiguous. Implementing the rule disproved it. `tournament-event`'s three transitions
+declare `respond`, `withdraw_response` and `cancel` — **none of which exists in `votePoll`'s
+vocabulary** — so the archetype is decidable, and the dispatcher not only tolerates this shape but
+special-cases this very workflow by name. Flagging it would have condemned a supported pattern.
+
+So the test is not "how many bespoke families are named" but "can the declared actions belong to more
+than one of them". Resolve by finding the family whose vocabulary accounts for every action the
+workflow declares: exactly one such family means the archetype is determined; none or several means it
+genuinely is not, and the workflow should be rewritten rather than guessed at. A workflow that declares
+no actions yet is also undecidable, which is the correct answer — it is unauthored.
 
 This matches the dispatcher, which switches on `resolved.binding.cardSurfaceFamily` — **per binding**,
-not per workflow — and already special-cases `tournament-event` by name. Archetype is a property of a
-binding; a workflow has an archetype only insofar as its bespoke binding gives it one.
+not per workflow. Archetype is a property of a binding; a workflow has an archetype only insofar as its
+bespoke binding gives it one.
 
 ## 9. What community JSON must never contain
 

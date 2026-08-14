@@ -432,6 +432,7 @@ const _hikeClubPackage = {
         'transitions': [
           {
             'id': 'rsvp-going',
+            'action': 'respond',
             'label': "I'm going",
             'tone': 'primary',
             'from': ['open'],
@@ -447,6 +448,7 @@ const _hikeClubPackage = {
           },
           {
             'id': 'cancel-hike',
+            'action': 'cancel',
             'label': 'Cancel hike',
             'tone': 'destructive',
             'from': ['open'],

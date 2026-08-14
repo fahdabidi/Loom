@@ -1,3 +1,4 @@
+import 'package:loom_ux_judges/src/permissions/archetype_resolver.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
@@ -128,6 +129,7 @@ class CommunityPackageValidator {
         declaredTabIds: declaredTabIds,
       ).validate(workflows).findings,
     );
+    findings.addAll(_validateTransitionActions(rawDefinitions));
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
     final instances = <String, Map<String, dynamic>>{};
@@ -381,6 +383,116 @@ class CommunityPackageValidator {
 
   Map<String, Object?>? _objectMap(Object? value) {
     return value is Map<String, Object?> ? value : null;
+  }
+
+  /// permissions.md §8's rules for the `action` field.
+  ///
+  /// A transition's `action` is what the platform maps to the permission the
+  /// transition requires, so a missing or misspelled one leaves a permission
+  /// ungranted and the action then fails at runtime for a reason no author can
+  /// see in the JSON. That is why every rule here is an error rather than a
+  /// warning.
+  ///
+  /// Reads the raw definitions on purpose: `LoomWorkflowStateMachine.fromJson`
+  /// only picks out the keys it knows, and `action` is not one of them.
+  List<ValidationFinding> _validateTransitionActions(Map<Object?, Object?> raw) {
+    const resolver = ArchetypeResolver();
+    final definitions = <String, Object?>{
+      for (final entry in raw.entries) entry.key.toString(): entry.value,
+    };
+    final archetypes = resolver.resolveAll(definitions);
+    final findings = <ValidationFinding>[];
+
+    for (final entry in definitions.entries) {
+      final type = entry.key;
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+      final archetype = archetypes[type];
+      if (archetype == null) continue;
+      final path = 'experience/workflowDefinitions/$type';
+
+      if (archetype.conflictingBespokeFamilies.length > 1) {
+        findings.add(
+          _finding(
+            'ambiguous_workflow_archetype',
+            'Workflow "$type" names more than one bespoke cardSurfaceFamily '
+                '(${archetype.conflictingBespokeFamilies.join(", ")}), so its '
+                'archetype is undecidable and its transitions could belong to '
+                'either closed vocabulary. Mixing one bespoke family with '
+                'generic bindings is fine; two bespoke families is not.',
+            '$path/renderBindings',
+          ),
+        );
+      }
+
+      final transitions = workflow['transitions'];
+      if (transitions is! List) continue;
+      for (var i = 0; i < transitions.length; i++) {
+        final transition = transitions[i];
+        if (transition is! Map) continue;
+        final id = transition['id'];
+        final label = id is String && id.isNotEmpty ? id : '[$i]';
+        final transitionPath = '$path/transitions/$label';
+        final action = transition['action'];
+        final family = archetype.family;
+
+        if (!archetype.requiresAction) {
+          if (action != null) {
+            final because = archetype.origin == ArchetypeOrigin.none
+                ? 'has no renderBindings and is not a responseTable target, so '
+                      'it derives no permission at all'
+                : 'is the generic family "$family", which derives its '
+                      'permissions structurally from tone and isTerminal';
+            findings.add(
+              _finding(
+                'unexpected_transition_action',
+                'Transition "$label" declares action "$action", but workflow '
+                    '"$type" $because. Remove the action field.',
+                '$transitionPath/action',
+              ),
+            );
+          }
+          continue;
+        }
+
+        if (action == null) {
+          final via = archetype.origin ==
+                  ArchetypeOrigin.inheritedFromResponseTable
+              ? ' (archetype inherited from "${archetype.inheritedFrom}" via '
+                    'its binding\'s responseTable)'
+              : '';
+          findings.add(
+            _finding(
+              'missing_transition_action',
+              'Transition "$label" of bespoke workflow "$type" must declare an '
+                  'action$via. Without it the transition derives no '
+                  'permission and will fail at runtime.',
+              '$transitionPath/action',
+            ),
+          );
+          continue;
+        }
+
+        if (action is! String ||
+            family == null ||
+            !resolver.isActionInVocabulary(family, action)) {
+          final allowed =
+              (ArchetypeResolver.bespokeVocabularies[family]?.toList() ??
+                  const <String>[])
+                ..sort();
+          findings.add(
+            _finding(
+              'unknown_transition_action',
+              'Transition "$label" declares action "$action", which is not in '
+                  'the closed vocabulary for "$family". Allowed: '
+                  '${allowed.join(", ")}.',
+              '$transitionPath/action',
+            ),
+          );
+        }
+      }
+    }
+    return findings;
   }
 
   ValidationFinding _finding(
