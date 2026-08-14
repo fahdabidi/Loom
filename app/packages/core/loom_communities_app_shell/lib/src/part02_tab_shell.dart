@@ -3836,71 +3836,11 @@ class _TabNativeRenderer extends StatelessWidget {
   }
 }
 
-bool _isGardenEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('garden-event-rsvp') &&
-      ids.contains('plant-exchange-submission') &&
-      ids.contains('garden-tool-loan') &&
-      ids.contains('garden-volunteer-shift') &&
-      ids.contains('garden-export-custom-schemas');
-}
 
-bool _isCameraEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('photo-walk-rsvp') &&
-      ids.contains('critique-submission') &&
-      ids.contains('gear-loan-request') &&
-      ids.contains('camera-validation-report');
-}
 
-bool _isBookEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('book-nomination') &&
-      ids.contains('book-vote') &&
-      ids.contains('book-meeting-rsvp') &&
-      ids.contains('book-discussion-message') &&
-      ids.contains('book-selection-publish') &&
-      ids.contains('book-search-ai-digest');
-}
 
-bool _isMosqueEngineExperience(LoomExperienceDefinition experience) {
-  if (experience.extensionId == 'ext_mosque') return true;
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('mosque-event-rsvp') &&
-      ids.contains('mosque-care-request') &&
-      ids.contains('mosque-donation-payment') &&
-      ids.contains('mosque-announcement');
-}
 
-bool _isYouthSoccerEngineExperience(LoomExperienceDefinition experience) {
-  if (experience.extensionId == 'ext_youth_soccer') return true;
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('soccer-guardian-join-approval') &&
-      ids.contains('soccer-team-roster') &&
-      ids.contains('soccer-practice-schedule') &&
-      ids.contains('soccer-registration-payment');
-}
 
-bool _isChessEngineExperience(LoomExperienceDefinition experience) {
-  if (experience.extensionId == 'ext_chess_club') return true;
-  final ids = experience.workflows
-      .map((workflow) => workflow.workflowId)
-      .toSet();
-  return ids.contains('chess-match-meetup') &&
-      ids.contains('chess-match-result') &&
-      ids.contains('chess-rankings-table') &&
-      ids.contains('chess-club-night');
-}
 
 SurfacePresentationState _presentationStateForWorkflow({
   required String workflowId,

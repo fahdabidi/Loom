@@ -164,7 +164,8 @@ is out of scope, and do not silently ship an incomplete package with no explanat
 ⚠️ **The CardSurfaces vocabulary trap** — found 2026-08-09 while authoring against a real product doc.
 Product docs' own "### B25 Card Surface Registry Mapping" tables name surfaces like `payment`, `documents`,
 `calendar`, `workflow-status`, `notification-inbox`, `portability`, `search`, `roster`, and link to
-`docs/CardSurfaces/*.md` — **none of those names are real `cardSurfaceFamily` values**, and that whole
+`docs/CardSurfaces/*.md` (**deleted 2026-08-14**; the surviving copy is under `docs/Build Plan V2/`)
+— **none of those names are real `cardSurfaceFamily` values**, and that whole
 `docs/CardSurfaces/` folder is explicitly superseded (`archetypes/README.md`: "every file invents a
 nonexistent `CommunityXxxApi`. Nothing from it is promoted here"). Never copy a product doc's registry-table
 name directly into `cardSurfaceFamily`. Always translate through `archetypes/README.md`'s real enum:

@@ -193,7 +193,9 @@ the bar Phase 3 (the Skill) actually needs. See
 Phase G for the closing evidence (G.1-G.3 closed; G.4 is this documentation pass; G.5 is the pending
 human sign-off).
 
-`docs/CardSurfaces/` (all 26 files) remains superseded — every file invents a nonexistent
+`docs/CardSurfaces/` was **deleted 2026-08-14** as a byte-identical duplicate of
+`docs/Build Plan V2/Skill/components/card-surfaces/`, which every real code reference already
+pointed at. It was superseded long before that — every file invented a nonexistent
 `CommunityXxxApi`. Nothing from it is promoted here.
 
 Per-archetype JSON reference docs, now that generic reachability is confirmed live for all 9:

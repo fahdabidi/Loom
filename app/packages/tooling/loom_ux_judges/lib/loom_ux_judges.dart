@@ -7850,7 +7850,7 @@ List<String> _appShellCapabilityImplementationGuidance(String gapType) {
       return <String>[
         ...shared,
         'Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.',
-        'Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI.',
+        'Use the renderer contracts in `docs/Build Plan V2/Skill/components/card-surfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI.',
       ];
     case 'app-shell-interaction-transition-gap':
       return <String>[

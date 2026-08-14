@@ -32,8 +32,6 @@ part 'src/part15_evidence_catalog.dart';
 part 'src/part16_experience_catalog.dart';
 part 'src/part17_theme_tokens.dart';
 part 'src/part18_marketplace_rendering.dart';
-part 'src/part19_youth_soccer_engine.dart';
-part 'src/part20_mosque_engine.dart';
 part 'src/part21_audience_multi_select_picker.dart';
 part 'src/part22_single_item_preference_control.dart';
 part 'src/part23_timeline_and_protected_detail.dart';
