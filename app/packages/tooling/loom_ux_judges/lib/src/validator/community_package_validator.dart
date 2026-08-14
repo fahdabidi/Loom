@@ -218,6 +218,7 @@ class CommunityPackageValidator {
       ).validate(workflows).findings,
     );
     findings.addAll(_validateTransitionActions(rawDefinitions));
+    findings.addAll(_validateResponseRowSweep(rawDefinitions));
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
     final instances = <String, Map<String, dynamic>>{};
@@ -582,6 +583,99 @@ class CommunityPackageValidator {
       }
 
       scanFormulas(experience, 'experience');
+    }
+    return findings;
+  }
+
+  /// A terminal transition on a workflow that owns response rows must sweep
+  /// them, or it orphans rows that stay live.
+  ///
+  /// Cancelling an event leaves its response rows in whatever state they were
+  /// in, still accepting `respond` — the row's own state machine has no
+  /// visibility into its parent's. Measured across the corpus, **all six**
+  /// communities with response rows have this hole today, so this is a
+  /// pre-existing defect rather than one the row shape introduces. The array
+  /// shape hid it only because the arrays lived on the event, so cancelling
+  /// took them along.
+  ///
+  /// (A hand-count of the fixtures found five and missed Cedar Commons HOA's
+  /// `hoa-meeting`, which lives in the calendar-slice file — the rule finding
+  /// the sixth is the argument for having the rule.)
+  ///
+  /// A warning rather than an error, deliberately: six shipped communities
+  /// trip it, and making the corpus un-validatable trains people to ignore
+  /// warnings. It is satisfiable today — Cedar Commons HOA already cascades a
+  /// parent's state change to child rows with `transitionRelated`, one effect
+  /// per source state — which is the test a rule has to pass before it earns a
+  /// place. A rule nobody can act on is worse than no rule.
+  List<ValidationFinding> _validateResponseRowSweep(Map<Object?, Object?> raw) {
+    final findings = <ValidationFinding>[];
+    final definitions = <String, Object?>{
+      for (final entry in raw.entries) entry.key.toString(): entry.value,
+    };
+
+    for (final entry in definitions.entries) {
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+
+      // Which response types does this workflow own?
+      final owned = <String>{};
+      final bindings = workflow['renderBindings'];
+      if (bindings is List) {
+        for (final binding in bindings) {
+          if (binding is! Map) continue;
+          final table = binding['responseTable'];
+          if (table is Map && table['workflowType'] is String) {
+            owned.add(table['workflowType'] as String);
+          }
+        }
+      }
+      if (owned.isEmpty) continue;
+
+      final states = workflow['states'];
+      final transitions = workflow['transitions'];
+      if (transitions is! List) continue;
+
+      for (final transition in transitions) {
+        if (transition is! Map) continue;
+        final to = transition['to'];
+        final terminal = (to is String &&
+                states is Map &&
+                states[to] is Map &&
+                (states[to] as Map)['isTerminal'] == true) ||
+            transition['tone'] == 'destructive';
+        if (!terminal) continue;
+
+        final swept = <String>{};
+        final effects = transition['effects'];
+        if (effects is List) {
+          for (final effect in effects) {
+            if (effect is! Map || effect['op'] != 'transitionRelated') continue;
+            final query = effect['relatedQuery'];
+            if (query is Map && query['workflowType'] is String) {
+              swept.add(query['workflowType'] as String);
+            }
+          }
+        }
+
+        final orphaned = owned.difference(swept);
+        if (orphaned.isEmpty) continue;
+
+        final id = transition['id'];
+        findings.add(
+          _finding(
+            'orphaned_response_rows',
+            'Transition "${id ?? '?'}" ends "${entry.key}" but does not sweep '
+                '${orphaned.map((t) => '"$t"').join(', ')}. Those response rows '
+                'stay in whatever state they were in and keep accepting '
+                'responses, because a row cannot see its parent\'s state. '
+                'Cascade with a `transitionRelated` effect per source state.',
+            'experience/workflowDefinitions/${entry.key}/transitions/'
+                '${id ?? '?'}/effects',
+            warning: true,
+          ),
+        );
+      }
     }
     return findings;
   }

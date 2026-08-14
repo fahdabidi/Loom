@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -79,7 +79,7 @@ instead of encoding it, and make Tabletop's missing-exclusivity bug unrepresenta
 
 | Owned | Meaning |
 |---|---|
-| the response row's lifecycle | one row per member per event, created on first response |
+| the response row's lifecycle | one row per member per event, materialized in `pending` (§4) |
 | response state transitions | `respond` and `join_waitlist` move the row; a row has one state |
 | `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous |
 
@@ -107,7 +107,45 @@ because it is a row rather than a membership flag.
 > 26 transitions across 5 communities, including `respond-going`, the single most common member action
 > in the product.
 
+### Who creates a row
+
+**The engine does, not the community.** A row is materialized in `pending` the first time a member
+applies a response transition to an event they have no row for. Nothing in community JSON declares it.
+
+This is the only reading consistent with the corpus: all six communities declare `from: ["pending"]` on
+their respond transitions, which is dead unless a row can exist in `pending` before its member has
+answered. Materializing at *view* time would satisfy that too, but it writes on read — one row per
+member per event opened — so the write is deferred to the first transition that actually needs it.
+
+Because the creation path is archetype-owned rather than community-declared, `no_creation_path_for_editable_type`
+must not fire on a workflow reached through `responseTable.workflowType`. All six response tables trip
+it today; that is a validator gap, not six authoring bugs.
+
+### Where `withdraw_response` lands
+
+**`pending`.** It is the only target that makes the action mean anything.
+
+Riverside is the corpus's one implementation, and it routes to `declined`:
+
+```
+respond-declined   pending|going|maybe|waitlisted -> declined
+cancel-rsvp              going|maybe|waitlisted   -> declined
+```
+
+`cancel-rsvp`'s sources are a strict subset of `respond-declined`'s and its target is identical — it is a
+relabelled duplicate that adds no reachable state. Routing withdrawal to `pending` restores the
+distinction the action names: `declined` is an answer ("not coming"), `pending` is the absence of one
+("never mind"). It also keeps the two separable downstream, since reminder sweeps target `pending` and
+should not re-nudge someone who affirmatively declined.
+
+This makes `pending` the sole state that is both initial and a transition target.
+
 ## 5. Worked example — Garden Club
+
+It takes **two** workflow definitions. The event holds authoring and lifecycle; the response table holds
+per-member answers. Showing only the first is what produced the array shape §2 replaced.
+
+**The event:**
 
 ```jsonc
 "garden-event-rsvp": {
@@ -117,25 +155,78 @@ because it is a row rather than a membership flag.
   },
   "visibility": { "default": "membersOnly" },
 
+  "renderBindings": [
+    { "responseTable": { "workflowType": "garden-event-rsvp-response",
+                         "eventField": "eventId", "pendingStates": ["pending"] } }
+  ],
+
   "transitions": [
     { "id": "publish-event",  "action": "create", "from": ["open"], "to": null,
       "guard": { "allowedRoleIds": ["garden-coordinator"] } },
     { "id": "make-recurring", "action": "edit",   "from": ["open"], "to": null,
       "guard": { "allowedRoleIds": ["garden-coordinator"] } },
-    { "id": "cancel-event",   "action": "cancel", "from": ["open"], "to": "cancelled",
-      "tone": "destructive",
-      "guard": { "allowedRoleIds": ["garden-coordinator"] } },
+    { "id": "add-reminder",   "action": "set_reminder", "from": ["open"], "to": null,
+      "guard": { "allowedRoleIds": ["garden-member"] } },
 
-    // Members respond. No actorInList guards, no response arrays declared:
-    // `respond` is once-per-person and mutually exclusive by definition.
-    { "id": "respond-going",    "action": "respond",       "from": ["open"], "to": null,
+    // Cancelling must sweep the rows, or they stay live and keep accepting
+    // responses -- a row cannot see its parent's state. One effect per source
+    // state, because a filter matches one state at a time.
+    { "id": "cancel-event", "action": "cancel", "from": ["open"], "to": "cancelled",
+      "tone": "destructive",
+      "guard": { "allowedRoleIds": ["garden-coordinator"] },
+      "effects": [
+        { "op": "transitionRelated", "transitionId": "event-cancelled",
+          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                            "filter": { "eventId": "{id}", "$state": "going" } } },
+        { "op": "transitionRelated", "transitionId": "event-cancelled",
+          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                            "filter": { "eventId": "{id}", "$state": "maybe" } } },
+        { "op": "transitionRelated", "transitionId": "event-cancelled",
+          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                            "filter": { "eventId": "{id}", "$state": "waitlisted" } } }
+      ] }
+  ]
+}
+```
+
+**The response table** — declares no bindings, and inherits `event_rsvp` via `permissions.md` §6 step 3b:
+
+```jsonc
+"garden-event-rsvp-response": {
+  "states": {
+    "pending":    { "label": "No response" },   // initial; engine-materialized (§4)
+    "going":      { "label": "Going" },
+    "maybe":      { "label": "Maybe" },
+    "declined":   { "label": "Not going" },
+    "waitlisted": { "label": "Waitlisted" },
+    "cancelled":  { "label": "Event cancelled", "isTerminal": true }
+  },
+  "visibility": { "default": "membersOnly" },
+
+  "transitions": [
+    { "id": "respond-going",    "action": "respond",
+      "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
       "guard": { "allowedRoleIds": ["garden-member"] } },
-    { "id": "respond-declined", "action": "respond",       "from": ["open"], "to": null,
+    { "id": "respond-maybe",    "action": "respond",
+      "from": ["pending", "going", "declined", "waitlisted"], "to": "maybe",
       "guard": { "allowedRoleIds": ["garden-member"] } },
-    { "id": "respond-waitlist", "action": "join_waitlist", "from": ["open"], "to": null,
+    { "id": "respond-declined", "action": "respond",
+      "from": ["pending", "going", "maybe", "waitlisted"], "to": "declined",
       "guard": { "allowedRoleIds": ["garden-member"] } },
-    { "id": "add-reminder",     "action": "set_reminder",  "from": ["open"], "to": null,
-      "guard": { "allowedRoleIds": ["garden-member"] } }
+    { "id": "respond-waitlist", "action": "join_waitlist",
+      "from": ["pending", "maybe", "declined"], "to": "waitlisted",
+      "guard": { "allowedRoleIds": ["garden-member"] } },
+
+    // Withdrawal returns the row to "no answer" -- not to `declined`, which
+    // would make it a duplicate of respond-declined. See §4.
+    { "id": "withdraw-rsvp", "action": "withdraw_response",
+      "from": ["going", "maybe", "waitlisted"], "to": "pending",
+      "guard": { "allowedRoleIds": ["garden-member"] } },
+
+    // Target of the parent's cascade. Not member-invokable.
+    { "id": "event-cancelled", "action": "cancel",
+      "from": ["pending", "going", "maybe", "waitlisted"], "to": "cancelled",
+      "guard": { "allowedRoleIds": ["garden-coordinator"] } }
   ]
 }
 ```
@@ -143,10 +234,16 @@ because it is a row rather than a membership flag.
 | Role | Permissions |
 |---|---|
 | `garden-coordinator` | `event_rsvp.create`, `.edit`, `.cancel` |
-| `garden-member` | `event_rsvp.respond`, `.join_waitlist`, `.set_reminder` |
+| `garden-member` | `event_rsvp.respond`, `.join_waitlist`, `.withdraw_response`, `.set_reminder` |
+
+Both workflows derive `event_rsvp.*` — that is the point of step 3b, and why `respond-going` carries a
+permission at all.
 
 `respond-waitlist` is `join_waitlist`, **not** `respond` — it is the overflow path, offered only when the
 event is full, and it is a distinct capability a community may withhold.
+
+Counts come from the rows, never from a stored field: `groupCount(responses, '$state')` tallies by real
+workflow state ([`formulas.md`](../reference/formulas.md)).
 
 ## 6. Community-defined actions
 

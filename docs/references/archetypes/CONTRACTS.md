@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -155,10 +155,15 @@ Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
 
 **Custom actions:** permitted.
 
-> **Response rows.** A community may put per-member responses in a separate workflow named by
-> `responseTable.workflowType`; it inherits this archetype (`permissions.md` §6 step 3b). Under this
-> contract that shape becomes optional rather than necessary, since the archetype now owns the
-> bookkeeping it existed to hold.
+> **Response rows.** Per-member responses live in a separate workflow named by
+> `responseTable.workflowType`, which inherits this archetype (`permissions.md` §6 step 3b). This shape
+> is **required**, not optional — it is what resolves the ambiguity described above, which the archetype
+> cannot resolve from the action alone. Six communities already model it, with a uniform state set of
+> `pending · going · maybe · declined · waitlisted`.
+>
+> The engine materializes a row in `pending` on demand, when a response transition is first applied by
+> a member who has none. `pending` is the only initial state, and the only transition that targets it is
+> `withdraw_response`. See [`event-rsvp.md`](./event-rsvp.md) §4.
 
 ---
 

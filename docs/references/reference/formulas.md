@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: current
 last_verified: 2026-07-31
 audience: llm-agent
@@ -129,7 +129,18 @@ vocabulary out of the interpreter, the same principle every other formula in thi
 |---|---|
 | `$actor` | The **person** who performed the current transition, as a `fanId` (or `null` outside a transition) |
 | `$viewer` | The **person** currently reading/querying, as a `fanId` (set on every `queryInstances`/`availableTransitionsAsync` call) |
-| `$state` | **(PROPOSED)** A row's own current FSM state, usable as the `column` argument to `groupCount`/`sum`/etc. — e.g. `groupCount(responses, '$state')` tallies rows by their real workflow state, not a duplicated status field. Only meaningful inside a `source: query(...)`-backed list's aggregate functions; not a bare field reference. |
+| `$state` | A row's own current FSM state. The engine projects it into every queried row alongside `$id`, which is what makes both uses below work off one mechanism. |
+
+`$state` is readable in two places, and the distinction matters when authoring:
+
+| Use | Shape | Example |
+|---|---|---|
+| **Aggregate column** — tally rows by their real workflow state rather than a duplicated status field | `column` argument to `groupCount`/`sum`/etc., inside a `source: query(...)`-backed list. Not a bare field reference. | `groupCount(responses, '$state')` |
+| **Query filter** — select related rows by state, notably to cascade a parent's terminal transition onto its children | key in a `relatedQuery.filter` | `"filter": { "eventId": "{id}", "$state": "going" }` |
+
+> Because a filter matches one state at a time, cascading across several source states takes one
+> `transitionRelated` effect per state. Cedar Commons HOA's `withdraw-request` does exactly this across
+> four states — see [`effects.md`](./effects.md).
 
 > **specVersion 4: `$actor` and `$viewer` are `fanId`-typed.** Comparing either against a declared `roleId`
 > is a validator error, not a silent false. This is the single most common pre-v3 authoring mistake —

@@ -1428,6 +1428,16 @@ class WorkflowValidator {
         for (final action in binding.actions.where((a) => a.kind == 'create')) {
           everCreatedTypes.add(action.workflowType ?? machine.workflowType);
         }
+        // A response table's creation path is archetype-owned, not community-
+        // declared: the engine materializes a row in `pending` the first time a
+        // member applies a response transition to an event they have no row for
+        // (archetypes/event-rsvp.md §4). There is deliberately nothing in the
+        // JSON to find, so without this all six response tables in the corpus
+        // report a provisioning gap they cannot fix.
+        final responseTable = binding.responseTable;
+        if (responseTable != null) {
+          everCreatedTypes.add(responseTable.workflowType);
+        }
       }
       for (final transition in machine.transitions) {
         collectEffects(transition.effects);

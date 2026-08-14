@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.9.0
+doc_version: 1.9.1
 status: current
 last_verified: 2026-08-09
 audience: llm-agent
@@ -42,7 +42,7 @@ default-when-absent semantics deliberately differ from `editGuard`'s.
 
 ## 1. `allowedRoleIds` — role allowlist
 
-> **specVersion 4 rename.** This key is `allowedRoleIds` in v1 and `allowedRoleIds` in v2. It was always
+> **specVersion 4 rename.** This key is `allowedPersonaIds` in v1 and v2. It was always
 > role-based; the rename makes it say so. See [`identity-types.md`](./identity-types.md).
 
 ```jsonc
