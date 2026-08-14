@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: { envelope: 1, experience: 2, grammar: 2 }
 doc_version: 1.9.0
 status: current
 last_verified: 2026-08-09
@@ -9,7 +9,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
 ---
 
-# Guards (normative) — grammar v1
+# Guards (normative) — grammar v2
 
 A guard decides **who may fire a transition, and when**.
 
@@ -40,23 +40,32 @@ default-when-absent semantics deliberately differ from `editGuard`'s.
 
 ---
 
-## 1. `allowedPersonaIds` — persona allowlist
+## 1. `allowedRoleIds` — role allowlist
+
+> **Grammar v2 rename.** This key is `allowedRoleIds` in v1 and `allowedRoleIds` in v2. It was always
+> role-based; the rename makes it say so. See [`identity-types.md`](./identity-types.md).
 
 ```jsonc
-"guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+"guard": { "allowedRoleIds": ["tabletop-organizer"] }
 ```
 
 | Field | Type | Meaning |
 |---|---|---|
-| `allowedPersonaIds` | string[] | The actor's `personaId` must be in this list |
+| `allowedRoleIds` | `roleId[]` | The actor must hold one of these roles |
 
-Every id MUST be a declared persona. → else `dangling_allowed_persona_id` (warning)
+Every id MUST be a declared role. → else `dangling_allowed_role_id` (error in v2)
 
 **Use for:** "only organizers can cancel", "only members can RSVP".
 
-**Also drives `role: "receiver"` resolution.** A `renderBindings` entry with `role: "receiver"` resolves to
-whichever personas pass at least one available transition's guard — an `allowedPersonaIds` guard here is
-usually what makes that resolution meaningful/narrow, rather than "every persona." See
+**This is the role layer, and it is the only identity check that can be pre-granted as a permission.**
+Questions about *which specific person* — the recipient, the current holder, the queue member — belong to
+`actorEqualsField` / `actorInList` below, which resolve per instance at runtime and are checked against
+`fanId` fields. See [`permissions.md`](./permissions.md) §2.
+
+**Also drives `audience: "receiver"` resolution.** A `renderBindings` entry with `audience: "receiver"`
+(v1: `audience: "receiver"`) resolves to whichever roles pass at least one available transition's guard — an
+`allowedRoleIds` guard here is usually what makes that resolution meaningful/narrow, rather than "every
+role." See
 [`render-bindings.md`'s role resolution section](./render-bindings.md#role-actorreceiver-resolution--general-guard-derived-tab-agnostic).
 
 ---
@@ -64,12 +73,12 @@ usually what makes that resolution meaningful/narrow, rather than "every persona
 ## 2. `actorInList` — is the actor in (or not in) a list field?
 
 ```jsonc
-"guard": { "actorInList": { "key": "goingPersonaIds", "present": false } }
+"guard": { "actorInList": { "key": "goingFanIds", "present": false } }
 ```
 
 | Field | Type | Meaning |
 |---|---|---|
-| `key` | string | A list-valued field on **this** instance. MUST be declared. |
+| `key` | string | A list-valued field on **this** instance, **typed `fanId[]`** in grammar v2. MUST be declared. |
 | `present` | bool | `true` = actor MUST be in the list · `false` = actor MUST NOT be |
 
 **Use for:** the classic paired transitions — show *Join queue* only to those not queued, and *Leave
@@ -77,12 +86,12 @@ queue* only to those who are.
 
 ```jsonc
 // Join: only if NOT already queued
-{ "id": "join-queue",  "guard": { "actorInList": { "key": "queuedPersonaIds", "present": false } },
-  "effects": [ { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" } ] }
+{ "id": "join-queue",  "guard": { "actorInList": { "key": "queuedFanIds", "present": false } },
+  "effects": [ { "op": "appendUnique", "key": "queuedFanIds", "value": "$actor" } ] }
 
 // Leave: only if already queued
-{ "id": "leave-queue", "guard": { "actorInList": { "key": "queuedPersonaIds", "present": true } },
-  "effects": [ { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" } ] }
+{ "id": "leave-queue", "guard": { "actorInList": { "key": "queuedFanIds", "present": true } },
+  "effects": [ { "op": "removeValue", "key": "queuedFanIds", "value": "$actor" } ] }
 ```
 
 ---
@@ -106,7 +115,7 @@ queue* only to those who are.
 ## 4. `formula` — any computed boolean condition
 
 ```jsonc
-"guard": { "formula": "size(goingPersonaIds) < capacity" }
+"guard": { "formula": "size(goingFanIds) < capacity" }
 ```
 
 | Field | Type | Meaning |
@@ -120,9 +129,9 @@ workflow's `instanceDataSchema`. → else `unknown_formula_field` (error)
 
 ```jsonc
 // Going: only while seats remain
-{ "id": "rsvp-going",    "guard": { "formula": "size(goingPersonaIds) < capacity" } }
+{ "id": "rsvp-going",    "guard": { "formula": "size(goingFanIds) < capacity" } }
 // Waitlist: only once genuinely full
-{ "id": "join-waitlist", "guard": { "formula": "size(goingPersonaIds) >= capacity" } }
+{ "id": "join-waitlist", "guard": { "formula": "size(goingFanIds) >= capacity" } }
 ```
 
 **This is the correct alternative to storing a stale `isFull` flag.** The condition is evaluated against
@@ -137,7 +146,7 @@ live data every time.
 ```jsonc
 "guard": {
   "relatedInstanceField": "eventId",        // a field on THIS instance holding a target instanceId
-  "relatedListField": "goingPersonaIds"     // a list field on THAT instance
+  "relatedListField": "goingFanIds"     // a list field on THAT instance
 }
 ```
 
@@ -157,8 +166,8 @@ snapshotted at creation).
 
 ```jsonc
 // On tournament-ballot:
-"guard": { "relatedInstanceField": "eventId", "relatedListField": "goingPersonaIds" }
-// Reads: ballot.instanceData.eventId -> that event instance -> is $actor in its goingPersonaIds?
+"guard": { "relatedInstanceField": "eventId", "relatedListField": "goingFanIds" }
+// Reads: ballot.instanceData.eventId -> that event instance -> is $actor in its goingFanIds?
 ```
 
 **Validation:** `relatedInstanceField` must be declared here (checked at definition level);
@@ -219,12 +228,12 @@ the caller (`applyTransition`/`availableTransitionsAsync`, both already `async`)
 
 **Use for:** a capacity/quorum/threshold check where the thing being counted lives in a separate
 per-row table, not a list field on this instance — e.g. "no more than `capacity` rows may reach
-`going`" when going/maybe/declined/waitlisted are real per-member rows, not a `personaId[]` list.
+`going`" when going/maybe/declined/waitlisted are real per-member rows, not a `fanId[]` list.
 
 ```jsonc
 // On event-rsvp-response's respond-going transition:
 "guard": {
-  "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+  "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
   "relatedAggregate": {
     "workflowType": "event-rsvp-response",
     "filter": { "eventId": "{eventId}", "$state": "going" },
@@ -364,26 +373,30 @@ recipient can dismiss their own notification," "only the assigned reviewer may a
 frozen fixture, gating `notification`'s own `mark-read` transition (CAL.Notify.3).
 
 ```jsonc
-"guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+"guard": { "actorEqualsField": { "key": "recipientFanId" } }
 ```
 
 | Field | Type | Meaning |
 |---|---|---|
-| `key` | string | A scalar (non-list) field on **this** instance. MUST be declared. The guard passes only if `$actor == instanceData[key]`. |
+| `key` | string | A scalar (non-list) field on **this** instance, **typed `fanId`** in grammar v2. MUST be declared. The guard passes only if `$actor == instanceData[key]`. |
+
+> **Grammar v2:** the field named here must be typed `fanId` (or `fanId?`), because `$actor` is a
+> `fanId`. Pointing it at a `roleId` field is an error — that comparison is the v1 defect that made
+> per-individual guards silently unsatisfiable. See [`identity-types.md`](./identity-types.md).
 
 **Use for:** "only the recipient may mark their own notification read" — the alternative (relying on the
 UI to only ever *show* a viewer their own notifications) is a UI convention, not engine enforcement; a
 direct API call would bypass it, the same category of gap `editGuard`'s original App-Shell-only
 enforcement had (see `spec-version.json` → `editGuardEngineEnforcement`).
 
-**Also drives `role: "actor"` resolution.** If any transition on a workflow declares `actorEqualsField`,
-that field's value is who `role: "actor"` on a `renderBindings` entry resolves to for that instance — not
+**Also drives `audience: "actor"` resolution.** If any transition on a workflow declares `actorEqualsField`,
+that field's value is who `audience: "actor"` on a `renderBindings` entry resolves to for that instance — not
 just who this specific transition's guard gates. See
 [`render-bindings.md`'s role resolution section](./render-bindings.md#role-actorreceiver-resolution--general-guard-derived-tab-agnostic).
 
 ```jsonc
 // On notification's mark-read transition:
-"guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+"guard": { "actorEqualsField": { "key": "recipientFanId" } }
 ```
 
 **Validation (once implemented):** `key` must be declared on this workflow's own `instanceDataSchema`,
@@ -396,7 +409,7 @@ and must not be a list-typed field (use `actorInList` for that shape instead). �
 
 ```jsonc
 "guard": {
-  "allowedPersonaIds": ["tabletop-member"],
+  "allowedRoleIds": ["tabletop-member"],
   "instanceDataEquals": { "key": "availabilityState", "value": "available" },
   "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
 }
@@ -412,7 +425,7 @@ usually clearer anyway — they typically want different labels ("Borrow" vs "Jo
 
 | Requirement | Guard |
 |---|---|
-| Only role X | `allowedPersonaIds` |
+| Only role X | `allowedRoleIds` |
 | Only if actor is/isn't already in a list | `actorInList` |
 | Only if a data field equals a value | `instanceDataEquals` |
 | Only if a computed/arithmetic condition holds | `formula` |

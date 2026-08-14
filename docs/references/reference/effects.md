@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: { envelope: 1, experience: 2, grammar: 2 }
 doc_version: 1.7.0
 status: current
 last_verified: 2026-07-31
@@ -11,7 +11,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/recurrence_evaluator.dart
 ---
 
-# Effects (normative) — grammar v1
+# Effects (normative) — grammar v2
 
 An effect is what **changes** when a transition fires. Effects run after guards pass, inside the same
 transaction as the state change.
@@ -93,7 +93,7 @@ parameterless transition second) — see [`guide/04-antipatterns.md`](../guide/0
 
 ```jsonc
 { "op": "set", "key": "availabilityState", "value": "onLoan" }
-{ "op": "set", "key": "holderPersonaId",   "value": "$actor" }
+{ "op": "set", "key": "holderFanId",   "value": "$actor" }
 { "op": "set", "key": "paidAt",            "value": "$timestamp" }
 { "op": "set", "key": "dueDate",           "value": null }        // null clears
 ```
@@ -102,21 +102,21 @@ parameterless transition second) — see [`guide/04-antipatterns.md`](../guide/0
 
 ```jsonc
 { "op": "append", "key": "ballots",
-  "value": { "personaId": "$actor", "choice": "{pendingChoice}" } }
+  "value": { "fanId": "$actor", "choice": "{pendingChoice}" } }
 ```
 `value` may be an **object** — interpolation applies inside it. This is how a vote record is built.
 
 ### 3. `appendUnique` — add to a list, no duplicates
 
 ```jsonc
-{ "op": "appendUnique", "key": "goingPersonaIds", "value": "$actor" }
+{ "op": "appendUnique", "key": "goingFanIds", "value": "$actor" }
 ```
 **Use this, not `append`, for persona lists.** Prevents an actor double-registering.
 
 ### 4. `removeValue` — remove from a list
 
 ```jsonc
-{ "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" }
+{ "op": "removeValue", "key": "goingFanIds", "value": "$actor" }
 ```
 
 ### 5. `increment` / 6. `decrement` — bump a number
@@ -125,7 +125,7 @@ parameterless transition second) — see [`guide/04-antipatterns.md`](../guide/0
 { "op": "increment", "key": "viewCount", "value": 1 }
 ```
 
-⚠️ **Prefer a computed field.** If the number is derivable (`size(goingPersonaIds)`), use a `formula` —
+⚠️ **Prefer a computed field.** If the number is derivable (`size(goingFanIds)`), use a `formula` —
 never an incrementing counter. A counter and its list **will** drift apart. Use `increment` only for a
 quantity with no underlying list.
 
@@ -218,7 +218,7 @@ No `key`. Removes the instance's tile from a grid surface. Touches no `instanceD
 |---|---|---|
 | `relatedQuery` | object | Same shape as `guards.md`'s `relatedAggregate.filter` (field → literal, `{fieldName}` interpolated against **this** instance, or the reserved `$state` key), plus `sortKey` (a field on the **target** type, ascending) and `limit` (currently only `1` is defined). |
 | `transitionId` | string | A transition declared on `relatedQuery.workflowType`. Applied to the **first** matching row after sorting. |
-| `onSuccessEffects` | `WorkflowEffect[]` | IMPLEMENTED 2026-07-31 (CAL.Notify.1, commit `06f53ed`; validator rules CAL.Notify.2, commit `572b8f6`). Optional. Additional effects run **only when the resolved target's transition actually succeeds** — not when its guard fails (matching the existing silent-no-op semantics below), and never for an ordinary, direct call to the same `transitionId` outside this effect. Interpolation inside these effects resolves against the **target** instance's own data (e.g. `{personaId}` reads the promoted `event-rsvp-response` row's own field), not the instance that declared `transitionRelated`. |
+| `onSuccessEffects` | `WorkflowEffect[]` | IMPLEMENTED 2026-07-31 (CAL.Notify.1, commit `06f53ed`; validator rules CAL.Notify.2, commit `572b8f6`). Optional. Additional effects run **only when the resolved target's transition actually succeeds** — not when its guard fails (matching the existing silent-no-op semantics below), and never for an ordinary, direct call to the same `transitionId` outside this effect. Interpolation inside these effects resolves against the **target** instance's own data (e.g. `{fanId}` reads the promoted `event-rsvp-response` row's own field), not the instance that declared `transitionRelated`. |
 
 **Why this exists:** every other cross-instance mechanism either writes one field on one directly-named
 instance (`relatedInstance`, §8) or spawns a brand-new one (`createInstance`, §9). Nothing today can
@@ -265,7 +265,7 @@ it only runs as part of *this* `transitionRelated` call succeeding, never on a d
     { "op": "createInstance",
       "workflowType": "notification",
       "fields": {
-        "recipientPersonaId": "{personaId}",
+        "recipientFanId": "{fanId}",
         "title": "You're off the waitlist!",
         "body": "A seat opened up and you've been moved to Going.",
         "createdAt": "$timestamp"
@@ -273,7 +273,7 @@ it only runs as part of *this* `transitionRelated` call succeeding, never on a d
     }
   ]
 }
-// {personaId} here reads the RESOLVED TARGET row's own personaId field (the member who was just
+// {fanId} here reads the RESOLVED TARGET row's own personaId field (the member who was just
 // promoted) -- not the actor who triggered respond-maybe/respond-declined.
 ```
 
@@ -386,7 +386,7 @@ behavior.
   "id": "close-vote",
   "label": "Close vote",
   "from": ["open"], "to": "closed",
-  "guard": { "allowedPersonaIds": ["organizer"] },
+  "guard": { "allowedRoleIds": ["organizer"] },
   "effects": [
     {
       "op": "branch",

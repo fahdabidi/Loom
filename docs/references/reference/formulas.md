@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: { envelope: 1, experience: 2, grammar: 2 }
 doc_version: 1.2.0
 status: current
 last_verified: 2026-07-31
@@ -7,7 +7,7 @@ audience: llm-agent
 derived_from: app/packages/core/loom_workflow_engine/lib/src/evaluator/formula_evaluator.dart
 ---
 
-# Formulas (normative) — grammar v1
+# Formulas (normative) — grammar v2
 
 A formula is a **pure expression** evaluated at read time. It never mutates anything.
 
@@ -40,7 +40,7 @@ you could compute. A stored count and its underlying list *will* drift apart.
 `!=`. Verified directly against the parser (`formula_evaluator.dart:458-462`, `_unary()`) and evaluator
 (`:236`, `!_bool(v)`): **`!` genuinely works** — only the two-character `!=` comparison operator is
 actually absent (confirmed: `_comparison()`, `:428-436`, never checks for it). `!isFull` is valid; prefer
-`size(goingPersonaIds) < capacity` anyway where a positive formulation reads more clearly, but do not
+`size(goingFanIds) < capacity` anyway where a positive formulation reads more clearly, but do not
 treat `!` as unsupported — it is.
 
 ## Literals
@@ -127,9 +127,16 @@ vocabulary out of the interpreter, the same principle every other formula in thi
 
 | Reference | Resolves to |
 |---|---|
-| `$actor` | The persona who performed the current transition (or `null` outside a transition) |
-| `$viewer` | The persona currently reading/querying (set on every `queryInstances`/`availableTransitionsAsync` call) |
+| `$actor` | The **person** who performed the current transition, as a `fanId` (or `null` outside a transition) |
+| `$viewer` | The **person** currently reading/querying, as a `fanId` (set on every `queryInstances`/`availableTransitionsAsync` call) |
 | `$state` | **(PROPOSED)** A row's own current FSM state, usable as the `column` argument to `groupCount`/`sum`/etc. — e.g. `groupCount(responses, '$state')` tallies rows by their real workflow state, not a duplicated status field. Only meaningful inside a `source: query(...)`-backed list's aggregate functions; not a bare field reference. |
+
+> **Grammar v2: `$actor` and `$viewer` are `fanId`-typed.** Comparing either against a declared `roleId`
+> is a validator error, not a silent false. This is the single most common v1 authoring mistake —
+> `$viewer == 'masjid-admin'` parses, never matches, and produces no diagnostic. "This person, or anyone
+> with this role" is written as a `fanId` comparison in the formula **plus** an `allowedRoleIds` guard;
+> they are different layers. See [`identity-types.md`](./identity-types.md) and
+> [`permissions.md`](./permissions.md) §2.
 
 **Why `$state` matters:** without it, counting "how many rows are in the `going` state" would force
 authoring a redundant `instanceData` field manually kept in sync with the state machine on every
@@ -143,10 +150,10 @@ true of a stored status code drifting from the real state).
 
 ### Capacity / attendance
 ```jsonc
-"goingCount":     { "type": "number", "formula": "size(goingPersonaIds)" },
-"spotsRemaining": { "type": "number", "formula": "capacity - size(goingPersonaIds)" },
-"isFull":         { "type": "bool",   "formula": "size(goingPersonaIds) >= capacity" },
-"quorumMet":      { "type": "bool",   "formula": "size(goingPersonaIds) >= minimumAttendance" }
+"goingCount":     { "type": "number", "formula": "size(goingFanIds)" },
+"spotsRemaining": { "type": "number", "formula": "capacity - size(goingFanIds)" },
+"isFull":         { "type": "bool",   "formula": "size(goingFanIds) >= capacity" },
+"quorumMet":      { "type": "bool",   "formula": "size(goingFanIds) >= minimumAttendance" }
 ```
 
 ### Vote tally, winner, tie — the entire ballot, in four lines
@@ -161,8 +168,8 @@ must be **acyclic**. → else `circular_formula_dependency` (error)
 
 ### Queue position
 ```jsonc
-"queueLength":   { "type": "number", "formula": "size(queuedPersonaIds)" },
-"myQueuePlace":  { "type": "number", "formula": "indexOf(queuedPersonaIds, $viewer)" }
+"queueLength":   { "type": "number", "formula": "size(queuedFanIds)" },
+"myQueuePlace":  { "type": "number", "formula": "indexOf(queuedFanIds, $viewer)" }
 ```
 
 ### Availability (string literal)
@@ -222,7 +229,7 @@ Reserved row references section above.
 
 | ❌ Wrong | ✅ Right |
 |---|---|
-| `{"op":"increment","key":"goingCount"}` alongside a `goingPersonaIds` list | `"goingCount": {"formula": "size(goingPersonaIds)"}` |
+| `{"op":"increment","key":"goingCount"}` alongside a `goingFanIds` list | `"goingCount": {"formula": "size(goingFanIds)"}` |
 | Seeding `"isFull": false` in `instanceData` | Declare it as a `formula`; never seed |
 | Parsing a display string (`"12 of 20 seats"`) to get a number | Store `capacity`; compute the rest |
 | `status != 'closed'` | `if(status == 'closed', false, true)` (no `!=` operator — `!` itself is fine) |

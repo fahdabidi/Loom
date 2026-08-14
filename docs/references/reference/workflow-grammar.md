@@ -1,12 +1,12 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: { envelope: 1, experience: 2, grammar: 2 }
 doc_version: 1.6.0
 status: current
 last_verified: 2026-08-09
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
-# Workflow grammar (normative) — grammar v1
+# Workflow grammar (normative) — grammar v2
 
 **The contract.** Every key here is one the engine's parser genuinely reads
 (`LoomWorkflowStateMachine.fromJson`, `workflow_models.dart:341-371`) and the engine genuinely executes.
@@ -44,7 +44,7 @@ the only place this construct was mentioned anywhere in `docs/references`.
 ```jsonc
 "visibility": {
   "default": "public",              // "public" | "membersOnly" | "guarded". Default if omitted: "public".
-  "readGuard": { "allowedPersonaIds": ["hoa-board"] }   // REQUIRED sibling when default is "guarded".
+  "readGuard": { "allowedRoleIds": ["hoa-board"] }   // REQUIRED sibling when default is "guarded".
                                                           // Same WorkflowGuard shape as editGuard/creationGuard.
 }
 ```
@@ -73,7 +73,7 @@ workflow type omits `visibility` entirely — it never blocks `report.passed`, s
 "states": {
   "open":      { "label": "Signups open", "tone": "positive",
                  "editableFields": ["title", "capacity"],
-                 "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] } },
+                 "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
   "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
 }
 ```
@@ -128,7 +128,7 @@ plumbing.
 - **`editableFields` may only name fields whose `writableBy` is `"formEntry"`.** A field written by an
   effect is not user-editable, and listing it is a contradiction. → `effect_field_in_editable_fields`
   (error)
-- **`editGuard.allowedPersonaIds`, if present, must name declared personas.** (proposed rule,
+- **`editGuard.allowedRoleIds`, if present, must name declared personas.** (proposed rule,
   `dangling_edit_guard_persona` — not yet implemented, see `spec-version.json`)
 - **`creationGuard`, if present, must be a well-formed `WorkflowGuard`** — every field-name it references
   (e.g. `locationOverlap.locationField`) must be declared in this workflow's own `instanceDataSchema`.
@@ -253,7 +253,7 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 
 ```jsonc
 "renderBindings": [
-  { "states": ["open"], "role": "any", "tabId": "calendar",
+  { "states": ["open"], "audience": "any", "tabId": "calendar",
     "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" }
 ]
 ```
@@ -262,7 +262,7 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | `home` / `messages` (always exist, system-guaranteed) or any id this community declares in `appShell.tabs[]`/`personaTabs[]` — see [render-bindings.md](./render-bindings.md#tabid--complete-rule) |
+| `tabId` | string | **yes** | `home` / `messages` (always exist, system-guaranteed) or any id this community declares in `appShell.tabs[]`/`roleTabs[]` — see [render-bindings.md](./render-bindings.md#tabid--complete-rule) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` (full, interactive) · `summary` (compact) |
 | `audienceMemberField` | string | no | Field holding the invited personas, for targeted visibility |
@@ -281,8 +281,8 @@ Full detail: [field-types.md](./field-types.md).
 "instanceDataSchema": {
   "title":      { "type": "text", "required": true, "writableBy": "formEntry",
                   "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-  "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
-  "goingCount": { "type": "number", "formula": "size(goingPersonaIds)" }   // computed
+  "goingFanIds": { "type": "fanId[]", "writableBy": "effect" },
+  "goingCount": { "type": "number", "formula": "size(goingFanIds)" }   // computed
 }
 ```
 
@@ -321,14 +321,14 @@ feature in one definition.
       "from": ["open"],
       "to": null,                                    // voting doesn't close the ballot
       "guard": {
-        // Cross-instance: the actor must appear in `goingPersonaIds` on the instance named by
+        // Cross-instance: the actor must appear in `goingFanIds` on the instance named by
         // THIS instance's `eventId` field. Enforced by the engine, not by hiding a button.
         "relatedInstanceField": "eventId",
-        "relatedListField": "goingPersonaIds"
+        "relatedListField": "goingFanIds"
       },
       "effects": [
         { "op": "append", "key": "ballots",
-          "value": { "personaId": "$actor", "choice": "{pendingChoice}" } }
+          "value": { "fanId": "$actor", "choice": "{pendingChoice}" } }
       ]
     },
     {
@@ -336,7 +336,7 @@ feature in one definition.
       "label": "Close vote",
       "from": ["open"],
       "to": "closed",
-      "guard": { "allowedPersonaIds": ["organizer"] },
+      "guard": { "allowedRoleIds": ["organizer"] },
       "effects": [
         {
           "op": "branch",
@@ -357,9 +357,9 @@ feature in one definition.
   ],
 
   "renderBindings": [
-    { "states": ["open"],   "role": "any", "tabId": "home",
+    { "states": ["open"],   "audience": "any", "tabId": "home",
       "cardSurfaceFamily": "votePoll", "bindingKind": "primary" },
-    { "states": ["closed"], "role": "any", "tabId": "home",
+    { "states": ["closed"], "audience": "any", "tabId": "home",
       "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
   ],
 

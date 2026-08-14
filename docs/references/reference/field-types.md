@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: { envelope: 1, experience: 2, grammar: 2 }
 doc_version: 1.4.0
 status: current
 last_verified: 2026-08-12
@@ -10,7 +10,7 @@ derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
 ---
 
-# `instanceDataSchema` field types (normative) — grammar v1
+# `instanceDataSchema` field types (normative) — grammar v2
 
 `instanceDataSchema` is the **single source of truth** for a workflow's data: validation, display,
 editability, and computation. Every field a workflow touches MUST be declared here.
@@ -37,8 +37,13 @@ editability, and computation. Every field a workflow touches MUST be declared he
 }
 ```
 
-⚠️ **`type` is a free-form string in the parser** — it is not validated against an enum. Use only the
-values below; an unrecognized type will parse but render unpredictably.
+⚠️ **In grammar v1 `type` is a free-form string in the parser** — not validated against an enum, so an
+unrecognized type parses but renders unpredictably. **Grammar v2 validates it**, which is what makes the
+`fanId` / `roleId` split enforceable rather than advisory. Use only the values below.
+
+> **Identity fields:** `fanId` and `roleId` are two distinct types in grammar v2, replacing v1's single
+> overloaded `personaId`. A `roleId` says what someone is allowed to be; a `fanId` says who they are.
+> See [`identity-types.md`](./identity-types.md) before typing any identity-valued field.
 
 ## Types
 
@@ -52,12 +57,13 @@ values below; an unrecognized type will parse but render unpredictably.
 | `time` | Time of day | |
 | `list` | Array of anything (incl. objects) | e.g. `ballots`, `candidates`, `messages` |
 | `map` | Key→value | Typically a `groupCount` result |
-| `personaId` | A single persona id | `personaId?` for nullable |
-| `personaId[]` | Array of persona ids | **The standard for member lists** |
+| `fanId` | One specific person | `fanId?` for nullable. **Grammar v2** — replaces v1's `personaId` |
+| `fanId[]` | Array of people | **The standard for member lists.** Grammar v2 — replaces `fanId[]` |
+| `roleId` | A kind of member, held by many | Grammar v2. Legal but rare as instance data; roles normally appear only in guards |
 | `image` | Image reference | Use `storage: "reference"` |
 | `url` | An openable external or embedded link/document | `openMode: "external"` and `"choice"` are ✅ REAL; standalone `"embedded"` alone is not yet implemented — see below. Use `url?` for nullable. |
 
-**Nullable convention:** append `?` (e.g. `date?`, `personaId?`) for fields that are legitimately empty.
+**Nullable convention:** append `?` (e.g. `date?`, `fanId?`) for fields that are legitimately empty.
 
 ## `type: "url"` — external/embedded document and link fields (`external`/`choice`: ✅ REAL; standalone `embedded`: still proposed)
 
@@ -254,7 +260,7 @@ person → `person_outline`, place → `location_on_outlined`, capacity → `gro
 "title":            { "labelTemplate": "{value}" },                 // -> "Eagle Ridge loop"
 "capacity":         { "labelTemplate": "{value} seats" },           // -> "12 seats"
 "goingCount":       { "labelTemplate": "Going: {value}" },          // -> "Going: 7"
-"queuedPersonaIds": { "labelTemplate": "Queue: {value.length}" },   // -> "Queue: 2"
+"queuedFanIds": { "labelTemplate": "Queue: {value.length}" },   // -> "Queue: 2"
 "dueDate":          { "labelTemplate": "Due back {value}" }         // -> "Due back 2026-07-17"
 ```
 `labelTemplate` is the **only** string-composition mechanism — formulas cannot concatenate strings.
@@ -286,17 +292,17 @@ person → `person_outline`, place → `location_on_outlined`, capacity → `gro
                  "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
 
   // effect-written: mutated by transitions
-  "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
-  "holderPersonaId": { "type": "personaId?",  "writableBy": "effect", "storage": "inline",
+  "goingFanIds": { "type": "fanId[]", "writableBy": "effect", "storage": "inline" },
+  "holderFanId": { "type": "fanId?",  "writableBy": "effect", "storage": "inline",
                        "displayIcon": "person_outline", "labelTemplate": "Holder: {value}",
                        "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
 
   // computed: derived on read. NEVER seeded, NEVER effect-written.
-  "goingCount":     { "type": "number", "formula": "size(goingPersonaIds)",
+  "goingCount":     { "type": "number", "formula": "size(goingFanIds)",
                       "displayIcon": "groups_outlined", "labelTemplate": "Going: {value}",
                       "displayContexts": ["tile", "detail"] },
-  "spotsRemaining": { "type": "number", "formula": "capacity - size(goingPersonaIds)" },
-  "isFull":         { "type": "bool",   "formula": "size(goingPersonaIds) >= capacity" }
+  "spotsRemaining": { "type": "number", "formula": "capacity - size(goingFanIds)" },
+  "isFull":         { "type": "bool",   "formula": "size(goingFanIds) >= capacity" }
 }
 ```
 

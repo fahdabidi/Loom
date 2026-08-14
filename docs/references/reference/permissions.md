@@ -30,8 +30,8 @@ derives the rest.
 Concretely, at community install time:
 
 ```
-personas[]                       ->  roles registered in App Access
-guard.allowedPersonaIds on T     ->  those roles may perform T
+roles[]                          ->  roles registered in App Access
+guard.allowedRoleIds on T        ->  those roles may perform T
 T.action + workflow archetype    ->  the permission T requires
                                  ->  grant that permission to those roles
 ```
@@ -43,17 +43,25 @@ pre-granted as a permission. Measured across the eleven real fixtures:
 
 | Kind | Occurrences | Resolved by |
 |---|---|---|
-| `allowedPersonaIds` (transition guards, 582), `byPersonaIds` (create actions, 70) | **652** | **App Access** — pre-granted permissions |
+| `allowedRoleIds` (transition guards, 582), `byRoleIds` (create actions, 70) | **652** | **App Access** — pre-granted permissions |
 | `actorEqualsField` (190), `actorInList` (53) | **243** | **Workflow engine** — per-instance, at runtime |
 
-**A note on naming.** The JSON says *persona*; App Access says *role*. They are the same thing across a
-translation that happens at install time, when §6 step 2 registers each entry of `personas[]` as a
-group-scoped role. This document uses the JSON's own key names for what an author writes, and "role"
-for what App Access stores.
+**A note on naming.** These keys are `allowedPersonaIds` and `byPersonaIds` in **grammar v1**, and
+`allowedRoleIds` / `byRoleIds` in **v2**. This document describes v2; see
+[`identity-types.md`](./identity-types.md) for the full migration.
 
-That distinction is not pedantic. An earlier draft wrote `allowedRoleIds` and `byRoleIds` throughout,
-and those keys appear **zero** times in any fixture — a derivation or validator implemented literally
-against it would have found no guards at all, in any community, and silently derived nothing.
+The rename is worth a sentence of history, because getting it wrong once already cost something. An
+earlier draft of this document wrote `allowedRoleIds` while every fixture was still v1 — so the keys it
+named appeared **zero** times in any package, and a derivation built literally from that text would have
+found no guards at all, in any community, and silently derived nothing. It was corrected to match the
+fixtures, and v2 has now moved the fixtures instead. The lesson is the same either way: this document
+and the packages must name the same key, and the spec-sync test exists so they cannot drift apart
+unnoticed.
+
+The two words are not synonyms by accident. The JSON's `roleId` and App Access's role are the same
+thing across a translation that happens at install time, when §6 step 2 registers each entry of
+`roles[]` as a group-scoped role. Fan Passport's `Persona` is a **different** concept — a pseudonymity
+facet of one human — which is precisely why the grammar stopped calling its role types "personas".
 
 App Access answers *may this role do this kind of thing in this community*. The workflow engine still
 answers *is this specific person the actor, recipient, or queue member of this specific row*. Both are
@@ -72,7 +80,7 @@ A transition declares which archetype action it is:
   "id": "acknowledge-latest-version",
   "action": "acknowledge",
   "label": "Acknowledge",
-  "guard": { "allowedPersonaIds": ["hoa-member"] }
+  "guard": { "allowedRoleIds": ["hoa-member"] }
 }
 ```
 
@@ -115,8 +123,8 @@ name.
 
 | Community | Guard | State | What it really is |
 |---|---|---|---|
-| Garden Club | `actorEqualsField: borrowerPersonaId` | `reserved` | withdrawing a reservation → `withdraw_request` |
-| Book Club | `actorEqualsField: currentHolderPersonaId` | `borrowed` | ending an active loan → `return` |
+| Garden Club | `actorEqualsField: borrowerFanId` | `reserved` | withdrawing a reservation → `withdraw_request` |
+| Book Club | `actorEqualsField: currentHolderFanId` | `borrowed` | ending an active loan → `return` |
 
 Same id, two different capabilities, two different permissions. Treating the column as authoritative
 would have collapsed them and granted Book Club's holders the wrong one — reintroducing exactly the
@@ -236,7 +244,7 @@ rather than member-invoked; grouping them keeps the member-facing vocabulary hon
 An earlier draft added a `withdraw_vote` action for `cancel-vote`, on the reasoning that it withdraws
 one ballot rather than closing the poll. That reasoning was wrong, and checking the only fixture that
 carries the id disproves it: Book Club's `cancel-vote` sits on the ballot workflow itself, is
-`allowedPersonaIds: ["book-organizer"]`, is `tone: "destructive"`, and moves `open → cancelled` —
+`allowedRoleIds: ["book-organizer"]`, is `tone: "destructive"`, and moves `open → cancelled` —
 directly alongside `close-vote`, which moves `open → closed`. It calls the poll off for everyone.
 
 Both are the organizer ending the poll, differing only in whether a result stands. Per §5's
@@ -324,7 +332,7 @@ path.
 Run at community **install** time, not build time, because communities install dynamically.
 
 1. **Create the group.** One App Access group per community: `loom_communities_<communityHandle>`.
-2. **Register the roles.** Each entry in `personas[]` becomes a group-scoped role.
+2. **Register the roles.** Each entry in `roles[]` becomes a group-scoped role.
 3. **For each workflow**, resolve its archetype:
    a. If any `renderBindings[].cardSurfaceFamily` is a bespoke family, that is the archetype. A
       workflow may also carry generic bindings; they do not compete (see §8).
@@ -334,9 +342,9 @@ Run at community **install** time, not build time, because communities install d
    d. A workflow with no bindings and no `responseTable` owner derives nothing at all.
 4. **For each transition**, resolve its action — the declared `action` for a bespoke archetype, or the
    structural rule for a generic one — and map to the permission id.
-5. **For each persona in that transition's `guard.allowedPersonaIds`** — i.e. each role registered in
-   step 2 — add the permission to that role.
-6. **For each `create` action's `byPersonaIds`**, add the archetype's `create` permission.
+5. **For each role in that transition's `guard.allowedRoleIds`** — registered in step 2 — add the
+   permission to that role.
+6. **For each `create` action's `byRoleIds`**, add the archetype's `create` permission.
 7. **Union per role**, then `setRolePermissions` once per role.
 
 Idempotent: re-installing the same package produces the same grants.
@@ -378,7 +386,7 @@ It holds the `community.*` permissions:
 | `community.manage_settings` | community configuration |
 
 `admin` is a **platform** role and coexists with domain roles: a real person may hold
-`[admin, hoa-board]`. No fixture declares a persona named `admin`, so this is purely additive.
+`[admin, hoa-board]`. No fixture declares a role named `admin`, so this is purely additive.
 
 User management is an App Shell experience gated on `community.manage_members`, never a workflow.
 Adding a member is by **Fan Passport id only** — there is deliberately no user search, so an admin
@@ -391,7 +399,7 @@ cannot enumerate or discover users.
 | `action` present on every transition of a bespoke-archetype workflow | error |
 | `action` is in that archetype's closed vocabulary | error |
 | `action` present on a generic-archetype transition | error — generic families derive structurally |
-| every `allowedPersonaIds` / `byPersonaIds` entry is a declared persona | error |
+| every `allowedRoleIds` / `byRoleIds` entry is a declared role | error |
 | a workflow's `renderBindings` mix one bespoke family with generic ones | allowed — the bespoke family is the archetype |
 | two or more bespoke families, and the declared actions fit only one of them | allowed — that family is the archetype |
 | two or more bespoke families, and the declared actions fit none or several | error — the archetype is genuinely undecidable |
@@ -435,7 +443,7 @@ bespoke binding gives it one.
 - a role-to-permission mapping
 - a user, account, or Fan Passport id
 - a membership or join-approval workflow — that is App Shell plus App Access
-- an `admin` persona — it is provided by the platform
+- an `admin` role — it is provided by the platform
 
 Roles are declared. Everything else is derived.
 
@@ -444,7 +452,7 @@ Roles are declared. Everything else is derived.
 No fixture grants membership, and none can. The workflow grammar has no effect op that could: the
 complete set in use is `set`, `append`, `appendUnique`, `removeValue`, `createInstance`,
 `transitionRelated`, `branch`, `generateRecurringInstances`, `removeFromTileGrid`. Of the 74 effects
-that assign a persona-shaped key, every one writes a persona into a **field on an instance** — who
+that assign an identity-shaped key, every one writes a `fanId` into a **field on an instance** — who
 reserved the room, who is holding the tool, who reviewed the request. That records a fact about a row;
 it grants nothing.
 
@@ -452,7 +460,7 @@ Scanning workflow *names* for `join`, `signup` or `membership` finds only false 
 already produced two:
 
 - **`soccer-guardian-join-approval`** is player registration, not community joining. Its opening
-  transition is guarded `allowedPersonaIds: ["soccer-guardian"]`, so the actor must already be a
+  transition is guarded `allowedRoleIds: ["soccer-guardian"]`, so the actor must already be a
   guardian in the community before they can start it. `approve-request` is gated on a formula requiring
   the waiver acknowledged and the fee paid, and its effects create a roster row and a redaction row.
   Waiver, payment, coach review, roster — a domain process end to end, and exactly the kind this
