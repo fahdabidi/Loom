@@ -167,11 +167,13 @@ product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`e
 
 ## The `action` field, and what you must never author
 
-**Declare `action` on every transition of a bespoke-archetype workflow** — `event-rsvp`, `votePoll`,
-`equipment-loan`, `documentLibrary`, `searchAiAnswer`, `exportWizard`, `table` — using only the values
-listed for that family in `21-permissions.md`. **Never declare `action` on a generic-archetype
-transition** (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
-`statusTimeline`, `notificationInbox`); those derive their permissions structurally.
+**Declare `action` on every transition of a bespoke-archetype workflow** — the six families with a
+dispatcher case: `event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`, `searchAiAnswer`,
+`exportWizard` — using only the values listed for that family in `21-permissions.md`. **Never declare
+`action` on a generic-archetype transition** (`paymentCheckout`, `approvalQueueItem`, `formEntry`,
+`discussionThread`, `statusTimeline`, `notificationInbox`, `table`); those derive their permissions
+structurally. `table` is the trap: it renders as a grid and reads as bespoke, but that is list layout
+only — it has no dispatcher case and takes no `action`.
 
 `action` is what the platform maps to the permission a transition needs. A missing or misnamed one
 silently leaves a permission ungranted, and the action then fails at runtime for a reason no author can

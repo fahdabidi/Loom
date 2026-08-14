@@ -132,12 +132,13 @@ real enum (fetched at step 7) instead.
     requirement per workflow, citing the exact JSON construct that satisfies it, or `not_implemented` with
     reasoning grounded in a real, checked constraint — never a guessed persona/tab restriction.
 12. **Declare `action` on every transition of a bespoke-archetype workflow, and never on a generic one.**
-    The seven bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
-    `searchAiAnswer`, `exportWizard`, `table`) each have a **closed** action vocabulary — see
-    `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The six
-    generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
-    `statusTimeline`, `notificationInbox`) derive their permissions structurally and must carry **no**
-    `action` field at all. `action` is what the platform maps to the permission a transition needs, so an
+    The six bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
+    `searchAiAnswer`, `exportWizard`) each have a **closed** action vocabulary — see
+    `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The
+    seven generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
+    `statusTimeline`, `notificationInbox`, `table`) derive their permissions structurally and must carry
+    **no** `action` field at all. `table` is the one to watch: it renders as a grid and reads as bespoke,
+    but that is list layout only — it has no dispatcher case, so it takes no `action`. `action` is what the platform maps to the permission a transition needs, so an
     unmapped or misnamed one silently leaves a permission ungranted and the action fails at runtime.
 13. **Never author a permission, a user, or a membership.** Permissions are derived from your
     `allowedPersonaIds`/`byPersonaIds` plus `action` — writing one is always wrong. Likewise never model
