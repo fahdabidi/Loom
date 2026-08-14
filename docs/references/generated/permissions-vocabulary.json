@@ -8,10 +8,141 @@
     "installer (Java), so that the derivation rules defined in",
     "docs/references/reference/permissions.md exist in exactly one place."
   ],
-  "specVersion": {
-    "envelope": 1,
-    "experience": 2,
-    "grammar": 3
+  "specVersion": 4,
+  "archetypeContracts": {
+    "_comment": "What each archetype guarantees. `bookkeeping` is per-person state the archetype maintains itself -- a community declares none of these fields and writes no idempotence guard against them. `enforcement: client_engine` means the rule is evaluated on the device by LocalWorkflowEngineApi and is advisory, not a security boundary: there is no workflow service yet.",
+    "approvalQueueItem": {
+      "isBespoke": false,
+      "visibility": "parties",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "discussionThread": {
+      "isBespoke": false,
+      "visibility": "participants",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "mutedByFanIds",
+        "readByFanIds"
+      ]
+    },
+    "documentLibrary": {
+      "isBespoke": true,
+      "visibility": "owner_and_shared",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "accessRequestedFanIds",
+        "acknowledgedFanIds",
+        "downloadedFanIds",
+        "openedFanIds",
+        "savedFanIds",
+        "sharedWithFanIds"
+      ],
+      "sharingGrantable": [
+        "download",
+        "edit",
+        "open"
+      ]
+    },
+    "equipment-loan": {
+      "isBespoke": true,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "currentHolderFanId",
+        "queuedFanIds"
+      ],
+      "placement": [
+        "borrow",
+        "claim",
+        "join-queue",
+        "leave-queue",
+        "return",
+        "return-game"
+      ]
+    },
+    "event-rsvp": {
+      "isBespoke": true,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "goingFanIds",
+        "maybeFanIds",
+        "notGoingFanIds",
+        "reminderFanIds",
+        "waitlistFanIds"
+      ]
+    },
+    "exportWizard": {
+      "isBespoke": true,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "formEntry": {
+      "isBespoke": false,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "notificationInbox": {
+      "isBespoke": false,
+      "visibility": "recipient",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "acknowledgedByFanIds",
+        "clickedByFanIds",
+        "dismissedByFanIds",
+        "impressionedByFanIds"
+      ]
+    },
+    "paymentCheckout": {
+      "isBespoke": false,
+      "visibility": "parties",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "searchAiAnswer": {
+      "isBespoke": true,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "savedFanIds"
+      ]
+    },
+    "statusTimeline": {
+      "isBespoke": false,
+      "visibility": "roles",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "table": {
+      "isBespoke": false,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": []
+    },
+    "votePoll": {
+      "isBespoke": true,
+      "visibility": "roles",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "votedFanIds"
+      ]
+    }
   },
   "bespokeArchetypes": {
     "documentLibrary": {

@@ -94,14 +94,79 @@ void main() {
       expect(all, isNotEmpty);
     });
 
-    test('declares the grammar version it was generated for', () {
-      final spec = artifact['specVersion'] as Map<String, Object?>;
+    test('declares the single spec version it was generated for', () {
       expect(
-        spec['grammar'],
-        equals(3),
-        reason: 'The installer refuses packages whose grammar version it does '
-            'not implement, so this must track the real version.',
+        artifact['specVersion'],
+        equals(4),
+        reason: 'One number versions the whole package. The installer refuses '
+            'packages whose version it does not implement, so this must track '
+            'the real one.',
       );
+    });
+
+    test('carries a contract for every archetype the resolver knows', () {
+      final contracts = Map<String, Object?>.from(
+        artifact['archetypeContracts'] as Map<String, Object?>,
+      )..removeWhere((key, _) => key.startsWith('_'));
+
+      expect(
+        contracts.keys.toSet(),
+        equals({
+          ...ArchetypeResolver.bespokeFamilies,
+          ...ArchetypeResolver.genericFamilies,
+        }),
+        reason: 'An archetype with no contract has no defined bookkeeping or '
+            'visibility model, so the workflow service would have nothing to '
+            'enforce for it.',
+      );
+    });
+
+    test('every contract names a visibility model and an enforcement boundary', () {
+      const visibilityModels = {
+        'roles',
+        'owner',
+        'owner_and_shared',
+        'participants',
+        'parties',
+        'recipient',
+      };
+      final contracts = Map<String, Object?>.from(
+        artifact['archetypeContracts'] as Map<String, Object?>,
+      )..removeWhere((key, _) => key.startsWith('_'));
+
+      for (final entry in contracts.entries) {
+        final contract = entry.value as Map<String, Object?>;
+        expect(
+          visibilityModels,
+          contains(contract['visibility']),
+          reason: '${entry.key} declares an unknown visibility model.',
+        );
+        expect(
+          const ['client_engine', 'server'],
+          contains(contract['enforcement']),
+          reason: '${entry.key} must state where its rules are enforced. '
+              'Everything is client_engine today, because no workflow service '
+              'exists — that is a fact worth being explicit about rather than '
+              'implied.',
+        );
+        expect(contract['allowsCustomActions'], isTrue);
+      }
+    });
+
+    test('only equipment-loan claims special placement', () {
+      // Six ids in one archetype, matched by name in part36 purely to position
+      // them. If another archetype grows placement, the claim in CONTRACTS.md
+      // that legality always comes from availableTransitionsAsync needs
+      // re-checking.
+      final contracts = Map<String, Object?>.from(
+        artifact['archetypeContracts'] as Map<String, Object?>,
+      )..removeWhere((key, _) => key.startsWith('_'));
+
+      final withPlacement = [
+        for (final e in contracts.entries)
+          if ((e.value as Map<String, Object?>).containsKey('placement')) e.key,
+      ];
+      expect(withPlacement, equals(['equipment-loan']));
     });
   });
 }

@@ -61,9 +61,216 @@ class ResolvedArchetype {
   bool get requiresAction => isBespoke;
 }
 
+/// How a read decision is reached for one archetype's instances.
+///
+/// Every model is additive over `roles` and every model **fails closed**: an
+/// unset identity field matches nobody, so an instance belonging to no one is
+/// visible to no one. That is why seed data carrying no identity renders
+/// nothing rather than leaking.
+enum VisibilityModel {
+  /// Only the roles a state's `readGuard` admits.
+  roles,
+
+  /// Plus whoever created the instance.
+  owner,
+
+  /// Plus anyone the instance was explicitly shared with.
+  ownerAndShared,
+
+  /// Plus anyone in the instance's participant set.
+  participants,
+
+  /// Plus the two named sides of a request.
+  parties,
+
+  /// Plus the addressee, and only the addressee.
+  recipient,
+}
+
+/// Where an archetype's rules are actually enforced today.
+enum EnforcementBoundary {
+  /// Evaluated by `LocalWorkflowEngineApi` on the device, over local sqlite.
+  /// Advisory: correct for the UI, but not a security boundary, because no
+  /// server evaluates it. There is no workflow service yet.
+  clientEngine,
+
+  /// Evaluated by a real backend service.
+  server,
+}
+
+/// What one archetype guarantees, as opposed to what a community declares.
+///
+/// This is the machine-readable form of `docs/references/archetypes/CONTRACTS.md`,
+/// read by the validator today and by the workflow service once it exists.
+class ArchetypeContract {
+  const ArchetypeContract({
+    required this.family,
+    required this.isBespoke,
+    required this.bookkeeping,
+    required this.visibility,
+    required this.enforcement,
+    this.placement = const <String>{},
+    this.sharingGrantable = const <String>{},
+  });
+
+  final String family;
+
+  /// Bespoke archetypes carry a closed action vocabulary that supplies
+  /// semantics. Generic ones derive everything structurally.
+  final bool isBespoke;
+
+  /// Per-person state the archetype maintains itself. A community declares
+  /// none of these fields and writes no idempotence guard against them.
+  final Set<String> bookkeeping;
+
+  final VisibilityModel visibility;
+
+  final EnforcementBoundary enforcement;
+
+  /// Transition ids given a position other than the generic button row. Only
+  /// `equipment-loan` has any, and only for layout — legality always comes
+  /// from `availableTransitionsAsync`.
+  final Set<String> placement;
+
+  /// Actions a share may grant, for archetypes whose visibility model supports
+  /// sharing.
+  final Set<String> sharingGrantable;
+
+  /// Community-defined actions are permitted on every archetype. A transition
+  /// that declares no `action` derives structurally and renders in the generic
+  /// button row.
+  bool get allowsCustomActions => true;
+}
+
 /// Resolves archetypes and maps actions to permission ids.
 class ArchetypeResolver {
   const ArchetypeResolver();
+
+  /// The full contract per archetype. See
+  /// `docs/references/archetypes/CONTRACTS.md`.
+  static const Map<String, ArchetypeContract> contracts = {
+    'documentLibrary': ArchetypeContract(
+      family: 'documentLibrary',
+      isBespoke: true,
+      bookkeeping: {
+        'openedFanIds',
+        'acknowledgedFanIds',
+        'savedFanIds',
+        'downloadedFanIds',
+        'accessRequestedFanIds',
+        'sharedWithFanIds',
+      },
+      visibility: VisibilityModel.ownerAndShared,
+      sharingGrantable: {'open', 'download', 'edit'},
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'equipment-loan': ArchetypeContract(
+      family: 'equipment-loan',
+      isBespoke: true,
+      bookkeeping: {'queuedFanIds', 'currentHolderFanId'},
+      visibility: VisibilityModel.owner,
+      // The only placement in the app shell: six ids matched by name in
+      // part36, purely to position them.
+      placement: {
+        'borrow',
+        'claim',
+        'join-queue',
+        'leave-queue',
+        'return',
+        'return-game',
+      },
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'event-rsvp': ArchetypeContract(
+      family: 'event-rsvp',
+      isBespoke: true,
+      bookkeeping: {
+        'goingFanIds',
+        'maybeFanIds',
+        'notGoingFanIds',
+        'waitlistFanIds',
+        'reminderFanIds',
+      },
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'exportWizard': ArchetypeContract(
+      family: 'exportWizard',
+      isBespoke: true,
+      bookkeeping: {},
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'searchAiAnswer': ArchetypeContract(
+      family: 'searchAiAnswer',
+      isBespoke: true,
+      bookkeeping: {'savedFanIds'},
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'votePoll': ArchetypeContract(
+      family: 'votePoll',
+      isBespoke: true,
+      // Who has voted, never how they voted. Tallies are derived.
+      bookkeeping: {'votedFanIds'},
+      visibility: VisibilityModel.roles,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'approvalQueueItem': ArchetypeContract(
+      family: 'approvalQueueItem',
+      isBespoke: false,
+      bookkeeping: {},
+      visibility: VisibilityModel.parties,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'formEntry': ArchetypeContract(
+      family: 'formEntry',
+      isBespoke: false,
+      bookkeeping: {},
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'discussionThread': ArchetypeContract(
+      family: 'discussionThread',
+      isBespoke: false,
+      bookkeeping: {'readByFanIds', 'mutedByFanIds'},
+      visibility: VisibilityModel.participants,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'notificationInbox': ArchetypeContract(
+      family: 'notificationInbox',
+      isBespoke: false,
+      bookkeeping: {
+        'dismissedByFanIds',
+        'clickedByFanIds',
+        'impressionedByFanIds',
+        'acknowledgedByFanIds',
+      },
+      visibility: VisibilityModel.recipient,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'paymentCheckout': ArchetypeContract(
+      family: 'paymentCheckout',
+      isBespoke: false,
+      bookkeeping: {},
+      visibility: VisibilityModel.parties,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'statusTimeline': ArchetypeContract(
+      family: 'statusTimeline',
+      isBespoke: false,
+      bookkeeping: {},
+      visibility: VisibilityModel.roles,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+    'table': ArchetypeContract(
+      family: 'table',
+      isBespoke: false,
+      bookkeeping: {},
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
+  };
 
   /// The six families with a dispatcher case in
   /// `part27_engine_native_binding_dispatcher.dart`. Their widgets look

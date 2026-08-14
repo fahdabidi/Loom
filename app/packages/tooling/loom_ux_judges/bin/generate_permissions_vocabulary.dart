@@ -56,6 +56,38 @@ Map<String, Object?> buildVocabulary() {
     };
   }
 
+  // The full per-archetype contract: what the archetype guarantees, as opposed
+  // to what a community declares. The validator reads it today; the workflow
+  // service reads it once it exists.
+  const visibilityNames = {
+    VisibilityModel.roles: 'roles',
+    VisibilityModel.owner: 'owner',
+    VisibilityModel.ownerAndShared: 'owner_and_shared',
+    VisibilityModel.participants: 'participants',
+    VisibilityModel.parties: 'parties',
+    VisibilityModel.recipient: 'recipient',
+  };
+  const enforcementNames = {
+    EnforcementBoundary.clientEngine: 'client_engine',
+    EnforcementBoundary.server: 'server',
+  };
+
+  final contracts = <String, Object?>{};
+  for (final family in (ArchetypeResolver.contracts.keys.toList()..sort())) {
+    final contract = ArchetypeResolver.contracts[family]!;
+    contracts[family] = {
+      'isBespoke': contract.isBespoke,
+      'visibility': visibilityNames[contract.visibility],
+      'enforcement': enforcementNames[contract.enforcement],
+      'allowsCustomActions': contract.allowsCustomActions,
+      'bookkeeping': contract.bookkeeping.toList()..sort(),
+      if (contract.placement.isNotEmpty)
+        'placement': contract.placement.toList()..sort(),
+      if (contract.sharingGrantable.isNotEmpty)
+        'sharingGrantable': contract.sharingGrantable.toList()..sort(),
+    };
+  }
+
   return {
     '_comment': [
       'GENERATED — do not edit by hand.',
@@ -66,7 +98,17 @@ Map<String, Object?> buildVocabulary() {
       'installer (Java), so that the derivation rules defined in',
       'docs/references/reference/permissions.md exist in exactly one place.',
     ],
-    'specVersion': {'envelope': 1, 'experience': 2, 'grammar': 3},
+    'specVersion': 4,
+    'archetypeContracts': {
+      '_comment':
+          'What each archetype guarantees. `bookkeeping` is per-person state the '
+              'archetype maintains itself -- a community declares none of these '
+              'fields and writes no idempotence guard against them. '
+              '`enforcement: client_engine` means the rule is evaluated on the '
+              'device by LocalWorkflowEngineApi and is advisory, not a security '
+              'boundary: there is no workflow service yet.',
+      ...contracts,
+    },
     'bespokeArchetypes': bespoke,
     'genericArchetypes': generic,
     'genericDerivation': {
