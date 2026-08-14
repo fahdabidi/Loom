@@ -428,3 +428,27 @@ binding; a workflow has an archetype only insofar as its bespoke binding gives i
 - an `admin` persona — it is provided by the platform
 
 Roles are declared. Everything else is derived.
+
+### The membership rule is already structurally satisfied — judge it by mechanism, not by name
+
+No fixture grants membership, and none can. The workflow grammar has no effect op that could: the
+complete set in use is `set`, `append`, `appendUnique`, `removeValue`, `createInstance`,
+`transitionRelated`, `branch`, `generateRecurringInstances`, `removeFromTileGrid`. Of the 74 effects
+that assign a persona-shaped key, every one writes a persona into a **field on an instance** — who
+reserved the room, who is holding the tool, who reviewed the request. That records a fact about a row;
+it grants nothing.
+
+Scanning workflow *names* for `join`, `signup` or `membership` finds only false positives, and it has
+already produced two:
+
+- **`soccer-guardian-join-approval`** is player registration, not community joining. Its opening
+  transition is guarded `allowedPersonaIds: ["soccer-guardian"]`, so the actor must already be a
+  guardian in the community before they can start it. `approve-request` is gated on a formula requiring
+  the waiver acknowledged and the fee paid, and its effects create a roster row and a redaction row.
+  Waiver, payment, coach review, roster — a domain process end to end, and exactly the kind this
+  document means to keep as a workflow.
+- **`mosque-volunteer-signup`** is signing up for volunteer shifts. Fully generic, grants nothing.
+
+Both must stay. The rule to apply is: *does any effect grant a role, a membership, or app access?*
+Today nothing can, so the answer is structurally no — and if a future effect op could, that op is what
+needs gating, not the workflow's name.
