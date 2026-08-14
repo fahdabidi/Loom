@@ -63,6 +63,7 @@ invariant a later file assumes you already know.
 | 9 | `docs/references/reference/theming.md`, `docs/references/reference/platform-services.md` | `platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable — always check it before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer. Never fabricate one (AP-6). |
 | 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list before treating a shape as novel. |
 | 11 | `docs/references/reference/permissions.md` | Always — defines the `action` field, which archetypes require it, and the closed action vocabulary for each. Permissions are **derived** from what you author; you never write one. |
+| 11b | `docs/references/archetypes/CONTRACTS.md` | Always — what each archetype **guarantees** as opposed to what you declare: its actions, the per-person bookkeeping it owns, and its visibility model. Then fetch the per-archetype doc (`docs/references/archetypes/<archetype>.md`) for each family you are actually using. |
 | 12 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
 
 ## Scope
@@ -134,6 +135,10 @@ real enum (fetched at step 7) instead.
 12. **Declare `action` on every transition of a bespoke-archetype workflow, and never on a generic one.**
     The six bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
     `searchAiAnswer`, `exportWizard`) each have a **closed** action vocabulary — see
+    Never declare a field an archetype owns. `CONTRACTS.md` (step 11b) lists the per-person bookkeeping
+    each archetype maintains itself — response sets, read/acknowledged/saved/downloaded sets, queues.
+    Declaring one of those, or writing an `actorInList` idempotence guard against it, duplicates logic
+    the archetype already applies and is how the same rule ends up expressed two different ways.
     `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The
     seven generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
     `statusTimeline`, `notificationInbox`, `table`) derive their permissions structurally and must carry

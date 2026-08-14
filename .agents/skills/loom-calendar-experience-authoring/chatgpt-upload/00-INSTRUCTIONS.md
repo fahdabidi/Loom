@@ -164,6 +164,7 @@ product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`e
 | 14 | `19-debugging-validator-responses.md` | Read this **every time** `validateCommunityPackage` returns anything other than a clean pass, before deciding what to do about it. It defines the only two shapes a real response can have, and what to do if what you're looking at doesn't match either. |
 | 15 | `20-solved-patterns.md` | Always, before Step 9.5's traceability table — recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list; several of these shapes were independently reinvented as bugs more than once before being named here. |
 | 16 | `21-permissions.md` | Always — the `action` field and the closed action vocabulary per bespoke archetype. |
+| 17 | `22-archetype-contracts.md` | Always — what each archetype **guarantees** rather than what you declare: its actions, the per-person bookkeeping it owns, and its visibility model. **Never declare a field the archetype owns**, and never write an `actorInList` idempotence guard against one. |
 
 ## The `action` field, and what you must never author
 

@@ -180,7 +180,54 @@ class DocsSyncChecker {
     }
 
     findings.addAll(_checkFixtures(refs, current, specVersion));
+    findings.addAll(_checkArchetypeDocs(refs));
     return DocsSyncReport(findings, docsChecked);
+  }
+
+  /// Every archetype in the generated contract artifact must have a doc.
+  ///
+  /// The gate previously checked that docs were *current*, not that they
+  /// *existed* — so eight archetypes, including the most-used one in the
+  /// corpus, had contracts and no documentation, and nothing noticed until
+  /// someone asked. An archetype an author cannot read about is one they will
+  /// guess at.
+  List<DocsSyncFinding> _checkArchetypeDocs(Directory refs) {
+    final artifact =
+        File('${refs.path}/generated/permissions-vocabulary.json');
+    final dir = Directory('${refs.path}/archetypes');
+    if (!artifact.existsSync() || !dir.existsSync()) return const [];
+
+    final contracts = (jsonDecode(artifact.readAsStringSync())
+            as Map<String, Object?>)['archetypeContracts'] as Map<String, Object?>?;
+    if (contracts == null) return const [];
+
+    final docNames = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.md'))
+        .map((f) => f.uri.pathSegments.last)
+        .toSet();
+
+    final findings = <DocsSyncFinding>[];
+    for (final family in contracts.keys.where((k) => !k.startsWith('_'))) {
+      // documentLibrary -> document-library.md, event-rsvp -> event-rsvp.md
+      final kebab = family
+          .replaceAllMapped(
+            RegExp('(?<=[a-z])(?=[A-Z])'),
+            (_) => '-',
+          )
+          .toLowerCase();
+      if (!docNames.contains('$kebab.md')) {
+        findings.add(DocsSyncFinding(
+          'archetype_doc_missing',
+          'docs/references/archetypes/$kebab.md',
+          'The generated contract declares archetype "$family" but no doc '
+              'describes it. An author cannot read what it guarantees, so they '
+              'will guess.',
+        ));
+      }
+    }
+    return findings;
   }
 
   /// Community packages must declare the current `specVersion` — unless

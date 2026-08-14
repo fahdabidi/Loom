@@ -70,6 +70,15 @@
       ]
     },
     {
+      "path": "archetypes/approval-queue-item.md",
+      "title": "`approvalQueueItem`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
       "path": "archetypes/approval-queue.md",
       "title": "approvalQueue / formEntry + live query list",
       "syncedTo": 4,
@@ -114,12 +123,75 @@
       ]
     },
     {
+      "path": "archetypes/event-rsvp.md",
+      "title": "`event-rsvp`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
+      "path": "archetypes/export-wizard.md",
+      "title": "`exportWizard`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
+      "path": "archetypes/form-entry.md",
+      "title": "`formEntry`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
+      "path": "archetypes/notification-inbox.md",
+      "title": "`notificationInbox`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
       "path": "archetypes/payment-checkout.md",
       "title": "paymentCheckout",
       "syncedTo": 4,
       "status": "current",
       "derivedFrom": [
         "app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart"
+      ]
+    },
+    {
+      "path": "archetypes/search-ai-answer.md",
+      "title": "`searchAiAnswer`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
+      "path": "archetypes/status-timeline.md",
+      "title": "`statusTimeline`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
+      ]
+    },
+    {
+      "path": "archetypes/table.md",
+      "title": "`table`",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": [
+        "docs/references/archetypes/CONTRACTS.md"
       ]
     },
     {
