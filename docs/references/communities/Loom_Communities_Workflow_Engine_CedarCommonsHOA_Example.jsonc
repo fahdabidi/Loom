@@ -599,6 +599,7 @@
         "transitions": [
           {
             "id": "record-open",
+            "action": "open",
             "label": "Mark as read",
             "icon": "menu_book",
             "tone": "primary",
@@ -614,6 +615,7 @@
           },
           {
             "id": "acknowledge-document",
+            "action": "acknowledge",
             "label": "Acknowledge",
             "icon": "verified",
             "tone": "primary",
@@ -630,6 +632,7 @@
           },
           {
             "id": "mark-document-unread",
+            "action": "mark_unread",
             "label": "Mark unread",
             "icon": "mark_email_unread",
             "tone": "secondary",
@@ -646,6 +649,7 @@
           },
           {
             "id": "request-document-access",
+            "action": "request_access",
             "label": "Request access",
             "icon": "lock_open",
             "tone": "secondary",
@@ -661,6 +665,7 @@
           },
           {
             "id": "save-document",
+            "action": "save",
             "label": "Save document",
             "icon": "bookmark_add",
             "tone": "secondary",
@@ -676,6 +681,7 @@
           },
           {
             "id": "remove-saved-document",
+            "action": "unsave",
             "label": "Remove saved",
             "icon": "bookmark_remove",
             "tone": "secondary",
@@ -691,6 +697,7 @@
           },
           {
             "id": "confirm-document-download",
+            "action": "download",
             "label": "Confirm downloaded",
             "icon": "download_done",
             "tone": "secondary",
@@ -706,6 +713,7 @@
           },
           {
             "id": "archive-document",
+            "action": "archive",
             "label": "Archive document",
             "icon": "archive",
             "tone": "destructive",
@@ -715,6 +723,7 @@
           },
           {
             "id": "restore-document",
+            "action": "restore",
             "label": "Restore document",
             "icon": "unarchive",
             "tone": "primary",
@@ -908,6 +917,7 @@
         "transitions": [
           {
             "id": "reserve-facility",
+            "action": "create",
             "label": "Reserve facility",
             "icon": "event_available",
             "tone": "primary",
@@ -930,6 +940,7 @@
           },
           {
             "id": "board-reserve-facility",
+            "action": "create",
             "label": "Reserve for homeowner",
             "icon": "event_available",
             "tone": "primary",
@@ -954,6 +965,7 @@
           // is an explicit audit action, not a claim of automatic state mutation.
           {
             "id": "flag-reservation-conflict",
+            "action": "record_outcome",
             "label": "Flag conflict",
             "icon": "event_busy",
             "tone": "destructive",
@@ -969,6 +981,7 @@
           },
           {
             "id": "revise-conflicted-reservation",
+            "action": "edit",
             "label": "Revise reservation",
             "icon": "edit_calendar",
             "tone": "primary",
@@ -984,6 +997,7 @@
           },
           {
             "id": "board-revise-conflicted-reservation",
+            "action": "edit",
             "label": "Return to open",
             "icon": "edit_calendar",
             "tone": "secondary",
@@ -996,6 +1010,7 @@
           },
           {
             "id": "change-reservation",
+            "action": "edit",
             "label": "Change reservation",
             "icon": "event_repeat",
             "tone": "secondary",
@@ -1012,6 +1027,7 @@
           },
           {
             "id": "board-change-reservation",
+            "action": "edit",
             "label": "Return for changes",
             "icon": "event_repeat",
             "tone": "secondary",
@@ -1025,6 +1041,7 @@
           },
           {
             "id": "cancel-reservation",
+            "action": "cancel",
             "label": "Cancel reservation",
             "icon": "event_busy",
             "tone": "destructive",
@@ -1040,6 +1057,7 @@
           },
           {
             "id": "board-cancel-reservation",
+            "action": "cancel",
             "label": "Board cancel",
             "icon": "event_busy",
             "tone": "destructive",
@@ -1052,6 +1070,7 @@
           },
           {
             "id": "reopen-reservation",
+            "action": "reopen",
             "label": "Reopen request",
             "icon": "restore",
             "tone": "secondary",
@@ -1067,6 +1086,7 @@
           },
           {
             "id": "board-reopen-reservation",
+            "action": "reopen",
             "label": "Board reopen",
             "icon": "restore",
             "tone": "secondary",
@@ -1079,6 +1099,7 @@
           },
           {
             "id": "enable-reservation-reminder",
+            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "notifications_active",
             "tone": "secondary",
@@ -1095,6 +1116,7 @@
           },
           {
             "id": "disable-reservation-reminder",
+            "action": "set_reminder",
             "label": "Remove reminder",
             "icon": "notifications_off",
             "tone": "secondary",
@@ -2469,6 +2491,7 @@
         "transitions": [
           {
             "id": "preview-export",
+            "action": "preview",
             "label": "Preview redactions",
             "icon": "preview",
             "tone": "primary",
@@ -2486,6 +2509,7 @@
           },
           {
             "id": "change-export-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "tune",
             "tone": "secondary",
@@ -2495,6 +2519,7 @@
           },
           {
             "id": "generate-export",
+            "action": "run",
             "label": "Generate export",
             "icon": "archive",
             "tone": "primary",
@@ -2515,6 +2540,7 @@
           },
           {
             "id": "record-platform-verification",
+            "action": "record_outcome",
             "label": "Record checksum verification",
             "icon": "verified",
             "tone": "primary",
@@ -2537,6 +2563,7 @@
           },
           {
             "id": "approve-manual-export-review",
+            "action": "approve_redaction",
             "label": "Approve manual review",
             "icon": "fact_check",
             "tone": "secondary",
@@ -2559,6 +2586,7 @@
           },
           {
             "id": "record-export-failure",
+            "action": "record_outcome",
             "label": "Record failure",
             "icon": "error_outline",
             "tone": "destructive",
@@ -2585,6 +2613,7 @@
           },
           {
             "id": "retry-export",
+            "action": "retry",
             "label": "Retry export",
             "icon": "refresh",
             "tone": "primary",
@@ -2598,6 +2627,7 @@
           },
           {
             "id": "request-export-download",
+            "action": "download",
             "label": "Request export download",
             "icon": "download",
             "tone": "primary",
@@ -2620,6 +2650,7 @@
           // 14, transfer progress is intentionally not gated on either unavailable platform-service value.
           {
             "id": "start-export-transfer",
+            "action": "run",
             "label": "Start transfer",
             "icon": "send",
             "tone": "primary",
@@ -2637,6 +2668,7 @@
           },
           {
             "id": "record-transfer-complete",
+            "action": "record_outcome",
             "label": "Record transfer complete",
             "icon": "cloud_done",
             "tone": "primary",
@@ -2654,6 +2686,7 @@
           },
           {
             "id": "rollback-transfer",
+            "action": "rollback",
             "label": "Request rollback",
             "icon": "settings_backup_restore",
             "tone": "destructive",
@@ -2672,6 +2705,7 @@
           },
           {
             "id": "cancel-export",
+            "action": "cancel",
             "label": "Cancel export",
             "icon": "cancel",
             "tone": "destructive",
@@ -2684,6 +2718,7 @@
           },
           {
             "id": "reopen-export",
+            "action": "retry",
             "label": "Reopen export",
             "icon": "restore",
             "tone": "secondary",

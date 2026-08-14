@@ -82,6 +82,7 @@
         "transitions": [
           {
             "id": "preview-scope",
+            "action": "preview",
             "label": "Preview scope",
             "icon": "preview",
             "tone": "primary",
@@ -102,6 +103,7 @@
           },
           {
             "id": "cancel-preview-draft",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -111,6 +113,7 @@
           },
           {
             "id": "change-preview-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "edit",
             "tone": "secondary",
@@ -120,6 +123,7 @@
           },
           {
             "id": "start-preview-export",
+            "action": "preview",
             "label": "Export",
             "icon": "download",
             "tone": "primary",
@@ -141,6 +145,7 @@
           },
           {
             "id": "start-preview-transfer",
+            "action": "preview",
             "label": "Start transfer",
             "icon": "swap_horiz",
             "tone": "primary",
@@ -162,6 +167,7 @@
           },
           {
             "id": "start-preview-import",
+            "action": "preview",
             "label": "Import data",
             "icon": "upload",
             "tone": "primary",
@@ -183,6 +189,7 @@
           },
           {
             "id": "cancel-preview-ready",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -192,6 +199,7 @@
           },
           {
             "id": "complete-preview-operation",
+            "action": "record_outcome",
             "label": "Confirm complete",
             "icon": "task_alt",
             "tone": "primary",
@@ -209,6 +217,7 @@
           },
           {
             "id": "fail-preview-operation",
+            "action": "record_outcome",
             "label": "Record error",
             "icon": "error_outline",
             "tone": "secondary",
@@ -221,6 +230,7 @@
           },
           {
             "id": "cancel-preview-running",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -230,6 +240,7 @@
           },
           {
             "id": "retry-preview-operation",
+            "action": "retry",
             "label": "Retry",
             "icon": "refresh",
             "tone": "primary",
@@ -247,6 +258,7 @@
           },
           {
             "id": "change-preview-scope-after-error",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "edit",
             "tone": "secondary",
@@ -256,6 +268,7 @@
           },
           {
             "id": "cancel-preview-error",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -265,6 +278,7 @@
           },
           {
             "id": "download-preview-export",
+            "action": "download",
             "label": "Download export",
             "icon": "download",
             "tone": "secondary",
@@ -275,6 +289,7 @@
           },
           {
             "id": "rollback-preview-operation",
+            "action": "rollback",
             "label": "Roll back",
             "icon": "settings_backup_restore",
             "tone": "destructive",
@@ -432,6 +447,7 @@
         "transitions": [
           {
             "id": "start-import-replay",
+            "action": "run",
             "label": "Import data",
             "icon": "restore",
             "tone": "primary",
@@ -452,6 +468,7 @@
           },
           {
             "id": "cancel-import-replay-prepared",
+            "action": "cancel",
             "label": "Cancel replay",
             "icon": "cancel",
             "tone": "destructive",
@@ -463,6 +480,7 @@
           },
           {
             "id": "confirm-import-replay",
+            "action": "run",
             "label": "Confirm replay verified",
             "icon": "task_alt",
             "tone": "primary",
@@ -484,6 +502,7 @@
           },
           {
             "id": "fail-import-replay",
+            "action": "record_outcome",
             "label": "Record validation failure",
             "icon": "error_outline",
             "tone": "secondary",
@@ -499,6 +518,7 @@
           },
           {
             "id": "cancel-import-replay-running",
+            "action": "cancel",
             "label": "Cancel replay",
             "icon": "cancel",
             "tone": "destructive",
@@ -510,6 +530,7 @@
           },
           {
             "id": "retry-import-replay",
+            "action": "retry",
             "label": "Retry replay",
             "icon": "refresh",
             "tone": "primary",
@@ -526,6 +547,7 @@
           },
           {
             "id": "change-replay-source",
+            "action": "configure_scope",
             "label": "Change source",
             "icon": "edit",
             "tone": "secondary",
@@ -535,6 +557,7 @@
           },
           {
             "id": "cancel-import-replay-failed",
+            "action": "cancel",
             "label": "Cancel replay",
             "icon": "cancel",
             "tone": "destructive",
@@ -629,6 +652,7 @@
         "transitions": [
           {
             "id": "preview-protected-redaction",
+            "action": "preview",
             "label": "Preview redaction",
             "icon": "visibility_off",
             "tone": "primary",
@@ -645,6 +669,7 @@
           },
           {
             "id": "cancel-redaction-draft",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -654,6 +679,7 @@
           },
           {
             "id": "confirm-protected-redaction",
+            "action": "approve_redaction",
             "label": "Confirm redaction",
             "icon": "task_alt",
             "tone": "primary",
@@ -670,6 +696,7 @@
           },
           {
             "id": "fail-protected-redaction",
+            "action": "record_outcome",
             "label": "Record validation failure",
             "icon": "error_outline",
             "tone": "secondary",
@@ -680,6 +707,7 @@
           },
           {
             "id": "change-protected-redaction",
+            "action": "configure_scope",
             "label": "Change redaction",
             "icon": "edit",
             "tone": "secondary",
@@ -689,6 +717,7 @@
           },
           {
             "id": "retry-protected-redaction",
+            "action": "retry",
             "label": "Retry preview",
             "icon": "refresh",
             "tone": "primary",
@@ -702,6 +731,7 @@
           },
           {
             "id": "cancel-protected-redaction-preview",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -788,6 +818,7 @@
         "transitions": [
           {
             "id": "lock-schema-listing",
+            "action": "record_outcome",
             "label": "Lock schema scope",
             "icon": "lock",
             "tone": "primary",
@@ -801,6 +832,7 @@
           },
           {
             "id": "retire-schema-listing-editable",
+            "action": "record_outcome",
             "label": "Retire listing",
             "icon": "delete_outline",
             "tone": "destructive",
@@ -810,6 +842,7 @@
           },
           {
             "id": "mark-schema-package-generated",
+            "action": "record_outcome",
             "label": "Mark package generated",
             "icon": "inventory_2",
             "tone": "primary",
@@ -826,6 +859,7 @@
           },
           {
             "id": "retire-schema-listing-locked",
+            "action": "record_outcome",
             "label": "Retire listing",
             "icon": "delete_outline",
             "tone": "destructive",
@@ -913,6 +947,7 @@
         "transitions": [
           {
             "id": "generate-full-bundle",
+            "action": "run",
             "label": "Generate full bundle",
             "icon": "inventory_2",
             "tone": "primary",
@@ -929,6 +964,7 @@
           },
           {
             "id": "cancel-full-bundle-draft",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -938,6 +974,7 @@
           },
           {
             "id": "complete-full-bundle",
+            "action": "record_outcome",
             "label": "Mark generation complete",
             "icon": "task_alt",
             "tone": "primary",
@@ -952,6 +989,7 @@
           },
           {
             "id": "fail-full-bundle",
+            "action": "record_outcome",
             "label": "Record generation error",
             "icon": "error_outline",
             "tone": "secondary",
@@ -965,6 +1003,7 @@
           },
           {
             "id": "cancel-full-bundle-running",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -974,6 +1013,7 @@
           },
           {
             "id": "download-full-bundle",
+            "action": "download",
             "label": "Download full bundle",
             "icon": "download",
             "tone": "primary",
@@ -990,6 +1030,7 @@
           },
           {
             "id": "record-full-bundle-verification-failure",
+            "action": "record_outcome",
             "label": "Record verification failure",
             "icon": "gpp_bad",
             "tone": "secondary",
@@ -1005,6 +1046,7 @@
           },
           {
             "id": "change-full-bundle-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "edit",
             "tone": "secondary",
@@ -1014,6 +1056,7 @@
           },
           {
             "id": "retry-full-bundle",
+            "action": "retry",
             "label": "Retry generation",
             "icon": "refresh",
             "tone": "primary",
@@ -1027,6 +1070,7 @@
           },
           {
             "id": "cancel-full-bundle-error",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -1134,6 +1178,7 @@
         "transitions": [
           {
             "id": "generate-redacted-bundle",
+            "action": "run",
             "label": "Generate redacted bundle",
             "icon": "security",
             "tone": "primary",
@@ -1150,6 +1195,7 @@
           },
           {
             "id": "cancel-redacted-bundle-draft",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -1159,6 +1205,7 @@
           },
           {
             "id": "complete-redacted-bundle",
+            "action": "record_outcome",
             "label": "Mark generation complete",
             "icon": "task_alt",
             "tone": "primary",
@@ -1173,6 +1220,7 @@
           },
           {
             "id": "fail-redacted-bundle",
+            "action": "record_outcome",
             "label": "Record generation error",
             "icon": "error_outline",
             "tone": "secondary",
@@ -1186,6 +1234,7 @@
           },
           {
             "id": "cancel-redacted-bundle-running",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -1195,6 +1244,7 @@
           },
           {
             "id": "download-redacted-bundle",
+            "action": "download",
             "label": "Download redacted bundle",
             "icon": "download",
             "tone": "primary",
@@ -1211,6 +1261,7 @@
           },
           {
             "id": "record-redaction-validation-failure",
+            "action": "record_outcome",
             "label": "Record validation failure",
             "icon": "gpp_bad",
             "tone": "secondary",
@@ -1226,6 +1277,7 @@
           },
           {
             "id": "change-redacted-bundle",
+            "action": "configure_scope",
             "label": "Change redaction",
             "icon": "edit",
             "tone": "secondary",
@@ -1235,6 +1287,7 @@
           },
           {
             "id": "retry-redacted-bundle",
+            "action": "retry",
             "label": "Retry generation",
             "icon": "refresh",
             "tone": "primary",
@@ -1248,6 +1301,7 @@
           },
           {
             "id": "cancel-redacted-bundle-error",
+            "action": "cancel",
             "label": "Cancel",
             "icon": "cancel",
             "tone": "destructive",
@@ -1339,6 +1393,7 @@
         "transitions": [
           {
             "id": "record-checksum-pass",
+            "action": "record_outcome",
             "label": "Record verification pass",
             "icon": "verified",
             "tone": "primary",
@@ -1359,6 +1414,7 @@
           },
           {
             "id": "record-checksum-failure",
+            "action": "record_outcome",
             "label": "Record verification failure",
             "icon": "gpp_bad",
             "tone": "secondary",
@@ -1378,6 +1434,7 @@
           },
           {
             "id": "cancel-checksum-verification",
+            "action": "cancel",
             "label": "Cancel verification",
             "icon": "cancel",
             "tone": "destructive",
@@ -1387,6 +1444,7 @@
           },
           {
             "id": "enable-transfer",
+            "action": "run",
             "label": "Enable transfer",
             "icon": "swap_horiz",
             "tone": "primary",
@@ -1403,6 +1461,7 @@
           },
           {
             "id": "export-checksum-evidence-record",
+            "action": "record_outcome",
             "label": "Export verification record",
             "icon": "file_download",
             "tone": "secondary",
@@ -1418,6 +1477,7 @@
           },
           {
             "id": "retry-checksum-verification",
+            "action": "retry",
             "label": "Retry verification",
             "icon": "refresh",
             "tone": "primary",
@@ -1427,6 +1487,7 @@
           },
           {
             "id": "cancel-checksum-verification-failed",
+            "action": "cancel",
             "label": "Cancel verification",
             "icon": "cancel",
             "tone": "destructive",
@@ -1525,6 +1586,7 @@
         "transitions": [
           {
             "id": "start-provider-transfer",
+            "action": "run",
             "label": "Start transfer",
             "icon": "swap_horiz",
             "tone": "primary",
@@ -1547,6 +1609,7 @@
           },
           {
             "id": "cancel-provider-transfer-draft",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -1556,6 +1619,7 @@
           },
           {
             "id": "submit-transfer-for-verification",
+            "action": "run",
             "label": "Send for provider verification",
             "icon": "send",
             "tone": "primary",
@@ -1569,6 +1633,7 @@
           },
           {
             "id": "fail-provider-transfer",
+            "action": "record_outcome",
             "label": "Record transfer error",
             "icon": "error_outline",
             "tone": "secondary",
@@ -1582,6 +1647,7 @@
           },
           {
             "id": "cancel-provider-transfer-running",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -1591,6 +1657,7 @@
           },
           {
             "id": "provider-accept-transfer",
+            "action": "decide_transfer",
             "label": "Accept transfer",
             "icon": "task_alt",
             "tone": "primary",
@@ -1612,6 +1679,7 @@
           },
           {
             "id": "provider-reject-transfer",
+            "action": "decide_transfer",
             "label": "Reject transfer",
             "icon": "cancel",
             "tone": "secondary",
@@ -1632,6 +1700,7 @@
           },
           {
             "id": "cancel-provider-transfer-awaiting",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -1641,6 +1710,7 @@
           },
           {
             "id": "retry-provider-transfer",
+            "action": "retry",
             "label": "Retry transfer",
             "icon": "refresh",
             "tone": "primary",
@@ -1654,6 +1724,7 @@
           },
           {
             "id": "change-provider-transfer",
+            "action": "configure_scope",
             "label": "Change transfer details",
             "icon": "edit",
             "tone": "secondary",
@@ -1663,6 +1734,7 @@
           },
           {
             "id": "cancel-provider-transfer-failed",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -1803,6 +1875,7 @@
         "transitions": [
           {
             "id": "start-transfer-rollback",
+            "action": "rollback",
             "label": "Roll back transfer",
             "icon": "settings_backup_restore",
             "tone": "primary",
@@ -1824,6 +1897,7 @@
           },
           {
             "id": "mark-rollback-unavailable",
+            "action": "record_outcome",
             "label": "Mark unavailable",
             "icon": "block",
             "tone": "secondary",
@@ -1837,6 +1911,7 @@
           },
           {
             "id": "cancel-transfer-rollback",
+            "action": "cancel",
             "label": "Cancel rollback",
             "icon": "cancel",
             "tone": "destructive",
@@ -1846,6 +1921,7 @@
           },
           {
             "id": "complete-transfer-rollback",
+            "action": "rollback",
             "label": "Confirm rollback complete",
             "icon": "task_alt",
             "tone": "primary",
@@ -1864,6 +1940,7 @@
           },
           {
             "id": "fail-transfer-rollback",
+            "action": "record_outcome",
             "label": "Record rollback failure",
             "icon": "error_outline",
             "tone": "secondary",
@@ -1877,6 +1954,7 @@
           },
           {
             "id": "cancel-transfer-rollback-running",
+            "action": "cancel",
             "label": "Cancel rollback",
             "icon": "cancel",
             "tone": "destructive",
@@ -1886,6 +1964,7 @@
           },
           {
             "id": "retry-transfer-rollback",
+            "action": "retry",
             "label": "Retry rollback",
             "icon": "refresh",
             "tone": "primary",
@@ -1899,6 +1978,7 @@
           },
           {
             "id": "cancel-transfer-rollback-failed",
+            "action": "cancel",
             "label": "Cancel rollback",
             "icon": "cancel",
             "tone": "destructive",

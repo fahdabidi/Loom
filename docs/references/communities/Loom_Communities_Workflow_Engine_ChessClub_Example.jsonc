@@ -61,6 +61,7 @@
         "transitions": [
           {
             "id": "accept-match",
+            "action": "respond",
             "label": "Accept match",
             "icon": "check_circle",
             "tone": "primary",
@@ -83,6 +84,7 @@
           },
           {
             "id": "decline-match",
+            "action": "respond",
             "label": "Decline",
             "icon": "cancel",
             "tone": "secondary",
@@ -96,6 +98,7 @@
           },
           {
             "id": "reschedule-match",
+            "action": "edit",
             "label": "Reschedule",
             "icon": "edit_calendar",
             "tone": "secondary",
@@ -121,6 +124,7 @@
           },
           {
             "id": "suggest-new-time",
+            "action": "propose_change",
             "label": "Suggest new time",
             "icon": "schedule_send",
             "tone": "secondary",
@@ -142,6 +146,7 @@
           },
           {
             "id": "add-reminder",
+            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "notifications_active",
             "tone": "secondary",
@@ -159,6 +164,7 @@
           },
           {
             "id": "record-result",
+            "action": "record_outcome",
             "label": "Record result",
             "icon": "scoreboard",
             "tone": "primary",
@@ -192,6 +198,7 @@
           },
           {
             "id": "cancel-meetup",
+            "action": "cancel",
             "label": "Cancel meetup",
             "icon": "event_busy",
             "tone": "destructive",
@@ -824,6 +831,7 @@
         "transitions": [
           {
             "id": "generate-export",
+            "action": "run",
             "label": "Generate export",
             "icon": "archive",
             "tone": "primary",
@@ -842,6 +850,7 @@
           },
           {
             "id": "rollback-export",
+            "action": "rollback",
             "label": "Roll back",
             "icon": "settings_backup_restore",
             "tone": "destructive",
@@ -857,6 +866,7 @@
           },
           {
             "id": "change-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "tune",
             "tone": "secondary",
@@ -870,6 +880,7 @@
           },
           {
             "id": "cancel-export",
+            "action": "cancel",
             "label": "Cancel export",
             "icon": "cancel",
             "tone": "destructive",
@@ -1181,6 +1192,7 @@
         "transitions": [
           {
             "id": "record-embedded-open",
+            "action": "open",
             "label": "Record embedded open",
             "icon": "open_in_browser",
             "tone": "secondary",
@@ -1193,6 +1205,7 @@
           },
           {
             "id": "record-external-open",
+            "action": "open",
             "label": "Record external open",
             "icon": "open_in_new",
             "tone": "secondary",
@@ -1205,6 +1218,7 @@
           },
           {
             "id": "record-download",
+            "action": "download",
             "label": "Record download",
             "icon": "download",
             "tone": "primary",
@@ -1218,6 +1232,7 @@
           },
           {
             "id": "archive-document",
+            "action": "archive",
             "label": "Archive document",
             "icon": "archive",
             "tone": "destructive",

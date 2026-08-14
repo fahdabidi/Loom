@@ -1818,6 +1818,7 @@
         "transitions": [
           {
             "id": "save-schedule-update",
+            "action": "edit",
             "label": "Save schedule update",
             "icon": "save",
             "tone": "primary",
@@ -1839,6 +1840,7 @@
           },
           {
             "id": "mark-rescheduled",
+            "action": "edit",
             "label": "Mark rescheduled",
             "icon": "event_repeat",
             "tone": "secondary",
@@ -1860,6 +1862,7 @@
           },
           {
             "id": "send-next-reminder",
+            "action": "set_reminder",
             "label": "Send next guardian reminder",
             "icon": "notifications_active",
             "tone": "primary",
@@ -1890,6 +1893,7 @@
           },
           {
             "id": "request-calendar-sync",
+            "action": "set_reminder",
             "label": "Request calendar sync",
             "icon": "calendar_month",
             "tone": "secondary",
@@ -1917,6 +1921,7 @@
           },
           {
             "id": "cancel-practice",
+            "action": "cancel",
             "label": "Cancel practice",
             "icon": "event_busy",
             "tone": "destructive",
@@ -2372,6 +2377,7 @@
         "transitions": [
           {
             "id": "mark-document-read",
+            "action": "mark_read",
             "label": "Mark opened and read",
             "icon": "visibility",
             "tone": "primary",
@@ -2395,6 +2401,7 @@
           },
           {
             "id": "acknowledge-latest-version",
+            "action": "acknowledge",
             "label": "Acknowledge waiver",
             "icon": "fact_check",
             "tone": "primary",
@@ -2434,6 +2441,7 @@
           },
           {
             "id": "request-document-access",
+            "action": "request_access",
             "label": "Request access",
             "icon": "lock_open",
             "tone": "secondary",
@@ -2455,6 +2463,7 @@
           },
           {
             "id": "grant-document-access",
+            "action": "grant_access",
             "label": "Grant access",
             "icon": "admin_panel_settings",
             "tone": "primary",
@@ -2476,6 +2485,7 @@
           },
           {
             "id": "withdraw-access-request",
+            "action": "withdraw_access_request",
             "label": "Withdraw access request",
             "icon": "undo",
             "tone": "secondary",
@@ -2488,6 +2498,7 @@
           },
           {
             "id": "mark-document-unread",
+            "action": "mark_unread",
             "label": "Mark unread",
             "icon": "mark_email_unread",
             "tone": "secondary",
@@ -2510,6 +2521,7 @@
           },
           {
             "id": "prepare-new-document-version",
+            "action": "upload",
             "label": "Prepare new version",
             "icon": "upgrade",
             "tone": "secondary",
@@ -2533,6 +2545,7 @@
           },
           {
             "id": "ask-coach-about-document",
+            "action": "request_follow_up",
             "label": "Ask coach",
             "icon": "contact_support",
             "tone": "secondary",
@@ -2554,6 +2567,7 @@
           },
           {
             "id": "archive-document",
+            "action": "archive",
             "label": "Archive document",
             "icon": "archive",
             "tone": "destructive",
@@ -2967,6 +2981,7 @@
         "transitions": [
           {
             "id": "select-export-scope",
+            "action": "configure_scope",
             "label": "Select export scope",
             "icon": "checklist",
             "tone": "primary",
@@ -2992,6 +3007,7 @@
           },
           {
             "id": "change-export-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "edit",
             "tone": "secondary",
@@ -3017,6 +3033,7 @@
           },
           {
             "id": "review-redaction-preview",
+            "action": "preview",
             "label": "Confirm redaction preview",
             "icon": "privacy_tip",
             "tone": "primary",
@@ -3042,6 +3059,7 @@
           },
           {
             "id": "start-export",
+            "action": "run",
             "label": "Start export",
             "icon": "upload_file",
             "tone": "primary",
@@ -3065,6 +3083,7 @@
           },
           {
             "id": "record-export-ready",
+            "action": "record_outcome",
             "label": "Record export ready",
             "icon": "task_alt",
             "tone": "primary",
@@ -3091,6 +3110,7 @@
           },
           {
             "id": "mark-export-failed",
+            "action": "record_outcome",
             "label": "Record export failure",
             "icon": "error",
             "tone": "destructive",
@@ -3116,6 +3136,7 @@
           },
           {
             "id": "cancel-export",
+            "action": "cancel",
             "label": "Cancel export",
             "icon": "cancel",
             "tone": "destructive",
@@ -3136,6 +3157,7 @@
           },
           {
             "id": "retry-export",
+            "action": "retry",
             "label": "Retry export",
             "icon": "refresh",
             "tone": "primary",
@@ -3160,6 +3182,7 @@
           },
           {
             "id": "record-download",
+            "action": "record_outcome",
             "label": "Record download",
             "icon": "download",
             "tone": "secondary",
@@ -3181,6 +3204,7 @@
           },
           {
             "id": "rollback-export",
+            "action": "rollback",
             "label": "Roll back export",
             "icon": "settings_backup_restore",
             "tone": "destructive",

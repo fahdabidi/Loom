@@ -82,6 +82,7 @@
         "transitions": [
           {
             "id": "make-recurring",
+            "action": "edit",
             "label": "Repeat this event",
             "icon": "event_repeat",
             "tone": "secondary",
@@ -122,6 +123,7 @@
           },
           {
             "id": "cancel-event",
+            "action": "cancel",
             "label": "Cancel event",
             "icon": "cancel",
             "tone": "destructive",
@@ -812,6 +814,7 @@
         "transitions": [
           {
             "id": "request-loan",
+            "action": "request",
             "label": "Request loan",
             "icon": "arrow_forward",
             "tone": "primary",
@@ -882,6 +885,7 @@
           },
           {
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "queue",
             "tone": "secondary",
@@ -905,6 +909,7 @@
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
@@ -927,6 +932,7 @@
           },
           {
             "id": "confirm-pickup",
+            "action": "take_custody",
             "label": "Confirm pickup",
             "icon": "handshake",
             "tone": "primary",
@@ -955,6 +961,7 @@
           },
           {
             "id": "decline-loan",
+            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel_presentation",
             "tone": "secondary",
@@ -993,6 +1000,7 @@
           },
           {
             "id": "cancel-loan",
+            "action": "withdraw_request",
             "label": "Cancel loan",
             "icon": "undo",
             "tone": "secondary",
@@ -1031,6 +1039,7 @@
           },
           {
             "id": "return-item",
+            "action": "return",
             "label": "Return item",
             "icon": "assignment_return",
             "tone": "primary",
@@ -1076,6 +1085,7 @@
           },
           {
             "id": "pause-listing",
+            "action": "pause_listing",
             "label": "Pause listing",
             "icon": "pause_circle_outline",
             "tone": "secondary",
@@ -1094,6 +1104,7 @@
           },
           {
             "id": "resume-listing",
+            "action": "list_item",
             "label": "Resume listing",
             "icon": "play_circle_outline",
             "tone": "secondary",
@@ -1116,6 +1127,7 @@
           },
           {
             "id": "mark-damaged",
+            "action": "report_issue",
             "label": "Mark damaged",
             "icon": "build_circle",
             "tone": "secondary",
@@ -1143,6 +1155,7 @@
           },
           {
             "id": "report-lost",
+            "action": "report_issue",
             "label": "Report lost",
             "icon": "report_problem",
             "tone": "destructive",
@@ -1175,6 +1188,7 @@
           },
           {
             "id": "report-issue",
+            "action": "report_issue",
             "label": "Report issue",
             "icon": "feedback",
             "tone": "secondary",
@@ -1197,6 +1211,7 @@
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
@@ -1215,6 +1230,7 @@
           },
           {
             "id": "retire-lost-item",
+            "action": "delist",
             "label": "Retire lost item",
             "icon": "delete_forever",
             "tone": "destructive",
@@ -1491,6 +1507,7 @@
         "transitions": [
           {
             "id": "claim-giveaway",
+            "action": "claim",
             "label": "Claim giveaway",
             "icon": "volunteer_activism",
             "tone": "primary",
@@ -1538,6 +1555,7 @@
           },
           {
             "id": "pause-giveaway",
+            "action": "pause_listing",
             "label": "Pause listing",
             "icon": "pause_circle_outline",
             "tone": "secondary",
@@ -1556,6 +1574,7 @@
           },
           {
             "id": "resume-giveaway",
+            "action": "list_item",
             "label": "Resume listing",
             "icon": "play_circle_outline",
             "tone": "secondary",
@@ -1578,6 +1597,7 @@
           },
           {
             "id": "delist-giveaway",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
@@ -1794,6 +1814,7 @@
         "transitions": [
           {
             "id": "open-redaction-preview",
+            "action": "preview",
             "label": "Review redaction preview",
             "icon": "policy",
             "tone": "primary",
@@ -1807,6 +1828,7 @@
           },
           {
             "id": "approve-redaction",
+            "action": "approve_redaction",
             "label": "Approve redaction",
             "icon": "verified_user",
             "tone": "primary",
@@ -1826,6 +1848,7 @@
           },
           {
             "id": "start-export",
+            "action": "run",
             "label": "Export",
             "icon": "file_download",
             "tone": "primary",
@@ -1843,6 +1866,7 @@
           },
           {
             "id": "start-transfer",
+            "action": "run",
             "label": "Start transfer",
             "icon": "send_to_mobile",
             "tone": "primary",
@@ -1860,6 +1884,7 @@
           },
           {
             "id": "start-import",
+            "action": "run",
             "label": "Import data",
             "icon": "upload_file",
             "tone": "primary",
@@ -1877,6 +1902,7 @@
           },
           {
             "id": "complete-operation",
+            "action": "record_outcome",
             "label": "Confirm completion",
             "icon": "task_alt",
             "tone": "primary",
@@ -1892,6 +1918,7 @@
           },
           {
             "id": "fail-operation",
+            "action": "record_outcome",
             "label": "Record export error",
             "icon": "error_outline",
             "tone": "secondary",
@@ -1914,6 +1941,7 @@
           },
           {
             "id": "retry-export",
+            "action": "retry",
             "label": "Retry",
             "icon": "refresh",
             "tone": "primary",
@@ -1929,6 +1957,7 @@
           },
           {
             "id": "rollback-export",
+            "action": "rollback",
             "label": "Rollback",
             "icon": "settings_backup_restore",
             "tone": "secondary",
@@ -1945,6 +1974,7 @@
           },
           {
             "id": "change-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "tune",
             "tone": "secondary",
@@ -1960,6 +1990,7 @@
           },
           {
             "id": "download-export",
+            "action": "download",
             "label": "Download export",
             "icon": "download",
             "tone": "primary",
@@ -1980,6 +2011,7 @@
           },
           {
             "id": "cancel-transfer",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",

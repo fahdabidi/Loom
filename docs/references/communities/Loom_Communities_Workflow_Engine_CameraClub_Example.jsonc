@@ -87,6 +87,7 @@
         "transitions": [
           {
             "id": "cancel-walk",
+            "action": "cancel",
             "label": "Cancel walk",
             "icon": "cancel",
             "tone": "destructive",
@@ -465,6 +466,7 @@
         "transitions": [
           {
             "id": "request-loan",
+            "action": "request",
             "label": "Request loan",
             "icon": "front_hand",
             "tone": "primary",
@@ -481,6 +483,7 @@
           },
           {
             "id": "approve-loan",
+            "action": "decide_request",
             "label": "Approve request",
             "icon": "check_circle",
             "tone": "primary",
@@ -504,6 +507,7 @@
           },
           {
             "id": "decline-loan",
+            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel",
             "tone": "secondary",
@@ -520,6 +524,7 @@
           },
           {
             "id": "cancel-request",
+            "action": "withdraw_request",
             "label": "Cancel request",
             "icon": "undo",
             "tone": "secondary",
@@ -536,6 +541,7 @@
           },
           {
             "id": "mark-picked-up",
+            "action": "take_custody",
             "label": "Confirm pickup",
             "icon": "inventory_2",
             "tone": "primary",
@@ -551,6 +557,7 @@
           },
           {
             "id": "return-gear-holder",
+            "action": "return",
             "label": "Return gear",
             "icon": "assignment_return",
             "tone": "primary",
@@ -571,6 +578,7 @@
           },
           {
             "id": "return-gear-owner",
+            "action": "return",
             "label": "Mark returned",
             "icon": "assignment_turned_in",
             "tone": "secondary",
@@ -591,6 +599,7 @@
           },
           {
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "groups",
             "tone": "secondary",
@@ -607,6 +616,7 @@
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "groups",
             "tone": "secondary",
@@ -619,6 +629,7 @@
           },
           {
             "id": "claim-giveaway",
+            "action": "claim",
             "label": "Claim giveaway",
             "icon": "redeem",
             "tone": "primary",
@@ -635,6 +646,7 @@
           },
           {
             "id": "report-issue",
+            "action": "report_issue",
             "label": "Report issue",
             "icon": "report_problem",
             "tone": "secondary",
@@ -651,6 +663,7 @@
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",

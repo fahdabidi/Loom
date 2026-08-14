@@ -176,6 +176,7 @@
         "transitions": [
           {
             "id": "cancel-event",
+            "action": "cancel",
             "label": "Cancel event",
             "icon": "cancel",
             "tone": "destructive",
@@ -190,6 +191,7 @@
             // "seriesId == null" formula guard self-removes this button after it fires once, since a
             // series can only be created from its anchor a single time.
             "id": "make-recurring",
+            "action": "edit",
             "label": "Make recurring",
             "icon": "event_repeat",
             "tone": "secondary",
@@ -647,6 +649,7 @@
         "transitions": [
           {
             "id": "rsvp-going",
+            "action": "respond",
             "label": "I'm going",
             "icon": "event_available",
             "tone": "primary",
@@ -662,6 +665,7 @@
           },
           {
             "id": "rsvp-withdraw",
+            "action": "withdraw_response",
             "label": "Can't make it",
             "icon": "event_busy",
             "tone": "secondary",
@@ -677,6 +681,7 @@
           },
           {
             "id": "cancel-tournament",
+            "action": "cancel",
             "label": "Cancel tournament",
             "icon": "cancel",
             "tone": "destructive",
@@ -789,6 +794,7 @@
         "transitions": [
           {
             "id": "cast-vote",
+            "action": "vote",
             "label": "Vote",
             "icon": "how_to_vote",
             "tone": "primary",
@@ -822,6 +828,7 @@
           },
           {
             "id": "close-vote",
+            "action": "close",
             "label": "Close vote",
             "icon": "how_to_vote_outlined",
             "tone": "primary",
@@ -1015,6 +1022,7 @@
         "transitions": [
           {
             "id": "borrow",
+            "action": "request",
             "label": "Request loan",
             "icon": "arrow_forward",
             "tone": "primary",
@@ -1037,6 +1045,7 @@
             // Allowed whether or not the item is currently out: queue-behind-a-loan (common) and
             // reserve-ahead on a high-demand item that's technically free (also valid).
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "add_circle_outline",
             "tone": "secondary",
@@ -1052,6 +1061,7 @@
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
@@ -1067,6 +1077,7 @@
           },
           {
             "id": "return",
+            "action": "return",
             "label": "Return",
             "icon": "keyboard_return",
             "tone": "primary",
@@ -1084,6 +1095,7 @@
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
@@ -1146,6 +1158,7 @@
         "transitions": [
           {
             "id": "claim",
+            "action": "claim",
             "label": "Claim giveaway",
             "icon": "check_circle",
             "tone": "primary",
@@ -1218,6 +1231,7 @@
         "transitions": [
           {
             "id": "request-borrow",
+            "action": "request",
             "label": "Request to borrow",
             "icon": "pan_tool_alt",
             "tone": "primary",
@@ -1237,6 +1251,7 @@
           },
           {
             "id": "approve-request",
+            "action": "decide_request",
             "label": "Approve request",
             "icon": "check_circle",
             "tone": "primary",
@@ -1255,6 +1270,7 @@
           },
           {
             "id": "decline-request",
+            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel",
             "tone": "secondary",
@@ -1267,6 +1283,7 @@
           },
           {
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "add_circle_outline",
             "tone": "secondary",
@@ -1285,6 +1302,7 @@
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
@@ -1300,6 +1318,7 @@
           },
           {
             "id": "return-game",
+            "action": "return",
             "label": "Return",
             "icon": "keyboard_return",
             "tone": "primary",
@@ -1321,6 +1340,7 @@
           },
           {
             "id": "renew",
+            "action": "renew",
             "label": "Renew loan",
             "icon": "update",
             "tone": "secondary",
@@ -1338,6 +1358,7 @@
           },
           {
             "id": "report-issue",
+            "action": "report_issue",
             "label": "Report an issue",
             "icon": "report_problem",
             "tone": "destructive",
@@ -1353,6 +1374,7 @@
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist my game",
             "icon": "delete_outline",
             "tone": "destructive",
