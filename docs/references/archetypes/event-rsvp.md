@@ -40,23 +40,51 @@ escalation hidden inside a naming decision.
 off for everyone; `cancel-rsvp` withdraws one person's attendance. Getting these backwards grants a
 member the power to cancel the event.
 
-## 2. Bookkeeping the archetype owns
+## 2. Responses are rows, not arrays
 
-| Field | Maintained by |
+**The response-row shape is canonical.** An event's responses live in a separate workflow named by the
+event binding's `responseTable.workflowType`, one instance per member per event, whose **state is the
+answer**: `pending`, `going`, `maybe`, `declined`, `waitlisted`.
+
+```jsonc
+"responseTable": { "workflowType": "garden-event-rsvp-response",
+                   "eventField": "eventId", "pendingStates": ["pending"] }
+```
+
+A `respond` transition moves that row between response states. **Exclusivity is inherent** — a row has
+exactly one state, so a member cannot be counted in two sets by construction.
+
+### Why this replaced the array shape
+
+An earlier draft of this contract listed five per-person arrays (`goingFanIds`, `maybeFanIds`,
+`notGoingFanIds`, `waitlistFanIds`, `reminderFanIds`) as archetype-owned, and justified it by claiming
+nothing enforced exclusivity. **Measuring the corpus disproved that claim**, and it is corrected here
+rather than quietly dropped:
+
+| Shape | Communities | Exclusivity |
+|---|---|---|
+| Response rows | Camera Club, Chess Club, Garden Club, Book Club, Tabletop, Riverside | inherent |
+| Arrays | Masjid Nur | correct, hand-written — 4 effects per transition |
+| Arrays | Tabletop `tournament-event` | **genuinely missing** |
+
+So the defect was one workflow in one community, not a systemic flaw.
+
+The real problem with arrays is different and fatal to archetype ownership: **`respond` maps to three
+different arrays depending on the transition** (`rsvp-going` → `goingPersonaIds`, `rsvp-maybe` →
+`maybePersonaIds`, and so on). The archetype cannot tell which set to fill from the action alone, so
+"the archetype owns the response sets" is not implementable in that shape. Rows remove the ambiguity
+instead of encoding it, and make Tabletop's missing-exclusivity bug unrepresentable.
+
+### What the archetype owns
+
+| Owned | Meaning |
 |---|---|
-| `goingFanIds` | `respond` |
-| `maybeFanIds` | `respond` |
-| `notGoingFanIds` | `respond` |
-| `waitlistFanIds` | `join_waitlist` |
-| `reminderFanIds` | `set_reminder` |
+| the response row's lifecycle | one row per member per event, created on first response |
+| response state transitions | `respond` and `join_waitlist` move the row; a row has one state |
+| `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous |
 
-**`respond` moves a person between the three response sets atomically.** That is a correctness
-property, not a convenience: today each community writes three separate transitions, each with its own
-`actorInList` guard, and nothing enforces that a person appears in exactly one set. A member who
-responds "going" then "maybe" can end up counted twice, inflating capacity and starving the waitlist.
-
-Counts, capacity remaining, and "is full" derive from these. A community never stores them — a stored
-count and its underlying list *will* drift.
+Counts, capacity remaining and "is full" **derive** from the rows. A community never stores them: a
+stored count and the rows it summarises will drift.
 
 ## 3. Visibility
 
@@ -67,14 +95,13 @@ A public community calendar and a board-only facility reservation are both `even
 
 ## 4. Response rows
 
-A community may hold per-member responses in a separate workflow named by
+Per-member responses live in a separate workflow named by
 `renderBindings[].responseTable.workflowType`. That workflow inherits this archetype
 (`permissions.md` §6 step 3b) even though it declares no bindings of its own.
 
-Five communities use this shape. **Under this contract it becomes optional**, because the archetype now
-owns the bookkeeping the response table existed to hold. It remains supported: a community that wants
-one row per member per event — to carry a dietary note or a comment alongside the response — still
-declares one.
+**This shape is required, not optional** — see §2. Six of eight communities already use it. It also
+carries what arrays never could: a row can hold a dietary note or a comment alongside the response,
+because it is a row rather than a membership flag.
 
 > Before step 3b existed, those workflows had no archetype and derived **no permission at all** —
 > 26 transitions across 5 communities, including `respond-going`, the single most common member action

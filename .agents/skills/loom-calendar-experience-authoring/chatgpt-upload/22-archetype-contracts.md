@@ -140,10 +140,16 @@ Used by 8 communities — the most widely used archetype.
 **Actions (11):** `view` · `create` · `edit` · `cancel` · `reopen` · `respond` · `withdraw_response` ·
 `join_waitlist` · `set_reminder` · `propose_change` · `record_outcome`
 
-**Bookkeeping:** `goingFanIds`, `maybeFanIds`, `notGoingFanIds`, `waitlistFanIds`, `reminderFanIds`.
-Five arrays the corpus declares by hand, each paired with an `actorInList` idempotence guard the author
-also writes. Both become archetype-owned: `respond` moves a person between the three response sets
-atomically, which is a correctness property no community should be re-implementing.
+**Bookkeeping:** the **response row** — one instance per member per event, whose state is the answer.
+`respond` moves that row between response states, so exclusivity is inherent rather than enforced.
+Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
+
+> **Corrected 2026-08-14.** An earlier draft listed five per-person arrays here and claimed nothing
+> enforced exclusivity. Measuring the corpus disproved it: six of eight communities already use response
+> rows (inherent), Masjid Nur's arrays are hand-written correctly, and only Tabletop's `tournament-event`
+> genuinely lacks it. The real blocker is different — `respond` maps to three different arrays depending
+> on the transition, so the archetype cannot tell which set to fill from the action alone. Rows remove
+> that ambiguity instead of encoding it. See [`event-rsvp.md`](./event-rsvp.md) §2.
 
 **Visibility:** `roles` + `owner`.
 
