@@ -16,7 +16,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:loom_ux_judges/src/permissions/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:test/test.dart';
 
 File _permissionsDoc() {

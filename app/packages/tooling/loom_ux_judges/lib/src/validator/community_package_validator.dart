@@ -1,4 +1,4 @@
-import 'package:loom_ux_judges/src/permissions/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 

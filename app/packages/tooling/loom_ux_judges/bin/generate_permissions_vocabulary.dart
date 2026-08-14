@@ -22,7 +22,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:loom_ux_judges/src/permissions/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 
 /// Repo-relative output path.
 const outputPath = 'docs/references/generated/permissions-vocabulary.json';
@@ -91,7 +91,7 @@ Map<String, Object?> buildVocabulary() {
   return {
     '_comment': [
       'GENERATED — do not edit by hand.',
-      'Source: app/packages/tooling/loom_ux_judges/lib/src/permissions/archetype_resolver.dart',
+      'Source: app/packages/core/loom_workflow_engine/lib/src/archetypes/archetype_resolver.dart',
       'Regenerate: dart run bin/generate_permissions_vocabulary.dart',
       '',
       'Consumed by the community-package validator (Dart) and the App Access',
