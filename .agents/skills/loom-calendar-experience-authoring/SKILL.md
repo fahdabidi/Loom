@@ -1,6 +1,6 @@
 ---
 name: loom-calendar-experience-authoring
-description: Author the JSON for a Loom Communities experience using only docs/references as source material, restricted to the 13 archetypes confirmed real in docs/references/archetypes/README.md (event-rsvp, votePoll, equipment-loan, paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox, table, documentLibrary, searchAiAnswer, exportWizard — the last 4 promoted 2026-08-11 and fully implemented, registry+dispatch+widget, 2026-08-12; searchAiAnswer/exportWizard each still carry one real platform-service field gap, see "searchAiAnswer/exportWizard's platform-service gaps" below). Originally scoped to Calendar/event-RSVP only (2026-08-04); broadened 2026-08-09 once every other real archetype was confirmed to already have a canonical pattern in docs/references/guide/03-common-patterns.md; broadened again 2026-08-11 for 4 more archetypes, implemented 2026-08-12. This is the ONLY sanctioned way to author or edit real community JSON in this repo — never hand-author community *.jsonc content directly, even for a small, well-understood change. A narrow, portable subset of the full using-loom-to-build-an-extension skill — deliberately does NOT use that skill's components/card-surfaces/* material, which uses a different, incompatible vocabulary from the real cardSurfaceFamily enum (see "CardSurfaces vocabulary trap" below). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
+description: Author the JSON for a Loom Communities experience using only docs/references as source material, restricted to the 13 archetypes confirmed real in docs/references/archetypes/README.md (event-rsvp, votePoll, equipment-loan, paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox, table, documentLibrary, searchAiAnswer, exportWizard — the last 4 promoted 2026-08-11 and fully implemented, registry+dispatch+widget, 2026-08-12; searchAiAnswer/exportWizard each still carry one real platform-service field gap, see "searchAiAnswer/exportWizard's platform-service gaps" below). Originally scoped to Calendar/event-RSVP only (2026-08-04); broadened 2026-08-09 once every other real archetype was confirmed to already have a canonical pattern in docs/references/guide/03-common-patterns.md; broadened again 2026-08-11 for 4 more archetypes, implemented 2026-08-12. This is the ONLY sanctioned way to author or edit real community JSON in this repo — never hand-author community *.jsonc content directly, even for a small, well-understood change. **It must be dispatched via `data/call_skill_authoring_agent.sh` (Codex CLI, zero repo access).** Authoring community JSON from an agent with direct filesystem access to this repo was removed 2026-08-14 and is not permitted: such an agent reads the working tree rather than published docs, which defeats the property this Skill exists to prove. A narrow, portable subset of the full using-loom-to-build-an-extension skill — deliberately does NOT use that skill's components/card-surfaces/* material, which uses a different, incompatible vocabulary from the real cardSurfaceFamily enum (see "CardSurfaces vocabulary trap" below). Provider-neutral by construction — the same reference material is exported as a standalone upload bundle for LLMs with no repo/tool access, such as a ChatGPT session.
 ---
 
 # Loom Calendar Experience Authoring
@@ -46,20 +46,36 @@ LLM agent... not a human tutorial" — see its own
 [`README.md`](../../../docs/references/README.md)): complete enumerations, explicit invariants, and a
 load-order table.
 
-## Three channels, one source of truth
+## Two channels, one source of truth
 
 This Skill is dispatched the same way regardless of who's running it — read `docs/references` (plus this
-bundle), author against the target spec, self-check, report. Three channels are proven working as of
-2026-08-11:
+bundle), author against the target spec, self-check, report.
 
-1. **In-repo, full access** — a Claude Code `Agent` tool dispatch (or an equivalent session with real
-   filesystem/tool access to this repo) reading `docs/references/**` directly off disk. Fastest to iterate,
-   used for most of the 11 real communities under `docs/references/communities/`.
-2. **Zero-tool-access external provider** — the [`chatgpt-upload/`](./chatgpt-upload) bundle (20 files),
+> ## ⛔ Direct repo access is not a valid authoring path
+>
+> **Removed 2026-08-14 by explicit user instruction.** A third channel used to exist: a Claude Code
+> `Agent` tool dispatch reading `docs/references/**` directly off disk. It is **no longer permitted**,
+> and no community JSON may be authored that way.
+>
+> **Why it was removed.** An agent with filesystem access reads the *working tree* — including
+> uncommitted edits, half-finished spec changes, and context the dispatching session happens to have
+> left lying around. That silently defeats the property both remaining channels exist to prove: that
+> `docs/references/**`, **as published**, is sufficient to author a correct package. A channel that can
+> paper over a documentation gap with local state cannot detect that the gap exists.
+>
+> It was also faster and more convenient, which is exactly why it got used by default and why the
+> substitution went unnoticed for a whole authoring pass. Convenience is the failure mode here, not a
+> mitigation.
+>
+> **If you are an agent with repo access and you are about to edit a `*.jsonc` under
+> `docs/references/communities/`: stop.** Dispatch `data/call_skill_authoring_agent.sh` instead.
+
+1. **Zero-tool-access external provider** — the [`chatgpt-upload/`](./chatgpt-upload) bundle (20 files),
    uploaded as-is to a provider with no repo access and no code execution (proven end-to-end against a
    ChatGPT Custom GPT, see "Status" above). Everything the Skill needs must be reachable by *reading docs
    alone* — the whole point is testing whether documentation-as-interface is sufficient.
-3. **Zero-repo-access, live GitHub fetch (Codex CLI)** — `data/call_skill_authoring_agent.sh` dispatches
+2. **Zero-repo-access, live GitHub fetch (Codex CLI)** — **the channel for authoring real community
+   JSON in this repo.** `data/call_skill_authoring_agent.sh` dispatches
    Codex CLI (profile `gpt5_6_sol_xhigh`, i.e. GPT-5.6-Sol at xhigh reasoning) with its working root pointed
    at an empty scratch directory outside this repo (`-C`, no `--add-dir`, `--skip-git-repo-check`) — this
    emulates the zero-tool-access provider's isolation, but with GitHub read access instead of a pre-attached
@@ -75,7 +91,7 @@ bundle), author against the target spec, self-check, report. Three channels are 
    channel's own self-report of validity as the final word.
 
 Every edit to `docs/references/**` that changes authoring behavior must be mirrored into `chatgpt-upload/`
-(see that folder's own section below) — channels 2 and 3 both depend on it, deliberately kept in lockstep
+(see that folder's own section below) — both channels depend on it, deliberately kept in lockstep
 rather than left to drift.
 
 ## Why this exists

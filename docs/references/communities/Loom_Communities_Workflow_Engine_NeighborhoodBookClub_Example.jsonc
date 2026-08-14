@@ -117,10 +117,10 @@
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "close-vote", "action": "close", "label": "Close vote", "icon": "how_to_vote", "tone": "primary",
+          { "id": "close-vote", "label": "Close vote", "icon": "how_to_vote", "tone": "primary",
             "from": ["open"], "to": "closed",
             "guard": { "allowedPersonaIds": ["book-organizer"] } },
-          { "id": "cancel-vote", "action": "close", "label": "Cancel ballot", "icon": "block", "tone": "destructive",
+          { "id": "cancel-vote", "label": "Cancel ballot", "icon": "block", "tone": "destructive",
             "from": ["open"], "to": "cancelled",
             "guard": { "allowedPersonaIds": ["book-organizer"] } }
         ],
@@ -222,10 +222,10 @@
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "cancel-meeting", "action": "cancel", "label": "Cancel meeting", "icon": "event_busy", "tone": "destructive",
+          { "id": "cancel-meeting", "label": "Cancel meeting", "icon": "event_busy", "tone": "destructive",
             "from": ["open"], "to": "cancelled",
             "guard": { "allowedPersonaIds": ["book-organizer"] } },
-          { "id": "make-recurring", "action": "edit", "label": "Make recurring", "icon": "repeat", "tone": "secondary",
+          { "id": "make-recurring", "label": "Make recurring", "icon": "repeat", "tone": "secondary",
             "from": ["open"], "to": null,
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "inputs": {
@@ -302,25 +302,25 @@
           "waitlisted": { "label": "Waitlisted", "tone": "warning" }
         },
         "transitions": [
-          { "id": "respond-going", "action": "respond", "label": "Going", "icon": "event_available", "tone": "primary",
+          { "id": "respond-going", "label": "Going", "icon": "event_available", "tone": "primary",
             "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
               "relatedAggregate": { "workflowType": "book-meeting-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" }, "op": "count", "comparator": "<",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" } } } },
-          { "id": "respond-maybe", "action": "respond", "label": "Maybe", "icon": "help_outline", "tone": "secondary",
+          { "id": "respond-maybe", "label": "Maybe", "icon": "help_outline", "tone": "secondary",
             "from": ["pending", "going", "declined", "waitlisted"], "to": "maybe",
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] } },
-          { "id": "respond-declined", "action": "respond", "label": "Not attending", "icon": "event_busy", "tone": "destructive",
+          { "id": "respond-declined", "label": "Not attending", "icon": "event_busy", "tone": "destructive",
             "from": ["pending", "going", "maybe", "waitlisted"], "to": "declined",
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] } },
-          { "id": "respond-waitlist", "action": "join_waitlist", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
+          { "id": "respond-waitlist", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
             "from": ["pending", "maybe", "declined"], "to": "waitlisted",
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"],
               "relatedAggregate": { "workflowType": "book-meeting-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" }, "op": "count", "comparator": ">=",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" } } } },
-          { "id": "send-reminder", "action": "set_reminder", "label": "Send reminder", "tone": "secondary",
+          { "id": "send-reminder", "label": "Send reminder", "tone": "secondary",
             "from": ["pending", "maybe", "going", "waitlisted"], "to": null,
             "guard": { "actorEqualsField": { "key": "personaId" } },
             "inputs": {
@@ -374,25 +374,25 @@
           "archived": { "label": "Archived", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "acknowledge-material", "action": "acknowledge", "label": "Acknowledge", "icon": "check_circle_outline", "tone": "primary",
+          { "id": "acknowledge-material", "label": "Acknowledge", "icon": "check_circle_outline", "tone": "primary",
             "from": ["active"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member"],
                        "actorInList": { "key": "acknowledgedByPersonaIds", "present": false } },
             "effects": [ { "op": "appendUnique", "key": "acknowledgedByPersonaIds", "value": "$actor" } ] },
-          { "id": "mark-unread", "action": "mark_unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary",
+          { "id": "mark-unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "actorInList": { "key": "acknowledgedByPersonaIds", "present": true } },
             "effects": [ { "op": "removeValue", "key": "acknowledgedByPersonaIds", "value": "$actor" } ] },
-          { "id": "save-material", "action": "save", "label": "Save", "icon": "bookmark_outline", "tone": "secondary",
+          { "id": "save-material", "label": "Save", "icon": "bookmark_outline", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "actorInList": { "key": "savedByPersonaIds", "present": false } },
             "effects": [ { "op": "appendUnique", "key": "savedByPersonaIds", "value": "$actor" } ] },
-          { "id": "request-access", "action": "request_access", "label": "Request access", "icon": "lock_outline", "tone": "secondary",
+          { "id": "request-access", "label": "Request access", "icon": "lock_outline", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "instanceDataEquals": { "key": "accessType", "value": "private" },
                        "actorInList": { "key": "accessRequestedPersonaIds", "present": false } },
             "effects": [ { "op": "appendUnique", "key": "accessRequestedPersonaIds", "value": "$actor" } ] },
-          { "id": "approve-access", "action": "grant_access", "label": "Approve access", "icon": "how_to_reg", "tone": "primary",
+          { "id": "approve-access", "label": "Approve access", "icon": "how_to_reg", "tone": "primary",
             "from": ["active"], "to": null,
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "inputs": { "member": { "type": "text", "required": true } },
@@ -400,14 +400,14 @@
               { "op": "appendUnique", "key": "approvedPersonaIds", "value": "{input.member}" },
               { "op": "removeValue", "key": "accessRequestedPersonaIds", "value": "{input.member}" }
             ] },
-          { "id": "share-within-club", "action": "share", "label": "Share within club", "icon": "group_add", "tone": "secondary",
+          { "id": "share-within-club", "label": "Share within club", "icon": "group_add", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "inputs": { "member": { "type": "text", "required": true } },
             "effects": [
               { "op": "appendUnique", "key": "approvedPersonaIds", "value": "{input.member}" }
             ] },
-          { "id": "archive-material", "action": "archive", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
+          { "id": "archive-material", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
             "from": ["active"], "to": "archived",
             "guard": { "allowedPersonaIds": ["book-organizer"] } }
         ],
@@ -464,14 +464,14 @@
           "lost": { "label": "Reported lost", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "publish-listing", "action": "list_item", "label": "Publish listing", "icon": "publish", "tone": "primary",
+          { "id": "publish-listing", "label": "Publish listing", "icon": "publish", "tone": "primary",
             "from": ["draft"], "to": "published",
             "guard": { "allowedPersonaIds": ["book-member"] },
             "effects": [
               { "op": "set", "key": "ownerPersonaId", "value": "$actor" },
               { "op": "set", "key": "availabilityState", "value": "available" }
             ] },
-          { "id": "request-loan", "action": "request", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
+          { "id": "request-loan", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
             "from": ["published"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member"],
                        "instanceDataEquals": { "key": "availabilityState", "value": "available" },
@@ -480,7 +480,7 @@
               { "op": "set", "key": "availabilityState", "value": "requested" },
               { "op": "set", "key": "pendingBorrowerPersonaId", "value": "$actor" }
             ] },
-          { "id": "approve-loan", "action": "decide_request", "label": "Approve loan", "icon": "check_circle", "tone": "primary",
+          { "id": "approve-loan", "label": "Approve loan", "icon": "check_circle", "tone": "primary",
             "from": ["published"], "to": null,
             "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
                        "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
@@ -491,7 +491,7 @@
               { "op": "set", "key": "pendingBorrowerPersonaId", "value": null },
               { "op": "set", "key": "dueDate", "value": "{input.dueDate}" }
             ] },
-          { "id": "decline-loan", "action": "decide_request", "label": "Decline loan", "icon": "cancel_outlined", "tone": "secondary",
+          { "id": "decline-loan", "label": "Decline loan", "icon": "cancel_outlined", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
                        "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
@@ -499,7 +499,7 @@
               { "op": "set", "key": "availabilityState", "value": "available" },
               { "op": "set", "key": "pendingBorrowerPersonaId", "value": null }
             ] },
-          { "id": "cancel-loan-request", "action": "withdraw_request", "label": "Cancel request", "icon": "undo", "tone": "secondary",
+          { "id": "cancel-loan-request", "label": "Cancel request", "icon": "undo", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "actorEqualsField": { "key": "pendingBorrowerPersonaId" },
                        "instanceDataEquals": { "key": "availabilityState", "value": "requested" } },
@@ -507,7 +507,7 @@
               { "op": "set", "key": "availabilityState", "value": "available" },
               { "op": "set", "key": "pendingBorrowerPersonaId", "value": null }
             ] },
-          { "id": "claim-giveaway", "action": "claim", "label": "Claim giveaway", "icon": "redeem", "tone": "primary",
+          { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "redeem", "tone": "primary",
             "from": ["published"], "to": "given",
             "guard": { "allowedPersonaIds": ["book-member"],
                        "instanceDataEquals": { "key": "availabilityState", "value": "available" },
@@ -516,17 +516,17 @@
               { "op": "set", "key": "currentHolderPersonaId", "value": "$actor" },
               { "op": "set", "key": "availabilityState", "value": "given" }
             ] },
-          { "id": "join-queue", "action": "join_queue", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
+          { "id": "join-queue", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member"],
                        "actorInList": { "key": "queuedPersonaIds", "present": false },
                        "formula": "if(ownerPersonaId == $actor, false, if(availabilityState == 'available', false, true))" },
             "effects": [ { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" } ] },
-          { "id": "leave-queue", "action": "leave_queue", "label": "Leave queue", "icon": "remove_circle_outline", "tone": "secondary",
+          { "id": "leave-queue", "label": "Leave queue", "icon": "remove_circle_outline", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "actorInList": { "key": "queuedPersonaIds", "present": true } },
             "effects": [ { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" } ] },
-          { "id": "return-item", "action": "return", "label": "Return item", "icon": "assignment_return", "tone": "primary",
+          { "id": "return-item", "label": "Return item", "icon": "assignment_return", "tone": "primary",
             "from": ["published"], "to": null,
             "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
                        "formula": "if(currentHolderPersonaId == $actor, true, if(ownerPersonaId == $actor, true, false))" },
@@ -536,7 +536,7 @@
               { "op": "set", "key": "dueDate", "value": null },
               { "op": "set", "key": "lastReturnedAt", "value": "$timestamp" }
             ] },
-          { "id": "cancel-loan", "action": "return", "label": "Cancel loan", "icon": "cancel_outlined", "tone": "secondary",
+          { "id": "cancel-loan", "label": "Cancel loan", "icon": "cancel_outlined", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
                        "actorEqualsField": { "key": "currentHolderPersonaId" } },
@@ -545,17 +545,17 @@
               { "op": "set", "key": "currentHolderPersonaId", "value": null },
               { "op": "set", "key": "dueDate", "value": null }
             ] },
-          { "id": "renew-loan", "action": "renew", "label": "Renew / extend", "icon": "update", "tone": "secondary",
+          { "id": "renew-loan", "label": "Renew / extend", "icon": "update", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "actorEqualsField": { "key": "currentHolderPersonaId" },
                        "formula": "size(queuedPersonaIds) == 0" },
             "inputs": { "dueDate": { "type": "text", "required": true } },
             "effects": [ { "op": "set", "key": "dueDate", "value": "{input.dueDate}" } ] },
-          { "id": "report-lost", "action": "report_issue", "label": "Report lost", "icon": "report_problem_outlined", "tone": "destructive",
+          { "id": "report-lost", "label": "Report lost", "icon": "report_problem_outlined", "tone": "destructive",
             "from": ["published"], "to": "lost",
             "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
                        "formula": "if(currentHolderPersonaId == $actor, true, if(ownerPersonaId == $actor, true, false))" } },
-          { "id": "delist-item", "action": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
+          { "id": "delist-item", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
             "from": ["published"], "to": "delisted",
             "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
                        "instanceDataEquals": { "key": "availabilityState", "value": "available" } } }
@@ -753,18 +753,18 @@
           "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
-          { "id": "submit-query", "action": "ask", "label": "Submit", "icon": "search", "tone": "primary",
+          { "id": "submit-query", "label": "Submit", "icon": "search", "tone": "primary",
             "from": ["draft"], "to": "open",
             "guard": { "allowedPersonaIds": ["book-member"] },
             "effects": [
               { "op": "set", "key": "submitterPersonaId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ] },
-          { "id": "save-digest", "action": "curate", "label": "Save digest", "icon": "bookmark", "tone": "primary",
+          { "id": "save-digest", "label": "Save digest", "icon": "bookmark", "tone": "primary",
             "from": ["open"], "to": "saved",
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] },
             "effects": [ { "op": "set", "key": "savedAt", "value": "$timestamp" } ] },
-          { "id": "edit-digest", "action": "curate", "label": "Edit query", "icon": "edit", "tone": "secondary",
+          { "id": "edit-digest", "label": "Edit query", "icon": "edit", "tone": "secondary",
             "from": ["open", "saved"], "to": "draft",
             "guard": { "actorEqualsField": { "key": "submitterPersonaId" } },
             "effects": [ { "op": "set", "key": "savedAt", "value": null } ] },
@@ -772,13 +772,13 @@
           // retrieval require External search / AI answer, which platform-services.md marks not implemented.
           // Citations added below and curatedSummary edits are honest human-authored alternatives; the
           // platform-owned `answer` field remains unset and is never written by any effect.
-          { "id": "add-citation", "action": "add_citation", "label": "Add citation", "icon": "auto_stories", "tone": "secondary",
+          { "id": "add-citation", "label": "Add citation", "icon": "auto_stories", "tone": "secondary",
             "from": ["open", "saved"], "to": null,
             "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] },
             "inputs": { "label": { "type": "text", "required": true }, "url": { "type": "text", "required": true } },
             "effects": [ { "op": "append", "key": "citations",
               "value": { "label": "{input.label}", "source": "{input.url}", "addedAt": "$timestamp" } } ] },
-          { "id": "withdraw-query", "action": "withdraw_query", "label": "Withdraw", "icon": "undo", "tone": "destructive",
+          { "id": "withdraw-query", "label": "Withdraw", "icon": "undo", "tone": "destructive",
             "from": ["open", "saved"], "to": "withdrawn",
             "guard": { "actorEqualsField": { "key": "submitterPersonaId" } } }
         ],
@@ -830,7 +830,7 @@
           "cancelled": { "label": "Cancelled", "tone": "negative" }
         },
         "transitions": [
-          { "id": "preview-redaction", "action": "preview", "label": "Preview redaction", "icon": "preview", "tone": "primary",
+          { "id": "preview-redaction", "label": "Preview redaction", "icon": "preview", "tone": "primary",
             "from": ["draft"], "to": "redaction-previewed",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "inputs": {
@@ -842,7 +842,7 @@
               { "op": "set", "key": "previewedAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Redaction preview recorded" }
             ] },
-          { "id": "confirm-export-ready", "action": "record_outcome", "label": "Confirm export ready", "icon": "task_alt", "tone": "primary",
+          { "id": "confirm-export-ready", "label": "Confirm export ready", "icon": "task_alt", "tone": "primary",
             "from": ["redaction-previewed"], "to": "ready",
             "guard": { "allowedPersonaIds": ["book-organizer"],
                        "formula": "redactionStatus == 'passed'" },
@@ -850,7 +850,7 @@
               { "op": "set", "key": "readyAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Export ready; checksum pending platform service" }
             ] },
-          { "id": "change-export-scope", "action": "configure_scope", "label": "Change scope", "icon": "edit", "tone": "secondary",
+          { "id": "change-export-scope", "label": "Change scope", "icon": "edit", "tone": "secondary",
             "from": ["redaction-previewed", "ready"], "to": "draft",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "effects": [
@@ -859,7 +859,7 @@
               { "op": "set", "key": "readyAt", "value": null },
               { "op": "set", "key": "statusMessage", "value": "Scope changed; review redaction again" }
             ] },
-          { "id": "download-export", "action": "download", "label": "Download export", "icon": "download", "tone": "primary",
+          { "id": "download-export", "label": "Download export", "icon": "download", "tone": "primary",
             "from": ["ready"], "to": null,
             "guard": { "allowedPersonaIds": ["book-organizer"],
                        "formula": "redactionStatus == 'passed'" },
@@ -867,7 +867,7 @@
               { "op": "set", "key": "downloadedAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Download requested; checksum remains pending" }
             ] },
-          { "id": "start-transfer", "action": "run", "label": "Start transfer", "icon": "send", "tone": "primary",
+          { "id": "start-transfer", "label": "Start transfer", "icon": "send", "tone": "primary",
             "from": ["ready"], "to": "transferring",
             "guard": { "allowedPersonaIds": ["book-organizer"],
                        "formula": "redactionStatus == 'passed'" },
@@ -875,7 +875,7 @@
               { "op": "set", "key": "transferStartedAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Organizer confirmed transfer start" }
             ] },
-          { "id": "confirm-transfer", "action": "run", "label": "Confirm transferred", "icon": "check_circle", "tone": "primary",
+          { "id": "confirm-transfer", "label": "Confirm transferred", "icon": "check_circle", "tone": "primary",
             "from": ["transferring"], "to": "transferred",
             "guard": { "allowedPersonaIds": ["book-organizer"],
                        "formula": "redactionStatus == 'passed'" },
@@ -883,14 +883,14 @@
               { "op": "set", "key": "transferredAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Transfer confirmed; platform identifiers pending" }
             ] },
-          { "id": "cancel-export", "action": "cancel", "label": "Cancel", "icon": "cancel", "tone": "destructive",
+          { "id": "cancel-export", "label": "Cancel", "icon": "cancel", "tone": "destructive",
             "from": ["draft", "redaction-previewed", "ready", "transferring"], "to": "cancelled",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "effects": [
               { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
               { "op": "set", "key": "statusMessage", "value": "Export cancelled" }
             ] },
-          { "id": "retry-export", "action": "retry", "label": "Retry", "icon": "refresh", "tone": "secondary",
+          { "id": "retry-export", "label": "Retry", "icon": "refresh", "tone": "secondary",
             "from": ["cancelled", "rolled-back"], "to": "draft",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "effects": [
@@ -904,7 +904,7 @@
               { "op": "set", "key": "cancelledAt", "value": null },
               { "op": "set", "key": "statusMessage", "value": "Retry started" }
             ] },
-          { "id": "rollback-transfer", "action": "rollback", "label": "Rollback transfer", "icon": "restore", "tone": "destructive",
+          { "id": "rollback-transfer", "label": "Rollback transfer", "icon": "restore", "tone": "destructive",
             "from": ["transferred"], "to": "rolled-back",
             "guard": { "allowedPersonaIds": ["book-organizer"] },
             "effects": [

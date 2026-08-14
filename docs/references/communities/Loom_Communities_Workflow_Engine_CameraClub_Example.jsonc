@@ -87,7 +87,6 @@
         "transitions": [
           {
             "id": "cancel-walk",
-            "action": "cancel",
             "label": "Cancel walk",
             "icon": "cancel",
             "tone": "destructive",
@@ -193,7 +192,6 @@
         "transitions": [
           {
             "id": "respond-going",
-            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
@@ -212,7 +210,6 @@
           },
           {
             "id": "respond-maybe",
-            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
@@ -222,7 +219,6 @@
           },
           {
             "id": "respond-declined",
-            "action": "respond",
             "label": "Not attending",
             "icon": "event_busy",
             "tone": "destructive",
@@ -232,7 +228,6 @@
           },
           {
             "id": "respond-waitlist",
-            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
@@ -251,7 +246,6 @@
           },
           {
             "id": "set-reminder",
-            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "notifications_active",
             "tone": "secondary",
@@ -471,7 +465,6 @@
         "transitions": [
           {
             "id": "request-loan",
-            "action": "request",
             "label": "Request loan",
             "icon": "front_hand",
             "tone": "primary",
@@ -488,7 +481,6 @@
           },
           {
             "id": "approve-loan",
-            "action": "decide_request",
             "label": "Approve request",
             "icon": "check_circle",
             "tone": "primary",
@@ -512,7 +504,6 @@
           },
           {
             "id": "decline-loan",
-            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel",
             "tone": "secondary",
@@ -529,7 +520,6 @@
           },
           {
             "id": "cancel-request",
-            "action": "withdraw_request",
             "label": "Cancel request",
             "icon": "undo",
             "tone": "secondary",
@@ -546,7 +536,6 @@
           },
           {
             "id": "mark-picked-up",
-            "action": "take_custody",
             "label": "Confirm pickup",
             "icon": "inventory_2",
             "tone": "primary",
@@ -562,7 +551,6 @@
           },
           {
             "id": "return-gear-holder",
-            "action": "return",
             "label": "Return gear",
             "icon": "assignment_return",
             "tone": "primary",
@@ -583,7 +571,6 @@
           },
           {
             "id": "return-gear-owner",
-            "action": "return",
             "label": "Mark returned",
             "icon": "assignment_turned_in",
             "tone": "secondary",
@@ -604,7 +591,6 @@
           },
           {
             "id": "join-queue",
-            "action": "join_queue",
             "label": "Join queue",
             "icon": "groups",
             "tone": "secondary",
@@ -621,7 +607,6 @@
           },
           {
             "id": "leave-queue",
-            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "groups",
             "tone": "secondary",
@@ -634,7 +619,6 @@
           },
           {
             "id": "claim-giveaway",
-            "action": "claim",
             "label": "Claim giveaway",
             "icon": "redeem",
             "tone": "primary",
@@ -651,7 +635,6 @@
           },
           {
             "id": "report-issue",
-            "action": "report_issue",
             "label": "Report issue",
             "icon": "report_problem",
             "tone": "secondary",
@@ -668,7 +651,6 @@
           },
           {
             "id": "delist",
-            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",

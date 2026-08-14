@@ -248,7 +248,6 @@
         "transitions": [
           {
             "id": "save-event-draft",
-            "action": "create",
             "label": "Save draft",
             "icon": "save",
             "tone": "secondary",
@@ -258,7 +257,6 @@
           },
           {
             "id": "publish-event",
-            "action": "create",
             "label": "Publish event",
             "icon": "event_available",
             "tone": "primary",
@@ -271,7 +269,6 @@
           },
           {
             "id": "rsvp-going",
-            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
@@ -291,7 +288,6 @@
           },
           {
             "id": "rsvp-maybe",
-            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
@@ -307,7 +303,6 @@
           },
           {
             "id": "rsvp-not-going",
-            "action": "respond",
             "label": "Not attending",
             "icon": "event_busy",
             "tone": "secondary",
@@ -323,7 +318,6 @@
           },
           {
             "id": "join-event-waitlist",
-            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
@@ -343,7 +337,6 @@
           },
           {
             "id": "cancel-rsvp",
-            "action": "withdraw_response",
             "label": "Cancel RSVP",
             "icon": "undo",
             "tone": "secondary",
@@ -359,7 +352,6 @@
           },
           {
             "id": "add-event-reminder",
-            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "notifications_active",
             "tone": "secondary",
@@ -375,7 +367,6 @@
           },
           {
             "id": "cancel-event",
-            "action": "cancel",
             "label": "Cancel event",
             "icon": "cancel",
             "tone": "destructive",
@@ -464,7 +455,6 @@
         "transitions": [
           {
             "id": "record-resource-open",
-            "action": "open",
             "label": "Record as opened",
             "icon": "open_in_new",
             "tone": "primary",
@@ -481,7 +471,6 @@
           },
           {
             "id": "acknowledge-resource",
-            "action": "acknowledge",
             "label": "Acknowledge",
             "icon": "task_alt",
             "tone": "primary",
@@ -499,7 +488,6 @@
           },
           {
             "id": "mark-resource-unread",
-            "action": "mark_unread",
             "label": "Mark unread",
             "icon": "mark_email_unread",
             "tone": "secondary",
@@ -516,7 +504,6 @@
           },
           {
             "id": "request-resource-access",
-            "action": "request_access",
             "label": "Request access",
             "icon": "lock_open",
             "tone": "secondary",
@@ -534,7 +521,6 @@
           },
           {
             "id": "save-resource",
-            "action": "save",
             "label": "Save resource",
             "icon": "bookmark_add",
             "tone": "secondary",
@@ -550,7 +536,6 @@
           },
           {
             "id": "request-resource-follow-up",
-            "action": "request_follow_up",
             "label": "Ask follow-up",
             "icon": "question_answer",
             "tone": "secondary",
@@ -564,7 +549,6 @@
           },
           {
             "id": "record-resource-download",
-            "action": "download",
             "label": "Record download",
             "icon": "download",
             "tone": "secondary",
@@ -581,7 +565,6 @@
           },
           {
             "id": "archive-resource",
-            "action": "archive",
             "label": "Archive resource",
             "icon": "archive",
             "tone": "destructive",
@@ -1457,7 +1440,6 @@
         "transitions": [
           {
             "id": "provide-curated-answer",
-            "action": "curate",
             "label": "Provide curated answer",
             "icon": "rate_review",
             "tone": "primary",
@@ -1479,7 +1461,6 @@
           },
           {
             "id": "refine-search-query",
-            "action": "ask",
             "label": "Refine query",
             "icon": "search",
             "tone": "primary",
@@ -1500,7 +1481,6 @@
           },
           {
             "id": "save-search-answer",
-            "action": "curate",
             "label": "Save answer",
             "icon": "bookmark_add",
             "tone": "secondary",
@@ -1516,7 +1496,6 @@
           },
           {
             "id": "hide-search-source",
-            "action": "moderate",
             "label": "Hide source",
             "icon": "visibility_off",
             "tone": "secondary",
@@ -1532,7 +1511,6 @@
           },
           {
             "id": "report-stale-citation",
-            "action": "report",
             "label": "Report stale citation",
             "icon": "report",
             "tone": "destructive",
@@ -1549,7 +1527,6 @@
           },
           {
             "id": "reopen-reported-question",
-            "action": "moderate",
             "label": "Reopen for new answer",
             "icon": "refresh",
             "tone": "secondary",
