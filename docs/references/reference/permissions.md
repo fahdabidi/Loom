@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-13
 audience: llm-agent
@@ -8,6 +8,8 @@ derived_from:
   - docs/API/OpenAPI/identity/app-access-api.openapi.yaml
   - docs/references/archetypes/README.md
   - app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart
+  - app/packages/core/loom_communities_app_shell/lib/src/part32_engine_native_list_surface.dart
+  - app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart
 ---
 
 # Permissions — derived, never authored
@@ -75,26 +77,41 @@ See §4 and §5.
 
 ## 4. Bespoke archetypes — closed vocabularies
 
-Seven families have a dedicated widget that already assumes specific semantics
-(`part27_engine_native_binding_dispatcher.dart` switches on them by name). Their action vocabulary is
-**closed**: the validator rejects an `action` outside the list.
+Six families have a dedicated widget that already assumes specific semantics
+(`part27_engine_native_binding_dispatcher.dart` switches on them by name, and those widgets look
+transitions up by id — `_action('borrow')`, `_action('join-queue')`, `_action('return-game')`). A
+widget that hard-codes ids has already fixed the vocabulary; writing it down only makes it checkable.
+So for these the action vocabulary is **closed**: the validator rejects an `action` outside the list.
 
 Permission ids are `<archetype_snake_case>.<action>`.
+
+The "Observed transitions" column is the authoritative mapping table, not an illustration — every
+bespoke transition in the eleven fixtures resolves through it. Entries ending in `*` are prefix
+patterns; a literal id always wins over a pattern, and a longer pattern wins over a shorter one, so
+`start-preview-*` beats `start-*`.
 
 ### `event-rsvp`
 
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
 | `view` | `event_rsvp.view` | read-only bindings |
-| `create` | `event_rsvp.create` | `publish-event`, `reserve-facility`, `board-reserve-facility` |
-| `edit` | `event_rsvp.edit` | `change-reservation`, `save-schedule-update`, `reschedule-match`, `make-recurring`, `mark-rescheduled` |
-| `cancel` | `event_rsvp.cancel` | `cancel-event`, `cancel-meeting`, `cancel-walk`, `board-cancel-reservation` (+7 more) |
+| `create` | `event_rsvp.create` | `publish-event`, `save-event-draft`, `reserve-facility`, `board-reserve-facility` |
+| `edit` | `event_rsvp.edit` | `change-reservation`, `board-change-reservation`, `revise-conflicted-reservation`, `board-revise-conflicted-reservation`, `save-schedule-update`, `reschedule-match`, `make-recurring`, `mark-rescheduled` |
+| `cancel` | `event_rsvp.cancel` | `cancel-*` — `cancel-event`, `cancel-meeting`, `cancel-walk`, `cancel-meetup`, `cancel-practice`, `cancel-reservation`, `cancel-tournament`, `board-cancel-reservation` |
 | `reopen` | `event_rsvp.reopen` | `reopen-reservation`, `board-reopen-reservation` |
 | `respond` | `event_rsvp.respond` | `rsvp-going`, `rsvp-maybe`, `rsvp-not-going`, `accept-match`, `decline-match` |
 | `withdraw_response` | `event_rsvp.withdraw_response` | `rsvp-withdraw`, `cancel-rsvp` |
 | `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist` |
-| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `enable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
+| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
+| `propose_change` | `event_rsvp.propose_change` | `suggest-new-time` |
 | `record_outcome` | `event_rsvp.record_outcome` | `record-result`, `flag-reservation-conflict` |
+
+`cancel-rsvp` and `cancel-tournament` read alike and mean opposite things — withdrawing your own
+attendance versus calling off the event for everyone. The literal `cancel-rsvp` entry under
+`withdraw_response` is what keeps the `cancel-*` pattern from swallowing it.
+
+`propose_change` exists because `suggest-new-time` is offered to members who cannot `edit`. Mapping it
+to `edit` would grant every suggester the power to actually move the event.
 
 ### `equipment-loan`
 
@@ -143,16 +160,28 @@ Permission ids are `<archetype_snake_case>.<action>`.
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
 | `view` | `export_wizard.view` | read-only bindings |
-| `configure_scope` | `export_wizard.configure_scope` | `change-export-scope`, `change-scope`, `change-*-scope`, `change-replay-source` (8 ids) |
-| `preview` | `export_wizard.preview` | `preview-export`, `preview-redaction`, `open-redaction-preview`, `preview-scope` (5 ids) |
+| `configure_scope` | `export_wizard.configure_scope` | `change-*`, `select-export-scope` |
+| `preview` | `export_wizard.preview` | `preview-*`, `start-preview-*`, `open-redaction-preview`, `review-redaction-preview` |
 | `approve_redaction` | `export_wizard.approve_redaction` | `approve-redaction`, `confirm-protected-redaction`, `approve-manual-export-review` |
-| `run` | `export_wizard.run` | `generate-export`, `generate-full-bundle`, `generate-redacted-bundle`, `confirm-transfer`, `enable-transfer` |
-| `download` | `export_wizard.download` | `download-export`, `download-full-bundle`, `download-redacted-bundle`, `request-export-download` (5 ids) |
-| `rollback` | `export_wizard.rollback` | `rollback-export`, `rollback-transfer`, `complete-transfer-rollback` |
-| `retry` | `export_wizard.retry` | `retry-export`, `reopen-export` |
-| `cancel` | `export_wizard.cancel` | every `cancel-*` (22 ids) |
-| `record_outcome` | `export_wizard.record_outcome` | `record-*`, `fail-*`, `complete-*`, `mark-export-failed`, `lock-schema-listing` (20+ ids) |
+| `run` | `export_wizard.run` | `start-*`, `generate-*`, `confirm-transfer`, `confirm-import-replay`, `enable-transfer`, `submit-transfer-for-verification` |
+| `download` | `export_wizard.download` | `download-*`, `request-export-download` |
+| `rollback` | `export_wizard.rollback` | `rollback-*`, `start-transfer-rollback`, `complete-transfer-rollback` |
+| `retry` | `export_wizard.retry` | `retry-*`, `reopen-export` |
+| `cancel` | `export_wizard.cancel` | `cancel-*` (22 ids) |
+| `record_outcome` | `export_wizard.record_outcome` | `record-*`, `fail-*`, `complete-*`, `mark-*`, `retire-*`, `lock-schema-listing`, `export-checksum-evidence-record`, `confirm-export-ready` |
 | `decide_transfer` | `export_wizard.decide_transfer` | `provider-accept-transfer`, `provider-reject-transfer` |
+
+Four pairs here look alike and resolve by the longer-pattern-wins rule, so they are worth stating
+outright:
+
+- `start-preview-export` is a `preview`, not a `run` — `start-preview-*` is longer than `start-*`.
+- `start-transfer-rollback` is a `rollback`, not a `run` — literal beats pattern.
+- `complete-transfer-rollback` is a `rollback`, not `record_outcome` — literal beats `complete-*`.
+- `cancel-transfer-rollback` *is* a `cancel`: it calls off the rollback operation.
+
+`confirm-*` deliberately has no pattern; its three occurrences land in three different actions
+(`confirm-transfer` runs, `confirm-protected-redaction` approves, `confirm-export-ready` records), so
+each is listed literally.
 
 `record_outcome` deliberately covers the state-machine bookkeeping transitions (`fail-*`,
 `record-checksum-pass`, `record-transfer-complete`). These are usually platform- or admin-recorded
@@ -160,41 +189,63 @@ rather than member-invoked; grouping them keeps the member-facing vocabulary hon
 
 ### `votePoll`
 
-| Action | Grants |
-|---|---|
-| `view` | `vote_poll.view` |
-| `create` | `vote_poll.create` |
-| `vote` | `vote_poll.vote` |
-| `change_vote` | `vote_poll.change_vote` |
-| `close` | `vote_poll.close` |
-| `publish_result` | `vote_poll.publish_result` |
+| Action | Grants | Observed transitions it covers |
+|---|---|---|
+| `view` | `vote_poll.view` | read-only bindings |
+| `create` | `vote_poll.create` | poll creation actions |
+| `vote` | `vote_poll.vote` | `cast-vote` |
+| `change_vote` | `vote_poll.change_vote` | vote revision |
+| `withdraw_vote` | `vote_poll.withdraw_vote` | `cancel-vote` |
+| `close` | `vote_poll.close` | `close-vote` |
+| `publish_result` | `vote_poll.publish_result` | result publication |
+
+`cancel-vote` withdraws a ballot; it does not close the poll. `withdraw_vote` keeps that separable
+from `close`, which ends voting for everyone.
 
 ### `searchAiAnswer`
 
-| Action | Grants |
-|---|---|
-| `view` | `search_ai_answer.view` |
-| `ask` | `search_ai_answer.ask` |
-| `curate` | `search_ai_answer.curate` |
-| `add_citation` | `search_ai_answer.add_citation` |
-| `report` | `search_ai_answer.report` |
+| Action | Grants | Observed transitions it covers |
+|---|---|---|
+| `view` | `search_ai_answer.view` | read-only bindings |
+| `ask` | `search_ai_answer.ask` | `submit-query`, `refine-search-query` |
+| `withdraw_query` | `search_ai_answer.withdraw_query` | `withdraw-query` |
+| `curate` | `search_ai_answer.curate` | `provide-curated-answer`, `save-search-answer`, `edit-digest`, `save-digest` |
+| `add_citation` | `search_ai_answer.add_citation` | `add-citation` |
+| `report` | `search_ai_answer.report` | `report-stale-citation` |
+| `moderate` | `search_ai_answer.moderate` | `hide-search-source`, `reopen-reported-question` |
 
-### `table`
-
-| Action | Grants |
-|---|---|
-| `view` | `table.view` |
-| `publish` | `table.publish` |
+`curate` covers the digest transitions as well as answer curation: a digest is curated output, and the
+capability is the same one. `moderate` is separate from `curate` on purpose — hiding a source and
+reopening a reported question act on **other members'** contributions, which is a different grant from
+writing your own curated answer.
 
 ## 5. Generic archetypes — structural derivation, no `action` field
 
-Six families have **no dispatcher case**. They reach `GenericWorkflowInstanceCard`, which calls
+Seven families have **no dispatcher case**. They reach `GenericWorkflowInstanceCard`, which calls
 `engine.availableTransitionsAsync(...)` and renders whatever comes back. Rendering *whatever
 transitions exist* is what the archetype **is** — so a closed vocabulary is impossible without
 destroying it.
 
 Applies to: `paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
-`statusTimeline`, `notificationInbox`.
+`statusTimeline`, `notificationInbox`, `table`.
+
+### Why `table` is here and not in §4
+
+An earlier draft of this document listed `table` as a seventh bespoke family with a two-action
+vocabulary, `view` and `publish`. That was wrong, and the corpus is what exposed it: the fixtures
+carry **13** `table` transitions — applying consent, redacting fields, archiving roster rows,
+requesting guardian updates, revising and discarding ranking drafts — and only `publish-ranking` fits
+either action.
+
+The dispatcher settles it. `table` has no `case` and falls through to `GenericWorkflowInstanceCard`,
+exactly like the other six. Its only bespoke treatment is **list layout**: `part32` groups sibling
+`table` bindings into one `WorkflowTableArchetypeCard` per `(tabId, workflowType)`. That is a
+rendering decision about arranging rows, and it makes no assumption whatsoever about what the
+transitions mean — the rankings tab even declares the generic
+`rendererContractId: 'workflow-status-timeline-actions'`.
+
+A tabular layout is not a semantic contract. `table` derives structurally, and its transitions carry
+no `action` field.
 
 For these, **the author writes no `action` field** and the permission is derived from structure the
 transition already carries:
