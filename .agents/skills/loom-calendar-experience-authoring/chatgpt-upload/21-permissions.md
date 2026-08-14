@@ -1,6 +1,6 @@
 ---
 spec: { envelope: 1, experience: 2, grammar: 2 }
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: proposed
 last_verified: 2026-08-13
 audience: llm-agent
@@ -85,10 +85,36 @@ So for these the action vocabulary is **closed**: the validator rejects an `acti
 
 Permission ids are `<archetype_snake_case>.<action>`.
 
-The "Observed transitions" column is the authoritative mapping table, not an illustration — every
-bespoke transition in the eleven fixtures resolves through it. Entries ending in `*` are prefix
-patterns; a literal id always wins over a pattern, and a longer pattern wins over a shorter one, so
+### What is normative here, and what is not
+
+**The action list is normative. The "Observed transitions" column is not.**
+
+The validator enforces one thing: that a bespoke transition's `action` is a member of its family's
+list. It cannot enforce *which* member, because the id does not determine the answer — that is the
+whole reason §3 exists.
+
+The "Observed transitions" column is a lookup aid built from the eleven fixtures. It resolves the
+corpus completely and is right the overwhelming majority of the time, so start there. Entries ending
+in `*` are prefix patterns; a literal id beats a pattern, and a longer pattern beats a shorter one, so
 `start-preview-*` beats `start-*`.
+
+But when the column disagrees with what the transition actually does, **the transition wins**. Its
+`guard`, its `from`/`to` states, and its `effects` are the evidence; the column is a guess based on a
+name.
+
+`cancel-loan` is the proof that this caveat is load-bearing, not boilerplate:
+
+| Community | Guard | State | What it really is |
+|---|---|---|---|
+| Garden Club | `actorEqualsField: borrowerPersonaId` | `reserved` | withdrawing a reservation → `withdraw_request` |
+| Book Club | `actorEqualsField: currentHolderPersonaId` | `borrowed` | ending an active loan → `return` |
+
+Same id, two different capabilities, two different permissions. Treating the column as authoritative
+would have collapsed them and granted Book Club's holders the wrong one — reintroducing exactly the
+ambiguity the `action` field was introduced to remove.
+
+So: consult the column, then confirm it against the transition. Where a community's usage diverges,
+author the action the transition actually performs and say so.
 
 ### `event-rsvp`
 
@@ -99,10 +125,10 @@ patterns; a literal id always wins over a pattern, and a longer pattern wins ove
 | `edit` | `event_rsvp.edit` | `change-reservation`, `board-change-reservation`, `revise-conflicted-reservation`, `board-revise-conflicted-reservation`, `save-schedule-update`, `reschedule-match`, `make-recurring`, `mark-rescheduled` |
 | `cancel` | `event_rsvp.cancel` | `cancel-*` — `cancel-event`, `cancel-meeting`, `cancel-walk`, `cancel-meetup`, `cancel-practice`, `cancel-reservation`, `cancel-tournament`, `board-cancel-reservation` |
 | `reopen` | `event_rsvp.reopen` | `reopen-reservation`, `board-reopen-reservation` |
-| `respond` | `event_rsvp.respond` | `rsvp-going`, `rsvp-maybe`, `rsvp-not-going`, `accept-match`, `decline-match` |
+| `respond` | `event_rsvp.respond` | `rsvp-going`, `rsvp-maybe`, `rsvp-not-going`, `respond-going`, `respond-maybe`, `respond-declined`, `accept-match`, `decline-match` |
 | `withdraw_response` | `event_rsvp.withdraw_response` | `rsvp-withdraw`, `cancel-rsvp` |
-| `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist` |
-| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
+| `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist`, `respond-waitlist` |
+| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `send-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
 | `propose_change` | `event_rsvp.propose_change` | `suggest-new-time` |
 | `record_outcome` | `event_rsvp.record_outcome` | `record-result`, `flag-reservation-conflict` |
 
@@ -123,7 +149,7 @@ to `edit` would grant every suggester the power to actually move the event.
 | `delist` | `equipment_loan.delist` | `delist`, `delist-item`, `delist-giveaway`, `retire-lost-item` |
 | `request` | `equipment_loan.request` | `request-loan`, `request-borrow`, `borrow` |
 | `decide_request` | `equipment_loan.decide_request` | `approve-loan`, `approve-request`, `decline-loan`, `decline-request` |
-| `withdraw_request` | `equipment_loan.withdraw_request` | `cancel-loan-request`, `cancel-request`, `cancel-loan` |
+| `withdraw_request` | `equipment_loan.withdraw_request` | `cancel-loan-request`, `cancel-request`, `cancel-loan` (community-dependent — see the caveat in §4's preamble) |
 | `claim` | `equipment_loan.claim` | `claim`, `claim-giveaway` |
 | `join_queue` | `equipment_loan.join_queue` | `join-queue` |
 | `leave_queue` | `equipment_loan.leave_queue` | `leave-queue` |
@@ -195,12 +221,22 @@ rather than member-invoked; grouping them keeps the member-facing vocabulary hon
 | `create` | `vote_poll.create` | poll creation actions |
 | `vote` | `vote_poll.vote` | `cast-vote` |
 | `change_vote` | `vote_poll.change_vote` | vote revision |
-| `withdraw_vote` | `vote_poll.withdraw_vote` | `cancel-vote` |
-| `close` | `vote_poll.close` | `close-vote` |
+| `close` | `vote_poll.close` | `close-vote`, `cancel-vote` |
 | `publish_result` | `vote_poll.publish_result` | result publication |
 
-`cancel-vote` withdraws a ballot; it does not close the poll. `withdraw_vote` keeps that separable
-from `close`, which ends voting for everyone.
+An earlier draft added a `withdraw_vote` action for `cancel-vote`, on the reasoning that it withdraws
+one ballot rather than closing the poll. That reasoning was wrong, and checking the only fixture that
+carries the id disproves it: Book Club's `cancel-vote` sits on the ballot workflow itself, is
+`allowedPersonaIds: ["book-organizer"]`, is `tone: "destructive"`, and moves `open → cancelled` —
+directly alongside `close-vote`, which moves `open → closed`. It calls the poll off for everyone.
+
+Both are the organizer ending the poll, differing only in whether a result stands. Per §5's
+accepted-limit reasoning, an organizer who may close may realistically cancel, so they share `close`
+and `withdraw_vote` is removed.
+
+The genuine member-level withdrawal does exist — Book Club's `clear-vote` — but it lives on the
+`book-vote-response` workflow, which is `formEntry`, so it derives structurally and never needed a
+`votePoll` action at all.
 
 ### `searchAiAnswer`
 
@@ -280,7 +316,13 @@ Run at community **install** time, not build time, because communities install d
 
 1. **Create the group.** One App Access group per community: `loom_communities_<communityHandle>`.
 2. **Register the roles.** Each entry in `personas[]` becomes a group-scoped role.
-3. **For each workflow**, take its archetype from its `renderBindings[].cardSurfaceFamily`.
+3. **For each workflow**, resolve its archetype:
+   a. If any `renderBindings[].cardSurfaceFamily` is a bespoke family, that is the archetype. A
+      workflow may also carry generic bindings; they do not compete (see §8).
+   b. Otherwise, if the workflow is named by some binding's `responseTable.workflowType`, it
+      **inherits that binding's archetype**.
+   c. Otherwise it is generic, and §5's structural rule applies.
+   d. A workflow with no bindings and no `responseTable` owner derives nothing at all.
 4. **For each transition**, resolve its action — the declared `action` for a bespoke archetype, or the
    structural rule for a generic one — and map to the permission id.
 5. **For each role in that transition's `guard.allowedRoleIds`**, add the permission to that role.
@@ -288,6 +330,26 @@ Run at community **install** time, not build time, because communities install d
 7. **Union per role**, then `setRolePermissions` once per role.
 
 Idempotent: re-installing the same package produces the same grants.
+
+### Why step 3b exists
+
+Without it, responding to an event derives no permission in five of the eleven communities.
+
+Those five put per-member responses in a separate `*-response` workflow with `"renderBindings": []`,
+reachable only as the parent `event-rsvp` binding's `responseTable` target. An earlier draft read the
+archetype off `renderBindings` alone, so those workflows had no archetype, were neither bespoke nor
+generic, and fell through every rule — leaving **26 transitions ungated**, among them `respond-going`,
+the single most common member action in the product.
+
+The same capability *does* derive `event_rsvp.respond` in Masjid Nur and Tabletop Club, where
+`rsvp-going` sits on the bespoke workflow directly. Tabletop carries both shapes at once. Identical
+member capabilities must not be gated in one community and ungated in another because of an authoring
+choice about where the rows live, and `responseTable.workflowType` names the link explicitly, so the
+inheritance is derivable rather than guessed.
+
+Step 3d is deliberate and distinct: the three `mark-read` notification workflows have no bindings and
+no `responseTable` owner. They are driven by effects from other workflows, are never rendered as an
+invocable surface, and correctly derive nothing.
 
 ## 7. The platform `admin` role
 
@@ -320,11 +382,32 @@ cannot enumerate or discover users.
 | `action` is in that archetype's closed vocabulary | error |
 | `action` present on a generic-archetype transition | error — generic families derive structurally |
 | every `allowedRoleIds` / `byRoleIds` entry is a declared role | error |
-| a workflow's `renderBindings` disagree on `cardSurfaceFamily` | error — the archetype must be unambiguous |
+| a workflow's `renderBindings` name **two or more bespoke** families | error — the archetype is ambiguous |
+| a workflow's `renderBindings` mix one bespoke family with generic ones | allowed — the bespoke family is the archetype |
 | a role ends up with zero permissions | warning — probably a role nothing can do |
 
 An unmapped transition is an **error, not a warning**: it would leave a permission ungranted, and the
 action would then fail at runtime for reasons no author could see.
+
+### Why the family rule is split in two
+
+An earlier draft made *any* disagreement among a workflow's `renderBindings` an error. Measured against
+the corpus, that rule rejects **27 of the fixtures' workflows** — and 26 of those rejections are wrong.
+
+Mixing families is the normal, correct shape: a workflow renders its primary surface on one tab and a
+summary on another. Data Portability alone has eight workflows that pair `exportWizard` with a
+`statusTimeline` home-tab summary. Nothing about that is ambiguous — only one family is bespoke, and it
+is the archetype.
+
+Exactly **one** workflow in the corpus names two bespoke families: Tabletop Club's `tournament-event`
+(`event-rsvp` plus a `votePoll` attendance/quorum summary). Even that one resolves in practice, because
+all three of its transitions are `event-rsvp` semantics and the `votePoll` binding contributes a view
+with no transitions of its own. It is still flagged, because a workflow whose transitions could belong
+to either vocabulary is genuinely undecidable and should be rewritten rather than guessed at.
+
+This matches the dispatcher, which switches on `resolved.binding.cardSurfaceFamily` — **per binding**,
+not per workflow — and already special-cases `tournament-event` by name. Archetype is a property of a
+binding; a workflow has an archetype only insofar as its bespoke binding gives it one.
 
 ## 9. What community JSON must never contain
 
