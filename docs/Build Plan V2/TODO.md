@@ -15,7 +15,7 @@ pipeline step 5.5.
 
 ## Open
 
-- [ ] `new-ticket` — 3 validator codes for `visibility.fields` are specified but unimplemented (`missing_visibility_fields`, `dangling_visibility_field`, `invalid_parties_arity`) — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
+- [x] `new-ticket` — D9's 3 validator codes shipped and verified; corpus now shows 32 expected `missing_visibility_fields` findings until Phase F backfills `visibility.fields` — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Phase A**: engine implements the archetype contracts (per-person bookkeeping, 6 visibility models) — blocks B and F — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Phase B**: build the Dart workflow service so guards are enforced server-side — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Phase C**: auth — Keycloak-as-broker (Google/Apple/Facebook), all 3 services as resource servers — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
