@@ -413,20 +413,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
-    final shouldSeedResponseRows =
+    final usesEventRsvpCreation =
         action.cardSurfaceFamily == 'event-rsvp' && action.responseTable != null;
-    final keyPrefix = shouldSeedResponseRows
+    final keyPrefix = usesEventRsvpCreation
         ? 'new-event'
         : 'new-${action.workflowType}';
-    final onCreated = shouldSeedResponseRows
-            ? (String instanceId) => _seedResponseRowsFor(
-            eventId: instanceId,
-            responseWorkflowType: action.responseTable!.workflowType,
-            eventField: action.responseTable!.eventField,
-            engine: engine,
-            organizerPersonaId: activePersona.accountId ?? activePersona.personaId,
-          )
-        : null;
     return EngineNativeArchetypeCreationCard(
       cardSurfaceFamily: action.cardSurfaceFamily,
       workflowType: action.workflowType,
@@ -435,7 +426,6 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       personaId: activePersona.accountId ?? activePersona.personaId,
       keyPrefix: keyPrefix,
       title: action.label,
-      onCreated: onCreated,
       resolvedInitialValues: action.resolvedInitialValues,
       audienceCandidates: [
         for (final persona
@@ -445,26 +435,6 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             label: persona.label,
           ),
       ],
-    );
-  }
-
-  Future<void> _seedResponseRowsFor({
-    required String eventId,
-    required String responseWorkflowType,
-    required String eventField,
-    required WorkflowEngineApi engine,
-    required String organizerPersonaId,
-  }) async {
-    final accounts = await LocalAuthApi().listAccounts(
-      communityExtensionId: community.extensionId,
-    );
-    await engine.createInstances(
-      workflowType: responseWorkflowType,
-      initialInstanceDataList: [
-        for (final account in accounts)
-          {eventField: eventId, 'personaId': account.accountId},
-      ],
-      personaId: organizerPersonaId,
     );
   }
 

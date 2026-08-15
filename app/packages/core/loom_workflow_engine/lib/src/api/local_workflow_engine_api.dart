@@ -534,24 +534,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }) {
     if (declaredField.isEmpty) return false;
 
-    final spellings = <String>{declaredField};
-    if (declaredField.endsWith('FanIds')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'FanIds'.length)}PersonaIds',
-      );
-    } else if (declaredField.endsWith('FanId')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'FanId'.length)}PersonaId',
-      );
-    } else if (declaredField.endsWith('PersonaIds')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'PersonaIds'.length)}FanIds',
-      );
-    } else if (declaredField.endsWith('PersonaId')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'PersonaId'.length)}FanId',
-      );
-    }
+    final spellings = _identityFieldSpellingsDuringD8Straddle(declaredField);
     candidateSpellings?.addAll(spellings);
     if (personaId.isEmpty) return false;
 
@@ -572,6 +555,40 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       }
     }
     return false;
+  }
+
+  /// Returns the two temporary identity spellings accepted during D8.
+  ///
+  /// Both visibility reads and archetype-owned writes use this one alias
+  /// expansion so the Phase F cleanup has a single compatibility seam.
+  List<String> _identityFieldSpellingsDuringD8Straddle(String declaredField) {
+    final spellings = <String>[declaredField];
+    if (declaredField == 'fanIds') {
+      spellings.add('personaIds');
+    } else if (declaredField == 'fanId') {
+      spellings.add('personaId');
+    } else if (declaredField == 'personaIds') {
+      spellings.add('fanIds');
+    } else if (declaredField == 'personaId') {
+      spellings.add('fanId');
+    } else if (declaredField.endsWith('FanIds')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'FanIds'.length)}PersonaIds',
+      );
+    } else if (declaredField.endsWith('FanId')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'FanId'.length)}PersonaId',
+      );
+    } else if (declaredField.endsWith('PersonaIds')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'PersonaIds'.length)}FanIds',
+      );
+    } else if (declaredField.endsWith('PersonaId')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'PersonaId'.length)}FanId',
+      );
+    }
+    return spellings;
   }
 
   String _cursorForRow(String sortKey, WorkflowInstanceRow row) {
@@ -1022,6 +1039,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       newState: newState,
       newInstanceData: _storageOnly(newData, machine),
     );
+    if (transition.action == 'create') {
+      await _fanOutEventRsvpResponseRows(
+        eventMachine: machine,
+        eventInstanceId: instanceId,
+        createdByPersonaId: personaId,
+      );
+    }
 
     return WorkflowTransitionResult(
       newState: newState,
@@ -1029,17 +1053,132 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
   }
 
+  /// Materializes the response-table row owned by `event-rsvp` for every
+  /// currently active, registered community member.
+  ///
+  /// Registration is the engine's existing enumerable membership boundary:
+  /// [setPersonaType] supplies account ids, and [_activeMembershipLookup]
+  /// filters them against the same account store used by members-only reads.
+  /// No workflow or community JSON supplies identities.
+  Future<void> _fanOutEventRsvpResponseRows({
+    required LoomWorkflowStateMachine eventMachine,
+    required String eventInstanceId,
+    required String createdByPersonaId,
+  }) async {
+    final resolved = _resolvedArchetypes[eventMachine.workflowType];
+    if (resolved?.family != 'event-rsvp') return;
+
+    ResponseTableSpec? responseTable;
+    for (final binding in eventMachine.renderBindings) {
+      if (binding.cardSurfaceFamily == 'event-rsvp' &&
+          binding.responseTable != null) {
+        responseTable = binding.responseTable;
+        break;
+      }
+    }
+    if (responseTable == null) return;
+    final responseSpec = responseTable;
+
+    final responseMachine = await _getDefinition(responseSpec.workflowType);
+    if (responseMachine == null) {
+      throw StateError(
+        'Unknown event-rsvp response workflow type: '
+        '${responseSpec.workflowType}',
+      );
+    }
+
+    final identitySpellings = _identityFieldSpellingsDuringD8Straddle(
+      'personaId',
+    );
+    String? identityField;
+    for (final spelling in identitySpellings) {
+      if (responseMachine.instanceDataSchema.containsKey(spelling)) {
+        identityField = spelling;
+        break;
+      }
+    }
+    if (identityField == null) {
+      throw StateError(
+        'event-rsvp response workflow ${responseSpec.workflowType} must '
+        'declare personaId or fanId in instanceDataSchema',
+      );
+    }
+    final responseIdentityField = identityField;
+
+    final registeredIds = _personaTypeById.keys.toList(growable: false);
+    final membershipLookup = _activeMembershipLookup;
+    final memberIds = membershipLookup == null
+        ? registeredIds
+        : <String>[
+            for (final personaId in registeredIds)
+              if (await membershipLookup(personaId)) personaId,
+          ];
+    if (memberIds.isEmpty) return;
+
+    final existingRows = (await _readAllInstancesOfType(
+      responseSpec.workflowType,
+    )).where((row) => row[responseSpec.eventField] == eventInstanceId);
+    for (final memberId in memberIds) {
+      final alreadyExists = existingRows.any(
+        (row) => _identityFieldMatchesDuringD8Straddle(
+          row,
+          responseIdentityField,
+          memberId,
+          shape: _IdentityFieldShape.scalar,
+        ),
+      );
+      if (alreadyExists) continue;
+
+      await _createInstanceValidated(
+        workflowType: responseSpec.workflowType,
+        initialInstanceData: <String, dynamic>{
+          responseSpec.eventField: eventInstanceId,
+          responseIdentityField: memberId,
+        },
+        personaId: createdByPersonaId,
+      );
+    }
+  }
+
   @override
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
     required String personaId,
+  }) => _createInstanceFromCreateAction(
+    workflowType: workflowType,
+    initialInstanceData: initialInstanceData,
+    personaId: personaId,
+  );
+
+  /// Creates one row through the singular creation action used by current
+  /// packages, then supplies their pre-action-grammar event-rsvp behavior.
+  Future<String> _createInstanceFromCreateAction({
+    required String workflowType,
+    required Map<String, dynamic> initialInstanceData,
+    required String personaId,
   }) async {
-    return _createInstanceValidated(
+    final instanceId = await _createInstanceValidated(
       workflowType: workflowType,
       initialInstanceData: initialInstanceData,
       personaId: personaId,
     );
+    final machine = await _getDefinition(workflowType);
+    if (machine != null &&
+        !machine.transitions.any(
+          (transition) => transition.action == 'create',
+        )) {
+      // Existing packages express tab-level creation as a render-binding
+      // `kind: create` action whose submit path calls this singular API
+      // directly. Once a workflow declares an explicit create transition, the
+      // transaction path above is the sole trigger instead.
+      await _fanOutEventRsvpResponseRows(
+        eventMachine: machine,
+        eventInstanceId: instanceId,
+        createdByPersonaId: personaId,
+      );
+    }
+    return instanceId;
   }
 
   @override
@@ -1552,7 +1691,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             inputValues: inputValues,
             instanceId: instanceId,
           );
-          await createInstance(
+          await _createInstanceFromCreateAction(
             workflowType: effect.workflowType!,
             initialInstanceData: Map<String, dynamic>.from(fields as Map),
             personaId: personaId,
@@ -1729,13 +1868,21 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               inputValues: inputValues,
               instanceId: instanceId,
             );
-            await _createInstanceValidated(
+            final occurrenceId = await _createInstanceValidated(
               workflowType: workflowType,
               initialInstanceData: Map<String, dynamic>.from(
                 resolvedFields as Map,
               ),
               personaId: personaId,
             );
+            final occurrenceMachine = await _getDefinition(workflowType);
+            if (occurrenceMachine != null) {
+              await _fanOutEventRsvpResponseRows(
+                eventMachine: occurrenceMachine,
+                eventInstanceId: occurrenceId,
+                createdByPersonaId: personaId,
+              );
+            }
           }
           continue;
         }
