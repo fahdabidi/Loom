@@ -44,7 +44,8 @@ member the power to cancel the event.
 
 **The response-row shape is canonical.** An event's responses live in a separate workflow named by the
 event binding's `responseTable.workflowType`, one instance per member per event, whose **state is the
-answer**: `pending`, `going`, `maybe`, `declined`, `waitlisted`.
+answer**. All six communities using this shape happen to declare `pending`, `going`, `maybe`, `declined`,
+`waitlisted` — a convention, not a fixed set. Communities declare their own states (§4).
 
 ```jsonc
 "responseTable": { "workflowType": "garden-event-rsvp-response",
@@ -79,7 +80,7 @@ instead of encoding it, and make Tabletop's missing-exclusivity bug unrepresenta
 
 | Owned | Meaning |
 |---|---|
-| the response row's lifecycle | one row per member per event, materialized in `pending` (§4) |
+| the response row's lifecycle | one row per member per event, created eagerly at event creation (§4) |
 | response state transitions | `respond` and `join_waitlist` move the row; a row has one state |
 | `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous |
 
