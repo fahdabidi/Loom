@@ -231,7 +231,10 @@ void main() {
         extensionId: 'ext_garden_club',
         personaId: 'garden-coordinator',
         tabId: 'home',
-        instanceId: 'mulch-day-shift',
+        // Renamed by 154493e6 (Garden Club exportWizard integration,
+        // Milestone 1.5); this test was not updated with it. Same instance,
+        // same garden-volunteer-shift binding on `home` -- id only.
+        instanceId: 'mulch-delivery-shift',
       ),
     ];
 
