@@ -130,6 +130,18 @@ Future<_EngineNativeCommunityFixture> _installFixture(String extensionId) async 
     displayName: source['displayName'] as String?,
     experienceConfiguration: experienceRaw ?? const <String, Object?>{},
   );
+  // These fixtures model someone already inside their own community, so
+  // membership has to be established through the same hook production uses.
+  // `_isActiveMember` returns false whenever no lookup is set, which makes
+  // every `membersOnly` workflow invisible -- not an "unknown, allow" default.
+  // Communities whose workflows are all `public` (Camera Club) never notice;
+  // Garden Club, whose marketplace and volunteer surfaces are `membersOnly`,
+  // is where it shows.
+  configureEngineAuthorizationForExtensionId(
+    extensionId: extensionId,
+    appShellConfiguration: const <String, Object?>{},
+    activeMembershipLookup: (_) async => true,
+  );
   final engine = await workflowEngineForExtensionId(extensionId);
   return _EngineNativeCommunityFixture(
     experience: experience,
@@ -194,19 +206,37 @@ void main() {
     final camera = await _installFixture('ext_camera_club');
     final garden = await _installFixture('ext_garden_club');
 
+    // Both of these model a *member* reading the shell, so both must supply
+    // membership the way the app does. `appShellTabsFor` gates `membersOnly`
+    // workflows on `hasActiveMembership == true`, and omitting it is not
+    // "unknown, allow" -- a null fails closed and hides the tab. All three
+    // production call sites in part01 pass `_activeAccountHasActiveMembership`;
+    // a test that omits it is asserting against a state the app never reaches.
+    //
+    // Camera Club masked this for a long time: every one of its workflows is
+    // `public`, so its tabs survive with or without membership. Garden Club's
+    // `marketplace` is served only by `garden-tool-loan` and
+    // `garden-tool-giveaway`, both `membersOnly`, so it is the first community
+    // where the omission actually shows.
     final cameraTabs = appShellTabsFor(
       experience: camera.experience,
       personaId: 'camera-club-member',
+      hasActiveMembership: true,
+    );
+    final gardenTabs = appShellTabsFor(
+      experience: garden.experience,
+      personaId: 'garden-member',
+      hasActiveMembership: true,
     );
     expect(
       cameraTabs.singleWhere((tab) => tab.tabId == 'calendar').label,
       'Walks',
     );
-
-    final gardenTabs = appShellTabsFor(
-      experience: garden.experience,
-      personaId: 'garden-member',
-    );
+    // `Exchange` is correct and always was -- it is the engine-native label
+    // override, which is the whole point of this test. Do not "fix" it to
+    // `Marketplace` by reading `appShell.tabs[].label` from the package root:
+    // that is a different value, and `appShellTabsFor` does not derive the
+    // label from it. The only thing wrong here was the missing membership.
     expect(
       gardenTabs.singleWhere((tab) => tab.tabId == 'marketplace').label,
       'Exchange',
