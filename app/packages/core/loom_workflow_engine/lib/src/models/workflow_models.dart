@@ -364,6 +364,7 @@ class WorkflowEffect {
 class LoomWorkflowTransition {
   final String id;
   final String label;
+  final String? action;
   final String? icon;
   final String? tone;
   final List<String> from;
@@ -378,6 +379,7 @@ class LoomWorkflowTransition {
   const LoomWorkflowTransition({
     required this.id,
     required this.label,
+    this.action,
     this.icon,
     this.tone,
     required this.from,
@@ -392,6 +394,7 @@ class LoomWorkflowTransition {
     return LoomWorkflowTransition(
       id: json['id'] as String,
       label: json['label'] as String,
+      action: json['action'] as String?,
       icon: json['icon'] as String?,
       tone: json['tone'] as String?,
       from: (json['from'] as List<dynamic>).map((e) => e as String).toList(),
@@ -471,6 +474,85 @@ class LoomWorkflowState {
 /// The workflow-level default visibility vocabulary.
 enum WorkflowVisibilityDefault { public, membersOnly, guarded }
 
+/// Instance-data fields that supply identities to archetype visibility models.
+///
+/// These names are declared by the workflow. The engine must never infer an
+/// identity field from its schema or name, because audit actors and senders are
+/// identity-shaped data but are not necessarily readers.
+class WorkflowVisibilityFields {
+  final String? sharedWith;
+  final List<String> participants;
+  final List<String> parties;
+  final String? recipient;
+
+  const WorkflowVisibilityFields({
+    this.sharedWith,
+    this.participants = const [],
+    this.parties = const [],
+    this.recipient,
+  });
+
+  bool get isEmpty =>
+      sharedWith == null &&
+      participants.isEmpty &&
+      parties.isEmpty &&
+      recipient == null;
+
+  factory WorkflowVisibilityFields.fromJson(Object? value) {
+    if (value == null) return const WorkflowVisibilityFields();
+    if (value is! Map) {
+      throw const FormatException(
+        'Workflow visibility.fields must be an object when declared.',
+      );
+    }
+
+    List<String> stringList(String key) {
+      final raw = value[key];
+      if (raw == null) return const [];
+      if (raw is! List) {
+        throw FormatException(
+          'Workflow visibility.fields.$key must be a list of field names.',
+        );
+      }
+      return raw
+          .map((entry) {
+            if (entry is! String || entry.isEmpty) {
+              throw FormatException(
+                'Workflow visibility.fields.$key must contain non-empty field names.',
+              );
+            }
+            return entry;
+          })
+          .toList(growable: false);
+    }
+
+    String? fieldName(String key) {
+      final raw = value[key];
+      if (raw == null) return null;
+      if (raw is! String || raw.isEmpty) {
+        throw FormatException(
+          'Workflow visibility.fields.$key must be a non-empty field name.',
+        );
+      }
+      return raw;
+    }
+
+    final parties = stringList('parties');
+    if (value.containsKey('parties') && parties.length != 2) {
+      throw const FormatException(
+        'Workflow visibility.fields.parties must name exactly two fields.',
+      );
+    }
+
+    return WorkflowVisibilityFields(
+      sharedWith: fieldName('sharedWith'),
+      participants: stringList('participants'),
+      parties: parties,
+      recipient: fieldName('recipient'),
+    );
+  }
+}
+
 /// Workflow-level read-visibility declaration.
 ///
 /// [isDeclared] keeps the distinction between an omitted visibility block and
@@ -479,11 +561,13 @@ enum WorkflowVisibilityDefault { public, membersOnly, guarded }
 class WorkflowVisibility {
   final WorkflowVisibilityDefault defaultValue;
   final WorkflowGuard? readGuard;
+  final WorkflowVisibilityFields fields;
   final bool isDeclared;
 
   const WorkflowVisibility({
     this.defaultValue = WorkflowVisibilityDefault.public,
     this.readGuard,
+    this.fields = const WorkflowVisibilityFields(),
     this.isDeclared = true,
   });
 
@@ -535,6 +619,7 @@ class WorkflowVisibility {
     return WorkflowVisibility(
       defaultValue: defaultValue,
       readGuard: readGuard,
+      fields: WorkflowVisibilityFields.fromJson(value['fields']),
       isDeclared: true,
     );
   }

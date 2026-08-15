@@ -7,6 +7,8 @@ LoomWorkflowStateMachine _machine(
   Map<String, dynamic>? readGuard,
   Map<String, dynamic>? stateReadGuard,
   Map<String, dynamic>? instanceDataSchema,
+  Map<String, dynamic>? visibilityFields,
+  List<Map<String, dynamic>>? renderBindings,
 }) => LoomWorkflowStateMachine.fromJson(<String, dynamic>{
   'initialState': 'open',
   'states': <String, dynamic>{
@@ -16,12 +18,26 @@ LoomWorkflowStateMachine _machine(
     },
   },
   'transitions': const <Map<String, dynamic>>[],
+  if (renderBindings != null) 'renderBindings': renderBindings,
   if (instanceDataSchema != null) 'instanceDataSchema': instanceDataSchema,
   'visibility': <String, dynamic>{
     'default': defaultVisibility,
     if (readGuard != null) 'readGuard': readGuard,
+    if (visibilityFields != null) 'fields': visibilityFields,
   },
 }, workflowType);
+
+Map<String, dynamic> _binding(
+  String family, {
+  Map<String, dynamic>? responseTable,
+}) => <String, dynamic>{
+  'states': <String>['open'],
+  'role': 'any',
+  'tabId': 'home',
+  'cardSurfaceFamily': family,
+  'bindingKind': 'primary',
+  if (responseTable != null) 'responseTable': responseTable,
+};
 
 LocalWorkflowEngineApi _api({ActiveMembershipLookup? activeMembershipLookup}) {
   return LocalWorkflowEngineApi(
@@ -228,6 +244,346 @@ void main() {
       expect(await _read(api, 'bystander'), isEmpty);
     });
   });
+
+  group('owner_and_shared visibility model', () {
+    test(
+      'admits shared viewers under both D8 spellings and refuses others',
+      () async {
+        final api = _api(
+          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+        );
+        api.registerDefinition(
+          _machine(
+            'documents',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{
+              'sharedWith': 'sharedWithFanIds',
+            },
+            renderBindings: <Map<String, dynamic>>[_binding('documentLibrary')],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'documents',
+          creator: 'seed',
+          title: 'legacy spelling',
+          data: <String, dynamic>{
+            'sharedWithPersonaIds': <String>['legacy-reader'],
+          },
+        );
+        await _create(
+          api,
+          workflowType: 'documents',
+          creator: 'seed',
+          title: 'current spelling',
+          data: <String, dynamic>{
+            'sharedWithFanIds': <String>['current-reader'],
+          },
+        );
+
+        expect(await _read(api, 'legacy-reader'), hasLength(1));
+        expect(await _read(api, 'current-reader'), hasLength(1));
+        expect(await _read(api, 'wrong-reader'), isEmpty);
+        expect(await _read(api, 'default-reader'), hasLength(2));
+      },
+    );
+
+    test(
+      'an unset sharedWith field matches neither empty nor named viewers',
+      () async {
+        final api = _api(activeMembershipLookup: (_) => false);
+        api.registerDefinition(
+          _machine(
+            'documents',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{
+              'sharedWith': 'sharedWithFanIds',
+            },
+            renderBindings: <Map<String, dynamic>>[_binding('documentLibrary')],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'documents',
+          creator: 'seed',
+          title: 'unshared seed',
+        );
+
+        expect(await _read(api, ''), isEmpty);
+        expect(await _read(api, 'named-viewer'), isEmpty);
+      },
+    );
+  });
+
+  group('participants visibility model', () {
+    test(
+      'inherits the responseTable archetype and unions declared fields',
+      () async {
+        final api = _api(
+          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+        );
+        api
+          ..registerDefinition(
+            _machine(
+              'thread-list',
+              defaultVisibility: 'public',
+              renderBindings: <Map<String, dynamic>>[
+                _binding(
+                  'discussionThread',
+                  responseTable: <String, dynamic>{
+                    'workflowType': 'thread-response',
+                    'eventField': 'threadId',
+                    'pendingStates': <String>['open'],
+                  },
+                ),
+              ],
+            ),
+          )
+          ..registerDefinition(
+            _machine(
+              'thread-response',
+              defaultVisibility: 'membersOnly',
+              visibilityFields: <String, dynamic>{
+                'participants': <String>[
+                  'participantFanIds',
+                  'participantBFanId',
+                ],
+              },
+            ),
+          );
+        await _create(
+          api,
+          workflowType: 'thread-response',
+          creator: 'seed',
+          title: 'private thread',
+          data: <String, dynamic>{
+            'participantPersonaIds': <String>['legacy-participant'],
+            'participantBFanId': 'current-participant',
+          },
+        );
+
+        expect(await _read(api, 'legacy-participant'), hasLength(1));
+        expect(await _read(api, 'current-participant'), hasLength(1));
+        expect(await _read(api, 'wrong-reader'), isEmpty);
+        expect(await _read(api, 'default-reader'), hasLength(1));
+      },
+    );
+
+    test(
+      'unset participant fields match neither empty nor named viewers',
+      () async {
+        final api = _api(activeMembershipLookup: (_) => false);
+        api.registerDefinition(
+          _machine(
+            'threads',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{
+              'participants': <String>['participantFanIds'],
+            },
+            renderBindings: <Map<String, dynamic>>[
+              _binding('discussionThread'),
+            ],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'threads',
+          creator: 'seed',
+          title: 'participant-less seed',
+        );
+
+        expect(await _read(api, ''), isEmpty);
+        expect(await _read(api, 'named-viewer'), isEmpty);
+      },
+    );
+  });
+
+  group('parties visibility model', () {
+    test(
+      'admits either named side for both parties archetypes and refuses others',
+      () async {
+        final api = _api(
+          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+        );
+        for (final entry in <String, String>{
+          'approval': 'approvalQueueItem',
+          'payment': 'paymentCheckout',
+        }.entries) {
+          api.registerDefinition(
+            _machine(
+              entry.key,
+              defaultVisibility: 'membersOnly',
+              visibilityFields: <String, dynamic>{
+                'parties': <String>['requesterFanId', 'reviewerFanId'],
+              },
+              renderBindings: <Map<String, dynamic>>[_binding(entry.value)],
+            ),
+          );
+          await _create(
+            api,
+            workflowType: entry.key,
+            creator: 'seed',
+            title: entry.key,
+            data: <String, dynamic>{
+              'requesterPersonaId': '${entry.key}-requester',
+              'reviewerFanId': '${entry.key}-reviewer',
+            },
+          );
+        }
+
+        expect(await _read(api, 'approval-requester'), hasLength(1));
+        expect(await _read(api, 'approval-reviewer'), hasLength(1));
+        expect(await _read(api, 'payment-requester'), hasLength(1));
+        expect(await _read(api, 'payment-reviewer'), hasLength(1));
+        expect(await _read(api, 'wrong-reader'), isEmpty);
+        expect(await _read(api, 'default-reader'), hasLength(2));
+      },
+    );
+
+    test('unset party fields match neither empty nor named viewers', () async {
+      final api = _api(activeMembershipLookup: (_) => false);
+      api.registerDefinition(
+        _machine(
+          'approval',
+          defaultVisibility: 'membersOnly',
+          visibilityFields: <String, dynamic>{
+            'parties': <String>['requesterFanId', 'reviewerFanId'],
+          },
+          renderBindings: <Map<String, dynamic>>[_binding('approvalQueueItem')],
+        ),
+      );
+      await _create(
+        api,
+        workflowType: 'approval',
+        creator: 'seed',
+        title: 'party-less seed',
+      );
+
+      expect(await _read(api, ''), isEmpty);
+      expect(await _read(api, 'named-viewer'), isEmpty);
+    });
+  });
+
+  group('recipient visibility model', () {
+    test(
+      'admits only the addressee while retaining default visibility',
+      () async {
+        final api = _api(
+          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+        );
+        api.registerDefinition(
+          _machine(
+            'notifications',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{'recipient': 'recipientFanId'},
+            renderBindings: <Map<String, dynamic>>[
+              _binding('notificationInbox'),
+            ],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'notifications',
+          creator: 'sender',
+          title: 'private notification',
+          data: <String, dynamic>{'recipientPersonaId': 'addressee'},
+        );
+
+        expect(await _read(api, 'addressee'), hasLength(1));
+        expect(await _read(api, 'wrong-reader'), isEmpty);
+        expect(await _read(api, 'default-reader'), hasLength(1));
+      },
+    );
+
+    test(
+      'an unset recipient matches neither empty nor named viewers',
+      () async {
+        final api = _api(activeMembershipLookup: (_) => false);
+        api.registerDefinition(
+          _machine(
+            'notifications',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{'recipient': 'recipientFanId'},
+            renderBindings: <Map<String, dynamic>>[
+              _binding('notificationInbox'),
+            ],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'notifications',
+          creator: 'sender',
+          title: 'recipient-less seed',
+        );
+
+        expect(await _read(api, ''), isEmpty);
+        expect(await _read(api, 'named-viewer'), isEmpty);
+      },
+    );
+  });
+
+  test(
+    'absent mappings never infer readers from identity-shaped data',
+    () async {
+      final api = _api(
+        activeMembershipLookup: (personaId) => personaId == 'default-reader',
+      );
+      final cases = <(String, String, Map<String, dynamic>)>[
+        (
+          'documents',
+          'documentLibrary',
+          <String, dynamic>{
+            'sharedWithFanIds': <String>['would-be-reader'],
+          },
+        ),
+        (
+          'threads',
+          'discussionThread',
+          <String, dynamic>{
+            'participantFanIds': <String>['would-be-reader'],
+          },
+        ),
+        (
+          'approvals',
+          'approvalQueueItem',
+          <String, dynamic>{
+            'requesterFanId': 'would-be-reader',
+            'reviewerFanId': 'reviewer',
+          },
+        ),
+        (
+          'notifications',
+          'notificationInbox',
+          <String, dynamic>{
+            'recipientFanId': 'would-be-reader',
+            'senderFanId': 'audit-sender',
+          },
+        ),
+      ];
+      for (final (workflowType, family, data) in cases) {
+        api.registerDefinition(
+          _machine(
+            workflowType,
+            defaultVisibility: 'membersOnly',
+            renderBindings: <Map<String, dynamic>>[_binding(family)],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: workflowType,
+          creator: 'seed',
+          title: workflowType,
+          data: data,
+        );
+      }
+
+      expect(await _read(api, 'would-be-reader'), isEmpty);
+      expect(await _read(api, 'audit-sender'), isEmpty);
+      // An omitted recipient is broadcast: it falls back to the default rather
+      // than granting the value of an inferred recipient field.
+      expect(await _read(api, 'default-reader'), hasLength(cases.length));
+    },
+  );
 
   test(
     'omitted and public visibility remain readable by every persona',

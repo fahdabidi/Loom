@@ -75,6 +75,55 @@ void main() {
       }
     });
 
+    test('workflow visibility parses archetype identity field mappings', () {
+      final machine = _machine('visibility-fields', {
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+        },
+        'transitions': <Map<String, dynamic>>[],
+        'visibility': {
+          'default': 'membersOnly',
+          'fields': {
+            'sharedWith': 'sharedWithFanIds',
+            'participants': ['participantFanIds'],
+            'parties': ['requesterFanId', 'reviewerFanId'],
+            'recipient': 'recipientFanId',
+          },
+        },
+      });
+
+      expect(machine.visibility.fields.sharedWith, 'sharedWithFanIds');
+      expect(machine.visibility.fields.participants, ['participantFanIds']);
+      expect(machine.visibility.fields.parties, [
+        'requesterFanId',
+        'reviewerFanId',
+      ]);
+      expect(machine.visibility.fields.recipient, 'recipientFanId');
+
+      expect(
+        () => _machine('invalid-parties', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+          'visibility': {
+            'fields': {
+              'parties': ['requesterFanId'],
+            },
+          },
+        }),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('exactly two fields'),
+          ),
+        ),
+      );
+    });
+
     test(
       'omitted workflow visibility resolves to public and remains undeclared',
       () {

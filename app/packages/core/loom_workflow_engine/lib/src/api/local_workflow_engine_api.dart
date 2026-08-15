@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import '../archetypes/archetype_resolver.dart';
 import '../evaluator/effect_evaluator.dart';
 import '../evaluator/formula_evaluator.dart';
 import '../evaluator/guard_evaluator.dart';
@@ -81,6 +82,53 @@ class _QueryCandidate {
 /// Uses [WorkflowDatabase] (sqlite3, transitively available via drift) so
 /// every read/write goes through a real transactional storage layer.
 class LocalWorkflowEngineApi implements WorkflowEngineApi {
+  /// Actor-set mutations promised by the archetype contract tables.
+  ///
+  /// These are engine semantics, not authored effects. Keeping the mapping
+  /// next to transition application makes the dual-writer Phase A/Phase F
+  /// straddle explicit: authored effects run first, then this pass restores
+  /// set semantics for the field the workflow currently spells.
+  static const Map<
+    String,
+    Map<String, (String, _ArchetypeBookkeepingOperation)>
+  >
+  _archetypeBookkeepingByAction = {
+    'documentLibrary': {
+      'open': ('openedFanIds', _ArchetypeBookkeepingOperation.addActor),
+      'acknowledge': (
+        'acknowledgedFanIds',
+        _ArchetypeBookkeepingOperation.addActor,
+      ),
+      'save': ('savedFanIds', _ArchetypeBookkeepingOperation.addActor),
+      'unsave': ('savedFanIds', _ArchetypeBookkeepingOperation.removeActor),
+      'download': (
+        'downloadedFanIds',
+        _ArchetypeBookkeepingOperation.addActor,
+      ),
+      'request_access': (
+        'accessRequestedFanIds',
+        _ArchetypeBookkeepingOperation.addActor,
+      ),
+      'withdraw_access_request': (
+        'accessRequestedFanIds',
+        _ArchetypeBookkeepingOperation.removeActor,
+      ),
+    },
+    'equipment-loan': {
+      'join_queue': ('queuedFanIds', _ArchetypeBookkeepingOperation.addActor),
+      'leave_queue': (
+        'queuedFanIds',
+        _ArchetypeBookkeepingOperation.removeActor,
+      ),
+    },
+    'event-rsvp': {
+      'set_reminder': (
+        'reminderFanIds',
+        _ArchetypeBookkeepingOperation.addActor,
+      ),
+    },
+  };
+
   final WorkflowDatabase _db;
   final String _communityId;
   final DateTime Function() _clock;
@@ -91,6 +139,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
   final Map<String, LoomWorkflowStateMachine> _definitions = {};
+  Map<String, ResolvedArchetype> _resolvedArchetypes = const {};
 
   /// Maps individual persona ids to their declared persona type (role).
   /// Set before any guard-evaluating calls so
@@ -136,6 +185,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   void registerDefinition(LoomWorkflowStateMachine machine) {
     final defId = '${_communityId}_${machine.workflowType}';
     _definitions[defId] = machine;
+    _resolveRegisteredArchetypes();
     unawaited(
       _db.upsertDefinition(
         definitionId: defId,
@@ -157,7 +207,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final map = jsonDecode(jsonStr) as Map<String, dynamic>;
     final machine = LoomWorkflowStateMachine.fromJson(map, workflowType);
     _definitions[defId] = machine;
+    _resolveRegisteredArchetypes();
     return machine;
+  }
+
+  void _resolveRegisteredArchetypes() {
+    _resolvedArchetypes = const ArchetypeResolver().resolveAll({
+      for (final machine in _definitions.values)
+        machine.workflowType: _serializeMachine(machine),
+    });
   }
 
   // ── WorkflowEngineApi ─────────────────────────────────────────────────
@@ -392,6 +450,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         instance.createdByPersonaId == personaId) {
       return true;
     }
+    if (_isVisibleThroughArchetype(instance, machine, personaId)) {
+      return true;
+    }
     switch (machine.visibility.defaultValue) {
       case WorkflowVisibilityDefault.public:
         return true;
@@ -409,6 +470,108 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           clock: _clock,
         );
     }
+  }
+
+  bool _isVisibleThroughArchetype(
+    WorkflowInstance instance,
+    LoomWorkflowStateMachine machine,
+    String personaId,
+  ) {
+    final family = _resolvedArchetypes[machine.workflowType]?.family;
+    final model = ArchetypeResolver.contracts[family]?.visibility;
+    final fields = machine.visibility.fields;
+
+    return switch (model) {
+      VisibilityModel.ownerAndShared =>
+        fields.sharedWith != null &&
+            _identityFieldMatchesDuringD8Straddle(
+              instance.instanceData,
+              fields.sharedWith!,
+              personaId,
+              shape: _IdentityFieldShape.list,
+            ),
+      VisibilityModel.participants => fields.participants.any(
+        (field) => _identityFieldMatchesDuringD8Straddle(
+          instance.instanceData,
+          field,
+          personaId,
+          shape: _IdentityFieldShape.scalarOrList,
+        ),
+      ),
+      VisibilityModel.parties => fields.parties.any(
+        (field) => _identityFieldMatchesDuringD8Straddle(
+          instance.instanceData,
+          field,
+          personaId,
+          shape: _IdentityFieldShape.scalar,
+        ),
+      ),
+      VisibilityModel.recipient =>
+        fields.recipient != null &&
+            _identityFieldMatchesDuringD8Straddle(
+              instance.instanceData,
+              fields.recipient!,
+              personaId,
+              shape: _IdentityFieldShape.scalar,
+            ),
+      VisibilityModel.roles || VisibilityModel.owner || null => false,
+    };
+  }
+
+  /// Reads both the specVersion 4 `*FanId(s)` spelling and the legacy
+  /// `*PersonaId(s)` spelling required by decision D8. Phase F deletes this
+  /// straddle helper once the corpus rename is complete.
+  ///
+  /// Empty viewers and empty/unset field values never match. The declared
+  /// field name is the only source of truth; the suffix alias is compatibility,
+  /// not permission to scan other identity-shaped instance data.
+  bool _identityFieldMatchesDuringD8Straddle(
+    Map<String, dynamic> instanceData,
+    String declaredField,
+    String personaId, {
+    required _IdentityFieldShape shape,
+    List<String>? candidateSpellings,
+  }) {
+    if (declaredField.isEmpty) return false;
+
+    final spellings = <String>{declaredField};
+    if (declaredField.endsWith('FanIds')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'FanIds'.length)}PersonaIds',
+      );
+    } else if (declaredField.endsWith('FanId')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'FanId'.length)}PersonaId',
+      );
+    } else if (declaredField.endsWith('PersonaIds')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'PersonaIds'.length)}FanIds',
+      );
+    } else if (declaredField.endsWith('PersonaId')) {
+      spellings.add(
+        '${declaredField.substring(0, declaredField.length - 'PersonaId'.length)}FanId',
+      );
+    }
+    candidateSpellings?.addAll(spellings);
+    if (personaId.isEmpty) return false;
+
+    for (final field in spellings) {
+      final value = instanceData[field];
+      if (shape != _IdentityFieldShape.list &&
+          value is String &&
+          value.isNotEmpty &&
+          value == personaId) {
+        return true;
+      }
+      if (shape != _IdentityFieldShape.scalar && value is Iterable) {
+        if (value.any(
+          (entry) => entry is String && entry.isNotEmpty && entry == personaId,
+        )) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   String _cursorForRow(String sortKey, WorkflowInstanceRow row) {
@@ -840,13 +1003,19 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       );
     }
 
-    final newData = await _applyExtendedEffects(
+    final effectedData = await _applyExtendedEffects(
       transition.effects,
       machine: machine,
       sourceData: data,
       personaId: personaId,
       inputValues: inputs,
       instanceId: instanceId,
+    );
+    final newData = _applyArchetypeBookkeeping(
+      machine: machine,
+      transition: transition,
+      sourceData: effectedData,
+      personaId: personaId,
     );
     await _db.updateInstanceState(
       instanceId: instanceId,
@@ -1132,6 +1301,61 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       if (machine.instanceDataSchema[entry.key]?.formula == null)
         entry.key: entry.value,
   };
+
+  Map<String, dynamic> _applyArchetypeBookkeeping({
+    required LoomWorkflowStateMachine machine,
+    required LoomWorkflowTransition transition,
+    required Map<String, dynamic> sourceData,
+    required String personaId,
+  }) {
+    final family = _resolvedArchetypes[machine.workflowType]?.family;
+    final action = transition.action;
+    if (family == null || action == null) return sourceData;
+
+    final rule = _archetypeBookkeepingByAction[family]?[action];
+    if (rule == null) return sourceData;
+    final (contractField, operation) = rule;
+
+    final candidateSpellings = <String>[];
+    final actorIsPresent = _identityFieldMatchesDuringD8Straddle(
+      sourceData,
+      contractField,
+      personaId,
+      shape: _IdentityFieldShape.list,
+      candidateSpellings: candidateSpellings,
+    );
+    final storageField = candidateSpellings.firstWhere(
+      machine.instanceDataSchema.containsKey,
+      orElse: () => candidateSpellings.firstWhere(
+        sourceData.containsKey,
+        orElse: () => contractField,
+      ),
+    );
+
+    final existing = sourceData[storageField];
+    final existingList = existing is List
+        ? List<dynamic>.from(existing)
+        : <dynamic>[];
+    final actorCount = existingList.where((value) => value == personaId).length;
+
+    switch (operation) {
+      case _ArchetypeBookkeepingOperation.addActor:
+        // A match under the other D8 spelling already represents this actor.
+        // Do not create a second physical entry while both spellings coexist.
+        if (actorIsPresent && actorCount <= 1) return sourceData;
+        return Map<String, dynamic>.from(sourceData)
+          ..[storageField] = <dynamic>[
+            ...existingList.where((value) => value != personaId),
+            personaId,
+          ];
+      case _ArchetypeBookkeepingOperation.removeActor:
+        if (!actorIsPresent || actorCount == 0) return sourceData;
+        return Map<String, dynamic>.from(sourceData)
+          ..[storageField] = existingList
+              .where((value) => value != personaId)
+              .toList(growable: false);
+    }
+  }
 
   /// Checks a guard's database-backed conditions before its synchronous ones.
   ///
@@ -1695,6 +1919,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             (t) => {
               'id': t.id,
               'label': t.label,
+              if (t.action != null) 'action': t.action,
               if (t.icon != null) 'icon': t.icon,
               if (t.tone != null) 'tone': t.tone,
               'from': t.from,
@@ -1755,6 +1980,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
                 'bindingKind': b.bindingKind,
                 if (b.audienceMemberField != null)
                   'audienceMemberField': b.audienceMemberField,
+                if (b.responseTable != null)
+                  'responseTable': {
+                    'workflowType': b.responseTable!.workflowType,
+                    'eventField': b.responseTable!.eventField,
+                    'pendingStates': b.responseTable!.pendingStates,
+                  },
               },
             )
             .toList(),
@@ -1780,6 +2011,17 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       if (machine.visibility.isDeclared)
         'visibility': {
           'default': machine.visibility.defaultValue.name,
+          if (!machine.visibility.fields.isEmpty)
+            'fields': {
+              if (machine.visibility.fields.sharedWith != null)
+                'sharedWith': machine.visibility.fields.sharedWith,
+              if (machine.visibility.fields.participants.isNotEmpty)
+                'participants': machine.visibility.fields.participants,
+              if (machine.visibility.fields.parties.isNotEmpty)
+                'parties': machine.visibility.fields.parties,
+              if (machine.visibility.fields.recipient != null)
+                'recipient': machine.visibility.fields.recipient,
+            },
           if (machine.visibility.readGuard != null)
             'readGuard':
                 _serializeGuard(machine.visibility.readGuard!) ??
@@ -1870,3 +2112,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       'else': effect.elseEffects.map(_serializeEffect).toList(),
   };
 }
+
+enum _IdentityFieldShape { scalar, list, scalarOrList }
+
+enum _ArchetypeBookkeepingOperation { addActor, removeActor }
