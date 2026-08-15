@@ -1878,17 +1878,19 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final appliesToEvent = _eventActionIds.contains(transitionId);
     final appliesToResponse = !appliesToEvent &&
         _responseActionIds.contains(transitionId);
-    if (appliesToResponse &&
-        (_usesResponseRows && (response == null || responseTable == null))) {
-      return Future.value();
+    // A response action with no response table is a malformed package, not a
+    // user error -- but it must still say so rather than swallow the tap.
+    if (appliesToResponse && _usesResponseRows && responseTable == null) {
+      setState(() {
+        _error = 'This event cannot record responses. Please report this.';
+        _retry = null;
+      });
+      return;
     }
     final responseWorkflowType = responseTable?.workflowType;
     final targetWorkflowType = appliesToResponse
         ? responseWorkflowType!
         : instance.workflowType;
-    final targetInstanceId = appliesToResponse
-        ? response!['\$id'] as String
-        : instance.instanceId;
     return _runMutation(
       generation: generation,
       instance: instance,
@@ -1896,6 +1898,46 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       engine: engine,
       personaId: personaId,
       operation: () async {
+        // Create-or-get (D7a). A member with no response row previously fell
+        // through to `return Future.value()`: the tap did nothing, silently,
+        // with no error and no state change -- a dead button. A missing row is
+        // not exceptional, because the archetype's fan-out only covers members
+        // who existed when the event was created; anyone joining later has no
+        // row for any earlier event. Materializing on demand is self-healing
+        // for every cause of a missing row (late joiner, a fan-out that failed
+        // part-way, data repair), not just that one.
+        //
+        // Deliberately inside `operation` so a failure to create raises through
+        // _runMutation's existing catch, surfacing the standard error banner
+        // and Retry rather than a second bespoke error path.
+        var targetInstanceId = response?['\$id'] as String?;
+        if (appliesToResponse && _usesResponseRows) {
+          if (targetInstanceId == null) {
+            final created = await engine.createInstances(
+              workflowType: responseTable!.workflowType,
+              initialInstanceDataList: [
+                {
+                  responseTable.eventField: instance.instanceId,
+                  // All six response tables in the corpus declare `personaId`.
+                  // This becomes `fanId` at the specVersion 4 identity rename;
+                  // `responseTable` should declare the field outright rather
+                  // than have this infer it -- tracked in §8.
+                  'personaId': personaId,
+                },
+              ],
+              personaId: personaId,
+            );
+            if (created.isEmpty) {
+              throw StateError(
+                'Creating a ${responseTable.workflowType} row for $personaId '
+                'returned no instance id.',
+              );
+            }
+            targetInstanceId = created.first;
+          }
+        } else {
+          targetInstanceId = instance.instanceId;
+        }
         final result = await engine.applyTransition(
           workflowType: targetWorkflowType,
           instanceId: targetInstanceId,
@@ -1903,7 +1945,12 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           personaId: personaId,
           inputs: inputs,
         );
-        if (appliesToResponse && response != null && !appliesToEvent) {
+        // Was gated on `response != null` back when a missing row aborted the
+        // whole call. With create-or-get that is no longer true, and a row we
+        // just created needs the re-read exactly as much as a pre-existing one
+        // -- otherwise the freshly recorded response would not appear until
+        // some later refresh.
+        if (appliesToResponse) {
           final page = await engine.queryInstances(
             tabId: 'calendar',
             personaId: personaId,

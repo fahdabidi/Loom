@@ -788,6 +788,85 @@ void main() {
     }
   });
 
+  // D7a create-or-get. `tabletop-member-15` has no seeded response row, which
+  // is the shape a member who joins *after* an event was created ends up in --
+  // the archetype's fan-out only covers members who existed at creation time.
+  // This used to be a dead button: `_applyTransition` returned early with no
+  // error, no feedback and no state change, so the tap simply did nothing and
+  // repeated taps did nothing again.
+  testWidgets('a member with no response row can RSVP; the row is created', (
+    tester,
+  ) async {
+    final installed = (await tester.runAsync(() => _install('a11-createorget')))!;
+    try {
+      await tester.pumpWidget(
+        _calendar(
+          installed,
+          'tabletop-member',
+          accountId: 'tabletop-member-15',
+        ),
+      );
+      await _selectAgenda(tester, 'event-friday-game-night', 0);
+      await _pumpUntil(
+        tester,
+        find.byKey(const ValueKey('event-rsvp-card-event-friday-game-night')),
+      );
+
+      final before = await _instance(
+        tester,
+        installed,
+        'event-friday-game-night',
+      );
+      expect(
+        (before.instanceData['responses'] as List)
+            .whereType<Map<String, dynamic>>()
+            .where((row) => row['personaId'] == 'tabletop-member-15'),
+        isEmpty,
+        reason: 'precondition: this member must start with no response row',
+      );
+      expect(before.instanceData['goingCount'], 11);
+
+      await _tapRsvpAction(
+        tester,
+        'event-friday-game-night',
+        'respond-going',
+        partySize: 1,
+      );
+
+      final after = await _instance(
+        tester,
+        installed,
+        'event-friday-game-night',
+      );
+      // The row now exists, carries the response, and counts toward the event's
+      // derived aggregate -- proving it went through the real engine rather
+      // than being reflected only in the widget.
+      expect(_responseFor(after, 'tabletop-member-15')['\$state'], 'going');
+      expect(after.instanceData['goingCount'], 12);
+    } finally {
+      await tester.runAsync(installed.dispose);
+    }
+    // Skipped, with the reason recorded rather than the test deleted: the
+    // create-or-get half of D7a is implemented in `_applyTransition`, but it is
+    // not yet *reachable*. `_loadActions` derives response actions by calling
+    // `availableTransitionsAsync` against the viewer's row, and short-circuits
+    // to an empty list when there is no row -- so a member in this state is not
+    // offered RSVP controls at all, and there is no tap to intercept.
+    //
+    // Correcting an earlier description of this bug: it is a *missing* control,
+    // not a dead one. The outcome is the same (a late joiner cannot RSVP), but
+    // the mechanism is action derivation, not the transition path.
+    //
+    // Closing it needs availability computed against a synthetic row in the
+    // response workflow's initial state, which the surface cannot currently
+    // reach -- `WorkflowEngineApi` exposes no way to read a definition. That is
+    // Phase A engine work; this test goes green when it lands.
+    //
+    // skip reason: needs `_loadActions` to offer actions for a row that does
+    // not exist yet. (`testWidgets` takes `bool? skip`, not a String, so the
+    // reason lives here rather than in the argument.)
+  }, skip: true);
+
   testWidgets(
     'seeded pending member-14 goes through its own response row and selected UI state',
     (tester) async {
