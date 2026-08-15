@@ -67,9 +67,18 @@ void main() {
   });
 
   test(
-    'createInstance derives its create permission and persists when allowed',
+    'createInstance keeps declaredBespoke and generic origins creatable',
     () async {
       await _installCreatableDefinition(database);
+      var definitions = await database.loadDefinitionsForCommunity(
+        _communityId,
+      );
+      expect(
+        const ArchetypeResolver()
+            .resolveAll(definitions)[_workflowType]!
+            .origin,
+        ArchetypeOrigin.declaredBespoke,
+      );
       final response = await service.handler(
         _createRequest(
           fanId: 'fan-creator',
@@ -97,6 +106,86 @@ void main() {
       expect(appAccessClient.appId, 'loom_communities');
       expect(appAccessClient.permissionId, 'event_rsvp.create');
       expect(appAccessClient.groupId, 'loom_communities_service_unit');
+
+      const genericWorkflowType = 'generic-entry';
+      await _installCreatableDefinition(
+        database,
+        workflowType: genericWorkflowType,
+        family: 'formEntry',
+      );
+      definitions = await database.loadDefinitionsForCommunity(_communityId);
+      expect(
+        const ArchetypeResolver()
+            .resolveAll(definitions)[genericWorkflowType]!
+            .origin,
+        ArchetypeOrigin.generic,
+      );
+
+      final genericResponse = await service.handler(
+        _createRequest(
+          fanId: 'fan-generic-creator',
+          body: {
+            'workflowType': genericWorkflowType,
+            'instanceData': {'ownerFanId': 'fan-generic-creator'},
+          },
+        ),
+      );
+
+      expect(genericResponse.statusCode, 201);
+      final genericBody =
+          jsonDecode(await genericResponse.readAsString())
+              as Map<String, dynamic>;
+      expect(genericBody['workflowType'], genericWorkflowType);
+      expect(appAccessClient.callCount, 2);
+      expect(appAccessClient.permissionId, 'form_entry.create');
+    },
+  );
+
+  test(
+    'createInstance refuses a response-table-owned type before App Access',
+    () async {
+      const responseWorkflowType = 'event-response';
+      await _installResponseTableDefinitionPair(
+        database,
+        responseWorkflowType: responseWorkflowType,
+      );
+      final definitions = await database.loadDefinitionsForCommunity(
+        _communityId,
+      );
+      final resolved = const ArchetypeResolver().resolveAll(definitions);
+      expect(
+        resolved[responseWorkflowType]!.origin,
+        ArchetypeOrigin.inheritedFromResponseTable,
+      );
+      expect(resolved[responseWorkflowType]!.family, 'event-rsvp');
+      expect(
+        const ArchetypeResolver().permissionId(
+          resolved[responseWorkflowType]!.family!,
+          'create',
+        ),
+        'event_rsvp.create',
+      );
+      appAccessClient.allowed = true;
+
+      final response = await service.handler(
+        _createRequest(
+          fanId: 'fan-event-organizer',
+          body: {
+            'workflowType': responseWorkflowType,
+            'instanceData': {
+              'eventId': 'fabricated-event',
+              'personaId': 'fan-victim',
+            },
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'workflow_create_refused'),
+      );
+      expect(appAccessClient.callCount, 0);
     },
   );
 
@@ -590,7 +679,11 @@ Future<void> _seed(WorkflowDatabase database) async {
   );
 }
 
-Future<void> _installCreatableDefinition(WorkflowDatabase database) async {
+Future<void> _installCreatableDefinition(
+  WorkflowDatabase database, {
+  String workflowType = _workflowType,
+  String family = 'event-rsvp',
+}) async {
   final definition = _definitionMap();
   final transition =
       (definition['transitions'] as List<dynamic>).first
@@ -601,7 +694,7 @@ Future<void> _installCreatableDefinition(WorkflowDatabase database) async {
       'states': ['draft'],
       'role': 'any',
       'tabId': 'home',
-      'cardSurfaceFamily': 'event-rsvp',
+      'cardSurfaceFamily': family,
       'bindingKind': 'primary',
       'actions': [
         {
@@ -615,11 +708,56 @@ Future<void> _installCreatableDefinition(WorkflowDatabase database) async {
     },
   ];
   await database.upsertDefinition(
-    definitionId: '${_communityId}_$_workflowType',
-    workflowType: _workflowType,
+    definitionId: '${_communityId}_$workflowType',
+    workflowType: workflowType,
     definitionJson: jsonEncode(definition),
     version: 4,
   );
+}
+
+Future<void> _installResponseTableDefinitionPair(
+  WorkflowDatabase database, {
+  required String responseWorkflowType,
+}) async {
+  final eventDefinition = _definitionMap();
+  eventDefinition['renderBindings'] = [
+    {
+      'states': ['draft'],
+      'role': 'any',
+      'tabId': 'calendar',
+      'cardSurfaceFamily': 'event-rsvp',
+      'bindingKind': 'primary',
+      'responseTable': {
+        'workflowType': responseWorkflowType,
+        'eventField': 'eventId',
+        'pendingStates': ['pending'],
+      },
+    },
+  ];
+  final responseDefinition = <String, dynamic>{
+    'initialState': 'pending',
+    'states': {
+      'pending': {'label': 'Pending'},
+    },
+    'transitions': <Map<String, dynamic>>[],
+    'renderBindings': <Map<String, dynamic>>[],
+    'instanceDataSchema': {
+      'eventId': {'type': 'text', 'required': true},
+      'personaId': {'type': 'text', 'required': true},
+    },
+  };
+
+  for (final entry in {
+    _workflowType: eventDefinition,
+    responseWorkflowType: responseDefinition,
+  }.entries) {
+    await database.upsertDefinition(
+      definitionId: '${_communityId}_${entry.key}',
+      workflowType: entry.key,
+      definitionJson: jsonEncode(entry.value),
+      version: 4,
+    );
+  }
 }
 
 Request _createRequest({

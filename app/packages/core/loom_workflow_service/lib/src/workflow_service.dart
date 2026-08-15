@@ -335,18 +335,6 @@ class WorkflowService {
 
     try {
       return await _databaseSerialExecutor.run(() async {
-        final groupId = await _communityGroupIdResolver.resolveGroupId(
-          communityId,
-        );
-        if (groupId == null || groupId.trim().isEmpty) {
-          return _error(
-            request: request,
-            statusCode: 503,
-            code: 'authorization_service_unavailable',
-            message: 'Workflow creation authorization is unavailable.',
-          );
-        }
-
         final definitions = await _database.loadDefinitionsForCommunity(
           communityId,
         );
@@ -361,6 +349,9 @@ class WorkflowService {
 
         const resolver = ArchetypeResolver();
         final archetype = resolver.resolveAll(definitions)[body.workflowType];
+        if (archetype?.origin == ArchetypeOrigin.inheritedFromResponseTable) {
+          return _createRefused(request);
+        }
         final family = archetype?.family;
         final permissionId = family == null
             ? null
@@ -368,6 +359,18 @@ class WorkflowService {
         if (permissionId == null ||
             archetype!.conflictingBespokeFamilies.isNotEmpty) {
           return _createRefused(request);
+        }
+
+        final groupId = await _communityGroupIdResolver.resolveGroupId(
+          communityId,
+        );
+        if (groupId == null || groupId.trim().isEmpty) {
+          return _error(
+            request: request,
+            statusCode: 503,
+            code: 'authorization_service_unavailable',
+            message: 'Workflow creation authorization is unavailable.',
+          );
         }
 
         final allowed = await _appAccessClient.checkAccess(
