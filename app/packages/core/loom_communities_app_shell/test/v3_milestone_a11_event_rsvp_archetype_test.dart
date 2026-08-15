@@ -24,6 +24,25 @@ const _customGardenResponseEventField = 'eventId';
 const _customGardenEventId = 'spring-workshop';
 const _customGardenOrganizerId = 'garden-coordinator';
 const _customGardenMemberId = 'garden-member';
+const _customGardenMemberAccountId = 'garden-member-maya';
+
+const _gardenAccounts = <LoomAccount>[
+  LoomAccount(
+    accountId: _customGardenOrganizerId,
+    displayName: 'Garden Coordinator',
+    personaTypeId: _customGardenOrganizerId,
+  ),
+  LoomAccount(
+    accountId: 'garden-member-rina',
+    displayName: 'Rina',
+    personaTypeId: _customGardenMemberId,
+  ),
+  LoomAccount(
+    accountId: _customGardenMemberAccountId,
+    displayName: 'Maya',
+    personaTypeId: _customGardenMemberId,
+  ),
+];
 
 File _fixtureFile([String fixtureRelative = _fixtureRelative]) {
   var directory = Directory.current;
@@ -62,7 +81,9 @@ Future<_InstalledTabletop> _install(
   String fixtureRelative = _fixtureRelative,
 }) async {
   final source =
-      jsonDecode(stripJsonComments(_fixtureFile(fixtureRelative).readAsStringSync()))
+      jsonDecode(
+            stripJsonComments(_fixtureFile(fixtureRelative).readAsStringSync()),
+          )
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
   final temp = await Directory.systemTemp.createTemp('loom-a11-$extensionId-');
@@ -222,7 +243,9 @@ Future<void> _openEventCreation(
   final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
   final createEvent = find.byKey(
     ValueKey(
-      workflowType == null ? 'creatable-fab-event-rsvp' : 'creatable-fab-$workflowType',
+      workflowType == null
+          ? 'creatable-fab-event-rsvp'
+          : 'creatable-fab-$workflowType',
     ),
   );
   if (speedDial.evaluate().isNotEmpty) {
@@ -294,6 +317,32 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   );
 }
 
+Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
+  var lastMatchCount = finder.evaluate().length;
+  for (var attempt = 0; attempt < 40; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    lastMatchCount = finder.evaluate().length;
+    if (lastMatchCount == 0) return;
+  }
+  throw TestFailure(
+    'Timed out waiting for $finder to disappear; '
+    'last observed matches=$lastMatchCount',
+  );
+}
+
+Future<void> _confirmPickerDialog(WidgetTester tester) async {
+  final dialog = find.byType(AlertDialog);
+  await _pumpUntil(tester, dialog);
+  expect(dialog, findsOneWidget);
+  final confirm = find.descendant(of: dialog, matching: find.text('OK'));
+  await _pumpUntil(tester, confirm);
+  await tester.tap(confirm);
+  await _pumpUntilAbsent(tester, dialog);
+}
+
 Future<WorkflowInstance> _instance(
   WidgetTester tester,
   _InstalledTabletop installed,
@@ -350,7 +399,9 @@ Future<void> _tapRsvpAction(
   }
   if (dialog.evaluate().isNotEmpty) {
     for (final entry in requestedInputs.entries) {
-      final input = find.byKey(ValueKey('generic-transition-input-${entry.key}'));
+      final input = find.byKey(
+        ValueKey('generic-transition-input-${entry.key}'),
+      );
       if (input.evaluate().isEmpty) continue;
       await _pumpUntil(tester, input);
       await tester.ensureVisible(input);
@@ -411,22 +462,58 @@ Future<void> _selectAgendaById(WidgetTester tester, String instanceId) async {
     find.byWidgetPredicate((widget) {
       final selected = widget.key;
       return selected is ValueKey<String> &&
-          selected.value.startsWith('engine-native-calendar-selected-detail-$instanceId-');
+          selected.value.startsWith(
+            'engine-native-calendar-selected-detail-$instanceId-',
+          );
     }),
   );
 }
 
 Future<LoomAuthApi> _useFixtureAccounts(_InstalledTabletop installed) async {
   final auth = LocalAuthApi();
-  final seedFrom = installed.experience.personas
-          ?.any((persona) => persona.personaId == 'tabletop-member') ==
-      true
-    ? 'ext_verify_tabletop_club'
-    : installed.community.extensionId;
+  final seedFrom =
+      installed.experience.personas?.any(
+            (persona) => persona.personaId == 'tabletop-member',
+          ) ==
+          true
+      ? 'ext_verify_tabletop_club'
+      : installed.community.extensionId;
   auth.seedAccounts(
     installed.community.extensionId,
     await auth.listAccounts(communityExtensionId: seedFrom),
   );
+  return auth;
+}
+
+TestActiveAuthApi _gardenAuth(
+  _InstalledTabletop installed, {
+  String activeAccountId = _customGardenMemberAccountId,
+}) {
+  final auth = activeAuthForCommunity(
+    community: installed.community,
+    experience: installed.experience,
+    accountId: activeAccountId,
+    accounts: _gardenAccounts,
+  );
+  configureEngineAuthorizationForExtensionId(
+    extensionId: installed.community.extensionId,
+    appShellConfiguration: installed.community.appShellConfiguration,
+    activeMembershipLookup: (personaId) async {
+      final accounts = await auth.listAccounts(
+        communityExtensionId: installed.community.extensionId,
+      );
+      return accounts.any(
+        (account) =>
+            account.accountId == personaId &&
+            account.status == MembershipStatus.active,
+      );
+    },
+  );
+  if (installed.engine case final LocalWorkflowEngineApi engine) {
+    for (final account in _gardenAccounts) {
+      engine.setPersonaType(account.accountId, account.personaTypeId);
+    }
+  }
   return auth;
 }
 
@@ -485,7 +572,8 @@ Future<WorkflowInstance?> _customEventByTitle(
     limit: 500,
   );
   final matches = page.items.where(
-    (row) => row.workflowType == workflowType && row.instanceData['title'] == title,
+    (row) =>
+        row.workflowType == workflowType && row.instanceData['title'] == title,
   );
   return matches.length == 1 ? matches.first : null;
 }
@@ -797,7 +885,9 @@ void main() {
   testWidgets('a member with no response row can RSVP; the row is created', (
     tester,
   ) async {
-    final installed = (await tester.runAsync(() => _install('a11-createorget')))!;
+    final installed = (await tester.runAsync(
+      () => _install('a11-createorget'),
+    ))!;
     try {
       // The fixture has no late-joiner shape to borrow: every one of its 13
       // accounts already has a row on the only event that has any. So make one
@@ -1104,13 +1194,22 @@ void main() {
   testWidgets(
     'custom workflow event uses event-rsvp response actions when the viewer has a seeded response',
     (tester) async {
-      final installed = (await tester.runAsync(() => _install(
-        'a11-garden-bespoke',
-        fixtureRelative: _gardenFixtureRelative,
-      )))!;
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a11-garden-bespoke',
+          fixtureRelative: _gardenFixtureRelative,
+        ),
+      ))!;
       try {
-        final auth = (await tester.runAsync(() => _useFixtureAccounts(installed)))!;
-        await tester.pumpWidget(_calendar(installed, _customGardenMemberId, authApi: auth));
+        final auth = _gardenAuth(installed);
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            _customGardenMemberId,
+            accountId: _customGardenMemberAccountId,
+            authApi: auth,
+          ),
+        );
         await _selectAgendaById(tester, _customGardenEventId);
 
         await _pumpUntil(
@@ -1123,26 +1222,33 @@ void main() {
           findsOneWidget,
         );
 
-        final seededResponse = await tester.runAsync(() => _customResponseFor(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: _customGardenEventId,
-          personaId: _customGardenMemberId,
-        ));
+        final seededResponse = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: _customGardenEventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          ),
+        );
         expect(seededResponse, isNotNull);
         expect(seededResponse!.currentState, 'pending');
 
         await _pumpUntil(
           tester,
           find.byKey(
-            const ValueKey('event-rsvp-$_customGardenEventId-action-respond-going'),
+            const ValueKey(
+              'event-rsvp-$_customGardenEventId-action-respond-waitlist',
+            ),
           ),
         );
         await _pumpUntil(
           tester,
           find.byKey(
-            const ValueKey('event-rsvp-$_customGardenEventId-action-respond-maybe'),
+            const ValueKey(
+              'event-rsvp-$_customGardenEventId-action-respond-maybe',
+            ),
           ),
         );
         await _pumpUntil(
@@ -1153,6 +1259,14 @@ void main() {
             ),
           ),
         );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'event-rsvp-$_customGardenEventId-action-respond-going',
+            ),
+          ),
+          findsNothing,
+        );
       } finally {
         await tester.runAsync(installed.dispose);
       }
@@ -1162,58 +1276,118 @@ void main() {
   testWidgets(
     'custom workflow respond-going updates the response row and event aggregate counts',
     (tester) async {
-      final installed = (await tester.runAsync(() => _install(
-        'a11-garden-response',
-        fixtureRelative: _gardenFixtureRelative,
-      )))!;
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a11-garden-response',
+          fixtureRelative: _gardenFixtureRelative,
+        ),
+      ))!;
       try {
-        final auth = (await tester.runAsync(() => _useFixtureAccounts(installed)))!;
-        await tester.pumpWidget(_calendar(installed, _customGardenMemberId, authApi: auth));
-        await _selectAgendaById(tester, _customGardenEventId);
+        final auth = _gardenAuth(installed);
+        final seeded = (await tester.runAsync(() async {
+          final eventId = (await installed.engine.createInstances(
+            workflowType: _customGardenEventWorkflow,
+            initialInstanceDataList: const [
+              {
+                'title': 'Test-owned non-full garden event',
+                'eventDate': '2026-09-12',
+                'eventTime': '10:00',
+                'location': 'Test Bed',
+                'capacity': 3,
+                'coordinatorPersonaId': _customGardenOrganizerId,
+                'recurrenceLabel': 'One-time test event',
+                'reminderOffsetHours': 24,
+              },
+            ],
+            personaId: _customGardenOrganizerId,
+          )).single;
+          final responseId = (await installed.engine.createInstances(
+            workflowType: _customGardenResponseWorkflow,
+            initialInstanceDataList: [
+              {
+                _customGardenResponseEventField: eventId,
+                'personaId': _customGardenMemberAccountId,
+              },
+            ],
+            personaId: _customGardenOrganizerId,
+          )).single;
+          return (eventId: eventId, responseId: responseId);
+        }))!;
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            _customGardenMemberId,
+            accountId: _customGardenMemberAccountId,
+            authApi: auth,
+          ),
+        );
+        await _selectAgendaById(tester, seeded.eventId);
         await _pumpUntil(
           tester,
-          find.byKey(ValueKey('event-rsvp-$_customGardenEventId-action-respond-going')),
+          find.byKey(
+            ValueKey('event-rsvp-${seeded.eventId}-action-respond-going'),
+          ),
         );
 
-        final beforeEvent = (await tester.runAsync(() =>
-            _customEventByTitle(installed, title: 'Spring Workshop')))!;
+        final beforeEvent = (await tester.runAsync(
+          () => _customEventByTitle(
+            installed,
+            title: 'Test-owned non-full garden event',
+          ),
+        ))!;
         expect(beforeEvent.currentState, 'open');
         final beforeCounts = beforeEvent.instanceData['goingCount'] as num;
+        final capacity = beforeEvent.instanceData['capacity'] as num;
+        expect(beforeCounts, lessThan(capacity));
 
-        final beforeResponse = await tester.runAsync(() => _customResponseFor(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: _customGardenEventId,
-          personaId: _customGardenMemberId,
-        ));
+        final beforeResponse = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: seeded.eventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          ),
+        );
+        expect(beforeResponse?.instanceId, seeded.responseId);
         expect(beforeResponse?.currentState, 'pending');
 
         await _tapRsvpAction(
           tester,
-          _customGardenEventId,
+          seeded.eventId,
           'respond-going',
           expectDialog: false,
         );
 
-        final afterEvent = (await tester.runAsync(() =>
-            _customEventByTitle(installed, title: 'Spring Workshop')))!;
+        final afterEvent = (await tester.runAsync(
+          () => _customEventByTitle(
+            installed,
+            title: 'Test-owned non-full garden event',
+          ),
+        ))!;
         expect(afterEvent.currentState, 'open');
         expect(afterEvent.instanceData['goingCount'], beforeCounts + 1);
 
-        final afterResponse = await tester.runAsync(() => _customResponseFor(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: _customGardenEventId,
-          personaId: _customGardenMemberId,
-        ));
+        final afterResponse = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: seeded.eventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          ),
+        );
         expect(afterResponse?.currentState, 'going');
-        await _pumpUntil(tester, find.text('2 / 20 going'));
+        await _pumpUntil(
+          tester,
+          find.text('${beforeCounts + 1} / $capacity going'),
+        );
 
         final selected = find.descendant(
           of: find.byKey(
-            ValueKey('event-rsvp-$_customGardenEventId-action-respond-going'),
+            ValueKey('event-rsvp-${seeded.eventId}-action-respond-going'),
           ),
           matching: find.byWidgetPredicate(
             (widget) => widget is InputChip && widget.selected,
@@ -1226,7 +1400,7 @@ void main() {
         final literalResponses = await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenMemberId,
+            personaId: _customGardenMemberAccountId,
             limit: 200,
           );
           return page.items
@@ -1243,10 +1417,12 @@ void main() {
   testWidgets(
     'missing custom response row keeps organizer event-level actions visible',
     (tester) async {
-      final installed = (await tester.runAsync(() => _install(
-        'a11-garden-missing-row',
-        fixtureRelative: _gardenFixtureRelative,
-      )))!;
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a11-garden-missing-row',
+          fixtureRelative: _gardenFixtureRelative,
+        ),
+      ))!;
       String customInstanceId = '';
       try {
         customInstanceId = (await tester.runAsync(() async {
@@ -1259,6 +1435,8 @@ void main() {
                 'eventTime': '09:00',
                 'location': 'North Bed',
                 'capacity': 18,
+                'coordinatorPersonaId': _customGardenOrganizerId,
+                'recurrenceLabel': 'One-time organizer event',
                 'reminderOffsetHours': 24,
               },
             ],
@@ -1267,13 +1445,15 @@ void main() {
           return createdIds.first;
         }))!;
 
-        final seededRow = await tester.runAsync(() => _customResponseFor(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: customInstanceId,
-          personaId: _customGardenOrganizerId,
-        ));
+        final seededRow = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: customInstanceId,
+            personaId: _customGardenOrganizerId,
+          ),
+        );
         expect(seededRow, isNull);
 
         await tester.pumpWidget(_calendar(installed, _customGardenOrganizerId));
@@ -1281,16 +1461,13 @@ void main() {
 
         await _pumpUntil(
           tester,
-          find.byKey(
-            ValueKey('event-rsvp-card-$customInstanceId'),
-          ),
+          find.byKey(ValueKey('event-rsvp-card-$customInstanceId')),
         );
-        expect(
-          find.byKey(
-            ValueKey('event-rsvp-$customInstanceId-action-cancel-event'),
-          ),
-          findsOneWidget,
+        final cancelAction = find.byKey(
+          ValueKey('event-rsvp-$customInstanceId-action-cancel-event'),
         );
+        await _pumpUntil(tester, cancelAction);
+        expect(cancelAction, findsOneWidget);
         expect(
           find.byKey(
             ValueKey('event-rsvp-$customInstanceId-action-respond-going'),
@@ -1303,88 +1480,111 @@ void main() {
     },
   );
 
-  testWidgets('custom workflow reminders are sent on custom response instances', (
-    tester,
-  ) async {
-    final installed = (await tester.runAsync(() => _install(
-      'a11-garden-reminder',
-      fixtureRelative: _gardenFixtureRelative,
-    )))!;
-    try {
-      final auth = activeAuthForInstalledCommunity(
-        community: installed.community,
-        personaTypeId: _customGardenMemberId,
-      );
-      await tester.pumpWidget(
-        _calendar(
-          installed,
-          _customGardenMemberId,
-          authApi: auth,
-          currentDate: DateTime(2026, 8, 14, 10),
+  testWidgets(
+    'custom workflow reminders are sent on custom response instances',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a11-garden-reminder',
+          fixtureRelative: _gardenFixtureRelative,
         ),
-      );
-      await _selectAgendaById(tester, _customGardenEventId);
-
-      final beforeResponse = await tester.runAsync(() => _customResponseFor(
-        installed,
-        responseWorkflowType: _customGardenResponseWorkflow,
-        eventField: _customGardenResponseEventField,
-        eventId: _customGardenEventId,
-        personaId: _customGardenMemberId,
-      ));
-      expect(beforeResponse?.instanceData['reminderSentAt'], isNull);
-
-      await _pollUntilObservation(tester, () async {
-        final pending = await _customResponseFor(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: _customGardenEventId,
-          personaId: _customGardenMemberId,
+      ))!;
+      try {
+        final auth = _gardenAuth(installed);
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            _customGardenMemberId,
+            accountId: _customGardenMemberAccountId,
+            authApi: auth,
+            currentDate: DateTime(2026, 8, 13, 10),
+          ),
         );
-        return _PollObservation(
-          pending?.instanceData['reminderSentAt'] is String,
-          'reminderSentAt=${pending?.instanceData['reminderSentAt']}',
-        );
-      }, description: 'custom response reminder applied');
+        await _selectAgendaById(tester, _customGardenEventId);
 
-      final after = await tester.runAsync(() => _customResponseFor(
-        installed,
-        responseWorkflowType: _customGardenResponseWorkflow,
-        eventField: _customGardenResponseEventField,
-        eventId: _customGardenEventId,
-        personaId: _customGardenMemberId,
-      ));
-      expect(after?.instanceData['reminderSentAt'], isNotNull);
-
-      final literalReminderTargets = await tester.runAsync(() async {
-        final page = await installed.engine.queryInstances(
-          tabId: 'calendar',
-          personaId: _customGardenMemberId,
-          limit: 200,
+        final beforeResponse = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: _customGardenEventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          ),
         );
-        return page.items
-            .where(
-              (row) =>
-                  row.workflowType == 'event-rsvp-response' &&
-                  row.instanceData[_customGardenResponseEventField] ==
-                      _customGardenEventId,
-            )
-            .toList();
-      });
-      expect(literalReminderTargets, isEmpty);
-    } finally {
-      await tester.runAsync(installed.dispose);
-    }
-  });
+        expect(beforeResponse, isNotNull);
+        expect(beforeResponse?.instanceData['reminderDueAt'], isNull);
+
+        const dueAt = '2026-08-14T10:00:00-07:00';
+        await _tapRsvpAction(
+          tester,
+          _customGardenEventId,
+          'add-reminder',
+          inputs: const {'dueAt': dueAt},
+          awaitSelection: false,
+        );
+
+        await _pollUntilObservation(tester, () async {
+          final pending = await _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: _customGardenEventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          );
+          return _PollObservation(
+            pending?.instanceData['reminderDueAt'] == dueAt,
+            'reminderDueAt=${pending?.instanceData['reminderDueAt']}',
+          );
+        }, description: 'custom response reminder applied');
+
+        final after = await tester.runAsync(
+          () => _customResponseFor(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: _customGardenEventId,
+            personaId: _customGardenMemberAccountId,
+            persona: _customGardenMemberAccountId,
+          ),
+        );
+        expect(after?.instanceData['reminderDueAt'], dueAt);
+
+        final notifications = await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: _customGardenMemberAccountId,
+            limit: 200,
+          );
+          return page.items
+              .where(
+                (row) =>
+                    row.workflowType == 'garden-notification' &&
+                    row.instanceData['recipientPersonaId'] ==
+                        _customGardenMemberAccountId &&
+                    row.instanceData['dueAt'] == dueAt &&
+                    row.instanceData['sourceWorkflowType'] ==
+                        _customGardenResponseWorkflow,
+              )
+              .toList();
+        });
+        expect(notifications, hasLength(1));
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
 
   testWidgets(
     'custom event creation and recurring generation seed custom response rows',
     (tester) async {
-      final installed = (await tester.runAsync(() => _install(
-        'a11-garden-recurring',
-        fixtureRelative: _gardenFixtureRelative,
-      )))!;
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a11-garden-recurring',
+          fixtureRelative: _gardenFixtureRelative,
+        ),
+      ))!;
       try {
         final auth = activeAuthForInstalledCommunity(
           community: installed.community,
@@ -1409,27 +1609,35 @@ void main() {
           find.byKey(const ValueKey('new-event-editor-capacity')),
           '12',
         );
+        await tester.enterText(
+          find.byKey(const ValueKey('new-event-editor-recurrenceLabel')),
+          'Weekly through September',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('new-event-editor-reminderOffsetHours')),
+          '24',
+        );
         final eventDate = find.byKey(
           const ValueKey('new-event-editor-eventDate'),
         );
         await tester.ensureVisible(eventDate);
         await tester.tap(eventDate);
         await tester.pump();
-        await _pumpUntil(tester, find.text('20'));
-        await tester.tap(find.text('20').last);
+        final dateDialog = find.byType(AlertDialog);
+        await _pumpUntil(tester, dateDialog);
+        expect(dateDialog, findsOneWidget);
+        final day = find.descendant(of: dateDialog, matching: find.text('20'));
+        await _pumpUntil(tester, day);
+        await tester.tap(day);
         await tester.pump();
-        await _pumpUntil(tester, find.text('OK'));
-        await tester.tap(find.text('OK').last);
-        await tester.pump();
+        await _confirmPickerDialog(tester);
         final eventTime = find.byKey(
           const ValueKey('new-event-editor-eventTime'),
         );
         await tester.ensureVisible(eventTime);
         await tester.tap(eventTime);
         await tester.pump();
-        await _pumpUntil(tester, find.text('OK'));
-        await tester.tap(find.text('OK').last);
-        await tester.pump();
+        await _confirmPickerDialog(tester);
         final submit = find.byKey(const ValueKey('new-event-submit'));
         await tester.ensureVisible(submit);
         await tester.tap(submit);
@@ -1465,17 +1673,19 @@ void main() {
         }))!;
 
         final accountIds = (await tester.runAsync(() async {
-          final accounts = await LocalAuthApi().listAccounts(
+          final accounts = await auth.listAccounts(
             communityExtensionId: installed.community.extensionId,
           );
           return accounts.map((account) => account.accountId).toSet();
         }))!;
-        final seededResponses = (await tester.runAsync(() => _customResponseRowsForEvent(
-          installed,
-          responseWorkflowType: _customGardenResponseWorkflow,
-          eventField: _customGardenResponseEventField,
-          eventId: created.instanceId,
-        )))!;
+        final seededResponses = (await tester.runAsync(
+          () => _customResponseRowsForEvent(
+            installed,
+            responseWorkflowType: _customGardenResponseWorkflow,
+            eventField: _customGardenResponseEventField,
+            eventId: created.instanceId,
+          ),
+        ))!;
         expect(
           seededResponses.length,
           accountIds.length,
@@ -1509,9 +1719,13 @@ void main() {
                     item.workflowType == _customGardenEventWorkflow,
               )
               .firstOrNull;
-          if (anchor == null) return _PollObservation(false, 'missing anchor');
+          if (anchor == null) {
+            return const _PollObservation(false, 'missing anchor');
+          }
           final seriesId = anchor.instanceData['seriesId'];
-          if (seriesId == null) return _PollObservation(false, 'seriesId missing');
+          if (seriesId == null) {
+            return const _PollObservation(false, 'seriesId missing');
+          }
           final events = page.items
               .where(
                 (item) =>
@@ -1525,18 +1739,17 @@ void main() {
           seriesEvents
             ..clear()
             ..addAll(events);
-          return _PollObservation(
-            true,
-            'seriesEventCount=${events.length}',
-          );
+          return _PollObservation(true, 'seriesEventCount=${events.length}');
         }, description: 'custom recurring series with seeded siblings');
         for (final event in seriesEvents) {
-          final responses = (await tester.runAsync(() => _customResponseRowsForEvent(
-            installed,
-            responseWorkflowType: _customGardenResponseWorkflow,
-            eventField: _customGardenResponseEventField,
-            eventId: event.instanceId,
-          )))!;
+          final responses = (await tester.runAsync(
+            () => _customResponseRowsForEvent(
+              installed,
+              responseWorkflowType: _customGardenResponseWorkflow,
+              eventField: _customGardenResponseEventField,
+              eventId: event.instanceId,
+            ),
+          ))!;
           expect(
             responses.length,
             accountIds.length,
@@ -1602,21 +1815,21 @@ void main() {
         await tester.ensureVisible(eventDate);
         await tester.tap(eventDate);
         await tester.pump();
-        await _pumpUntil(tester, find.text('15'));
-        await tester.tap(find.text('15').last);
+        final dateDialog = find.byType(AlertDialog);
+        await _pumpUntil(tester, dateDialog);
+        expect(dateDialog, findsOneWidget);
+        final day = find.descendant(of: dateDialog, matching: find.text('15'));
+        await _pumpUntil(tester, day);
+        await tester.tap(day);
         await tester.pump();
-        await _pumpUntil(tester, find.text('OK'));
-        await tester.tap(find.text('OK').last);
-        await tester.pump();
+        await _confirmPickerDialog(tester);
         final eventTime = find.byKey(
           const ValueKey('new-event-editor-eventTime'),
         );
         await tester.ensureVisible(eventTime);
         await tester.tap(eventTime);
         await tester.pump();
-        await _pumpUntil(tester, find.text('OK'));
-        await tester.tap(find.text('OK').last);
-        await tester.pump();
+        await _confirmPickerDialog(tester);
         final submit = find.byKey(const ValueKey('new-event-submit'));
         await tester.ensureVisible(submit);
         await tester.tap(submit);

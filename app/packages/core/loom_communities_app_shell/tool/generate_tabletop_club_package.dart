@@ -4,14 +4,16 @@ import 'dart:io';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
 const _extensionId = 'ext_verify_tabletop_club';
-const _fixtureRelativePath =
+const tabletopClubFixtureRelativePath =
     'docs/references/communities/'
     'Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
 
-Directory _repositoryRoot() {
+Directory findTabletopClubRepositoryRoot() {
   var directory = Directory.current;
   for (var i = 0; i < 8; i++) {
-    if (File('${directory.path}/$_fixtureRelativePath').existsSync()) {
+    if (File(
+      '${directory.path}/$tabletopClubFixtureRelativePath',
+    ).existsSync()) {
       return directory;
     }
     directory = directory.parent;
@@ -19,15 +21,18 @@ Directory _repositoryRoot() {
   throw StateError('Could not find the frozen Tabletop fixture.');
 }
 
-Future<void> main() async {
-  final root = _repositoryRoot();
-  final fixture = File('${root.path}/$_fixtureRelativePath');
+Future<({File extensionPackage, File initializationPackage})>
+generateTabletopClubPackagePair({
+  required Directory outputDirectory,
+  Directory? repositoryRoot,
+}) async {
+  final root = repositoryRoot ?? findTabletopClubRepositoryRoot();
+  final fixture = File('${root.path}/$tabletopClubFixtureRelativePath');
   final source =
       jsonDecode(stripJsonComments(await fixture.readAsString()))
           as Map<String, dynamic>;
   source['extensionId'] = _extensionId;
 
-  final outputDirectory = Directory('${root.path}/.codex-logs');
   await outputDirectory.create(recursive: true);
   final initialization = File(
     '${outputDirectory.path}/$_extensionId.loom-init.zip',
@@ -48,6 +53,16 @@ Future<void> main() async {
     }),
   );
 
-  stdout.writeln('Regenerated ${extension.path}');
-  stdout.writeln('Regenerated ${initialization.path}');
+  return (extensionPackage: extension, initializationPackage: initialization);
+}
+
+Future<void> main() async {
+  final root = findTabletopClubRepositoryRoot();
+  final generated = await generateTabletopClubPackagePair(
+    outputDirectory: Directory('${root.path}/.codex-logs'),
+    repositoryRoot: root,
+  );
+
+  stdout.writeln('Regenerated ${generated.extensionPackage.path}');
+  stdout.writeln('Regenerated ${generated.initializationPackage.path}');
 }
