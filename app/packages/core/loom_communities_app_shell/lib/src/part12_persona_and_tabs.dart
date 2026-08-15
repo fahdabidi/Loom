@@ -645,7 +645,14 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
       mergedById[override.tabId] = override.toTabSpec();
     }
   }
-  final orderedIds = <String>[
+  // A LinkedHashSet, not a list: `mergedById` is keyed by tabId and so already
+  // collapses duplicates, but this ordering pass emits one entry per
+  // *occurrence*, so any tabId appearing twice in `overrides` renders the same
+  // tab twice. That happens for real -- `overrides` concatenates the
+  // configuration's `tabs` and this persona's `personaTabs`, and installing a
+  // package over an already-preloaded shell contributes both. Set semantics
+  // keep first-occurrence order while making the id unique by construction.
+  final orderedIds = <String>{
     'home',
     ...overrides
         .map((override) => override.tabId)
@@ -656,7 +663,7 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
           tab.tabId != 'messages')
         tab.tabId,
     'messages',
-  ];
+  };
   return [
     for (final tabId in orderedIds)
       if (mergedById[tabId] != null) mergedById[tabId]!,
