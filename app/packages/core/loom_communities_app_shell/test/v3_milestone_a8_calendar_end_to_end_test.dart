@@ -53,6 +53,7 @@ class _PollObservation {
 Future<_InstalledTabletop> _install(
   String extensionId, {
   void Function(Map<String, dynamic> source)? configure,
+  Set<String>? accountIdsToRegister,
 }) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
@@ -92,6 +93,10 @@ Future<_InstalledTabletop> _install(
         communityExtensionId: 'ext_verify_tabletop_club',
       );
       for (final account in accounts) {
+        if (accountIdsToRegister != null &&
+            !accountIdsToRegister.contains(account.accountId)) {
+          continue;
+        }
         engine.setPersonaType(account.accountId, account.personaTypeId);
         registeredAccountIds.add(account.accountId);
       }
@@ -131,13 +136,14 @@ Widget _calendar(
   String personaId, {
   int revision = 0,
   String? accountId,
+  LoomAuthApi? authApi,
   ScrollController? scrollController,
   ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
 }) => MaterialApp(
   home: ActiveIdentityScope(
     identity: ActiveIdentityContext(
       accountId: accountId,
-      authApi: LocalAuthApi(),
+      authApi: authApi ?? LocalAuthApi(),
       personaId: personaId,
     ),
     child: Scaffold(
@@ -297,6 +303,31 @@ Future<_PollObservation> _observeRecurringEvents(
     events.length == expectedCount && datesMatch,
     'seriesCount=${events.length}, dates=$dates',
   );
+}
+
+Future<List<WorkflowInstance>> _allCalendarInstances(
+  _InstalledTabletop installed,
+) async {
+  final instances = <WorkflowInstance>[];
+  final seenCursors = <String>{};
+  String? cursor;
+  while (true) {
+    final page = await installed.engine.queryInstances(
+      tabId: 'calendar',
+      personaId: 'tabletop-organizer',
+      limit: 100,
+      cursor: cursor,
+    );
+    instances.addAll(page.items);
+    if (!page.hasMore) return instances;
+    final nextCursor = page.nextCursor;
+    if (nextCursor == null ||
+        nextCursor.isEmpty ||
+        !seenCursors.add(nextCursor)) {
+      throw StateError('Calendar pagination returned an invalid cursor.');
+    }
+    cursor = nextCursor;
+  }
 }
 
 Future<void> _expectRefused(
@@ -1257,6 +1288,145 @@ void main() {
           );
         }
         expect(action, findsNothing);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'Make recurring creates no duplicate event/persona response pairs',
+    (tester) async {
+      const accounts = <LoomAccount>[
+        LoomAccount(
+          accountId: 'tabletop-organizer',
+          displayName: 'Alex T.',
+          personaTypeId: 'tabletop-organizer',
+        ),
+        LoomAccount(
+          accountId: 'tabletop-member-04',
+          displayName: 'Sam K.',
+          personaTypeId: 'tabletop-member',
+        ),
+      ];
+      final installed = (await tester.runAsync(
+        () => _install(
+          'a8-make-recurring-unique-responses',
+          accountIdsToRegister: {
+            for (final account in accounts) account.accountId,
+          },
+        ),
+      ))!;
+      final auth = activeAuthForCommunity(
+        community: installed.community,
+        experience: installed.experience,
+        accountId: 'tabletop-organizer',
+        accounts: accounts,
+      );
+      try {
+        expect(installed.registeredAccountIds, hasLength(2));
+        expect(
+          await tester.runAsync(
+            () => auth.listAccounts(
+              communityExtensionId: installed.community.extensionId,
+            ),
+          ),
+          hasLength(2),
+        );
+        await tester.pumpWidget(
+          _calendar(
+            installed,
+            'tabletop-organizer',
+            accountId: 'tabletop-organizer',
+            authApi: auth,
+          ),
+        );
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final action = find.byKey(
+          const ValueKey(
+            'event-rsvp-event-friday-game-night-action-make-recurring',
+          ),
+        );
+        await _pumpUntil(tester, action);
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pump();
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('generic-transition-input-dialog')),
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-freq')),
+          'weekly',
+        );
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const ValueKey('generic-transition-input-count')),
+          '3',
+        );
+        await tester.tap(
+          find.byKey(
+            const ValueKey('generic-transition-input-byDayOfWeekWeekly-FR'),
+          ),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('generic-transition-input-confirm')),
+        );
+        await _pollUntilObservation(
+          tester,
+          () => _observeRecurringEvents(
+            installed,
+            expectedCount: 3,
+            expectedDates: const {'2026-07-10', '2026-07-17', '2026-07-24'},
+          ),
+          description: 'weekly recurring events for response uniqueness',
+        );
+
+        final seriesRows = (await tester.runAsync(() async {
+          final rows = await _allCalendarInstances(installed);
+          final anchor = rows.singleWhere(
+            (row) => row.instanceId == 'event-friday-game-night',
+          );
+          final seriesId = anchor.instanceData['seriesId'];
+          final events = rows
+              .where(
+                (row) =>
+                    row.workflowType == 'event-rsvp' &&
+                    row.instanceData['seriesId'] == seriesId,
+              )
+              .toList();
+          final eventIds = events.map((event) => event.instanceId).toSet();
+          final responses = rows
+              .where(
+                (row) =>
+                    row.workflowType == 'event-rsvp-response' &&
+                    eventIds.contains(row.instanceData['eventId']),
+              )
+              .toList();
+          return (events: events, responses: responses);
+        }))!;
+        expect(
+          seriesRows.events
+              .where((event) => event.instanceId != 'event-friday-game-night')
+              .toList(),
+          hasLength(2),
+        );
+        expect(
+          seriesRows.responses.any(
+            (response) =>
+                response.instanceData['eventId'] == 'event-friday-game-night',
+          ),
+          isTrue,
+        );
+        final responsePairs = seriesRows.responses
+            .map(
+              (response) => (
+                eventId: response.instanceData['eventId'] as String,
+                personaId: response.instanceData['personaId'] as String,
+              ),
+            )
+            .toList();
+        expect(responsePairs.toSet(), hasLength(responsePairs.length));
       } finally {
         await tester.runAsync(installed.dispose);
       }

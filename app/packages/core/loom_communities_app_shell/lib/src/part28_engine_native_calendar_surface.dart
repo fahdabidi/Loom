@@ -1899,9 +1899,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     if (declaredInputs != null && declaredInputs.isNotEmpty && inputs == null) {
       return;
     }
-    // The recurring-series post-processing remains intentionally isolated in
-    // its existing method; input collection is now the same generic path as
-    // every other transition.
+    // Keep recurrence inputs for mutation retries instead of reopening the
+    // input dialog after a failed attempt.
     if (transitionId == 'make-recurring') {
       return _applyMakeRecurring(inputs!);
     }
@@ -2012,7 +2011,6 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   Future<void> _applyMakeRecurring(Map<String, dynamic> inputs) {
     final generation = _generation;
     final instance = _instance;
-    final responseTable = widget.binding.responseTable;
     final machine = widget.machine;
     final engine = widget.engine;
     final personaId = widget.personaId;
@@ -2030,58 +2028,6 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           personaId: personaId,
           inputs: inputs,
         );
-        final seriesId = result.newInstanceData['seriesId']?.toString();
-        if (seriesId != null && seriesId.isNotEmpty) {
-          final siblings = <WorkflowInstance>[];
-          final seenCursors = <String>{};
-          String? cursor;
-          while (true) {
-            final page = await engine.queryInstances(
-              tabId: 'calendar',
-              personaId: personaId,
-              limit: 100,
-              cursor: cursor,
-            );
-            siblings.addAll(
-              page.items.where(
-                (candidate) =>
-                    candidate.workflowType == instance.workflowType &&
-                    candidate.instanceData['seriesId'] == seriesId &&
-                    candidate.instanceId != instance.instanceId,
-              ),
-            );
-            if (!page.hasMore) break;
-            final nextCursor = page.nextCursor;
-            if (nextCursor == null ||
-                nextCursor.trim().isEmpty ||
-                !seenCursors.add(nextCursor)) {
-              throw StateError(
-                'Invalid pagination cursor while loading calendar for $personaId',
-              );
-            }
-            cursor = nextCursor;
-          }
-          if (siblings.isNotEmpty && responseTable != null) {
-            final responseEventField = responseTable.eventField;
-            final accounts = await ActiveIdentityScope.of(context).authApi
-                .listAccounts(
-                  communityExtensionId: widget.communityExtensionId,
-                );
-            for (final sibling in siblings) {
-              await engine.createInstances(
-                workflowType: responseTable.workflowType,
-                initialInstanceDataList: [
-                  for (final account in accounts)
-                    {
-                      responseEventField: sibling.instanceId,
-                      'personaId': account.accountId,
-                    },
-                ],
-                personaId: personaId,
-              );
-            }
-          }
-        }
         return WorkflowInstance(
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
