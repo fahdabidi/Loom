@@ -698,6 +698,15 @@ class CommunityPackageValidator {
   /// `hoa-meeting`, which lives in the calendar-slice file — the rule finding
   /// the sixth is the argument for having the rule.)
   ///
+  /// **Severity is a ratchet (D3, approved 2026-08-14): warning now, error
+  /// after Phase F.** Phase F regenerates all 11 fixtures through the Skill;
+  /// once the corpus is clean this becomes an error so it cannot regress. Do
+  /// not promote it before then — six shipped communities trip it today, and
+  /// the guide's own rule is that a community failing the validator is not a
+  /// deliverable. That the corpus *can* be made clean is demonstrated, not
+  /// hoped: a Codex dispatch emitted the full per-state cascade unprompted,
+  /// from these docs alone.
+  ///
   /// A warning rather than an error, deliberately: six shipped communities
   /// trip it, and making the corpus un-validatable trains people to ignore
   /// warnings. It is satisfiable today — Cedar Commons HOA already cascades a
