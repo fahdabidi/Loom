@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -110,6 +110,12 @@ that is correct — "only the submitter may withdraw their own submission" is a 
 
 ## 7. Open
 
-- **Whether `parties` needs configurable field names.** Communities name the two sides differently
-  (`requesterFanId`/`reviewerFanId`, `submitterFanId`/`mentorFanId`, `guardianFanId`/`coachFanId`).
-  The model must let a community say which fields play which part.
+- ~~**Whether `parties` needs configurable field names.**~~ **Resolved 2026-08-14 (D9): yes.** A
+  community declares them in `visibility.fields.parties`, which must name **exactly two**
+  `fanId`-typed fields on this workflow — see
+  [`workflow-grammar.md`](../reference/workflow-grammar.md)'s `visibility.fields` section. The
+  measured variance is what settled it: the corpus carries `requesterPersonaId` ×6,
+  `guardianPersonaId` ×4, `reviewerPersonaId` ×2, plus `submitterPersonaId`,
+  `assignedReviewerPersonaId` and `coachReviewerPersonaId`. With no shared convention, the engine
+  cannot infer which field is a *party* rather than an audit actor, and a read model that guesses
+  would grant access it was never told to grant.

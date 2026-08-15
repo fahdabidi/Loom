@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -73,7 +73,20 @@ Model: **`owner_and_shared`**. A document is readable by
 
 1. the roles a state's `readGuard` admits, plus
 2. its owner, plus
-3. anyone in `sharedWithFanIds`.
+3. anyone in the field named by `visibility.fields.sharedWith`.
+
+The community names that field; the archetype does not fix it (decision D9, 2026-08-14 —
+[`workflow-grammar.md`](../reference/workflow-grammar.md)'s `visibility.fields`). Conventionally
+`sharedWithFanIds`:
+
+```jsonc
+"visibility": {
+  "default": "membersOnly",
+  "fields": { "sharedWith": "sharedWithFanIds" }
+}
+```
+
+An unset or empty list admits nobody — never everybody.
 
 **Per-state read guards already exist** — `LoomWorkflowState.readGuard`, which the engine prefers over
 the workflow-level guard (`stateGuard ?? machine.visibility.readGuard`). State-scoped visibility needs

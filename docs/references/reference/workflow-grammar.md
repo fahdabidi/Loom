@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.6.0
+doc_version: 1.7.0
 status: current
 last_verified: 2026-08-09
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
@@ -64,6 +64,66 @@ be `guarded` overall but relax (or further restrict) which persona can read a sp
 **Validator:** `no_read_visibility_declared` (warning only, `guide/05-validation.md`) fires whenever a
 workflow type omits `visibility` entirely — it never blocks `report.passed`, since the omitted-default
 (`public`) is legitimate and matches every pre-existing community's actual behavior.
+
+### `visibility.fields` — which field plays which part (specVersion 4)
+
+**PROPOSED — approved 2026-08-14 (decision D9).** Required by four of the six archetype visibility
+models in [`archetypes/CONTRACTS.md`](../archetypes/CONTRACTS.md) §3. The archetype supplies the *rule*
+(“plus the two named sides of a request”); this block supplies the *fields it reads*.
+
+```jsonc
+"visibility": {
+  "default": "membersOnly",
+  "fields": {
+    "sharedWith":   "sharedWithFanIds",                   // owner_and_shared
+    "participants": ["participantFanIds"],                 // participants
+    "parties":      ["requesterFanId", "reviewerFanId"],   // parties — exactly two
+    "recipient":    "recipientFanId"                       // recipient
+  }
+}
+```
+
+| Key | Type | Consumed by | Meaning |
+|---|---|---|---|
+| `sharedWith` | one field name, `fanId[]`-typed | `owner_and_shared` | Everyone the instance was explicitly shared with |
+| `participants` | **list** of field names, each `fanId` or `fanId[]` | `participants` | The union of all named fields is the participant set |
+| `parties` | list of **exactly two** field names, each `fanId` | `parties` | The two sides of a request |
+| `recipient` | one field name, `fanId` | `recipient` | The sole addressee |
+
+Every named field MUST be declared in this workflow's `instanceDataSchema`, and MUST be identity-typed.
+
+**Why this is declared rather than inferred.** There is no convention to infer from. The corpus names
+the two sides of a request `requester`/`reviewer`, `submitter`/`mentor`, `guardian`/`coach`; the payer
+`owner`, `member`, `guardian`, or `payer`. Inferring from every identity-shaped field would silently
+admit audit actors and senders as *readers*; a hard-coded prefix allowlist would silently refuse valid
+community-specific names. Both are guesses, and an access-control decision that guesses is the failure
+this construct exists to remove.
+
+**`participants` is a list, deliberately.** Two shapes exist in the corpus — a single
+`participantPersonaIds` list, and a `participantAPersonaId`/`participantBPersonaId` pair. Rather than
+force one to migrate, a community declares whichever fields it has and the engine unions them:
+`["participantFanIds"]` or `["participantAFanId", "participantBFanId"]` are both valid.
+
+**An omitted `recipient` means broadcast**, not "no one and not everyone". A `notificationInbox`
+workflow with no addressee falls back to the `default` visibility decision alone — which is the correct
+reading of a community-wide announcement, and still fails closed under `membersOnly`/`guarded`.
+
+**All four fail closed, asymmetrically.** An unset or empty field value matches nobody; it must never
+match a viewer whose own id is unset. This is what keeps seed data carrying no identity from rendering
+to everyone rather than to no one — see `CONTRACTS.md` §3's "all models fail closed".
+
+**These models widen, never narrow.** They are evaluated *in addition to* the `default` decision and
+the `owner` check, so declaring `fields` can only grant reads, never revoke one the default already
+allowed.
+
+> **Identity spelling during the straddle (D8).** These names are the specVersion 4 `*FanId`/`*FanIds`
+> forms. The corpus still carries `*PersonaId`/`*PersonaIds` in 129 places, and the rename is Phase F,
+> which is sequenced *after* the engine work — so the engine reads both spellings behind a single
+> helper, deleted in one edit at Phase F's closeout.
+
+**Validator:** `missing_visibility_fields` (error) — the workflow's archetype uses a model that needs a
+field mapping and none is declared. `dangling_visibility_field` (error) — a named field is not in
+`instanceDataSchema`. `invalid_parties_arity` (error) — `parties` does not name exactly two fields.
 
 ---
 

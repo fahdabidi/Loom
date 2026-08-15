@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -44,6 +44,23 @@ notifications.
 
 Corpus split: 4 `guarded`, 3 `public`. The `public` ones are broadcast announcements rather than
 addressed messages -- the same archetype serving two shapes.
+
+**Which field holds the addressee is declared, not assumed** (decision D9, 2026-08-14 —
+[`workflow-grammar.md`](../reference/workflow-grammar.md)'s `visibility.fields`). The corpus already
+carries two names, `recipientPersonaId` and `handoffRecipientPersonaId`:
+
+```jsonc
+"visibility": {
+  "default": "guarded",
+  "readGuard": { "allowedRoleIds": ["masjid-admin"] },
+  "fields": { "recipient": "recipientFanId" }
+}
+```
+
+**Omitting `recipient` is legal and means broadcast** — exactly the three `public` workflows above.
+Such a workflow falls back to the `default` decision alone, which is the correct reading of a
+community-wide announcement and still fails closed under `membersOnly` or `guarded`. So the two shapes
+this archetype serves are now distinguishable in the JSON rather than only in prose.
 
 ## 4. Community-defined actions
 

@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -67,18 +67,32 @@ that without the author writing it.
 Replaces hand-written `readGuard` formulas. A community declares `visibleTo` per state; the archetype
 supplies anything richer.
 
-| Model | Rule | Archetypes |
-|---|---|---|
-| `roles` | visible to the roles listed in the state's `visibleTo` | all |
-| `owner` | plus: whoever created the instance | all |
-| `owner_and_shared` | plus: anyone the instance was explicitly shared with | `documentLibrary` |
-| `participants` | plus: anyone in the instance's participant set | `discussionThread` |
-| `parties` | plus: the two named sides of a request | `approvalQueueItem`, `paymentCheckout` |
-| `recipient` | plus: the addressee only | `notificationInbox` |
+| Model | Rule | Archetypes | Reads |
+|---|---|---|---|
+| `roles` | visible to the roles listed in the state's `visibleTo` | all | — |
+| `owner` | plus: whoever created the instance | all | `createdByFanId` |
+| `owner_and_shared` | plus: anyone the instance was explicitly shared with | `documentLibrary` | `visibility.fields.sharedWith` |
+| `participants` | plus: anyone in the instance's participant set | `discussionThread` | `visibility.fields.participants` |
+| `parties` | plus: the two named sides of a request | `approvalQueueItem`, `paymentCheckout` | `visibility.fields.parties` |
+| `recipient` | plus: the addressee only | `notificationInbox` | `visibility.fields.recipient` |
+
+**The archetype supplies the rule; the community supplies the fields.** The four models below `owner`
+read their identities from a declared `visibility.fields` mapping
+([`workflow-grammar.md`](../reference/workflow-grammar.md), decision D9, approved 2026-08-14) — because
+there is no convention to infer from. The corpus names the two sides of a request
+`requester`/`reviewer`, `submitter`/`mentor`, `guardian`/`coach`, and the payer `owner`, `member`,
+`guardian`, or `payer`. Guessing would admit audit actors and senders as readers; an allowlist of
+prefixes would refuse valid community names.
+
+`roles` and `owner` need no mapping, which is why they are universal and already enforced: `roles` is
+the existing `visibility.default` / `readGuard` path, and `owner` reads the instance's creator.
 
 **All models fail closed.** An identity field that is unset matches nobody. An instance belonging to
 no one is visible to no one — which is correct, and is why seed data carrying no identity renders
-nothing rather than leaking.
+nothing rather than leaking. The asymmetry matters: an unset field must not match an unset *viewer*.
+
+**They widen, never narrow.** Each is evaluated in addition to the `default` visibility decision, so a
+declared mapping can only grant a read, never revoke one the default already allowed.
 
 ---
 
