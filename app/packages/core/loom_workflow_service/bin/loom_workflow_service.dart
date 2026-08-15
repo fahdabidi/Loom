@@ -10,6 +10,10 @@ Future<void> main() async {
   if (postgresPassword == null || postgresPassword.isEmpty) {
     throw StateError('LOOM_POSTGRES_PASSWORD is required');
   }
+  final communityGroupIds = environment['LOOM_COMMUNITY_GROUP_IDS'];
+  if (communityGroupIds == null || communityGroupIds.isEmpty) {
+    throw StateError('LOOM_COMMUNITY_GROUP_IDS is required');
+  }
 
   final postgres = await WorkflowPostgresConnection.open(
     host:
@@ -19,9 +23,19 @@ Future<void> main() async {
     username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
     password: postgresPassword,
   );
+  final appAccessClient = HttpAppAccessDecisionClient(
+    baseUri: Uri.parse(
+      environment['LOOM_APP_ACCESS_BASE_URL'] ??
+          'http://app-access.loom.svc.cluster.local:8080',
+    ),
+  );
   final service = WorkflowService(
     database: postgres.database,
     identityExtractor: const HeaderWorkflowIdentityExtractor(),
+    appAccessClient: appAccessClient,
+    communityGroupIdResolver: MapCommunityGroupIdResolver.fromJson(
+      communityGroupIds,
+    ),
   );
   final server = await shelf_io.serve(
     service.handler,
@@ -43,5 +57,6 @@ Future<void> main() async {
   await sigintSubscription.cancel();
   await sigtermSubscription.cancel();
   await server.close(force: true);
+  appAccessClient.close(force: true);
   await postgres.close();
 }

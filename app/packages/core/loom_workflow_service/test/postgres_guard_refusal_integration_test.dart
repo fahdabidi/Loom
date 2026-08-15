@@ -109,6 +109,10 @@ void main() {
         final service = WorkflowService(
           database: serverDatabase,
           identityExtractor: const HeaderWorkflowIdentityExtractor(),
+          appAccessClient: const _DenyAppAccessClient(),
+          communityGroupIdResolver: MapCommunityGroupIdResolver({
+            _communityId: 'loom_communities_service_postgres_integration',
+          }),
         );
         final refused = await service.handler(
           _request(
@@ -207,6 +211,10 @@ void main() {
         final service = WorkflowService(
           database: database,
           identityExtractor: const HeaderWorkflowIdentityExtractor(),
+          appAccessClient: const _DenyAppAccessClient(),
+          communityGroupIdResolver: MapCommunityGroupIdResolver({
+            _communityId: 'loom_communities_service_postgres_integration',
+          }),
         );
 
         final publicDefinition =
@@ -393,3 +401,16 @@ Request _getRequest(String path, String fanId) => Request(
     HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
   },
 );
+
+class _DenyAppAccessClient implements AppAccessDecisionClient {
+  const _DenyAppAccessClient();
+
+  @override
+  Future<bool> checkAccess({
+    required String fanId,
+    required String appId,
+    required String permissionId,
+    required String groupId,
+    required String correlationId,
+  }) async => false;
+}

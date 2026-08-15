@@ -153,6 +153,35 @@ class WorkflowDatabase {
     return result.first['definition_json'] as String;
   }
 
+  /// Loads every raw workflow definition owned by one canonical community.
+  ///
+  /// Archetype resolution is experience-wide because response-table workflows
+  /// can inherit their archetype from another definition. Returning the raw
+  /// maps preserves the render bindings needed for that resolution after a
+  /// server restart, when the engine's in-memory definition cache is empty.
+  Future<Map<String, Map<String, dynamic>>> loadDefinitionsForCommunity(
+    String communityId,
+  ) async {
+    await _ensureOpenAndMigrated();
+    final rows = await _db.runSelect(
+      'SELECT definition_id, workflow_type, definition_json '
+      'FROM workflow_definitions',
+      const [],
+    );
+    final definitions = <String, Map<String, dynamic>>{};
+    for (final row in rows) {
+      final definitionId = row['definition_id'] as String;
+      final workflowType = row['workflow_type'] as String;
+      if (definitionId != '${communityId}_$workflowType') continue;
+      final decoded = jsonDecode(row['definition_json'] as String);
+      if (decoded is! Map<String, dynamic>) {
+        throw StateError('Stored workflow definition is not a JSON object');
+      }
+      definitions[workflowType] = decoded;
+    }
+    return definitions;
+  }
+
   /// Atomically replaces every definition owned by one community.
   ///
   /// Definition ids predate the server store's community-aware operations and

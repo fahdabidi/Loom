@@ -47,12 +47,18 @@ const _definitionJson = '''
 void main() {
   late WorkflowDatabase database;
   late WorkflowService service;
+  late _RecordingAppAccessClient appAccessClient;
 
   setUp(() {
     database = WorkflowDatabase.memory();
+    appAccessClient = _RecordingAppAccessClient();
     service = WorkflowService(
       database: database,
       identityExtractor: const HeaderWorkflowIdentityExtractor(),
+      appAccessClient: appAccessClient,
+      communityGroupIdResolver: MapCommunityGroupIdResolver({
+        _communityId: 'loom_communities_service_unit',
+      }),
     );
   });
 
@@ -60,18 +66,98 @@ void main() {
     database.close();
   });
 
-  test('createInstance remains an explicit 501 response', () async {
-    final response = await service.handler(
-      Request(
-        'POST',
-        Uri.parse('http://localhost/v1/communities/community/instances'),
-      ),
-    );
-    expect(response.statusCode, 501);
-    final body = await response.readAsString();
-    expect(body, contains('createInstance'));
-    expect(body, contains('not implemented'));
-  });
+  test(
+    'createInstance derives its create permission and persists when allowed',
+    () async {
+      await _installCreatableDefinition(database);
+      final response = await service.handler(
+        _createRequest(
+          fanId: 'fan-creator',
+          body: {
+            'workflowType': _workflowType,
+            'instanceData': {'ownerFanId': 'fan-creator'},
+            'fanId': 'fan-forged',
+          },
+        ),
+      );
+
+      expect(response.statusCode, 201);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+      expect(body['workflowType'], _workflowType);
+      expect(body['currentState'], 'draft');
+      expect(body['instanceData'], {'ownerFanId': 'fan-creator'});
+      expect(body['updatedAt'], isA<String>());
+      final stored = await database.readInstance(body['instanceId'] as String);
+      expect(stored, isNotNull);
+      expect(stored!.createdByPersonaId, 'fan-creator');
+
+      expect(appAccessClient.callCount, 1);
+      expect(appAccessClient.fanId, 'fan-creator');
+      expect(appAccessClient.appId, 'loom_communities');
+      expect(appAccessClient.permissionId, 'event_rsvp.create');
+      expect(appAccessClient.groupId, 'loom_communities_service_unit');
+    },
+  );
+
+  test(
+    'createInstance denies without leaking permission or role details',
+    () async {
+      await _installCreatableDefinition(database);
+      appAccessClient.allowed = false;
+
+      final response = await service.handler(
+        _createRequest(
+          fanId: 'fan-denied',
+          body: {
+            'workflowType': _workflowType,
+            'instanceData': {'ownerFanId': 'fan-denied'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      final encoded = await response.readAsString();
+      expect(
+        jsonDecode(encoded),
+        containsPair('code', 'workflow_create_refused'),
+      );
+      expect(encoded, isNot(contains('event_rsvp.create')));
+      expect(encoded, isNot(contains('grantingRoleIds')));
+      expect(encoded, isNot(contains('role')));
+      final page = await LocalWorkflowEngineApi(
+        db: database,
+        communityId: _communityId,
+      ).queryInstances(tabId: 'home', personaId: 'fan-denied');
+      expect(page.items, isEmpty);
+    },
+  );
+
+  test(
+    'createInstance fails closed when community group mapping is absent',
+    () async {
+      await _installCreatableDefinition(database);
+      final unmappedService = WorkflowService(
+        database: database,
+        identityExtractor: const HeaderWorkflowIdentityExtractor(),
+        appAccessClient: appAccessClient,
+        communityGroupIdResolver: MapCommunityGroupIdResolver(const {}),
+      );
+
+      final response = await unmappedService.handler(
+        _createRequest(
+          fanId: 'fan-creator',
+          body: {
+            'workflowType': _workflowType,
+            'instanceData': {'ownerFanId': 'fan-creator'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 503);
+      expect(appAccessClient.callCount, 0);
+    },
+  );
 
   test(
     'replaceWorkflowDefinitions replaces wholesale and reports removals',
@@ -504,6 +590,48 @@ Future<void> _seed(WorkflowDatabase database) async {
   );
 }
 
+Future<void> _installCreatableDefinition(WorkflowDatabase database) async {
+  final definition = _definitionMap();
+  final transition =
+      (definition['transitions'] as List<dynamic>).first
+          as Map<String, dynamic>;
+  transition['action'] = 'cancel';
+  definition['renderBindings'] = [
+    {
+      'states': ['draft'],
+      'role': 'any',
+      'tabId': 'home',
+      'cardSurfaceFamily': 'event-rsvp',
+      'bindingKind': 'primary',
+      'actions': [
+        {
+          'kind': 'create',
+          'label': 'Create event',
+          'byRoleIds': ['event-organizer'],
+          'scope': 'tab',
+          'presentation': 'fab',
+        },
+      ],
+    },
+  ];
+  await database.upsertDefinition(
+    definitionId: '${_communityId}_$_workflowType',
+    workflowType: _workflowType,
+    definitionJson: jsonEncode(definition),
+    version: 4,
+  );
+}
+
+Request _createRequest({
+  required String fanId,
+  required Map<String, dynamic> body,
+}) => Request(
+  'POST',
+  Uri.parse('http://localhost/v1/communities/$_communityId/instances'),
+  headers: _headers(fanId),
+  body: jsonEncode(body),
+);
+
 Request _transitionRequest({
   String? fanId,
   String correlationId = _correlationId,
@@ -555,3 +683,28 @@ Request _getRequest(String path, String fanId) => Request(
     HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
   },
 );
+
+class _RecordingAppAccessClient implements AppAccessDecisionClient {
+  bool allowed = true;
+  int callCount = 0;
+  String? fanId;
+  String? appId;
+  String? permissionId;
+  String? groupId;
+
+  @override
+  Future<bool> checkAccess({
+    required String fanId,
+    required String appId,
+    required String permissionId,
+    required String groupId,
+    required String correlationId,
+  }) async {
+    callCount += 1;
+    this.fanId = fanId;
+    this.appId = appId;
+    this.permissionId = permissionId;
+    this.groupId = groupId;
+    return allowed;
+  }
+}

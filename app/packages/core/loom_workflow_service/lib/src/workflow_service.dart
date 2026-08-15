@@ -1,19 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:shelf/shelf.dart';
 
+import 'app_access_client.dart';
+import 'community_group_id_resolver.dart';
 import 'definition_validation.dart';
 import 'identity.dart';
 
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
 ///
-/// Phase B.2 implements definition replacement and authoritative reads in
-/// addition to Phase B.1's transition mutation. `createInstance` remains an
-/// explicit 501 until App Access role resolution is available.
+/// Implements the workflow-engine OpenAPI operations over the shared engine,
+/// with instance creation authorized by the live App Access service.
 class WorkflowService {
+  static const _appId = 'loom_communities';
   static const _jsonHeaders = <String, String>{
     'content-type': 'application/json; charset=utf-8',
   };
@@ -25,6 +28,8 @@ class WorkflowService {
 
   final WorkflowDatabase _database;
   final WorkflowIdentityExtractor _identityExtractor;
+  final AppAccessDecisionClient _appAccessClient;
+  final CommunityGroupIdResolver _communityGroupIdResolver;
   final Map<String, LocalWorkflowEngineApi> _engines = {};
 
   // WorkflowDatabase's transaction boundary uses one externally-owned
@@ -35,8 +40,12 @@ class WorkflowService {
   WorkflowService({
     required WorkflowDatabase database,
     required WorkflowIdentityExtractor identityExtractor,
+    required AppAccessDecisionClient appAccessClient,
+    required CommunityGroupIdResolver communityGroupIdResolver,
   }) : _database = database,
-       _identityExtractor = identityExtractor;
+       _identityExtractor = identityExtractor,
+       _appAccessClient = appAccessClient,
+       _communityGroupIdResolver = communityGroupIdResolver;
 
   Handler get handler => _handle;
 
@@ -52,7 +61,7 @@ class WorkflowService {
         return _queryInstances(request, segments[2]);
       }
       if (request.method == 'POST') {
-        return _notImplemented(request, 'createInstance');
+        return _createInstance(request, segments[2]);
       }
     }
     if (_matchesInstanceAction(segments, 'available-transitions') &&
@@ -278,6 +287,195 @@ class WorkflowService {
     }
     return null;
   }
+
+  Future<Response> _createInstance(Request request, String communityId) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey == null ||
+        idempotencyKey.length < 8 ||
+        idempotencyKey.length > 200) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_idempotency_key',
+        message: 'Idempotency-Key must contain between 8 and 200 characters.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    late final _CreateInstanceBody body;
+    try {
+      body = await _readCreateInstanceBody(request);
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: error.message,
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final groupId = await _communityGroupIdResolver.resolveGroupId(
+          communityId,
+        );
+        if (groupId == null || groupId.trim().isEmpty) {
+          return _error(
+            request: request,
+            statusCode: 503,
+            code: 'authorization_service_unavailable',
+            message: 'Workflow creation authorization is unavailable.',
+          );
+        }
+
+        final definitions = await _database.loadDefinitionsForCommunity(
+          communityId,
+        );
+        if (!definitions.containsKey(body.workflowType)) {
+          return _error(
+            request: request,
+            statusCode: 404,
+            code: 'workflow_type_not_found',
+            message: 'The requested workflow type was not found.',
+          );
+        }
+
+        const resolver = ArchetypeResolver();
+        final archetype = resolver.resolveAll(definitions)[body.workflowType];
+        final family = archetype?.family;
+        final permissionId = family == null
+            ? null
+            : resolver.permissionId(family, 'create');
+        if (permissionId == null ||
+            archetype!.conflictingBespokeFamilies.isNotEmpty) {
+          return _createRefused(request);
+        }
+
+        final allowed = await _appAccessClient.checkAccess(
+          fanId: identity.fanId,
+          appId: _appId,
+          permissionId: permissionId,
+          groupId: groupId,
+          correlationId: correlationId,
+        );
+        if (!allowed) return _createRefused(request);
+
+        final instanceId = await _authoritativeEngine(communityId)
+            .createInstance(
+              workflowType: body.workflowType,
+              initialInstanceData: body.instanceData,
+              personaId: identity.fanId,
+            );
+        final created = await _database.readInstance(instanceId);
+        if (created == null) {
+          throw StateError(
+            'Workflow instance disappeared after successful creation',
+          );
+        }
+        return Response(
+          201,
+          body: jsonEncode({
+            'instanceId': created.instanceId,
+            'workflowType': created.workflowType,
+            'currentState': created.currentState,
+            'instanceData': jsonDecode(created.instanceData),
+            'updatedAt': DateTime.fromMillisecondsSinceEpoch(
+              created.updatedAt,
+              isUtc: true,
+            ).toIso8601String(),
+          }),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } on AppAccessDecisionException catch (_) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'authorization_service_unavailable',
+        message: 'Workflow creation authorization is unavailable.',
+      );
+    } on SocketException catch (_) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'authorization_service_unavailable',
+        message: 'Workflow creation authorization is unavailable.',
+      );
+    } on WorkflowValidationError catch (_) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'The workflow instance data is invalid.',
+      );
+    } on StateError catch (error) {
+      final message = '${error.message}';
+      if (message.startsWith('Creation of ')) return _createRefused(request);
+      if (message.startsWith('Unknown workflow type:')) {
+        return _error(
+          request: request,
+          statusCode: 404,
+          code: 'workflow_type_not_found',
+          message: 'The requested workflow type was not found.',
+        );
+      }
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow instance could not be created.',
+      );
+    } catch (_) {
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow instance could not be created.',
+      );
+    }
+  }
+
+  Future<_CreateInstanceBody> _readCreateInstanceBody(Request request) async {
+    final decoded = await _readJsonObject(request);
+    final workflowType = decoded['workflowType'];
+    if (workflowType is! String || workflowType.trim().isEmpty) {
+      throw const FormatException('workflowType must be a non-empty string.');
+    }
+    final rawInstanceData = decoded['instanceData'];
+    if (rawInstanceData != null && rawInstanceData is! Map<String, dynamic>) {
+      throw const FormatException('instanceData must be a JSON object.');
+    }
+    return _CreateInstanceBody(
+      workflowType: workflowType,
+      instanceData: rawInstanceData as Map<String, dynamic>? ?? const {},
+    );
+  }
+
+  Response _createRefused(Request request) => _error(
+    request: request,
+    statusCode: 403,
+    code: 'workflow_create_refused',
+    message: 'The workflow instance cannot be created by this caller.',
+  );
 
   Future<Response> _queryInstances(Request request, String communityId) async {
     final correlationId = request.headers['x-loom-correlation-id'];
@@ -710,13 +908,6 @@ class WorkflowService {
     );
   }
 
-  Response _notImplemented(Request request, String operationId) => _error(
-    request: request,
-    statusCode: 501,
-    code: 'operation_not_implemented',
-    message: '$operationId is declared but not implemented in Phase B.1.',
-  );
-
   Response _error({
     required Request request,
     required int statusCode,
@@ -761,6 +952,16 @@ class _ApplyTransitionBody {
     required this.transitionId,
     required this.inputs,
   });
+}
+
+class _CreateInstanceBody {
+  const _CreateInstanceBody({
+    required this.workflowType,
+    required this.instanceData,
+  });
+
+  final String workflowType;
+  final Map<String, dynamic> instanceData;
 }
 
 class _ReplaceWorkflowDefinitionsBody {
