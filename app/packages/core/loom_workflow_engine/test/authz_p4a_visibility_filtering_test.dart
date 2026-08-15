@@ -165,6 +165,70 @@ void main() {
     expect(lookups, <String>['active-member', 'pending-member']);
   });
 
+  // Phase A -- the `owner` visibility model (CONTRACTS.md §3). Every archetype
+  // supports it, so it is enforced here rather than per-archetype.
+  group('owner visibility model', () {
+    test('the creator reads their own membersOnly instance without membership', () async {
+      final api = _api(activeMembershipLookup: (_) => false);
+      api.registerDefinition(
+        _machine('members-only', defaultVisibility: 'membersOnly'),
+      );
+      await _create(
+        api,
+        workflowType: 'members-only',
+        creator: 'author',
+        title: 'my own request',
+      );
+
+      // Before this model existed, `author` could not read the very request
+      // they had submitted the moment their membership lapsed.
+      expect(await _read(api, 'author'), hasLength(1));
+      expect(await _read(api, 'someone-else'), isEmpty);
+    });
+
+    test('an instance with no creator is readable by nobody', () async {
+      final api = _api(activeMembershipLookup: (_) => false);
+      api.registerDefinition(
+        _machine('members-only', defaultVisibility: 'membersOnly'),
+      );
+      await _create(
+        api,
+        workflowType: 'members-only',
+        creator: '',
+        title: 'orphaned seed row',
+      );
+
+      // The asymmetry that makes the model fail closed: an unset creator must
+      // match nobody, rather than matching an equally unset viewer. Seed data
+      // carrying no identity renders to no one instead of leaking to everyone.
+      expect(await _read(api, ''), isEmpty);
+      expect(await _read(api, 'anyone'), isEmpty);
+    });
+
+    test('ownership does not widen a guarded instance to other viewers', () async {
+      final api = _api();
+      api.registerDefinition(
+        _machine(
+          'guarded',
+          defaultVisibility: 'guarded',
+          readGuard: <String, dynamic>{
+            'allowedPersonaIds': <String>['reviewer'],
+          },
+        ),
+      );
+      await _create(
+        api,
+        workflowType: 'guarded',
+        creator: 'author',
+        title: 'sensitive',
+      );
+
+      expect(await _read(api, 'author'), hasLength(1));
+      expect(await _read(api, 'reviewer'), hasLength(1));
+      expect(await _read(api, 'bystander'), isEmpty);
+    });
+  });
+
   test(
     'omitted and public visibility remain readable by every persona',
     () async {

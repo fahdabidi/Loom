@@ -378,13 +378,26 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     Future<bool> Function() activeMembership,
   ) async {
     if (machine == null) return true;
+    // The `owner` visibility model (CONTRACTS.md §3), which every archetype
+    // supports: whoever created an instance can always read it. Only `guarded`
+    // honoured this before, so a creator who was not an active member could not
+    // read their own `membersOnly` instance -- their own submitted request, for
+    // example, the moment their membership lapsed.
+    //
+    // Fails closed by construction: an unset creator matches nobody, rather
+    // than matching an unset viewer. That asymmetry is the whole point of the
+    // "all models fail closed" clause -- seed data carrying no identity must
+    // render to no one instead of leaking to everyone.
+    if (instance.createdByPersonaId.isNotEmpty &&
+        instance.createdByPersonaId == personaId) {
+      return true;
+    }
     switch (machine.visibility.defaultValue) {
       case WorkflowVisibilityDefault.public:
         return true;
       case WorkflowVisibilityDefault.membersOnly:
         return activeMembership();
       case WorkflowVisibilityDefault.guarded:
-        if (instance.createdByPersonaId == personaId) return true;
         final stateGuard = machine.states[instance.currentState]?.readGuard;
         final readGuard = stateGuard ?? machine.visibility.readGuard;
         if (readGuard == null) return false;
