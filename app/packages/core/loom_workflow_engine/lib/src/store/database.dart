@@ -29,7 +29,8 @@ enum WorkflowSqlDialect {
 /// guard, formula and effect semantics, executed in both places. A second
 /// implementation for the server would have to agree with this one on every
 /// input of a 23-function expression language, and nothing could prove that it
-/// did.
+/// did. SQL syntax and parameter placeholders branch only where the two
+/// engines require different spellings.
 class WorkflowDatabase {
   static bool _sqliteProcessSymbolsLoaded = false;
 
@@ -102,8 +103,8 @@ class WorkflowDatabase {
         workflow_type TEXT NOT NULL,
         current_state TEXT NOT NULL,
         instance_data TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
+        created_at ${_dialect.isSqlite ? 'INTEGER' : 'BIGINT'} NOT NULL,
+        updated_at ${_dialect.isSqlite ? 'INTEGER' : 'BIGINT'} NOT NULL,
         created_by_persona_id TEXT NOT NULL
       );
     ''');
@@ -123,9 +124,17 @@ class WorkflowDatabase {
   }) async {
     await _ensureOpenAndMigrated();
     await _db.runCustom(
-      'INSERT OR REPLACE INTO workflow_definitions '
-      '(definition_id, workflow_type, definition_json, version) '
-      'VALUES (?, ?, ?, ?)',
+      _dialect.isSqlite
+          ? 'INSERT OR REPLACE INTO workflow_definitions '
+                '(definition_id, workflow_type, definition_json, version) '
+                'VALUES (?, ?, ?, ?)'
+          : r'INSERT INTO workflow_definitions '
+                '(definition_id, workflow_type, definition_json, version) '
+                r'VALUES ($1, $2, $3, $4) '
+                'ON CONFLICT (definition_id) DO UPDATE SET '
+                'workflow_type = EXCLUDED.workflow_type, '
+                'definition_json = EXCLUDED.definition_json, '
+                'version = EXCLUDED.version',
       [definitionId, workflowType, definitionJson, version],
     );
   }
@@ -133,8 +142,11 @@ class WorkflowDatabase {
   Future<String?> loadDefinitionJson(String definitionId) async {
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
-      'SELECT definition_json FROM workflow_definitions '
-      'WHERE definition_id = ?',
+      _dialect.isSqlite
+          ? 'SELECT definition_json FROM workflow_definitions '
+                'WHERE definition_id = ?'
+          : r'SELECT definition_json FROM workflow_definitions '
+                r'WHERE definition_id = $1',
       [definitionId],
     );
     if (result.isEmpty) return null;
@@ -154,10 +166,15 @@ class WorkflowDatabase {
     await _ensureOpenAndMigrated();
     final now = DateTime.now().millisecondsSinceEpoch;
     await _db.runCustom(
-      'INSERT INTO workflow_instances '
-      '(instance_id, community_id, workflow_type, current_state, '
-      'instance_data, created_at, updated_at, created_by_persona_id) '
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      _dialect.isSqlite
+          ? 'INSERT INTO workflow_instances '
+                '(instance_id, community_id, workflow_type, current_state, '
+                'instance_data, created_at, updated_at, created_by_persona_id) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          : r'INSERT INTO workflow_instances '
+                '(instance_id, community_id, workflow_type, current_state, '
+                'instance_data, created_at, updated_at, created_by_persona_id) '
+                r'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         instanceId,
         communityId,
@@ -174,7 +191,9 @@ class WorkflowDatabase {
   Future<WorkflowInstanceRow?> readInstance(String instanceId) async {
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
-      'SELECT * FROM workflow_instances WHERE instance_id = ?',
+      _dialect.isSqlite
+          ? 'SELECT * FROM workflow_instances WHERE instance_id = ?'
+          : r'SELECT * FROM workflow_instances WHERE instance_id = $1',
       [instanceId],
     );
     if (result.isEmpty) return null;
@@ -189,9 +208,13 @@ class WorkflowDatabase {
   }) async {
     await _ensureOpenAndMigrated();
     await _db.runCustom(
-      'UPDATE workflow_instances '
-      'SET current_state = ?, instance_data = ?, updated_at = ? '
-      'WHERE instance_id = ?',
+      _dialect.isSqlite
+          ? 'UPDATE workflow_instances '
+                'SET current_state = ?, instance_data = ?, updated_at = ? '
+                'WHERE instance_id = ?'
+          : r'UPDATE workflow_instances '
+                r'SET current_state = $1, instance_data = $2, updated_at = $3 '
+                r'WHERE instance_id = $4',
       [
         newState,
         jsonEncode(newInstanceData),
@@ -248,8 +271,8 @@ class WorkflowDatabase {
           )
         : await _db.runSelect(
             'SELECT * FROM workflow_instances '
-            'WHERE community_id = ? '
-            "ORDER BY instance_data::jsonb #>> ? ASC, instance_id ASC",
+            r'WHERE community_id = $1 '
+            r'ORDER BY instance_data::jsonb #>> $2 ASC, instance_id ASC',
             [communityId, '{$sortKey}'],
           );
 
@@ -297,7 +320,11 @@ class WorkflowDatabase {
   Future<int> countInstances(String communityId) async {
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
-      'SELECT COUNT(*) as c FROM workflow_instances WHERE community_id = ?',
+      _dialect.isSqlite
+          ? 'SELECT COUNT(*) as c FROM workflow_instances '
+                'WHERE community_id = ?'
+          : r'SELECT COUNT(*) as c FROM workflow_instances '
+                r'WHERE community_id = $1',
       [communityId],
     );
     return result.first['c'] as int;
@@ -309,9 +336,13 @@ class WorkflowDatabase {
   }) async {
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
-      'SELECT * FROM workflow_instances '
-      'WHERE community_id = ? AND created_by_persona_id = ? '
-      'ORDER BY workflow_type ASC, instance_id ASC',
+      _dialect.isSqlite
+          ? 'SELECT * FROM workflow_instances '
+                'WHERE community_id = ? AND created_by_persona_id = ? '
+                'ORDER BY workflow_type ASC, instance_id ASC'
+          : r'SELECT * FROM workflow_instances '
+                r'WHERE community_id = $1 AND created_by_persona_id = $2 '
+                'ORDER BY workflow_type ASC, instance_id ASC',
       [communityId, personaId],
     );
     return result.map((r) => WorkflowInstanceRow.fromRow(r)).toList();
@@ -327,14 +358,14 @@ class WorkflowDatabase {
     await _db.runCustom('DELETE FROM workflow_definitions');
   }
 
-  /// Runs [action] inside a single SQLite transaction (explicit BEGIN/COMMIT/ROLLBACK).
+  /// Runs [action] inside a single transaction (explicit BEGIN/COMMIT/ROLLBACK).
   Future<void> transaction(Future<void> Function() action) async {
     await _executeTx(action);
   }
 
   Future<void> _executeTx(Future<void> Function() action) async {
     await _ensureOpenAndMigrated();
-    await _db.runCustom('BEGIN IMMEDIATE');
+    await _db.runCustom(_dialect.isSqlite ? 'BEGIN IMMEDIATE' : 'BEGIN');
     try {
       await action();
       await _db.runCustom('COMMIT');
