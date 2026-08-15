@@ -799,6 +799,18 @@ void main() {
   ) async {
     final installed = (await tester.runAsync(() => _install('a11-createorget')))!;
     try {
+      // The fixture has no late-joiner shape to borrow: every one of its 13
+      // accounts already has a row on the only event that has any. So make one
+      // -- a real, typed member with no response row.
+      //
+      // Registering the persona type is the part that matters. Without it the
+      // account has no entry in `_personaTypeById`, so `allowedPersonaIds` on
+      // `respond-going` refuses it and no actions resolve -- which looks
+      // identical to the bug under test while having nothing to do with it.
+      final engine = installed.engine;
+      if (engine is LocalWorkflowEngineApi) {
+        engine.setPersonaType('tabletop-member-15', 'tabletop-member');
+      }
       await tester.pumpWidget(
         _calendar(
           installed,
@@ -846,39 +858,13 @@ void main() {
     } finally {
       await tester.runAsync(installed.dispose);
     }
-    // Skipped, with the reason recorded rather than the test deleted: the
-    // create-or-get half of D7a is implemented in `_applyTransition`, but it is
-    // not yet *reachable*. `_loadActions` derives response actions by calling
-    // `availableTransitionsAsync` against the viewer's row, and short-circuits
-    // to an empty list when there is no row -- so a member in this state is not
-    // offered RSVP controls at all, and there is no tap to intercept.
-    //
-    // Correcting an earlier description of this bug: it is a *missing* control,
-    // not a dead one. The outcome is the same (a late joiner cannot RSVP), but
-    // the mechanism is action derivation, not the transition path.
-    //
-    // Closing it needs availability computed against a synthetic row in the
-    // response workflow's initial state, which the surface cannot currently
-    // reach -- `WorkflowEngineApi` exposes no way to read a definition. That is
-    // Phase A engine work; this test goes green when it lands.
-    //
-    // skip reason: needs `_loadActions` to offer actions for a row that does
-    // not exist yet. (`testWidgets` takes `bool? skip`, not a String, so the
-    // reason lives here rather than in the argument.)
-    //
-    // Progress, so the next attempt does not restart from zero: the plumbing
-    // is now in place. `EngineNativeResolvedBinding.responseMachine` carries
-    // the response-table definition (resolved in `part27` where the
-    // definitions map is in scope), it is threaded into `_EventRsvpDetailCard`,
-    // and `_loadActions` builds a synthetic row at that machine's
-    // `initialState` when the viewer has none. The chips still do not render,
-    // so one link in that chain is not behaving as read -- most likely
-    // `responseMachine` arriving null on the path this test exercises.
-    // Instrument `_loadActions` rather than reasoning further: the next step is
-    // to print whether `widget.responseMachine` and `responseTable` are
-    // non-null at that point, which distinguishes "not plumbed" from
-    // "availableTransitionsAsync declines the synthetic row".
-  }, skip: true);
+    // This covers both halves of D7a together, which is the only way it is
+    // worth covering: `_loadActions` offers the controls by resolving
+    // availability against a synthetic row at the response workflow's
+    // `initialState`, and `_applyTransition` materializes the real row when one
+    // is tapped. Either half alone is unobservable -- without the first there
+    // is no control to tap, and without the second the tap does nothing.
+  });
 
   testWidgets(
     'seeded pending member-14 goes through its own response row and selected UI state',
