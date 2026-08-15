@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
@@ -219,6 +221,7 @@ class CommunityPackageValidator {
     );
     findings.addAll(_validateTransitionActions(rawDefinitions));
     findings.addAll(_validateResponseRowSweep(rawDefinitions));
+    findings.addAll(_validateRedundantTransitions(rawDefinitions));
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
     final instances = <String, Map<String, dynamic>>{};
@@ -587,6 +590,99 @@ class CommunityPackageValidator {
     return findings;
   }
 
+  /// Two transitions offered from the same state, landing on the same state,
+  /// are two buttons that do the same thing.
+  ///
+  /// The archetype deliberately does not mandate where `withdraw_response`
+  /// lands — communities own their own state vocabularies, and a community may
+  /// route withdrawal to a `pendingStates` member, to a declared `withdrawn`
+  /// state, or anywhere else that reads correctly to its members. What it may
+  /// not do is duplicate a `respond` transition: Riverside's `cancel-rsvp`
+  /// (`going|maybe|waitlisted -> declined`) is a strict subset of its own
+  /// `respond-declined` (`pending|going|maybe|waitlisted -> declined`), so a
+  /// member sees "Not going" and "Cancel RSVP" side by side, doing exactly the
+  /// same thing.
+  ///
+  /// Scoped to one workflow on purpose. Different workflows may share a target
+  /// state and label the button differently — that is not redundancy, because
+  /// the two are never offered together.
+  List<ValidationFinding> _validateRedundantTransitions(
+    Map<Object?, Object?> raw,
+  ) {
+    final findings = <ValidationFinding>[];
+    for (final entry in raw.entries) {
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+      final transitions = workflow['transitions'];
+      if (transitions is! List) continue;
+
+      List<String> sourcesOf(Map<Object?, Object?> t) {
+        final from = t['from'];
+        if (from is List) return from.map((e) => e.toString()).toList();
+        if (from is String) return [from];
+        return const [];
+      }
+
+      for (var i = 0; i < transitions.length; i++) {
+        for (var j = i + 1; j < transitions.length; j++) {
+          final a = transitions[i];
+          final b = transitions[j];
+          if (a is! Map || b is! Map) continue;
+          // A null `to` is a self-transition (data edit), never redundant with
+          // a state move.
+          final to = a['to'];
+          if (to == null || to != b['to']) continue;
+
+          final overlap = sourcesOf(a).toSet().intersection(
+            sourcesOf(b).toSet(),
+          );
+          if (overlap.isEmpty) continue;
+
+          // Same destination is not enough. Two transitions legitimately share
+          // a target when they *do* different things on the way there
+          // (`start-export` and `start-transfer` both reach `running`), or when
+          // their guards mean they are never offered to the same person
+          // (`cancel` vs `board-cancel`). Redundancy is only real when neither
+          // is true: identical effects and identical guards, so the member sees
+          // two controls with the same outcome.
+          // Differing guards mean the two are never offered to the same person
+          // (`cancel` vs `board-cancel`), so they cannot be redundant controls.
+          //
+          // Effects are deliberately NOT required to match. Riverside's
+          // `cancel-rsvp` and `respond-declined` carry identical guards and
+          // effects that differ only in an audit string ("cancelled" vs
+          // "declined" appended to responseHistory) -- byte-comparing effects
+          // lets a history label hide a genuine duplicate. What survives is a
+          // question worth a human answering: these two are offered together
+          // and land in the same state, so are they meaningfully different?
+          if (jsonEncode(a['guard'] ?? const <String, Object?>{}) !=
+              jsonEncode(b['guard'] ?? const <String, Object?>{})) {
+            continue;
+          }
+
+          findings.add(
+            _finding(
+              'redundant_transition',
+              'Transitions "${a['id']}" and "${b['id']}" on "${entry.key}" share '
+                  'a guard and both move to "$to" from '
+                  '${(overlap.toList()..sort()).map((s) => '"$s"').join(', ')}, '
+                  'so the same member is offered both at once with the same '
+                  'outcome. Confirm they are meaningfully different: two '
+                  'distinct operations may legitimately share a target state '
+                  '(an export and a transfer both reaching "running"), and that '
+                  'is fine. What is not fine is two labels for one capability — '
+                  'if they differ only in bookkeeping, give one a distinct '
+                  'target or remove it.',
+              'experience/workflowDefinitions/${entry.key}/transitions',
+              warning: true,
+            ),
+          );
+        }
+      }
+    }
+    return findings;
+  }
+
   /// A terminal transition on a workflow that owns response rows must sweep
   /// them, or it orphans rows that stay live.
   ///
@@ -646,35 +742,75 @@ class CommunityPackageValidator {
             transition['tone'] == 'destructive';
         if (!terminal) continue;
 
-        final swept = <String>{};
+        // Collect, per swept response type, which `$state` values the cascade
+        // actually covers. A filter matches one state at a time, so covering a
+        // type means one effect per non-terminal state it declares.
+        final sweptStates = <String, Set<String>>{};
         final effects = transition['effects'];
         if (effects is List) {
           for (final effect in effects) {
             if (effect is! Map || effect['op'] != 'transitionRelated') continue;
             final query = effect['relatedQuery'];
-            if (query is Map && query['workflowType'] is String) {
-              swept.add(query['workflowType'] as String);
-            }
+            if (query is! Map || query['workflowType'] is! String) continue;
+            final type = query['workflowType'] as String;
+            final filter = query['filter'];
+            final state = filter is Map ? filter[r'$state'] : null;
+            (sweptStates[type] ??= <String>{}).add(
+              state is String ? state : '*',
+            );
           }
         }
 
-        final orphaned = owned.difference(swept);
-        if (orphaned.isEmpty) continue;
-
         final id = transition['id'];
-        findings.add(
-          _finding(
-            'orphaned_response_rows',
-            'Transition "${id ?? '?'}" ends "${entry.key}" but does not sweep '
-                '${orphaned.map((t) => '"$t"').join(', ')}. Those response rows '
-                'stay in whatever state they were in and keep accepting '
-                'responses, because a row cannot see its parent\'s state. '
-                'Cascade with a `transitionRelated` effect per source state.',
-            'experience/workflowDefinitions/${entry.key}/transitions/'
-                '${id ?? '?'}/effects',
-            warning: true,
-          ),
-        );
+        for (final type in owned) {
+          final covered = sweptStates[type] ?? const <String>{};
+          // An unfiltered sweep covers everything by definition.
+          if (covered.contains('*')) continue;
+
+          final target = definitions[type];
+          final targetStates = target is Map ? target['states'] : null;
+          final live = <String>{};
+          if (targetStates is Map) {
+            for (final s in targetStates.entries) {
+              final decl = s.value;
+              if (decl is Map && decl['isTerminal'] == true) continue;
+              live.add(s.key.toString());
+            }
+          }
+
+          final missed = live.difference(covered);
+          if (covered.isEmpty) {
+            findings.add(
+              _finding(
+                'orphaned_response_rows',
+                'Transition "${id ?? '?'}" ends "${entry.key}" but does not '
+                    'sweep "$type". Those response rows stay in whatever state '
+                    'they were in and keep accepting responses, because a row '
+                    'cannot see its parent\'s state. Cascade with a '
+                    '`transitionRelated` effect per source state.',
+                'experience/workflowDefinitions/${entry.key}/transitions/'
+                    '${id ?? '?'}/effects',
+                warning: true,
+              ),
+            );
+          } else if (missed.isNotEmpty) {
+            findings.add(
+              _finding(
+                'orphaned_response_rows',
+                'Transition "${id ?? '?'}" ends "${entry.key}" and sweeps '
+                    '"$type", but misses '
+                    '${(missed.toList()..sort()).map((s) => '"$s"').join(', ')}'
+                    '. A `\$state` filter matches one state at a time, so the '
+                    'cascade needs one effect for every non-terminal state '
+                    '"$type" declares -- rows left in a missed state survive '
+                    'the cancellation still claiming a live answer.',
+                'experience/workflowDefinitions/${entry.key}/transitions/'
+                    '${id ?? '?'}/effects',
+                warning: true,
+              ),
+            );
+          }
+        }
       }
     }
     return findings;

@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -158,12 +158,15 @@ Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
 > **Response rows.** Per-member responses live in a separate workflow named by
 > `responseTable.workflowType`, which inherits this archetype (`permissions.md` §6 step 3b). This shape
 > is **required**, not optional — it is what resolves the ambiguity described above, which the archetype
-> cannot resolve from the action alone. Six communities already model it, with a uniform state set of
-> `pending · going · maybe · declined · waitlisted`.
+> cannot resolve from the action alone. Six communities already model it, and all six happen to use
+> `pending · going · maybe · declined · waitlisted` — a convention, not a requirement. The archetype does
+> not fix the state set; communities declare their own.
 >
-> The engine materializes a row in `pending` on demand, when a response transition is first applied by
-> a member who has none. `pending` is the only initial state, and the only transition that targets it is
-> `withdraw_response`. See [`event-rsvp.md`](./event-rsvp.md) §4.
+> The engine creates rows eagerly at event creation — one per member, in the response workflow's declared
+> initial state. Which states mean "hasn't answered" is the community's choice, declared as
+> `responseTable.pendingStates` (a list). `withdraw_response` may target any state that is not already
+> the target of a `respond` transition offered from the same source. See
+> [`event-rsvp.md`](./event-rsvp.md) §4.
 
 ---
 

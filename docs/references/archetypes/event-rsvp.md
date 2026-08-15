@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -109,36 +109,54 @@ because it is a row rather than a membership flag.
 
 ### Who creates a row
 
-**The engine does, not the community.** A row is materialized in `pending` the first time a member
-applies a response transition to an event they have no row for. Nothing in community JSON declares it.
+**The engine does, eagerly, at event creation** — one row per member, in the response workflow's declared
+initial state. Nothing in community JSON declares the creation, and no member action triggers it.
 
-This is the only reading consistent with the corpus: all six communities declare `from: ["pending"]` on
-their respond transitions, which is dead unless a row can exist in `pending` before its member has
-answered. Materializing at *view* time would satisfy that too, but it writes on read — one row per
-member per event opened — so the write is deferred to the first transition that actually needs it.
+This is what the shipped test suite asserts (`organizer creates an event and one pending response per
+member`): after an organizer creates an event, there is exactly one response instance per account, each
+in the initial state. It also explains the corpus cleanly — all six communities declare the initial state
+in their respond transitions' `from` and *nothing anywhere targets it*, which is only coherent if rows are
+born there in bulk rather than reaching it by transition.
 
-Because the creation path is archetype-owned rather than community-declared, `no_creation_path_for_editable_type`
-must not fire on a workflow reached through `responseTable.workflowType`. All six response tables trip
-it today; that is a validator gap, not six authoring bugs.
+> **Cost, stated plainly:** eager fan-out is N rows per event. A 500-member community with 50 events
+> carries 25,000 response rows. That is the accepted cost of this design, not an argument against it —
+> but it is the reason a community's member count and event volume are capacity-planning inputs.
+
+Which states count as "hasn't answered" is the **community's** choice, declared as
+`responseTable.pendingStates` — a list, not a single state. Reminder sweeps target it.
+
+Because the creation path is archetype-owned rather than community-declared,
+`no_creation_path_for_editable_type` must not fire on a workflow reached through
+`responseTable.workflowType`.
+
+> ⚠️ **Not yet implemented.** No code creates these rows today — `responseTable` is consumed only for
+> reading. Seven app-shell tests fail on exactly this. Until the fan-out ships, the validator exemption
+> above suppresses a warning that is currently accurate.
 
 ### Where `withdraw_response` lands
 
-**`pending`.** It is the only target that makes the action mean anything.
+**The community decides. The archetype requires only that it not be redundant.**
 
-Riverside is the corpus's one implementation, and it routes to `declined`:
+> A `withdraw_response` transition MUST NOT land on the same state as a `respond` transition available
+> from the same source state.
+
+`pending` satisfies this. So does a community-declared `withdrawn`. What fails is Riverside's shape:
 
 ```
 respond-declined   pending|going|maybe|waitlisted -> declined
 cancel-rsvp              going|maybe|waitlisted   -> declined
 ```
 
-`cancel-rsvp`'s sources are a strict subset of `respond-declined`'s and its target is identical — it is a
-relabelled duplicate that adds no reachable state. Routing withdrawal to `pending` restores the
-distinction the action names: `declined` is an answer ("not coming"), `pending` is the absence of one
-("never mind"). It also keeps the two separable downstream, since reminder sweeps target `pending` and
-should not re-nudge someone who affirmatively declined.
+`cancel-rsvp`'s sources are a strict subset of `respond-declined`'s and its target is identical, so a
+member is offered two buttons that do the same thing at the same time. That is the defect — not the
+choice of `declined` as such.
 
-This makes `pending` the sole state that is both initial and a transition target.
+The rule is deliberately about redundancy rather than a mandated target, because **communities own their
+own state vocabularies**. A community that wants to distinguish "withdrew" from "never answered" declares
+`withdrawn` and leaves it out of `pendingStates` (so those members are not re-nudged); one that does not
+routes withdrawal back into a `pendingStates` member. Both are valid; the grammar already carries the
+knob. Different workflows may also share a target state and label the button differently — redundancy
+only matters *within* one workflow, among transitions offered together.
 
 ## 5. Worked example — Garden Club
 
@@ -170,17 +188,26 @@ per-member answers. Showing only the first is what produced the array shape §2 
 
     // Cancelling must sweep the rows, or they stay live and keep accepting
     // responses -- a row cannot see its parent's state. One effect per source
-    // state, because a filter matches one state at a time.
+    // state, because a filter matches one state at a time, and the sweep must
+    // cover EVERY non-terminal state this community declares -- including
+    // `pending` and `declined`. Leaving those behind means a cancelled event
+    // still has rows claiming a live answer.
     { "id": "cancel-event", "action": "cancel", "from": ["open"], "to": "cancelled",
       "tone": "destructive",
       "guard": { "allowedRoleIds": ["garden-coordinator"] },
       "effects": [
         { "op": "transitionRelated", "transitionId": "event-cancelled",
           "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                            "filter": { "eventId": "{id}", "$state": "pending" } } },
+        { "op": "transitionRelated", "transitionId": "event-cancelled",
+          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
                             "filter": { "eventId": "{id}", "$state": "going" } } },
         { "op": "transitionRelated", "transitionId": "event-cancelled",
           "relatedQuery": { "workflowType": "garden-event-rsvp-response",
                             "filter": { "eventId": "{id}", "$state": "maybe" } } },
+        { "op": "transitionRelated", "transitionId": "event-cancelled",
+          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                            "filter": { "eventId": "{id}", "$state": "declined" } } },
         { "op": "transitionRelated", "transitionId": "event-cancelled",
           "relatedQuery": { "workflowType": "garden-event-rsvp-response",
                             "filter": { "eventId": "{id}", "$state": "waitlisted" } } }
@@ -217,8 +244,10 @@ per-member answers. Showing only the first is what produced the array shape §2 
       "from": ["pending", "maybe", "declined"], "to": "waitlisted",
       "guard": { "allowedRoleIds": ["garden-member"] } },
 
-    // Withdrawal returns the row to "no answer" -- not to `declined`, which
-    // would make it a duplicate of respond-declined. See §4.
+    // This community routes withdrawal back to "no answer". It could equally
+    // declare a `withdrawn` state instead -- what it may NOT do is target
+    // `declined`, which respond-declined already reaches from these same
+    // source states. See §4.
     { "id": "withdraw-rsvp", "action": "withdraw_response",
       "from": ["going", "maybe", "waitlisted"], "to": "pending",
       "guard": { "allowedRoleIds": ["garden-member"] } },
