@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -110,8 +110,16 @@ because it is a row rather than a membership flag.
 
 ### Who creates a row
 
-**The engine does, eagerly, at event creation** — one row per member, in the response workflow's declared
-initial state. Nothing in community JSON declares the creation, and no member action triggers it.
+**The archetype does, as built-in behaviour** — a transition declaring `action: "create"` fans out one
+response row per member, in the response workflow's declared initial state. Nothing in community JSON
+declares the creation, and no member action triggers it.
+
+> **Why not an effect op.** The grammar could express this: `generateRecurringInstances` already fans out
+> over N dates without naming a single date, so an engine-resolved iteration domain plainly needs no
+> identity values in JSON. A `createInstancePerMember` op was rejected anyway — it would let every
+> community hand-roll per-member creation, which is the duplication this archetype exists to absorb.
+> An earlier draft of this section claimed the identity rule made the fan-out *inexpressible*. It does
+> not, and that reasoning should not be reused.
 
 This is what the shipped test suite asserts (`organizer creates an event and one pending response per
 member`): after an organizer creates an event, there is exactly one response instance per account, each

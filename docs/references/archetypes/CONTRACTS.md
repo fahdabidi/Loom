@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.2.0
+doc_version: 1.3.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -143,6 +143,23 @@ Used by 8 communities — the most widely used archetype.
 **Bookkeeping:** the **response row** — one instance per member per event, whose state is the answer.
 `respond` moves that row between response states, so exclusivity is inherent rather than enforced.
 Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
+
+**Provisioning is archetype-owned, and is a built-in action.** A transition declaring `action: "create"`
+on an `event-rsvp` workflow fans out one response row per member, in the response workflow's declared
+initial state. The author declares nothing — no effect, no create action on the response type, no member
+list.
+
+> This is a deliberate choice between two workable designs, recorded because the rejected one is not
+> obviously wrong. The effect grammar *could* have carried a general per-member fan-out op, shaped
+> exactly like `generateRecurringInstances` — which already fans out over N dates without naming a single
+> date, proving an engine-resolved iteration domain needs no identity values in JSON. That was rejected in
+> favour of archetype ownership: a general op would let any community hand-roll per-member creation, which
+> is precisely the duplication the archetype exists to absorb. **The identity rule (§9) was never the
+> obstacle** — an earlier draft of this contract claimed it was, and that claim was false.
+
+Because provisioning is archetype-owned, `no_creation_path_for_editable_type` does not apply to a
+workflow reached through `responseTable.workflowType` — there is deliberately no authored creation path,
+for the same reason there is no authored `reminderFanIds`.
 
 > **Corrected 2026-08-14.** An earlier draft listed five per-person arrays here and claimed nothing
 > enforced exclusivity. Measuring the corpus disproved it: six of eight communities already use response
