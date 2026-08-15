@@ -302,8 +302,10 @@ class WorkflowDatabase {
   }) async {
     await _ensureOpenAndMigrated();
     // JSON extraction is the one query shape the two dialects spell
-    // differently. The sort key remains a bound JSON-path parameter in both
-    // dialects; it is never interpolated into SQL text.
+    // differently. The sort key remains a bound parameter in both dialects;
+    // it is never interpolated into SQL text. This query and its cursor logic
+    // treat sortKey as one top-level instance_data key, so PostgreSQL uses
+    // ->> (jsonb, text) rather than #>> (jsonb, text[]).
     final allRowsResult = _dialect.isSqlite
         ? await _db.runSelect(
             workflowType == null
@@ -325,13 +327,13 @@ class WorkflowDatabase {
             workflowType == null
                 ? 'SELECT * FROM workflow_instances '
                       r'WHERE community_id = $1 '
-                      r'ORDER BY instance_data::jsonb #>> $2 ASC, '
+                      r'ORDER BY instance_data::jsonb ->> $2 ASC, '
                       'instance_id ASC'
                 : 'SELECT * FROM workflow_instances '
                       r'WHERE community_id = $1 AND workflow_type = $2 '
-                      r'ORDER BY instance_data::jsonb #>> $3 ASC, '
+                      r'ORDER BY instance_data::jsonb ->> $3 ASC, '
                       'instance_id ASC',
-            [communityId, if (workflowType != null) workflowType, '{$sortKey}'],
+            [communityId, if (workflowType != null) workflowType, sortKey],
           );
 
     final allRows = allRowsResult
