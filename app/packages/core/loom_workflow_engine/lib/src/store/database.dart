@@ -153,6 +153,48 @@ class WorkflowDatabase {
     return result.first['definition_json'] as String;
   }
 
+  /// Atomically replaces every definition owned by one community.
+  ///
+  /// Definition ids predate the server store's community-aware operations and
+  /// are encoded as `communityId_workflowType`. Matching both the stored id and
+  /// its stored workflow type avoids treating another community's shared id
+  /// prefix as ownership.
+  Future<Set<String>> replaceDefinitionsForCommunity({
+    required String communityId,
+    required Map<String, Map<String, dynamic>> definitions,
+    required int version,
+  }) async {
+    final previousWorkflowTypes = <String>{};
+    await transaction(() async {
+      final rows = await _db.runSelect(
+        'SELECT definition_id, workflow_type FROM workflow_definitions',
+        const [],
+      );
+      for (final row in rows) {
+        final definitionId = row['definition_id'] as String;
+        final workflowType = row['workflow_type'] as String;
+        if (definitionId != '${communityId}_$workflowType') continue;
+        previousWorkflowTypes.add(workflowType);
+        await _db.runCustom(
+          _dialect.isSqlite
+              ? 'DELETE FROM workflow_definitions WHERE definition_id = ?'
+              : r'DELETE FROM workflow_definitions WHERE definition_id = $1',
+          [definitionId],
+        );
+      }
+
+      for (final entry in definitions.entries) {
+        await upsertDefinition(
+          definitionId: '${communityId}_${entry.key}',
+          workflowType: entry.key,
+          definitionJson: jsonEncode(entry.value),
+          version: version,
+        );
+      }
+    });
+    return previousWorkflowTypes.difference(definitions.keys.toSet());
+  }
+
   // ── Instances: mutations ───────────────────────────────────────────────
 
   Future<void> insertInstance({
@@ -253,27 +295,43 @@ class WorkflowDatabase {
   /// Returns exactly [limit] + 1 rows so callers can detect hasMore.
   Future<List<WorkflowInstanceRow>> queryInstancesKeyset({
     required String communityId,
+    String? workflowType,
     String? cursor,
     required int limit,
     required String sortKey,
   }) async {
     await _ensureOpenAndMigrated();
     // JSON extraction is the one query shape the two dialects spell
-    // differently. The sort key is a declared instanceDataSchema field name,
-    // never caller-supplied text, so interpolating it into the Postgres path
-    // expression cannot carry untrusted input.
+    // differently. The sort key remains a bound JSON-path parameter in both
+    // dialects; it is never interpolated into SQL text.
     final allRowsResult = _dialect.isSqlite
         ? await _db.runSelect(
-            'SELECT * FROM workflow_instances '
-            'WHERE community_id = ? '
-            'ORDER BY json_extract(instance_data, ?) ASC, instance_id ASC',
-            [communityId, '\$.$sortKey'],
+            workflowType == null
+                ? 'SELECT * FROM workflow_instances '
+                      'WHERE community_id = ? '
+                      'ORDER BY json_extract(instance_data, ?) ASC, '
+                      'instance_id ASC'
+                : 'SELECT * FROM workflow_instances '
+                      'WHERE community_id = ? AND workflow_type = ? '
+                      'ORDER BY json_extract(instance_data, ?) ASC, '
+                      'instance_id ASC',
+            [
+              communityId,
+              if (workflowType != null) workflowType,
+              '\$.$sortKey',
+            ],
           )
         : await _db.runSelect(
-            'SELECT * FROM workflow_instances '
-            r'WHERE community_id = $1 '
-            r'ORDER BY instance_data::jsonb #>> $2 ASC, instance_id ASC',
-            [communityId, '{$sortKey}'],
+            workflowType == null
+                ? 'SELECT * FROM workflow_instances '
+                      r'WHERE community_id = $1 '
+                      r'ORDER BY instance_data::jsonb #>> $2 ASC, '
+                      'instance_id ASC'
+                : 'SELECT * FROM workflow_instances '
+                      r'WHERE community_id = $1 AND workflow_type = $2 '
+                      r'ORDER BY instance_data::jsonb #>> $3 ASC, '
+                      'instance_id ASC',
+            [communityId, if (workflowType != null) workflowType, '{$sortKey}'],
           );
 
     final allRows = allRowsResult

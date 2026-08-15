@@ -1,8 +1,10 @@
 # Loom workflow service
 
-Phase B.1 exposes the shared `loom_workflow_engine` over HTTP. Only
-`applyTransition` is implemented; the other four OpenAPI operations return
-explicit `501 Not Implemented` responses.
+Phase B.2 exposes the shared `loom_workflow_engine` over HTTP for definition
+replacement, visibility-filtered instance queries, available-transition
+resolution, and transition application. `createInstance` remains an explicit
+`501 Not Implemented` response until Phase B.3 supplies App Access permission
+resolution.
 
 The temporary `X-Loom-Fan-Id` adapter is isolated behind
 `WorkflowIdentityExtractor`. It is a pre-auth test seam, not a production auth

@@ -1,6 +1,7 @@
 export 'src/api/local_workflow_engine_api.dart';
 export 'src/api/notification_delivery_service.dart';
 export 'src/api/workflow_engine_api.dart';
+export 'src/archetypes/archetype_resolver.dart';
 export 'src/evaluator/binding_resolver.dart';
 export 'src/evaluator/effect_evaluator.dart';
 export 'src/evaluator/formula_evaluator.dart';

@@ -133,6 +133,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final String _communityId;
   final DateTime Function() _clock;
   final NotificationDeliveryService? _notificationDeliveryService;
+  bool _failClosedOnMissingDefinition;
   ActiveMembershipLookup? _activeMembershipLookup;
   WorkflowSurfacePermissionLookup? _surfacePermissionLookup;
 
@@ -158,10 +159,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     NotificationDeliveryService? notificationDeliveryService,
     ActiveMembershipLookup? activeMembershipLookup,
     WorkflowSurfacePermissionLookup? surfacePermissionLookup,
+    bool failClosedOnMissingDefinition = false,
   }) : _db = db,
        _communityId = communityId,
        _clock = clock ?? DateTime.now,
        _notificationDeliveryService = notificationDeliveryService,
+       _failClosedOnMissingDefinition = failClosedOnMissingDefinition,
        _activeMembershipLookup = activeMembershipLookup,
        _surfacePermissionLookup = surfacePermissionLookup;
 
@@ -179,6 +182,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     _surfacePermissionLookup = lookup;
   }
 
+  /// Selects whether persisted instances without an installed definition are
+  /// hidden. Server-authoritative callers enable this so wholesale definition
+  /// replacement makes retired workflow instances unreachable.
+  void setFailClosedOnMissingDefinition(bool failClosed) {
+    _failClosedOnMissingDefinition = failClosed;
+  }
+
   // ── populate definitions (called before any API use) ──────────────────
 
   /// Registers a workflow definition from JSON.
@@ -194,6 +204,34 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         version: 1,
       ),
     );
+  }
+
+  /// Replaces this community's definitions as one durable database operation.
+  ///
+  /// Raw maps are persisted so installation does not silently discard a field
+  /// merely because the in-memory model does not need it while rendering.
+  Future<Set<String>> replaceDefinitions({
+    required Map<String, Map<String, dynamic>> definitions,
+    required int version,
+  }) async {
+    final parsed = <String, LoomWorkflowStateMachine>{
+      for (final entry in definitions.entries)
+        entry.key: LoomWorkflowStateMachine.fromJson(entry.value, entry.key),
+    };
+    final removed = await _db.replaceDefinitionsForCommunity(
+      communityId: _communityId,
+      definitions: definitions,
+      version: version,
+    );
+    _definitions
+      ..clear()
+      ..addEntries(
+        parsed.entries.map(
+          (entry) => MapEntry('${_communityId}_${entry.key}', entry.value),
+        ),
+      );
+    _resolveRegisteredArchetypes();
+    return removed;
   }
 
   Future<LoomWorkflowStateMachine?> _getDefinition(String workflowType) async {
@@ -224,6 +262,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   Future<InstancePage> queryInstances({
     required String tabId,
     required String personaId,
+    String? workflowType,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
@@ -233,6 +272,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
     final rows = await _db.queryInstancesKeyset(
       communityId: _communityId,
+      workflowType: workflowType,
       cursor: cursor,
       limit: limit,
       sortKey: sortKey,
@@ -259,9 +299,32 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       initialRows: rows,
       sortKey: sortKey,
       personaId: personaId,
+      workflowType: workflowType,
       query: query,
       limit: limit,
     );
+  }
+
+  /// Reads one instance through the same hydration and visibility path used by
+  /// [queryInstances]. Returns null for missing, cross-community, retired, or
+  /// unreadable instances so an authoritative adapter need not disclose which
+  /// case occurred.
+  Future<WorkflowInstance?> readVisibleInstance({
+    required String instanceId,
+    required String personaId,
+  }) async {
+    final row = await _db.readInstance(instanceId);
+    if (row == null || row.communityId != _communityId) return null;
+    final candidate = await _hydrateQueryRow(row, personaId);
+    if (!await _isVisibleToPersona(
+      candidate.instance,
+      candidate.machine,
+      personaId,
+      () => _isActiveMember(personaId),
+    )) {
+      return null;
+    }
+    return candidate.instance;
   }
 
   Future<InstancePage> _legacyQueryPage({
@@ -300,6 +363,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required List<WorkflowInstanceRow> initialRows,
     required String sortKey,
     required String personaId,
+    String? workflowType,
     required SurfaceQuery query,
     required int limit,
   }) async {
@@ -342,6 +406,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
       rows = await _db.queryInstancesKeyset(
         communityId: _communityId,
+        workflowType: workflowType,
         cursor: _cursorForRow(sortKey, lastScannedRow),
         limit: limit,
         sortKey: sortKey,
@@ -394,6 +459,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   ) async {
     for (final row in rows) {
       final machine = await _getDefinition(row.workflowType);
+      if (machine == null && _failClosedOnMissingDefinition) return true;
       if (machine != null &&
           machine.visibility.defaultValue != WorkflowVisibilityDefault.public) {
         return true;
@@ -435,7 +501,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     String personaId,
     Future<bool> Function() activeMembership,
   ) async {
-    if (machine == null) return true;
+    if (machine == null) return !_failClosedOnMissingDefinition;
     // The `owner` visibility model (CONTRACTS.md §3), which every archetype
     // supports: whoever created an instance can always read it. Only `guarded`
     // honoured this before, so a creator who was not an active member could not
@@ -780,8 +846,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required Map<String, dynamic> instanceData,
     required String personaId,
   }) async {
-    final defId = '${_communityId}_$workflowType';
-    final machine = _definitions[defId];
+    final machine = await _getDefinition(workflowType);
     if (machine == null) return const [];
     // Cross-workflow guards must use the same live completion projection as
     // applyTransition. Without this read, a just-paid dues instance remains

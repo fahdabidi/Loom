@@ -78,7 +78,9 @@ class WorkflowGuard {
   factory WorkflowGuard.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const WorkflowGuard();
     return WorkflowGuard(
-      allowedPersonaIds: (json['allowedPersonaIds'] as List<dynamic>?)
+      allowedPersonaIds:
+          ((json['allowedRoleIds'] ?? json['allowedPersonaIds'])
+                  as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
       actorInList: json['actorInList'] != null
