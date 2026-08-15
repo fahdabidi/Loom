@@ -865,6 +865,19 @@ void main() {
     // skip reason: needs `_loadActions` to offer actions for a row that does
     // not exist yet. (`testWidgets` takes `bool? skip`, not a String, so the
     // reason lives here rather than in the argument.)
+    //
+    // Progress, so the next attempt does not restart from zero: the plumbing
+    // is now in place. `EngineNativeResolvedBinding.responseMachine` carries
+    // the response-table definition (resolved in `part27` where the
+    // definitions map is in scope), it is threaded into `_EventRsvpDetailCard`,
+    // and `_loadActions` builds a synthetic row at that machine's
+    // `initialState` when the viewer has none. The chips still do not render,
+    // so one link in that chain is not behaving as read -- most likely
+    // `responseMachine` arriving null on the path this test exercises.
+    // Instrument `_loadActions` rather than reasoning further: the next step is
+    // to print whether `widget.responseMachine` and `responseTable` are
+    // non-null at that point, which distinguishes "not plumbed" from
+    // "availableTransitionsAsync declines the synthetic row".
   }, skip: true);
 
   testWidgets(

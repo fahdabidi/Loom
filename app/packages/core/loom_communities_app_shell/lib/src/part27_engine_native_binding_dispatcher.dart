@@ -26,12 +26,24 @@ class EngineNativeResolvedBinding {
     required this.machine,
     required this.binding,
     required this.definitionBindingIndex,
+    this.responseMachine,
   });
 
   final WorkflowInstance instance;
   final LoomWorkflowStateMachine machine;
   final RenderBinding binding;
   final int definitionBindingIndex;
+
+  /// The definition named by `binding.responseTable.workflowType`, when there
+  /// is one. Resolved here because this is where the definitions map is in
+  /// scope; the surfaces below it hold only their own machine.
+  ///
+  /// Needed to offer response actions to a member who has **no** response row
+  /// yet: availability has to be computed against that workflow's declared
+  /// `initialState`, and without it the surface can only ask about rows that
+  /// already exist — which is why a member who joined after an event was
+  /// created saw no RSVP controls at all.
+  final LoomWorkflowStateMachine? responseMachine;
 
   String get identity =>
       '${binding.tabId}::${instance.instanceId}::$definitionBindingIndex';
@@ -196,6 +208,8 @@ class _EngineNativeBindingDispatcherState
                 machine: machine,
                 binding: binding,
                 definitionBindingIndex: index,
+                responseMachine:
+                    definitions[binding.responseTable?.workflowType],
               ),
             );
           }
@@ -313,6 +327,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           instance: resolved.instance,
           binding: resolved.binding,
           machine: resolved.machine,
+          responseMachine: resolved.responseMachine,
           engine: engine,
           communityExtensionId: communityExtensionId,
           personaId: personaId,

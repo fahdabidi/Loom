@@ -895,6 +895,11 @@ class _EngineNativeCalendarContentState
             machine: entry.resolved.machine,
             binding: entry.resolved.binding,
             definitionBindingIndex: entry.resolved.definitionBindingIndex,
+            // Rebuilt field-by-field, so anything added to
+            // EngineNativeResolvedBinding has to be carried here too or it is
+            // silently dropped on refresh -- which is exactly what happened to
+            // responseMachine the first time.
+            responseMachine: entry.resolved.responseMachine,
           ),
           date: entry.date,
           minutes: entry.minutes,
@@ -1452,6 +1457,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
     required this.personaId,
     required this.accent,
     required this.onInstanceChanged,
+    this.responseMachine,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
   });
@@ -1459,6 +1465,10 @@ class _EventRsvpDetailCard extends StatefulWidget {
   final WorkflowInstance instance;
   final LoomWorkflowStateMachine machine;
   final RenderBinding binding;
+
+  /// Definition of the response table, when this binding has one. Supplies the
+  /// `initialState` used to offer response actions to a member with no row.
+  final LoomWorkflowStateMachine? responseMachine;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
   final String personaId;
@@ -1809,13 +1819,40 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         instanceData: instance.instanceData,
         personaId: personaId,
       );
-      final responseActions = response == null || responseTable == null
+      // A member with no row still gets offered response actions, computed
+      // against a synthetic row in the response workflow's declared
+      // `initialState`. Previously this short-circuited to an empty list, so
+      // anyone who joined after the event was created saw no RSVP controls at
+      // all -- and `_applyTransition`'s create-or-get could never fire, because
+      // there was no control to tap. The row is materialized on that tap, not
+      // here; this stays a pure read.
+      final responseMachine = widget.responseMachine;
+      final syntheticResponse = response == null && responseMachine != null
+          ? <String, dynamic>{
+              responseTable!.eventField: instance.instanceId,
+              'personaId': personaId,
+            }
+          : null;
+      final responseActions = responseTable == null
           ? const <LoomWorkflowTransition>[]
-          : await engine.availableTransitionsAsync(
+          : response != null
+          ? await engine.availableTransitionsAsync(
               workflowType: responseTable.workflowType,
               instanceId: response['\$id'] as String,
               currentState: response['\$state'] as String,
               instanceData: response,
+              personaId: personaId,
+            )
+          : syntheticResponse == null
+          ? const <LoomWorkflowTransition>[]
+          : await engine.availableTransitionsAsync(
+              workflowType: responseTable.workflowType,
+              // No row exists yet, so there is no id to name. Guards that
+              // resolve per-instance data still see the synthetic row's own
+              // fields (notably `personaId`, which `actorEqualsField` reads).
+              instanceId: '',
+              currentState: responseMachine!.initialState,
+              instanceData: syntheticResponse,
               personaId: personaId,
             );
       if (!_isCurrent(generation, instance, machine, engine, personaId) ||
