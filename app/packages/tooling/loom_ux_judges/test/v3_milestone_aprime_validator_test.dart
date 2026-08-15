@@ -8,8 +8,6 @@ import 'package:test/test.dart';
 LoomWorkflowStateMachine _machine(
   String workflowType, {
   Map<String, dynamic> schema = const {},
-  Map<String, dynamic> guard = const {},
-  List<Map<String, dynamic>> effects = const [],
   List<Map<String, dynamic>> renderBindings = const [],
   required List<Map<String, dynamic>> transitions,
 }) {

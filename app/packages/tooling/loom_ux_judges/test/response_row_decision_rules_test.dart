@@ -286,8 +286,9 @@ void main() {
       final package = _package(
         event: _eventDefinition(sweptStates: const ['pending', 'going', 'declined']),
       );
-      (package['experience'] as Map<String, dynamic>)['workflowDefinitions']
-          ['unrelated'] = <String, dynamic>{
+      final experience = package['experience'] as Map<String, dynamic>;
+      final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
+      definitions['unrelated'] = <String, dynamic>{
         'initialState': 'open',
         'states': <String, dynamic>{
           'open': <String, dynamic>{'label': 'Open'},

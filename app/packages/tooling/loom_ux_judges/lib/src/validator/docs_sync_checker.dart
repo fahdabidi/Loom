@@ -49,7 +49,7 @@ class DocsSyncChecker {
     final findings = <DocsSyncFinding>[];
     final refs = Directory('${repoRoot.path}/docs/references');
     if (!refs.existsSync()) {
-      return DocsSyncReport([
+      return const DocsSyncReport([
         DocsSyncFinding('missing_tree', 'docs/references', 'Directory not found.'),
       ], 0);
     }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 class CommunityPackageValidator {
@@ -219,6 +219,7 @@ class CommunityPackageValidator {
         declaredTabIds: declaredTabIds,
       ).validate(workflows).findings,
     );
+    findings.addAll(_validateVisibilityFields(rawDefinitions));
     findings.addAll(_validateTransitionActions(rawDefinitions));
     findings.addAll(_validateResponseRowSweep(rawDefinitions));
     findings.addAll(_validateRedundantTransitions(rawDefinitions));
@@ -586,6 +587,102 @@ class CommunityPackageValidator {
       }
 
       scanFormulas(experience, 'experience');
+    }
+    return findings;
+  }
+
+  /// Decision D9 (`444c6a90`): validate the instance-data field mappings used
+  /// by archetype visibility models.
+  ///
+  /// Archetype resolution stays centralized in [ArchetypeResolver]. This check
+  /// reads the raw workflow JSON only after resolution because the mapping's
+  /// key presence and list entries are authoring details that must retain their
+  /// exact source locations in findings.
+  List<ValidationFinding> _validateVisibilityFields(Map<Object?, Object?> raw) {
+    const resolver = ArchetypeResolver();
+    final definitions = <String, Object?>{
+      for (final entry in raw.entries) entry.key.toString(): entry.value,
+    };
+    final archetypes = resolver.resolveAll(definitions);
+    final findings = <ValidationFinding>[];
+
+    for (final entry in definitions.entries) {
+      final type = entry.key;
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+
+      final family = archetypes[type]?.family;
+      final model = ArchetypeResolver.contracts[family]?.visibility;
+      if (model == null) continue;
+
+      final path = 'experience/workflowDefinitions/$type/visibility/fields';
+      final visibility = workflow['visibility'];
+      final rawFields = visibility is Map ? visibility['fields'] : null;
+      final fields = rawFields is Map ? rawFields : null;
+      final requiredKey = switch (model) {
+        VisibilityModel.ownerAndShared => 'sharedWith',
+        VisibilityModel.participants => 'participants',
+        VisibilityModel.parties => 'parties',
+        VisibilityModel.roles ||
+        VisibilityModel.owner ||
+        VisibilityModel.recipient => null,
+      };
+
+      if (requiredKey != null &&
+          (fields == null || !fields.containsKey(requiredKey))) {
+        findings.add(
+          _finding(
+            'missing_visibility_fields',
+            "The workflow's archetype uses a visibility model that reads "
+                'instance-data identities (`owner_and_shared`, `participants`, '
+                '`parties`, `recipient`) but declares no `visibility.fields` '
+                'mapping. The engine cannot guess which field is a party rather '
+                'than an audit actor.',
+            '$path/$requiredKey',
+          ),
+        );
+      }
+
+      if (fields == null) continue;
+      final schema = workflow['instanceDataSchema'];
+      final declaredFields = schema is Map
+          ? schema.keys.map((key) => key.toString()).toSet()
+          : const <String>{};
+
+      void checkField(Object? value, String location) {
+        if (value is! String || declaredFields.contains(value)) return;
+        findings.add(
+          _finding(
+            'dangling_visibility_field',
+            'A field named in `visibility.fields` is not declared in this '
+                "workflow's `instanceDataSchema`.",
+            location,
+          ),
+        );
+      }
+
+      checkField(fields['sharedWith'], '$path/sharedWith');
+      for (final key in const ['participants', 'parties']) {
+        final values = fields[key];
+        if (values is! List) continue;
+        for (var i = 0; i < values.length; i++) {
+          checkField(values[i], '$path/$key[$i]');
+        }
+      }
+      checkField(fields['recipient'], '$path/recipient');
+
+      final parties = fields['parties'];
+      if (fields.containsKey('parties') &&
+          parties is List &&
+          parties.length != 2) {
+        findings.add(
+          _finding(
+            'invalid_parties_arity',
+            '`visibility.fields.parties` does not name exactly two fields.',
+            '$path/parties',
+          ),
+        );
+      }
     }
     return findings;
   }

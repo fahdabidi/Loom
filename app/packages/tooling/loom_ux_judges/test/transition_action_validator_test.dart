@@ -5,8 +5,8 @@
 /// that never fires is indistinguishable from no rule at all.
 library;
 
-import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
+import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:test/test.dart';
 
 /// Minimal package skeleton: enough envelope for the validator to reach the
