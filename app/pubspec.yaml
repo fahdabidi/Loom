@@ -15,6 +15,7 @@ workspace:
   - packages/core/loom_communities_app_shell
   - packages/core/loom_demo_local_backend
   - packages/core/loom_workflow_engine
+  - packages/core/loom_workflow_service
   - packages/core/loom_design_system
   - packages/core/loom_extension_package
   - packages/core/loom_fake_backend

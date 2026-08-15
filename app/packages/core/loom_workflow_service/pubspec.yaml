@@ -1,0 +1,18 @@
+name: loom_workflow_service
+description: Server-authoritative HTTP adapter for the shared Loom workflow engine.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  drift_postgres: 1.3.1
+  loom_workflow_engine:
+    path: ../loom_workflow_engine
+  postgres: ^3.5.12
+  shelf: ^1.4.2
+
+dev_dependencies:
+  test: ^1.25.0
