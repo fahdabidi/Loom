@@ -15,6 +15,7 @@ pipeline step 5.5.
 
 ## Open
 
+- [ ] `blocked` — **D9 AWAITING SPEC APPROVAL**: 4 of 6 visibility models cannot be built — nothing declares which instance-data field plays which part (parties/participants/payer/recipient all vary across the corpus); `owner`+`roles` shipped
 - [ ] `new-milestone` — **Phase A**: engine implements the archetype contracts (per-person bookkeeping, 6 visibility models) — blocks B and F — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Phase B**: build the Dart workflow service so guards are enforced server-side — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Phase C**: auth — Keycloak-as-broker (Google/Apple/Facebook), all 3 services as resource servers — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
