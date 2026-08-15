@@ -29,11 +29,13 @@ class _InstalledTabletop {
     this.experience,
     this.engine,
     this.temp,
+    this.registeredAccountIds,
   );
   final LocalInstalledCommunity community;
   final LoomExperienceDefinition experience;
   final WorkflowEngineApi engine;
   final Directory temp;
+  final Set<String> registeredAccountIds;
 
   Future<void> dispose() => temp.delete(recursive: true);
 }
@@ -84,15 +86,23 @@ Future<_InstalledTabletop> _install(
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
+    final registeredAccountIds = <String>{};
     if (engine is LocalWorkflowEngineApi) {
       final accounts = await LocalAuthApi().listAccounts(
         communityExtensionId: 'ext_verify_tabletop_club',
       );
       for (final account in accounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
+        registeredAccountIds.add(account.accountId);
       }
     }
-    return _InstalledTabletop(community, experience, engine, temp);
+    return _InstalledTabletop(
+      community,
+      experience,
+      engine,
+      temp,
+      Set<String>.unmodifiable(registeredAccountIds),
+    );
   } catch (_) {
     await temp.delete(recursive: true);
     rethrow;
@@ -1215,11 +1225,8 @@ void main() {
           events.map((event) => event.instanceData['eventDate']).toSet(),
           containsAll(<String>['2026-07-10', '2026-07-17', '2026-07-24']),
         );
-        final accountIds = (await tester.runAsync(
-          () async => (await LocalAuthApi().listAccounts(
-            communityExtensionId: installed.community.extensionId,
-          )).map((account) => account.accountId).toSet(),
-        ))!;
+        final accountIds = installed.registeredAccountIds;
+        expect(accountIds, hasLength(13));
         for (final event in events.where(
           (event) => event.instanceId != 'event-friday-game-night',
         )) {
@@ -1241,7 +1248,7 @@ void main() {
                 )
                 .toList();
           }))!;
-          expect(responses, hasLength(accountIds.length));
+          expect(responses, hasLength(13));
           expect(
             responses
                 .map((response) => response.instanceData['personaId'])

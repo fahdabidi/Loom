@@ -142,6 +142,27 @@ Future<void> _settleBounded(WidgetTester tester, {int iterations = 10}) async {
   }
 }
 
+Future<void> _pumpUntilCreationDismissed(WidgetTester tester) async {
+  final dialog = find.byType(AlertDialog);
+  for (var attempt = 0; attempt < 80; attempt++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    if (dialog.evaluate().isEmpty) return;
+  }
+
+  final errorTexts = tester
+      .widgetList<Text>(find.byKey(const ValueKey('new-event-error')))
+      .map((text) => text.data ?? text.textSpan?.toPlainText() ?? '')
+      .where((text) => text.isNotEmpty)
+      .toList(growable: false);
+  throw TestFailure(
+    'Timed out waiting for event creation to dismiss; '
+    'visible errors: ${errorTexts.isEmpty ? '<none>' : errorTexts.join(' | ')}',
+  );
+}
+
 Future<void> _submitNewEvent(WidgetTester tester) async {
   await tester.enterText(
     find.byKey(const ValueKey('new-event-editor-title')),
@@ -171,7 +192,7 @@ Future<void> _submitNewEvent(WidgetTester tester) async {
   final submit = find.byKey(const ValueKey('new-event-submit'));
   await tester.ensureVisible(submit);
   await tester.tap(submit);
-  await _settleBounded(tester);
+  await _pumpUntilCreationDismissed(tester);
 }
 
 void main() {
