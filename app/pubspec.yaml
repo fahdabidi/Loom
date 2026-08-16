@@ -12,6 +12,7 @@ workspace:
   - apps/loom_communities_demo
   - packages/core/loom_api_contracts
   - packages/core/loom_app_shell
+  - packages/core/loom_auth_session
   - packages/core/loom_communities_app_shell
   - packages/core/loom_demo_local_backend
   - packages/core/loom_workflow_engine

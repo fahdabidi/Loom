@@ -1,202 +1,165 @@
-# Phase E.4a — `RemoteWorkflowEngineApi`
+# Phase E.4b (core) — `LoomAuthSession`
 
 ## What changed
 
-- Added `RemoteWorkflowEngineApi implements WorkflowEngineApi` in
-  `loom_workflow_engine` and exported it from the package barrel. Its
-  constructor takes an absolute `baseUri`, `communityId`, an injected
-  `Future<String> Function()` bearer-token provider, and an injected
-  `http.Client`; it owns no login, token cache, refresh flow, or HTTP-client
-  lifecycle.
-- Added `http: ^1.6.0` as a direct package dependency. Version 1.6.0 was
-  already present in `app/pubspec.lock` and the local pub cache, and the whole
-  workspace resolved successfully with `dart pub get --offline`; no new
-  network-fetched dependency or lockfile version change was needed.
-- Implemented all seven remotely legitimate interface operations against the
-  exact OpenAPI routes and JSON projections:
-
-  | Engine method | HTTP operation |
-  | --- | --- |
-  | `queryInstances` | `GET /v1/communities/{communityId}/instances` |
-  | `availableTransitionsAsync` | `GET /v1/communities/{communityId}/instances/{instanceId}/available-transitions` |
-  | `applyTransition` | `POST /v1/communities/{communityId}/instances/{instanceId}/transitions` |
-  | `createInstance` | `POST /v1/communities/{communityId}/instances` |
-  | `createInstances` | `POST /v1/communities/{communityId}/instances/batch` |
-  | `updateInstanceFields` | `PATCH /v1/communities/{communityId}/instances/{instanceId}/fields` |
-  | `aggregate` | `POST /v1/communities/{communityId}/instances/aggregate` |
-
-- Every outbound request obtains the bearer token exactly once and sends
-  `Authorization: Bearer <token>` plus a fresh RFC 4122 version-4
-  `X-Loom-Correlation-Id`. The four mutations (`applyTransition`, singular and
-  batch creation, and field update) also send a separate fresh UUID in
-  `Idempotency-Key`. The aggregate route remains a read-only POST and correctly
-  has no idempotency key, matching the authoritative OpenAPI operation.
-- The remote service derives fan identity from the token, so interface-only
-  `personaId`, `tabId`, current-state, and local instance-data inputs are never
-  serialized as forged authority. `queryInstances` exposes the same additive
-  optional `workflowType` argument as `LocalWorkflowEngineApi`; only the
-  OpenAPI-supported `workflowType`, `sortKey`, `limit`, and `cursor` query
-  parameters go over the wire.
-- Adapted the OpenAPI response projections without inventing authority. The
-  service does not expose `createdByPersonaId`, so remotely queried instances
-  use the empty string as the interface model's explicit "not provided"
-  value. Available-transition responses intentionally contain render advice,
-  not full workflow definitions, so their `transitionId`, label, action, tone,
-  inputs, and response `currentState` are projected into
-  `LoomWorkflowTransition`; no target state, guards, or effects are fabricated.
-- `availableTransitions` throws `UnsupportedError` synchronously and points to
-  `availableTransitionsAsync`, because a network round trip cannot satisfy a
-  synchronous return. `dueNotifications` also throws synchronously because no
-  workflow-service OpenAPI operation exists. Tests prove neither path obtains
-  a token or invokes HTTP.
-- Added three remote-only exception classes for failures a local SQLite call
-  cannot experience: `RemoteWorkflowAuthenticationError`,
-  `RemoteWorkflowProtocolError`, and `RemoteWorkflowServiceError`, all carrying
-  a code, message, optional HTTP status, and optional correlation id. Malformed
-  success/error payloads and network failures are normalized into these same
-  remote-only categories instead of leaking arbitrary JSON/client exceptions.
-- Added 25 mock-client unit cases: all seven successful operation shapes,
-  fresh request identifiers and token-provider invocation, every service error
-  code, and both unsupported methods. `package:http/testing.dart` supplies
-  `MockClient`, so no mocking dependency was added.
-- Added a live integration test that uses the production remote class against
-  a configured deployed-service base URI, creates a real instance, paginates
-  `queryInstances`, and requires the created id and initial data to come back.
-  It is gated on a real fan JWT plus an installed/creatable community fixture;
-  it never fabricates a token.
-- No app-shell file, `LocalWorkflowEngineApi`, `WorkflowEngineApi`, workflow
-  service file, or protected `docs/references/{reference,guide,archetypes,communities}`
-  file changed.
-
-### Full exception-vocabulary mapping
-
-The mapping preserves the local implementation's domain exception vocabulary
-where the remote code represents the same outcome. It uses a remote-only type
-where authentication, transport, or protocol semantics have no honest local
-equivalent.
-
-| Workflow-service `code` | Client exception | Mapping decision |
-| --- | --- | --- |
-| `workflow_field_edit_refused` | `WorkflowAuthorizationError` | Exact parity with `LocalWorkflowEngineApi.updateInstanceFields`, whose edit-guard/schema refusals use this type rather than `StateError`. |
-| `workflow_guard_refused` | `StateError` | Exact parity with local transition-guard refusal. |
-| `workflow_read_refused` | `StateError` | Exact parity with the local surface-permission refusal path. |
-| `workflow_instance_not_found` | `StateError` | Exact parity with local missing-instance failures. |
-| `workflow_type_not_found` | `StateError` | Exact parity with local unknown-workflow-type failures. |
-| `workflow_state_conflict` | `StateError` | Exact parity with a locally unavailable source state. |
-| `workflow_create_refused` | `StateError` | Matches local creation-guard refusal, so an existing domain catch continues to work. |
-| `invalid_transition_request` | `StateError` | The service currently emits this additional code for unknown transitions and missing required inputs; both are local `StateError` outcomes. It is covered even though the ticket's enumerated grep result omitted it. |
-| `invalid_request` | `RemoteWorkflowProtocolError` | The service collapses malformed JSON, schema validation, and invalid aggregate arguments into one code; local behavior spans `WorkflowValidationError`, `ArgumentError`, and other input failures. Claiming one of those as exact parity would be false, so the loss of specificity is represented explicitly as a remote protocol rejection. |
-| `invalid_correlation_id` | `RemoteWorkflowProtocolError` | Client/service protocol failure; the local engine has no correlation header. A correctly generated request should never receive it. |
-| `invalid_idempotency_key` | `RemoteWorkflowProtocolError` | Client/service protocol failure; the local engine has no idempotency header. A correctly generated mutation should never receive it. |
-| `unsupported_spec_version` | `RemoteWorkflowProtocolError` | Contract/version mismatch with no local-call equivalent. The seven methods do not install definitions, but the code is mapped and tested as part of the service's complete vocabulary. |
-| `authentication_required` | `RemoteWorkflowAuthenticationError` | Authentication exists only at the remote boundary and must not masquerade as a workflow guard or field authorization decision. |
-| `authorization_service_unavailable` | `RemoteWorkflowServiceError` | Upstream App Access availability is an infrastructure failure, not a caller authorization refusal and not a local `StateError`. |
-| `route_not_found` | `RemoteWorkflowProtocolError` | Base-path/client-service contract mismatch, impossible for an in-process local call. |
-| `workflow_service_error` | `RemoteWorkflowServiceError` | Remote infrastructure/internal failure with no local domain-equivalent exception. |
-
-An unknown future server code maps to `RemoteWorkflowProtocolError` so contract
-drift is visible. Client transport failures use `RemoteWorkflowServiceError`
-with `network_error`; malformed successful/error HTTP projections use
-`RemoteWorkflowProtocolError` with `malformed_response` or
-`malformed_error_response`.
+- Added the new Flutter-aware workspace package
+  `app/packages/core/loom_auth_session`. The workspace manifest was updated so
+  the package participates in normal workspace dependency resolution; no
+  existing package source was edited.
+- Added `LoomAuthSession`, configured with an absolute Keycloak token endpoint,
+  a required client id, and an injected `LoomAuthSecureStorageBackend`. The
+  package takes the token endpoint directly because password and refresh grants
+  are the only flows in scope; discovery and interactive authorization add no
+  value to this phase. Nothing hardcodes a different client, and the live test
+  supplies the provisioned `loom-test-client` id.
+- Chose a small storage interface rather than coupling the session core
+  directly to a plugin singleton. Unit and live tests can use an in-memory
+  implementation, while `FlutterSecureStorageBackend` delegates production
+  reads/writes/deletes to an injected `FlutterSecureStorage`. Access token,
+  refresh token, proactive refresh time, access expiry, and known refresh
+  expiry are serialized together under one secure-storage key. A newly created
+  session object reloads that record, so an app process restart does not discard
+  a still-renewable session.
+- `currentAccessToken()` returns the cached token outside its refresh window and
+  otherwise performs a Keycloak `grant_type=refresh_token` exchange. It mirrors
+  the existing token-client caching shape: a 30-second proactive refresh skew,
+  a half-lifetime fallback for short-lived tokens, and a shared in-flight
+  refresh future so concurrent callers do not stampede the endpoint. Successful
+  refreshes replace and persist both rotated tokens. An operation generation
+  also prevents a stale in-flight refresh from re-persisting tokens after
+  logout or a newer login.
+- Added dedicated, inspectable failures. `LoomAuthNotLoggedInException`,
+  `LoomAuthRefreshTokenExpiredException`, and `LoomAuthNetworkException` let a
+  caller distinguish no session, mandatory re-login, and reachability failure.
+  Test-credential rejection, other token-endpoint failures, malformed token
+  responses, and secure-storage failures also have distinct exception types.
+  A locally known refresh expiry or Keycloak `invalid_grant` clears the unusable
+  stored session before requiring login again; a transient network failure does
+  not destroy it.
+- Added `loginWithTestCredentials`, using a form-encoded Direct Access Grant
+  with `grant_type=password`, `client_id`, username, and password. The class and
+  method documentation both state explicitly that this is a **test-only bypass
+  of the interactive browser flow for automated/local testing against
+  Keycloak-native accounts and must never be called by production UI code**.
+  Failed credentials never write a partial token record or replace a prior
+  session.
+- Added local-only `logout()`. It deletes the persisted token record and does
+  not call Keycloak's browser-oriented end-session endpoint.
+- Used minimal `package:http` form posts instead of adding `openid_client`.
+  Authorization Code + PKCE is intentionally absent, so bringing its discovery
+  and interactive machinery into this core phase would be unused scope.
+- Declared `http: ^1.6.0` (already locked/cached) and
+  `flutter_secure_storage: ^10.3.1`. The latter is the current stable release,
+  but it was not cached and this sandbox cannot resolve pub.dev; consequently
+  the real dependency could not be added to `app/pubspec.lock`. No temporary
+  override or stub is present in the committed tree.
+- Added 11 unit cases plus one live Keycloak test. The live test invokes the
+  production session API with `test-fan-alice` / `LoomTest123!`, obtains the
+  result via `currentAccessToken()`, decodes the JWT payload, and asserts both
+  the pinned issuer and `fanId == fan-test-alice` whenever the NodePort is
+  reachable.
+- No `loom_workflow_engine`, `loom_workflow_service`, app-shell, Android
+  manifest, UI, or protected
+  `docs/references/{reference,guide,archetypes,communities}` file changed.
 
 ## Verification
 
-The clean pre-change engine baseline was 232 passing tests and 2 existing
-credential-gated PostgreSQL skips:
-
-```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
-...
-00:04 +232 ~2: All tests passed!
-```
-
-The cached dependency resolved without network access. `http` stayed at the
-already-locked 1.6.0:
+The mandated offline dependency check was attempted first and failed only
+because `flutter_secure_storage` was not in the existing pub cache:
 
 ```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart pub get --offline
 Resolving dependencies...
-Downloading packages...
-...
-Got dependencies!
-11 packages have newer versions incompatible with dependency constraints.
+Because loom_auth_session depends on flutter_secure_storage any which doesn't exist (could not find package flutter_secure_storage in cache), version solving failed.
+
+Try again without --offline!
+exit_code=69
 ```
 
-Static analysis is clean:
+The online retry confirmed that this sandbox cannot reach pub.dev:
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart pub get
+Resolving dependencies...
+Got socket error trying to find package flutter_secure_storage at https://pub.dev.
+exit_code=69
+```
+
+To validate the authored source despite that environmental gap, I temporarily
+overrode only `flutter_secure_storage` with an uncommitted compile-only package
+that exposes the documented 10.3.1 `read`, `write`, and `delete` signatures.
+That stub did not implement storage and was never exercised: every session test
+injects the package's own in-memory `LoomAuthSecureStorageBackend`. The override,
+stub, and generated path lock entry were removed after verification. Under that
+explicitly limited compile setup, static analysis was clean:
 
 ```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
-Analyzing loom_workflow_engine...
+Analyzing loom_auth_session...
 No issues found!
 ```
 
-All 25 focused mock-client/error/unsupported cases pass:
+All 11 mocked-HTTP/in-memory-storage unit tests pass. This includes cached and
+proactive-refresh paths, persisted restart recovery, concurrent refresh
+coalescing, no-login/no-HTTP behavior, the exact password-grant form, rejected
+credentials without partial persistence, logout clearing, locally expired and
+server-rejected refresh tokens, and the distinct network failure:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test \
-    test/remote_workflow_engine_api_test.dart --reporter expanded
-...
-00:00 +23: RemoteWorkflowEngineApi error vocabulary workflow_service_error maps to RemoteWorkflowServiceError
-00:00 +24: unsupported methods throw immediately without token or HTTP calls
-00:00 +25: All tests passed!
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart \
+    --packages=/home/fahd/Loom/app/.dart_tool/package_config.json \
+    /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart \
+    test/loom_auth_session_test.dart --reporter expanded
+00:00 +0: loading test/loom_auth_session_test.dart
+00:00 +0: returns a cached access token while it is unexpired
+00:00 +1: proactively refreshes a token that is nearing expiry
+00:00 +2: refreshes an expired token and re-stores the new tokens
+00:00 +3: coalesces concurrent refresh-token exchanges
+00:00 +4: no prior login throws without making an HTTP call
+00:00 +5: test credential login posts a password grant and stores tokens
+00:00 +6: bad test credentials are clear and do not store a partial session
+00:00 +7: logout clears persistence and leaves no current session
+00:00 +8: known refresh-token expiry requires login without HTTP
+00:00 +9: invalid_grant refresh requires login and clears persistence
+00:00 +10: network failure stays distinct from login-required failures
+00:00 +11: All tests passed!
 ```
 
-The final exact engine count is 257 passing and 3 skipped: the original
-232/2 plus 25 new unit passes and one new live credential-gated skip. No
-existing test changed or weakened.
+The live test genuinely attempted the already-exposed Keycloak NodePort through
+`LoomAuthSession.loginWithTestCredentials`; the sandbox denied that distinct
+plain-HTTP socket with `EPERM`, so the reachability-gated test reported one skip
+rather than a fabricated pass:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
-...
-00:04 +257 ~3: All tests passed!
-```
-
-The live integration test compiles, is selected, and reports precisely which
-real fixture values are absent. This is skip evidence, not a live round-trip
-claim:
-
-```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test \
-    test/remote_workflow_engine_api_live_test.dart --reporter expanded
-Running build hooks...Running build hooks...00:00 +0: loading test/remote_workflow_engine_api_live_test.dart
-00:00 +0: deployed service createInstance is returned by queryInstances
-  Skip: Set LOOM_WORKFLOW_SERVICE_BEARER_TOKEN (a real fan JWT), LOOM_WORKFLOW_SERVICE_COMMUNITY_ID (an installed live community id), LOOM_WORKFLOW_SERVICE_WORKFLOW_TYPE (a creatable live workflow type), LOOM_WORKFLOW_SERVICE_INITIAL_INSTANCE_DATA (valid JSON for that workflow type) to run against the deployed k3s workflow service.
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart \
+    --packages=/home/fahd/Loom/app/.dart_tool/package_config.json \
+    /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart \
+    test/loom_auth_session_live_test.dart --reporter expanded
+00:00 +0: loading test/loom_auth_session_live_test.dart
+00:00 +0: live Keycloak login returns test-fan-alice fanId claim
+  Live Keycloak NodePort is unreachable: LoomAuthNetworkException: Failed to reach the Keycloak token endpoint: ClientException with SocketException: Connection failed (OS Error: Operation not permitted, errno = 1), address = 192.168.56.10, port = 30082, uri=http://192.168.56.10:30082/realms/loom/protocol/openid-connect/token
 00:00 +0 ~1: All tests skipped.
 ```
 
-An explicit attempt to reach the real cluster failed at the sandbox socket
-boundary before a Keycloak port-forward or token request could be made:
+The requested port-forward fallback was also attempted, but the sandbox denies
+the k3s API socket before a Keycloak pod can be selected:
 
 ```text
-$ kubectl get pods -n loom -o wide
+$ kubectl get pods -n loom -o name
 Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
-
-$ kubectl get deployment -n loom loom-workflow-service ...
-Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
+exit_code=1
 ```
 
-The untouched workflow-service package remains clean at exactly its baseline
-48 passing tests and 5 existing live skips:
-
-```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
-Analyzing loom_workflow_service...
-No issues found!
-
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
-...
-00:01 +48 ~5: All tests passed!
-```
+The new package therefore has **11 passing unit tests and one live reachability
+skip**. A standard final `dart test` using the real dependency graph cannot run
+until `flutter_secure_storage` resolves; the direct cached test-runner command
+above avoids claiming otherwise.
 
 Final formatting and whitespace checks are clean:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format \
-    lib/src/api/remote_workflow_engine_api.dart \
-    test/remote_workflow_engine_api_test.dart \
-    test/remote_workflow_engine_api_live_test.dart
-Formatted 3 files (0 changed) in 0.06 seconds.
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format lib test
+Formatted 7 files (0 changed) in 0.11 seconds.
 
 $ git diff --check
 <no output; exit 0>
@@ -204,24 +167,38 @@ $ git diff --check
 
 ## Proposed next steps
 
-1. From an environment with k3s socket access, port-forward Keycloak and
-   `loom-workflow-service`, mint a real `loom`-realm fan JWT using the already
-   established client-credentials/direct-grant recipe, provide an installed
-   community/workflow fixture and valid initial JSON, and run the focused live
-   test until it reports `+1: All tests passed!`.
-2. Treat Phase E.4b as separate, larger, unscoped work. Before wiring the app
-   shell to this client, migrate the 10 synchronous `availableTransitions`
-   call sites to `availableTransitionsAsync`; then introduce a real factory/DI
-   seam for the roughly 19 direct `LocalWorkflowEngineApi` construction sites.
-   Phase E.4b was not started here.
+1. In a network-enabled environment, run `dart pub get`/`flutter pub get` from
+   `app` to download the real `flutter_secure_storage` 10.3.1 packages, commit
+   the resulting lockfile, then rerun the package's normal `dart analyze` and
+   `dart test` commands. From an environment with NodePort access, rerun the
+   focused live test until its real JWT issuer and `fanId` assertions pass.
+2. Build the interactive Authorization Code + PKCE browser flow as the separate
+   Phase E.4b-interactive ticket.
+3. Add Android manifest redirect handling for
+   `com.loom.communities:/oauthredirect` as separate platform integration work.
+4. Add a minimal production login screen only after the interactive flow and
+   redirect wiring exist; it must never call `loginWithTestCredentials`.
+5. Separately wire `currentAccessToken` into
+   `RemoteWorkflowEngineApi.bearerTokenProvider` after the app-shell integration
+   design is in scope.
+
+All four requested product follow-ons—the interactive PKCE/browser flow,
+Android redirect wiring, minimal login UI, and remote-engine token-provider
+wiring—remain deliberately unscoped here.
 
 ## Anything I could not do
 
-- I could not mint a real JWT or execute the deployed-service create/query
-  round trip because this sandbox has no live fixture variables and the k3s
-  API socket is denied (`127.0.0.1:6443: operation not permitted`). Reporting
-  the credential-gated skip as a live pass would be inaccurate.
-- Everything else requested for the client-only Phase E.4a scope completed,
-  including offline dependency resolution, all seven operation adapters,
-  complete error-code tests, clean analysis, both full package regressions,
-  and preservation of every prohibited path.
+- I could not resolve or exercise the real `flutter_secure_storage` plugin,
+  update `app/pubspec.lock`, or run the standard real-dependency `dart analyze`
+  / `dart test` verification because the package was absent from the pub cache
+  and DNS/network access to pub.dev is denied. The exact failures and the
+  limited temporary compile setup are recorded above.
+- I could not obtain a live Keycloak JWT proof because direct HTTP access to
+  `192.168.56.10:30082` is denied with `operation not permitted`, while the
+  port-forward fallback is independently blocked at the k3s API socket. The
+  live test made the real request and skipped for that reachability error only;
+  reachable credential, issuer, or `fanId` failures remain hard failures.
+- Everything else in the additive session-core scope is implemented. No
+  interactive flow, redirect manifest, production login UI, end-session call,
+  remote-engine wiring, new Keycloak client/account, or prohibited package/doc
+  edit was attempted.
