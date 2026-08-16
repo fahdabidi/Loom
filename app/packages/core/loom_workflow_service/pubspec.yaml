@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   drift_postgres: 1.3.1
+  jose: 0.3.5+1
   loom_workflow_engine:
     path: ../loom_workflow_engine
   postgres: ^3.5.12

@@ -15,9 +15,9 @@ class WorkflowRequestIdentity {
 
 /// Swappable boundary between HTTP authentication and workflow execution.
 ///
-/// Phase C will replace the implementation with JWT validation. The service
-/// depends only on this interface, so that change does not alter routing or
-/// workflow execution.
+/// Production uses JWT validation while tests may continue to supply a focused
+/// extractor or the isolated header adapter without changing workflow routing
+/// or execution.
 abstract interface class WorkflowIdentityExtractor {
   FutureOr<WorkflowRequestIdentity?> extract(Request request);
 }

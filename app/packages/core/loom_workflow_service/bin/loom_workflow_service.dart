@@ -14,6 +14,14 @@ Future<void> main() async {
   if (communityGroupIds == null || communityGroupIds.isEmpty) {
     throw StateError('LOOM_COMMUNITY_GROUP_IDS is required');
   }
+  final jwtJwksUri = environment['JWT_JWKS_URI'];
+  if (jwtJwksUri == null || jwtJwksUri.isEmpty) {
+    throw StateError('JWT_JWKS_URI is required');
+  }
+  final jwtIssuer = environment['JWT_ISSUER'];
+  if (jwtIssuer == null || jwtIssuer.isEmpty) {
+    throw StateError('JWT_ISSUER is required');
+  }
 
   final postgres = await WorkflowPostgresConnection.open(
     host:
@@ -29,9 +37,13 @@ Future<void> main() async {
           'http://app-access.loom.svc.cluster.local:8080',
     ),
   );
+  final identityExtractor = JwtWorkflowIdentityExtractor(
+    jwksUri: Uri.parse(jwtJwksUri),
+    expectedIssuer: jwtIssuer,
+  );
   final service = WorkflowService(
     database: postgres.database,
-    identityExtractor: const HeaderWorkflowIdentityExtractor(),
+    identityExtractor: identityExtractor,
     appAccessClient: appAccessClient,
     communityGroupIdResolver: MapCommunityGroupIdResolver.fromJson(
       communityGroupIds,
@@ -57,6 +69,7 @@ Future<void> main() async {
   await sigintSubscription.cancel();
   await sigtermSubscription.cancel();
   await server.close(force: true);
+  identityExtractor.close(force: true);
   appAccessClient.close(force: true);
   await postgres.close();
 }

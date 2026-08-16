@@ -11,16 +11,18 @@ Canonical community ids and community handles are separate identifiers. The
 service therefore requires an explicit JSON object mapping canonical ids to
 the App Access group ids created from handles; it never guesses that mapping.
 
-The temporary `X-Loom-Fan-Id` adapter is isolated behind
-`WorkflowIdentityExtractor`. It is a pre-auth test seam, not a production auth
-protocol. Phase C replaces that implementation with JWT validation without
-changing the service or engine boundary.
+Production authenticates `Authorization: Bearer` tokens through
+`JwtWorkflowIdentityExtractor`, using the configured Keycloak JWKS and exact
+issuer before reading Loom's `fanId` claim. The `X-Loom-Fan-Id` adapter remains
+available only as an isolated test seam behind `WorkflowIdentityExtractor`.
 
 Run the service with the k3s PostgreSQL connection:
 
 ```bash
 LOOM_POSTGRES_PASSWORD='<from loom/postgres-credentials>' \
 LOOM_COMMUNITY_GROUP_IDS='{"community_book_club":"loom_communities_book-club"}' \
+JWT_JWKS_URI='http://keycloak.loom.svc.cluster.local:8080/realms/loom/protocol/openid-connect/certs' \
+JWT_ISSUER='http://keycloak.loom.svc.cluster.local:8080/realms/loom' \
   dart run bin/loom_workflow_service.dart
 ```
 
