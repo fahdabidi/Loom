@@ -249,6 +249,194 @@ void main() {
   );
 
   test(
+    'createInstances allows one batch and returns instances in request order',
+    () async {
+      await _installCreatableDefinition(database);
+
+      final response = await service.handler(
+        _createBatchRequest(
+          fanId: 'fan-batch-creator',
+          body: {
+            'workflowType': _workflowType,
+            'initialInstanceDataList': [
+              {'ownerFanId': 'fan-first'},
+              {'ownerFanId': 'fan-second'},
+            ],
+          },
+        ),
+      );
+
+      expect(response.statusCode, 201);
+      final body = jsonDecode(await response.readAsString()) as List<dynamic>;
+      expect(body, hasLength(2));
+      expect(
+        body.map((item) => (item as Map<String, dynamic>)['instanceData']),
+        [
+          {'ownerFanId': 'fan-first'},
+          {'ownerFanId': 'fan-second'},
+        ],
+      );
+      for (final item in body.cast<Map<String, dynamic>>()) {
+        expect(item['workflowType'], _workflowType);
+        expect(item['currentState'], 'draft');
+        expect(item['updatedAt'], isA<String>());
+        final stored = await database.readInstance(
+          item['instanceId'] as String,
+        );
+        expect(stored, isNotNull);
+        expect(stored!.createdByPersonaId, 'fan-batch-creator');
+      }
+
+      expect(appAccessClient.callCount, 1);
+      expect(appAccessClient.fanId, 'fan-batch-creator');
+      expect(appAccessClient.permissionId, 'event_rsvp.create');
+    },
+  );
+
+  test(
+    'createInstances denies generically after one access check and writes zero rows',
+    () async {
+      await _installCreatableDefinition(database);
+      appAccessClient.allowed = false;
+
+      final response = await service.handler(
+        _createBatchRequest(
+          fanId: 'fan-batch-denied',
+          body: {
+            'workflowType': _workflowType,
+            'initialInstanceDataList': [
+              {'ownerFanId': 'fan-first'},
+              {'ownerFanId': 'fan-second'},
+            ],
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      final encoded = await response.readAsString();
+      expect(
+        jsonDecode(encoded),
+        containsPair('code', 'workflow_create_refused'),
+      );
+      expect(encoded, isNot(contains('event_rsvp.create')));
+      expect(encoded, isNot(contains('grantingRoleIds')));
+      expect(encoded, isNot(contains('role')));
+      expect(appAccessClient.callCount, 1);
+      final page = await LocalWorkflowEngineApi(
+        db: database,
+        communityId: _communityId,
+      ).queryInstances(tabId: 'home', personaId: 'fan-batch-denied');
+      expect(page.items, isEmpty);
+    },
+  );
+
+  test(
+    'createInstances refuses a response-table-owned type before App Access',
+    () async {
+      const responseWorkflowType = 'event-response-batch';
+      await _installResponseTableDefinitionPair(
+        database,
+        responseWorkflowType: responseWorkflowType,
+      );
+      final definitions = await database.loadDefinitionsForCommunity(
+        _communityId,
+      );
+      expect(
+        const ArchetypeResolver()
+            .resolveAll(definitions)[responseWorkflowType]!
+            .origin,
+        ArchetypeOrigin.inheritedFromResponseTable,
+      );
+
+      final response = await service.handler(
+        _createBatchRequest(
+          fanId: 'fan-event-organizer',
+          body: {
+            'workflowType': responseWorkflowType,
+            'initialInstanceDataList': [
+              {'eventId': 'fabricated-event', 'personaId': 'fan-victim'},
+              {'eventId': 'fabricated-event', 'personaId': 'fan-other'},
+            ],
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'workflow_create_refused'),
+      );
+      expect(appAccessClient.callCount, 0);
+      final page = await LocalWorkflowEngineApi(
+        db: database,
+        communityId: _communityId,
+      ).queryInstances(tabId: 'calendar', personaId: 'fan-event-organizer');
+      expect(page.items, isEmpty);
+    },
+  );
+
+  test(
+    'createInstances rejects an empty batch as 400 without writes',
+    () async {
+      await _installCreatableDefinition(database);
+
+      final response = await service.handler(
+        _createBatchRequest(
+          fanId: 'fan-batch-creator',
+          body: {
+            'workflowType': _workflowType,
+            'initialInstanceDataList': <Map<String, dynamic>>[],
+          },
+        ),
+      );
+
+      expect(response.statusCode, 400);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'invalid_request'),
+      );
+      expect(appAccessClient.callCount, 0);
+      final page = await LocalWorkflowEngineApi(
+        db: database,
+        communityId: _communityId,
+      ).queryInstances(tabId: 'home', personaId: 'fan-batch-creator');
+      expect(page.items, isEmpty);
+    },
+  );
+
+  test(
+    'createInstances rolls back earlier items when later validation fails',
+    () async {
+      await _installCreatableDefinition(database);
+
+      final response = await service.handler(
+        _createBatchRequest(
+          fanId: 'fan-batch-creator',
+          body: {
+            'workflowType': _workflowType,
+            'initialInstanceDataList': [
+              {'ownerFanId': 'must-be-rolled-back'},
+              <String, dynamic>{},
+            ],
+          },
+        ),
+      );
+
+      expect(response.statusCode, 400);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'invalid_request'),
+      );
+      expect(appAccessClient.callCount, 1);
+      final page = await LocalWorkflowEngineApi(
+        db: database,
+        communityId: _communityId,
+      ).queryInstances(tabId: 'home', personaId: 'fan-batch-creator');
+      expect(page.items, isEmpty);
+    },
+  );
+
+  test(
     'replaceWorkflowDefinitions replaces wholesale and reports removals',
     () async {
       final first = await service.handler(
@@ -766,6 +954,16 @@ Request _createRequest({
 }) => Request(
   'POST',
   Uri.parse('http://localhost/v1/communities/$_communityId/instances'),
+  headers: _headers(fanId),
+  body: jsonEncode(body),
+);
+
+Request _createBatchRequest({
+  required String fanId,
+  required Map<String, dynamic> body,
+}) => Request(
+  'POST',
+  Uri.parse('http://localhost/v1/communities/$_communityId/instances/batch'),
   headers: _headers(fanId),
   body: jsonEncode(body),
 );

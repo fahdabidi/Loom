@@ -56,6 +56,9 @@ class WorkflowService {
         request.method == 'PUT') {
       return _replaceWorkflowDefinitions(request, segments[2]);
     }
+    if (_matchesInstancesBatch(segments) && request.method == 'POST') {
+      return _createInstances(request, segments[2]);
+    }
     if (_matchesCollection(segments, 'instances')) {
       if (request.method == 'GET') {
         return _queryInstances(request, segments[2]);
@@ -87,6 +90,14 @@ class WorkflowService {
       segments[1] == 'communities' &&
       segments[2].isNotEmpty &&
       segments[3] == collection;
+
+  bool _matchesInstancesBatch(List<String> segments) =>
+      segments.length == 5 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4] == 'batch';
 
   bool _matchesInstanceAction(List<String> segments, String action) =>
       segments.length == 6 &&
@@ -479,6 +490,211 @@ class WorkflowService {
     code: 'workflow_create_refused',
     message: 'The workflow instance cannot be created by this caller.',
   );
+
+  Future<Response> _createInstances(Request request, String communityId) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey == null ||
+        idempotencyKey.length < 8 ||
+        idempotencyKey.length > 200) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_idempotency_key',
+        message: 'Idempotency-Key must contain between 8 and 200 characters.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    late final _CreateInstancesBody body;
+    try {
+      body = await _readCreateInstancesBody(request);
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: error.message,
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final definitions = await _database.loadDefinitionsForCommunity(
+          communityId,
+        );
+        if (!definitions.containsKey(body.workflowType)) {
+          return _error(
+            request: request,
+            statusCode: 404,
+            code: 'workflow_type_not_found',
+            message: 'The requested workflow type was not found.',
+          );
+        }
+
+        const resolver = ArchetypeResolver();
+        final archetype = resolver.resolveAll(definitions)[body.workflowType];
+        if (archetype?.origin == ArchetypeOrigin.inheritedFromResponseTable) {
+          return _createRefused(request);
+        }
+        final family = archetype?.family;
+        final permissionId = family == null
+            ? null
+            : resolver.permissionId(family, 'create');
+        if (permissionId == null ||
+            archetype!.conflictingBespokeFamilies.isNotEmpty) {
+          return _createRefused(request);
+        }
+
+        final groupId = await _communityGroupIdResolver.resolveGroupId(
+          communityId,
+        );
+        if (groupId == null || groupId.trim().isEmpty) {
+          return _error(
+            request: request,
+            statusCode: 503,
+            code: 'authorization_service_unavailable',
+            message: 'Workflow creation authorization is unavailable.',
+          );
+        }
+
+        final allowed = await _appAccessClient.checkAccess(
+          fanId: identity.fanId,
+          appId: _appId,
+          permissionId: permissionId,
+          groupId: groupId,
+          correlationId: correlationId,
+        );
+        if (!allowed) return _createRefused(request);
+
+        final instanceIds = await _authoritativeEngine(communityId)
+            .createInstances(
+              workflowType: body.workflowType,
+              initialInstanceDataList: body.initialInstanceDataList,
+              personaId: identity.fanId,
+            );
+        final created = <Map<String, dynamic>>[];
+        for (final instanceId in instanceIds) {
+          final instance = await _database.readInstance(instanceId);
+          if (instance == null) {
+            throw StateError(
+              'Workflow instance disappeared after successful creation',
+            );
+          }
+          created.add({
+            'instanceId': instance.instanceId,
+            'workflowType': instance.workflowType,
+            'currentState': instance.currentState,
+            'instanceData': jsonDecode(instance.instanceData),
+            'updatedAt': DateTime.fromMillisecondsSinceEpoch(
+              instance.updatedAt,
+              isUtc: true,
+            ).toIso8601String(),
+          });
+        }
+        return Response(
+          201,
+          body: jsonEncode(created),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } on AppAccessDecisionException catch (_) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'authorization_service_unavailable',
+        message: 'Workflow creation authorization is unavailable.',
+      );
+    } on SocketException catch (_) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'authorization_service_unavailable',
+        message: 'Workflow creation authorization is unavailable.',
+      );
+    } on WorkflowValidationError catch (_) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'The workflow instance data is invalid.',
+      );
+    } on StateError catch (error) {
+      final message = '${error.message}';
+      if (message.startsWith('Creation of ')) return _createRefused(request);
+      if (message.startsWith('Unknown workflow type:')) {
+        return _error(
+          request: request,
+          statusCode: 404,
+          code: 'workflow_type_not_found',
+          message: 'The requested workflow type was not found.',
+        );
+      }
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow instances could not be created.',
+      );
+    } catch (_) {
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow instances could not be created.',
+      );
+    }
+  }
+
+  Future<_CreateInstancesBody> _readCreateInstancesBody(Request request) async {
+    final decoded = await _readJsonObject(request);
+    final workflowType = decoded['workflowType'];
+    if (workflowType is! String || workflowType.trim().isEmpty) {
+      throw const FormatException('workflowType must be a non-empty string.');
+    }
+    final rawList = decoded['initialInstanceDataList'];
+    if (rawList is! List<dynamic>) {
+      throw const FormatException(
+        'initialInstanceDataList must be a JSON array.',
+      );
+    }
+    if (rawList.isEmpty) {
+      throw const FormatException(
+        'initialInstanceDataList must contain at least one item.',
+      );
+    }
+    final initialInstanceDataList = <Map<String, dynamic>>[];
+    for (final item in rawList) {
+      if (item is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Every initialInstanceDataList item must be a JSON object.',
+        );
+      }
+      initialInstanceDataList.add(item);
+    }
+    return _CreateInstancesBody(
+      workflowType: workflowType,
+      initialInstanceDataList: initialInstanceDataList,
+    );
+  }
 
   Future<Response> _queryInstances(Request request, String communityId) async {
     final correlationId = request.headers['x-loom-correlation-id'];
@@ -965,6 +1181,16 @@ class _CreateInstanceBody {
 
   final String workflowType;
   final Map<String, dynamic> instanceData;
+}
+
+class _CreateInstancesBody {
+  const _CreateInstancesBody({
+    required this.workflowType,
+    required this.initialInstanceDataList,
+  });
+
+  final String workflowType;
+  final List<Map<String, dynamic>> initialInstanceDataList;
 }
 
 class _ReplaceWorkflowDefinitionsBody {

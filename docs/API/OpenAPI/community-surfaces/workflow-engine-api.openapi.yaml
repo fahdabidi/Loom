@@ -152,6 +152,37 @@ paths:
         '403':
           $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
 
+  /v1/communities/{communityId}/instances/batch:
+    post:
+      operationId: createInstances
+      summary: Atomically create instances of one workflow type.
+      description: >-
+        Permitted only if the caller holds the archetype's `create` permission for this workflow, as
+        derived by App Access from the package's `byRoleIds`.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CommunityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstancesRequest'
+      responses:
+        '201':
+          description: Created in request order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkflowInstance'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+
   /v1/communities/{communityId}/instances/{instanceId}/available-transitions:
     get:
       operationId: availableTransitions
@@ -317,6 +348,19 @@ components:
             Seed values for this instance's declared fields. Fields the archetype owns are rejected --
             bookkeeping is maintained by the engine, never supplied by a caller.
           additionalProperties: true
+
+    CreateInstancesRequest:
+      type: object
+      required: [workflowType, initialInstanceDataList]
+      properties:
+        workflowType:
+          type: string
+        initialInstanceDataList:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: true
 
     ApplyTransitionRequest:
       type: object

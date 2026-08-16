@@ -24,7 +24,7 @@ void main() {
       : false;
 
   test(
-    'live App Access grant permits createInstance and no grant refuses it',
+    'live App Access authorizes create and Postgres rolls back an invalid batch',
     () async {
       final unique = '${DateTime.now().microsecondsSinceEpoch}-$pid';
       final communityId = 'community_workflow_b3_$unique';
@@ -111,6 +111,44 @@ void main() {
           idempotencyKey: 'b3-replace-$unique',
         );
         expect(replace.statusCode, HttpStatus.ok, reason: replace.body);
+
+        final invalidBatch = await _sendJson(
+          workflowHttpClient,
+          'POST',
+          workflowBaseUri.resolve(
+            'v1/communities/${Uri.encodeComponent(communityId)}/'
+            'instances/batch',
+          ),
+          body: {
+            'workflowType': workflowType,
+            'initialInstanceDataList': [
+              {'title': 'Must be rolled back'},
+              <String, dynamic>{},
+            ],
+          },
+          fanId: allowedFanId,
+          idempotencyKey: 'b3-create-batch-invalid-$unique',
+        );
+        expect(
+          invalidBatch.statusCode,
+          HttpStatus.badRequest,
+          reason: invalidBatch.body,
+        );
+        expect(
+          jsonDecode(invalidBatch.body),
+          containsPair('code', 'invalid_request'),
+        );
+        final afterInvalidBatch = await LocalWorkflowEngineApi(
+          db: database,
+          communityId: communityId,
+        ).queryInstances(tabId: 'home', personaId: allowedFanId);
+        expect(
+          afterInvalidBatch.items,
+          isEmpty,
+          reason:
+              'The valid first item must be rolled back when the second item '
+              'fails required-field validation.',
+        );
 
         final allowed = await _sendJson(
           workflowHttpClient,

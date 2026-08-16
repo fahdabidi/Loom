@@ -1,141 +1,127 @@
-# Phase C.4 — real JWT identity extraction for loom_workflow_service
+# Phase E.1 — atomic `createInstances` workflow-service batch
 
 ## What changed
 
-- Added the hosted pub.dev package `jose` 0.3.5+1 to
-  `loom_workflow_service`. I chose `jose` because it is an established,
-  actively maintained JOSE implementation with native JWS, JWT, JWK/JWKS,
-  `kid`, and real RS256 support. The package performs the RSA signature
-  verification; the service does not implement RSA or RS256 itself.
-- Added `JwtWorkflowIdentityExtractor`, preserving
-  `WorkflowIdentityExtractor` and `HeaderWorkflowIdentityExtractor` as the
-  existing swappable boundary and test adapter.
-- The extractor accepts only a well-formed `Authorization: Bearer <token>`
-  value and only RS256 compact JWS tokens. It selects a JWK by the protected
-  `kid` header, verifies the signature with `jose`, compares the raw `iss`
-  claim to the configured issuer exactly, requires an unexpired `exp`, and
-  rejects a future `nbf` when present. Every parse, fetch, signature, or claim
-  validation failure returns `null`.
-- Successful verification reads only the `fanId` claim. It must be a nonblank
-  string. Missing, empty, whitespace-only, or non-string values return `null`;
-  there is no `sub` fallback. The decisive no-`fanId` test deliberately gives
-  the valid token a `sub` claim to prove this behavior.
-- JWKS values are cached per extractor for five minutes in an in-memory map
-  keyed by `kid`. A TTL expiry triggers a refresh. A token whose `kid` is not
-  in an otherwise-fresh cache triggers one immediate re-fetch, allowing
-  Keycloak signing-key rotation without waiting for the TTL. Concurrent
-  refreshes reuse the same in-flight future.
-- Wired the production entrypoint to require `JWT_JWKS_URI` and `JWT_ISSUER`
-  with the existing `StateError`-if-missing pattern, construct
-  `JwtWorkflowIdentityExtractor`, and close its owned HTTP client during
-  shutdown. The package README now documents the real in-cluster values. The
-  production values remain deployment configuration; the code contains no
-  placeholder or alternate defaults.
-- Added 12 unit tests backed by three locally generated 2048-bit RSA JWK key
-  pairs. They cover valid extraction, missing and empty `fanId`, expiry,
-  `nbf`, a bad signature from a colliding-`kid` key, wrong issuer, absent and
-  malformed authorization, malformed JWT, cache reuse, and unknown-`kid`
-  rotation refresh.
-- No workflow-engine file, workflow routing/execution operation, App Access
-  client, community-group resolver, or file under
+- Added `POST /v1/communities/{communityId}/instances/batch` with
+  `operationId: createInstances` to the workflow-engine OpenAPI contract. It
+  reuses the singular operation's correlation, idempotency, community,
+  permission-derivation, `400`, and `403` conventions. Its request requires one
+  `workflowType` and a non-empty `initialInstanceDataList`; its `201` response
+  reuses `WorkflowInstance` and preserves request order.
+- Added `WorkflowService._createInstances`. It validates the same headers as
+  `createInstance`, resolves the archetype and derives its `create` permission
+  once, performs one real App Access decision for the whole batch, and invokes
+  the engine's existing atomic `createInstances` inside the service's serialized
+  database mutation boundary.
+- Reused the singular creation refusal behavior exactly: denied access returns
+  generic `403 workflow_create_refused` without permission or role details, and
+  `ArchetypeOrigin.inheritedFromResponseTable` is refused before App Access.
+- Added five service unit tests covering ordered multi-item success, one-check
+  generic denial with zero writes, response-table-origin refusal, empty-batch
+  `400`, and rollback of a valid first item when the second item fails required
+  field validation.
+- Extended the existing live App Access/PostgreSQL integration harness. It now
+  sends `[valid, invalid]` to the batch route before any singular create and
+  asserts that querying PostgreSQL returns zero instances.
+- No app-shell file, workflow-engine source/test file, singular `createInstance`,
+  other workflow-service operation, or file under
   `docs/references/{reference,guide,archetypes,communities}/` changed.
 
 ## Verification
 
-The pre-change workflow-service baseline was 14 runnable tests with 3 existing
-credential-gated integration skips:
+The OpenAPI YAML parses and contains the expected operation:
 
 ```text
-$ dart test --reporter compact  # resolved package:test runner, before changes
-00:02 +14 ~3: 3 skipped tests.
-00:02 +14 ~3: All other tests passed!
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /tmp/validate_workflow_openapi.dart docs/API/OpenAPI/community-surfaces/workflow-engine-api.openapi.yaml
+YAML/OpenAPI batch operation parse: ok
 ```
 
-Formatting and the required package analysis are clean:
+Formatting and service analysis are clean:
 
 ```text
 $ cd app/packages/core/loom_workflow_service
-$ dart format --output=none --set-exit-if-changed lib bin test
-Formatted 13 files (0 changed) in 0.51 seconds.
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format --output=none --set-exit-if-changed lib/src/workflow_service.dart test/workflow_service_test.dart test/app_access_create_instance_integration_test.dart
+Formatted 3 files (0 changed) in 0.31 seconds.
 
-$ dart analyze
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
 Analyzing loom_workflow_service...
 No issues found!
 ```
 
-The real `dart test` command passes all 26 runnable service tests after the
-change, with the same 3 pre-existing live-integration skips. This is an exact
-before/after increase from 14 to 26 runnable passing tests (+12):
+The focused service unit file passes all 19 tests, including the five new batch
+tests:
 
 ```text
-$ dart test --reporter expanded
-Running build hooks...Running build hooks...
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded test/workflow_service_test.dart
 ...
-00:00 +15 ~3: accepts a valid token and extracts its fanId claim
-00:00 +16 ~3: returns null for a validly-signed token with no fanId claim
-00:00 +17 ~3: returns null for a validly-signed token with an empty fanId claim
-00:00 +18 ~3: returns null for an expired token
-00:00 +19 ~3: returns null for a not-yet-valid token
-00:00 +20 ~3: returns null for a token signed with a different key
-00:00 +21 ~3: returns null for a token with the wrong issuer
-00:00 +22 ~3: returns null when the Authorization header is absent
-00:00 +23 ~3: returns null when the Authorization header is malformed
-00:00 +24 ~3: returns null for a malformed bearer token
-00:00 +25 ~3: reuses a cached JWKS for repeated requests
-00:00 +26 ~3: refreshes a fresh JWKS cache when kid is unknown
-00:01 +26 ~3: All tests passed!
+00:00 +8: createInstances rolls back earlier items when later validation fails
+...
+00:00 +19: All tests passed!
 ```
 
-The unchanged workflow-engine suite remains at exactly 232 passing tests with
-its same 2 live-PostgreSQL skips:
+The full workflow-service suite has exactly 34 tests after this change: 31
+runnable passes and 3 credential-gated skips. Before this change it had exactly
+29 tests: 26 runnable passes and the same 3 skips. The exact before/after count
+is therefore **29 -> 34** (`+5`), with no existing test weakened or deleted.
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded
+...
+00:00 +0 ~3: live App Access authorizes create and Postgres rolls back an invalid batch
+  Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL port-forward.
+...
+00:02 +31 ~3: All tests passed!
+```
+
+The local rollback path executed successfully: the service received a valid
+first item followed by an invalid second item, returned `400 invalid_request`,
+performed exactly one App Access check, and the post-request engine query found
+zero rows. The unchanged engine suite also retains its own atomic
+`createInstances` coverage and passes at 232 runnable tests with 2 unchanged
+live-PostgreSQL skips:
 
 ```text
 $ cd ../loom_workflow_engine
-$ dart test --reporter compact
-Running build hooks...Running build hooks...
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded
 ...
-00:15 +232 ~2: 2 skipped tests.
-00:15 +232 ~2: All other tests passed!
+00:00 +109 ~2: createInstances is atomic and preserves input order
+...
+00:06 +232 ~2: All tests passed!
 ```
 
-`git diff --check` is clean.
+`git diff --check` is clean. No workflow-engine file changed.
+
+The requested live PostgreSQL/App Access atomicity assertion is present, but it
+could not execute in this sandbox. The real output was:
+
+```text
+Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL port-forward.
+
+$ kubectl get namespaces
+Unable to connect to the server: dial tcp 127.0.0.1:6443:
+socket: operation not permitted
+```
+
+I do not claim a live-PostgreSQL atomicity pass from this environment.
 
 ## Proposed next steps
 
-Run a live guarded workflow-service request against the deployed Keycloak
-using:
-
-```text
-JWT_JWKS_URI=http://keycloak.loom.svc.cluster.local:8080/realms/loom/protocol/openid-connect/certs
-JWT_ISSUER=http://keycloak.loom.svc.cluster.local:8080/realms/loom
-```
-
-The request should use a real Phase C.2 broker-issued access token and prove
-both directions: its real `fanId` reaches workflow guard evaluation, while a
-cryptographically valid token without `fanId` receives the existing
-unauthenticated outcome. This is the obvious next step because unit coverage
-already exercises the same RS256/JWK/claim path without depending on the live
-cluster.
+1. Run `app_access_create_instance_integration_test.dart` with live PostgreSQL
+   and App Access port-forwards in a network-enabled environment to capture the
+   required zero-row rollback proof.
+2. `updateInstanceFields` and `aggregate` are the remaining server-expansion
+   tickets. `dueNotifications` remains deliberately non-public, and synchronous
+   `availableTransitions` remains separate client-side migration work.
 
 ## Anything I could not do
 
-- I could not run the live Keycloak request. `JWT_JWKS_URI`, `JWT_ISSUER`,
-  `LOOM_POSTGRES_PASSWORD`, and `LOOM_APP_ACCESS_BASE_URL` are unset in this
-  process, and the sandbox cannot reach the local k3s API:
-
-  ```text
-  $ kubectl -n loom get pods -o name
-  Unable to connect to the server: dial tcp 127.0.0.1:6443:
-  socket: operation not permitted
-  ```
-
-- Consequently, the 3 existing workflow-service integration tests remained
-  skipped, as did the engine's 2 existing live-PostgreSQL tests. I do not claim
-  that those live tests passed; all 26 runnable service tests and all 232
-  runnable engine tests did pass.
-- The sandbox also blocks loopback server sockets, so the unit suite injects a
-  deterministic in-memory JWKS fetcher into the extractor instead of binding a
-  local HTTP endpoint. The tests still generate real RSA keys and execute real
-  RS256 signing and verification; the production HTTP JWKS fetch path is
-  compiled and clean under `dart analyze`, and the live Keycloak step above is
-  still required to exercise that transport end to end.
+- I could not produce the required live-PostgreSQL atomicity pass because
+  `LOOM_POSTGRES_PASSWORD` and `LOOM_APP_ACCESS_BASE_URL` are unset, while the
+  sandbox forbids access to the local k3s API needed to establish port-forwards.
+- The literal `dart test` wrapper could not complete dependency resolution: six
+  pre-existing hosted entries are absent from the local pub cache, their
+  committed lock entries contain no SHA fields, and outbound pub.dev access is
+  blocked. I restored their exact upstream release sources outside the repo and
+  ran the resolved `package:test` executable directly. All runnable service and
+  engine tests passed as reported above; the three service live tests and two
+  engine live tests remained explicitly skipped.
