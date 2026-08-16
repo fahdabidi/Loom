@@ -204,6 +204,55 @@ Future<void> _decideFromAdmin(
 }
 
 void main() {
+  test('cosmetic-only Admin override decorates the generated organizer tab '
+      'without granting one to members', () {
+    final source =
+        jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
+            as Map<String, dynamic>;
+    final experience = experienceForExtensionId(
+      'phasee-admin-tab-cosmetics',
+      displayName: source['displayName'] as String?,
+      experienceConfiguration: source['experience'] as Map<String, Object?>,
+    );
+    const appShellConfiguration = <String, Object?>{
+      'tabs': <Object?>[
+        <String, Object?>{
+          'tabId': 'admin',
+          'label': 'Organizer desk',
+          'iconKey': 'board',
+          'description': 'Review proposals and publish club updates.',
+        },
+      ],
+    };
+
+    final memberTabIds = appShellTabsFor(
+      experience: experience,
+      personaId: 'tabletop-member',
+      appShellConfiguration: appShellConfiguration,
+      hasActiveMembership: true,
+    ).map((tab) => tab.tabId);
+    expect(memberTabIds, isNot(contains('admin')));
+
+    final organizerAdmin = appShellTabsFor(
+      experience: experience,
+      personaId: 'tabletop-organizer',
+      appShellConfiguration: appShellConfiguration,
+      hasActiveMembership: true,
+    ).singleWhere((tab) => tab.tabId == 'admin');
+    expect(organizerAdmin.label, 'Organizer desk');
+    expect(organizerAdmin.icon, Icons.fact_check_outlined);
+    expect(
+      organizerAdmin.description,
+      'Review proposals and publish club updates.',
+    );
+    expect(
+      organizerAdmin.requiredPermission,
+      'community.surface.navigation.configure',
+    );
+    expect(organizerAdmin.rendererContractId, 'admin-review-compose-queue');
+    expect(organizerAdmin.visiblePersonaIds, ['tabletop-organizer']);
+  });
+
   testWidgets(
     'member proposals flow from Home creation through the live Admin queue, '
     'decisions, and revision',

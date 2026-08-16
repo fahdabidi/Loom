@@ -608,6 +608,13 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
     for (final tab in generatedTabs) tab.tabId: tab,
   };
   for (final override in overrides) {
+    // The special engine-native declarations are cosmetic-only. If upstream
+    // generation omitted the tab for this persona, there is no gated entry to
+    // decorate and the declaration must not create one independently.
+    if (_engineNativeSpecialTabIdsForCosmetics.contains(override.tabId) &&
+        mergedById[override.tabId] == null) {
+      continue;
+    }
     if (_engineNativeSpecialTabIdsForCosmetics.contains(override.tabId) &&
         mergedById[override.tabId] != null) {
       final generated = mergedById[override.tabId]!;
