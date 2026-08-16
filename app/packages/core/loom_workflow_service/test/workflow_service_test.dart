@@ -10,6 +10,7 @@ const _workflowType = 'owner-approval';
 const _instanceId = 'instance-unit';
 const _editableWorkflowType = 'editable-record';
 const _editableInstanceId = 'editable-instance-unit';
+const _aggregateWorkflowType = 'aggregate-record';
 const _correlationId = '11111111-1111-4111-8111-111111111111';
 const _definitionJson = '''
 {
@@ -701,6 +702,167 @@ void main() {
     },
   );
 
+  test('aggregate returns a filtered count without App Access', () async {
+    await _seedAggregateRows(database);
+
+    final response = await service.handler(
+      _aggregateRequest(
+        fanId: 'fan-owner',
+        body: {
+          'workflowType': _aggregateWorkflowType,
+          'column': 'amount',
+          'op': 'count',
+          'filter': {'status': 'unread'},
+        },
+      ),
+    );
+
+    expect(response.statusCode, 200);
+    expect(
+      jsonDecode(await response.readAsString()),
+      containsPair('result', 2),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test('aggregate groups rows and returns each group value', () async {
+    await _seedAggregateRows(database);
+
+    final response = await service.handler(
+      _aggregateRequest(
+        fanId: 'fan-owner',
+        body: {
+          'workflowType': _aggregateWorkflowType,
+          'column': 'amount',
+          'op': 'sum',
+          'groupBy': 'category',
+        },
+      ),
+    );
+
+    expect(response.statusCode, 200);
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+    expect(
+      body['result'],
+      unorderedEquals([
+        {'category': 'alpha', 'sum': 7},
+        {'category': 'beta', 'sum': 11},
+      ]),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test('aggregate preserves empty sum and average semantics', () async {
+    await _seedAggregateRows(database);
+    final body = {
+      'workflowType': _aggregateWorkflowType,
+      'column': 'amount',
+      'filter': {'status': 'missing'},
+    };
+
+    final sumResponse = await service.handler(
+      _aggregateRequest(fanId: 'fan-owner', body: {...body, 'op': 'sum'}),
+    );
+    final avgResponse = await service.handler(
+      _aggregateRequest(fanId: 'fan-owner', body: {...body, 'op': 'avg'}),
+    );
+
+    expect(sumResponse.statusCode, 200);
+    expect(
+      jsonDecode(await sumResponse.readAsString()),
+      containsPair('result', 0),
+    );
+    expect(avgResponse.statusCode, 200);
+    expect(
+      jsonDecode(await avgResponse.readAsString()),
+      containsPair('result', isNull),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test('aggregate rejects an unsupported operation as 400', () async {
+    final response = await service.handler(
+      _aggregateRequest(
+        fanId: 'fan-owner',
+        body: {
+          'workflowType': _aggregateWorkflowType,
+          'column': 'amount',
+          'op': 'median',
+        },
+      ),
+    );
+
+    expect(response.statusCode, 400);
+    expect(
+      jsonDecode(await response.readAsString()),
+      containsPair('code', 'invalid_request'),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test(
+    'aggregate rejects missing, empty, and malformed fields as 400',
+    () async {
+      final invalidBodies = <Map<String, dynamic>>[
+        {'column': 'amount', 'op': 'count'},
+        {'workflowType': '   ', 'column': 'amount', 'op': 'count'},
+        {'workflowType': _aggregateWorkflowType, 'op': 'count'},
+        {
+          'workflowType': _aggregateWorkflowType,
+          'column': '   ',
+          'op': 'count',
+        },
+        {
+          'workflowType': _aggregateWorkflowType,
+          'column': 'amount',
+          'op': 'count',
+          'filter': <dynamic>[],
+        },
+      ];
+
+      for (final body in invalidBodies) {
+        final response = await service.handler(
+          _aggregateRequest(fanId: 'fan-owner', body: body),
+        );
+        expect(response.statusCode, 400, reason: '$body');
+        expect(
+          jsonDecode(await response.readAsString()),
+          containsPair('code', 'invalid_request'),
+          reason: '$body',
+        );
+      }
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
+  test(
+    'aggregate counts only instances visible to the extracted fan',
+    () async {
+      await _seedAggregateRows(database, guarded: true);
+
+      final response = await service.handler(
+        _aggregateRequest(
+          fanId: 'fan-owner',
+          body: {
+            'workflowType': _aggregateWorkflowType,
+            'column': 'amount',
+            'op': 'count',
+            // A body value cannot select aggregate's unscoped engine path.
+            'personaId': null,
+          },
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('result', 1),
+      );
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
   test(
     'availableTransitions omits a guarded action and returns it for the owner',
     () async {
@@ -1079,6 +1241,52 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
   );
 }
 
+Future<void> _seedAggregateRows(
+  WorkflowDatabase database, {
+  bool guarded = false,
+}) async {
+  final definition = _definitionMap();
+  if (guarded) {
+    definition['visibility'] = {
+      'default': 'guarded',
+      'readGuard': {
+        'actorEqualsField': {'key': 'ownerFanId'},
+      },
+    };
+  }
+  await database.upsertDefinition(
+    definitionId: '${_communityId}_$_aggregateWorkflowType',
+    workflowType: _aggregateWorkflowType,
+    definitionJson: jsonEncode(definition),
+    version: 4,
+  );
+  final rows = guarded
+      ? const [
+          ('aggregate-visible', 'fan-owner', 'alpha', 'unread', 2),
+          ('aggregate-hidden', 'fan-other', 'beta', 'read', 11),
+        ]
+      : const [
+          ('aggregate-alpha-first', 'fan-owner', 'alpha', 'unread', 2),
+          ('aggregate-alpha-second', 'fan-owner', 'alpha', 'unread', 5),
+          ('aggregate-beta', 'fan-owner', 'beta', 'read', 11),
+        ];
+  for (final (id, ownerFanId, category, status, amount) in rows) {
+    await database.insertInstance(
+      instanceId: id,
+      communityId: _communityId,
+      workflowType: _aggregateWorkflowType,
+      currentState: 'draft',
+      instanceData: {
+        'ownerFanId': ownerFanId,
+        'category': category,
+        'status': status,
+        'amount': amount,
+      },
+      createdByPersonaId: ownerFanId,
+    );
+  }
+}
+
 Future<void> _installCreatableDefinition(
   WorkflowDatabase database, {
   String workflowType = _workflowType,
@@ -1177,6 +1385,22 @@ Request _createBatchRequest({
   'POST',
   Uri.parse('http://localhost/v1/communities/$_communityId/instances/batch'),
   headers: _headers(fanId),
+  body: jsonEncode(body),
+);
+
+Request _aggregateRequest({
+  required String fanId,
+  required Map<String, dynamic> body,
+}) => Request(
+  'POST',
+  Uri.parse(
+    'http://localhost/v1/communities/$_communityId/instances/aggregate',
+  ),
+  headers: {
+    'content-type': 'application/json',
+    'x-loom-correlation-id': _correlationId,
+    HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
+  },
   body: jsonEncode(body),
 );
 

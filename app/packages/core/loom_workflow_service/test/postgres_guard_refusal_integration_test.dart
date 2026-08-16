@@ -13,6 +13,7 @@ const _workflowType = 'server-guard-proof';
 const _instanceId = 'guarded-instance';
 const _editableWorkflowType = 'server-field-edit-proof';
 const _editableInstanceId = 'editable-postgres-instance';
+const _aggregateWorkflowType = 'server-aggregate-proof';
 const _correlationId = '22222222-2222-4222-8222-222222222222';
 const _definitionJson = '''
 {
@@ -459,6 +460,111 @@ void main() {
               'port-forward.'
         : false,
   );
+
+  test(
+    'live PostgreSQL aggregate reflects persisted rows',
+    () async {
+      final host = Platform.environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1';
+      final port = int.parse(
+        Platform.environment['LOOM_POSTGRES_PORT'] ?? '15432',
+      );
+      final databaseName =
+          Platform.environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access';
+      final username = Platform.environment['LOOM_POSTGRES_USERNAME'] ?? 'loom';
+      final schema =
+          'workflow_service_aggregate_test_'
+          '${DateTime.now().microsecondsSinceEpoch}_$pid';
+
+      final connection = await pg.Connection.open(
+        pg.Endpoint(
+          host: host,
+          port: port,
+          database: databaseName,
+          username: username,
+          password: password,
+        ),
+        settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+      );
+
+      WorkflowDatabase? database;
+      var schemaCreated = false;
+      try {
+        await connection.execute('CREATE SCHEMA $schema');
+        schemaCreated = true;
+        await connection.execute('SET search_path TO $schema');
+        database = WorkflowDatabase.withExecutor(
+          PgDatabase.opened(connection, enableMigrations: false),
+          dialect: WorkflowSqlDialect.postgres,
+        );
+        await database.upsertDefinition(
+          definitionId: '${_communityId}_$_aggregateWorkflowType',
+          workflowType: _aggregateWorkflowType,
+          definitionJson: _definitionJson,
+          version: 4,
+        );
+        for (final (id, status, amount) in const [
+          ('aggregate-postgres-first', 'posted', 4),
+          ('aggregate-postgres-second', 'posted', 8),
+          ('aggregate-postgres-excluded', 'draft', 50),
+        ]) {
+          await database.insertInstance(
+            instanceId: id,
+            communityId: _communityId,
+            workflowType: _aggregateWorkflowType,
+            currentState: 'draft',
+            instanceData: {
+              'ownerFanId': 'fan-aggregate-reader',
+              'status': status,
+              'amount': amount,
+            },
+            createdByPersonaId: 'fan-aggregate-reader',
+          );
+        }
+        expect(
+          jsonDecode(
+            (await database.readInstance(
+              'aggregate-postgres-second',
+            ))!.instanceData,
+          ),
+          containsPair('amount', 8),
+        );
+
+        final service = WorkflowService(
+          database: database,
+          identityExtractor: const HeaderWorkflowIdentityExtractor(),
+          appAccessClient: const _DenyAppAccessClient(),
+          communityGroupIdResolver: MapCommunityGroupIdResolver({
+            _communityId: 'loom_communities_service_postgres_integration',
+          }),
+        );
+        final response = await service.handler(
+          _aggregateRequest(
+            workflowType: _aggregateWorkflowType,
+            fanId: 'fan-aggregate-reader',
+            column: 'amount',
+            op: 'sum',
+            filter: {'status': 'posted'},
+          ),
+        );
+
+        expect(response.statusCode, 200);
+        expect(
+          jsonDecode(await response.readAsString()),
+          containsPair('result', 12),
+        );
+      } finally {
+        database?.close();
+        if (schemaCreated) {
+          await connection.execute('DROP SCHEMA $schema CASCADE');
+        }
+        await connection.close();
+      }
+    },
+    skip: password == null || password.isEmpty
+        ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
+              'port-forward.'
+        : false,
+  );
 }
 
 Future<void> _seed(WorkflowDatabase database) async {
@@ -512,6 +618,30 @@ Request _fieldUpdateRequest({required Map<String, dynamic> fieldUpdates}) =>
       },
       body: jsonEncode({'fieldUpdates': fieldUpdates}),
     );
+
+Request _aggregateRequest({
+  required String workflowType,
+  required String fanId,
+  required String column,
+  required String op,
+  Map<String, dynamic>? filter,
+}) => Request(
+  'POST',
+  Uri.parse(
+    'http://localhost/v1/communities/$_communityId/instances/aggregate',
+  ),
+  headers: {
+    'content-type': 'application/json',
+    'x-loom-correlation-id': _correlationId,
+    HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
+  },
+  body: jsonEncode({
+    'workflowType': workflowType,
+    'column': column,
+    'op': op,
+    if (filter != null) 'filter': filter,
+  }),
+);
 
 Request _replaceRequest({
   required Map<String, Map<String, dynamic>> definitions,

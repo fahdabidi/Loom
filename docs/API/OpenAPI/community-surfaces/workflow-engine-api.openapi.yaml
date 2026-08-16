@@ -152,6 +152,33 @@ paths:
         '403':
           $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
 
+  /v1/communities/{communityId}/instances/aggregate:
+    post:
+      operationId: aggregate
+      summary: Aggregate workflow instance values visible to the caller.
+      description: >-
+        Computes an aggregate over instances that pass the workflow's visibility rule for the
+        authenticated caller. `filter` entries are exact-match equality constraints. Supplying
+        `groupBy` returns one object per distinct group value; otherwise `result` is a scalar or null.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AggregateRequest'
+      responses:
+        '200':
+          description: Aggregate result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+
   /v1/communities/{communityId}/instances/batch:
     post:
       operationId: createInstances
@@ -399,6 +426,33 @@ components:
           items:
             type: object
             additionalProperties: true
+
+    AggregateRequest:
+      type: object
+      required: [workflowType, column, op]
+      properties:
+        workflowType:
+          type: string
+          minLength: 1
+        column:
+          type: string
+          minLength: 1
+        op:
+          type: string
+          enum: [count, sum, avg, min, max, countDistinct]
+        filter:
+          type: object
+          description: Exact-match equality constraints applied per key.
+          additionalProperties: true
+        groupBy:
+          type: string
+          minLength: 1
+
+    AggregateResponse:
+      type: object
+      required: [result]
+      properties:
+        result: {}
 
     ApplyTransitionRequest:
       type: object

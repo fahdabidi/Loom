@@ -25,6 +25,14 @@ class WorkflowService {
   );
   static final Random _secureRandom = Random.secure();
   static const _unresolvedRoleId = '\u0000loom-role-resolution-pending';
+  static const _supportedAggregateOperations = {
+    'count',
+    'sum',
+    'avg',
+    'min',
+    'max',
+    'countDistinct',
+  };
 
   final WorkflowDatabase _database;
   final WorkflowIdentityExtractor _identityExtractor;
@@ -58,6 +66,9 @@ class WorkflowService {
     }
     if (_matchesInstancesBatch(segments) && request.method == 'POST') {
       return _createInstances(request, segments[2]);
+    }
+    if (_matchesInstancesAggregate(segments) && request.method == 'POST') {
+      return _aggregate(request, segments[2]);
     }
     if (_matchesCollection(segments, 'instances')) {
       if (request.method == 'GET') {
@@ -102,6 +113,14 @@ class WorkflowService {
       segments[2].isNotEmpty &&
       segments[3] == 'instances' &&
       segments[4] == 'batch';
+
+  bool _matchesInstancesAggregate(List<String> segments) =>
+      segments.length == 5 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4] == 'aggregate';
 
   bool _matchesInstanceAction(List<String> segments, String action) =>
       segments.length == 6 &&
@@ -797,6 +816,103 @@ class WorkflowService {
     }
   }
 
+  Future<Response> _aggregate(Request request, String communityId) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    late final _AggregateBody body;
+    try {
+      body = await _readAggregateBody(request);
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: error.message,
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        // Phase B.3 replaces this fail-closed placeholder with roles resolved
+        // by App Access. A fan id must never be treated as a claimed role id.
+        engine.setPersonaType(identity.fanId, _unresolvedRoleId);
+        final result = await engine.aggregate(
+          workflowType: body.workflowType,
+          column: body.column,
+          op: body.op,
+          filter: body.filter,
+          groupBy: body.groupBy,
+          personaId: identity.fanId,
+        );
+        return Response.ok(
+          jsonEncode({'result': result}),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } catch (_) {
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'Workflow instances could not be aggregated.',
+      );
+    }
+  }
+
+  Future<_AggregateBody> _readAggregateBody(Request request) async {
+    final decoded = await _readJsonObject(request);
+    final workflowType = decoded['workflowType'];
+    if (workflowType is! String || workflowType.trim().isEmpty) {
+      throw const FormatException('workflowType must be a non-empty string.');
+    }
+    final column = decoded['column'];
+    if (column is! String || column.trim().isEmpty) {
+      throw const FormatException('column must be a non-empty string.');
+    }
+    final op = decoded['op'];
+    if (op is! String || !_supportedAggregateOperations.contains(op)) {
+      throw const FormatException(
+        'op must be a supported aggregate operation.',
+      );
+    }
+    final filter = decoded['filter'];
+    if (filter != null && filter is! Map<String, dynamic>) {
+      throw const FormatException('filter must be a JSON object.');
+    }
+    final groupBy = decoded['groupBy'];
+    if (groupBy != null && (groupBy is! String || groupBy.trim().isEmpty)) {
+      throw const FormatException(
+        'groupBy must be a non-empty string when supplied.',
+      );
+    }
+    return _AggregateBody(
+      workflowType: workflowType,
+      column: column,
+      op: op,
+      filter: filter as Map<String, dynamic>?,
+      groupBy: groupBy as String?,
+    );
+  }
+
   Future<Response> _availableTransitions(
     Request request,
     String communityId,
@@ -1343,6 +1459,22 @@ class _CreateInstancesBody {
 
   final String workflowType;
   final List<Map<String, dynamic>> initialInstanceDataList;
+}
+
+class _AggregateBody {
+  const _AggregateBody({
+    required this.workflowType,
+    required this.column,
+    required this.op,
+    required this.filter,
+    required this.groupBy,
+  });
+
+  final String workflowType;
+  final String column;
+  final String op;
+  final Map<String, dynamic>? filter;
+  final String? groupBy;
 }
 
 class _ReplaceWorkflowDefinitionsBody {
