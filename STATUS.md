@@ -1,131 +1,202 @@
-# Phase E.3 — `aggregate`
+# Phase E.4a — `RemoteWorkflowEngineApi`
 
 ## What changed
 
-- Added `POST /v1/communities/{communityId}/instances/aggregate` with
-  `operationId: aggregate` to the OpenAPI 3.1 workflow-engine contract. The
-  read-only operation requires `CorrelationId` but no `IdempotencyKey`, accepts
-  the exact six engine operations, an optional free-form equality `filter`, and
-  an optional `groupBy` field.
-- Added `AggregateRequest` and `AggregateResponse`. The response's required
-  `result` property is an empty OpenAPI 3.1 schema, so it accurately permits a
-  number, string, null, or grouped result array instead of narrowing the engine
-  result to numbers.
-- Added `WorkflowService._aggregate` within the existing database serial
-  executor. It validates the correlation id, extracts the authenticated fan
-  identity, parses the JSON body, sets the same unresolved-role sentinel used
-  by the other read path, calls the shared engine, and returns `{result: ...}`.
-  It makes no App Access request.
-- Confirmed from `LocalWorkflowEngineApi.aggregate` that an unsupported `op`
-  throws `ArgumentError.value`; `ArgumentError` is not a `StateError`. The HTTP
-  adapter therefore validates `op` against `count`, `sum`, `avg`, `min`, `max`,
-  and `countDistinct` before the engine call, mapping an unsupported operation
-  to `400 invalid_request` rather than letting it reach the generic `500` path.
-- Confirmed from `_readAllInstancesOfType`, `_readVisibleInstancesOfType`, and
-  `aggregate` that a null `personaId` selects the unscoped system-truth path
-  used by internal guard math. The HTTP handler never accepts a persona from
-  the body and always passes `personaId: identity.fanId`. A visibility test
-  sends a forged body `personaId: null` while seeding one visible and one hidden
-  row; the returned count is one, directly excluding the unscoped path.
-- Confirmed from `aggregateValues` that an empty `sum` returns `0`, while an
-  empty `avg` returns `null`, and covered both through the HTTP endpoint.
-- Added six service unit tests covering filtered count plus zero App Access
-  calls, grouped sum results, empty-set sum/average semantics, unsupported-op
-  `400`, missing/empty/malformed fields, and caller-scoped visibility.
-- Added a credential-gated integration test to the existing live-PostgreSQL
-  harness. It creates a unique schema, writes three real persisted rows, reads
-  one back directly, sums the two matching rows through the Shelf service,
-  expects `result: 12`, and drops the schema in `finally`.
-- No file under
-  `docs/references/{reference,guide,archetypes,communities}/`, no app-shell file,
-  no existing workflow operation implementation, and no
-  `app_access_client.dart` file was changed.
+- Added `RemoteWorkflowEngineApi implements WorkflowEngineApi` in
+  `loom_workflow_engine` and exported it from the package barrel. Its
+  constructor takes an absolute `baseUri`, `communityId`, an injected
+  `Future<String> Function()` bearer-token provider, and an injected
+  `http.Client`; it owns no login, token cache, refresh flow, or HTTP-client
+  lifecycle.
+- Added `http: ^1.6.0` as a direct package dependency. Version 1.6.0 was
+  already present in `app/pubspec.lock` and the local pub cache, and the whole
+  workspace resolved successfully with `dart pub get --offline`; no new
+  network-fetched dependency or lockfile version change was needed.
+- Implemented all seven remotely legitimate interface operations against the
+  exact OpenAPI routes and JSON projections:
+
+  | Engine method | HTTP operation |
+  | --- | --- |
+  | `queryInstances` | `GET /v1/communities/{communityId}/instances` |
+  | `availableTransitionsAsync` | `GET /v1/communities/{communityId}/instances/{instanceId}/available-transitions` |
+  | `applyTransition` | `POST /v1/communities/{communityId}/instances/{instanceId}/transitions` |
+  | `createInstance` | `POST /v1/communities/{communityId}/instances` |
+  | `createInstances` | `POST /v1/communities/{communityId}/instances/batch` |
+  | `updateInstanceFields` | `PATCH /v1/communities/{communityId}/instances/{instanceId}/fields` |
+  | `aggregate` | `POST /v1/communities/{communityId}/instances/aggregate` |
+
+- Every outbound request obtains the bearer token exactly once and sends
+  `Authorization: Bearer <token>` plus a fresh RFC 4122 version-4
+  `X-Loom-Correlation-Id`. The four mutations (`applyTransition`, singular and
+  batch creation, and field update) also send a separate fresh UUID in
+  `Idempotency-Key`. The aggregate route remains a read-only POST and correctly
+  has no idempotency key, matching the authoritative OpenAPI operation.
+- The remote service derives fan identity from the token, so interface-only
+  `personaId`, `tabId`, current-state, and local instance-data inputs are never
+  serialized as forged authority. `queryInstances` exposes the same additive
+  optional `workflowType` argument as `LocalWorkflowEngineApi`; only the
+  OpenAPI-supported `workflowType`, `sortKey`, `limit`, and `cursor` query
+  parameters go over the wire.
+- Adapted the OpenAPI response projections without inventing authority. The
+  service does not expose `createdByPersonaId`, so remotely queried instances
+  use the empty string as the interface model's explicit "not provided"
+  value. Available-transition responses intentionally contain render advice,
+  not full workflow definitions, so their `transitionId`, label, action, tone,
+  inputs, and response `currentState` are projected into
+  `LoomWorkflowTransition`; no target state, guards, or effects are fabricated.
+- `availableTransitions` throws `UnsupportedError` synchronously and points to
+  `availableTransitionsAsync`, because a network round trip cannot satisfy a
+  synchronous return. `dueNotifications` also throws synchronously because no
+  workflow-service OpenAPI operation exists. Tests prove neither path obtains
+  a token or invokes HTTP.
+- Added three remote-only exception classes for failures a local SQLite call
+  cannot experience: `RemoteWorkflowAuthenticationError`,
+  `RemoteWorkflowProtocolError`, and `RemoteWorkflowServiceError`, all carrying
+  a code, message, optional HTTP status, and optional correlation id. Malformed
+  success/error payloads and network failures are normalized into these same
+  remote-only categories instead of leaking arbitrary JSON/client exceptions.
+- Added 25 mock-client unit cases: all seven successful operation shapes,
+  fresh request identifiers and token-provider invocation, every service error
+  code, and both unsupported methods. `package:http/testing.dart` supplies
+  `MockClient`, so no mocking dependency was added.
+- Added a live integration test that uses the production remote class against
+  a configured deployed-service base URI, creates a real instance, paginates
+  `queryInstances`, and requires the created id and initial data to come back.
+  It is gated on a real fan JWT plus an installed/creatable community fixture;
+  it never fabricates a token.
+- No app-shell file, `LocalWorkflowEngineApi`, `WorkflowEngineApi`, workflow
+  service file, or protected `docs/references/{reference,guide,archetypes,communities}`
+  file changed.
+
+### Full exception-vocabulary mapping
+
+The mapping preserves the local implementation's domain exception vocabulary
+where the remote code represents the same outcome. It uses a remote-only type
+where authentication, transport, or protocol semantics have no honest local
+equivalent.
+
+| Workflow-service `code` | Client exception | Mapping decision |
+| --- | --- | --- |
+| `workflow_field_edit_refused` | `WorkflowAuthorizationError` | Exact parity with `LocalWorkflowEngineApi.updateInstanceFields`, whose edit-guard/schema refusals use this type rather than `StateError`. |
+| `workflow_guard_refused` | `StateError` | Exact parity with local transition-guard refusal. |
+| `workflow_read_refused` | `StateError` | Exact parity with the local surface-permission refusal path. |
+| `workflow_instance_not_found` | `StateError` | Exact parity with local missing-instance failures. |
+| `workflow_type_not_found` | `StateError` | Exact parity with local unknown-workflow-type failures. |
+| `workflow_state_conflict` | `StateError` | Exact parity with a locally unavailable source state. |
+| `workflow_create_refused` | `StateError` | Matches local creation-guard refusal, so an existing domain catch continues to work. |
+| `invalid_transition_request` | `StateError` | The service currently emits this additional code for unknown transitions and missing required inputs; both are local `StateError` outcomes. It is covered even though the ticket's enumerated grep result omitted it. |
+| `invalid_request` | `RemoteWorkflowProtocolError` | The service collapses malformed JSON, schema validation, and invalid aggregate arguments into one code; local behavior spans `WorkflowValidationError`, `ArgumentError`, and other input failures. Claiming one of those as exact parity would be false, so the loss of specificity is represented explicitly as a remote protocol rejection. |
+| `invalid_correlation_id` | `RemoteWorkflowProtocolError` | Client/service protocol failure; the local engine has no correlation header. A correctly generated request should never receive it. |
+| `invalid_idempotency_key` | `RemoteWorkflowProtocolError` | Client/service protocol failure; the local engine has no idempotency header. A correctly generated mutation should never receive it. |
+| `unsupported_spec_version` | `RemoteWorkflowProtocolError` | Contract/version mismatch with no local-call equivalent. The seven methods do not install definitions, but the code is mapped and tested as part of the service's complete vocabulary. |
+| `authentication_required` | `RemoteWorkflowAuthenticationError` | Authentication exists only at the remote boundary and must not masquerade as a workflow guard or field authorization decision. |
+| `authorization_service_unavailable` | `RemoteWorkflowServiceError` | Upstream App Access availability is an infrastructure failure, not a caller authorization refusal and not a local `StateError`. |
+| `route_not_found` | `RemoteWorkflowProtocolError` | Base-path/client-service contract mismatch, impossible for an in-process local call. |
+| `workflow_service_error` | `RemoteWorkflowServiceError` | Remote infrastructure/internal failure with no local domain-equivalent exception. |
+
+An unknown future server code maps to `RemoteWorkflowProtocolError` so contract
+drift is visible. Client transport failures use `RemoteWorkflowServiceError`
+with `network_error`; malformed successful/error HTTP projections use
+`RemoteWorkflowProtocolError` with `malformed_response` or
+`malformed_error_response`.
 
 ## Verification
 
-The untouched `loom_workflow_service` baseline was 42 passing tests and 4
-credential-gated skips:
+The clean pre-change engine baseline was 232 passing tests and 2 existing
+credential-gated PostgreSQL skips:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
-00:01 +42 ~4: All tests passed!
+00:04 +232 ~2: All tests passed!
 ```
 
-All six new unit cases pass:
+The cached dependency resolved without network access. `http` stayed at the
+already-locked 1.6.0:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test \
-    test/workflow_service_test.dart --name aggregate --reporter expanded
-Running build hooks...Running build hooks...00:00 +0: loading test/workflow_service_test.dart
-00:00 +0: aggregate returns a filtered count without App Access
-00:00 +1: aggregate groups rows and returns each group value
-00:00 +2: aggregate preserves empty sum and average semantics
-00:00 +3: aggregate rejects an unsupported operation as 400
-00:00 +4: aggregate rejects missing, empty, and malformed fields as 400
-00:00 +5: aggregate counts only instances visible to the extracted fan
-00:00 +6: All tests passed!
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart pub get --offline
+Resolving dependencies...
+Downloading packages...
+...
+Got dependencies!
+11 packages have newer versions incompatible with dependency constraints.
 ```
 
 Static analysis is clean:
 
 ```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
-Analyzing loom_workflow_service...
+Analyzing loom_workflow_engine...
 No issues found!
 ```
 
-After the change, the exact `loom_workflow_service` count is 48 passing and 5
-skipped: six new unit passes, one new live-PostgreSQL skip, and no failure or
-weakened test.
-
-```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
-...
-00:03 +48 ~5: All tests passed!
-```
-
-The new PostgreSQL test compiles and is selected correctly, but this sandbox
-could not execute it against a live server. This is skipped output, not a live
-proof:
+All 25 focused mock-client/error/unsupported cases pass:
 
 ```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test \
-    test/postgres_guard_refusal_integration_test.dart \
-    --name 'live PostgreSQL aggregate reflects persisted rows' \
-    --reporter expanded
-Running build hooks...Running build hooks...00:00 +0: loading test/postgres_guard_refusal_integration_test.dart
-00:00 +0: live PostgreSQL aggregate reflects persisted rows
-  Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL port-forward.
+    test/remote_workflow_engine_api_test.dart --reporter expanded
+...
+00:00 +23: RemoteWorkflowEngineApi error vocabulary workflow_service_error maps to RemoteWorkflowServiceError
+00:00 +24: unsupported methods throw immediately without token or HTTP calls
+00:00 +25: All tests passed!
+```
+
+The final exact engine count is 257 passing and 3 skipped: the original
+232/2 plus 25 new unit passes and one new live credential-gated skip. No
+existing test changed or weakened.
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
+...
+00:04 +257 ~3: All tests passed!
+```
+
+The live integration test compiles, is selected, and reports precisely which
+real fixture values are absent. This is skip evidence, not a live round-trip
+claim:
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test \
+    test/remote_workflow_engine_api_live_test.dart --reporter expanded
+Running build hooks...Running build hooks...00:00 +0: loading test/remote_workflow_engine_api_live_test.dart
+00:00 +0: deployed service createInstance is returned by queryInstances
+  Skip: Set LOOM_WORKFLOW_SERVICE_BEARER_TOKEN (a real fan JWT), LOOM_WORKFLOW_SERVICE_COMMUNITY_ID (an installed live community id), LOOM_WORKFLOW_SERVICE_WORKFLOW_TYPE (a creatable live workflow type), LOOM_WORKFLOW_SERVICE_INITIAL_INSTANCE_DATA (valid JSON for that workflow type) to run against the deployed k3s workflow service.
 00:00 +0 ~1: All tests skipped.
 ```
 
-The complete, unchanged `loom_workflow_engine` suite remains green:
+An explicit attempt to reach the real cluster failed at the sandbox socket
+boundary before a Keycloak port-forward or token request could be made:
 
 ```text
-$ cd app/packages/core/loom_workflow_engine
+$ kubectl get pods -n loom -o wide
+Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
+
+$ kubectl get deployment -n loom loom-workflow-service ...
+Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
+```
+
+The untouched workflow-service package remains clean at exactly its baseline
+48 passing tests and 5 existing live skips:
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
+Analyzing loom_workflow_service...
+No issues found!
+
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
-00:12 +232 ~2: All tests passed!
+00:01 +48 ~5: All tests passed!
 ```
 
-The OpenAPI document parses, is confirmed as 3.1, and has the required
-aggregate shapes:
-
-```text
-$ python3 - <<'PY'
-... yaml.safe_load and aggregate contract assertions ...
-PY
-OpenAPI 3.1 YAML parsed; aggregate enum, free-form filter/result, and no-idempotency rule verified
-```
-
-Formatting and whitespace validation are clean:
+Final formatting and whitespace checks are clean:
 
 ```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format \
-    lib/src/workflow_service.dart test/workflow_service_test.dart \
-    test/postgres_guard_refusal_integration_test.dart
-Formatted 3 files (3 changed) in 0.24 seconds.
+    lib/src/api/remote_workflow_engine_api.dart \
+    test/remote_workflow_engine_api_test.dart \
+    test/remote_workflow_engine_api_live_test.dart
+Formatted 3 files (0 changed) in 0.06 seconds.
 
 $ git diff --check
 <no output; exit 0>
@@ -133,35 +204,24 @@ $ git diff --check
 
 ## Proposed next steps
 
-1. Run the focused live-PostgreSQL test above in the existing k3s
-   port-forward environment with `LOOM_POSTGRES_PASSWORD`, and retain its
-   `+1: All tests passed!` output as the outstanding Phase E.3 execution proof.
-2. Proceed to Phase E.4: implement the app-shell `RemoteWorkflowEngineApi`
-   client against the now-complete real server operation set.
-
-This closes the real server-side operation coverage gap against
-`WorkflowEngineApi`. The only interface methods left without server operations
-are `dueNotifications` (it has no app-shell callers and was correctly excluded
-per Phase E.1) and the synchronous `availableTransitions` variant (the
-architecturally client-side-only form; the async authoritative variant is
-already exposed).
+1. From an environment with k3s socket access, port-forward Keycloak and
+   `loom-workflow-service`, mint a real `loom`-realm fan JWT using the already
+   established client-credentials/direct-grant recipe, provide an installed
+   community/workflow fixture and valid initial JSON, and run the focused live
+   test until it reports `+1: All tests passed!`.
+2. Treat Phase E.4b as separate, larger, unscoped work. Before wiring the app
+   shell to this client, migrate the 10 synchronous `availableTransitions`
+   call sites to `availableTransitionsAsync`; then introduce a real factory/DI
+   seam for the roughly 19 direct `LocalWorkflowEngineApi` construction sites.
+   Phase E.4b was not started here.
 
 ## Anything I could not do
 
-- I could not produce the required live-PostgreSQL aggregate execution proof
-  in this sandbox. `LOOM_POSTGRES_PASSWORD` is unset, the k3s API cannot be
-  reached because socket access is denied, Docker's local API is denied, and
-  only the PostgreSQL client is installed locally:
-
-  ```text
-  $ kubectl get pods -A -o wide
-  Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
-
-  $ docker ps
-  permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
-  ```
-
-  The real-PostgreSQL test is implemented using the package's existing
-  connection, unique-schema, and cleanup pattern, but reporting the skipped run
-  as a live pass would be inaccurate.
-- All other requested implementation and runnable verification completed.
+- I could not mint a real JWT or execute the deployed-service create/query
+  round trip because this sandbox has no live fixture variables and the k3s
+  API socket is denied (`127.0.0.1:6443: operation not permitted`). Reporting
+  the credential-gated skip as a live pass would be inaccurate.
+- Everything else requested for the client-only Phase E.4a scope completed,
+  including offline dependency resolution, all seven operation adapters,
+  complete error-code tests, clean analysis, both full package regressions,
+  and preservation of every prohibited path.
