@@ -21,6 +21,9 @@ Run the service with the k3s PostgreSQL connection:
 ```bash
 LOOM_POSTGRES_PASSWORD='<from loom/postgres-credentials>' \
 LOOM_COMMUNITY_GROUP_IDS='{"community_book_club":"loom_communities_book-club"}' \
+LOOM_KEYCLOAK_TOKEN_URL='http://keycloak.loom.svc.cluster.local:8080/realms/loom/protocol/openid-connect/token' \
+LOOM_APP_ACCESS_CLIENT_ID='loom-workflow-service' \
+LOOM_APP_ACCESS_CLIENT_SECRET='<from the workflow service client secret>' \
 JWT_JWKS_URI='http://keycloak.loom.svc.cluster.local:8080/realms/loom/protocol/openid-connect/certs' \
 JWT_ISSUER='http://keycloak.loom.svc.cluster.local:8080/realms/loom' \
   dart run bin/loom_workflow_service.dart
@@ -28,7 +31,10 @@ JWT_ISSUER='http://keycloak.loom.svc.cluster.local:8080/realms/loom' \
 
 `LOOM_APP_ACCESS_BASE_URL` defaults to the in-cluster
 `http://app-access.loom.svc.cluster.local:8080`. Override it with the local
-App Access port-forward URL when running the live integration test.
+App Access port-forward URL when running the live integration test. The
+workflow service uses `LOOM_KEYCLOAK_TOKEN_URL`, `LOOM_APP_ACCESS_CLIENT_ID`,
+and `LOOM_APP_ACCESS_CLIENT_SECRET` to cache a client-credentials token and
+authenticate every App Access decision request.
 
 The PostgreSQL integration tests default to the local k3s port-forward at
 `127.0.0.1:15432` and create then drop their own unique schemas. The B.3 test

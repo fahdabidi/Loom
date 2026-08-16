@@ -25,14 +25,44 @@ class AppAccessDecisionException implements Exception {
 
 /// Minimal HTTP client for App Access's `POST /v1/access-decisions` operation.
 class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
-  HttpAppAccessDecisionClient({required Uri baseUri, HttpClient? httpClient})
-    : _baseUri = _normalizeBaseUri(baseUri),
-      _httpClient = httpClient ?? HttpClient(),
-      _ownsHttpClient = httpClient == null;
+  static const Duration defaultTokenRefreshSkew = Duration(seconds: 30);
+
+  HttpAppAccessDecisionClient({
+    required Uri baseUri,
+    required Uri tokenUri,
+    required String clientId,
+    required String clientSecret,
+    this.tokenRefreshSkew = defaultTokenRefreshSkew,
+    HttpClient? httpClient,
+    DateTime Function()? clock,
+  }) : _baseUri = _normalizeBaseUri(baseUri),
+       _tokenUri = _requireAbsoluteUri(tokenUri, 'tokenUri'),
+       _clientId = _requireNonEmpty(clientId, 'clientId'),
+       _clientSecret = _requireNonEmpty(clientSecret, 'clientSecret'),
+       _httpClient = httpClient ?? HttpClient(),
+       _ownsHttpClient = httpClient == null,
+       _clock = clock ?? DateTime.now {
+    if (tokenRefreshSkew.isNegative) {
+      throw ArgumentError.value(
+        tokenRefreshSkew,
+        'tokenRefreshSkew',
+        'must not be negative',
+      );
+    }
+  }
 
   final Uri _baseUri;
+  final Uri _tokenUri;
+  final String _clientId;
+  final String _clientSecret;
+  final Duration tokenRefreshSkew;
   final HttpClient _httpClient;
   final bool _ownsHttpClient;
+  final DateTime Function() _clock;
+
+  String? _cachedAccessToken;
+  DateTime? _tokenRefreshAt;
+  Future<String>? _refreshingToken;
 
   @override
   Future<bool> checkAccess({
@@ -42,10 +72,12 @@ class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
     required String groupId,
     required String correlationId,
   }) async {
+    final accessToken = await _loadAccessToken();
     final request = await _httpClient.postUrl(
       _baseUri.resolve('v1/access-decisions'),
     );
     request.headers.contentType = ContentType.json;
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
     request.headers.set('x-loom-correlation-id', correlationId);
     request.write(
       jsonEncode({
@@ -86,15 +118,121 @@ class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
     return decoded['allowed'] as bool;
   }
 
+  Future<String> _loadAccessToken() async {
+    if (_tokenIsFresh(_clock())) return _cachedAccessToken!;
+
+    final inFlight = _refreshingToken;
+    if (inFlight != null) return inFlight;
+
+    final refresh = _fetchAndCacheAccessToken();
+    _refreshingToken = refresh;
+    try {
+      return await refresh;
+    } finally {
+      if (identical(_refreshingToken, refresh)) {
+        _refreshingToken = null;
+      }
+    }
+  }
+
+  bool _tokenIsFresh(DateTime now) {
+    final refreshAt = _tokenRefreshAt;
+    return _cachedAccessToken != null &&
+        refreshAt != null &&
+        now.isBefore(refreshAt);
+  }
+
+  Future<String> _fetchAndCacheAccessToken() async {
+    try {
+      final request = await _httpClient.postUrl(_tokenUri);
+      request.headers.contentType = ContentType(
+        'application',
+        'x-www-form-urlencoded',
+        charset: 'utf-8',
+      );
+      request.write(
+        _formEncode({
+          'grant_type': 'client_credentials',
+          'client_id': _clientId,
+          'client_secret': _clientSecret,
+        }),
+      );
+
+      final response = await request.close();
+      final encoded = await utf8.decoder.bind(response).join();
+      if (response.statusCode != HttpStatus.ok) {
+        throw AppAccessDecisionException(
+          'Keycloak token endpoint returned HTTP ${response.statusCode}.',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Object? decoded;
+      try {
+        decoded = jsonDecode(encoded);
+      } on FormatException {
+        throw const AppAccessDecisionException(
+          'Keycloak token endpoint returned a malformed token response.',
+        );
+      }
+      if (decoded is! Map<String, dynamic> ||
+          decoded['access_token'] is! String ||
+          (decoded['access_token'] as String).isEmpty ||
+          decoded['expires_in'] is! int ||
+          (decoded['expires_in'] as int) <= 0) {
+        throw const AppAccessDecisionException(
+          'Keycloak token endpoint returned a malformed token response.',
+        );
+      }
+
+      final accessToken = decoded['access_token'] as String;
+      final lifetime = Duration(seconds: decoded['expires_in'] as int);
+      final refreshSkew = tokenRefreshSkew < lifetime
+          ? tokenRefreshSkew
+          : Duration(microseconds: lifetime.inMicroseconds ~/ 2);
+      _cachedAccessToken = accessToken;
+      _tokenRefreshAt = _clock().add(lifetime - refreshSkew);
+      return accessToken;
+    } on AppAccessDecisionException {
+      rethrow;
+    } catch (_) {
+      throw const AppAccessDecisionException(
+        'Failed to obtain an App Access bearer token from Keycloak.',
+      );
+    }
+  }
+
   void close({bool force = false}) {
     if (_ownsHttpClient) _httpClient.close(force: force);
   }
 
   static Uri _normalizeBaseUri(Uri baseUri) {
-    if (!baseUri.hasScheme || baseUri.host.isEmpty) {
-      throw ArgumentError.value(baseUri, 'baseUri', 'must be an absolute URI');
-    }
+    _requireAbsoluteUri(baseUri, 'baseUri');
     final path = baseUri.path.endsWith('/') ? baseUri.path : '${baseUri.path}/';
     return baseUri.replace(path: path, query: null, fragment: null);
+  }
+
+  static Uri _requireAbsoluteUri(Uri uri, String name) {
+    if (!uri.hasScheme || uri.host.isEmpty) {
+      throw ArgumentError.value(uri, name, 'must be an absolute URI');
+    }
+    return uri;
+  }
+
+  static String _requireNonEmpty(String value, String name) {
+    if (value.isEmpty) {
+      throw ArgumentError.value(value, name, 'must not be empty');
+    }
+    return value;
+  }
+
+  static String _formEncode(Map<String, String> values) {
+    return values.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}='
+              '${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
   }
 }

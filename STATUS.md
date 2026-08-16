@@ -1,128 +1,123 @@
-# App Access integration-test bearer authentication
+# Live workflow-creation App Access authentication fix
 
 ## What changed
 
-- The only functional code change is in
-  `app/packages/core/loom_workflow_service/test/app_access_create_instance_integration_test.dart`.
-  This `STATUS.md` handoff is the only other changed file in the commit. No
-  workflow-service implementation, workflow-engine contract, App Access
-  source, or `loom-backend` file changed.
-- Added explicit credential gates for `LOOM_KEYCLOAK_TOKEN_URL`,
-  `LOOM_KEYCLOAK_ADMIN_URL`, `LOOM_KEYCLOAK_ADMIN_USERNAME`, and
-  `LOOM_KEYCLOAK_ADMIN_PASSWORD`, alongside the existing PostgreSQL and App
-  Access gates. `LOOM_KEYCLOAK_ADMIN_URL` is the Keycloak base URL;
-  `LOOM_KEYCLOAK_TOKEN_URL` is the full `loom`-realm token endpoint.
-- The test now obtains an `admin-cli` password-grant token from the `master`
-  realm, creates a uniquely named confidential `openid-connect` client in the
-  `loom` realm with `serviceAccountsEnabled: true`, reads its generated secret,
-  and obtains a client-credentials access token from the configured `loom`
-  token endpoint.
-- All four existing direct App Access setup mutations (`createGroup`,
-  `createRole`, `setRolePermissions`, and `setGroupMembership`) now send that
-  token as `Authorization: Bearer <token>` without changing their payloads,
-  idempotency keys, expected statuses, or seeded identities and permissions.
-- The Keycloak client UUID is captured from the create response's `Location`
-  header and deleted in the test's outer cleanup path. Cleanup is attempted
-  after setup or assertion failures as well as successful runs.
-- The workflow `createInstances`/`createInstance` requests and all assertions
-  remain unchanged. This follows the requested test-only scope for a test that
-  predates Phase C.1's deployed JWT enforcement.
+- `HttpAppAccessDecisionClient` now obtains a Keycloak client-credentials
+  access token and sends `Authorization: Bearer <token>` on every
+  `POST /v1/access-decisions` request. Authentication lives in the HTTP client
+  itself because it owns both the outbound decision call and its HTTP-client
+  lifecycle; callers cannot accidentally omit the bearer token.
+- The token is cached and refreshed proactively 30 seconds before
+  `expires_in` (halfway through lifetimes shorter than 30 seconds). The cache
+  deliberately reuses `JwtWorkflowIdentityExtractor`'s shape: a cached value,
+  an expiry/refresh timestamp, and one shared in-flight refresh future. It does
+  not call Keycloak for every access decision.
+- Non-200, malformed, and transport-failed token acquisition is normalized to
+  `AppAccessDecisionException`, preserving `WorkflowService`'s existing
+  `503 authorization_service_unavailable` behavior.
+- The production entrypoint now requires `LOOM_KEYCLOAK_TOKEN_URL`,
+  `LOOM_APP_ACCESS_CLIENT_ID`, and `LOOM_APP_ACCESS_CLIENT_SECRET` using the
+  existing `StateError`-if-missing pattern. `LOOM_KEYCLOAK_TOKEN_URL` was
+  reused because its only existing package use is the same `loom`-realm token
+  endpoint; there is no naming conflict.
+- The README run example documents the three required variables. The live App
+  Access integration test now gives `HttpAppAccessDecisionClient` the
+  throwaway client credentials that test already provisions.
+- Added four in-memory HTTP-client tests that assert the exact outbound
+  `Authorization` header and client-credentials form, cached reuse, proactive
+  refresh, and `AppAccessDecisionException` on token rejection.
+- The normal `createInstance`/`createInstances` success and refusal suites did
+  remain mock-based as expected (`_RecordingAppAccessClient` and
+  `_DenyAppAccessClient`); neither test file nor `WorkflowService` routing and
+  request handling changed. No file under protected `docs/references` paths,
+  no Java service, and no `loom-backend` file changed.
 
 ## Verification
 
-Formatting and static analysis are clean, using the installed SDK binary
-directly because the `dart` wrapper attempts to update a read-only Flutter
-engine stamp in this sandbox:
+The untouched workflow-service baseline was clean and contained 31 passing
+tests plus the same 3 credential-gated live skips:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format test/app_access_create_instance_integration_test.dart
-Formatted test/app_access_create_instance_integration_test.dart
-Formatted 1 file (1 changed) in 0.06 seconds.
-
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
 Analyzing loom_workflow_service...
 No issues found!
-```
 
-The full workflow-service suite has no runnable-test regression:
-
-```text
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
 00:01 +31 ~3: All tests passed!
 ```
 
-The three skips are the package's live, credential-gated integration tests.
-For the changed target, the ordinary unconfigured output is explicit:
+The new focused unit suite passes all four required cases:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test test/app_access_create_instance_integration_test.dart --reporter expanded
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test test/app_access_client_test.dart --reporter expanded
+Running build hooks...Running build hooks...00:00 +0: loading test/app_access_client_test.dart
+00:00 +0: attaches the Keycloak bearer token to the App Access request
+00:00 +1: reuses a cached token for repeated access decisions
+00:00 +2: refreshes a token proactively when it is nearing expiry
+00:00 +3: wraps token acquisition failure as AppAccessDecisionException
+00:00 +4: All tests passed!
+```
+
+After the change, static analysis remains clean and the exact workflow-service
+count is 35 passing, 3 skipped: four new passing tests and no new skip or
+failure.
+
+```text
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
+Analyzing loom_workflow_service...
+No issues found!
+
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
-Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL instance or port-forward.
-00:00 +0 ~1: All tests skipped.
+00:01 +35 ~3: All tests passed!
 ```
 
-I could not produce the required real `+1: All tests passed!` result in this
-execution environment. The cluster is configured locally and its manifests
-document App Access on NodePort `30080`, Keycloak on NodePort `30082`, and
-PostgreSQL behind its cluster service. However, the sandbox blocks access to
-the Kubernetes API and local network sockets:
+The three workflow-service skips are unchanged live, credential-gated
+PostgreSQL/App Access integration tests. The complete workflow-engine suite is
+also unaffected:
 
 ```text
-$ kubectl -n loom get svc,pods
-Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
-```
-
-I also ran the exact test with every gate set and the documented Keycloak and
-App Access NodePort addresses (using placeholder credentials because the
-connection fails before authentication). This proves it did not skip, but it
-could not reach Keycloak:
-
-```text
-$ LOOM_POSTGRES_PASSWORD=unavailable \
-  LOOM_APP_ACCESS_BASE_URL=http://127.0.0.1:30080 \
-  LOOM_KEYCLOAK_TOKEN_URL=http://127.0.0.1:30082/realms/loom/protocol/openid-connect/token \
-  LOOM_KEYCLOAK_ADMIN_URL=http://127.0.0.1:30082 \
-  LOOM_KEYCLOAK_ADMIN_USERNAME=loom-admin \
-  LOOM_KEYCLOAK_ADMIN_PASSWORD=unavailable \
-  /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test test/app_access_create_instance_integration_test.dart --reporter expanded
+$ cd app/packages/core/loom_workflow_engine
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
-SocketException: Connection failed (OS Error: Operation not permitted, errno = 1),
-address = 127.0.0.1, port = 30082
-00:00 +0 -1: Some tests failed.
+00:05 +232 ~2: All tests passed!
 ```
 
-`git diff --check` is clean.
+The two engine skips are its unchanged credential-gated PostgreSQL integration
+tests. Final whitespace validation is clean:
+
+```text
+$ git diff --check
+<no output; exit 0>
+```
+
+The SDK binary was invoked directly because this sandbox's `dart` wrapper
+tries to update `/home/fahd/flutter/bin/cache/engine.stamp`, which is read-only
+here; the direct binary is the same installed Dart SDK 3.11.5.
 
 ## Proposed next steps
 
-1. Re-run the exact target test from a network-enabled environment that can
-   reach the three live services. Running in the `loom` namespace is the least
-   ambiguous Keycloak route because the token endpoint then uses
-   `http://keycloak.loom.svc.cluster.local:8080`, matching App Access's expected
-   issuer. Supply the bootstrap admin and PostgreSQL credentials from their
-   Kubernetes secrets and require the literal `+1: All tests passed!` result.
-2. Before claiming that pass, resolve or explicitly authorize the separate
-   service-to-service authentication gap described below. The smallest
-   test-only option would be an authenticated HTTP client injected into the
-   existing `HttpAppAccessDecisionClient`; the production-correct option is a
-   real workflow-service credential/token-provider design. That choice is
-   outside this ticket's explicit setup-only scope and should not be guessed.
+1. Urgently build and redeploy the fixed `loom-workflow-service` image. Yes,
+   redeployment is the immediate next step: the currently deployed image still
+   sends unauthenticated App Access decisions and therefore still breaks real
+   `createInstance`/`createInstances` calls.
+2. Supply the existing `loom-workflow-service` Keycloak client's ID and secret
+   to the deployment as `LOOM_APP_ACCESS_CLIENT_ID` and
+   `LOOM_APP_ACCESS_CLIENT_SECRET`, and set `LOOM_KEYCLOAK_TOKEN_URL` to the
+   `loom` realm's in-cluster token endpoint. Do not provision another client.
+3. After rollout, make a real creation request and confirm App Access returns a
+   decision instead of `401`, then verify both single and batch creation no
+   longer become `503 authorization_service_unavailable`.
 
 ## Anything I could not do
 
-- I could not establish the PostgreSQL, App Access, or Keycloak port-forwards,
-  retrieve the live Kubernetes secrets, or run the target test against the
-  live cluster because this sandbox rejects the Kubernetes API and socket
-  operations. I therefore do not claim the required live pass.
-- There is a second JWT-enforcement consequence visible in unchanged code:
-  `HttpAppAccessDecisionClient.checkAccess` sends no `Authorization` header on
-  `POST /v1/access-decisions`, while the deployed App Access
-  `JwtSecurityConfiguration` permits only the two literal health paths and
-  requires authentication for every other request. The batch path performs
-  this decision before writing and converts that client's non-200 response to
-  `503 authorization_service_unavailable`. The requested scope says to change
-  only this test's App Access setup calls and specifically forbids changing the
-  actual create calls or service implementation, so I left this separate
-  boundary untouched. It is likely to be the next live failure after the four
-  seed requests begin succeeding.
+- I could not build/redeploy the production image, update its external secret
+  or manifest, or perform a live post-rollout creation check; those systems are
+  outside this ticket's writable repository scope and this sandbox cannot
+  access the local Kubernetes API/network sockets.
+- Consequently, the credential-gated live integration tests remained skipped.
+  All runnable unit and package regression suites passed as recorded above.
+- I did not modify or provision anything in the live Keycloak realm, as
+  required. The fix only consumes the already-provisioned service-account
+  credentials through configuration.

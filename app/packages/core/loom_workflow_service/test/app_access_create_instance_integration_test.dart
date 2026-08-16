@@ -130,7 +130,12 @@ void main() {
           PgDatabase.opened(connection, enableMigrations: false),
           dialect: WorkflowSqlDialect.postgres,
         );
-        appAccessClient = HttpAppAccessDecisionClient(baseUri: appAccessUri);
+        appAccessClient = HttpAppAccessDecisionClient(
+          baseUri: appAccessUri,
+          tokenUri: keycloakTokenUri,
+          clientId: keycloakClientName,
+          clientSecret: keycloakClientSecret,
+        );
         final service = WorkflowService(
           database: database,
           identityExtractor: const HeaderWorkflowIdentityExtractor(),

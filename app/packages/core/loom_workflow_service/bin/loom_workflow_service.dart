@@ -14,6 +14,18 @@ Future<void> main() async {
   if (communityGroupIds == null || communityGroupIds.isEmpty) {
     throw StateError('LOOM_COMMUNITY_GROUP_IDS is required');
   }
+  final keycloakTokenUrl = environment['LOOM_KEYCLOAK_TOKEN_URL'];
+  if (keycloakTokenUrl == null || keycloakTokenUrl.isEmpty) {
+    throw StateError('LOOM_KEYCLOAK_TOKEN_URL is required');
+  }
+  final appAccessClientId = environment['LOOM_APP_ACCESS_CLIENT_ID'];
+  if (appAccessClientId == null || appAccessClientId.isEmpty) {
+    throw StateError('LOOM_APP_ACCESS_CLIENT_ID is required');
+  }
+  final appAccessClientSecret = environment['LOOM_APP_ACCESS_CLIENT_SECRET'];
+  if (appAccessClientSecret == null || appAccessClientSecret.isEmpty) {
+    throw StateError('LOOM_APP_ACCESS_CLIENT_SECRET is required');
+  }
   final jwtJwksUri = environment['JWT_JWKS_URI'];
   if (jwtJwksUri == null || jwtJwksUri.isEmpty) {
     throw StateError('JWT_JWKS_URI is required');
@@ -36,6 +48,9 @@ Future<void> main() async {
       environment['LOOM_APP_ACCESS_BASE_URL'] ??
           'http://app-access.loom.svc.cluster.local:8080',
     ),
+    tokenUri: Uri.parse(keycloakTokenUrl),
+    clientId: appAccessClientId,
+    clientSecret: appAccessClientSecret,
   );
   final identityExtractor = JwtWorkflowIdentityExtractor(
     jwksUri: Uri.parse(jwtJwksUri),
