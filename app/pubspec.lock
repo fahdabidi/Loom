@@ -53,6 +53,7 @@ packages:
     dependency: transitive
     description:
       name: asn1lib
+      sha256: "9a8f69025044eb466b9b60ef3bc3ac99b4dc6c158ae9c56d25eeccf5bc56d024"
       url: "https://pub.dev"
     source: hosted
     version: "1.6.5"
@@ -236,6 +237,7 @@ packages:
     dependency: transitive
     description:
       name: crypto_keys
+      sha256: "2ed305a11a3e5d16dd7f489121c956fd19b9816938bb68bc7ed3a379827a304e"
       url: "https://pub.dev"
     source: hosted
     version: "0.3.0+2"
@@ -473,6 +475,7 @@ packages:
     dependency: transitive
     description:
       name: jose
+      sha256: "52c7b344ae2d69c5b35be28a2ac3fc322c2574494b0327fe78b8ac2180bd30f4"
       url: "https://pub.dev"
     source: hosted
     version: "0.3.5+1"
@@ -680,6 +683,7 @@ packages:
     dependency: transitive
     description:
       name: pointycastle
+      sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
@@ -751,6 +755,7 @@ packages:
     dependency: transitive
     description:
       name: quiver
+      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
       url: "https://pub.dev"
     source: hosted
     version: "3.2.2"
@@ -1123,6 +1128,7 @@ packages:
     dependency: transitive
     description:
       name: x509
+      sha256: "3262dc9a7d45b0876f886c01bfc7d5e765704f7dfd31f8cf5224fc875c17a6c6"
       url: "https://pub.dev"
     source: hosted
     version: "0.2.4+2"
