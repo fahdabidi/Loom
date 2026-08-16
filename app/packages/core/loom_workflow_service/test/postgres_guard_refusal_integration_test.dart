@@ -11,6 +11,8 @@ import 'package:test/test.dart';
 const _communityId = 'service-postgres-integration';
 const _workflowType = 'server-guard-proof';
 const _instanceId = 'guarded-instance';
+const _editableWorkflowType = 'server-field-edit-proof';
+const _editableInstanceId = 'editable-postgres-instance';
 const _correlationId = '22222222-2222-4222-8222-222222222222';
 const _definitionJson = '''
 {
@@ -41,6 +43,26 @@ const _definitionJson = '''
     "decision": {
       "type": "text",
       "writableBy": "effect",
+      "storage": "inline"
+    }
+  }
+}
+''';
+const _editableDefinitionJson = '''
+{
+  "initialState": "draft",
+  "states": {
+    "draft": {
+      "label": "Draft",
+      "editableFields": ["title"],
+      "editGuard": {"allowedPersonaIds": ["fan-editor"]}
+    }
+  },
+  "transitions": [],
+  "instanceDataSchema": {
+    "title": {
+      "type": "text",
+      "writableBy": "formEntry",
       "storage": "inline"
     }
   }
@@ -337,6 +359,106 @@ void main() {
               'port-forward.'
         : false,
   );
+
+  test(
+    'live PostgreSQL updateInstanceFields persists and is readable afterward',
+    () async {
+      final host = Platform.environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1';
+      final port = int.parse(
+        Platform.environment['LOOM_POSTGRES_PORT'] ?? '15432',
+      );
+      final databaseName =
+          Platform.environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access';
+      final username = Platform.environment['LOOM_POSTGRES_USERNAME'] ?? 'loom';
+      final schema =
+          'workflow_service_field_edit_test_'
+          '${DateTime.now().microsecondsSinceEpoch}_$pid';
+
+      final connection = await pg.Connection.open(
+        pg.Endpoint(
+          host: host,
+          port: port,
+          database: databaseName,
+          username: username,
+          password: password,
+        ),
+        settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+      );
+
+      WorkflowDatabase? database;
+      var schemaCreated = false;
+      try {
+        await connection.execute('CREATE SCHEMA $schema');
+        schemaCreated = true;
+        await connection.execute('SET search_path TO $schema');
+        database = WorkflowDatabase.withExecutor(
+          PgDatabase.opened(connection, enableMigrations: false),
+          dialect: WorkflowSqlDialect.postgres,
+        );
+        await database.upsertDefinition(
+          definitionId: '${_communityId}_$_editableWorkflowType',
+          workflowType: _editableWorkflowType,
+          definitionJson: _editableDefinitionJson,
+          version: 4,
+        );
+        await database.insertInstance(
+          instanceId: _editableInstanceId,
+          communityId: _communityId,
+          workflowType: _editableWorkflowType,
+          currentState: 'draft',
+          instanceData: {'title': 'Before'},
+          createdByPersonaId: 'fan-editor',
+        );
+
+        final service = WorkflowService(
+          database: database,
+          identityExtractor: const HeaderWorkflowIdentityExtractor(),
+          appAccessClient: const _DenyAppAccessClient(),
+          communityGroupIdResolver: MapCommunityGroupIdResolver({
+            _communityId: 'loom_communities_service_postgres_integration',
+          }),
+        );
+        final updateResponse = await service.handler(
+          _fieldUpdateRequest(fieldUpdates: {'title': 'Persisted in Postgres'}),
+        );
+        expect(updateResponse.statusCode, 200);
+        expect(
+          (jsonDecode(await updateResponse.readAsString())
+              as Map<String, dynamic>)['instanceData'],
+          containsPair('title', 'Persisted in Postgres'),
+        );
+
+        final persisted = await database.readInstance(_editableInstanceId);
+        expect(persisted, isNotNull);
+        expect(
+          jsonDecode(persisted!.instanceData),
+          containsPair('title', 'Persisted in Postgres'),
+        );
+
+        final readResponse = await service.handler(
+          _getRequest(
+            '/v1/communities/$_communityId/instances'
+                '?workflowType=$_editableWorkflowType',
+            'fan-editor',
+          ),
+        );
+        expect(readResponse.statusCode, 200);
+        final readBody = await readResponse.readAsString();
+        expect(readBody, contains(_editableInstanceId));
+        expect(readBody, contains('Persisted in Postgres'));
+      } finally {
+        database?.close();
+        if (schemaCreated) {
+          await connection.execute('DROP SCHEMA $schema CASCADE');
+        }
+        await connection.close();
+      }
+    },
+    skip: password == null || password.isEmpty
+        ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
+              'port-forward.'
+        : false,
+  );
 }
 
 Future<void> _seed(WorkflowDatabase database) async {
@@ -374,6 +496,22 @@ Request _request({
   },
   body: jsonEncode({'transitionId': 'approve', 'fanId': bodyFanId}),
 );
+
+Request _fieldUpdateRequest({required Map<String, dynamic> fieldUpdates}) =>
+    Request(
+      'PATCH',
+      Uri.parse(
+        'http://localhost/v1/communities/$_communityId/instances/'
+        '$_editableInstanceId/fields',
+      ),
+      headers: {
+        'content-type': 'application/json',
+        'x-loom-correlation-id': _correlationId,
+        'idempotency-key': 'postgres-field-edit',
+        HeaderWorkflowIdentityExtractor.defaultHeaderName: 'fan-editor',
+      },
+      body: jsonEncode({'fieldUpdates': fieldUpdates}),
+    );
 
 Request _replaceRequest({
   required Map<String, Map<String, dynamic>> definitions,

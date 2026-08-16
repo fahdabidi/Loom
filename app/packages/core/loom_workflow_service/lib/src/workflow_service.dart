@@ -75,6 +75,10 @@ class WorkflowService {
         request.method == 'POST') {
       return _applyTransition(request, segments[2], segments[4]);
     }
+    if (_matchesInstanceAction(segments, 'fields') &&
+        request.method == 'PATCH') {
+      return _updateInstanceFields(request, segments[2], segments[4]);
+    }
 
     return _error(
       request: request,
@@ -944,6 +948,148 @@ class WorkflowService {
     );
   }
 
+  Future<Response> _updateInstanceFields(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey == null ||
+        idempotencyKey.length < 8 ||
+        idempotencyKey.length > 200) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_idempotency_key',
+        message: 'Idempotency-Key must contain between 8 and 200 characters.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    late final _UpdateInstanceFieldsBody body;
+    try {
+      body = await _readUpdateInstanceFieldsBody(request);
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: error.message,
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final before = await _database.readInstance(instanceId);
+        if (before == null || before.communityId != communityId) {
+          return _error(
+            request: request,
+            statusCode: 404,
+            code: 'workflow_instance_not_found',
+            message: 'The requested workflow instance was not found.',
+          );
+        }
+
+        final engine = _engines.putIfAbsent(
+          communityId,
+          () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
+        );
+        await engine.updateInstanceFields(
+          workflowType: before.workflowType,
+          instanceId: instanceId,
+          fieldUpdates: body.fieldUpdates,
+          personaId: identity.fanId,
+        );
+        final after = await _database.readInstance(instanceId);
+        if (after == null) {
+          throw StateError(
+            'Workflow instance disappeared after a successful field update',
+          );
+        }
+
+        return Response.ok(
+          jsonEncode({
+            'instanceId': after.instanceId,
+            'workflowType': after.workflowType,
+            'currentState': after.currentState,
+            'instanceData': jsonDecode(after.instanceData),
+            'updatedAt': DateTime.fromMillisecondsSinceEpoch(
+              after.updatedAt,
+              isUtc: true,
+            ).toIso8601String(),
+          }),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } on WorkflowAuthorizationError catch (_) {
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'workflow_field_edit_refused',
+        message: 'The workflow fields cannot be edited by this caller.',
+      );
+    } on StateError catch (error) {
+      final message = '${error.message}';
+      if (message.startsWith('Instance ') ||
+          message.startsWith('Unknown workflow type:')) {
+        return _error(
+          request: request,
+          statusCode: 404,
+          code: 'workflow_instance_not_found',
+          message: 'The requested workflow instance was not found.',
+        );
+      }
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow fields could not be updated.',
+      );
+    } catch (_) {
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The workflow fields could not be updated.',
+      );
+    }
+  }
+
+  Future<_UpdateInstanceFieldsBody> _readUpdateInstanceFieldsBody(
+    Request request,
+  ) async {
+    final decoded = await _readJsonObject(request);
+    final fieldUpdates = decoded['fieldUpdates'];
+    if (fieldUpdates is! Map<String, dynamic>) {
+      throw const FormatException('fieldUpdates must be a JSON object.');
+    }
+    if (fieldUpdates.isEmpty) {
+      throw const FormatException(
+        'fieldUpdates must contain at least one field.',
+      );
+    }
+    return _UpdateInstanceFieldsBody(fieldUpdates: fieldUpdates);
+  }
+
   Future<Response> _applyTransition(
     Request request,
     String communityId,
@@ -1171,6 +1317,12 @@ class _ApplyTransitionBody {
     required this.transitionId,
     required this.inputs,
   });
+}
+
+class _UpdateInstanceFieldsBody {
+  final Map<String, dynamic> fieldUpdates;
+
+  const _UpdateInstanceFieldsBody({required this.fieldUpdates});
 }
 
 class _CreateInstanceBody {

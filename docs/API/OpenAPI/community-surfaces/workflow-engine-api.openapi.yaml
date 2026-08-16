@@ -183,6 +183,44 @@ paths:
         '403':
           $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
 
+  /v1/communities/{communityId}/instances/{instanceId}/fields:
+    patch:
+      operationId: updateInstanceFields
+      summary: Edit fields without changing workflow state.
+      description: >-
+        Authorization is evaluated by the workflow engine from the instance's current-state
+        `editGuard`, `editableFields`, and field schema. It does not use an App Access permission.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInstanceFieldsRequest'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInstance'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          description: >-
+            The current-state edit guard or field schema refused the edit. Deliberately does not
+            identify the guard clause or field that caused the refusal.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
   /v1/communities/{communityId}/instances/{instanceId}/available-transitions:
     get:
       operationId: availableTransitions
@@ -371,6 +409,15 @@ components:
         inputs:
           type: object
           description: Values for the transition's declared `inputs`.
+          additionalProperties: true
+
+    UpdateInstanceFieldsRequest:
+      type: object
+      required: [fieldUpdates]
+      properties:
+        fieldUpdates:
+          type: object
+          minProperties: 1
           additionalProperties: true
 
     WorkflowInstance:

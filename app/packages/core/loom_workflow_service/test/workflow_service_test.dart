@@ -8,6 +8,8 @@ import 'package:test/test.dart';
 const _communityId = 'service-unit';
 const _workflowType = 'owner-approval';
 const _instanceId = 'instance-unit';
+const _editableWorkflowType = 'editable-record';
+const _editableInstanceId = 'editable-instance-unit';
 const _correlationId = '11111111-1111-4111-8111-111111111111';
 const _definitionJson = '''
 {
@@ -735,6 +737,181 @@ void main() {
   );
 
   test(
+    'updateInstanceFields allows an engine-authorized edit and returns it',
+    () async {
+      await _seedEditableInstance(database);
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-editor',
+          body: {
+            'fieldUpdates': {'title': 'After'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+      expect(body['instanceId'], _editableInstanceId);
+      expect(body['workflowType'], _editableWorkflowType);
+      expect(body['currentState'], 'draft');
+      expect(
+        body['instanceData'] as Map<String, dynamic>,
+        containsPair('title', 'After'),
+      );
+      expect(body['updatedAt'], isA<String>());
+      final stored = await database.readInstance(_editableInstanceId);
+      expect(jsonDecode(stored!.instanceData), containsPair('title', 'After'));
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
+  test(
+    'updateInstanceFields maps editGuard refusal to a detail-free 403',
+    () async {
+      await _seedEditableInstance(database);
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-denied',
+          body: {
+            'fieldUpdates': {'title': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      final encoded = await response.readAsString();
+      expect(
+        jsonDecode(encoded),
+        containsPair('code', 'workflow_field_edit_refused'),
+      );
+      expect(encoded, isNot(contains('editGuard')));
+      expect(encoded, isNot(contains('allowedPersonaIds')));
+      expect(encoded, isNot(contains('fan-editor')));
+      expect(encoded, isNot(contains('fan-denied')));
+      expect(encoded, isNot(contains('title')));
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Before'),
+      );
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
+  test(
+    'updateInstanceFields refuses a field absent from editableFields',
+    () async {
+      await _seedEditableInstance(database);
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-editor',
+          body: {
+            'fieldUpdates': {'locked': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'workflow_field_edit_refused'),
+      );
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
+  test('updateInstanceFields refuses a computed field', () async {
+    await _seedEditableInstance(database);
+
+    final response = await service.handler(
+      _fieldUpdateRequest(
+        fanId: 'fan-editor',
+        body: {
+          'fieldUpdates': {'computedTitle': 'Must not persist'},
+        },
+      ),
+    );
+
+    expect(response.statusCode, 403);
+    expect(
+      jsonDecode(await response.readAsString()),
+      containsPair('code', 'workflow_field_edit_refused'),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test('updateInstanceFields refuses an effect-only-writable field', () async {
+    await _seedEditableInstance(database);
+
+    final response = await service.handler(
+      _fieldUpdateRequest(
+        fanId: 'fan-editor',
+        body: {
+          'fieldUpdates': {'effectOnly': 'Must not persist'},
+        },
+      ),
+    );
+
+    expect(response.statusCode, 403);
+    expect(
+      jsonDecode(await response.readAsString()),
+      containsPair('code', 'workflow_field_edit_refused'),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test('updateInstanceFields rejects an empty update as 400', () async {
+    final response = await service.handler(
+      _fieldUpdateRequest(
+        fanId: 'fan-editor',
+        body: {'fieldUpdates': <String, dynamic>{}},
+      ),
+    );
+
+    expect(response.statusCode, 400);
+    expect(
+      jsonDecode(await response.readAsString()),
+      containsPair('code', 'invalid_request'),
+    );
+    expect(appAccessClient.callCount, 0);
+  });
+
+  test(
+    'updateInstanceFields returns another community instance as absent',
+    () async {
+      await _seedEditableInstance(database);
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-editor',
+          communityId: 'other',
+          body: {
+            'fieldUpdates': {'title': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 404);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'workflow_instance_not_found'),
+      );
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Before'),
+      );
+      expect(appAccessClient.callCount, 0);
+    },
+  );
+
+  test(
     'applyTransition requires identity from the extractor boundary',
     () async {
       final response = await service.handler(
@@ -867,6 +1044,41 @@ Future<void> _seed(WorkflowDatabase database) async {
   );
 }
 
+Future<void> _seedEditableInstance(WorkflowDatabase database) async {
+  await database.upsertDefinition(
+    definitionId: '${_communityId}_$_editableWorkflowType',
+    workflowType: _editableWorkflowType,
+    definitionJson: jsonEncode({
+      'initialState': 'draft',
+      'states': {
+        'draft': {
+          'label': 'Draft',
+          'editableFields': ['title', 'computedTitle', 'effectOnly'],
+          'editGuard': {
+            'allowedPersonaIds': ['fan-editor'],
+          },
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'instanceDataSchema': {
+        'title': {'type': 'text', 'writableBy': 'formEntry'},
+        'locked': {'type': 'text', 'writableBy': 'formEntry'},
+        'computedTitle': {'type': 'text', 'formula': 'title'},
+        'effectOnly': {'type': 'text', 'writableBy': 'effect'},
+      },
+    }),
+    version: 4,
+  );
+  await database.insertInstance(
+    instanceId: _editableInstanceId,
+    communityId: _communityId,
+    workflowType: _editableWorkflowType,
+    currentState: 'draft',
+    instanceData: {'title': 'Before', 'locked': 'Locked'},
+    createdByPersonaId: 'fan-editor',
+  );
+}
+
 Future<void> _installCreatableDefinition(
   WorkflowDatabase database, {
   String workflowType = _workflowType,
@@ -978,6 +1190,27 @@ Request _transitionRequest({
   Uri.parse(
     'http://localhost/v1/communities/$_communityId/instances/'
     '$_instanceId/transitions',
+  ),
+  headers: {
+    ..._headers(fanId),
+    'x-loom-correlation-id': correlationId,
+    'idempotency-key': idempotencyKey,
+  },
+  body: jsonEncode(body),
+);
+
+Request _fieldUpdateRequest({
+  required String fanId,
+  String communityId = _communityId,
+  String instanceId = _editableInstanceId,
+  String correlationId = _correlationId,
+  String idempotencyKey = 'unit-field-edit',
+  required Map<String, dynamic> body,
+}) => Request(
+  'PATCH',
+  Uri.parse(
+    'http://localhost/v1/communities/$communityId/instances/'
+    '$instanceId/fields',
   ),
   headers: {
     ..._headers(fanId),
