@@ -1,127 +1,128 @@
-# Phase E.1 — atomic `createInstances` workflow-service batch
+# App Access integration-test bearer authentication
 
 ## What changed
 
-- Added `POST /v1/communities/{communityId}/instances/batch` with
-  `operationId: createInstances` to the workflow-engine OpenAPI contract. It
-  reuses the singular operation's correlation, idempotency, community,
-  permission-derivation, `400`, and `403` conventions. Its request requires one
-  `workflowType` and a non-empty `initialInstanceDataList`; its `201` response
-  reuses `WorkflowInstance` and preserves request order.
-- Added `WorkflowService._createInstances`. It validates the same headers as
-  `createInstance`, resolves the archetype and derives its `create` permission
-  once, performs one real App Access decision for the whole batch, and invokes
-  the engine's existing atomic `createInstances` inside the service's serialized
-  database mutation boundary.
-- Reused the singular creation refusal behavior exactly: denied access returns
-  generic `403 workflow_create_refused` without permission or role details, and
-  `ArchetypeOrigin.inheritedFromResponseTable` is refused before App Access.
-- Added five service unit tests covering ordered multi-item success, one-check
-  generic denial with zero writes, response-table-origin refusal, empty-batch
-  `400`, and rollback of a valid first item when the second item fails required
-  field validation.
-- Extended the existing live App Access/PostgreSQL integration harness. It now
-  sends `[valid, invalid]` to the batch route before any singular create and
-  asserts that querying PostgreSQL returns zero instances.
-- No app-shell file, workflow-engine source/test file, singular `createInstance`,
-  other workflow-service operation, or file under
-  `docs/references/{reference,guide,archetypes,communities}/` changed.
+- The only functional code change is in
+  `app/packages/core/loom_workflow_service/test/app_access_create_instance_integration_test.dart`.
+  This `STATUS.md` handoff is the only other changed file in the commit. No
+  workflow-service implementation, workflow-engine contract, App Access
+  source, or `loom-backend` file changed.
+- Added explicit credential gates for `LOOM_KEYCLOAK_TOKEN_URL`,
+  `LOOM_KEYCLOAK_ADMIN_URL`, `LOOM_KEYCLOAK_ADMIN_USERNAME`, and
+  `LOOM_KEYCLOAK_ADMIN_PASSWORD`, alongside the existing PostgreSQL and App
+  Access gates. `LOOM_KEYCLOAK_ADMIN_URL` is the Keycloak base URL;
+  `LOOM_KEYCLOAK_TOKEN_URL` is the full `loom`-realm token endpoint.
+- The test now obtains an `admin-cli` password-grant token from the `master`
+  realm, creates a uniquely named confidential `openid-connect` client in the
+  `loom` realm with `serviceAccountsEnabled: true`, reads its generated secret,
+  and obtains a client-credentials access token from the configured `loom`
+  token endpoint.
+- All four existing direct App Access setup mutations (`createGroup`,
+  `createRole`, `setRolePermissions`, and `setGroupMembership`) now send that
+  token as `Authorization: Bearer <token>` without changing their payloads,
+  idempotency keys, expected statuses, or seeded identities and permissions.
+- The Keycloak client UUID is captured from the create response's `Location`
+  header and deleted in the test's outer cleanup path. Cleanup is attempted
+  after setup or assertion failures as well as successful runs.
+- The workflow `createInstances`/`createInstance` requests and all assertions
+  remain unchanged. This follows the requested test-only scope for a test that
+  predates Phase C.1's deployed JWT enforcement.
 
 ## Verification
 
-The OpenAPI YAML parses and contains the expected operation:
+Formatting and static analysis are clean, using the installed SDK binary
+directly because the `dart` wrapper attempts to update a read-only Flutter
+engine stamp in this sandbox:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /tmp/validate_workflow_openapi.dart docs/API/OpenAPI/community-surfaces/workflow-engine-api.openapi.yaml
-YAML/OpenAPI batch operation parse: ok
-```
-
-Formatting and service analysis are clean:
-
-```text
-$ cd app/packages/core/loom_workflow_service
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format --output=none --set-exit-if-changed lib/src/workflow_service.dart test/workflow_service_test.dart test/app_access_create_instance_integration_test.dart
-Formatted 3 files (0 changed) in 0.31 seconds.
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart format test/app_access_create_instance_integration_test.dart
+Formatted test/app_access_create_instance_integration_test.dart
+Formatted 1 file (1 changed) in 0.06 seconds.
 
 $ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart analyze
 Analyzing loom_workflow_service...
 No issues found!
 ```
 
-The focused service unit file passes all 19 tests, including the five new batch
-tests:
+The full workflow-service suite has no runnable-test regression:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded test/workflow_service_test.dart
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test --reporter expanded
 ...
-00:00 +8: createInstances rolls back earlier items when later validation fails
-...
-00:00 +19: All tests passed!
+00:01 +31 ~3: All tests passed!
 ```
 
-The full workflow-service suite has exactly 34 tests after this change: 31
-runnable passes and 3 credential-gated skips. Before this change it had exactly
-29 tests: 26 runnable passes and the same 3 skips. The exact before/after count
-is therefore **29 -> 34** (`+5`), with no existing test weakened or deleted.
+The three skips are the package's live, credential-gated integration tests.
+For the changed target, the ordinary unconfigured output is explicit:
 
 ```text
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded
+$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test test/app_access_create_instance_integration_test.dart --reporter expanded
 ...
-00:00 +0 ~3: live App Access authorizes create and Postgres rolls back an invalid batch
-  Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL port-forward.
-...
-00:02 +31 ~3: All tests passed!
+Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL instance or port-forward.
+00:00 +0 ~1: All tests skipped.
 ```
 
-The local rollback path executed successfully: the service received a valid
-first item followed by an invalid second item, returned `400 invalid_request`,
-performed exactly one App Access check, and the post-request engine query found
-zero rows. The unchanged engine suite also retains its own atomic
-`createInstances` coverage and passes at 232 runnable tests with 2 unchanged
-live-PostgreSQL skips:
+I could not produce the required real `+1: All tests passed!` result in this
+execution environment. The cluster is configured locally and its manifests
+document App Access on NodePort `30080`, Keycloak on NodePort `30082`, and
+PostgreSQL behind its cluster service. However, the sandbox blocks access to
+the Kubernetes API and local network sockets:
 
 ```text
-$ cd ../loom_workflow_engine
-$ /home/fahd/flutter/bin/cache/dart-sdk/bin/dart --packages=/home/fahd/Loom/app/.dart_tool/package_config.json /home/fahd/.pub-cache/hosted/pub.dev/test-1.30.0/bin/test.dart --reporter expanded
-...
-00:00 +109 ~2: createInstances is atomic and preserves input order
-...
-00:06 +232 ~2: All tests passed!
+$ kubectl -n loom get svc,pods
+Unable to connect to the server: dial tcp 127.0.0.1:6443: socket: operation not permitted
 ```
 
-`git diff --check` is clean. No workflow-engine file changed.
-
-The requested live PostgreSQL/App Access atomicity assertion is present, but it
-could not execute in this sandbox. The real output was:
+I also ran the exact test with every gate set and the documented Keycloak and
+App Access NodePort addresses (using placeholder credentials because the
+connection fails before authentication). This proves it did not skip, but it
+could not reach Keycloak:
 
 ```text
-Skip: Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL port-forward.
-
-$ kubectl get namespaces
-Unable to connect to the server: dial tcp 127.0.0.1:6443:
-socket: operation not permitted
+$ LOOM_POSTGRES_PASSWORD=unavailable \
+  LOOM_APP_ACCESS_BASE_URL=http://127.0.0.1:30080 \
+  LOOM_KEYCLOAK_TOKEN_URL=http://127.0.0.1:30082/realms/loom/protocol/openid-connect/token \
+  LOOM_KEYCLOAK_ADMIN_URL=http://127.0.0.1:30082 \
+  LOOM_KEYCLOAK_ADMIN_USERNAME=loom-admin \
+  LOOM_KEYCLOAK_ADMIN_PASSWORD=unavailable \
+  /home/fahd/flutter/bin/cache/dart-sdk/bin/dart test test/app_access_create_instance_integration_test.dart --reporter expanded
+...
+SocketException: Connection failed (OS Error: Operation not permitted, errno = 1),
+address = 127.0.0.1, port = 30082
+00:00 +0 -1: Some tests failed.
 ```
 
-I do not claim a live-PostgreSQL atomicity pass from this environment.
+`git diff --check` is clean.
 
 ## Proposed next steps
 
-1. Run `app_access_create_instance_integration_test.dart` with live PostgreSQL
-   and App Access port-forwards in a network-enabled environment to capture the
-   required zero-row rollback proof.
-2. `updateInstanceFields` and `aggregate` are the remaining server-expansion
-   tickets. `dueNotifications` remains deliberately non-public, and synchronous
-   `availableTransitions` remains separate client-side migration work.
+1. Re-run the exact target test from a network-enabled environment that can
+   reach the three live services. Running in the `loom` namespace is the least
+   ambiguous Keycloak route because the token endpoint then uses
+   `http://keycloak.loom.svc.cluster.local:8080`, matching App Access's expected
+   issuer. Supply the bootstrap admin and PostgreSQL credentials from their
+   Kubernetes secrets and require the literal `+1: All tests passed!` result.
+2. Before claiming that pass, resolve or explicitly authorize the separate
+   service-to-service authentication gap described below. The smallest
+   test-only option would be an authenticated HTTP client injected into the
+   existing `HttpAppAccessDecisionClient`; the production-correct option is a
+   real workflow-service credential/token-provider design. That choice is
+   outside this ticket's explicit setup-only scope and should not be guessed.
 
 ## Anything I could not do
 
-- I could not produce the required live-PostgreSQL atomicity pass because
-  `LOOM_POSTGRES_PASSWORD` and `LOOM_APP_ACCESS_BASE_URL` are unset, while the
-  sandbox forbids access to the local k3s API needed to establish port-forwards.
-- The literal `dart test` wrapper could not complete dependency resolution: six
-  pre-existing hosted entries are absent from the local pub cache, their
-  committed lock entries contain no SHA fields, and outbound pub.dev access is
-  blocked. I restored their exact upstream release sources outside the repo and
-  ran the resolved `package:test` executable directly. All runnable service and
-  engine tests passed as reported above; the three service live tests and two
-  engine live tests remained explicitly skipped.
+- I could not establish the PostgreSQL, App Access, or Keycloak port-forwards,
+  retrieve the live Kubernetes secrets, or run the target test against the
+  live cluster because this sandbox rejects the Kubernetes API and socket
+  operations. I therefore do not claim the required live pass.
+- There is a second JWT-enforcement consequence visible in unchanged code:
+  `HttpAppAccessDecisionClient.checkAccess` sends no `Authorization` header on
+  `POST /v1/access-decisions`, while the deployed App Access
+  `JwtSecurityConfiguration` permits only the two literal health paths and
+  requires authentication for every other request. The batch path performs
+  this decision before writing and converts that client's non-200 response to
+  `503 authorization_service_unavailable`. The requested scope says to change
+  only this test's App Access setup calls and specifically forbids changing the
+  actual create calls or service implementation, so I left this separate
+  boundary untouched. It is likely to be the next live failure after the four
+  seed requests begin succeeding.

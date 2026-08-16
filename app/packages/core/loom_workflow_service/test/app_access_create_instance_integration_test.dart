@@ -8,20 +8,32 @@ import 'package:postgres/postgres.dart' as pg;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:test/test.dart';
 
+/// Live-test requirements:
+///
+/// - `LOOM_POSTGRES_PASSWORD` for the PostgreSQL instance (with the existing
+///   optional host, port, database, and username overrides);
+/// - `LOOM_APP_ACCESS_BASE_URL` for the live App Access service;
+/// - `LOOM_KEYCLOAK_TOKEN_URL` for the `loom` realm token endpoint;
+/// - `LOOM_KEYCLOAK_ADMIN_URL` for the Keycloak base URL; and
+/// - `LOOM_KEYCLOAK_ADMIN_USERNAME` and `LOOM_KEYCLOAK_ADMIN_PASSWORD` for
+///   the bootstrap realm administrator.
+///
+/// The test skips with the first missing requirement rather than silently
+/// substituting credentials or infrastructure addresses.
 const _appId = 'loom_communities';
 const _permissionId = 'event_rsvp.create';
 const _correlationId = '33333333-3333-4333-8333-333333333333';
+const _keycloakRealm = 'loom';
 
 void main() {
-  final password = Platform.environment['LOOM_POSTGRES_PASSWORD'];
-  final appAccessBaseUrl = Platform.environment['LOOM_APP_ACCESS_BASE_URL'];
-  final skipReason = password == null || password.isEmpty
-      ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
-            'port-forward.'
-      : appAccessBaseUrl == null || appAccessBaseUrl.isEmpty
-      ? 'Set LOOM_APP_ACCESS_BASE_URL to run against the live App Access '
-            'port-forward.'
-      : false;
+  final environment = Platform.environment;
+  final password = environment['LOOM_POSTGRES_PASSWORD'];
+  final appAccessBaseUrl = environment['LOOM_APP_ACCESS_BASE_URL'];
+  final keycloakTokenUrl = environment['LOOM_KEYCLOAK_TOKEN_URL'];
+  final keycloakAdminUrl = environment['LOOM_KEYCLOAK_ADMIN_URL'];
+  final keycloakAdminUsername = environment['LOOM_KEYCLOAK_ADMIN_USERNAME'];
+  final keycloakAdminPassword = environment['LOOM_KEYCLOAK_ADMIN_PASSWORD'];
+  final skipReason = _liveTestSkipReason(environment);
 
   test(
     'live App Access authorizes create and Postgres rolls back an invalid batch',
@@ -34,42 +46,83 @@ void main() {
       final allowedFanId = 'fan-b3-allowed-$unique';
       final deniedFanId = 'fan-b3-denied-$unique';
       final workflowType = 'b3-event-$unique';
+      final keycloakClientName = 'loom-workflow-service-test-$unique';
       final schema =
           'workflow_service_b3_test_'
           '${DateTime.now().microsecondsSinceEpoch}_$pid';
 
       final appAccessUri = Uri.parse(appAccessBaseUrl!);
+      final keycloakTokenUri = Uri.parse(keycloakTokenUrl!);
+      final keycloakAdminBaseUri = _normalizeBaseUri(
+        Uri.parse(keycloakAdminUrl!),
+      );
+      final keycloakAdminClient = HttpClient();
       final seedClient = HttpClient();
-      await _seedAppAccess(
-        client: seedClient,
-        baseUri: appAccessUri,
-        groupId: groupId,
-        roleId: roleId,
-        fanId: allowedFanId,
-        unique: unique,
-      );
-
-      final connection = await pg.Connection.open(
-        pg.Endpoint(
-          host: Platform.environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1',
-          port: int.parse(
-            Platform.environment['LOOM_POSTGRES_PORT'] ?? '15432',
-          ),
-          database:
-              Platform.environment['LOOM_POSTGRES_DATABASE'] ??
-              'loom_app_access',
-          username: Platform.environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
-          password: password,
-        ),
-        settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
-      );
-
+      pg.Connection? connection;
       WorkflowDatabase? database;
       HttpAppAccessDecisionClient? appAccessClient;
       HttpServer? workflowServer;
       final workflowHttpClient = HttpClient();
+      String? keycloakAdminToken;
+      String? keycloakClientId;
       var schemaCreated = false;
       try {
+        keycloakAdminToken = await _obtainKeycloakToken(
+          client: keycloakAdminClient,
+          tokenUri: keycloakAdminBaseUri.resolve(
+            'realms/master/protocol/openid-connect/token',
+          ),
+          form: {
+            'grant_type': 'password',
+            'client_id': 'admin-cli',
+            'username': keycloakAdminUsername!,
+            'password': keycloakAdminPassword!,
+          },
+          purpose: 'bootstrap administrator',
+        );
+        keycloakClientId = await _createKeycloakClient(
+          client: keycloakAdminClient,
+          adminBaseUri: keycloakAdminBaseUri,
+          adminToken: keycloakAdminToken,
+          clientName: keycloakClientName,
+        );
+        final keycloakClientSecret = await _getKeycloakClientSecret(
+          client: keycloakAdminClient,
+          adminBaseUri: keycloakAdminBaseUri,
+          adminToken: keycloakAdminToken,
+          clientId: keycloakClientId,
+        );
+        final appAccessBearerToken = await _obtainKeycloakToken(
+          client: keycloakAdminClient,
+          tokenUri: keycloakTokenUri,
+          form: {
+            'grant_type': 'client_credentials',
+            'client_id': keycloakClientName,
+            'client_secret': keycloakClientSecret,
+          },
+          purpose: 'throwaway App Access service account',
+        );
+        await _seedAppAccess(
+          client: seedClient,
+          baseUri: appAccessUri,
+          bearerToken: appAccessBearerToken,
+          groupId: groupId,
+          roleId: roleId,
+          fanId: allowedFanId,
+          unique: unique,
+        );
+
+        connection = await pg.Connection.open(
+          pg.Endpoint(
+            host: environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1',
+            port: int.parse(environment['LOOM_POSTGRES_PORT'] ?? '15432'),
+            database:
+                environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access',
+            username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
+            password: password,
+          ),
+          settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+        );
         await connection.execute('CREATE SCHEMA $schema');
         schemaCreated = true;
         await connection.execute('SET search_path TO $schema');
@@ -210,21 +263,183 @@ void main() {
         workflowHttpClient.close(force: true);
         await workflowServer?.close(force: true);
         appAccessClient?.close(force: true);
-        seedClient.close(force: true);
         database?.close();
-        if (schemaCreated) {
-          await connection.execute('DROP SCHEMA $schema CASCADE');
+        try {
+          if (schemaCreated) {
+            await connection?.execute('DROP SCHEMA $schema CASCADE');
+          }
+          await connection?.close();
+        } finally {
+          try {
+            if (keycloakAdminToken != null && keycloakClientId != null) {
+              await _deleteKeycloakClient(
+                client: keycloakAdminClient,
+                adminBaseUri: keycloakAdminBaseUri,
+                adminToken: keycloakAdminToken,
+                clientId: keycloakClientId,
+              );
+            }
+          } finally {
+            seedClient.close(force: true);
+            keycloakAdminClient.close(force: true);
+          }
         }
-        await connection.close();
       }
     },
     skip: skipReason,
   );
 }
 
+Object _liveTestSkipReason(Map<String, String> environment) {
+  const requirements = {
+    'LOOM_POSTGRES_PASSWORD': 'the k3s PostgreSQL instance or port-forward',
+    'LOOM_APP_ACCESS_BASE_URL': 'the live App Access service or port-forward',
+    'LOOM_KEYCLOAK_TOKEN_URL': 'the live loom-realm token endpoint',
+    'LOOM_KEYCLOAK_ADMIN_URL': 'the live Keycloak base URL',
+    'LOOM_KEYCLOAK_ADMIN_USERNAME': 'the Keycloak bootstrap administrator',
+    'LOOM_KEYCLOAK_ADMIN_PASSWORD': 'the Keycloak bootstrap administrator',
+  };
+  for (final requirement in requirements.entries) {
+    final value = environment[requirement.key];
+    if (value == null || value.isEmpty) {
+      return 'Set ${requirement.key} to run against ${requirement.value}.';
+    }
+  }
+  return false;
+}
+
+Future<String> _obtainKeycloakToken({
+  required HttpClient client,
+  required Uri tokenUri,
+  required Map<String, String> form,
+  required String purpose,
+}) async {
+  final request = await client.postUrl(tokenUri);
+  request.headers.contentType = ContentType(
+    'application',
+    'x-www-form-urlencoded',
+    charset: 'utf-8',
+  );
+  request.write(
+    form.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}='
+              '${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&'),
+  );
+  final response = await request.close();
+  final body = await utf8.decoder.bind(response).join();
+  expect(response.statusCode, HttpStatus.ok, reason: body);
+  final decoded = jsonDecode(body);
+  expect(
+    decoded,
+    isA<Map<String, dynamic>>().having(
+      (value) => value['access_token'],
+      'access_token for $purpose',
+      isA<String>().having((value) => value.isNotEmpty, 'is not empty', isTrue),
+    ),
+  );
+  return (decoded as Map<String, dynamic>)['access_token'] as String;
+}
+
+Future<String> _createKeycloakClient({
+  required HttpClient client,
+  required Uri adminBaseUri,
+  required String adminToken,
+  required String clientName,
+}) async {
+  final request = await client.postUrl(
+    adminBaseUri.resolve('admin/realms/$_keycloakRealm/clients'),
+  );
+  request.headers.contentType = ContentType.json;
+  request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $adminToken');
+  request.write(
+    jsonEncode({
+      'clientId': clientName,
+      'enabled': true,
+      'protocol': 'openid-connect',
+      'publicClient': false,
+      'clientAuthenticatorType': 'client-secret',
+      'serviceAccountsEnabled': true,
+      'standardFlowEnabled': false,
+      'directAccessGrantsEnabled': false,
+    }),
+  );
+  final response = await request.close();
+  final body = await utf8.decoder.bind(response).join();
+  expect(response.statusCode, HttpStatus.created, reason: body);
+  final location = response.headers.value(HttpHeaders.locationHeader);
+  expect(location, isNotNull, reason: 'Keycloak omitted the client Location.');
+  final pathSegments = Uri.parse(
+    location!,
+  ).pathSegments.where((segment) => segment.isNotEmpty).toList();
+  expect(
+    pathSegments,
+    isNotEmpty,
+    reason: 'Invalid client Location: $location',
+  );
+  return pathSegments.last;
+}
+
+Future<String> _getKeycloakClientSecret({
+  required HttpClient client,
+  required Uri adminBaseUri,
+  required String adminToken,
+  required String clientId,
+}) async {
+  final request = await client.getUrl(
+    adminBaseUri.resolve(
+      'admin/realms/$_keycloakRealm/clients/'
+      '${Uri.encodeComponent(clientId)}/client-secret',
+    ),
+  );
+  request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $adminToken');
+  final response = await request.close();
+  final body = await utf8.decoder.bind(response).join();
+  expect(response.statusCode, HttpStatus.ok, reason: body);
+  final decoded = jsonDecode(body);
+  expect(
+    decoded,
+    isA<Map<String, dynamic>>().having(
+      (value) => value['value'],
+      'client secret',
+      isA<String>().having((value) => value.isNotEmpty, 'is not empty', isTrue),
+    ),
+  );
+  return (decoded as Map<String, dynamic>)['value'] as String;
+}
+
+Future<void> _deleteKeycloakClient({
+  required HttpClient client,
+  required Uri adminBaseUri,
+  required String adminToken,
+  required String clientId,
+}) async {
+  final request = await client.deleteUrl(
+    adminBaseUri.resolve(
+      'admin/realms/$_keycloakRealm/clients/${Uri.encodeComponent(clientId)}',
+    ),
+  );
+  request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $adminToken');
+  final response = await request.close();
+  final body = await utf8.decoder.bind(response).join();
+  expect(response.statusCode, HttpStatus.noContent, reason: body);
+}
+
+Uri _normalizeBaseUri(Uri baseUri) {
+  if (!baseUri.hasScheme || baseUri.host.isEmpty) {
+    throw ArgumentError.value(baseUri, 'baseUri', 'must be an absolute URI');
+  }
+  final path = baseUri.path.endsWith('/') ? baseUri.path : '${baseUri.path}/';
+  return baseUri.replace(path: path, query: null, fragment: null);
+}
+
 Future<void> _seedAppAccess({
   required HttpClient client,
   required Uri baseUri,
+  required String bearerToken,
   required String groupId,
   required String roleId,
   required String fanId,
@@ -239,6 +454,7 @@ Future<void> _seedAppAccess({
     normalizedBase.resolve('v1/apps/$_appId/groups'),
     body: {'groupId': groupId, 'displayName': 'Workflow B.3 test $unique'},
     idempotencyKey: 'b3-group-$unique',
+    bearerToken: bearerToken,
   );
   expect(group.statusCode, HttpStatus.created, reason: group.body);
 
@@ -252,6 +468,7 @@ Future<void> _seedAppAccess({
       'displayName': 'Workflow B.3 event creator',
     },
     idempotencyKey: 'b3-role-$unique',
+    bearerToken: bearerToken,
   );
   expect(role.statusCode, HttpStatus.created, reason: role.body);
 
@@ -265,6 +482,7 @@ Future<void> _seedAppAccess({
       'permissionIds': [_permissionId],
     },
     idempotencyKey: 'b3-permissions-$unique',
+    bearerToken: bearerToken,
   );
   expect(permissions.statusCode, HttpStatus.ok, reason: permissions.body);
 
@@ -280,6 +498,7 @@ Future<void> _seedAppAccess({
       'state': 'active',
     },
     idempotencyKey: 'b3-membership-$unique',
+    bearerToken: bearerToken,
   );
   expect(membership.statusCode, HttpStatus.ok, reason: membership.body);
 }
@@ -338,11 +557,15 @@ Future<_HttpResult> _sendJson(
   required Map<String, dynamic> body,
   required String idempotencyKey,
   String? fanId,
+  String? bearerToken,
 }) async {
   final request = await client.openUrl(method, uri);
   request.headers.contentType = ContentType.json;
   request.headers.set('x-loom-correlation-id', _correlationId);
   request.headers.set('idempotency-key', idempotencyKey);
+  if (bearerToken != null) {
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $bearerToken');
+  }
   if (fanId != null) {
     request.headers.set(
       HeaderWorkflowIdentityExtractor.defaultHeaderName,
