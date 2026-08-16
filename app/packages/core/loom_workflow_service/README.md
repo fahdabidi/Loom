@@ -35,3 +35,20 @@ The PostgreSQL integration tests default to the local k3s port-forward at
 also requires `LOOM_APP_ACCESS_BASE_URL`; it creates a unique App Access group,
 role, and membership through the real HTTP API, then starts the workflow Shelf
 server on a real loopback port and proves both the allow and deny directions.
+
+## Deployment
+
+`./build.sh` builds `loom-workflow-service:0.1.0` (requires the workspace
+already bootstrapped, and Docker). See `Dockerfile` for why the build stages a
+pre-resolved workspace rather than resolving inside Docker, and why the Dart
+SDK version pinned there must match the host Dart SDK exactly.
+
+Deployed to k3s via `deploy/k8s/workflow-service.yaml` in the `loom-backend`
+repo, alongside the App Access/Fan Passport/Keycloak manifests. No health
+endpoint exists yet, so that manifest deliberately has no readiness/liveness
+probe -- Kubernetes considers the pod ready once the container starts.
+
+`LOOM_COMMUNITY_GROUP_IDS` is deployed as an empty `{}` until a real community
+completes `installCommunityPackage` against this cluster (Phase D implements
+that endpoint; nothing calls it live yet) -- every community fails closed
+(503) until real entries exist.
