@@ -11,6 +11,11 @@ void main() {
     setUp(() {
       translator = PersonaRoleTranslator(const [
         MigrationPersona(
+          personaId: 'moderator-dakota',
+          label: 'Dakota',
+          roleLabel: 'Moderator',
+        ),
+        MigrationPersona(
           personaId: 'member-alex',
           label: 'Alex',
           roleLabel: 'Community Member',
@@ -19,11 +24,6 @@ void main() {
           personaId: 'member-bailey',
           label: 'Bailey',
           roleLabel: 'Community Member',
-        ),
-        MigrationPersona(
-          personaId: 'moderator-dakota',
-          label: 'Dakota',
-          roleLabel: 'Moderator',
         ),
       ]);
     });
@@ -55,9 +55,9 @@ void main() {
       expect(audit.finding?.message, contains('member-bailey'));
     });
 
-    test('personas from two roles are flagged instead of merged', () {
+    test('partial persona set from two roles is flagged as mixed', () {
       final audit = translator.translate(
-        ['member-alex', 'member-bailey', 'moderator-dakota'],
+        ['member-alex', 'moderator-dakota'],
         location: r'$.guard.allowedPersonaIds',
         source: RoleTranslationSource.guard,
       );
@@ -66,6 +66,18 @@ void main() {
       expect(audit.roleIds, isNull);
       expect(audit.finding?.code, 'mixed_role_labels');
       expect(audit.finding?.roleLabels, ['Community Member', 'Moderator']);
+    });
+
+    test('full persona roster across roles translates to sorted role ids', () {
+      final audit = translator.translate(
+        ['member-alex', 'member-bailey', 'moderator-dakota'],
+        location: r'$.guard.allowedPersonaIds',
+        source: RoleTranslationSource.guard,
+      );
+
+      expect(audit.isClean, isTrue);
+      expect(audit.roleIds, ['community-member', 'moderator']);
+      expect(audit.finding, isNull);
     });
   });
 
@@ -119,15 +131,10 @@ void main() {
       }
     });
 
-    test('audits every real legacy guard and omits unsafe role guesses', () {
-      expect(plan.cleanGuardCount, 14);
-      expect(plan.flaggedGuardCount, 7);
-      expect(
-        plan.findings.map((finding) => finding.location),
-        contains(
-          r'$.experience.workflowDefinitions.platform-in-stream-ad.transitions[id=record-impression].guard.allowedPersonaIds',
-        ),
-      );
+    test('audits every real legacy guard and translates full rosters', () {
+      expect(plan.cleanGuardCount, 21);
+      expect(plan.flaggedGuardCount, 0);
+      expect(plan.findings, isEmpty);
 
       final workflows = _workflowsByType(plan);
       final inStreamTransitions = {
@@ -137,7 +144,7 @@ void main() {
       };
       expect(
         inStreamTransitions['record-impression'],
-        isNot(contains('allowedRoleIds')),
+        containsPair('allowedRoleIds', ['member', 'moderator']),
       );
       expect(
         inStreamTransitions['dismiss-ad'],
@@ -158,10 +165,13 @@ void main() {
         expect(draft['editGuard'], isNot(contains('allowedPersonaIds')));
 
         final inStreamAd = definitions['platform-in-stream-ad'] as Map;
-        final mixedGuard =
+        final fullRosterGuard =
             ((inStreamAd['transitions'] as List).first as Map)['guard'] as Map;
-        expect(mixedGuard, contains('allowedPersonaIds'));
-        expect(mixedGuard, isNot(contains('allowedRoleIds')));
+        expect(
+          fullRosterGuard,
+          containsPair('allowedRoleIds', ['member', 'moderator']),
+        );
+        expect(fullRosterGuard, isNot(contains('allowedPersonaIds')));
       },
     );
 

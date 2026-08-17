@@ -309,6 +309,19 @@ class PersonaRoleTranslator {
       );
     }
     if (roleLabels.length > 1) {
+      final fullPersonaRoster = <String>{
+        for (final personaIds in _personaIdsByRoleLabel.values) ...personaIds,
+      };
+      if (_sameSet(uniquePersonaIds, fullPersonaRoster)) {
+        final roleIds = _roleIdsByLabel.values.toList()..sort();
+        return RoleTranslationAudit._(
+          location: location,
+          source: source,
+          personaIds: List.unmodifiable(personaIds),
+          roleLabels: List.unmodifiable(roleLabels),
+          roleIds: List.unmodifiable(roleIds),
+        );
+      }
       return _failed(
         code: 'mixed_role_labels',
         location: location,
