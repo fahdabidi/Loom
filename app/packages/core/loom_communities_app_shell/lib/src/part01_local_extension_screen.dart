@@ -879,6 +879,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     LoomExperienceDefinition experience,
     LoomPersonaDefinition activePersona,
   ) async {
+    final productionAuthSession = loomAuthSession;
     final personas = personasForExtensionId(
       experience.extensionId,
       experience: experience,
@@ -988,6 +989,25 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       onTap: () => Navigator.of(context).pop(persona.personaId),
                     ),
                   const Divider(),
+                  if (productionAuthSession != null)
+                    ListTile(
+                      key: const ValueKey('production-identity-provider-login'),
+                      leading: Icon(Icons.lock_outline, color: dialogAccent),
+                      title: Text(
+                        'Sign in securely with Loom…',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedHeading)
+                            : null,
+                      ),
+                      subtitle: Text(
+                        'Use your organization’s identity provider.',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedBody)
+                            : null,
+                      ),
+                      onTap: () =>
+                          Navigator.of(context).pop('_production-login'),
+                    ),
                   ListTile(
                     key: const ValueKey('persona-sign-in-specific-person'),
                     leading: Icon(Icons.login, color: dialogAccent),
@@ -1023,6 +1043,15 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       },
     );
     if (selected == null) {
+      return;
+    }
+    if (selected == '_production-login' && productionAuthSession != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              LoomProductionLoginScreen(session: productionAuthSession),
+        ),
+      );
       return;
     }
     if (selected == '_sign-in-specific-person') {
