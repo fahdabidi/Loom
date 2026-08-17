@@ -33,6 +33,7 @@ Approved and committed. Changing any of these needs explicit re-approval.
 | The workflow service is the **authority**; the client engine is a cache and renderer | `workflow-engine-api.openapi.yaml` | `927baf87` |
 | Identity from the **token**, never the request | same | `927baf87` |
 | The server runs **this** engine, not a reimplementation | `store/database.dart` | `4076cba4` |
+| **`home` and `messages` are fixed app-shell tabs, never community-configurable** — no community JSON declares a `messages` render binding or otherwise customizes messaging; it is system-defaulted, identically to `home`. User-directed 2026-08-16, following an investigation that found 5 shipped communities silently regressing to hardcoded fake seed-thread data specifically because the current implementation treats `messages` as conditional on a community declaring a renderBinding for it — the fix is architectural (make `messages` unconditional, matching `home`), not a per-community JSON patch. The real fix is deliberately deferred to after this tracker's plan completes; this row exists to lock the decision and drive the Skill update that stops it from ever emitting a `messages` tab declaration. | `part12_persona_and_tabs.dart`, authoring Skill | pending |
 
 ## 2. Enforced gates
 
