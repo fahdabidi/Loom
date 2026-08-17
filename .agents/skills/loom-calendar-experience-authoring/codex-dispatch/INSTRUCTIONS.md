@@ -63,6 +63,7 @@ invariant a later file assumes you already know.
 | 9 | `docs/references/reference/theming.md`, `docs/references/reference/platform-services.md` | `platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable — always check it before writing any effect that looks like it produces a receipt id, checksum, payment confirmation, or search/AI answer. Never fabricate one (AP-6). |
 | 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list before treating a shape as novel. |
 | 11 | `docs/references/reference/permissions.md` | Always — defines the `action` field, which archetypes require it, and the closed action vocabulary for each. Permissions are **derived** from what you author; you never write one. |
+| 11a | `docs/references/reference/identity-types.md` | Always — normative for `specVersion: 4`, the only version this bundle describes. Defines the `roleId`/`fanId` type split: `experience.personas[]`→`roles[]`, `personaId`→`roleId` for role declarations, `guard.allowedPersonaIds`→`allowedRoleIds`, `actions[].byPersonaIds`→`byRoleIds`, `tabs[].visiblePersonaIds`→`visibleRoleIds`, `renderBindings[].role`→`audience`, and every person-shaped instance-data field (`createdByPersonaId`, `goingPersonaIds`, etc.) renames to its `*FanId(s)` equivalent. A legacy key in a `specVersion: 4` package is a validator error — never emit `personaId`-shaped keys alongside `specVersion`. |
 | 11b | `docs/references/archetypes/CONTRACTS.md` | Always — what each archetype **guarantees** as opposed to what you declare: its actions, the per-person bookkeeping it owns, and its visibility model. Then fetch the per-archetype doc (`docs/references/archetypes/<archetype>.md`) for each family you are actually using. |
 | 12 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
 
@@ -112,6 +113,18 @@ real enum (fetched at step 7) instead.
    rows). This has been a real, load-bearing mistake in practice; double-check this before returning
    output, especially when updating an already-shipped community that still declares the legacy triple
    — the target output must not carry it forward.
+2a. **`specVersion: 4` requires the `roleId`/`fanId` identity split — see `identity-types.md` (step
+   11a), fetched in full, not assumed from this summary.** `experience.personas[]` becomes `roles[]`
+   with `roleId` (not `personaId`); `guard.allowedPersonaIds`→`allowedRoleIds`;
+   `actions[].byPersonaIds`→`byRoleIds`; `tabs[].visiblePersonaIds`→`visibleRoleIds`;
+   `renderBindings[].role`→`audience`; every person-shaped instance-data field renames to its
+   `*FanId(s)` form (`createdByPersonaId`→`createdByFanId`, and so on) and its declared `type`
+   becomes `fanId`/`fanId[]` instead of `personaId`/`personaId[]`. When updating an already-shipped
+   community (see the "Updating an existing" section above), apply this rename to **every** occurrence
+   in the existing package — do not leave any old-spelled key alongside the new version stamp, and do
+   not silently skip a field because it looked like an edge case; if genuinely unsure whether a field
+   is role-shaped or person-shaped, say so explicitly in your Gaps/assumptions section rather than
+   guessing.
 3. Never emit a JSON key that isn't enumerated in the reference files you fetched. An unknown key is
    silently ignored by the real parser — it produces a community that looks correct in the JSON but does
    nothing at runtime.
