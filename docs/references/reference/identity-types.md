@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.0.0
-status: proposed
-last_verified: 2026-08-13
+doc_version: 1.1.0
+status: current
+last_verified: 2026-08-17
 audience: llm-agent
 derived_from:
   - docs/Build Plan V2/CJM.16 Identity Architecture Proposal.md
@@ -12,8 +12,9 @@ derived_from:
 
 # Identity types — `roleId` and `fanId`
 
-**Status: PROPOSED.** This defines `specVersion: 4`. Packages stamped `1` or `2` keep the old
-rules unchanged; the two versions are not mixed within a package.
+**Status: CURRENT.** This defines `specVersion: 4`. Packages stamped `1` or `2` keep the old
+rules unchanged; the two versions are not mixed within a package. Ratified 2026-08-17: reviewed
+against the corpus and found sound, with one correction to the motivating example below.
 
 ## 1. The defect this fixes
 
@@ -24,8 +25,18 @@ Grammar v1 and v2 have exactly one identity type, `personaId`, and use it for tw
 
 Guards that need the second meaning are given values that only ever satisfy the first. At runtime
 `$viewer` binds to a signed-in account id, so a seeded `"participantAPersonaId": "platform-member-alex"`
-compared against `$viewer` can never match. Member Social Space's Messages tab — the community's entire
-purpose — is permanently empty as a result.
+compared against `$viewer` can never match — a real, present defect in guard/formula correctness,
+independent of any particular tab.
+
+**Correction (2026-08-17):** an earlier version of this section additionally claimed this defect was
+why "Member Social Space's Messages tab — the community's entire purpose — is permanently empty." That
+part is no longer accurate on its own: `messages` was separately locked 2026-08-16 as a fixed,
+system-provided App Shell tab that renders unconditionally and ignores community-declared
+`renderBindings` targeting it entirely (`antipatterns.md` AP-14) — a real fixture like Member Social
+Space that still targets `tabId: "messages"` (see `guide/03-common-patterns.md` P6) needs that separate,
+deliberately deferred fix regardless of this identity-type split. Fixing the `personaId`/`fanId`
+confusion below remains correct and necessary on its own merits — it just does not, by itself, make that
+particular tab render.
 
 This is not one community's bug. Ten of eleven fixtures seed a person-shaped field with a role string,
 and seven have live guards checking such values. It went unnoticed through eight walkthroughs because

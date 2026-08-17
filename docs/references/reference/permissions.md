@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.4.0
-status: proposed
-last_verified: 2026-08-13
+doc_version: 1.5.0
+status: current
+last_verified: 2026-08-17
 audience: llm-agent
 derived_from:
   - docs/API/OpenAPI/identity/app-access-api.openapi.yaml
@@ -14,9 +14,12 @@ derived_from:
 
 # Permissions — derived, never authored
 
-**Status: PROPOSED.** Nothing here is implemented yet. This defines how a community's roles and
-permissions are derived from its JSON, so that community JSON never contains a permission and never
-contains user management.
+**Status: CURRENT.** Ratified 2026-08-17: §6's derivation algorithm was reviewed line-by-line against
+the real, deployed `CommunityPermissionDeriver` (`services/app-access/.../CommunityPermissionDeriver.java`)
+and matches it — group creation, role registration, archetype resolution, transition-to-permission
+mapping, and the reduced `POST /v1/apps/{appId}/community-installations` payload shape are all real and
+working, not merely proposed. This defines how a community's roles and permissions are derived from its
+JSON, so that community JSON never contains a permission and never contains user management.
 
 ## 1. The rule
 
