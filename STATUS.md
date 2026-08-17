@@ -1,169 +1,190 @@
-# Phase E — Admin-tab access-control leak
+# Phase E.4b — interactive Flutter Web authorization code + PKCE
 
 ## What changed
 
-- Updated `_mergeDeclarativeTabSpecs` in
-  `app/packages/core/loom_communities_app_shell/lib/src/part12_persona_and_tabs.dart`.
-  When a declarative override uses one of the four cosmetic-only engine-native
-  IDs (`calendar`, `marketplace`, `giving`, or `admin`) and there is no
-  generated tab with that ID for the active persona, the merge now skips the
-  override. It can no longer fall through to `override.toTabSpec()` and become
-  a standalone tab with the generic navigation-read permission.
-- Left the existing positive merge branch unchanged. When a generated special
-  tab exists, the declarative label, icon, and description still decorate it,
-  while the generated renderer, required permission, pinning metadata, and
-  upstream persona gate remain authoritative.
-- Added focused Tabletop regression coverage to
-  `v3_milestone_phasee_purchase_proposal_test.dart`. The new case proves both
-  sides of the invariant:
-  - `tabletop-member` receives no Admin tab from a cosmetic-only override.
-  - `tabletop-organizer` still receives Admin with distinctive override
-    cosmetics (`Organizer desk`, the `board` icon, and the custom description)
-    layered over the generated Admin renderer, configure permission, and
-    organizer persona gate.
-- Kept the existing widget assertion that
-  `community-tab-admin` is absent for `tabletop-member`; no test was weakened
-  or removed.
-- Grepped every real `appShell.tabs` declaration under
-  `docs/references/communities`. No current `calendar`, `marketplace`, or
-  `giving` declaration has the same missing-generated-entry shape:
-  - Every declarative Calendar community has a real Calendar render binding.
-  - All four declarative Marketplace communities (Camera Club, Garden Club,
-    Neighborhood Book Club, and Tabletop Club) have an `equipment-loan`
-    surface family, which generates Marketplace.
-  - Every declarative Giving community has a real Giving render binding.
-  Therefore no fabricated regression fixture was added for those three IDs.
-- Did not edit community JSON or any protected file under
+- Added a Flutter-Web-only interactive path to `LoomAuthSession`:
+  - `loginInteractively()` discovers the issuer, constructs an explicit
+    `Flow.authorizationCodeWithPKCE`, persists the one-time transaction in
+    per-tab `sessionStorage`, and redirects the current browser window to
+    Keycloak.
+  - `completeInteractiveLogin()` detects the returned authorization response,
+    rejects missing or forged `state` before discovery or code exchange,
+    consumes the stored transaction, reconstructs the same PKCE flow, exchanges
+    the real authorization code, and removes the callback query from browser
+    history after success.
+  - A conditional non-web implementation throws `UnsupportedError`; no
+    `dart:js_interop` or browser DOM dependency enters non-web compilation.
+- Used `package:openid_client` 0.4.10+1 directly. No `Authenticator` or
+  implicit-flow API is present. The request is created only through
+  `Flow.authorizationCodeWithPKCE`, with an explicit verifier, `S256`
+  challenge, redirect URI, and CSRF `state`.
+- Reused the existing token-session machinery. The authorization-code result
+  is normalized by the same `_TokenResponse` parser and then passed through the
+  existing `_sessionFromTokenResponse` and `_persistSession` functions used by
+  `loginWithTestCredentials`; refresh and secure-storage behavior were not
+  duplicated.
+- Added focused unit coverage for verifier length/alphabet, the RFC 7636 `S256`
+  known vector, authorization URL parameters, and forged/missing-state
+  rejection.
+- Added a minimal Flutter Web harness with one login button plus a host-side
+  WebDriver controller. The controller is written to:
+  - click the harness trigger;
+  - wait for the real hosted Keycloak page;
+  - locate the rendered `#username`, `#password`, and `#kc-login` elements (and
+    print the live page source if any selector is absent);
+  - type `test-fan-alice` / `LoomTest123!` and submit;
+  - follow the redirect to the harness; and
+  - retrieve and independently decode the resulting access JWT, asserting
+    `fanId == fan-test-alice`.
+- Added only a test-harness `web/index.html`; this is not a production login
+  screen.
+- Did not change either existing test file, Android configuration,
+  `RemoteWorkflowEngineApi`, Keycloak configuration, or any file under
   `docs/references/{reference,guide,archetypes,communities}`. The unrelated
-  untracked `ROOT_CAUSE_REPORT_2.md` and `ROOT_CAUSE_REPORT_3.md` files were
-  preserved and are not part of this change.
+  untracked `ROOT_CAUSE_REPORT_2.md` and `ROOT_CAUSE_REPORT_3.md` remain
+  untouched and are excluded from this change.
 
 ## Verification
 
-The original Flutter SDK is read-only in this sandbox, so the commands below
-used an exact temporary copy at `/tmp/loom-flutter-sdk-phasee`. Dependency
-resolution was disabled with `--no-pub` because the workspace package graph was
-already resolved and outbound DNS is unavailable.
+The installed Flutter SDK is read-only in this sandbox, so all Flutter commands
+used an exact temporary copy at `/tmp/loom-flutter-sdk`. Pub registry DNS is
+also unavailable; dependency resolution was performed offline after populating
+the local cache with the upstream `openid_client` 0.4.10+1 source. No vendored
+dependency is part of the repository change.
 
-The pre-fix focused command was attempted before any source edit. Flutter Test
-could not start its test harness because this sandbox forbids the required
-localhost server, so it did not reach the known assertion:
-
-```text
-$ flutter test --no-pub test/v3_milestone_phasee_purchase_proposal_test.dart \
-    --plain-name 'member proposals flow from Home creation through the live Admin queue, decisions, and revision' \
-    --reporter expanded
-00:00 +0: loading .../v3_milestone_phasee_purchase_proposal_test.dart
-00:00 +0 -1: loading .../v3_milestone_phasee_purchase_proposal_test.dart [E]
-Failed to create server socket (OS Error: Operation not permitted, errno = 1),
-address = 127.0.0.1, port = 0
-00:00 +0 -1: Some tests failed.
-```
-
-The post-fix focused Flutter Test attempt hit the identical environment error
-before loading the test body. Running with `--ipv6` did not change the harness'
-loopback bind behavior:
+Package-wide analysis is clean:
 
 ```text
-$ flutter test --no-pub --ipv6 \
-    test/v3_milestone_phasee_purchase_proposal_test.dart \
-    --plain-name 'cosmetic-only Admin override decorates the generated organizer tab without granting one to members' \
-    --reporter expanded
-00:00 +0: loading .../v3_milestone_phasee_purchase_proposal_test.dart
-00:00 +0 -1: loading .../v3_milestone_phasee_purchase_proposal_test.dart [E]
-Failed to create server socket (OS Error: Operation not permitted, errno = 1),
-address = 127.0.0.1, port = 0
-00:00 +0 -1: Some tests failed.
-```
-
-As a runtime fallback, I compiled a temporary one-shot program with Flutter's
-patched SDK and ran it directly with `flutter_tester`, avoiding only the
-socket-based test harness. It used the frozen Tabletop JSON, called the real
-`appShellTabsFor`, asserted the member exclusion and all organizer cosmetics
-plus generated metadata, and exited successfully. The temporary source and
-compiled output are not in the repository:
-
-```text
-$ flutter_tester --disable-vm-service --enable-checked-mode \
-    --non-interactive --use-test-fonts \
-    --packages=/home/fahd/Loom/app/.dart_tool/package_config.json \
-    /tmp/phasee_tab_smoke.dill
-PASS: member excluded; organizer cosmetics preserved
+$ /tmp/loom-flutter-sdk/bin/flutter analyze --no-pub .
+Analyzing loom_auth_session...
+No issues found! (ran in 30.3s)
 exit_code=0
 ```
 
-Static analysis of exactly the changed Dart files passes:
+The five new non-browser security tests all execute and pass:
 
 ```text
-$ flutter analyze --no-pub \
-    lib/src/part12_persona_and_tabs.dart \
-    test/v3_milestone_phasee_purchase_proposal_test.dart
-Analyzing 2 items...
-No issues found! (ran in 23.8s)
+$ /tmp/loom-flutter-sdk/bin/dart test \
+    test/interactive_authorization_test.dart --reporter expanded
+Running build hooks...Running build hooks...
+00:00 +0: loading test/interactive_authorization_test.dart
+00:00 +0: PKCE verifier has RFC 7636 length and unreserved encoding
+00:00 +1: S256 derivation matches the RFC 7636 known vector
+00:00 +2: authorization URL contains code, PKCE, state, and redirect data
+00:00 +3: forged callback state is rejected before code exchange
+00:00 +4: missing callback state is rejected before code exchange
+00:00 +5: All tests passed!
 exit_code=0
 ```
 
-Package-wide analysis completed with nine pre-existing informational lints in
-unrelated files and no diagnostic in either changed file:
+The real harness compiles as Flutter Web production output, including the
+conditional web implementation and `openid_client` code exchange:
 
 ```text
-$ flutter analyze --no-pub
-9 issues found. (ran in 14.9s)
-exit_code=1
+$ /tmp/loom-flutter-sdk/bin/flutter build web --no-pub \
+    --target integration_test/interactive_login_harness.dart \
+    --output /tmp/loom-auth-interactive-web
+Compiling integration_test/interactive_login_harness.dart for the Web...
+Wasm dry run succeeded. Consider building and testing your application with the `--wasm` flag.
+Compiling integration_test/interactive_login_harness.dart for the Web...        61.9s
+✓ Built ../../../../../../../tmp/loom-auth-interactive-web
+exit_code=0
 ```
 
-The post-fix full-suite command was allowed to finish. All 58 test files failed
-at the same harness setup step; zero test bodies executed:
+The required existing Flutter suite was invoked without modifying its 11 unit
+tests or one live-Keycloak test. The sandbox denied Flutter Test's mandatory
+loopback server before any test body ran, so this is not a passing-suite claim:
 
 ```text
-$ flutter test --no-pub --reporter compact
-00:00 +0 -1: loading .../authz_p4b_permission_wiring_test.dart [E]
+$ /tmp/loom-flutter-sdk/bin/flutter test --no-pub --reporter expanded
+00:00 +0: loading .../test/loom_auth_session_test.dart
+00:00 +0 -1: loading .../test/loom_auth_session_test.dart [E]
 Failed to create server socket (OS Error: Operation not permitted, errno = 1),
 address = 127.0.0.1, port = 0
 ...
-01:57 +0 -58: loading .../v3_milestone_phasee_purchase_proposal_test.dart [E]
+00:00 +0 -2: loading .../test/loom_auth_session_live_test.dart [E]
 Failed to create server socket (OS Error: Operation not permitted, errno = 1),
 address = 127.0.0.1, port = 0
-01:57 +0 -58: Some tests failed.
+...
+00:00 +0 -3: loading .../test/interactive_authorization_test.dart [E]
+Failed to create server socket (OS Error: Operation not permitted, errno = 1),
+address = 127.0.0.1, port = 0
+00:00 +0 -3: Some tests failed.
 exit_code=1
 ```
 
-Because the environment fails before test discovery/execution, there is no
-honest passing-suite before/after count to report. The observed harness counts
-are pre-fix focused `+0 -1`, post-fix focused `+0 -1`, and post-fix full-suite
-`+0 -58`; these are infrastructure load errors, not test results. The direct
-Flutter-engine fallback and changed-file analysis are green, but they do not
-replace the requested test-suite proof.
-
-Final whitespace validation is clean:
+ChromeDriver was then started directly to make the genuine browser attempt. It
+is the expected matching binary, but this dispatch sandbox denied both listen
+sockets before it could accept a WebDriver session:
 
 ```text
-$ git diff --check
-<no output; exit_code=0>
+$ chromedriver --port=9515 --verbose
+Starting ChromeDriver 151.0.7922.138 (...) on port 9515
+Only local connections are allowed.
+Unable to start server with either IPv4 or IPv6. Exiting...
+[...][SEVERE]: CreatePlatformSocket() failed: Operation not permitted (1)
+[...][INFO]: listen on IPv6 failed with error ERR_ACCESS_DENIED
+[...][SEVERE]: CreatePlatformSocket() failed: Operation not permitted (1)
+[...][INFO]: listen on IPv4 failed with error ERR_ACCESS_DENIED
+exit_code=1
 ```
+
+Finally, the actual `flutter drive` command was invoked against the real
+harness and host-side WebDriver controller. It stopped at the app server's
+first bind, before Chrome launch, Keycloak navigation, or credential entry:
+
+```text
+$ /tmp/loom-flutter-sdk/bin/flutter drive --no-pub -d web-server \
+    --driver=tool/interactive_login_webdriver.dart \
+    --target=integration_test/interactive_login_harness.dart \
+    --web-hostname=localhost --web-port=7357 --driver-port=9515 --headless
+Launching integration_test/interactive_login_harness.dart on Web Server in debug mode...
+Failed to bind web development server:
+SocketException: Failed to create server socket
+(OS Error: Operation not permitted, errno = 1),
+address = localhost, port = 7357
+#0      _NativeSocket.bind (dart:io-patch/socket_patch.dart:1216:7)
+...
+#4      WebAssetServer.start
+(package:flutter_tools/src/isolated/web_asset_server.dart:231:24)
+...
+exit_code=1
+```
+
+Therefore the real WebDriver end-to-end proof did **not** succeed in this
+dispatch sandbox. The stopping point is precise: local process socket creation,
+before any browser session or network request to Keycloak. No partial browser
+result is reported as an end-to-end pass.
 
 ## Proposed next steps
 
-1. In an environment that permits binding a localhost test-harness socket, run
-   the exact focused widget test command above and confirm the existing
-   `community-tab-admin` `findsNothing` assertion passes for
-   `tabletop-member`.
-2. Run the new focused cosmetic-merge case and confirm the organizer's label,
-   icon, description, generated renderer, configure permission, and persona
-   gate assertions all pass.
-3. Run `flutter test --no-pub` for the full
-   `loom_communities_app_shell` package before and after this commit (or against
-   the parent and this commit) and record the actual passing test counts.
+1. Re-run the exact ChromeDriver and `flutter drive` commands above in the
+   independent verification environment that permits localhost listeners and
+   access to `192.168.56.10:30082`. Confirm the rendered Keycloak selectors,
+   credential submission, redirect URI acceptance, real code exchange, stored
+   session, and decoded `fanId: fan-test-alice` assertion. If the rendered IDs
+   differ, the committed controller prints the real WebDriver page source so
+   the selectors can be updated from evidence.
+2. Android custom-URL-scheme redirect/manifest wiring remains separate,
+   unscoped follow-on work.
+3. A production login screen remains separate, unscoped follow-on work.
+4. Wiring `LoomAuthSession.currentAccessToken` into
+   `RemoteWorkflowEngineApi.bearerTokenProvider` remains separate, unscoped
+   follow-on work.
 
 ## Anything I could not do
 
-- I could not truthfully claim the exact previously failing widget assertion
-  passed, because Flutter Test cannot bind its mandatory localhost harness
-  socket in this sandbox and never executes the test body.
-- I could not produce the requested full-suite passing before/after count or
-  confirm the full suite has no regressions for the same environment reason.
-  The complete post-fix attempt reached all 58 files and every one failed at
-  harness startup, before any product code or assertion ran.
-- No other requested implementation work remains. The isolated merge fix,
-  focused permanent regression coverage, real-declaration scan, direct
-  Flutter-engine runtime check, and changed-file analysis are complete.
+- I could not complete or truthfully claim the real interactive WebDriver proof
+  because this sandbox rejects every server-socket bind with `EPERM`, including
+  both Flutter's web/test servers and ChromeDriver's IPv4/IPv6 listeners.
+- I could not inspect the real client-rendered Keycloak DOM in WebDriver, so
+  `#username`, `#password`, and `#kc-login` remain the supplied starting
+  hypothesis, not selectors confirmed by this run.
+- I could not confirm the existing 11 unit tests and one live-Keycloak test pass
+  under their required Flutter runner. Their files are unmodified, but Flutter
+  failed before test execution, and direct access to the live NodePort is also
+  denied by the same process-network sandbox. The five new pure-Dart security
+  tests, package analysis, and production Web compilation are green; none is
+  presented as a substitute for the missing live browser proof.
+- I did not loosen PKCE, widen redirect URIs, modify `loom-test-client`, or make
+  any other live Keycloak change to work around the environment.

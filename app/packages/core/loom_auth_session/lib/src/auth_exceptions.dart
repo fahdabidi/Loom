@@ -25,6 +25,24 @@ class LoomAuthNetworkException extends LoomAuthSessionException {
   const LoomAuthNetworkException(super.message);
 }
 
+/// The authorization callback did not carry the state issued before redirect.
+class LoomAuthStateMismatchException extends LoomAuthSessionException {
+  const LoomAuthStateMismatchException()
+    : super(
+        'The interactive login callback state did not match the pending login.',
+      );
+}
+
+/// Keycloak returned an OAuth error from interactive authorization.
+class LoomAuthInteractiveLoginException extends LoomAuthSessionException {
+  const LoomAuthInteractiveLoginException({
+    required String message,
+    required this.oauthError,
+  }) : super(message);
+
+  final String oauthError;
+}
+
 /// Keycloak rejected credentials supplied to the test-only login bypass.
 class LoomAuthTestCredentialsRejectedException
     extends LoomAuthSessionException {

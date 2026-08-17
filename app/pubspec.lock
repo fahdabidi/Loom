@@ -647,6 +647,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.4.1"
+  openid_client:
+    dependency: transitive
+    description:
+      name: openid_client
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.10+1"
   package_config:
     dependency: transitive
     description:

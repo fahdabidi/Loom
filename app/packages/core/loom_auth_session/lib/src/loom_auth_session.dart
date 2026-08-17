@@ -3,14 +3,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'auth_exceptions.dart';
+import 'interactive_authorization.dart';
+import 'interactive_login_stub.dart'
+    if (dart.library.js_interop) 'interactive_login_web.dart';
 import 'secure_storage_backend.dart';
 
 /// Persists and renews the bearer-token session used by Loom API clients.
 ///
-/// This core does not implement interactive browser authorization. Its
-/// [loginWithTestCredentials] method bypasses the interactive browser flow and
-/// exists only for automated/local testing with Keycloak-native test accounts;
-/// production UI code must never call it.
+/// Flutter Web clients can use [loginInteractively] and
+/// [completeInteractiveLogin] for browser-hosted authorization code + PKCE.
+/// [loginWithTestCredentials] bypasses that browser flow and exists only for
+/// automated/local testing with Keycloak-native test accounts; production UI
+/// code must never call it.
 class LoomAuthSession {
   LoomAuthSession({
     required Uri tokenEndpoint,
@@ -53,6 +57,7 @@ class LoomAuthSession {
   bool _storageWasRead = false;
   Future<String>? _refreshingAccessToken;
   int _sessionGeneration = 0;
+  InteractiveLoginPlatform? _interactiveLoginPlatform;
 
   /// Returns an access token that is outside the proactive refresh window.
   ///
@@ -78,6 +83,22 @@ class LoomAuthSession {
       }
     }
   }
+
+  /// Redirects a Flutter Web browser to Keycloak for authorization code + PKCE.
+  ///
+  /// The returned future intentionally remains pending while the current page
+  /// navigates away. Non-web targets throw [UnsupportedError]. Call
+  /// [completeInteractiveLogin] while initializing the returned page.
+  Future<void> loginInteractively({
+    List<String> scopes = defaultInteractiveLoginScopes,
+  }) => _interactiveLogin.start(scopes: scopes);
+
+  /// Completes a pending Flutter Web login from the current browser URL.
+  ///
+  /// Returns `false` when the current URL is not an authorization callback.
+  /// Missing or forged callback state is rejected before any token exchange.
+  /// Non-web targets throw [UnsupportedError].
+  Future<bool> completeInteractiveLogin() => _interactiveLogin.complete();
 
   /// Logs in through Keycloak's Direct Access Grant for tests only.
   ///
@@ -122,6 +143,24 @@ class LoomAuthSession {
     );
     final session = _sessionFromTokenResponse(tokens, previous: null);
     await _persistSession(session);
+  }
+
+  InteractiveLoginPlatform get _interactiveLogin =>
+      _interactiveLoginPlatform ??= InteractiveLoginPlatform(
+        issuerUri: _issuerUriForTokenEndpoint(_tokenEndpoint),
+        clientId: _clientId,
+        httpClient: _httpClient,
+        persistTokens: _persistAuthorizationCodeTokens,
+      );
+
+  Future<void> _persistAuthorizationCodeTokens(
+    Map<String, dynamic> tokenResponse,
+  ) async {
+    final tokens = _TokenResponse.fromJson(
+      tokenResponse,
+      requireRefreshToken: true,
+    );
+    await _persistSession(_sessionFromTokenResponse(tokens, previous: null));
   }
 
   /// Clears only the locally persisted tokens.
@@ -317,6 +356,21 @@ class LoomAuthSession {
     return uri;
   }
 
+  static Uri? _issuerUriForTokenEndpoint(Uri tokenEndpoint) {
+    const endpointSuffix = '/protocol/openid-connect/token';
+    if (!tokenEndpoint.path.endsWith(endpointSuffix)) return null;
+    return Uri(
+      scheme: tokenEndpoint.scheme,
+      userInfo: tokenEndpoint.userInfo,
+      host: tokenEndpoint.host,
+      port: tokenEndpoint.hasPort ? tokenEndpoint.port : null,
+      path: tokenEndpoint.path.substring(
+        0,
+        tokenEndpoint.path.length - endpointSuffix.length,
+      ),
+    );
+  }
+
   static String _requireNonEmpty(String value, String name) {
     if (value.isEmpty) {
       throw ArgumentError.value(value, name, 'must not be empty');
@@ -350,6 +404,24 @@ final class _TokenResponse {
         'Keycloak token endpoint returned malformed JSON.',
       );
     }
+    return _TokenResponse._fromDecoded(
+      decoded,
+      requireRefreshToken: requireRefreshToken,
+    );
+  }
+
+  factory _TokenResponse.fromJson(
+    Map<String, dynamic> decoded, {
+    required bool requireRefreshToken,
+  }) => _TokenResponse._fromDecoded(
+    decoded,
+    requireRefreshToken: requireRefreshToken,
+  );
+
+  factory _TokenResponse._fromDecoded(
+    Object? decoded, {
+    required bool requireRefreshToken,
+  }) {
     if (decoded is! Map<String, dynamic>) {
       throw const LoomAuthProtocolException(
         'Keycloak token response must be a JSON object.',
