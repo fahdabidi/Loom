@@ -258,12 +258,16 @@ even after CJM.6 landed — both mechanisms work today, use whichever fits the w
 
 ---
 
-## 8. Every non-`home`/`messages` `tabId` used anywhere in `renderBindings` needs a matching `appShell.tabs[]`/`personaTabs[]` declaration — omitting it entirely is easy when focused on workflow content
+## 8. Every non-`home` `tabId` used anywhere in `renderBindings` needs a matching `appShell.tabs[]`/`personaTabs[]` declaration — omitting it entirely is easy when focused on workflow content
 
 **Requirement shape:** a workflow's `renderBindings[].tabId` names a tab (e.g. `"calendar"`, `"organize"`,
-`"documents"`) that isn't `home`/`messages`. `tabId` is an open vocabulary — any name is valid — but every
-value used anywhere in the package must have a corresponding entry in the top-level `appShell.tabs[]`
-array (or `personaTabs[]` for a persona-scoped tab), or the validator rejects it with `unknown_tab_id`.
+`"documents"`) that isn't `home`. `tabId` is an open vocabulary — any name is valid — but every value used
+anywhere in the package must have a corresponding entry in the top-level `appShell.tabs[]` array (or
+`personaTabs[]` for a persona-scoped tab), or the validator rejects it with `unknown_tab_id`. `home` is
+exempt because it's system-curated by definition (AP-10). `messages` should never appear as a
+`renderBindings[].tabId` value at all, exempt or not — it is a fixed, system-provided tab with no
+community-authorable content (AP-14); don't author it, don't declare it, don't treat it as available for
+this exemption pattern.
 
 **Looks plausible but is wrong:** authoring every workflow's `renderBindings` correctly, including
 well-chosen custom `tabId` values that match the product doc's own vocabulary, and then simply never
@@ -273,9 +277,9 @@ so a field-by-field self-check of each `renderBindings` entry will not catch it.
 full self-check pass (all antipattern rules, all `05-validation.md` rows, every `role`/guard check) still
 missed this, because none of those checks are phrased as "does a top-level key exist."
 
-**Verified-correct shape:** after drafting every workflow, collect the full set of distinct non-`home`/
-`messages` `tabId` values used anywhere in the package, then emit exactly one `appShell.tabs[]` entry per
-value:
+**Verified-correct shape:** after drafting every workflow, collect the full set of distinct non-`home`
+`tabId` values used anywhere in the package (there should be none using `messages` — see above), then
+emit exactly one `appShell.tabs[]` entry per value:
 ```jsonc
 "appShell": {
   "tabs": [
@@ -291,9 +295,10 @@ bespoke renderer. See `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]`
 section for the complete field list.
 
 **Self-check step to add, explicitly:** before finishing, grep your own draft for every distinct
-`renderBindings[].tabId` value across every workflow, then confirm each one (other than `home`/`messages`)
-has a matching `appShell.tabs[]`/`personaTabs[]` entry. Do this as a literal list-comparison step, separate
-from validating each `renderBindings` entry in isolation — the two checks catch different failure modes.
+`renderBindings[].tabId` value across every workflow, confirm none of them is `messages` (AP-14), then
+confirm each remaining one (other than `home`) has a matching `appShell.tabs[]`/`personaTabs[]` entry. Do
+this as a literal list-comparison step, separate from validating each `renderBindings` entry in isolation
+— the two checks catch different failure modes.
 
 **Found in:** Garden Club, re-authored via the Codex GitHub-fetch dispatch channel 2026-08-12 (Milestone
 1.5 of `TabId-Archetype Gap Closure.md`) — the fresh output correctly used `calendar`/`marketplace`/

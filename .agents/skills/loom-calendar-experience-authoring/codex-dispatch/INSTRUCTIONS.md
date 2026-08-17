@@ -204,8 +204,10 @@ run come back clean, via a rigorous **manual** self-check performed before you s
    `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, validate cleanly as of 2026-08-12.
 6. **Do this as its own separate pass, not folded into step 5** (a whole-package omission is easy to miss
    while reviewing each `renderBindings` entry in isolation — this has happened in practice, see
-   `solved-patterns.md` pattern 8): list every distinct non-`home`/`messages` `tabId` value used anywhere
-   across the whole package, then confirm each one has a matching `appShell.tabs[]`/`personaTabs[]` entry.
+   `solved-patterns.md` pattern 8): first confirm no `renderBindings[].tabId` in your draft equals
+   `"messages"` — it is a fixed, system-provided App Shell tab with no community-authorable content
+   (`antipatterns.md` AP-14) — then list every remaining distinct non-`home` `tabId` value used anywhere
+   across the whole package and confirm each one has a matching `appShell.tabs[]`/`personaTabs[]` entry.
    Missing this produces `unknown_tab_id` findings, one per undeclared tab.
 7. State clearly and plainly in your final answer that this was a **manual self-check, no live validator
    ran in this channel** — never imply or fabricate a validator response you did not actually obtain. If you
@@ -216,15 +218,18 @@ run come back clean, via a rigorous **manual** self-check performed before you s
 1. **One JSON (or JSONC) file** — the complete package: `schemaVersion`, `packageId`, `communityId`,
    `communityHandle`, `displayName`, `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, the
    `experience` block, **and a top-level `appShell` block** (see below — required whenever any workflow uses
-   a `tabId` other than `home`/`messages`, which is nearly always). Return it in a single fenced code block
-   so it can be extracted and validated for real; if the package is too large for one reply to be practical,
-   write it to a file in your own scratch working directory and say so explicitly, naming the exact path —
-   never truncate or summarize the package itself in place of the real content.
+   a `tabId` other than `home`, which is nearly always). Return it in a single fenced code block so it can
+   be extracted and validated for real; if the package is too large for one reply to be practical, write it
+   to a file in your own scratch working directory and say so explicitly, naming the exact path — never
+   truncate or summarize the package itself in place of the real content. **Never declare `messages` in
+   `appShell.tabs[]`/`personaTabs[]` or target it in any `renderBindings` entry** — it is a fixed,
+   system-provided App Shell tab, not a community-authorable one (`antipatterns.md` AP-14).
 
    **`appShell.tabs[]` is easy to drop entirely — check for it as an explicit, separate step, not as part of
    reviewing each `renderBindings` entry.** After drafting every workflow, collect the full set of distinct
-   non-`home`/`messages` `tabId` values used anywhere across the package, then confirm every one of them has
-   a matching entry in `appShell.tabs[]` (or `personaTabs[]` for a persona-scoped tab) — see
+   non-`home` `tabId` values used anywhere across the package (there should be none using `messages`), then
+   confirm every one of them has a matching entry in `appShell.tabs[]` (or `personaTabs[]` for a
+   persona-scoped tab) — see
    `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]` — tab declaration shape` section (fetched at
    step 5) for the exact field shape, and `solved-patterns.md` pattern 8 (fetched at step 10) for a full
    worked example of this exact omission and its fix. A package whose workflows are otherwise perfect but

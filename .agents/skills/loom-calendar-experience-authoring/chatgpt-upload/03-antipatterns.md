@@ -284,6 +284,32 @@ creatability — that teaches the wrong shape even where nothing yet renders the
 
 ---
 
+## AP-14 — Targeting the `messages` tabId with any render binding or tab declaration (locked 2026-08-16)
+
+**Detection:** any `renderBindings[].tabId` equal to `"messages"`, or any `appShell.tabs[]`/`personaTabs[]`
+entry with `"tabId": "messages"`, anywhere in the JSON you are about to emit — regardless of which
+`cardSurfaceFamily` the binding uses.
+
+**Why this is wrong:** `messages` (like `home`) is a **fixed, system-provided App Shell tab** — it is not
+a per-community surface and is never customized, declared, or backed by community-authored workflow
+content. This is not about the `discussionThread` archetype itself — that remains a real, fully-supported
+archetype (P6 in `02-common-patterns.md`) and stays legitimate on any real, community-declared tab. The
+problem is specifically the choice of `tabId: "messages"` as the *target* for any binding: several shipped
+communities currently do exactly this, which is legacy content pending a separate, deferred fix, not
+something to imitate — and other communities that never added the binding at all surfaced a live bug
+where the Messages tab silently showed unrelated hardcoded fallback content instead of nothing or a real
+feature. The real fix is architectural (the App Shell must render `messages` unconditionally, the same
+way it already does for `home`), not something any community's JSON can complete by adding a binding.
+
+**Fix:** never target `tabId: "messages"` with a render binding or a tab declaration, no matter which
+archetype the binding uses. If a community's product intent genuinely calls for member-to-member or
+member-to-organizer discussion content, author it with a real, community-declared `tabId` (e.g.
+`"discussions"`) instead — see P6's corrected example. If that still doesn't fit, that is a platform-level
+capability request, not something this Skill's output can
+provide — report it as an unmet requirement (AP-11) rather than approximating it with a custom workflow.
+
+---
+
 ## Final self-check
 
 - [ ] No state can coexist with another state (AP-1)
@@ -298,3 +324,4 @@ creatability — that teaches the wrong shape even where nothing yet renders the
 - [ ] Every unmet requirement is explicitly marked and reported (AP-11)
 - [ ] No shared scratch field for a per-item action — use transition `inputs` (AP-12)
 - [ ] No seeded blank draft standing in for `creatable` (AP-13)
+- [ ] No `messages`-tabId render binding or tab declaration anywhere — it is system-provided (AP-14)
