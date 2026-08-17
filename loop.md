@@ -160,8 +160,15 @@ values you have not independently derived.
   `specVersion: 4` package (`part15_evidence_catalog.dart`, `loom_demo_local_backend.dart`,
   `workflow_models.dart` dual-reads, `part12` tab alias).
 
-### In progress
-- **E.4c + E.4d** — user-approved 2026-08-17. Decisions already locked in with the user:
+- **E.4c + E.4d** — **closed 2026-08-17** (`18d1df1e`), independently verified (analyze 8/8 same lints;
+  app shell 238 tests with exactly the 3 known failures; engine 259/259; auth session 17/17 incl. a live
+  Keycloak pass). Session seam (`part37_remote_auth_session.dart`) defaults to **null/unconfigured**;
+  production login screen (`part38_production_login_screen.dart`) is gated behind it; the remote engine
+  factory wires `bearerTokenProvider: session.currentAccessToken`. **The default engine factory is
+  unchanged — every community still runs Local.** A test confirms a real `RemoteWorkflowEngineApi` passes
+  cleanly through the store's E.4e Local-only gates.
+
+### Historical context for E.4c + E.4d (decisions that remain binding)
   - The production IdP login screen is **added alongside** the existing demo account picker
     (`LoomAuthScreen` in `part31_auth_screens.dart`), gated, **not** replacing it. The demo picker is
     persona-selection for offline local communities — a genuinely different concern from signing in to a
@@ -197,16 +204,17 @@ has 8 pre-existing informational lints — same rule.
 
 ## 5. Priority queue
 
-1. **E.4c + E.4d** (in progress, decisions locked — see §3). Dispatch, verify, close out.
-2. **DI seam per-community upgrade** — replace the single global test-only factory override with genuine
+1. **DI seam per-community upgrade** — replace the single global test-only factory override with genuine
    per-`extensionId` remote enablement. This is the mechanism that lets one community run remote while
-   the rest stay local. Independent of Phase F.
-3. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
+   the rest stay local, and it is now the **last** piece before remote is end-to-end usable:
+   `createRemoteEngineNativeCommunityEngineFactory` (E.4d) already exists and is tested — what's missing
+   is per-community *selection*. Independent of Phase F.
+2. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
    (`platform-message-thread`, `platform-connection`, `platform-blocked-target`) — archetypes use
    identity-reading visibility models but declare no `visibility.fields` mapping. Pre-existing, unrelated
    to any migration. Fixing them means community JSON → §1.1 applies.
-4. **LLM Vision UX Judge gate** — never invoked this effort.
-5. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
+3. **LLM Vision UX Judge gate** — never invoked this effort.
+4. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
    approval cycle. Do not batch-migrate.
 
 ---
