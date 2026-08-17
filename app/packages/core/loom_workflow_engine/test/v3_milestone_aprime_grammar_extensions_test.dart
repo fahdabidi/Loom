@@ -204,6 +204,26 @@ void main() {
       expect(unstyled.styleField, isNull);
     });
 
+    test('render binding accepts legacy role and v4 audience identically', () {
+      final shared = <String, dynamic>{
+        'states': ['open'],
+        'tabId': 'home',
+        'cardSurfaceFamily': 'statusTimeline',
+        'bindingKind': 'primary',
+      };
+      final legacy = RenderBinding.fromJson(<String, dynamic>{
+        ...shared,
+        'role': 'receiver',
+      });
+      final v4 = RenderBinding.fromJson(<String, dynamic>{
+        ...shared,
+        'audience': 'receiver',
+      });
+
+      expect(legacy.role, 'receiver');
+      expect(v4.role, legacy.role);
+    });
+
     test('transition fromJson parses inputs from frozen JSON fragment', () {
       final t = LoomWorkflowTransition.fromJson(<String, dynamic>{
         'id': 'cast-vote',
@@ -301,6 +321,20 @@ void main() {
       expect(b.actions.single.scope, 'instance');
       expect(b.actions.single.presentation, 'button');
       expect(b.actions.single.prefill, {'title': '{context.gameName}'});
+    });
+
+    test('workflow action accepts legacy and v4 role keys identically', () {
+      final legacy = WorkflowAction.fromJson(<String, dynamic>{
+        'kind': 'create',
+        'byPersonaIds': ['tabletop-member'],
+      });
+      final v4 = WorkflowAction.fromJson(<String, dynamic>{
+        'kind': 'create',
+        'byRoleIds': ['tabletop-member'],
+      });
+
+      expect(legacy.byPersonaIds, ['tabletop-member']);
+      expect(v4.byPersonaIds, legacy.byPersonaIds);
     });
 
     test('create action parses without optional prefill', () {

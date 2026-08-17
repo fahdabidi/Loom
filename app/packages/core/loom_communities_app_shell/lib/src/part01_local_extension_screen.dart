@@ -229,6 +229,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     return experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
   }
@@ -410,6 +411,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
@@ -501,6 +503,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     if (experience.workflowDefinitions == null ||
@@ -666,6 +669,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final accent = Color(experience.accentColor);
@@ -716,6 +720,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experienceForExtensionId(
           community.extensionId,
           displayName: community.displayName,
+          specVersion: community.specVersion,
           experienceConfiguration: community.experienceConfiguration,
         ).themeOverride !=
         null;
@@ -775,6 +780,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experienceForExtensionId(
           community.extensionId,
           displayName: community.displayName,
+          specVersion: community.specVersion,
           experienceConfiguration: community.experienceConfiguration,
         ).themeOverride !=
         null;
@@ -823,6 +829,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);
@@ -1149,6 +1156,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final activePersona = _activePersona(experience);

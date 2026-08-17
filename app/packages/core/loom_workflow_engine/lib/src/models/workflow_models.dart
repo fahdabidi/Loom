@@ -691,9 +691,10 @@ class WorkflowAction {
   factory WorkflowAction.fromJson(Map<String, dynamic> json) => WorkflowAction(
     kind: json['kind'] as String,
     label: json['label'] as String?,
-    byPersonaIds: (json['byPersonaIds'] as List<dynamic>?)
-        ?.map((e) => e as String)
-        .toList(),
+    byPersonaIds:
+        ((json['byRoleIds'] ?? json['byPersonaIds']) as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList(),
     workflowType: json['workflowType'] as String?,
     transitionId: json['transitionId'] as String?,
     scope: json['scope'] as String?,
@@ -741,7 +742,7 @@ class RenderBinding {
       states: (json['states'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      role: json['role'] as String,
+      role: (json['audience'] ?? json['role']) as String,
       tabId: json['tabId'] as String,
       cardSurfaceFamily: json['cardSurfaceFamily'] as String,
       bindingKind: json['bindingKind'] as String,

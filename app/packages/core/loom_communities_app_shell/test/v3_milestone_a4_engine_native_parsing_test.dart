@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 
 const _tabletopRelativePath =
@@ -73,6 +74,77 @@ Map<String, Object?> _v2Experience({int grammarVersion = 1}) =>
       ],
     };
 
+Map<String, Object?> _minimalPackageExperience({required bool v4}) {
+  final experience = _v2Experience();
+  final identity = <String, Object?>{
+    if (v4) 'roleId': 'community-member',
+    if (!v4) 'personaId': 'community-member',
+    'label': 'Community Member',
+    'roleLabel': 'Member',
+    'description': 'Uses community workflows.',
+  };
+  if (v4) {
+    experience
+      ..remove('experienceSchemaVersion')
+      ..remove('workflowGrammarVersion')
+      ..['roles'] = <Object?>[identity];
+  } else {
+    experience['personas'] = <Object?>[identity];
+  }
+  return experience;
+}
+
+_LocalPackagePair _writeLocalPackagePair({required int? specVersion}) {
+  final suffix = specVersion == null ? 'legacy' : 'v$specVersion';
+  final extensionId = 'a4-local-$suffix';
+  final directory = Directory.systemTemp.createTempSync('loom_a4_$suffix');
+  final extensionFile = File(
+    '${directory.path}/community.loom-extension.zip',
+  );
+  final initializationFile = File(
+    '${directory.path}/community.loom-init.zip',
+  );
+  extensionFile.writeAsStringSync(
+    jsonEncode(<String, Object?>{
+      if (specVersion == null) 'schemaVersion': 1,
+      if (specVersion != null) 'specVersion': specVersion,
+      'extensionId': extensionId,
+      'displayName': 'Minimal Community',
+      'version': '1.0.0',
+      'permissions': <Object?>[],
+      'assets': <Object?>[],
+    }),
+  );
+  initializationFile.writeAsStringSync(
+    jsonEncode(<String, Object?>{
+      if (specVersion == null) 'schemaVersion': 1,
+      if (specVersion != null) 'specVersion': specVersion,
+      'communityId': 'community-$suffix',
+      'displayName': 'Minimal Community',
+      'extensionId': extensionId,
+      'seedDataFiles': <Object?>[],
+      'experience': _minimalPackageExperience(v4: specVersion == 4),
+    }),
+  );
+  return _LocalPackagePair(
+    directory: directory,
+    extensionPath: extensionFile.path,
+    initializationPath: initializationFile.path,
+  );
+}
+
+class _LocalPackagePair {
+  const _LocalPackagePair({
+    required this.directory,
+    required this.extensionPath,
+    required this.initializationPath,
+  });
+
+  final Directory directory;
+  final String extensionPath;
+  final String initializationPath;
+}
+
 List<Object?> _legacyProjection(LoomExperienceDefinition experience) =>
     <Object?>[
       experience.displayName,
@@ -93,6 +165,101 @@ List<Object?> _legacyProjection(LoomExperienceDefinition experience) =>
     ];
 
 void main() {
+  test('legacy and v4 local package pairs load to the same representation', () {
+    final legacyFiles = _writeLocalPackagePair(specVersion: null);
+    final v4Files = _writeLocalPackagePair(specVersion: 4);
+    addTearDown(() {
+      legacyFiles.directory.deleteSync(recursive: true);
+      v4Files.directory.deleteSync(recursive: true);
+    });
+
+    final legacyBackend = LocalInAppBackend();
+    final v4Backend = LocalInAppBackend();
+    final legacyPlan = legacyBackend.parseLocalPackagePair(
+      extensionPackagePath: legacyFiles.extensionPath,
+      initializationPackagePath: legacyFiles.initializationPath,
+    );
+    final v4Plan = v4Backend.parseLocalPackagePair(
+      extensionPackagePath: v4Files.extensionPath,
+      initializationPackagePath: v4Files.initializationPath,
+    );
+    final legacyCommunity = legacyBackend
+        .installLocalPackagePairFromFiles(
+          extensionPackagePath: legacyFiles.extensionPath,
+          initializationPackagePath: legacyFiles.initializationPath,
+        )
+        .community;
+    final v4Community = v4Backend
+        .installLocalPackagePairFromFiles(
+          extensionPackagePath: v4Files.extensionPath,
+          initializationPackagePath: v4Files.initializationPath,
+        )
+        .community;
+    final legacy = experienceForExtensionId(
+      legacyCommunity.extensionId,
+      displayName: legacyCommunity.displayName,
+      specVersion: legacyCommunity.specVersion,
+      experienceConfiguration: legacyCommunity.experienceConfiguration,
+    );
+    final v4 = experienceForExtensionId(
+      v4Community.extensionId,
+      displayName: v4Community.displayName,
+      specVersion: v4Community.specVersion,
+      experienceConfiguration: v4Community.experienceConfiguration,
+    );
+
+    expect(legacyPlan.specVersion, isNull);
+    expect(legacyCommunity.specVersion, isNull);
+    expect(v4Plan.specVersion, 4);
+    expect(v4Community.specVersion, 4);
+    expect(legacy.workflowDefinitions!.keys, <String>['valid']);
+    expect(v4.workflowDefinitions!.keys, legacy.workflowDefinitions!.keys);
+    expect(legacy.workflowInstances, hasLength(1));
+    expect(v4.workflowInstances, hasLength(1));
+    expect(legacy.personas!.single.personaId, 'community-member');
+    expect(v4.personas!.single.personaId, legacy.personas!.single.personaId);
+    expect(v4.personas!.single.label, legacy.personas!.single.label);
+    expect(v4.personas!.single.roleLabel, legacy.personas!.single.roleLabel);
+  });
+
+  test('tab visibility accepts legacy and v4 role keys identically', () {
+    final experience = experienceForExtensionId('a4-tab-visibility-alias');
+    Map<String, Object?> shell(String visibilityKey) => <String, Object?>{
+      'tabs': <Object?>[
+        <String, Object?>{
+          'tabId': 'role-only',
+          'label': 'Role only',
+          visibilityKey: <Object?>['community-member'],
+        },
+      ],
+    };
+
+    List<String> tabIdsFor(
+      String personaId,
+      Map<String, Object?> configuration,
+    ) => appShellTabsFor(
+      experience: experience,
+      personaId: personaId,
+      appShellConfiguration: configuration,
+    ).map((tab) => tab.tabId).toList();
+
+    final legacyVisible = tabIdsFor(
+      'community-member',
+      shell('visiblePersonaIds'),
+    );
+    final v4Visible = tabIdsFor(
+      'community-member',
+      shell('visibleRoleIds'),
+    );
+    final legacyHidden = tabIdsFor('other-role', shell('visiblePersonaIds'));
+    final v4Hidden = tabIdsFor('other-role', shell('visibleRoleIds'));
+
+    expect(legacyVisible, contains('role-only'));
+    expect(v4Visible, legacyVisible);
+    expect(legacyHidden, isNot(contains('role-only')));
+    expect(v4Hidden, legacyHidden);
+  });
+
   test('1 parses the real Tabletop engine-native package completely', () {
     final experience = experienceForExtensionId(
       'a4-tabletop-real-fixture',

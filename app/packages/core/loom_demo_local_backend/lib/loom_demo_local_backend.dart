@@ -34,6 +34,7 @@ class LocalInstalledCommunity {
     required this.cardImageAssetId,
     required this.heroImageAssetId,
     required this.accentColor,
+    this.specVersion,
     this.appShellConfiguration = const {},
     this.experienceConfiguration = const {},
   });
@@ -45,6 +46,7 @@ class LocalInstalledCommunity {
   final String? cardImageAssetId;
   final String? heroImageAssetId;
   final String accentColor;
+  final int? specVersion;
   final Map<String, Object?> appShellConfiguration;
 
   /// Package-declared workflows/personas/persona-policies (from the
@@ -92,6 +94,7 @@ class LocalPackagePairInstallPlan {
     required this.logoAssetId,
     required this.heroImageAssetId,
     required this.appShellConfiguration,
+    this.specVersion,
     this.experienceConfiguration = const {},
   });
 
@@ -101,6 +104,7 @@ class LocalPackagePairInstallPlan {
   final String? logoAssetId;
   final String? heroImageAssetId;
   final Map<String, Object?> appShellConfiguration;
+  final int? specVersion;
   final Map<String, Object?> experienceConfiguration;
 }
 
@@ -215,6 +219,7 @@ class LocalInAppBackend {
           _optionalString(initialization['heroImageAssetId']) ??
           _optionalString(branding?['heroImageAssetId']) ??
           _optionalString(branding?['heroImage']),
+      specVersion: initialization['specVersion'] as int?,
       appShellConfiguration:
           _objectMap(initialization['appShell']) ??
           _objectMap(initialization['appShellCustomization']) ??
@@ -241,6 +246,7 @@ class LocalInAppBackend {
       accentColor: plan.accentColor,
       logoAssetId: plan.logoAssetId,
       heroImageAssetId: plan.heroImageAssetId,
+      specVersion: plan.specVersion,
       appShellConfiguration: plan.appShellConfiguration,
       experienceConfiguration: plan.experienceConfiguration,
     );
@@ -255,6 +261,7 @@ class LocalInAppBackend {
     String accentColor = '#246B62',
     String? logoAssetId,
     String? heroImageAssetId,
+    int? specVersion,
     Map<String, Object?> appShellConfiguration = const {},
     Map<String, Object?> experienceConfiguration = const {},
   }) {
@@ -277,6 +284,7 @@ class LocalInAppBackend {
       cardImageAssetId: package.cardAssetId,
       heroImageAssetId: heroImageAssetId,
       accentColor: accentColor,
+      specVersion: specVersion,
       appShellConfiguration: appShellConfiguration,
       experienceConfiguration: experienceConfiguration,
     );

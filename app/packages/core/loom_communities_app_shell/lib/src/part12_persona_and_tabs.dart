@@ -813,6 +813,7 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
       'pinnedWorkflowIds',
     ]),
     visiblePersonaIds: _readShellStringList(value, const [
+      'visibleRoleIds',
       'visiblePersonaIds',
       'personas',
     ]),

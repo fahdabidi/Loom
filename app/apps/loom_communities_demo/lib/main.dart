@@ -221,6 +221,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
       final experience = experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
       return LocalAuthApi(

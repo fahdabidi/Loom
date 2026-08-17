@@ -62,7 +62,25 @@ void main() {
       expect(plan.accentColor, '#3A7D44');
       expect(plan.logoAssetId, 'asset_logo_garden');
       expect(plan.heroImageAssetId, 'asset_hero_garden');
+      expect(plan.specVersion, isNull);
       expect(plan.appShellConfiguration['tabs'], isA<List<Object?>>());
+    });
+
+    test('specVersion 4 is preserved from plan through installation', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryPackagePair(specVersion: 4);
+
+      final plan = backend.parseLocalPackagePair(
+        extensionPackagePath: fixture.extensionPath,
+        initializationPackagePath: fixture.initializationPath,
+      );
+      final report = backend.installLocalPackagePairFromFiles(
+        extensionPackagePath: fixture.extensionPath,
+        initializationPackagePath: fixture.initializationPath,
+      );
+
+      expect(plan.specVersion, 4);
+      expect(report.community.specVersion, 4);
     });
 
     test('vt_fake-backend_import-arbitrary-package-pair', () {
@@ -82,6 +100,7 @@ void main() {
       expect(report.community.logoAssetId, 'asset_logo_garden');
       expect(report.community.heroImageAssetId, 'asset_hero_garden');
       expect(report.community.accentColor, '#3A7D44');
+      expect(report.community.specVersion, isNull);
       expect(
         report.community.appShellConfiguration['tabs'],
         isA<List<Object?>>(),
@@ -298,13 +317,14 @@ int _crc32(List<int> bytes) {
   return (crc ^ 0xffffffff) & 0xffffffff;
 }
 
-_PackagePairFixture _writeArbitraryPackagePair() {
+_PackagePairFixture _writeArbitraryPackagePair({int? specVersion}) {
   final tempDir = Directory.systemTemp.createTempSync('loom_arbitrary_');
   final extensionFile = File('${tempDir.path}/garden-club.loom-extension.zip');
   final initializationFile = File('${tempDir.path}/garden-club.loom-init.zip');
   extensionFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      if (specVersion == null) 'schemaVersion': 1,
+      if (specVersion != null) 'specVersion': specVersion,
       'mode': 'local-demo',
       'extensionId': 'ext_garden_club',
       'displayName': 'Garden Club',
@@ -326,7 +346,8 @@ _PackagePairFixture _writeArbitraryPackagePair() {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      if (specVersion == null) 'schemaVersion': 1,
+      if (specVersion != null) 'specVersion': specVersion,
       'communityId': 'community_garden_club',
       'communityName': 'Garden Club',
       'extensionId': 'ext_garden_club',

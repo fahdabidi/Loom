@@ -3,11 +3,13 @@ part of '../loom_communities_app_shell.dart';
 LoomExperienceDefinition experienceForExtensionId(
   String extensionId, {
   String? displayName,
+  int? specVersion,
   Map<String, Object?> experienceConfiguration = const {},
 }) {
   final packageExperience = _experienceFromConfiguration(
     extensionId,
     displayName: displayName,
+    specVersion: specVersion,
     experienceConfiguration: experienceConfiguration,
   );
   if (packageExperience != null) {
@@ -42,12 +44,26 @@ LoomExperienceDefinition experienceForExtensionId(
 LoomExperienceDefinition? _experienceFromConfiguration(
   String extensionId, {
   String? displayName,
+  int? specVersion,
   required Map<String, Object?> experienceConfiguration,
 }) {
   if (experienceConfiguration.isEmpty) {
     return null;
   }
   final experienceVersion = experienceConfiguration['experienceSchemaVersion'];
+  if (specVersion != null) {
+    if (specVersion != 4) {
+      throw FormatException(
+        'Unsupported specVersion "$specVersion" for extension "$extensionId". Supported: 4.',
+      );
+    }
+    return _experienceFromEngineNativeConfiguration(
+      extensionId,
+      displayName: displayName,
+      specVersion: specVersion,
+      experienceConfiguration: experienceConfiguration,
+    );
+  }
   if (experienceVersion == 2) {
     return _experienceFromEngineNativeConfiguration(
       extensionId,
@@ -74,7 +90,8 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   }
 
   List<LoomPersonaDefinition>? personas;
-  final personasRaw = experienceConfiguration['personas'];
+  final personasRaw =
+      experienceConfiguration['roles'] ?? experienceConfiguration['personas'];
   if (personasRaw is List) {
     final parsed = <LoomPersonaDefinition>[
       for (final entry in personasRaw)
@@ -301,10 +318,11 @@ List<CalendarDateRailEntry>? _parseCalendarDateRailEntries(Object? themeRaw) {
 LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   String extensionId, {
   String? displayName,
+  int? specVersion,
   required Map<String, Object?> experienceConfiguration,
 }) {
   final grammarVersion = experienceConfiguration['workflowGrammarVersion'];
-  if (grammarVersion != 1)
+  if (specVersion != 4 && grammarVersion != 1)
     throw FormatException(
       'Unsupported experience.workflowGrammarVersion "$grammarVersion" for extension "$extensionId" (experienceSchemaVersion 2 requires grammar version 1).',
     );
@@ -336,7 +354,8 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
         );
       } catch (_) {}
     }
-  final personasRaw = experienceConfiguration['personas'];
+  final personasRaw =
+      experienceConfiguration['roles'] ?? experienceConfiguration['personas'];
   final personas = personasRaw is List
       ? [
           for (final entry in personasRaw)
@@ -1049,7 +1068,9 @@ LoomListingTransition _parseTransition(Map<String, Object?> map) {
     label: map['label'] as String? ?? '',
     fromStates: _shellStringList(map['from']),
     to: map['to'] as String?,
-    allowedPersonaIds: _shellStringList(map['allowedPersonaIds']),
+    allowedPersonaIds: _shellStringList(
+      map['allowedRoleIds'] ?? map['allowedPersonaIds'],
+    ),
     requiresWorkflowsComplete: _shellStringList(
       map['requiresWorkflowsComplete'],
     ),
@@ -1067,7 +1088,7 @@ LoomListingTransition _parseTransition(Map<String, Object?> map) {
 }
 
 LoomPersonaDefinition? _parsePersonaDefinition(Map<String, Object?> map) {
-  final personaId = map['personaId'];
+  final personaId = map['roleId'] ?? map['personaId'];
   final label = map['label'];
   if (personaId is! String || personaId.isEmpty || label is! String) {
     return null;
