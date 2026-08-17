@@ -48,9 +48,9 @@ error cannot be fixed within the grammar, **stop and report the gap** (see AP-11
 
 | Code | Meaning | Fix |
 |---|---|---|
-| `missing_schema_version` | A version stamp is absent | Add all three: `schemaVersion`, `experienceSchemaVersion`, `workflowGrammarVersion` |
+| `missing_schema_version` | A version stamp is absent | Add a single package-root `specVersion: 4`. **Not** the legacy triple — a package declaring `specVersion` must not also carry `schemaVersion` / `experienceSchemaVersion` / `workflowGrammarVersion`, and doing so is its own error. |
 | `unsupported_schema_version` | Version higher than the build supports | Author against the current spec ([`spec-version.json`](../spec-version.json)) |
-| `legacy_experience_schema` (warning) | `experienceSchemaVersion: 1` | Re-author at v2. v1 cannot express state machines. |
+| `legacy_experience_schema` (warning) | The package uses the pre-4 version triple | Re-author at `specVersion: 4`. The triple's v1 could not express state machines at all; v4 folds all three into one package-root stamp. |
 
 ### States
 

@@ -82,10 +82,12 @@ product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`e
 
 ## Hard rules — never violate these
 
-1. **Emit `experienceSchemaVersion: 2`** (engine-native). This is the only schema version described in
-   this bundle.
-2. **Stamp all three version fields**: `schemaVersion`, `experienceSchemaVersion`,
-   `workflowGrammarVersion`. Never omit them.
+1. **Stamp a single package-root `specVersion: 4`.** This is the only version scheme described in this
+   bundle — it replaced the legacy three-number scheme (`schemaVersion`, `experienceSchemaVersion`,
+   `workflowGrammarVersion`).
+2. **Never emit any of the three legacy version fields alongside `specVersion`.** A package declaring
+   `specVersion` must not also carry `schemaVersion`, `experienceSchemaVersion`, or
+   `workflowGrammarVersion` — doing so is its own validation error.
 3. **Never emit a JSON key that isn't enumerated in these reference files.** An unknown key is silently
    ignored by the real parser — it produces a community that looks correct in the JSON but does nothing
    at runtime. If you're not sure a key exists, say so instead of guessing. **Named example this has

@@ -18,10 +18,11 @@ invariants, decision tables, canonical templates, and an error→fix table.
 
 ### Hard rules (never violate)
 
-1. **MUST emit `experienceSchemaVersion: 2`** (engine-native). Never author v1 (legacy shallow) for a new
-   community.
-2. **MUST stamp all three version fields** — `schemaVersion`, `experienceSchemaVersion`,
-   `workflowGrammarVersion`. Omission is a hard error, not a default.
+1. **MUST stamp a single package-root `specVersion: 4`.** See
+   [`_meta/versioning-policy.md`](./_meta/versioning-policy.md). Omission is a hard error, not a default.
+2. **MUST NOT emit the legacy version triple** — `schemaVersion`, `experience.experienceSchemaVersion`,
+   `experience.workflowGrammarVersion`. A package declaring `specVersion` must not also carry any of the
+   three; doing so is its own validation error (`guide/05-validation.md`).
 3. **MUST NOT emit any key not enumerated in `reference/`.** The parser ignores unknown keys silently —
    an invented key produces a community that looks right and does nothing.
 4. **MUST NOT write Dart, or request that Dart be written.** If a requirement seems to need code, it is

@@ -514,10 +514,12 @@ prompts, where every prior round had gotten stuck in that cycle.
 
 When a JSON package built from this bundle (by ChatGPT or anything else) comes back for inspection:
 
-1. Confirm the envelope and version fields (`schemaVersion: 1`, `experienceSchemaVersion: 2`,
-   `workflowGrammarVersion: 1`) are present and correct — an LLM authoring from this bundle with no
-   validator access has gotten `workflowGrammarVersion` wrong before (stamped `2` instead of `1`); the
-   real validator rejects it outright (`unsupported_schema_version`).
+1. Confirm the envelope carries a single package-root `specVersion: 4` and **none** of the legacy triple
+   (`schemaVersion`, `experience.experienceSchemaVersion`, `experience.workflowGrammarVersion`) — an LLM
+   authoring from this bundle with no validator access has gotten the legacy fields wrong before
+   (mismatched values against each other); the real validator rejects either mistake outright
+   (`unsupported_schema_version`, or `missing_schema_version`-adjacent errors for carrying both schemes
+   at once).
 2. Run it through the real validator CLI (`community_package_validator.dart`) as soon as the package is
    in-repo — do not rely on a manual re-read of `04-antipatterns.md`/`05-validation.md` as a substitute,
    the CLI is authoritative and catches more than either of us will by eye.

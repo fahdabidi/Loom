@@ -102,13 +102,16 @@ real enum (fetched at step 7) instead.
 
 ## Hard rules — never violate these
 
-1. Emit `experienceSchemaVersion: 2`.
-2. Stamp all three version fields with their current real values, confirmed against a real shipped
-   fixture, never guessed by analogy to each other: `schemaVersion: 1`, `experienceSchemaVersion: 2`,
-   `workflowGrammarVersion: 1`. **`workflowGrammarVersion` is 1, not 2** — it does not track
-   `experienceSchemaVersion`; the two numbers are independent and a value of `2` fails validation
-   (`unsupported_schema_version`). This has happened in practice; double-check this specific field before
-   returning output.
+1. Stamp a single package-root `specVersion: 4`. This replaced the legacy three-number scheme
+   (`schemaVersion`/`experience.experienceSchemaVersion`/`experience.workflowGrammarVersion`) — see
+   `docs/references/_meta/versioning-policy.md`, fetched as part of step 1's authoring procedure.
+2. **Never emit any of the three legacy version fields.** A package declaring `specVersion` must not
+   also carry `schemaVersion`, `experience.experienceSchemaVersion`, or
+   `experience.workflowGrammarVersion` — doing so is its own validation error
+   (`docs/references/guide/05-validation.md`'s `missing_schema_version` / `legacy_experience_schema`
+   rows). This has been a real, load-bearing mistake in practice; double-check this before returning
+   output, especially when updating an already-shipped community that still declares the legacy triple
+   — the target output must not carry it forward.
 3. Never emit a JSON key that isn't enumerated in the reference files you fetched. An unknown key is
    silently ignored by the real parser — it produces a community that looks correct in the JSON but does
    nothing at runtime.

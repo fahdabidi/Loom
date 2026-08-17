@@ -381,7 +381,7 @@ Adapt this. It is complete and valid — nothing elided.
 
 ```jsonc
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "packageId": "init_hiking_club_1",
   "communityId": "community_hiking_club",
   "communityHandle": "hiking-club",
@@ -391,9 +391,6 @@ Adapt this. It is complete and valid — nothing elided.
   "seedDataFiles": [],
 
   "experience": {
-    "experienceSchemaVersion": 2,
-    "workflowGrammarVersion": 1,
-
     "displayName": "Hiking Club",
     "tagline": "Weekend trails for the neighbourhood.",
     "accentColor": "#2D6A4F",

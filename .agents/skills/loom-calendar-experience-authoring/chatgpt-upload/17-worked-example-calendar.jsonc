@@ -31,8 +31,8 @@
 // real validator (see 00-INSTRUCTIONS.md for why that gate could not run here).
 
 {
-  // ---- Package Envelope Schema v1 ----
-  "schemaVersion": 1,
+  // ---- specVersion 4: single package-root stamp, replaces the legacy triple ----
+  "specVersion": 4,
   "packageId": "init_riverbend_run_club_1",
   "communityId": "community_riverbend_run_club",
   "communityHandle": "riverbend-run-club",
@@ -45,10 +45,6 @@
   "idempotencyKey": "init-riverbend-run-club-v1",
 
   "experience": {
-    // ---- Experience Content Schema v2 (engine-native) + Workflow Grammar v1 ----
-    "experienceSchemaVersion": 2,
-    "workflowGrammarVersion": 1,
-
     "displayName": "Riverbend Run Club",
     "tagline": "Weekly group runs along the river trail.",
     "accentColor": "#2A6F4D",

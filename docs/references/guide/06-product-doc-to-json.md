@@ -15,7 +15,7 @@ derived_from:
 **When to use this.** Your input is a filled-in
 [Community Product Experience Template](../../Build%20Plan%20V2/Skill/references/community-product-experience-template.md)
 — a human-authored, human-verifiable description of a community (identity, personas, workflow types,
-surfaces, seed data). Your output is one validated `experienceSchemaVersion: 2` package. This doc is the
+surfaces, seed data). Your output is one validated `specVersion: 4` package. This doc is the
 **mechanical mapping** from each of the template's 11 sections to the JSON it produces, and which
 reference doc governs the legal values for that JSON.
 
@@ -64,8 +64,8 @@ open it side-by-side — every rule below points at a real line there.
 
 ## §1 → package envelope + experience header
 
-The product doc's identity table becomes fixed top-level keys. All three version fields are **mandatory**
-(README hard rule 2).
+The product doc's identity table becomes fixed top-level keys. A single package-root `specVersion: 4` is
+**mandatory** (README hard rule 1); the legacy triple must not appear at all (README hard rule 2).
 
 | Product-doc field (§1) | JSON key |
 |---|---|
@@ -75,7 +75,7 @@ The product doc's identity table becomes fixed top-level keys. All three version
 | Product promise / tagline | `experience.tagline` |
 
 ```jsonc
-"schemaVersion": 1,                     // envelope — always 1
+"specVersion": 4,                       // package root — always 4, replaces the legacy triple
 "packageId": "init_verify_tabletop_club_2",
 "communityId": "community_verify_tabletop_club",
 "communityHandle": "tabletop-club",
@@ -83,8 +83,6 @@ The product doc's identity table becomes fixed top-level keys. All three version
 "extensionId": "ext_verify_tabletop_club",
 "branding": { "accentColor": "#C4703F", /* logo/hero/altText optional */ },
 "experience": {
-  "experienceSchemaVersion": 2,         // engine-native — always 2 for new communities
-  "workflowGrammarVersion": 1,          // always 1
   "displayName": "Tabletop Club",
   "tagline": "Board game nights, tournaments, loaner games, and dues for local tabletop fans.",
   "accentColor": "#C4703F",
