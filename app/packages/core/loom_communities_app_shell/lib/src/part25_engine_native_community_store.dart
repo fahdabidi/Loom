@@ -129,14 +129,43 @@ class _ActiveIdentityInherited
   final ActiveIdentityScopeState scope;
 }
 
+typedef EngineNativeCommunityEngineFactory =
+    WorkflowEngineApi Function({
+      required WorkflowDatabase database,
+      required String extensionId,
+    });
+
+WorkflowEngineApi _createLocalEngineNativeCommunityEngine({
+  required WorkflowDatabase database,
+  required String extensionId,
+}) => LocalWorkflowEngineApi(
+  db: database,
+  communityId: extensionId,
+  notificationDeliveryService: LocalNotificationDeliveryService(),
+);
+
+EngineNativeCommunityEngineFactory _engineNativeCommunityEngineFactory =
+    _createLocalEngineNativeCommunityEngine;
+
+@visibleForTesting
+void overrideEngineNativeCommunityEngineFactoryForTesting(
+  EngineNativeCommunityEngineFactory factory,
+) {
+  _engineNativeCommunityEngineFactory = factory;
+}
+
+@visibleForTesting
+void resetEngineNativeCommunityEngineFactoryForTesting() {
+  _engineNativeCommunityEngineFactory = _createLocalEngineNativeCommunityEngine;
+}
+
 class _EngineNativeCommunityStore {
   static final _stores = <String, _EngineNativeCommunityStore>{};
 
   late final WorkflowDatabase _database = WorkflowDatabase.memory();
-  late final LocalWorkflowEngineApi engine = LocalWorkflowEngineApi(
-    db: _database,
-    communityId: extensionId,
-    notificationDeliveryService: LocalNotificationDeliveryService(),
+  late final WorkflowEngineApi engine = _engineNativeCommunityEngineFactory(
+    database: _database,
+    extensionId: extensionId,
   );
   final LoomExperienceDefinition experience;
   final String extensionId;
@@ -164,9 +193,11 @@ class _EngineNativeCommunityStore {
   }
 
   Future<void> _initialize() async {
+    final local = engine;
+    if (local is! LocalWorkflowEngineApi) return;
     final definitions = experience.workflowDefinitions!;
     for (final definition in definitions.values) {
-      engine.registerDefinition(definition);
+      local.registerDefinition(definition);
     }
     final seeds = <WorkflowInstance>[];
     for (final seed
@@ -187,15 +218,17 @@ class _EngineNativeCommunityStore {
         ),
       );
     }
-    await engine.seedInstances(seeds);
+    await local.seedInstances(seeds);
   }
 
   void configureAuthorization({
     required Map<String, Object?> appShellConfiguration,
     required ActiveMembershipLookup activeMembershipLookup,
   }) {
-    engine.setActiveMembershipLookup(activeMembershipLookup);
-    engine.setSurfacePermissionLookup(({
+    final local = engine;
+    if (local is! LocalWorkflowEngineApi) return;
+    local.setActiveMembershipLookup(activeMembershipLookup);
+    local.setSurfacePermissionLookup(({
       required String personaId,
       String? personaTypeId,
       String? tabId,
