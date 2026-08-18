@@ -324,13 +324,17 @@ was alive and the machine awake the entire time — the scheduler simply did not
 
 ## 5. Priority queue
 
-1. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
-   (`platform-message-thread`, `platform-connection`, `platform-blocked-target`) — archetypes use
-   identity-reading visibility models but declare no `visibility.fields` mapping. Pre-existing, unrelated
-   to any migration. Fixing them means community JSON → §1.1 applies.
-2. **LLM Vision UX Judge gate** — never invoked this effort.
-3. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
-   approval cycle. Do not batch-migrate.
+1. **LLM Vision UX Judge gate** — never invoked this effort. The only remaining item that needs neither
+   the user nor Phase F.
+2. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
+   approval cycle. Do not batch-migrate. **Scope grew 2026-08-18**: it now also carries `visibility.fields`
+   (~30 findings across 11 of 13 fixtures — the corpus predates D9) plus one real in-pass design decision
+   on `platform-blocked-target`, which cannot satisfy `approvalQueueItem`'s exactly-two-`parties` rule
+   without leaking the block record to the blocked person. See the tracker's investigation row for the
+   full evidence; the recommended resolution is re-homing it to `formEntry`.
+
+**`missing_visibility_fields` is no longer a separate queue item** — investigated 2026-08-18 and folded
+into Phase F by user decision, since fixing it separately would mean touching all 11 fixtures twice.
 
 **Note:** with the DI seam closed (below), every *mechanism* for remote is now built and tested. What
 remains before a community can actually run remote is Phase F layer 4, which is gated on the user.
