@@ -160,6 +160,13 @@ values you have not independently derived.
   `specVersion: 4` package (`part15_evidence_catalog.dart`, `loom_demo_local_backend.dart`,
   `workflow_models.dart` dual-reads, `part12` tab alias).
 
+- **DI seam per-community routing** — **closed 2026-08-17** (`cee3e171`), independently verified (analyze
+  same 8 lints; app shell **243** passes, up from 238, with exactly the 3 known failures). A
+  `Map<String, EngineNativeCommunityEngineFactory>` is consulted before the global factory, so **zero
+  registrations = today's exact behavior**. `enableRemoteEngineForCommunity`/`disableRemoteEngineForCommunity`
+  compose E.4d's factory. Changing routing after a community's store is installed throws a clear
+  `StateError` rather than being silently ignored (the `late final` + `putIfAbsent` trap). **No community
+  is remote — this is the mechanism, not a rollout.**
 - **E.4c + E.4d** — **closed 2026-08-17** (`18d1df1e`), independently verified (analyze 8/8 same lints;
   app shell 238 tests with exactly the 3 known failures; engine 259/259; auth session 17/17 incl. a live
   Keycloak pass). Session seam (`part37_remote_auth_session.dart`) defaults to **null/unconfigured**;
@@ -204,18 +211,16 @@ has 8 pre-existing informational lints — same rule.
 
 ## 5. Priority queue
 
-1. **DI seam per-community upgrade** — replace the single global test-only factory override with genuine
-   per-`extensionId` remote enablement. This is the mechanism that lets one community run remote while
-   the rest stay local, and it is now the **last** piece before remote is end-to-end usable:
-   `createRemoteEngineNativeCommunityEngineFactory` (E.4d) already exists and is tested — what's missing
-   is per-community *selection*. Independent of Phase F.
-2. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
+1. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
    (`platform-message-thread`, `platform-connection`, `platform-blocked-target`) — archetypes use
    identity-reading visibility models but declare no `visibility.fields` mapping. Pre-existing, unrelated
    to any migration. Fixing them means community JSON → §1.1 applies.
-3. **LLM Vision UX Judge gate** — never invoked this effort.
-4. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
+2. **LLM Vision UX Judge gate** — never invoked this effort.
+3. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
    approval cycle. Do not batch-migrate.
+
+**Note:** with the DI seam closed (below), every *mechanism* for remote is now built and tested. What
+remains before a community can actually run remote is Phase F layer 4, which is gated on the user.
 
 ---
 
