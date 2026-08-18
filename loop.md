@@ -152,27 +152,56 @@ Default profile is already correct for this script. Output lands at
 `~/Loom/.codex-logs/skill-authoring/<label>/final_answer.md`. Monitor for `turn.completed`/`turn.failed`.
 **Remember §1.1: its output still needs per-instance approval before it touches a file.**
 
-### Idle cadence — use a Monitor heartbeat, not a timer
+### Recurring prompts — the loop agent (`loop_ctl.sh` + `loop_emitter.sh`)
 
-When there is no dispatch to wait on but the loop should keep ticking, **do not** reach for
-`ScheduleWakeup` or `CronCreate` — neither fires reliably here (§4a). Instead emit the cadence as an
-event stream and let the Monitor deliver it:
+For any named, recurring prompt — including this loop's own cadence — **do not** reach for
+`ScheduleWakeup` or `CronCreate` (neither fires reliably here, §4a). Use the loop agent, which emits the
+cadence as *events* so the one reliable mechanism delivers it.
 
+**Register a loop** (takes effect immediately; no need to re-arm the Monitor):
+
+```bash
+bash data/loop_ctl.sh add tracker 900 "read loop.md and complete all the tasks in that file"
+bash data/loop_ctl.sh ls          # name, interval, enabled, fires, next-in, prompt
+bash data/loop_ctl.sh pause tracker | resume tracker | rm tracker
 ```
-while true; do sleep 900; echo "LOOP-TICK $(date +%H:%M:%S)"; done
+
+**Arm the emitter once** as a persistent Monitor — one instance serves every registered loop:
+
+```bash
+bash data/loop_emitter.sh
 ```
 
-Arm that as a persistent Monitor. Each tick becomes a task-notification that wakes the loop, converting
-an unreliable timer into the one mechanism with a perfect track record. Keep the interval at 900s or
-more — Monitors that emit too frequently are throttled and eventually stopped automatically.
+It emits one line per event: `LOOP-FIRE <name> :: <prompt>` (act on the prompt),
+`LOOP-EXPIRED <name> :: <why>` (hit `max_fires`/`expires_at`, auto-disabled), and
+`LOOP-SKIP <name> :: <why>` (malformed definition — warned **once** per file version, never per pass).
 
-Run the heartbeat **locally**, not over `ssh`: a heartbeat whose only job is to keep firing should not
-depend on the network. SSH to the VM is not always instantaneous (a call timed out at 07:33 on
-2026-08-18 under a load average of 5.0, then succeeded immediately on retry), and an ssh-hosted
-heartbeat dies with the connection.
+**Why it is shaped this way:**
 
-The honest limit: this fixes *session-alive-but-timer-didn't-fire*, which is exactly what was observed.
-It cannot fire when the session itself is gone — nothing available can (§4a rule 4).
+- **Registry re-read every pass**, so loops are added/retuned/paused by touching files — the Monitor is
+  armed once and never needs re-arming.
+- **300s interval floor**, enforced in *both* scripts so a hand-edited file cannot bypass it. Monitors
+  that emit too frequently are throttled and stopped, which would silently kill the wake channel.
+- **`max_fires` (default 200) and `--hours` (default 24)** so a forgotten loop cannot run forever.
+- **Runs locally, never over `ssh`.** It needs no VM access to emit text, and a heartbeat must not die
+  with a network blip — an ssh call timed out at 07:33 on 2026-08-18 under load average 5.0, then
+  succeeded on retry.
+- **Registry lives in `data/loops/`**, deliberately gitignored runtime state, so `git reset --hard`
+  cannot revert it and it cannot trip the §1.1a tracked-file hazard.
+- **A malformed file never crashes the emitter** — a dead emitter is a silently dead wake channel.
+
+**MCP cannot replace this.** An MCP server is request/response: it can hold loop state but cannot wake a
+session on its own, only answer when already called — precisely when waking is unnecessary. `Monitor` is
+the only mechanism that reaches into a session unprompted.
+
+**A fired prompt is a trigger, not authorization.** Events arrive as task-notifications, which are
+explicitly not user input. A loop may tell you to do work; it can never supply the fresh per-instance
+approval that community-JSON changes require (§1.1).
+
+**The honest limit:** this fixes *session-alive-but-timer-didn't-fire*, exactly what was observed. It
+cannot fire once the session itself is gone — nothing available can (§4a rule 4). But unlike
+`CronCreate`, whose jobs are in-memory and lost forever, **the registry survives on disk**: a fresh
+session re-arms every loop by running the emitter once.
 
 ### Running the validator yourself (mandatory gate for any JSON change)
 
