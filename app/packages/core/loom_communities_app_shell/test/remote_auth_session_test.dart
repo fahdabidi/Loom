@@ -37,9 +37,43 @@ final class _TokenLoomAuthSession extends LoomAuthSession {
   Future<String> currentAccessToken() async => token;
 }
 
+final class _FakeWorkflowEngineApi implements WorkflowEngineApi {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+void _installEngineNativeTestExperience(String extensionId) {
+  experienceForExtensionId(
+    extensionId,
+    experienceConfiguration: const <String, Object?>{
+      'experienceSchemaVersion': 2,
+      'workflowGrammarVersion': 1,
+      'workflowDefinitions': <String, Object?>{
+        'remote-workflow': <String, Object?>{
+          'initialState': 'open',
+          'states': <String, Object?>{
+            'open': <String, Object?>{'label': 'Open'},
+          },
+          'transitions': <Object?>[],
+        },
+      },
+      'workflowInstances': <Object?>[
+        <String, Object?>{
+          'instanceId': 'remote-seed',
+          'workflowType': 'remote-workflow',
+          'currentState': 'open',
+          'instanceData': <String, Object?>{},
+          'createdByPersonaId': 'member',
+        },
+      ],
+    },
+  );
+}
+
 void main() {
   tearDown(() {
     resetLoomAuthSessionForTesting();
+    resetEngineNativeCommunityFactoryRegistrationsForTesting();
     resetEngineNativeCommunityEngineFactoryForTesting();
   });
 
@@ -83,7 +117,164 @@ void main() {
   );
 
   test(
-    'real remote engine passes through the store Local-only gates',
+    'one registered community is remote while another remains local',
+    () async {
+      const remoteExtensionId = 'per-community-headline-remote';
+      const localExtensionId = 'per-community-headline-local';
+      final session = _TokenLoomAuthSession('headline-token');
+      final httpClient = MockClient(
+        (_) async => throw StateError('No HTTP request expected in this test.'),
+      );
+      addTearDown(httpClient.close);
+
+      enableRemoteEngineForCommunity(
+        extensionId: remoteExtensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
+      );
+      _installEngineNativeTestExperience(remoteExtensionId);
+      _installEngineNativeTestExperience(localExtensionId);
+
+      final engines = await Future.wait(<Future<WorkflowEngineApi>>[
+        workflowEngineForExtensionId(remoteExtensionId),
+        workflowEngineForExtensionId(localExtensionId),
+      ]);
+
+      expect(engines[0], isA<RemoteWorkflowEngineApi>());
+      expect(engines[1], isA<LocalWorkflowEngineApi>());
+    },
+  );
+
+  test('resetting all registrations restores local routing for all', () async {
+    const firstExtensionId = 'per-community-reset-first';
+    const secondExtensionId = 'per-community-reset-second';
+    final session = _TokenLoomAuthSession('reset-token');
+    final httpClient = MockClient(
+      (_) async => throw StateError('No HTTP request expected in this test.'),
+    );
+    addTearDown(httpClient.close);
+
+    for (final extensionId in <String>[firstExtensionId, secondExtensionId]) {
+      enableRemoteEngineForCommunity(
+        extensionId: extensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
+      );
+    }
+    resetEngineNativeCommunityFactoryRegistrationsForTesting();
+    _installEngineNativeTestExperience(firstExtensionId);
+    _installEngineNativeTestExperience(secondExtensionId);
+
+    final engines = await Future.wait(<Future<WorkflowEngineApi>>[
+      workflowEngineForExtensionId(firstExtensionId),
+      workflowEngineForExtensionId(secondExtensionId),
+    ]);
+
+    expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
+  });
+
+  test('disable removes remote routing before store installation', () async {
+    const extensionId = 'per-community-disable-before-install';
+    final session = _TokenLoomAuthSession('disable-token');
+    final httpClient = MockClient(
+      (_) async => throw StateError('No HTTP request expected in this test.'),
+    );
+    addTearDown(httpClient.close);
+
+    enableRemoteEngineForCommunity(
+      extensionId: extensionId,
+      session: session,
+      workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+      httpClient: httpClient,
+    );
+    disableRemoteEngineForCommunity(extensionId: extensionId);
+    _installEngineNativeTestExperience(extensionId);
+
+    expect(
+      await workflowEngineForExtensionId(extensionId),
+      isA<LocalWorkflowEngineApi>(),
+    );
+  });
+
+  test('enablement after store installation fails loudly', () async {
+    const extensionId = 'per-community-too-late-enable';
+    final session = _TokenLoomAuthSession('too-late-token');
+    final httpClient = MockClient(
+      (_) async => throw StateError('No HTTP request expected in this test.'),
+    );
+    addTearDown(httpClient.close);
+    _installEngineNativeTestExperience(extensionId);
+    final originalEngine = await workflowEngineForExtensionId(extensionId);
+
+    expect(
+      () => enableRemoteEngineForCommunity(
+        extensionId: extensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
+      ),
+      throwsA(
+        isA<StateError>()
+            .having((error) => error.message, 'message', contains(extensionId))
+            .having(
+              (error) => error.message,
+              'message',
+              contains('before installing'),
+            ),
+      ),
+    );
+    expect(
+      await workflowEngineForExtensionId(extensionId),
+      same(originalEngine),
+    );
+    expect(originalEngine, isA<LocalWorkflowEngineApi>());
+  });
+
+  test(
+    'per-community registration precedes global override and global remains fallback',
+    () async {
+      const remoteExtensionId = 'per-community-precedence-remote';
+      const fallbackExtensionId = 'per-community-precedence-fallback';
+      final fakeGlobalEngine = _FakeWorkflowEngineApi();
+      final globalFactoryExtensionIds = <String>[];
+      overrideEngineNativeCommunityEngineFactoryForTesting(({
+        required WorkflowDatabase database,
+        required String extensionId,
+      }) {
+        globalFactoryExtensionIds.add(extensionId);
+        return fakeGlobalEngine;
+      });
+      final session = _TokenLoomAuthSession('precedence-token');
+      final httpClient = MockClient(
+        (_) async => throw StateError('No HTTP request expected in this test.'),
+      );
+      addTearDown(httpClient.close);
+      enableRemoteEngineForCommunity(
+        extensionId: remoteExtensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
+      );
+
+      _installEngineNativeTestExperience(remoteExtensionId);
+      _installEngineNativeTestExperience(fallbackExtensionId);
+      final remoteEngine = await workflowEngineForExtensionId(
+        remoteExtensionId,
+      );
+      final fallbackEngine = await workflowEngineForExtensionId(
+        fallbackExtensionId,
+      );
+
+      expect(remoteEngine, isA<RemoteWorkflowEngineApi>());
+      expect(fallbackEngine, same(fakeGlobalEngine));
+      expect(globalFactoryExtensionIds, <String>[fallbackExtensionId]);
+    },
+  );
+
+  test(
+    'per-community remote engine passes through the store Local-only gates',
     () async {
       const extensionId = 'real-remote-store-gating-test';
       final session = _TokenLoomAuthSession('store-token');
@@ -91,39 +282,14 @@ void main() {
         (_) async => throw StateError('No HTTP request expected in this test.'),
       );
       addTearDown(httpClient.close);
-      overrideEngineNativeCommunityEngineFactoryForTesting(
-        createRemoteEngineNativeCommunityEngineFactory(
-          session: session,
-          workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
-          httpClient: httpClient,
-        ),
+      enableRemoteEngineForCommunity(
+        extensionId: extensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
       );
 
-      experienceForExtensionId(
-        extensionId,
-        experienceConfiguration: const <String, Object?>{
-          'experienceSchemaVersion': 2,
-          'workflowGrammarVersion': 1,
-          'workflowDefinitions': <String, Object?>{
-            'remote-workflow': <String, Object?>{
-              'initialState': 'open',
-              'states': <String, Object?>{
-                'open': <String, Object?>{'label': 'Open'},
-              },
-              'transitions': <Object?>[],
-            },
-          },
-          'workflowInstances': <Object?>[
-            <String, Object?>{
-              'instanceId': 'remote-seed',
-              'workflowType': 'remote-workflow',
-              'currentState': 'open',
-              'instanceData': <String, Object?>{},
-              'createdByPersonaId': 'member',
-            },
-          ],
-        },
-      );
+      _installEngineNativeTestExperience(extensionId);
       configureEngineAuthorizationForExtensionId(
         extensionId: extensionId,
         appShellConfiguration: const <String, Object?>{},

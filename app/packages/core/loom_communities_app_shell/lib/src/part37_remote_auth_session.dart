@@ -116,6 +116,37 @@ createRemoteEngineNativeCommunityEngineFactory({
           httpClient: httpClient,
         );
 
+/// Routes one community to the remote workflow engine.
+///
+/// This must be called before [experienceForExtensionId] installs the
+/// engine-native store for [extensionId]. A per-community registration takes
+/// precedence over the process-wide engine factory; communities without a
+/// registration continue to use that existing factory unchanged.
+void enableRemoteEngineForCommunity({
+  required String extensionId,
+  required LoomAuthSession session,
+  required Uri workflowServiceBaseUri,
+  required http.Client httpClient,
+}) {
+  _registerEngineNativeCommunityEngineFactory(
+    extensionId: extensionId,
+    factory: createRemoteEngineNativeCommunityEngineFactory(
+      session: session,
+      workflowServiceBaseUri: workflowServiceBaseUri,
+      httpClient: httpClient,
+    ),
+  );
+}
+
+/// Removes one community's remote workflow-engine registration.
+///
+/// This is idempotent when [extensionId] has no registration. Like enablement,
+/// an existing registration cannot be removed after the community's
+/// engine-native store has been installed because that store caches its engine.
+void disableRemoteEngineForCommunity({required String extensionId}) {
+  _unregisterEngineNativeCommunityEngineFactory(extensionId);
+}
+
 @visibleForTesting
 void overrideLoomAuthSessionForTesting(LoomAuthSession session) {
   _loomAuthSession = session;

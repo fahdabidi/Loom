@@ -147,6 +147,10 @@ WorkflowEngineApi _createLocalEngineNativeCommunityEngine({
 EngineNativeCommunityEngineFactory _engineNativeCommunityEngineFactory =
     _createLocalEngineNativeCommunityEngine;
 
+final Map<String, EngineNativeCommunityEngineFactory>
+_engineNativeCommunityEngineFactoriesByExtensionId =
+    <String, EngineNativeCommunityEngineFactory>{};
+
 @visibleForTesting
 void overrideEngineNativeCommunityEngineFactoryForTesting(
   EngineNativeCommunityEngineFactory factory,
@@ -159,14 +163,49 @@ void resetEngineNativeCommunityEngineFactoryForTesting() {
   _engineNativeCommunityEngineFactory = _createLocalEngineNativeCommunityEngine;
 }
 
+void _registerEngineNativeCommunityEngineFactory({
+  required String extensionId,
+  required EngineNativeCommunityEngineFactory factory,
+}) {
+  _ensureEngineNativeCommunityRoutingCanChange(extensionId);
+  _engineNativeCommunityEngineFactoriesByExtensionId[extensionId] = factory;
+}
+
+void _unregisterEngineNativeCommunityEngineFactory(String extensionId) {
+  if (!_engineNativeCommunityEngineFactoriesByExtensionId.containsKey(
+    extensionId,
+  )) {
+    return;
+  }
+  _ensureEngineNativeCommunityRoutingCanChange(extensionId);
+  _engineNativeCommunityEngineFactoriesByExtensionId.remove(extensionId);
+}
+
+void _ensureEngineNativeCommunityRoutingCanChange(String extensionId) {
+  if (_EngineNativeCommunityStore._stores.containsKey(extensionId)) {
+    throw StateError(
+      'Engine routing for "$extensionId" cannot be changed after its '
+      'engine-native store has been installed. Configure routing before '
+      'installing the community experience.',
+    );
+  }
+}
+
+@visibleForTesting
+void resetEngineNativeCommunityFactoryRegistrationsForTesting() {
+  _engineNativeCommunityEngineFactoriesByExtensionId.clear();
+}
+
 class _EngineNativeCommunityStore {
   static final _stores = <String, _EngineNativeCommunityStore>{};
 
   late final WorkflowDatabase _database = WorkflowDatabase.memory();
-  late final WorkflowEngineApi engine = _engineNativeCommunityEngineFactory(
-    database: _database,
-    extensionId: extensionId,
-  );
+  late final WorkflowEngineApi engine =
+      (_engineNativeCommunityEngineFactoriesByExtensionId[extensionId] ??
+      _engineNativeCommunityEngineFactory)(
+        database: _database,
+        extensionId: extensionId,
+      );
   final LoomExperienceDefinition experience;
   final String extensionId;
   Future<void>? _ready;
