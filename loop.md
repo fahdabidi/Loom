@@ -29,6 +29,20 @@ than making no progress at all.
 - A broad earlier authorization ("migrate all the communities…") does **not** substitute for per-file
   approval. This exact mistake was made and reverted on 2026-08-17.
 
+### 1.1a Two `data/` scripts are tracked — `git reset` silently reverts deployments to them
+
+`.gitignore` line 1 is `/data/`, but **`data/call_implementation_agent.sh` and
+`data/call_skill_authoring_agent.sh` were committed before that took effect**, and gitignore does not
+apply to already-tracked files. So `git reset --hard origin/main` on the VM restores those two to their
+*committed* content, silently undoing anything deployed with `scp`. Found 2026-08-18 when a freshly
+deployed fix reverted on the next sync; the untracked `watch_dispatch_log.sh` survived the same reset,
+which is what exposed the asymmetry.
+
+**Therefore: never `scp` a fix to those two files as the last step.** Change the tracked copy
+(`docs/Build Plan V2/Tools/code/<script>` **and** `data/<script>`, which must stay byte-identical),
+commit, push, then sync the VM — the reset then delivers the correct version by itself. Verify with
+`md5sum` on both sides afterwards, never by assuming.
+
 ### 1.2 The lock does not survive git operations — re-apply it
 
 `git reset --hard` / `checkout` / `pull` silently restores write permissions, because file modes are not
