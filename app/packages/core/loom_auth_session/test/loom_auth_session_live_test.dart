@@ -9,7 +9,7 @@ void main() {
     final client = _TimeoutClient(http.Client(), const Duration(seconds: 5));
     final session = LoomAuthSession(
       tokenEndpoint: Uri.parse(
-        'http://192.168.56.10:30082/realms/loom/'
+        'http://localhost:30082/realms/loom/'
         'protocol/openid-connect/token',
       ),
       clientId: 'loom-test-client',
@@ -31,7 +31,7 @@ void main() {
 
     final token = await session.currentAccessToken();
     final claims = _decodeJwtClaims(token);
-    expect(claims['iss'], 'http://192.168.56.10:30082/realms/loom');
+    expect(claims['iss'], 'http://localhost:30082/realms/loom');
     expect(claims['fanId'], 'fan-test-alice');
   });
 }

@@ -32,7 +32,7 @@ final class _InteractiveLoginHarnessState
     super.initState();
     _session = LoomAuthSession(
       tokenEndpoint: Uri.parse(
-        'http://192.168.56.10:30082/realms/loom/'
+        'http://localhost:30082/realms/loom/'
         'protocol/openid-connect/token',
       ),
       clientId: 'loom-test-client',
