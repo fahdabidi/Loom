@@ -324,20 +324,37 @@ was alive and the machine awake the entire time — the scheduler simply did not
 
 ## 5. Priority queue
 
-1. **LLM Vision UX Judge gate** — never invoked this effort. The only remaining item that needs neither
-   the user nor Phase F.
+**Sequenced 2026-08-18 — do these in order; each unblocks the next.**
+
+1. **`visibility.fields` spec Changes 1 + 2** — `docs/Build Plan V2/Visibility Fields Spec Proposal.md`,
+   user-approved in principle. **Phase F is blocked corpus-wide until this lands.** Change 1 (conditional
+   requirement) resolves 7 unexpressible cases; Change 2 (role-as-party) resolves 4 more and gives the
+   seven always-false `$viewer == 'role'` guards a legitimate home. Touches spec docs, the validator, and
+   the Skill mirror. **Verify first, do not assume**: role-principal resolution must go through the same
+   role-membership lookup `allowedRoleIds` already uses.
 2. **Phase F layer 4** (fixture migration, 11 communities) — **not autonomous.** Each file needs the §1.1
-   approval cycle. Do not batch-migrate. **Scope grew 2026-08-18**: it now also carries `visibility.fields`
-   (~30 findings across 11 of 13 fixtures — the corpus predates D9) plus one real in-pass design decision
-   on `platform-blocked-target`, which cannot satisfy `approvalQueueItem`'s exactly-two-`parties` rule
-   without leaking the block record to the blocked person. See the tracker's investigation row for the
-   full evidence; the recommended resolution is re-homing it to `formEntry`.
+   approval cycle. Do not batch-migrate. Pilot is **AdFreeCommunity** (1016 lines, 3 errors all one type,
+   0 warnings, 22/22 guards + 2/2 creates translate cleanly, no broken `$viewer` comparisons, dead-draft
+   bug already fixed there) — **not** Cedar, which is the hardest at 3172 lines and 38 errors and should
+   come late. Re-scope the pilot after step 1, since several of its errors dissolve under Change 1.
+   Carries the `visibility.fields` work, plus one in-pass decision on `platform-blocked-target`
+   (recommended: re-home to `formEntry`; resolved by *neither* spec change).
+3. **Document ACL** — `docs/Build Plan V2/Document ACL Spec Proposal.md`. Deliberately last: **no shipped
+   community uses per-document sharing**, all five `documentLibrary` workflows are `membersOnly` with no
+   `readGuard`, so Change 1 already resolves their findings. Greenfield, no fixture migration. Generalise
+   the principal type from Change 2 at this point rather than growing a second dialect.
+4. **LLM Vision UX Judge gate** — never invoked this effort, and **blocked on evidence**: the 207
+   screenshots it audits were captured 2026-07-03 under WSL-era `/mnt/c` paths and no longer exist. The
+   evidence JSON survived (362 files) but the PNGs did not. Re-capture also needs a stale-path fix in
+   `b25_capture_workflow_screenshots.dart` (it expects `apps/`, the app is at `app/apps/`). Do this
+   **after** Phase F — capturing now would only photograph a corpus about to change.
 
 **`missing_visibility_fields` is no longer a separate queue item** — investigated 2026-08-18 and folded
-into Phase F by user decision, since fixing it separately would mean touching all 11 fixtures twice.
+into Phase F, since fixing it separately would mean touching all 11 fixtures twice.
 
-**Note:** with the DI seam closed (below), every *mechanism* for remote is now built and tested. What
-remains before a community can actually run remote is Phase F layer 4, which is gated on the user.
+**Note:** every *mechanism* for remote is built and tested (auth session, login screen, token wiring,
+remote factory, per-community routing). What remains before a community can actually run remote is the
+chain above, and step 2 is gated on the user.
 
 ---
 
