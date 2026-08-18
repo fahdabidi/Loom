@@ -469,10 +469,6 @@ how many actions there are — it governs the launched form, not the FAB itself.
 `home` and `messages` are added **unconditionally** by the App Shell. The rest appear only when a
 workflow binds to them.
 
-`messages`'s content is entirely system-provided — never author a `renderBindings` entry targeting it, and
-never declare it in `appShell.tabs[]`/`personaTabs[]` (AP-14 in `03-antipatterns.md`). Its row above
-describes what the tab *is*, not something this Skill's output ever populates.
-
 ## `role` — complete list
 
 | `role` | Renders for |

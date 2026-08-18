@@ -335,17 +335,7 @@ guard**. A tie spawns a **real runoff** via `branch` + `createInstance`.
 
 ## P6 — Discussion thread
 
-**Key ideas:** the message list is **data**; posting is an orthogonal `append`. `discussionThread` is a
-real, fully-supported generic archetype (`archetypes/README.md`) — this pattern itself is still correct
-and in active use across 6 shipped communities.
-
-> ⚠️ **Never bind it (or anything else) to `tabId: "messages"` — see [AP-14](./03-antipatterns.md#ap-14--authoring-a-custom-messaging-workflow-or-a-messages-render-binding-locked-2026-08-16).**
-> `messages` is a fixed, system-provided App Shell tab, same as `home` — no community-authored workflow
-> content backs it, ever. Bind a `discussionThread` instance to a real, community-declared tab instead
-> (`"discussions"` below is illustrative — pick whatever name fits the product doc's own vocabulary, and
-> declare it in `appShell.tabs[]` like any other custom tab per pattern 8 in `20-solved-patterns.md`).
-> Some older shipped communities still bind `discussionThread` to `tabId: "messages"` — that is legacy
-> content pending a separate, deferred fix, not something to imitate in new output.
+**Key ideas:** the message list is **data**; posting is an orthogonal `append`.
 
 ```jsonc
 "discussion-thread": {
@@ -369,7 +359,7 @@ and in active use across 6 shipped communities.
       "guard": { "allowedPersonaIds": ["member", "organizer"] } }
   ],
   "renderBindings": [
-    { "states": ["open"], "role": "any", "tabId": "discussions",
+    { "states": ["open"], "role": "any", "tabId": "messages",
       "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }
   ],
   "instanceDataSchema": {
@@ -383,9 +373,6 @@ and in active use across 6 shipped communities.
   }
 }
 ```
-
-Remember the corresponding `appShell.tabs[]` entry for `"discussions"` (or whatever real tabId you chose)
-— see pattern 8.
 
 > ⚠️ **Starting a *new* thread** is the same tab-scoped `actions[]` create affordance as P3 — see
 > [`07-actions-and-fabs.md`](./07-actions-and-fabs.md).

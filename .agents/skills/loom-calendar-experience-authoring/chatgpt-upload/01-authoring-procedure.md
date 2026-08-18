@@ -209,9 +209,10 @@ For each type, decide where its instances appear, per state and per role.
 ```
 
 - `tabId` ∈ `calendar` · `marketplace` · `giving` · `admin` (plus any open-vocabulary custom name). `home`
-  and `messages` are reserved, system-provided App Shell tabs — **never** target `tabId: "messages"` in a
-  `renderBindings` entry (AP-14); `home` is technically valid but should stay curated, not a dumping
-  ground (AP-10).
+  and `messages` always exist without a declaration — the App Shell adds both unconditionally — but both
+  are still valid binding targets, and `messages` is specifically **where discussion threads belong**
+  (`render-bindings.md`'s tab table). Declaring either in `appShell.tabs[]` is optional and only affects
+  cosmetics (label/icon). `home` is valid but should stay curated, not a dumping ground (AP-10).
 - `role` ∈ `any` · `actor` · `receiver`
 - `bindingKind` ∈ `primary` (full/interactive) · `summary` (compact)
 - `cardSurfaceFamily` — **only** values from [`archetypes/README.md`](../archetypes/README.md)

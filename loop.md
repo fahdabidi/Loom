@@ -349,7 +349,7 @@ remains before a community can actually run remote is Phase F layer 4, which is 
 | Phase E.4b Android | Emulator has no KVM in the VM; Windows host has **no Android SDK installed at all** now. Emulator formerly ran on the *host*, pre-VM-migration | User decides: reinstall host SDK, **or** retire WSL + disable Hyper-V (never do this unilaterally) |
 | Live remote execution / `setGroupMembership` / expand-to-3-more | Corpus-wide: all 11 fixtures are `workflowGrammarVersion: 1`; App Access only implements `specVersion: 4`. Not a server bug — the identity-model gate working as designed | Phase F layer 4 (§5.5) |
 | D3 ratchet, D8 dual-read deletion | Both explicitly gated on Phase F closeout | Phase F layer 4 |
-| Messages tab fix (5 communities show fake seed data) | User deliberately deferred until the plan completes | User direction |
+| Messages tab fallback (5 communities show fake "Tabletop Club" seed threads) | User deliberately deferred until the plan completes. **Scope corrected 2026-08-18**: this is an app-shell *fallback* bug — communities with no discussion workflow bound to `messages` fall back to hardcoded demo data instead of an empty state. It is **not** an argument against `messages` bindings; `render-bindings.md` gives `messages` the explicit purpose "Discussion threads" and 6 communities bind to it correctly (see the retracted AP-14 rows in the tracker) | User direction |
 
 ---
 

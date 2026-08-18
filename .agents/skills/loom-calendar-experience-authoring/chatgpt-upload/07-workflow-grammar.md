@@ -258,14 +258,10 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | `calendar` · `marketplace` · `giving` · `admin` (plus custom names) |
+| `tabId` | string | **yes** | `home` · `calendar` · `marketplace` · `giving` · `admin` · `messages` |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` (full, interactive) · `summary` (compact) |
 | `audienceMemberField` | string | no | Field holding the invited personas, for targeted visibility |
-
-`home` and `messages` are reserved, system-provided App Shell tabs — never author a `renderBindings` entry
-targeting `tabId: "messages"` (AP-14); a stray `renderBindings[].tabId: "home"` entry is technically legal
-but should stay curated, not a dumping ground (AP-10).
 
 A workflow with **no** bindings for a state simply doesn't render in that state — which is a legitimate
 way to hide drafts.
