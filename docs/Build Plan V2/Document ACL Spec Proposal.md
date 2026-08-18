@@ -123,9 +123,14 @@ Two alternatives were considered and rejected:
 | **App shell** | A real share affordance — pick a person or role, pick a level, show current grants, revoke |
 | **Docs** | `document-library.md` §3/§6, `CONTRACTS.md` documentLibrary row and the visibility table |
 
-**Engine dependency to confirm before building:** role-principal resolution must go through the same
-role-membership lookup `allowedRoleIds` already uses. This is stated as a requirement to verify, **not**
-an assumption — the same open item as Change 2.
+**Engine dependency — verified 2026-08-18, no longer an open item.** Role-principal resolution goes
+through `_personaTypeById` (`local_workflow_engine_api.dart:148`), the same map `allowedRoleIds`
+resolves against via `guard_evaluator.dart:26-31`. `_isVisibleThroughArchetype` is an instance method
+on the class that owns that map, so the `sharedWith` case can read it directly — no signature change
+and nothing becomes async. See the Visibility proposal §5a for the full evidence table and for the two
+qualifications that carry over here: the field type must widen from `String`/`List<String>` to a
+principal union, and an unregistered viewer resolves to `null` and is therefore denied (fail-closed,
+consistent with the existing clause, but it should be documented rather than discovered).
 
 ## 5. Migration impact — none
 

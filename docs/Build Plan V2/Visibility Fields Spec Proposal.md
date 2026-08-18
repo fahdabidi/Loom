@@ -151,9 +151,41 @@ here. **Recommendation: adopt Changes 1 and 2 now; treat this as a Phase F revie
 | `community_package_validator.dart` | `_validateVisibilityFields`: conditional requirement; accept role objects; validate roleId against `roles[]`; keep arity at 2 |
 | `.agents/skills/.../chatgpt-upload/` mirror + zip | Same guidance, regenerated |
 
-**Engine impact:** none for Change 1. For Change 2, whichever component resolves `parties` at read time
-must resolve a role reference through the same role-membership lookup `allowedRoleIds` already uses —
-to be confirmed against the engine before implementation, not assumed.
+## 5a. Engine impact — verified against the engine, 2026-08-18
+
+The proposal previously flagged this as *"to be confirmed, not assumed."* It has now been read out of
+the engine. **The required role-membership lookup exists and is reachable.**
+
+**Change 1: zero engine impact — confirmed, not inferred.** `_isVisibleThroughArchetype`
+(`local_workflow_engine_api.dart:541`) already tolerates absent fields: the `parties` and
+`participants` cases call `.any(...)` over a list that defaults to `const []`, and the `sharedWith`
+and `recipient` cases short-circuit on `!= null`. Dropping the validator requirement changes no engine
+behaviour on any path.
+
+**Change 2: the lookup `allowedRoleIds` uses is `_personaTypeById`, and it is already in scope.**
+
+| Evidence | Location |
+|---|---|
+| `final Map<String, String> _personaTypeById = {};`, populated by explicit registration | `local_workflow_engine_api.dart:148,152` |
+| `allowedRoleIds` resolves through it: `typeForAllowedCheck = personaTypeId ?? personaId` | `guard_evaluator.dart:26-31` |
+| The engine feeds it in at 8 call sites, including the `guarded` read path | `local_workflow_engine_api.dart:535` |
+| `_isVisibleThroughArchetype` is an instance method on that same class | `local_workflow_engine_api.dart:541` |
+
+Because the archetype visibility resolver is a method on the class that owns the map, a role-as-party
+branch can read `_personaTypeById[personaId]` directly. **No signature change, nothing becomes async,
+and the semantics are identical to `allowedRoleIds` by construction** — which is exactly the
+consistency the change requires.
+
+**Two findings that qualify the estimate, both real:**
+
+1. **`parties` is `List<String>` today**, parsed by a `stringList()` helper that rejects non-string
+   entries (`workflow_models.dart:487,511`). Change 2 therefore needs a genuine model change —
+   `parties` becomes a list of a two-case union (field name vs role reference) with `fromJson`
+   accepting `{"role": "<roleId>"}` — not a one-line branch in the resolver. Sizeable but contained.
+2. **`_personaTypeById` is populated by registration, so an unregistered viewer resolves to `null`**
+   and a role-as-party entry denies. That is fail-closed and consistent with the "all models fail
+   closed" clause, but it means role-as-party admits only registered viewers. Worth stating in
+   `CONTRACTS.md` alongside the change rather than leaving it to be discovered.
 
 ## 6. Expected effect on Phase F
 
