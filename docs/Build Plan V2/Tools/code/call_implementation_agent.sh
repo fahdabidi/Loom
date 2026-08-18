@@ -24,11 +24,19 @@
 #   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && \
 #     setsid nohup bash data/call_implementation_agent.sh <ticket> --fresh \
 #     < /dev/null > .codex-logs/<label>_dispatch.out.log 2>&1 & disown'
-#   # ... then watch for genuine completion, NOT a raw `tail -F | grep` --
-#   # that old pattern never exited on its own (grep had no -m1). Use
-#   # watch_dispatch_log.sh, which kills its own `tail -F` and exits itself a
-#   # few seconds after the real completion line:
+#   # ... then WRAP THIS IN A Monitor (persistent: true). Event-based waking is
+#   # the only kind proven reliable here -- see loop.md section 4a: timers
+#   # (ScheduleWakeup/cron) missed every single firing across two overnight
+#   # stalls, while every Monitor fired promptly. Never poll, never sleep-loop.
 #   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
+#   # That script self-terminates and emits exactly one of:
+#   #   codex exec exited with status <n>  -> normal completion
+#   #   DISPATCH-DIED: ...                 -> process vanished, no completion
+#   #                                         line (killed/crashed/OOM)
+#   #   DISPATCH-SIGNAL: <line>            -> usage limit / panic / fatal seen
+#   #                                         mid-run (informational, continues)
+#   # Do NOT filter the Monitor down to only the success line: a dispatch that
+#   # dies silently must still wake you. Silence must never be the signal.
 #   # ... once the dispatch has genuinely completed (watcher fired on
 #   # "codex exec exited with status"), commit the round's real edits (once
 #   # confirmed present via `git status`/`git diff`) immediately -- not
@@ -240,9 +248,14 @@ fi
 
 # Record this script's OWN pid so a caller that backgrounds this whole script
 # (setsid nohup bash call_implementation_agent.sh ... & disown) has a
-# reliable, repeatable way to poll for completion later -- `while kill -0
-# "$(cat .codex-logs/.last_dispatch.pid)" 2>/dev/null; do sleep 5; done`.
-# This replaces fragile pgrep-by-command-substring checks (e.g. `pgrep -f
+# reliable, repeatable way to detect completion later. DO NOT poll it in a
+# sleep loop -- watch_dispatch_log.sh reads this file and turns process death
+# into an event (DISPATCH-DIED), so a Monitor wrapping that script covers both
+# normal completion and abnormal death without a single poll. The old
+# `while kill -0 "$(cat .codex-logs/.last_dispatch.pid)"; do sleep 5; done`
+# recipe is retired: it burned a turn per poll and reported nothing about
+# *why* a dispatch ended.
+# The pid file also replaces fragile pgrep-by-command-substring checks (e.g. `pgrep -f
 # "codex exec"`), which have twice produced wrong answers in practice: an
 # unanchored pattern matches the wrapper shell command's own text (it
 # contains "codex exec" as a literal substring of the script being run,

@@ -109,11 +109,24 @@ ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && \
   (`gpt5_3_spark`) has a separate, frequently-exhausted quota — omitting this has already wasted a
   dispatch.
 - **Always pass `--fresh`** so it starts a clean session rather than resuming a prior one.
-- Then arm a persistent monitor:
+- **Always redirect into `.codex-logs/<label>_dispatch.out.log`** — that is the path
+  `watch_dispatch_log.sh` derives from `<label>`.
+- Then arm a **persistent Monitor** wrapping the hardened watcher (never a raw `tail -F | grep`, never a
+  poll loop):
   ```
-  ssh loom-vm 'tail -F -n +1 ~/<label>.log' | grep --line-buffered -E \
-    "^codex exec exited with status|hit your usage limit|panic:|FAILED \(|^fatal:"
+  ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
   ```
+  It self-terminates and emits exactly one terminal event, so **every** outcome wakes you:
+
+  | Emitted line | Meaning |
+  |---|---|
+  | `codex exec exited with status <n>` | normal completion |
+  | `DISPATCH-DIED: …` | process vanished with no completion line (killed / crashed / OOM) |
+  | `DISPATCH-SIGNAL: <line>` | usage limit / panic / fatal seen mid-run — informational, watch continues |
+
+  **Do not narrow the Monitor to only the success line.** A dispatch that dies silently must still wake
+  you; silence must never be the signal. All four paths (completion, death, mid-run signal, and the
+  exit-before-final-line-flushes race) were tested end to end on 2026-08-18.
 
 ### Dispatching the authoring Skill (community JSON only)
 
@@ -124,6 +137,28 @@ ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && \
 Default profile is already correct for this script. Output lands at
 `~/Loom/.codex-logs/skill-authoring/<label>/final_answer.md`. Monitor for `turn.completed`/`turn.failed`.
 **Remember §1.1: its output still needs per-instance approval before it touches a file.**
+
+### Idle cadence — use a Monitor heartbeat, not a timer
+
+When there is no dispatch to wait on but the loop should keep ticking, **do not** reach for
+`ScheduleWakeup` or `CronCreate` — neither fires reliably here (§4a). Instead emit the cadence as an
+event stream and let the Monitor deliver it:
+
+```
+while true; do sleep 900; echo "LOOP-TICK $(date +%H:%M:%S)"; done
+```
+
+Arm that as a persistent Monitor. Each tick becomes a task-notification that wakes the loop, converting
+an unreliable timer into the one mechanism with a perfect track record. Keep the interval at 900s or
+more — Monitors that emit too frequently are throttled and eventually stopped automatically.
+
+Run the heartbeat **locally**, not over `ssh`: a heartbeat whose only job is to keep firing should not
+depend on the network. SSH to the VM is not always instantaneous (a call timed out at 07:33 on
+2026-08-18 under a load average of 5.0, then succeeded immediately on retry), and an ssh-hosted
+heartbeat dies with the connection.
+
+The honest limit: this fixes *session-alive-but-timer-didn't-fire*, which is exactly what was observed.
+It cannot fire when the session itself is gone — nothing available can (§4a rule 4).
 
 ### Running the validator yourself (mandatory gate for any JSON change)
 
