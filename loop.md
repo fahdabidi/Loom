@@ -209,6 +209,41 @@ has 8 pre-existing informational lints — same rule.
 
 ---
 
+## 4a. Scheduling reliability — diagnosed 2026-08-18, do not relearn this
+
+**Time-based wake-ups do not fire in this setup. Event-based ones always do.** This was measured, not
+assumed, after two overnight stalls (~9h and ~8h).
+
+| Mechanism | Observed result |
+|---|---|
+| `ScheduleWakeup(delaySeconds: 1500)` | Registered as *"Every day at 1:53 PM (one-shot)"* — a 25-minute relative delay silently mistranslated into a daily absolute time — then never fired |
+| `CronCreate("7,22,37,52 * * * *")` | ~32 consecutive missed firings across 8 hours; never fired once |
+| `Monitor` (log-line / process events) | Fired correctly and promptly **every time**, across every dispatch this effort |
+
+**Ruled out as causes, with evidence:** host sleep (no Kernel-Power 42/107 events in the window), reboot
+(uptime 5d 22h; last boot 2026-08-12), VSCode/extension-host restart (all `Code` processes continuous
+since 2026-08-12 08:58), and session death (conversation context survived both gaps intact). The session
+was alive and the machine awake the entire time — the scheduler simply did not fire.
+
+**Rules that follow:**
+
+1. **Never put a timer in the critical path of progress.** A `ScheduleWakeup`/cron may be armed as a
+   courtesy heartbeat, but never assume it will fire, and never treat "the loop will pick it up later"
+   as a plan.
+2. **Prefer chaining on events.** End an iteration by dispatching work and arming a `Monitor` on its
+   completion; the Monitor drives the next iteration. This is self-propelling and has a perfect track
+   record here.
+3. **Do more per iteration.** Since each wake-up is precious and may be the last for hours, finish a
+   complete unit of work — dispatch → verify → reconcile → close out → push — rather than leaving
+   something half-done for "next tick."
+4. **Cloud routines cannot substitute.** They run in Anthropic's cloud with no route to `loom-vm`
+   (VirtualBox host-only `192.168.56.10`), so they cannot dispatch, test, validate, or re-apply the
+   community-JSON lock. They also cannot wake this local session. Confirmed 2026-08-18.
+5. **Leave the repo resumable at all times** (§7) — the real mitigation for an unreliable scheduler is
+   that a stall costs nothing but time.
+
+---
+
 ## 5. Priority queue
 
 1. **The 3 `missing_visibility_fields` validator errors** surfaced 2026-08-17 on Member Social Space
@@ -238,15 +273,40 @@ remains before a community can actually run remote is Phase F layer 4, which is 
 
 ## 7. Each loop iteration
 
-1. Read this file. Check `git log --oneline -3` on both local and VM; re-apply the community-JSON lock
-   (§1.2) if the VM was reset.
-2. **Surface to the user**, at the top of your response: any small-architecture decision made since the
-   last iteration that has not yet been confirmed, and anything newly discovered that is blocked on them.
-3. Check for in-flight dispatches before starting new ones (`pgrep -af codex` on the VM).
-4. Advance the highest-priority unblocked item in §5.
-5. Verify independently (§1.4), reconcile git (§1.5), write the tracker closeout row citing the real
-   evidence, push.
-6. Update this file's §3/§5 when the state materially changes.
+Assume you may be resuming after an unannounced multi-hour stall (§4a). Every step below is written to be
+safe to run at any time, in any order of arrival, with no memory of the previous iteration.
+
+**Recover first — one command, before anything else:**
+
+```bash
+date "+NOW: %F %T"; git log -1 --format="LOCAL: %h %ad %s" --date=format:"%F %T"
+ssh loom-vm 'cd ~/Loom && git log -1 --format="VM: %h %ad %s" --date=format:"%F %T"; \
+  chmod 444 docs/references/communities/*.jsonc; \
+  echo "IN-FLIGHT:"; pgrep -af codex | grep -v pgrep | grep -v "tail -F" || echo "  none"'
+```
+
+Verified working 2026-08-18: it surfaced an 8h14m stall, both repos in sync, no in-flight dispatch, and
+re-applied the lock — in one call, before any other decision.
+
+1. **Detect a stall and say so.** If the newest commit is more than ~1 hour old, state the gap explicitly
+   in your response ("last update was N hours ago") rather than continuing silently. A stall is not a
+   failure to hide — it is the expected behavior of an unreliable scheduler (§4a), and the user needs to
+   know the loop was not running.
+2. **Recover in-flight work before starting anything new.** If a `codex` process is still running, do not
+   dispatch — monitor it. If the VM has commits the local checkout doesn't, reconcile them (§1.5) before
+   anything else; a dispatch may have completed and been verified-but-not-pushed during a stall. If the
+   VM was reset, the lock is already re-applied by the recovery command above — verify it with a real
+   write attempt.
+3. **Surface to the user**, at the top of your response: any small-architecture decision made since the
+   last confirmed one, and anything newly discovered that is blocked on them.
+4. **Advance the highest-priority unblocked item in §5** — and finish it completely (dispatch → verify →
+   reconcile → close out → push). Do not leave a unit of work half-done expecting a next tick (§4a rule 3).
+5. Verify independently (§1.4), reconcile git (§1.5), write the tracker closeout row citing real evidence,
+   push.
+6. **Arm a `Monitor` on any dispatch you start** — that is the wake signal that actually works. A cron or
+   `ScheduleWakeup` is at best a courtesy heartbeat; never rely on it.
+7. Update this file's §3/§5 when the state materially changes, so the next session inherits current truth
+   rather than reconstructing it.
 
 **Stop the loop and ask** when: a §1.3 escalation is hit, the priority queue is empty of unblocked work,
 or the same failure recurs twice with no new information — in that case report the precise diagnosis
