@@ -393,13 +393,21 @@ at all.
 ### The loop
 
 1. Draft the complete package to a file in your working directory. Do not show it yet.
-2. `POST` it to `/validate`:
+2. `POST` it to `/validate`, **always sending the `X-Loom-Dispatch` header** with the label you were
+   given at dispatch time (it appears in your prompt's target-doc path, e.g. `cedar_r2`):
 
    ```bash
    curl -s -m 30 -X POST -H 'Content-Type: application/json' \
+     -H 'X-Loom-Dispatch: <your-label>' \
+     -H 'X-Loom-Round: <round number, starting at 1>' \
      --data-binary @your-package.jsonc \
      http://127.0.0.1:8787/validate
    ```
+
+   The two headers cost you nothing and are not optional. The server records which findings each round
+   produced, which is how this Skill gets improved — a rule that keeps producing the same finding
+   across dispatches is a documentation gap, and that is only visible if the rounds are attributable.
+   Sending them wrong is better than omitting them.
 
    The body may be JSON or JSONC — comments are stripped server-side. The response is a
    `ValidationReport`: `{"status", "errorCount", "warningCount", "findings":[{"type","message","location","isWarning"}]}`.
@@ -414,6 +422,24 @@ at all.
 **Returning a package with `errorCount > 0` is a failed dispatch.** You had the tool that would have
 caught it. If you cannot make a finding go away, say so explicitly in Gaps/assumptions, quote the
 finding, and explain what you tried — do not quietly return it.
+
+### Bound the loop — 6 rounds, then stop and report
+
+**Stop after 6 validate-and-fix rounds even if findings remain**, and return what you have with an
+explicit `## UNRESOLVED FINDINGS` section listing each remaining finding verbatim (`type`, `location`,
+`message`) and what you tried for it. A bounded run that reports honestly is useful; an unbounded one
+that burns the dispatch and returns nothing is not.
+
+Three things that do **not** count as a round, because they are not the normal fix cycle:
+
+- a `curl` that fails to connect or times out — that is a transport failure, retry it;
+- a response that is not a `ValidationReport` — malformed request, fix the call;
+- a validate you ran purely to confirm an edit you already knew was right.
+
+**Aim to need one round, not six.** Every finding you fix on round three is one the reference docs
+should have prevented on round one, so treat a multi-round run as a signal worth reporting: if the
+same finding type keeps reappearing, say so plainly in Gaps/assumptions and name the doc that should
+have told you. That note is more valuable than the fix.
 
 ### Reading findings
 
