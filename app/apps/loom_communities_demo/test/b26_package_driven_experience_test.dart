@@ -30,6 +30,7 @@ void main() {
       final experience = experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
 
@@ -70,6 +71,7 @@ void main() {
       final experience = experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
 
@@ -108,6 +110,7 @@ void main() {
       final experience = experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
 

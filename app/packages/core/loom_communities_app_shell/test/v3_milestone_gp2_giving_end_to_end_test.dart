@@ -66,6 +66,7 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
@@ -172,6 +173,7 @@ void main() {
         final experience = experienceForExtensionId(
           installed.community.extensionId,
           displayName: installed.community.displayName,
+          specVersion: installed.community.specVersion,
           experienceConfiguration: installed.community.experienceConfiguration,
         );
         final givingTheme = LoomCardTheme.merge(

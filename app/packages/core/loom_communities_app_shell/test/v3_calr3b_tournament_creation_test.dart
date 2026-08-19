@@ -64,6 +64,7 @@ Future<_InstalledFixture> _install(String extensionId) async {
   experienceForExtensionId(
     extensionId,
     displayName: community.displayName,
+    specVersion: community.specVersion,
     experienceConfiguration: community.experienceConfiguration,
   );
   await workflowEngineForExtensionId(extensionId);

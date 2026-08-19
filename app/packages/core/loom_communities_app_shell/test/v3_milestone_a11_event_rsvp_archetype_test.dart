@@ -110,6 +110,7 @@ Future<_InstalledTabletop> _install(
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
@@ -178,6 +179,7 @@ Widget _app(_InstalledTabletop installed, {LoomAuthApi? authApi}) =>
               experience: experienceForExtensionId(
                 installed.community.extensionId,
                 displayName: installed.community.displayName,
+                specVersion: installed.community.specVersion,
                 experienceConfiguration:
                     installed.community.experienceConfiguration,
               ),

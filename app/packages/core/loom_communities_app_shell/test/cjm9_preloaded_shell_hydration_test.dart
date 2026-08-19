@@ -188,6 +188,7 @@ void main() {
         final experience = experienceForExtensionId(
           installation.report.community.extensionId,
           displayName: installation.report.community.displayName,
+          specVersion: installation.report.community.specVersion,
           experienceConfiguration:
               installation.report.community.experienceConfiguration,
         );
@@ -223,6 +224,7 @@ void main() {
       final experience = experienceForExtensionId(
         installation.report.community.extensionId,
         displayName: installation.report.community.displayName,
+        specVersion: installation.report.community.specVersion,
         experienceConfiguration:
             installation.report.community.experienceConfiguration,
       );

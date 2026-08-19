@@ -84,6 +84,7 @@ Future<_InstalledTabletop> _install(
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);

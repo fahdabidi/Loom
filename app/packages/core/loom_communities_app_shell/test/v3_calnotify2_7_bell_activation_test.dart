@@ -64,6 +64,7 @@ Future<_InstalledFixture> _install(String extensionId) async {
   experienceForExtensionId(
     extensionId,
     displayName: community.displayName,
+    specVersion: community.specVersion,
     experienceConfiguration: community.experienceConfiguration,
   );
   await workflowEngineForExtensionId(extensionId);
@@ -124,6 +125,7 @@ void main() {
         final experience = experienceForExtensionId(
           installed.community.extensionId,
           displayName: installed.community.displayName,
+          specVersion: installed.community.specVersion,
           experienceConfiguration: installed.community.experienceConfiguration,
         );
         expect(experience.resolvedNotificationPresentationStyle, 'bell');

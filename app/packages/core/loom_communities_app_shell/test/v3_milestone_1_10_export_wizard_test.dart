@@ -76,6 +76,7 @@ Future<_InstalledFixture> _installFixture(String extensionId, String fixtureRela
   experienceForExtensionId(
     community.extensionId,
     displayName: community.displayName,
+    specVersion: community.specVersion,
     experienceConfiguration: community.experienceConfiguration,
   );
   final engine = await workflowEngineForExtensionId(community.extensionId);

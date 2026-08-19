@@ -62,6 +62,7 @@ void main() {
       experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
 

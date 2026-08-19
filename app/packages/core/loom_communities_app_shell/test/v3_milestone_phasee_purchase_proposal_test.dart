@@ -67,6 +67,7 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
+      specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
@@ -212,6 +213,7 @@ void main() {
     final experience = experienceForExtensionId(
       'phasee-admin-tab-cosmetics',
       displayName: source['displayName'] as String?,
+      specVersion: source['specVersion'] as int?,
       experienceConfiguration: source['experience'] as Map<String, Object?>,
     );
     const appShellConfiguration = <String, Object?>{

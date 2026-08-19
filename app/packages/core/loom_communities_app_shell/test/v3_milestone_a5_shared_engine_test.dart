@@ -50,6 +50,7 @@ void main() {
       final resolved = experienceForExtensionId(
         community.extensionId,
         displayName: community.displayName,
+        specVersion: community.specVersion,
         experienceConfiguration: community.experienceConfiguration,
       );
       final engine = await workflowEngineForExtensionId(community.extensionId);
@@ -141,6 +142,7 @@ void main() {
       experienceForExtensionId(
         reinstalled.extensionId,
         displayName: reinstalled.displayName,
+        specVersion: reinstalled.specVersion,
         experienceConfiguration: reinstalled.experienceConfiguration,
       );
       final reloadedEngine = await workflowEngineForExtensionId(

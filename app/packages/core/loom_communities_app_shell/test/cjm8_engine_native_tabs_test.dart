@@ -128,6 +128,7 @@ Future<_EngineNativeCommunityFixture> _installFixture(String extensionId) async 
   final experience = experienceForExtensionId(
     extensionId,
     displayName: source['displayName'] as String?,
+    specVersion: source['specVersion'] as int?,
     experienceConfiguration: experienceRaw ?? const <String, Object?>{},
   );
   // These fixtures model someone already inside their own community, so

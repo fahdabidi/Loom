@@ -68,6 +68,7 @@ Future<_InstalledFixture> _install(
   experienceForExtensionId(
     extensionId,
     displayName: community.displayName,
+    specVersion: community.specVersion,
     experienceConfiguration: community.experienceConfiguration,
   );
   await workflowEngineForExtensionId(extensionId);
