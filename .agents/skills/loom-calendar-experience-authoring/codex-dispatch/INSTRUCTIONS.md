@@ -45,6 +45,37 @@ is new and why the existing set didn't already cover the need.
 If no `## Existing identifiers` section is present in the target doc, this is a brand-new community with
 nothing to preserve — author personas/tabs fresh as normal, per the rest of this document.
 
+### When the update is also a `specVersion: 4` migration — the persona→role collapse
+
+The shipped file you are updating declares legacy `experience.personas[]`; your output must declare
+`experience.roles[]` (rule 2a). **These are not the same list renamed.** A persona is an individual
+(Alex, Bailey, Casey); a role is a *kind* of member. Roles derive from the **distinct `roleLabel`
+values** across the personas, so four personas whose `roleLabel`s are Member/Member/Member/Moderator
+collapse to **two** roles. Do not emit one role per persona.
+
+- `roles[]` entries are `{"roleId": "<slug-of-roleLabel>", "label": "<roleLabel>"}`.
+- The listed `personaId` values do **not** become `roleId`s. They are individuals — wherever one names
+  a *person* (seed data, instance-data identity fields) it becomes a `fanId`; wherever a *guard*
+  selected people by persona, it becomes `allowedRoleIds`/`byRoleIds`/`visibleRoleIds` naming the
+  role(s) those personas belong to.
+- **Two `roleLabel`s that slug to the same `roleId` are an error, not something to merge.** Say so in
+  Gaps/assumptions rather than picking one.
+
+**The hazard that makes this non-mechanical — read carefully.** A guard listing *some but not all* of
+a role's personas **cannot be translated to that role**: `allowedRoleIds: ["member"]` would grant
+access to every member, including the ones the original list deliberately excluded. That is a silent
+privilege widening, and it is exactly the kind of change that looks correct in review.
+
+When you hit one, **do not widen and do not guess**. Two cases, both of which must go in
+Gaps/assumptions naming the exact guard and personas:
+
+- a **strict subset of one role** — flag it; translating would widen access;
+- a **partial set spanning two or more roles** — flag it as mixed; no single role expresses it.
+
+Only a persona list covering a role's **full** roster translates cleanly to that role. The dispatching
+session verifies your derivation against this repo's own migration-derivation tool, so a flagged case
+costs a follow-up question; a silently widened one is a real access-control defect.
+
 ## Fetch order
 
 Fetch each of these in order, reading it in full before moving to the next. Skipping ahead risks missing an
@@ -139,11 +170,12 @@ real enum (fetched at step 7) instead.
 9. Cross-reference repeat/retry language in the target product doc against your transition graph — if it
    uses "retry", "resubmit", "try again", "reopen", "undo", or "re-request", confirm the transition(s) that
    phrase implies actually cover every state a member could realistically be retrying from.
-10. On every tab except `admin`, `role: "receiver"` never resolves to anyone, and `role: "actor"` only ever
+10. **In `specVersion: 4` this key is `audience`, not `role` (rule 2a) — the values below are unchanged.**
+    On every tab except `admin`, `audience: "receiver"` never resolves to anyone, and `audience: "actor"` only ever
     matches the literal instance creator — never assume otherwise (see `render-bindings.md`'s normative
-    table, fetched at step 5). For every `renderBinding` using `role: "actor"` or `"receiver"` on a
+    table, fetched at step 5). For every `renderBinding` using `audience: "actor"` or `"receiver"` on a
     non-`admin` tab, confirm the persona it needs to reach really is always the instance creator; if not,
-    use `role: "any"` instead.
+    use `audience: "any"` instead.
 11. Build the requirement traceability table (`01-authoring-procedure.md` Step 9.5) and include it as a
     real artifact in your final answer, not a claim that you checked. One row per atomic product-doc
     requirement per workflow, citing the exact JSON construct that satisfies it, or `not_implemented` with
@@ -151,16 +183,16 @@ real enum (fetched at step 7) instead.
 12. **Declare `action` on every transition of a bespoke-archetype workflow, and never on a generic one.**
     The six bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
     `searchAiAnswer`, `exportWizard`) each have a **closed** action vocabulary — see
-    Never declare a field an archetype owns. `CONTRACTS.md` (step 11b) lists the per-person bookkeeping
-    each archetype maintains itself — response sets, read/acknowledged/saved/downloaded sets, queues.
-    Declaring one of those, or writing an `actorInList` idempotence guard against it, duplicates logic
-    the archetype already applies and is how the same rule ends up expressed two different ways.
     `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The
     seven generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
     `statusTimeline`, `notificationInbox`, `table`) derive their permissions structurally and must carry
     **no** `action` field at all. `table` is the one to watch: it renders as a grid and reads as bespoke,
-    but that is list layout only — it has no dispatcher case, so it takes no `action`. `action` is what the platform maps to the permission a transition needs, so an
-    unmapped or misnamed one silently leaves a permission ungranted and the action fails at runtime.
+    but that is list layout only — it has no dispatcher case, so it takes no `action`. `action` is what the platform maps to the permission a transition needs.
+    **A missing one does not crash — and that is exactly why it matters.** The engine reads
+    `if (family == null || action == null) return sourceData;`: the transition still runs, and the
+    archetype's per-person bookkeeping for it silently never happens, with no error and no runtime
+    diagnostic. A crash would announce itself; this loses the archetype's guaranteed record-keeping
+    quietly and permanently, which is why the validator has to catch it and why you must not omit one.
     Three further points, each of which has already caused a real defect:
     (a) A workflow with `"renderBindings": []` that is named by some binding's `responseTable.workflowType`
     **inherits that binding's archetype** (§6 step 3b) — so an RSVP response workflow is bespoke and its
@@ -171,8 +203,39 @@ real enum (fetched at step 7) instead.
     against the transition, and say so when they diverge.
     (c) A workflow may mix one bespoke family with generic bindings; that is normal and the bespoke family
     is the archetype. Only two or more *bespoke* families is an error.
+12a. **Never declare a field an archetype owns.** `CONTRACTS.md` (step 11b) lists the per-person
+    bookkeeping each archetype maintains itself — response sets, read/acknowledged/saved/downloaded
+    sets, queues. Declaring one of those in `instanceDataSchema`, or writing an `actorInList`
+    idempotence guard against it, duplicates logic the archetype already applies and is how the same
+    rule ends up expressed two different ways. (This rule was previously spliced into the middle of
+    rule 12's sentence about action vocabularies, leaving both unreadable; they are separate rules.)
+
+12b. **`visibility.fields` — declare it only when identity-scoped reads actually engage, and get the
+    `parties` shape right.** See `workflow-grammar.md` § `visibility.fields` (step 2) and
+    `CONTRACTS.md` §3 (step 11b), both fetched in full — this summary is a pointer, not a substitute.
+    - A mapping is **required** only when the workflow's own `visibility.default` is `guarded`, **or**
+      it declares a `readGuard` at the workflow level or on any state. When the workflow is `public` or
+      `membersOnly` with no guard anywhere, **do not invent one** — the archetype's identity model can
+      only widen a read that is already open, so a mapping there adds nothing and risks naming the
+      wrong field.
+    - **Never point a mapping at archetype bookkeeping.** `sharedWith: "downloadedFanIds"` would grant
+      read access to everyone who already downloaded the document — circular, and wrong. It passes the
+      arity check while granting incorrectly, which is worse than failing. If the workflow has no field
+      that genuinely means "party", say so in Gaps/assumptions rather than picking the nearest
+      identity-shaped one.
+    - `parties` takes **exactly two** entries, each either an instance-data field name **or**
+      `{"role": "<roleId>"}` for a counterparty that is the community itself rather than a person — the
+      collecting side of a payment, the reviewing body of a request. A role entry's `<roleId>` must be
+      declared in `experience.roles[]`. A role object carries **only** the `role` key.
+    - Use a role party instead of reaching for a formula like `$viewer == 'some-role-id'`. That
+      comparison is always false — `$viewer` is a `fanId`, not a `roleId` — and the two conditions
+      inside one guard are ANDed, so a `readGuard` cannot express "this person **or** whoever holds
+      role X" at all. The role party is what expresses it, because archetype models widen rather than
+      replace. See `identity-types.md` §3.5 (step 11a).
+
 13. **Never author a permission, a user, or a membership.** Permissions are derived from your
-    `allowedPersonaIds`/`byPersonaIds` plus `action` — writing one is always wrong. Likewise never model
+    `allowedRoleIds`/`byRoleIds` (the `specVersion: 4` spellings — see rule 2a) plus `action` —
+    writing one is always wrong. Likewise never model
     joining a community, approving a member, or assigning someone a persona as a workflow: that is an App
     Shell experience backed by the App Access service. Domain processes that *accompany* joining (signing a
     waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
@@ -221,7 +284,7 @@ run come back clean, via a rigorous **manual** self-check performed before you s
 6. **Do this as its own separate pass, not folded into step 5** (a whole-package omission is easy to miss
    while reviewing each `renderBindings` entry in isolation — this has happened in practice, see
    `solved-patterns.md` pattern 8): list every distinct non-`home`/`messages` `tabId` value used anywhere
-   across the whole package, then confirm each one has a matching `appShell.tabs[]`/`personaTabs[]` entry.
+   across the whole package, then confirm each one has a matching `appShell.tabs[]`/`roleTabs[]` entry.
    `home` and `messages` are exempt because the App Shell adds both unconditionally — they need no
    declaration, though binding content to them is entirely valid (`messages` is where discussion threads
    belong). Missing this produces `unknown_tab_id` findings, one per undeclared tab.
@@ -231,7 +294,9 @@ run come back clean, via a rigorous **manual** self-check performed before you s
 
 ## What to deliver
 
-1. **One JSON (or JSONC) file** — the complete package: `schemaVersion`, `packageId`, `communityId`,
+1. **One JSON (or JSONC) file** — the complete package: `specVersion` (the value `4`, and **not**
+   `schemaVersion` — see Hard Rules 1 and 2; this list previously named `schemaVersion` here, which
+   directly contradicted them), `packageId`, `communityId`,
    `communityHandle`, `displayName`, `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, the
    `experience` block, **and a top-level `appShell` block** (see below — required whenever any workflow uses
    a `tabId` other than `home`/`messages`, which is nearly always). Return it in a single fenced code block
@@ -242,9 +307,9 @@ run come back clean, via a rigorous **manual** self-check performed before you s
    **`appShell.tabs[]` is easy to drop entirely — check for it as an explicit, separate step, not as part of
    reviewing each `renderBindings` entry.** After drafting every workflow, collect the full set of distinct
    non-`home`/`messages` `tabId` values used anywhere across the package, then
-   confirm every one of them has a matching entry in `appShell.tabs[]` (or `personaTabs[]` for a
+   confirm every one of them has a matching entry in `appShell.tabs[]` (or `roleTabs[]` for a
    persona-scoped tab) — see
-   `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]` — tab declaration shape` section (fetched at
+   `render-bindings.md`'s `appShell.tabs[]` / `roleTabs[]` — tab declaration shape` section (fetched at
    step 5) for the exact field shape, and `solved-patterns.md` pattern 8 (fetched at step 10) for a full
    worked example of this exact omission and its fix. A package whose workflows are otherwise perfect but
    has no `appShell` block will fail validation with an `unknown_tab_id` finding per undeclared tab — this
