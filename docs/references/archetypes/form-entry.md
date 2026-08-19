@@ -53,3 +53,71 @@ Corpus split: 4 `membersOnly`, 3 `guarded`, 2 `public`.
 - **Chess Club's rankings pair `formEntry` with `table`** on one workflow. Both are generic so nothing
   is ambiguous today, but it is the only workflow in the corpus mixing two generic families where the
   primary surface is arguably the `table`.
+
+## 6. Worked example
+
+The archetype to reach for when no bespoke family fits. Everything derives structurally, so the shape
+is carried entirely by states, guards and bindings.
+
+```jsonc
+"club-volunteer-signup": {
+  "initialState": "submitted",
+  "visibility": { "default": "membersOnly" },
+
+  "instanceDataSchema": {
+    "shiftChoice":    { "type": "text",    "required": true },
+    "notes":          { "type": "textarea" },
+    "createdByFanId": { "type": "fanId",   "required": true },
+    // Community-declared and community-maintained -- see section 2.
+    "confirmedFanIds":{ "type": "fanId[]", "writableBy": "effect" }
+  },
+
+  "states": {
+    "submitted": { "label": "Signed up", "tone": "info",
+                   "editableFields": ["shiftChoice", "notes"],
+                   "editGuard": { "actorEqualsField": { "key": "createdByFanId" } } },
+    "confirmed": { "label": "Confirmed", "tone": "positive" },
+    "cancelled": { "label": "Cancelled", "tone": "neutral", "isTerminal": true }
+  },
+
+  "transitions": [
+    // No "action" key: formEntry is generic (section 1).
+    { "id": "confirm-signup", "label": "Confirm",
+      "from": ["submitted"], "to": "confirmed",
+      "guard": { "allowedRoleIds": ["club-coordinator"] },
+      "effects": [ { "op": "append", "key": "confirmedFanIds", "value": "$actor" } ] },
+
+    { "id": "cancel-signup", "label": "Cancel signup", "tone": "destructive",
+      "from": ["submitted", "confirmed"], "to": "cancelled",
+      "guard": { "actorEqualsField": { "key": "createdByFanId" } } }
+  ],
+
+  "renderBindings": [
+    { "tabId": "home", "audience": "any",
+      "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+      "states": ["submitted", "confirmed", "cancelled"],
+      "actions": [ { "kind": "create", "label": "Sign up" } ] }
+  ]
+}
+```
+
+### Why each part is the way it is
+
+- **No `action` anywhere.** Generic family (§1). `create` derives from the create affordance,
+  `advance` from `confirm-signup`, `terminate` from `cancel-signup`'s destructive tone and terminal
+  target, `view` from reading.
+- **`confirmedFanIds` is declared, and that is correct here.** §2: `formEntry` owns no bookkeeping, so
+  a per-person array on it is the community's own field, written by the community's own effect. The
+  rule that forbids declaring archetype-owned sets does not apply — this archetype owns none.
+- **The submitter edits their own submission.** `actorEqualsField` on `createdByFanId` expresses
+  "owner", which is half of this archetype's visibility model (§3).
+- **`cancel-signup` accepts two `from` states.** Cancelling should work before *and* after
+  confirmation; a transition that only left `submitted` would strand confirmed signups.
+
+### What not to do
+
+- Do not use `formEntry` for something a bespoke family already models. A payment is
+  `paymentCheckout`; a submit-then-decide queue is `approvalQueueItem` (see
+  [`approval-queue.md`](./approval-queue.md) for that pairing). Reaching for `formEntry` because it is
+  permissive loses the archetype's bookkeeping and its actions.
+- Do not add an `action` to make a transition "explicit". It is a validator error on a generic family.
