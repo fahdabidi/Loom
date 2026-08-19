@@ -287,6 +287,43 @@ has 8 pre-existing informational lints — same rule.
 
 ---
 
+## 4b. `Read-only file system` on the Flutter SDK — an environment failure, not a code failure
+
+**Symptom.** A dispatch emits `DISPATCH-SIGNAL: FAILED (in 1 packages)`, repeatedly, and the log shows:
+
+```
+FileSystemException: Cannot open file,
+  path = '/home/fahd/flutter/bin/cache/<artifact>.stamp'
+  (OS Error: Read-only file system, errno = 30)
+ERROR: Failed to update packages.
+```
+
+**Cause.** The Codex sandbox is `workspace-write` and grants only the repo, `/tmp`, `~/.pub-cache` and
+`~/.config/flutter`. **The Flutter SDK itself (`~/flutter`) is not writable.** When Flutter decides a
+cached artifact's stamp is stale it re-downloads and tries to re-stamp inside the SDK, which the
+sandbox refuses. `melos bootstrap` then fails, and every subsequent `analyze`/`test` fails with it.
+
+**This is not fixable from inside the dispatch.** The agent will loop on it indefinitely, burning the
+run, because nothing it can legally write changes the outcome. Do not read these signals as the change
+under test being broken — check the log before concluding anything about the diff.
+
+**Fix, from the host side, while the dispatch is still running:**
+
+```bash
+ssh loom-vm '. ~/.loom-env.sh && flutter precache'
+```
+
+That runs as the normal user, outside the sandbox, and rewrites the stamps. The agent's next iteration
+picks them up and proceeds. Observed 2026-08-18 on the Change 2 dispatch; the run recovered without
+being restarted.
+
+**Do not** "fix" this by adding `--add-dir ~/flutter` to the dispatch grants. Giving an agent write
+access to the toolchain it is building with trades a recoverable stall for an unrecoverable one — a
+corrupted SDK breaks every future dispatch, not just this one. Pre-caching is the correct fix because
+the SDK should never need writing during a dispatch at all.
+
+---
+
 ## 4a. Scheduling reliability — diagnosed 2026-08-18, do not relearn this
 
 **Time-based wake-ups do not fire in this setup. Event-based ones always do.** This was measured, not
