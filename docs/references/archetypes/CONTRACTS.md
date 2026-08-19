@@ -94,6 +94,18 @@ nothing rather than leaking. The asymmetry matters: an unset field must not matc
 **They widen, never narrow.** Each is evaluated in addition to the `default` visibility decision, so a
 declared mapping can only grant a read, never revoke one the default already allowed.
 
+**Which is why the mapping is only *required* when identity-scoped reads actually engage.** Widening a
+read that is already open adds nothing, so a workflow that is `public` or `membersOnly` with no
+`readGuard` anywhere is not asked for a `visibility.fields` mapping. The requirement applies when
+`visibility.default` is `guarded`, or a `readGuard` is declared at the workflow level or on any state.
+Declaring a mapping outside those conditions stays legal and is still fully validated. See
+[`workflow-grammar.md`](../reference/workflow-grammar.md) § `visibility.fields` for the validator
+behaviour.
+
+> Note that `recipient`, despite appearing in the table above, is **not** enforced as a required
+> mapping by the validator — an omitted addressee means broadcast, which falls back to the `default`
+> decision and still fails closed under `membersOnly`/`guarded`.
+
 ---
 
 ## 4. The contracts
