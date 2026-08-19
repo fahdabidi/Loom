@@ -19,6 +19,7 @@ class _PreloadedShellInstallation {
   const _PreloadedShellInstallation({
     required this.backend,
     required this.report,
+    required this.incomingPackage,
     required this.incomingExperience,
     required this.initialCommunity,
     required this.temp,
@@ -26,6 +27,7 @@ class _PreloadedShellInstallation {
 
   final LocalInAppBackend backend;
   final LocalBackendImportReport report;
+  final Map<String, Object?> incomingPackage;
   final Map<String, Object?> incomingExperience;
   final LocalInstalledCommunity initialCommunity;
   final Directory temp;
@@ -61,6 +63,7 @@ Future<_PreloadedShellInstallation> _installOverPreloadedShell({
   return _PreloadedShellInstallation(
     backend: backend,
     report: report,
+    incomingPackage: source,
     incomingExperience: incomingExperience,
     initialCommunity: snapshotCommunity,
     temp: temp,
@@ -92,6 +95,36 @@ String _stringValue(Map<String, Object?> source, String key) {
   final value = source[key];
   if (value is String && value.trim().isNotEmpty) return value.trim();
   throw StateError('Fixture missing required string "$key".');
+}
+
+void _expectCoherentHydratedVersionScheme(
+  _PreloadedShellInstallation installation,
+) {
+  final incomingPackage = installation.incomingPackage;
+  final incomingExperience = installation.incomingExperience;
+  final installedCommunity = installation.report.community;
+  final installedExperience = installedCommunity.experienceConfiguration;
+
+  if (incomingPackage.containsKey('specVersion')) {
+    expect(incomingPackage['specVersion'], 4);
+    expect(installedCommunity.specVersion, 4);
+    expect(incomingPackage.containsKey('schemaVersion'), isFalse);
+    for (final key in const <String>[
+      'experienceSchemaVersion',
+      'workflowGrammarVersion',
+    ]) {
+      expect(incomingExperience.containsKey(key), isFalse);
+      expect(installedExperience.containsKey(key), isFalse);
+    }
+    return;
+  }
+
+  expect(incomingPackage['schemaVersion'], 1);
+  expect(incomingExperience['experienceSchemaVersion'], 2);
+  expect(incomingExperience['workflowGrammarVersion'], 1);
+  expect(installedCommunity.specVersion, isNull);
+  expect(installedExperience['experienceSchemaVersion'], 2);
+  expect(installedExperience['workflowGrammarVersion'], 1);
 }
 
 Map<String, Object?> _extensionManifestFromSource(
@@ -177,10 +210,7 @@ void main() {
           installation.report.community.experienceConfiguration,
           equals(installation.incomingExperience),
         );
-        expect(
-          installation.report.community.experienceConfiguration['experienceSchemaVersion'],
-          2,
-        );
+        _expectCoherentHydratedVersionScheme(installation);
         expect(
           installation.report.community.experienceConfiguration.isNotEmpty,
           isTrue,
@@ -217,10 +247,7 @@ void main() {
         installation.report.community.experienceConfiguration,
         equals(installation.incomingExperience),
       );
-      expect(
-        installation.report.community.experienceConfiguration['experienceSchemaVersion'],
-        2,
-      );
+      _expectCoherentHydratedVersionScheme(installation);
       final experience = experienceForExtensionId(
         installation.report.community.extensionId,
         displayName: installation.report.community.displayName,
