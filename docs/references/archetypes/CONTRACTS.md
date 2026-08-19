@@ -73,7 +73,7 @@ supplies anything richer.
 | `owner` | plus: whoever created the instance | all | `createdByFanId` |
 | `owner_and_shared` | plus: anyone the instance was explicitly shared with | `documentLibrary` | `visibility.fields.sharedWith` |
 | `participants` | plus: anyone in the instance's participant set | `discussionThread` | `visibility.fields.participants` |
-| `parties` | plus: the two named sides of a request | `approvalQueueItem`, `paymentCheckout` | `visibility.fields.parties` |
+| `parties` | plus: the two named sides of a request — each a person **or** a role | `approvalQueueItem`, `paymentCheckout` | `visibility.fields.parties` |
 | `recipient` | plus: the addressee only | `notificationInbox` | `visibility.fields.recipient` |
 
 **The archetype supplies the rule; the community supplies the fields.** The four models below `owner`

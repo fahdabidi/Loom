@@ -116,6 +116,28 @@ a silent no-op:
 An author who wants "this person, or anyone with this role" writes the person check as a formula and
 the role check as `allowedRoleIds`. They are different layers — see `permissions.md` §2.
 
+**For read visibility specifically, there is a direct construct — use it.** The two conditions inside a
+single guard are ANDed, so a `readGuard` cannot express *"the payer **or** the treasurer"* by combining
+a formula with `allowedRoleIds`; that yields "the payer **and** a treasurer", which is not what any of
+these workflows mean. This is the actual reason the broken `$viewer == 'role-id'` formulas keep getting
+written — authors reach for the only shape that looks like an OR.
+
+The correct home is a role reference in `visibility.fields.parties`
+([`workflow-grammar.md`](workflow-grammar.md) § *A party may be a role*):
+
+```jsonc
+"visibility": {
+  "default": "guarded",
+  "readGuard": { "actorEqualsField": { "key": "payerFanId" } },
+  "fields": { "parties": ["payerFanId", { "role": "masjid-admin" }] }
+}
+```
+
+The archetype visibility models **widen** — they are evaluated in addition to the `readGuard`, never
+instead of it — so this reads as the OR the author intended, while each layer stays type-correct: the
+guard compares `fanId` to `fanId`, and the role reference resolves through the same role lookup
+`allowedRoleIds` uses.
+
 ## 4. Validator rules added in specVersion 4
 
 | Rule | Severity |

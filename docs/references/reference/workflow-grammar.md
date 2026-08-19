@@ -90,7 +90,7 @@ verified against `community_package_validator.dart` 2026-08-18). The archetype s
 |---|---|---|---|
 | `sharedWith` | one field name, `fanId[]`-typed | `owner_and_shared` | Everyone the instance was explicitly shared with |
 | `participants` | **list** of field names, each `fanId` or `fanId[]` | `participants` | The union of all named fields is the participant set |
-| `parties` | list of **exactly two** field names, each `fanId` | `parties` | The two sides of a request |
+| `parties` | list of **exactly two** entries, each a field name **or** `{"role": "<roleId>"}` | `parties` | The two sides of a request |
 | `recipient` | one field name, `fanId` | `recipient` | The sole addressee |
 
 Every named field MUST be declared in this workflow's `instanceDataSchema`, and MUST be identity-typed.
@@ -101,6 +101,42 @@ the two sides of a request `requester`/`reviewer`, `submitter`/`mentor`, `guardi
 admit audit actors and senders as *readers*; a hard-coded prefix allowlist would silently refuse valid
 community-specific names. Both are guesses, and an access-control decision that guesses is the failure
 this construct exists to remove.
+
+### A party may be a role, not just a person
+
+An entry in `parties` is either an **instance-data field name** (the person named in that field) or a
+**role reference**:
+
+```jsonc
+"visibility": {
+  "default": "guarded",
+  "fields": { "parties": ["payerFanId", { "role": "masjid-admin" }] }
+}
+```
+
+**Why this exists.** Four shipped payment workflows have exactly one identifiable person; their second
+party is *the community* — a club, a mosque, a soccer org — which is not a person and therefore cannot
+be named by any instance-data field. This is also the correct home for the always-false comparisons
+communities keep reaching for (`$viewer == payerFanId || $viewer == 'masjid-admin'`): what they mean is
+*"this person, plus whoever holds role X"*, and now that is sayable.
+
+- The **exactly-two arity is retained.** D9's rationale — a read model that guesses would grant access
+  it was never told to grant — is untouched; a role entry counts as one of the two.
+- `<roleId>` must be declared in `experience.roles[]`; a dangling role is an error, exactly as for
+  `allowedRoleIds`.
+- A role object must carry **only** the `role` key. `{"role":"x","fanId":"y"}` is rejected rather than
+  partially honoured — silently ignoring the extra key would hide an authoring mistake behind a
+  working grant.
+- **Fails closed like everything else**: an empty viewer, an empty `roleId`, or a viewer whose role
+  cannot be resolved all deny. A viewer's role is resolved through the same lookup `allowedRoleIds`
+  uses, so the two constructs cannot disagree about who holds a role.
+
+> **Sequencing: role entries require a specVersion 4 package.** The validator reads declared roles from
+> `experience.roles[]`, which exists only after the `personas[]` → `roles[]` rename. A legacy package
+> legitimately still says `personas`/`personaId`, and the identity checks early-return for it — so a
+> role entry added to a legacy package would be reported as dangling. **Author role entries only in
+> migrated packages.** The four payment workflows above therefore gain theirs during Phase F, at the
+> same time as their rename, not before.
 
 **`participants` is a list, deliberately.** Two shapes exist in the corpus — a single
 `participantPersonaIds` list, and a `participantAPersonaId`/`participantBPersonaId` pair. Rather than
@@ -140,6 +176,9 @@ and `invalid_parties_arity` fire exactly as they would otherwise.
 condition above), its archetype uses a model that needs a field mapping, and none is declared.
 `dangling_visibility_field` (error) — a named field is not in `instanceDataSchema`.
 `invalid_parties_arity` (error) — `parties` does not name exactly two entries.
+`dangling_visibility_role` (error) — a `{"role": …}` entry names a role not declared in
+`experience.roles[]`. `invalid_visibility_principal` (error) — a `parties` entry is neither a non-empty
+field name nor an object containing only a non-empty string `role`.
 
 ---
 
