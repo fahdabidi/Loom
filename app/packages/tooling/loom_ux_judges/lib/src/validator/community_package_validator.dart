@@ -1154,29 +1154,6 @@ class CommunityPackageValidator {
       }
 
       if (fields == null) continue;
-      const legalKeys = {'sharedWith', 'participants', 'parties', 'recipient'};
-      for (final rawKey in fields.keys) {
-        final key = rawKey.toString();
-        if (rawKey is String && legalKeys.contains(key)) continue;
-
-        final modelRatherThanKey = key == 'roles' || key == 'owner'
-            ? ' `$key` is a visibility model, not a `visibility.fields` key.'
-            : '';
-        final archetypeRequirement = requiredKey != null
-            ? " This workflow's archetype requires the `$requiredKey` key "
-                  'for its visibility model.'
-            : '';
-        findings.add(
-          _finding(
-            'unknown_visibility_field_key',
-            'Unknown `visibility.fields` key `$key`. The legal keys are '
-                '`sharedWith`, `participants`, `parties`, and `recipient`.'
-                '$modelRatherThanKey$archetypeRequirement',
-            '$path/$key',
-          ),
-        );
-      }
-
       if (model == null) continue;
       final schema = workflow['instanceDataSchema'];
       final declaredFields = schema is Map

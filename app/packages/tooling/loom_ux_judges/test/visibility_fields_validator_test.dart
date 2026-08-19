@@ -9,7 +9,7 @@ import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:test/test.dart';
 
 const _visibilityFindingTypes = {
-  'unknown_visibility_field_key',
+  'unknown_key',
   'missing_visibility_fields',
   'dangling_visibility_field',
   'dangling_visibility_role',
@@ -85,7 +85,7 @@ List<ValidationFinding> _ofType(
     ).where((finding) => finding.type == type).toList();
 
 void main() {
-  group('unknown_visibility_field_key', () {
+  group('unknown_key in visibility.fields', () {
     test(
       'owner model key on documentLibrary also leaves sharedWith missing',
       () {
@@ -98,7 +98,7 @@ void main() {
           ),
         );
         final unknown = findings
-            .where((finding) => finding.type == 'unknown_visibility_field_key')
+            .where((finding) => finding.type == 'unknown_key')
             .toList();
 
         expect(unknown, hasLength(1));
@@ -109,9 +109,10 @@ void main() {
         );
         expect(
           unknown.single.message,
-          'Unknown `visibility.fields` key `owner`. The legal keys are '
-          '`sharedWith`, `participants`, `parties`, and `recipient`. `owner` '
-          'is a visibility model, not a `visibility.fields` key. This '
+          'Unknown key `owner` in visibility.fields. The parser ignores it. '
+          'Legal keys for this position: `sharedWith`, `participants`, '
+          '`parties`, `recipient`. `owner` is a visibility model value, not '
+          'a `visibility.fields` key. This '
           "workflow's archetype requires the `sharedWith` key for its "
           'visibility model.',
         );
@@ -146,7 +147,7 @@ void main() {
               },
               fields: {entry.key: entry.value},
             ),
-            'unknown_visibility_field_key',
+            'unknown_key',
           ),
           isEmpty,
         );
@@ -159,7 +160,7 @@ void main() {
           family: 'documentLibrary',
           fields: const {'roles': 'boardRoleId', 'viewer': 'viewerFanId'},
         ),
-        'unknown_visibility_field_key',
+        'unknown_key',
       );
 
       expect(findings, hasLength(2));
@@ -175,7 +176,8 @@ void main() {
             .singleWhere((finding) => finding.location.endsWith('/roles'))
             .message,
         contains(
-          '`roles` is a visibility model, not a `visibility.fields` key.',
+          '`roles` is a visibility model value, not a '
+          '`visibility.fields` key.',
         ),
       );
     });
@@ -192,7 +194,7 @@ void main() {
             'owner': 'documentOwnerFanId',
           },
         ),
-        'unknown_visibility_field_key',
+        'unknown_key',
       );
 
       expect(findings, hasLength(1));
@@ -206,7 +208,7 @@ void main() {
       expect(
         _ofType(
           _workflow(family: 'documentLibrary'),
-          'unknown_visibility_field_key',
+          'unknown_key',
         ),
         isEmpty,
       );
