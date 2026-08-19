@@ -25,17 +25,27 @@ Map<String, Object?> _workflow({
   required String family,
   Map<String, Object?> schema = const {},
   Map<String, Object?>? fields,
+  String? visibilityDefault = 'membersOnly',
+  Map<String, Object?>? visibilityReadGuard,
+  Map<String, Object?>? stateReadGuard,
+  bool includeVisibility = true,
 }) => {
   'initialState': 'done',
   'states': {
-    'done': {'label': 'Done', 'isTerminal': true},
+    'done': {
+      'label': 'Done',
+      'isTerminal': true,
+      if (stateReadGuard != null) 'readGuard': stateReadGuard,
+    },
   },
   'transitions': <Object?>[],
   'instanceDataSchema': schema,
-  'visibility': {
-    'default': 'membersOnly',
-    if (fields != null) 'fields': fields,
-  },
+  if (includeVisibility)
+    'visibility': {
+      if (visibilityDefault != null) 'default': visibilityDefault,
+      if (visibilityReadGuard != null) 'readGuard': visibilityReadGuard,
+      if (fields != null) 'fields': fields,
+    },
   'renderBindings': [
     {
       'states': ['done'],
@@ -70,9 +80,13 @@ void main() {
     for (final entry in cases.entries) {
       final (family, key, field) = entry.value;
 
-      test('fires for ${entry.key} when its mapping is absent', () {
+      test('fires for ${entry.key} under guarded default without mapping', () {
         final findings = _ofType(
-          _workflow(family: family),
+          _workflow(
+            family: family,
+            visibilityDefault: 'guarded',
+            visibilityReadGuard: const {},
+          ),
           'missing_visibility_fields',
         );
 
@@ -109,6 +123,61 @@ void main() {
         );
       });
     }
+
+    test('fires for workflow readGuard under membersOnly without mapping', () {
+      final findings = _ofType(
+        _workflow(family: 'discussionThread', visibilityReadGuard: const {}),
+        'missing_visibility_fields',
+      );
+
+      expect(findings, hasLength(1));
+    });
+
+    test('fires for one state readGuard under membersOnly without mapping', () {
+      final findings = _ofType(
+        _workflow(family: 'discussionThread', stateReadGuard: const {}),
+        'missing_visibility_fields',
+      );
+
+      expect(findings, hasLength(1));
+    });
+
+    test('does not fire for membersOnly without any readGuard', () {
+      expect(
+        _ofType(
+          _workflow(family: 'discussionThread'),
+          'missing_visibility_fields',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('does not fire for public without any readGuard', () {
+      expect(
+        _ofType(
+          _workflow(family: 'discussionThread', visibilityDefault: 'public'),
+          'missing_visibility_fields',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('does not fire when visibility is absent or default is unset', () {
+      expect(
+        _ofType(
+          _workflow(family: 'discussionThread', includeVisibility: false),
+          'missing_visibility_fields',
+        ),
+        isEmpty,
+      );
+      expect(
+        _ofType(
+          _workflow(family: 'discussionThread', visibilityDefault: null),
+          'missing_visibility_fields',
+        ),
+        isEmpty,
+      );
+    });
 
     test('recipient omission is legal broadcast and does not fire', () {
       expect(
@@ -201,6 +270,18 @@ void main() {
         isEmpty,
       );
     });
+
+    test('still fires outside identity layer when mapping is declared', () {
+      final findings = _ofType(
+        _workflow(
+          family: 'documentLibrary',
+          fields: {'sharedWith': 'missingFanIds'},
+        ),
+        'dangling_visibility_field',
+      );
+
+      expect(findings, hasLength(1));
+    });
   });
 
   group('invalid_parties_arity', () {
@@ -247,6 +328,23 @@ void main() {
         ),
         isEmpty,
       );
+    });
+
+    test('still fires outside identity layer when parties is declared', () {
+      final findings = _ofType(
+        _workflow(
+          family: 'paymentCheckout',
+          schema: {
+            'payerFanId': {'type': 'fanId'},
+          },
+          fields: {
+            'parties': ['payerFanId'],
+          },
+        ),
+        'invalid_parties_arity',
+      );
+
+      expect(findings, hasLength(1));
     });
   });
 }

@@ -619,6 +619,17 @@ class CommunityPackageValidator {
       final visibility = workflow['visibility'];
       final rawFields = visibility is Map ? visibility['fields'] : null;
       final fields = rawFields is Map ? rawFields : null;
+      final states = workflow['states'];
+      final hasStateReadGuard =
+          states is Map &&
+          states.values.any(
+            (state) => state is Map && state.containsKey('readGuard'),
+          );
+      final engagesIdentityScopedLayer =
+          (visibility is Map &&
+              (visibility['default'] == 'guarded' ||
+                  visibility.containsKey('readGuard'))) ||
+          hasStateReadGuard;
       final requiredKey = switch (model) {
         VisibilityModel.ownerAndShared => 'sharedWith',
         VisibilityModel.participants => 'participants',
@@ -628,7 +639,8 @@ class CommunityPackageValidator {
         VisibilityModel.recipient => null,
       };
 
-      if (requiredKey != null &&
+      if (engagesIdentityScopedLayer &&
+          requiredKey != null &&
           (fields == null || !fields.containsKey(requiredKey))) {
         findings.add(
           _finding(
