@@ -58,6 +58,9 @@ import 'dart:math';
 import 'community_package_validator.dart';
 import 'jsonc.dart';
 import 'package_builder.dart';
+import 'workflow_validator.dart';
+
+const _defaultValidatorLogPath = '/tmp/loom_validator_rounds.jsonl';
 
 /// In-memory store for zips built by `/package.json`, fetched back via
 /// `GET /download/:id`. Bounded and non-durable by design -- this is a local
@@ -91,28 +94,50 @@ String _randomId() {
 
 /// Starts the validator HTTP server and returns the bound [HttpServer].
 /// Pass `port: 0` to bind an OS-assigned ephemeral port (used by tests).
+/// [validatorLogPath] overrides `LOOM_VALIDATOR_LOG` when supplied.
 Future<HttpServer> startValidatorServer({
   InternetAddress? address,
   int port = 8787,
+  String? validatorLogPath,
 }) async {
   final server = await HttpServer.bind(
     address ?? InternetAddress.anyIPv4,
     port,
   );
-  unawaited(_serve(server));
+  unawaited(
+    _serve(
+      server,
+      validatorLogPath: validatorLogPath ?? _validatorLogPathFromEnvironment(),
+    ),
+  );
   return server;
 }
 
-Future<void> _serve(HttpServer server) async {
+String _validatorLogPathFromEnvironment() {
+  final configured = Platform.environment['LOOM_VALIDATOR_LOG'];
+  return configured == null || configured.isEmpty
+      ? _defaultValidatorLogPath
+      : configured;
+}
+
+Future<void> _serve(
+  HttpServer server, {
+  required String validatorLogPath,
+}) async {
   await for (final request in server) {
-    unawaited(handleValidatorRequest(request));
+    unawaited(
+      handleValidatorRequest(request, validatorLogPath: validatorLogPath),
+    );
   }
 }
 
 /// Handles a single request. Exposed separately from [startValidatorServer]
 /// so it can also be exercised directly against a fake/real [HttpRequest] in
 /// tests without needing a real socket.
-Future<void> handleValidatorRequest(HttpRequest request) async {
+Future<void> handleValidatorRequest(
+  HttpRequest request, {
+  String? validatorLogPath,
+}) async {
   // Logged unconditionally, before any parsing/validation, so a live `tail`
   // on this process's stdout is ground truth for "did a request actually
   // arrive, and at what path" -- independent of anything a caller (e.g. an
@@ -148,27 +173,55 @@ Future<void> handleValidatorRequest(HttpRequest request) async {
 
     if (request.method == 'POST' && request.uri.path == '/validate') {
       response.headers.contentType = ContentType.json;
-      final body = await utf8.decoder.bind(request).join();
-      final Map<String, dynamic> package;
+      Map<String, dynamic>? submittedPackage;
+      ValidationReport? validationReport;
+      var roundLogged = false;
       try {
-        package = _decodePackageFromBody(body);
-      } catch (error) {
-        response.statusCode = HttpStatus.badRequest;
-        response.write(
-          jsonEncode({
-            'error': 'invalid_json',
-            'message': 'Request body is not valid JSON/JSONC: $error',
-          }),
+        final body = await utf8.decoder.bind(request).join();
+        final Map<String, dynamic> package;
+        try {
+          package = _decodePackageFromBody(body);
+          submittedPackage = package;
+        } catch (error) {
+          await _appendValidationRound(
+            request: request,
+            logPath: validatorLogPath ?? _validatorLogPathFromEnvironment(),
+          );
+          roundLogged = true;
+          response.statusCode = HttpStatus.badRequest;
+          response.write(
+            jsonEncode({
+              'error': 'invalid_json',
+              'message': 'Request body is not valid JSON/JSONC: $error',
+            }),
+          );
+          await response.close();
+          return;
+        }
+
+        final report = CommunityPackageValidator().validate(package);
+        validationReport = report;
+        await _appendValidationRound(
+          request: request,
+          logPath: validatorLogPath ?? _validatorLogPathFromEnvironment(),
+          package: package,
+          report: report,
         );
+        roundLogged = true;
+        response.statusCode = HttpStatus.ok;
+        response.write(jsonEncode(report.toJson()));
         await response.close();
         return;
+      } finally {
+        if (!roundLogged) {
+          await _appendValidationRound(
+            request: request,
+            logPath: validatorLogPath ?? _validatorLogPathFromEnvironment(),
+            package: submittedPackage,
+            report: validationReport,
+          );
+        }
       }
-
-      final report = CommunityPackageValidator().validate(package);
-      response.statusCode = HttpStatus.ok;
-      response.write(jsonEncode(report.toJson()));
-      await response.close();
-      return;
     }
 
     if (request.method == 'POST' && request.uri.path == '/package') {
@@ -370,6 +423,50 @@ Future<void> handleValidatorRequest(HttpRequest request) async {
     } catch (_) {
       // Response already closed/broken; nothing more to do.
     }
+  }
+}
+
+Future<void> _appendValidationRound({
+  required HttpRequest request,
+  required String logPath,
+  Map<String, dynamic>? package,
+  ValidationReport? report,
+}) async {
+  try {
+    final findingTypes = <String, int>{};
+    if (report != null) {
+      for (final finding in report.findings) {
+        findingTypes.update(
+          finding.type,
+          (count) => count + 1,
+          ifAbsent: () => 1,
+        );
+      }
+    }
+
+    final reportJson = report?.toJson();
+    final entry = <String, dynamic>{
+      'at': DateTime.now().toUtc().toIso8601String(),
+      'dispatch': request.headers.value('x-loom-dispatch') ?? 'unknown',
+      'round': int.tryParse(request.headers.value('x-loom-round') ?? ''),
+      'status': reportJson?['status'],
+      'errorCount': reportJson?['errorCount'],
+      'warningCount': reportJson?['warningCount'],
+      'findingTypes': findingTypes,
+      'packageId': package?['packageId'],
+      'communityId': package?['communityId'],
+    };
+
+    final file = await File(logPath).open(mode: FileMode.append);
+    try {
+      await file.writeString('${jsonEncode(entry)}\n');
+      await file.flush();
+    } finally {
+      await file.close();
+    }
+  } catch (_) {
+    // Round logging is diagnostic only. A full disk, unwritable path, or any
+    // other logging failure must never alter the validation response.
   }
 }
 
