@@ -15,7 +15,6 @@ const _chessFixtureRelative =
 const _cedarFixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc';
 
-const _chessInstanceId = 'chess-export-august';
 const _cedarInstanceId = 'hoa-export-board-records-2026-q2';
 
 const _chessPersona = 'chess-organizer';
@@ -23,9 +22,15 @@ const _cedarPersona = 'hoa-board';
 const _adminTab = 'admin';
 
 class _InstalledFixture {
-  const _InstalledFixture(this.community, this.engine, this.temp);
+  const _InstalledFixture(
+    this.community,
+    this.experience,
+    this.engine,
+    this.temp,
+  );
 
   final LocalInstalledCommunity community;
+  final LoomExperienceDefinition experience;
   final WorkflowEngineApi engine;
   final Directory temp;
 
@@ -44,12 +49,19 @@ File _fixtureFile(String relativePath) {
   throw StateError('Could not locate fixture: $relativePath');
 }
 
-Future<_InstalledFixture> _installFixture(String extensionId, String fixtureRelative) async {
-  final source = jsonDecode(
-    stripJsonComments(_fixtureFile(fixtureRelative).readAsStringSync()),
-  ) as Map<String, dynamic>;
+Future<_InstalledFixture> _installFixture(
+  String extensionId,
+  String fixtureRelative,
+) async {
+  final source =
+      jsonDecode(
+            stripJsonComments(_fixtureFile(fixtureRelative).readAsStringSync()),
+          )
+          as Map<String, dynamic>;
   source['extensionId'] = extensionId;
-  final temp = await Directory.systemTemp.createTemp('loom-exportwizard-$extensionId-');
+  final temp = await Directory.systemTemp.createTemp(
+    'loom-exportwizard-$extensionId-',
+  );
   final init = File('${temp.path}/community.loom-init.zip');
   final extension = File('${temp.path}/community.loom-extension.zip');
   await init.writeAsString(jsonEncode(source));
@@ -73,14 +85,14 @@ Future<_InstalledFixture> _installFixture(String extensionId, String fixtureRela
   // workflowEngineForExtensionId throws "No engine-native experience is
   // installed" without this (confirmed against the established pattern in
   // v3_milestone_phaseb_votepoll_archetype_test.dart's own _install helper).
-  experienceForExtensionId(
+  final experience = experienceForExtensionId(
     community.extensionId,
     displayName: community.displayName,
     specVersion: community.specVersion,
     experienceConfiguration: community.experienceConfiguration,
   );
   final engine = await workflowEngineForExtensionId(community.extensionId);
-  return _InstalledFixture(community, engine, temp);
+  return _InstalledFixture(community, experience, engine, temp);
 }
 
 Widget _host(_InstalledFixture installed, String personaId) => MaterialApp(
@@ -129,7 +141,11 @@ Future<WorkflowInstance> _queryInstance({
   required String personaId,
   required String tabId,
 }) async {
-  final page = await engine.queryInstances(tabId: tabId, personaId: personaId, limit: 200);
+  final page = await engine.queryInstances(
+    tabId: tabId,
+    personaId: personaId,
+    limit: 200,
+  );
   return page.items.firstWhere((item) => item.instanceId == instanceId);
 }
 
@@ -145,11 +161,129 @@ Future<List<LoomWorkflowTransition>> _queryTransitions({
   personaId: personaId,
 );
 
-Future<void> _openTab(WidgetTester tester, String tabId) async {
-  await _pumpUntilFound(
-    tester,
-    find.byKey(ValueKey('community-tab-$tabId')),
+LoomWorkflowStateMachine _exportWorkflow(LoomExperienceDefinition experience) {
+  final definitions = experience.workflowDefinitions;
+  if (definitions == null) {
+    throw StateError('Fixture has no workflow definitions');
+  }
+  return definitions.values.singleWhere(
+    (definition) => definition.renderBindings.any(
+      (binding) => binding.cardSurfaceFamily == 'exportWizard',
+    ),
   );
+}
+
+LoomWorkflowSeedInstance _exportSeed(
+  LoomExperienceDefinition experience,
+  String workflowType,
+) {
+  final seeds = experience.workflowInstances;
+  if (seeds == null) {
+    throw StateError('Fixture has no workflow seed instances');
+  }
+  return seeds.singleWhere((seed) => seed.workflowType == workflowType);
+}
+
+String? _historyFieldKey(LoomWorkflowStateMachine workflow) {
+  for (final key in const <String>[
+    'exportHistory',
+    'statusHistory',
+    'auditHistory',
+  ]) {
+    if (workflow.instanceDataSchema.containsKey(key)) return key;
+  }
+  for (final entry in workflow.instanceDataSchema.entries) {
+    if (entry.key.toLowerCase().endsWith('history') &&
+        entry.value.type.toLowerCase() == 'list') {
+      return entry.key;
+    }
+  }
+  return null;
+}
+
+bool _isEmptyFixtureValue(Object? value) {
+  if (value == null) return true;
+  if (value is String) return value.trim().isEmpty;
+  if (value is Iterable) return value.isEmpty;
+  if (value is Map) return value.isEmpty;
+  return false;
+}
+
+String _fixtureValueText(Object? value) {
+  if (value == null) return '';
+  if (value is Iterable) {
+    return value
+        .map((item) => item.toString())
+        .where((item) => item.trim().isNotEmpty)
+        .join(', ');
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    final looksLikeIdentifier =
+        !trimmed.contains(' ') &&
+        RegExp(r'^[A-Za-z][A-Za-z0-9_-]*$').hasMatch(trimmed);
+    return looksLikeIdentifier ? humanizeIdentifierValue(value) : value;
+  }
+  if (value is bool) return value ? 'Yes' : 'No';
+  return '$value';
+}
+
+int _fixtureValueLength(Object? value) {
+  if (value is String) return value.length;
+  if (value is Iterable) return value.length;
+  return 0;
+}
+
+String _fixtureFactText(InstanceDataField field, Object? value) {
+  final template = field.labelTemplate ?? '{value}';
+  return template
+      .replaceAll('{value.length}', '${_fixtureValueLength(value)}')
+      .replaceAll('{value}', _fixtureValueText(value))
+      .trim();
+}
+
+Map<String, String> _expectedTileFacts({
+  required LoomWorkflowStateMachine workflow,
+  required WorkflowInstance instance,
+}) {
+  final historyKey = _historyFieldKey(workflow);
+  final expected = <String, String>{};
+  for (final entry in workflow.instanceDataSchema.entries) {
+    final key = entry.key;
+    final field = entry.value;
+    if (key == historyKey || !instance.instanceData.containsKey(key)) {
+      continue;
+    }
+    if (field.displayContexts != null &&
+        !field.displayContexts!.contains('tile')) {
+      continue;
+    }
+    final hasFormula = field.formula?.trim().isNotEmpty == true;
+    final hasLabelTemplate = field.labelTemplate?.trim().isNotEmpty == true;
+    if (hasFormula && !hasLabelTemplate) continue;
+    final value = instance.instanceData[key];
+    if (field.hideWhenEmpty && _isEmptyFixtureValue(value)) continue;
+    final text = _fixtureFactText(field, value);
+    if (text.isNotEmpty) expected[key] = text;
+  }
+  return expected;
+}
+
+void _expectFactTexts(Finder factsFinder, Iterable<String> expectedTexts) {
+  final counts = <String, int>{};
+  for (final text in expectedTexts) {
+    counts.update(text, (count) => count + 1, ifAbsent: () => 1);
+  }
+  for (final entry in counts.entries) {
+    expect(
+      find.descendant(of: factsFinder, matching: find.text(entry.key)),
+      findsNWidgets(entry.value),
+    );
+  }
+}
+
+Future<void> _openTab(WidgetTester tester, String tabId) async {
+  await _pumpUntilFound(tester, find.byKey(ValueKey('community-tab-$tabId')));
   await _tapVisible(tester, find.byKey(ValueKey('community-tab-$tabId')));
   await tester.pump(const Duration(milliseconds: 100));
 }
@@ -159,43 +293,70 @@ void main() {
     'Chess fixture exportWizard renders schema-divergent core fields without assumptions',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _installFixture('ext_chess_exportwizard_chess', _chessFixtureRelative),
+        () => _installFixture(
+          'ext_chess_exportwizard_chess',
+          _chessFixtureRelative,
+        ),
       ))!;
       addTearDown(() => tester.runAsync(installed.dispose));
+
+      final exportWorkflow = _exportWorkflow(installed.experience);
+      final exportSeed = _exportSeed(
+        installed.experience,
+        exportWorkflow.workflowType,
+      );
+      final chessInstanceId = exportSeed.instanceId;
+      final instance = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: chessInstanceId,
+          personaId: _chessPersona,
+          tabId: _adminTab,
+        ),
+      ))!;
+      final currentState = exportWorkflow.states[instance.currentState];
+      if (currentState == null) {
+        throw StateError(
+          'Export seed ${instance.instanceId} has undeclared state '
+          '${instance.currentState}',
+        );
+      }
+      final expectedFacts = _expectedTileFacts(
+        workflow: exportWorkflow,
+        instance: instance,
+      );
 
       await tester.pumpWidget(_host(installed, _chessPersona));
       await _openTab(tester, _adminTab);
       final badgeFinder = find.byKey(
-        const ValueKey('export-wizard-state-badge-$_chessInstanceId-tile'),
+        ValueKey('export-wizard-state-badge-$chessInstanceId-tile'),
       );
       await _pumpUntilNoThrow(tester, badgeFinder);
 
-      expect(find.byKey(const ValueKey('export-wizard-facts-$_chessInstanceId-tile')), findsOneWidget);
-      expect(find.text('Ready to export'), findsOneWidget);
-      expect(find.text('August ladder and match archive'), findsOneWidget);
-      expect(find.text('Ready to generate'), findsOneWidget);
-      // exportScope's labelTemplate is "Scope: {value}" -- the fact-pill
-      // renderer always includes the template's own prefix text.
       expect(
-        find.text('Scope: match results, ranking rows, pairing history'),
+        find.descendant(
+          of: badgeFinder,
+          matching: find.text(currentState.label),
+        ),
         findsOneWidget,
       );
+      final factsFinder = find.byKey(
+        ValueKey('export-wizard-facts-$chessInstanceId-tile'),
+      );
+      expect(factsFinder, findsOneWidget);
+      // Fact-pill text includes the schema's whole labelTemplate, including
+      // any prefix (and {value.length}) rather than only the seed's raw value.
+      _expectFactTexts(factsFinder, expectedFacts.values);
       expect(
-        find.byKey(const ValueKey('export-wizard-history-heading-$_chessInstanceId-tile')),
+        find.byKey(
+          ValueKey('export-wizard-history-heading-$chessInstanceId-tile'),
+        ),
         findsNothing,
       );
       expect(find.text('checksum'), findsNothing);
       expect(find.text('transferId'), findsNothing);
       expect(find.text('transfer id'), findsNothing);
 
-      final instance = (await tester.runAsync(
-        () => _queryInstance(
-          engine: installed.engine,
-          instanceId: _chessInstanceId,
-          personaId: _chessPersona,
-          tabId: _adminTab,
-        ),
-      ))!;
       final actions = (await tester.runAsync(
         () => _queryTransitions(
           engine: installed.engine,
@@ -209,33 +370,69 @@ void main() {
       await _pumpUntilNoThrow(
         tester,
         find.byKey(
-          ValueKey(
-            'export-wizard-$_chessInstanceId-action-${actions.first.id}',
-          ),
+          ValueKey('export-wizard-$chessInstanceId-action-${actions.first.id}'),
         ),
       );
       for (final action in actions) {
         expect(
           find.byKey(
-            ValueKey('export-wizard-$_chessInstanceId-action-${action.id}'),
+            ValueKey('export-wizard-$chessInstanceId-action-${action.id}'),
           ),
           findsOneWidget,
         );
       }
+      final progressAction = actions.firstWhere(
+        (action) {
+          final targetState = action.to == null
+              ? null
+              : exportWorkflow.states[action.to];
+          return targetState != null && !targetState.isTerminal;
+        },
+        orElse: () => throw StateError(
+          'Could not locate an export action that enters a non-terminal state',
+        ),
+      );
       await _tapVisible(
         tester,
         find.byKey(
-          const ValueKey(
-            'export-wizard-$_chessInstanceId-action-generate-export',
+          ValueKey(
+            'export-wizard-$chessInstanceId-action-${progressAction.id}',
           ),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
+      final nextState = exportWorkflow.states[progressAction.to]!;
       await _pumpUntilFound(
         tester,
-        find.text('Export generated; checksum pending platform verification'),
+        find.descendant(of: badgeFinder, matching: find.text(nextState.label)),
       );
-      expect(find.text('Export generated; checksum pending platform verification'), findsOneWidget);
+      expect(
+        find.descendant(of: badgeFinder, matching: find.text(nextState.label)),
+        findsOneWidget,
+      );
+
+      final updatedInstance = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: chessInstanceId,
+          personaId: _chessPersona,
+          tabId: _adminTab,
+        ),
+      ))!;
+      final updatedFacts = _expectedTileFacts(
+        workflow: exportWorkflow,
+        instance: updatedInstance,
+      );
+      final effectFactKeys = <String>{
+        for (final effect in progressAction.effects)
+          if (effect.key != null && updatedFacts.containsKey(effect.key))
+            effect.key!,
+      };
+      expect(effectFactKeys, isNotEmpty);
+      _expectFactTexts(
+        factsFinder,
+        effectFactKeys.map((key) => updatedFacts[key]!),
+      );
     },
   );
 
