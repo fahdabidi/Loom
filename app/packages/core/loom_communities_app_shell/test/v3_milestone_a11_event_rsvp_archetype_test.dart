@@ -137,6 +137,28 @@ LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
       (persona) => persona.personaId == id,
     );
 
+String _identityFieldName(
+  _InstalledTabletop installed, {
+  required String workflowType,
+  required String fieldStem,
+}) {
+  final workflow = installed.experience.workflowDefinitions?[workflowType];
+  if (workflow == null) {
+    throw StateError('Fixture has no workflow definition for $workflowType');
+  }
+  final fanIdField = fieldStem.isEmpty ? 'fanId' : '${fieldStem}FanId';
+  if (workflow.instanceDataSchema.containsKey(fanIdField)) return fanIdField;
+  final personaIdField = fieldStem.isEmpty
+      ? 'personaId'
+      : '${fieldStem}PersonaId';
+  if (workflow.instanceDataSchema.containsKey(personaIdField)) {
+    return personaIdField;
+  }
+  throw StateError(
+    '$workflowType declares neither $fanIdField nor $personaIdField',
+  );
+}
+
 Widget _calendar(
   _InstalledTabletop installed,
   String personaId, {
@@ -359,11 +381,21 @@ Future<WorkflowInstance> _instance(
   return page.items.singleWhere((row) => row.instanceId == id);
 }))!;
 
-Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
-    (event.instanceData['responses'] as List)
-        .whereType<Map<String, dynamic>>()
-        .map((response) => Map<String, dynamic>.from(response))
-        .singleWhere((response) => response['personaId'] == personaId);
+Map<String, dynamic> _responseFor(
+  _InstalledTabletop installed,
+  WorkflowInstance event,
+  String personaId,
+) {
+  final identityField = _identityFieldName(
+    installed,
+    workflowType: 'event-rsvp-response',
+    fieldStem: '',
+  );
+  return (event.instanceData['responses'] as List)
+      .whereType<Map<String, dynamic>>()
+      .map((response) => Map<String, dynamic>.from(response))
+      .singleWhere((response) => response[identityField] == personaId);
+}
 
 /// Taps an action chip keyed to the bespoke event-rsvp widget.
 Future<void> _tapRsvpAction(
@@ -532,10 +564,15 @@ Future<WorkflowInstance?> _customResponseFor(
     personaId: persona,
     limit: 250,
   );
+  final identityField = _identityFieldName(
+    installed,
+    workflowType: responseWorkflowType,
+    fieldStem: '',
+  );
   for (final row in page.items) {
     if (row.workflowType != responseWorkflowType) continue;
     if (row.instanceData[eventField] != eventId) continue;
-    if (row.instanceData['personaId'] != personaId) continue;
+    if (row.instanceData[identityField] != personaId) continue;
     return row;
   }
   return null;
@@ -828,10 +865,13 @@ void main() {
         'event-friday-game-night',
       );
       expect(
-        _responseFor(before, 'tabletop-member-14')['\$id'],
+        _responseFor(installed, before, 'tabletop-member-14')['\$id'],
         'resp-friday-member-14',
       );
-      expect(_responseFor(before, 'tabletop-member-14')['\$state'], 'pending');
+      expect(
+        _responseFor(installed, before, 'tabletop-member-14')['\$state'],
+        'pending',
+      );
       expect(before.instanceData['goingCount'], 11);
 
       await _tapRsvpAction(
@@ -848,11 +888,17 @@ void main() {
         'event-friday-game-night',
       );
       expect(
-        _responseFor(after, 'tabletop-member-14')['\$id'],
+        _responseFor(installed, after, 'tabletop-member-14')['\$id'],
         'resp-friday-member-14',
       );
-      expect(_responseFor(after, 'tabletop-member-14')['\$state'], 'going');
-      expect(_responseFor(after, 'tabletop-member-14')['partySize'], 3);
+      expect(
+        _responseFor(installed, after, 'tabletop-member-14')['\$state'],
+        'going',
+      );
+      expect(
+        _responseFor(installed, after, 'tabletop-member-14')['partySize'],
+        3,
+      );
       expect(after.instanceData['goingCount'], 12);
       expect(after.instanceData['seatsRemaining'], 8);
 
@@ -921,10 +967,15 @@ void main() {
         installed,
         'event-friday-game-night',
       );
+      final responseIdentityField = _identityFieldName(
+        installed,
+        workflowType: 'event-rsvp-response',
+        fieldStem: '',
+      );
       expect(
         (before.instanceData['responses'] as List)
             .whereType<Map<String, dynamic>>()
-            .where((row) => row['personaId'] == 'tabletop-member-15'),
+            .where((row) => row[responseIdentityField] == 'tabletop-member-15'),
         isEmpty,
         reason: 'precondition: this member must start with no response row',
       );
@@ -945,7 +996,10 @@ void main() {
       // The row now exists, carries the response, and counts toward the event's
       // derived aggregate -- proving it went through the real engine rather
       // than being reflected only in the widget.
-      expect(_responseFor(after, 'tabletop-member-15')['\$state'], 'going');
+      expect(
+        _responseFor(installed, after, 'tabletop-member-15')['\$state'],
+        'going',
+      );
       expect(after.instanceData['goingCount'], 12);
     } finally {
       await tester.runAsync(installed.dispose);
@@ -980,11 +1034,11 @@ void main() {
           personaId: 'tabletop-member-14',
         );
         expect(
-          _responseFor(before, 'tabletop-member-14')['\$id'],
+          _responseFor(installed, before, 'tabletop-member-14')['\$id'],
           'resp-friday-member-14',
         );
         expect(
-          _responseFor(before, 'tabletop-member-14')['\$state'],
+          _responseFor(installed, before, 'tabletop-member-14')['\$state'],
           'pending',
         );
         final goingBefore = before.instanceData['goingCount'] as num;
@@ -1001,7 +1055,10 @@ void main() {
           'event-friday-game-night',
           personaId: 'tabletop-member-14',
         );
-        expect(_responseFor(after, 'tabletop-member-14')['\$state'], 'going');
+        expect(
+          _responseFor(installed, after, 'tabletop-member-14')['\$state'],
+          'going',
+        );
         expect(after.instanceData['goingCount'], goingBefore + 1);
         final goingChipFinder = find.descendant(
           of: find.byKey(
@@ -1101,7 +1158,7 @@ void main() {
         personaId: 'tabletop-member-14',
       );
       expect(
-        _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
+        _responseFor(installed, waitlisted, 'tabletop-member-14')['\$state'],
         'waitlisted',
       );
       expect(waitlisted.instanceData['goingCount'], 11);
@@ -1287,16 +1344,26 @@ void main() {
       try {
         final auth = _gardenAuth(installed);
         final seeded = (await tester.runAsync(() async {
+          final coordinatorField = _identityFieldName(
+            installed,
+            workflowType: _customGardenEventWorkflow,
+            fieldStem: 'coordinator',
+          );
+          final responseIdentityField = _identityFieldName(
+            installed,
+            workflowType: _customGardenResponseWorkflow,
+            fieldStem: '',
+          );
           final eventId = (await installed.engine.createInstances(
             workflowType: _customGardenEventWorkflow,
-            initialInstanceDataList: const [
+            initialInstanceDataList: [
               {
                 'title': 'Test-owned non-full garden event',
                 'eventDate': '2026-09-12',
                 'eventTime': '10:00',
                 'location': 'Test Bed',
                 'capacity': 3,
-                'coordinatorPersonaId': _customGardenOrganizerId,
+                coordinatorField: _customGardenOrganizerId,
                 'recurrenceLabel': 'One-time test event',
                 'reminderOffsetHours': 24,
               },
@@ -1308,7 +1375,7 @@ void main() {
             initialInstanceDataList: [
               {
                 _customGardenResponseEventField: eventId,
-                'personaId': _customGardenMemberAccountId,
+                responseIdentityField: _customGardenMemberAccountId,
               },
             ],
             personaId: _customGardenOrganizerId,
@@ -1428,16 +1495,21 @@ void main() {
       String customInstanceId = '';
       try {
         customInstanceId = (await tester.runAsync(() async {
+          final coordinatorField = _identityFieldName(
+            installed,
+            workflowType: _customGardenEventWorkflow,
+            fieldStem: 'coordinator',
+          );
           final createdIds = await installed.engine.createInstances(
             workflowType: _customGardenEventWorkflow,
-            initialInstanceDataList: const [
+            initialInstanceDataList: [
               {
                 'title': 'Bespoke Garden orphan response event',
                 'eventDate': '2026-09-20',
                 'eventTime': '09:00',
                 'location': 'North Bed',
                 'capacity': 18,
-                'coordinatorPersonaId': _customGardenOrganizerId,
+                coordinatorField: _customGardenOrganizerId,
                 'recurrenceLabel': 'One-time organizer event',
                 'reminderOffsetHours': 24,
               },
@@ -1554,6 +1626,11 @@ void main() {
         expect(after?.instanceData['reminderDueAt'], dueAt);
 
         final notifications = await tester.runAsync(() async {
+          final recipientField = _identityFieldName(
+            installed,
+            workflowType: 'garden-notification',
+            fieldStem: 'recipient',
+          );
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
             personaId: _customGardenMemberAccountId,
@@ -1563,7 +1640,7 @@ void main() {
               .where(
                 (row) =>
                     row.workflowType == 'garden-notification' &&
-                    row.instanceData['recipientPersonaId'] ==
+                    row.instanceData[recipientField] ==
                         _customGardenMemberAccountId &&
                     row.instanceData['dueAt'] == dueAt &&
                     row.instanceData['sourceWorkflowType'] ==
@@ -1877,11 +1954,16 @@ void main() {
           return (accounts: accounts, responses: responses.toList());
         }))!;
         expect(result.responses, hasLength(result.accounts.length));
+        final responseIdentityField = _identityFieldName(
+          installed,
+          workflowType: 'event-rsvp-response',
+          fieldStem: '',
+        );
         for (final response in result.responses) {
           expect(response.currentState, 'pending');
           expect(
             result.accounts.map((account) => account.accountId),
-            contains(response.instanceData['personaId']),
+            contains(response.instanceData[responseIdentityField]),
           );
         }
       } finally {
