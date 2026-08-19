@@ -33,12 +33,84 @@ Exit codes: `0` = pass · `1` = errors found · `64` = usage error.
 ```
 1. Emit JSON
 2. Run validator
-3. If errors: find each error code in the table below, apply the fix, go to 2
+3. If errors: DIAGNOSE the cause (see "Diagnosing a finding" below), then apply the fix, go to 2
 4. If clean: emit
 ```
 
 **Never** exit this loop by weakening the validator, deleting the requirement, or hand-waving. If an
 error cannot be fixed within the grammar, **stop and report the gap** (see AP-11).
+
+---
+
+## Diagnosing a finding — work out the cause before choosing the fix
+
+The error → fix table below tells you what a finding means. It does **not** tell you which of several
+possible causes produced it, and for most findings there are several, with different correct fixes.
+Applying the table's fix without diagnosing first is how a package ends up validating clean while
+having quietly lost a product feature.
+
+**The governing rule: a finding is almost always something referenced but never declared, or declared
+but never read. The fix is to make the intent real.** Deleting the reference clears the finding too,
+and the validator cannot tell the difference — so the burden is on you to know which you did.
+
+### The diagnostic, in order
+
+Given any finding, ask these in sequence and stop at the first that matches.
+
+**1. Did I misspell something that already exists?**
+Compare the name in the finding against the declared names nearby — the same workflow's
+`instanceDataSchema`, its `states`, the package's `roles[]`. A one-character difference, a
+singular/plural slip, or a legacy spelling (`*PersonaId` where the package now uses `*FanId`) is the
+single most common cause. Fix: correct the spelling. Nothing else changes.
+
+**2. Is this something an archetype already owns?**
+Check `archetypes/CONTRACTS.md` for the workflow's family. If the name is one of the archetype's own
+bookkeeping sets — read, acknowledged, saved, downloaded, response sets — then **you must not declare
+it**, and the finding is telling you the reference is in the wrong place, not that a declaration is
+missing. Fix: remove your declaration or guard and let the archetype maintain it. This is the one case
+where removing is correct, and it is why "always declare" is the wrong rule.
+
+**3. Does the product doc actually ask for this?**
+If the reference expresses a real requirement — a field a guard needs, a value a formula computes, a
+state a transition reaches — then the declaration is genuinely missing. Fix: declare it properly, with
+the right type and `writableBy`, and make sure something populates it on every path that creates the
+workflow.
+
+**4. Is the reference itself a mistake?**
+Occasionally a guard, effect or binding was copied from another workflow and names something that has
+no meaning here. Fix: remove the reference — and **say so explicitly in your Gaps/assumptions**,
+naming what you removed and why it did not belong. If you cannot write that sentence convincingly, you
+are in case 3, not case 4.
+
+### Before you accept your own fix
+
+Two checks, both cheap, both worth doing every round:
+
+- **Did the package get smaller?** Field, formula, transition and binding counts should generally rise
+  across a fix round, not fall. A round that clears ten findings while shrinking the package is a
+  signal to re-read what you removed.
+- **Can the workflow still do what it did?** If the fix makes a workflow less capable than the shipped
+  package — a transition gone, a guard dropped, a formula deleted — you have removed a feature rather
+  than declared an intent, unless case 2 or case 4 applies and you have said so.
+
+### When the same finding keeps coming back
+
+If a finding type survives two fix rounds, stop editing and re-read the reference doc for that
+construct. Three attempts at the same finding means the model of the grammar is wrong, and the fourth
+edit will be wrong for the same reason. Report the gap rather than iterating — a package returned with
+a clearly-described unresolved finding is more useful than one that was hammered until the validator
+went quiet.
+
+### What never counts as a fix
+
+- Weakening or bypassing the validator.
+- Deleting a requirement the product doc states.
+- Changing `visibility.default` to dodge a visibility requirement — that changes who can read the
+  workflow.
+- Re-homing a workflow to a different archetype to escape that archetype's rules.
+- Retyping a field to something permissive to silence a type error.
+
+If an error genuinely cannot be fixed within the grammar, **stop and report the gap** (AP-11).
 
 ---
 
