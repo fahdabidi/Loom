@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: 4
 doc_version: 1.8.0
 status: current
 last_verified: 2026-08-09
@@ -13,7 +13,7 @@ derived_from:
   - app/packages/core/loom_communities_app_shell/lib/src/part28_engine_native_calendar_surface.dart
 ---
 
-# Render bindings (normative) — grammar v1
+# Render bindings (normative) — specVersion 4
 
 A render binding answers: **where does an instance of this workflow appear, in this state, for this
 role?**
@@ -27,13 +27,13 @@ drafts).
 ```jsonc
 {
   "states": ["open"],                  // REQUIRED
-  "role": "any",                       // REQUIRED
+  "audience": "any",                       // REQUIRED
   "tabId": "calendar",                 // REQUIRED
   "cardSurfaceFamily": "event-rsvp",   // REQUIRED
   "bindingKind": "primary",            // REQUIRED
-  "audienceMemberField": "invitedPersonaIds",  // optional
+  "audienceMemberField": "invitedFanIds",  // optional
   "repeater": { /* see below */ },              // optional, GAP-1
-  "actions": [ /* see below */ ],               // optional, GAP-2 (replaced `creatable`, grammar v2)
+  "actions": [ /* see below */ ],               // optional, GAP-2 (replaced `creatable`; shipped under grammar v1)
   "responseTable": { /* see below */ },         // optional, PROPOSED 2026-07-17
   "filterableFacets": [ /* see below */ ],      // optional, PROPOSED 2026-07-17
   "styleField": "cardStyleId"                   // optional, PROPOSED 2026-07-23
@@ -43,20 +43,20 @@ drafts).
 | Key | Type | Required | Meaning |
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to. Each MUST be declared. |
-| `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | Which tab (enumerated below) |
+| `audience` | string | **yes** | `any` · `actor` · `receiver` — specVersion 4 rename of v1/v2's `role` |
+| `tabId` | string | **yes** | Which tab — `home`/`messages`, or any id declared in `appShell.tabs[]` (rule below) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` · `summary` |
 | `audienceMemberField` | string | no | Field holding invited personas, for targeted visibility |
 | `repeater` | object | no | Renders a per-item action row over a list (GAP-1) |
-| `actions` | object[] | no | Archetype-owned actions (create, transition) rendered as buttons on the card or as tab/contextual FABs (GAP-2; replaced the flat `creatable` object in grammar v2) |
+| `actions` | object[] | no | Archetype-owned actions (create, transition) rendered as buttons on the card or as tab/contextual FABs (GAP-2; replaced the flat `creatable` object) |
 | `responseTable` | object | no | Points a calendar-family archetype at a per-member response table, instead of assuming field names (PROPOSED) |
 | `filterableFacets` | object[] | no | Named, labeled, computed-field-backed filters/stats a generic list surface may offer (PROPOSED) |
 | `styleField` | string | no | Names a `number`-typed field in this workflow's own `instanceDataSchema` whose per-instance computed value selects this card's visual style/color slot, instead of the archetype always using one flat community/tab accent (PROPOSED) |
 
 ⚠️ **Grammar/engine status differs across these additions — read before using any of them.** `repeater`
 is fully implemented and engine-executed (parsing + `{item.x}`/`{input.x}` resolution + validator
-checks) — confirmed working end-to-end on `tournament-ballot`. `actions` (grammar v2, replacing the flat
+checks) — confirmed working end-to-end on `tournament-ballot`. `actions` (replacing the flat
 `creatable` object) is **the model this file now normatively describes**, and covers two action kinds.
 `kind: "create"`: `scope: "tab"` create-actions are fully built and shipping (the tab creatable-action
 FAB — CALR.3g/3h/3b — every `event-rsvp`, `tournament-event`, and every other tab-level creation runs
@@ -69,42 +69,32 @@ code that will consume it, same convention. `responseTable`, `filterableFacets`,
 **PROPOSED — grammar/validator only, written ahead of the App Shell code that will consume them**, same
 convention this file's earlier additions used before their own consumers existed.
 
-## ⚠️ `role: "actor"`/`"receiver"` resolution — per-tab, creator-only, and NOT symmetric (found 2026-08-09)
+## `audience: "actor"`/`"receiver"` resolution — general, guard-derived, tab-agnostic
 
-**This is not part of the JSON grammar at all — it's decided per-tab by App Shell dispatch code, and its
-real behavior is sharp enough to silently produce dead buttons and invisible cards if you assume
-`"actor"`/`"receiver"` resolve the way their names suggest.** A binding covering a state, passing the
-validator, and even satisfying `no_render_binding_for_reachable_state` does **not** mean a guard-permitted
-persona can actually reach it — role resolution is a separate, undocumented-until-now failure mode
-(confirmed by reading `part27_engine_native_binding_dispatcher.dart`, `part32_engine_native_list_surface.dart`,
-`part28_engine_native_calendar_surface.dart`, `part36_engine_native_marketplace_surface.dart`):
+Role resolution is engine-derived from this workflow's own guards, not hardcoded per tab — a binding's
+`role` behaves identically no matter which tab it's declared on, or what that tab is named.
 
-| Tab | Resolution | Practical effect |
-|---|---|---|
-| `admin` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → `"receiver"` | The **only** tab where `role: "receiver"` ever resolves to anything. |
-| `giving`, `home`, `messages`, `marketplace` | `instance.createdByPersonaId == viewer` → `"actor"`; everyone else → **nothing** | `role: "receiver"` can **never** resolve here — a `"receiver"` binding on these tabs is permanently dead, no matter what the guard allows. |
-| `calendar` | No role callback is passed at all — always resolves to nothing | **Neither** `"actor"` nor `"receiver"` ever resolves — only `role: "any"` (or `"receiver"` + `audienceMemberField` + a dynamic-audience instance, per `binding_resolver.dart`) can render anything on Calendar. |
+- **`actor`** — the persona a transition's own `guard.actorEqualsField` names as the business-relevant
+  party, if any transition on this workflow declares one; otherwise the instance's creator
+  (`createdByFanId`). This means `actor` correctly resolves to "whoever the transition is really about"
+  (e.g. the payer on a dues charge the board created on their behalf), not just whoever happened to create
+  the record.
+- **`receiver`** — any persona who is not `actor` and passes at least one guard among the transitions
+  reachable from the instance's current state — i.e. anyone with some declared, guard-permitted agency over
+  this instance right now. A workflow whose approval transition is guarded to `allowedRoleIds:
+  ["hoa-board"]` makes only `hoa-board` personas resolve as `receiver`; a workflow with no such restriction
+  makes every eligible persona a `receiver`. This is genuinely derived from the workflow's own guards, not a
+  separate permission declaration.
+- **`any`** — unchanged, always matches.
+- The `audienceMemberField` dynamic-audience mechanism (see the binding-object table above) is preserved
+  unchanged as an additional, explicit receiver signal for cases where a workflow wants to name a receiver
+  set independent of guard eligibility.
 
-Two consequences that have each caused real, shipped bugs:
-
-1. **`"actor"` means literal `createdByPersonaId`, not "whoever the transition's guard is really about."** A
-   workflow where persona X *creates* an instance on behalf of persona Y (e.g. the board creates a dues
-   charge that a homeowner must pay, `payerPersonaId` ≠ `createdByPersonaId`) will resolve `"actor"` to the
-   *creator* (board), never the business-relevant persona (the payer) — even though the payer is exactly who
-   the transition's own `guard.actorEqualsField` names. A `role: "actor"` binding in this situation is a dead
-   card for the very persona the transition exists for.
-2. **`role: "receiver"` is a trap outside `admin`.** It reads as "the other participant" and is easy to reach
-   for whenever a workflow has two personas, but on `giving`/`home`/`messages`/`marketplace`/`calendar` it
-   silently never resolves — the binding parses, validates, and produces zero errors or warnings, and the
-   card or button it was meant to expose simply never appears for anyone.
-
-**What to do about it, until this becomes an engine-level fix or a validator rule:** on every tab except
-`admin`, default to `role: "any"` whenever a binding needs to be visible/actionable to a persona that isn't
-guaranteed to be the instance's literal creator — `"any"` is the only selector these tabs can reliably
-resolve for a non-creator. The transition's own `guard` still restricts who can actually press a button;
-widening the binding's `role` to `"any"` only affects who can *see the card*, never who can *act on it*. Only
-reach for `"actor"`/`"receiver"` on non-`admin` tabs when you've confirmed the persona you need really is
-always `createdByPersonaId` for every instance of that type.
+**Practical guidance:** `receiver`-role bindings are most useful on approval/review-style transitions that
+already carry a real, narrowing guard (`allowedRoleIds`, `actorEqualsField`, `actorInList`) — that guard
+is exactly what now determines who resolves as `receiver`. A transition with no guard at all makes every
+persona a receiver, which is rarely what's intended for a `receiver`-scoped binding; give it a real guard if
+you want `receiver` to mean something narrower than "everyone."
 
 ## `responseTable` — point a calendar-family archetype at its per-member response table (PROPOSED)
 
@@ -246,20 +236,20 @@ to avoid two affordances for the same action).
 "actions": [
   // Tab-scoped create: a brand-new instance from nothing. Renders as a tab FAB.
   { "kind": "create", "label": "New event",
-    "byPersonaIds": ["tabletop-organizer"],
+    "byRoleIds": ["tabletop-organizer"],
     "scope": "tab", "presentation": "fab" },
 
   // Instance-scoped create of a DIFFERENT workflow type, owned by THIS archetype's card.
   // Renders as a button on each card; {context.id} is that card's own instance id.
   { "kind": "create", "workflowType": "tournament-ballot",
     "label": "Create ballot for this tournament",
-    "byPersonaIds": ["tabletop-organizer"],
+    "byRoleIds": ["tabletop-organizer"],
     "scope": "instance", "presentation": "button",
     "prefill": { "eventId": "{context.id}" } },
 
   // Transition, pulled out of the automatic row into its own contextual FAB.
   // "borrow" stays a normal declared transition with its own guard/effects; this entry
-  // only changes how it presents. No byPersonaIds/workflowType/prefill — the transition's
+  // only changes how it presents. No byRoleIds/workflowType/prefill — the transition's
   // own guard is still the sole eligibility check, same as when it rendered in the row.
   { "kind": "transition", "transitionId": "borrow", "label": "Request loan",
     "presentation": "fab" }
@@ -270,7 +260,7 @@ to avoid two affordances for the same action).
 |---|---|---|---|
 | `kind` | string | **yes** | `create` or `transition`; the enum is the extension point for future action kinds. |
 | `label` | string | `create`: **yes** · `transition`: no | The affordance's button/FAB text. For `transition`, defaults to that transition's own declared `label` if omitted. |
-| `byPersonaIds` | string[] | `create`: **yes** · `transition`: n/a | Personas allowed to invoke a `create` action. **Not applicable to `transition`** — a transition's own `guard.allowedPersonaIds` is already the single source of truth for who may invoke it; setting `byPersonaIds` here would be a second, driftable copy of that same fact. |
+| `byRoleIds` | `roleId[]` | `create`: **yes** · `transition`: n/a | Roles allowed to invoke a `create` action. Grammar v2 rename of v1's `byRoleIds`. **Not applicable to `transition`** — a transition's own `guard.allowedRoleIds` is already the single source of truth for who may invoke it; setting `byRoleIds` here would be a second, driftable copy of that same fact. |
 | `workflowType` | string | no; n/a for `transition` | For `kind: "create"`, the type to create. **Defaults to the binding's own workflow type.** Set it only for the cross-archetype case — an action on the tournament-event card that creates a `tournament-ballot`. **Not applicable to `transition`** — a transition always acts on its own binding's workflow type. |
 | `transitionId` | string | `transition`: **yes** · n/a for `create` | Names a `transitions[].id` already declared on this binding's own workflow type. |
 | `scope` | string | no | `create` defaults to `tab` (`tab` or `instance`). `transition` **must** be `instance` (the default; a transition always acts on an existing instance — there is nothing to transition before one exists). |
@@ -308,10 +298,10 @@ how a hidden, context-derived field like `eventId` is populated without showing 
 **Transition-presentation semantics:** a `transition` action does not create a second way to invoke the
 transition — it **replaces** the transition's row-button presentation with the declared one. The named
 transition's own `guard`/`effects`/`inputs` declaration is completely unchanged; only *where and how* it
-renders differs. This is why `byPersonaIds`, `workflowType`, and `prefill` are inapplicable here: nothing
+renders differs. This is why `byRoleIds`, `workflowType`, and `prefill` are inapplicable here: nothing
 about eligibility or target type changes, only presentation.
 
-**Validator checks:** `byPersonaIds` against the known persona registry (`dangling_allowed_persona_id`,
+**Validator checks:** `byRoleIds` against the known persona registry (`dangling_allowed_persona_id`,
 warning); `workflowType` (when present) must name a declared workflow (`dangling_action_workflow_type`);
 `kind` must be a known action kind (`unknown_action_kind`); `scope`/`presentation` must be known enum
 values (`unknown_action_scope`/`unknown_action_presentation`); `presentation: "button"` with `scope:
@@ -322,7 +312,7 @@ than inside an instance-scoped action's `prefill`/`inputs`, is an error
 (`context_reference_outside_instance_action`). For `kind: "transition"`: `transitionId` must name a
 transition declared on this binding's own workflow type (`dangling_action_transition_id`); `scope:
 "tab"` is an error (`transition_action_cannot_be_tab_scoped`); a present `workflowType`, `prefill`, or
-`byPersonaIds` is an error (`transition_action_cannot_set_workflow_type` /
+`byRoleIds` is an error (`transition_action_cannot_set_workflow_type` /
 `transition_action_cannot_set_prefill` / `transition_action_cannot_set_by_persona_ids`); an `inputs` key
 not declared under the named transition's own `inputs` is an error (`unknown_action_input_reference`);
 two `transition` actions on the same binding naming the same `transitionId` is an error
@@ -408,7 +398,7 @@ workflow types actually create notifications.
 | Style | Where it renders | Shape |
 |---|---|---|
 | `bell` (default) | Shared AppBar, every tab | Icon + unread-count badge, opens a bottom-sheet panel listing notifications (mark-read on tap). Community-wide chrome, not tied to any one tab. |
-| `dedicatedTab` | Its own app-shell tab (`appShellConfiguration['tabs']`, not a `renderBindings[].tabId`) | A bespoke, always-scrollable list — the whole tab IS the notification inbox. |
+| `dedicatedTab` | Its own app-shell tab (`appShell['tabs']`, not a `renderBindings[].tabId`) | A bespoke, always-scrollable list — the whole tab IS the notification inbox. |
 | `fixedCard` | Pinned to the top of one specific tab's own content column | A persistent card above that tab's normal (e.g. date-grid) content — the one style that's genuinely tab-scoped rather than global. |
 | `fab` | A FloatingActionButton (own or shared with a tab's existing creatable-action FAB) | Same bottom-sheet panel as `bell`, triggered from a FAB instead of an AppBar icon — for a tab whose AppBar is already crowded. |
 
@@ -455,30 +445,75 @@ how many actions there are — it governs the launched form, not the FAB itself.
 `presentationStyle` values and all three `multiActionStyle` values) ships end-to-end as of CALR.3g/3h/3b.
 `presentationStyle` also governs instance-scoped contextual FABs' launched forms.
 
-## `tabId` — complete list
+## `tabId` — complete rule
 
-| `tabId` | Purpose | Always present? |
+`tabId` is **not a closed enum.** Exactly two ids are structural — added unconditionally by the App Shell,
+present in every community regardless of JSON:
+
+| `tabId` | Purpose | Declaration required? |
 |---|---|---|
-| `home` | The curated feed — what needs attention | **Yes** (structural) |
-| `messages` | Discussion threads | **Yes** (structural, renameable but not removable) |
-| `calendar` | Events, schedules, RSVPs | Only if the community declares calendar content |
-| `marketplace` | Browse/borrow/claim items | Only if declared |
-| `giving` | Payments, dues, donations | Only if declared |
-| `admin` | Organizer-only queues and publishing | Only if declared |
+| `home` | The curated feed — what needs attention | No — always present |
+| `messages` | Discussion threads | No — always present (label/icon still overridable via `appShell.tabs[]`, but the tab itself cannot be removed) |
 
-`home` and `messages` are added **unconditionally** by the App Shell. The rest appear only when a
-workflow binds to them.
+**Every other `tabId` a `renderBindings` entry uses must be declared** in the community's own
+`appShell.tabs[]` (community-wide) or `roleTabs[]` (persona-scoped) array — a `tabId` with
+no matching declaration fails validation (`unknown_tab_id`). A community names its own tabs; `calendar` is
+not a reserved word — one community may declare a tab literally named `calendar`, another may declare the
+same kind of content under `scheduling` or `events`. What matters is that the workflow's `renderBindings`
+and the community's tab declaration agree on the same string.
 
-## `role` — complete list
+### `appShell.tabs[]` / `roleTabs[]` — tab declaration shape
 
-| `role` | Renders for |
+```jsonc
+"appShell": {
+  "tabs": [
+    {
+      "tabId": "scheduling",              // REQUIRED — matched against renderBindings[].tabId
+      "label": "Scheduling",              // REQUIRED — shown in the tab bar
+      "rendererContractId": "engine-native-generic-list",  // REQUIRED — see below
+      "iconKey": "calendar_today",        // optional, defaults to a generic icon
+      "description": "...",               // optional, defaults to "<label> surfaces for this community."
+      "pinningPolicy": "none",            // optional
+      "pinningPolicyRationale": "...",    // optional
+      "sectionTitles": [ /* ... */ ],     // optional
+      "cardSurfaceFamilies": [ /* ... */ ],  // optional — restricts which archetypes this tab shows, if set
+      "pinnedWorkflowIds": [ /* ... */ ], // optional
+      "visibleRoleIds": [ /* ... */ ], // optional — omit for visible-to-all
+      "requiredPermission": "community.surface.navigation.read"  // optional, has a default
+    }
+  ],
+  "roleTabs": {
+    "<roleId>": [ /* same per-tab shape, additional tabs only that persona sees */ ]
+  }
+}
+```
+
+`rendererContractId` selects which widget renders the tab's content. Omit it (or use
+`"engine-native-generic-list"` explicitly) to get the shared engine-native list surface — the correct
+default for nearly every custom tab, since it already handles live queries, pagination, and dispatches each
+instance to its own `cardSurfaceFamily`-declared archetype. Only specify a different `rendererContractId` if
+building a genuinely bespoke, non-generic tab surface.
+
+`home` and `messages` never need a declaration to exist, but a declaration for either is still honored for
+cosmetic overrides (custom label/icon/description) if a community wants to rename `messages` to
+"Connections", for example — the structural guarantee (the tab always exists, cannot be removed) is
+independent of what it's labeled.
+
+## `audience` — complete list
+
+> **Grammar v2 rename: `role` → `audience`.** The values are unchanged. This key never meant a community
+> role — it means *the viewer's relationship to this instance*. Once `roleId` became a real type, leaving
+> two unrelated meanings of "role" in one file was untenable. See
+> [`identity-types.md`](./identity-types.md).
+
+| `audience` | Renders for |
 |---|---|
 | `any` | Everyone who can see the community |
-| `actor` | The persona who acts on / owns this instance |
-| `receiver` | The persona on the receiving end (approver, organizer) |
+| `actor` | The person who acts on / owns this instance |
+| `receiver` | The person on the receiving end (approver, organizer) |
 
-**Role is how one workflow serves two audiences differently.** A proposal binds `actor` → the author's
-Home card, and `receiver` → the organizer's Admin queue. **One workflow, two surfaces.**
+**`audience` is how one workflow serves two audiences differently.** A proposal binds `actor` → the
+author's Home card, and `receiver` → the organizer's Admin queue. **One workflow, two surfaces.**
 
 ## `bindingKind` — complete list
 
@@ -499,15 +534,15 @@ ballot, a cancelled event).
 ```jsonc
 "renderBindings": [
   // The author composes it on Home
-  { "states": ["draft", "changes-requested"], "role": "actor", "tabId": "home",
+  { "states": ["draft", "changes-requested"], "audience": "actor", "tabId": "home",
     "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
 
   // The author watches its status on Home
-  { "states": ["pending", "approved", "rejected"], "role": "actor", "tabId": "home",
+  { "states": ["pending", "approved", "rejected"], "audience": "actor", "tabId": "home",
     "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
 
   // The organizer decides it in the Admin queue
-  { "states": ["pending"], "role": "receiver", "tabId": "admin",
+  { "states": ["pending"], "audience": "receiver", "tabId": "admin",
     "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" }
 ]
 ```
@@ -520,9 +555,9 @@ is expressed by *omission*, not by a permission flag.
 ```jsonc
 // A tournament shows on Calendar as an event AND on Home next to its ballot.
 "renderBindings": [
-  { "states": ["open"], "role": "any", "tabId": "calendar",
+  { "states": ["open"], "audience": "any", "tabId": "calendar",
     "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" },
-  { "states": ["open"], "role": "any", "tabId": "home",
+  { "states": ["open"], "audience": "any", "tabId": "home",
     "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
 ]
 ```
@@ -532,7 +567,7 @@ is expressed by *omission*, not by a permission flag.
 ```jsonc
 "states": { "draft": {...}, "published": {...} },
 "renderBindings": [
-  { "states": ["published"], "role": "any", "tabId": "home",
+  { "states": ["published"], "audience": "any", "tabId": "home",
     "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" }
   // No binding for "draft" -> drafts do not appear on Home. Correct.
 ]
@@ -550,7 +585,7 @@ is expressed by *omission*, not by a permission flag.
 | >32 bindings on one workflow | warning — a smell; likely two workflows |
 | >16 distinct roles | warning — same |
 | `repeater.itemActions[].inputs`' `{item.x}` must match the source's item shape | error (`unknown_item_reference`) |
-| `actions[].byPersonaIds` must be a known persona | warning (`dangling_allowed_persona_id`) |
+| `actions[].byRoleIds` must be a known persona | warning (`dangling_allowed_persona_id`) |
 | `actions[].kind` must be a known action kind | error (`unknown_action_kind`) |
 | `actions[].scope`/`presentation` must be known enum values | error (`unknown_action_scope` / `unknown_action_presentation`) |
 | `actions[].presentation: "button"` with `scope: "tab"` | error (`tab_action_cannot_be_button`) |
@@ -560,7 +595,7 @@ is expressed by *omission*, not by a permission flag.
 | `{context.x}` on a `scope: "tab"` action, or outside any instance-scoped action's `prefill`/`inputs` | error (`context_reference_outside_instance_action`) |
 | `actions[].transitionId` (kind: transition) must name a transition declared on this binding's own workflow type | error (`dangling_action_transition_id`) |
 | `actions[]` with `kind: "transition"` and `scope: "tab"` | error (`transition_action_cannot_be_tab_scoped`) |
-| `actions[]` with `kind: "transition"` and a present `workflowType` / `prefill` / `byPersonaIds` | error (`transition_action_cannot_set_workflow_type` / `transition_action_cannot_set_prefill` / `transition_action_cannot_set_by_persona_ids`) |
+| `actions[]` with `kind: "transition"` and a present `workflowType` / `prefill` / `byRoleIds` | error (`transition_action_cannot_set_workflow_type` / `transition_action_cannot_set_prefill` / `transition_action_cannot_set_by_persona_ids`) |
 | `actions[].inputs` key (kind: transition) not declared under the named transition's own `inputs` | error (`unknown_action_input_reference`) |
 | Two `kind: "transition"` actions on one binding naming the same `transitionId` | error (`duplicate_action_transition_id`) |
 | `actions[]` with `kind: "create"` and a present `inputs` | error (`create_action_cannot_set_inputs`) |

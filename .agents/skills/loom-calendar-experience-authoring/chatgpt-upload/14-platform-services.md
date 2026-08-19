@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: 4
 doc_version: 1.0.0
 status: current
 last_verified: 2026-07-14
@@ -69,7 +69,7 @@ These *look* like they might need code but are plain JSON. Do not reach for a se
 | Winner / tie detection | `argMaxKey` / `topKeys` / `size(...) > 1` |
 | Runoff creation | `branch` + `createInstance` |
 | Capacity / quorum | A `formula` guard |
-| Queue position | `indexOf(queuedPersonaIds, $viewer)` |
+| Queue position | `indexOf(queuedFanIds, $viewer)` |
 | Standings | `sortBy(players, score, 'desc')` |
 | Totals / averages | `sum` / `avg` |
 | Deadline checks | `isPast(dueAt)` |
@@ -90,11 +90,11 @@ no code" promise holds.
 
 ## Identity (LoomAuthApi / LocalAuthApi) — established 2026-07-15
 
-**Rationale.** Every guard/effect that references a `personaId` (e.g. `ownerPersonaId == $actor`,
-`allowedPersonaIds`, `actorInList`, `voterId`) needs to resolve against a *concrete individual*, not
+**Rationale.** Every guard/effect that references a `personaId` (e.g. `ownerFanId == $actor`,
+`allowedRoleIds`, `actorInList`, `voterId`) needs to resolve against a *concrete individual*, not
 merely a *role*. The engine's formula evaluator (`$actor`) echoes whatever `personaId` string the
 app passes to `applyTransition` / `availableTransitionsAsync`. Until 2026-07-15, the app only ever
-passed persona **types** (e.g. `"tabletop-member"`), so `ownerPersonaId == $actor` could distinguish
+passed persona **types** (e.g. `"tabletop-member"`), so `ownerFanId == $actor` could distinguish
 an organizer from a member, but never tell `tabletop-member-03` from `tabletop-member-05` apart.
 
 **The contract.** `LoomAuthApi` (`app/packages/core/loom_communities_app_shell/lib/src/part29_auth_api.dart`)
@@ -107,15 +107,15 @@ is an abstract identity-provider contract modelled on `WorkflowEngineApi`'s own 
 - `currentSession` → `LoomSession?`
 
 `LoomAccount` carries **two** identity values:
-- `accountId` — the stable per-individual id (e.g. `"tabletop-member-05"`) used for `$actor`/`ownerPersonaId`/`voterId` resolution
-- `personaTypeId` — the declared persona type (e.g. `"tabletop-member"`) used for `allowedPersonaIds` guard checks
+- `accountId` — the stable per-individual id (e.g. `"tabletop-member-05"`) used for `$actor`/`ownerFanId`/`voterId` resolution
+- `personaTypeId` — the declared persona type (e.g. `"tabletop-member"`) used for `allowedRoleIds` guard checks
 
 **Demo backend.** `LocalAuthApi` (`part30_local_auth_api.dart`) seeds accounts from each
 community's own frozen JSON individual ids — a genuine interface a real backend could implement
 later, not a UI-only illusion.
 
 **Engine integration.** `LocalWorkflowEngineApi` accepts `setPersonaType(individualId, typeId)`
-mappings. The guard evaluator's `personaTypeId` parameter enables `allowedPersonaIds` checks to
+mappings. The guard evaluator's `personaTypeId` parameter enables `allowedRoleIds` checks to
 compare against the **type** while all other guard/effect/formula evaluation uses the **individual
 id**. This is the load-bearing distinction — see the multi-user login ticket
 (`data/v3_ticket_login_multiuser_STATUS.md`) for the full threading audit.

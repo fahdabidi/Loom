@@ -1,12 +1,12 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
-doc_version: 1.6.0
+spec: 4
+doc_version: 1.7.0
 status: current
 last_verified: 2026-08-09
 derived_from: app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart
 ---
 
-# Workflow grammar (normative) — grammar v1
+# Workflow grammar (normative) — specVersion 4
 
 **The contract.** Every key here is one the engine's parser genuinely reads
 (`LoomWorkflowStateMachine.fromJson`, `workflow_models.dart:341-371`) and the engine genuinely executes.
@@ -44,7 +44,7 @@ the only place this construct was mentioned anywhere in `docs/references`.
 ```jsonc
 "visibility": {
   "default": "public",              // "public" | "membersOnly" | "guarded". Default if omitted: "public".
-  "readGuard": { "allowedPersonaIds": ["hoa-board"] }   // REQUIRED sibling when default is "guarded".
+  "readGuard": { "allowedRoleIds": ["hoa-board"] }   // REQUIRED sibling when default is "guarded".
                                                           // Same WorkflowGuard shape as editGuard/creationGuard.
 }
 ```
@@ -65,6 +65,121 @@ be `guarded` overall but relax (or further restrict) which persona can read a sp
 workflow type omits `visibility` entirely — it never blocks `report.passed`, since the omitted-default
 (`public`) is legitimate and matches every pre-existing community's actual behavior.
 
+### `visibility.fields` — which field plays which part (specVersion 4)
+
+**PROPOSED — approved 2026-08-14 (decision D9).** Required by three of the six archetype visibility
+models in [`archetypes/CONTRACTS.md`](../archetypes/CONTRACTS.md) §3 — `owner_and_shared`,
+`participants` and `parties`. **`recipient` is not required**: the validator maps it to no required
+key, so a `notificationInbox` workflow is never asked for a mapping (this doc previously said four;
+verified against `community_package_validator.dart` 2026-08-18). The archetype supplies the *rule*
+(“plus the two named sides of a request”); this block supplies the *fields it reads*.
+
+```jsonc
+"visibility": {
+  "default": "membersOnly",
+  "fields": {
+    "sharedWith":   "sharedWithFanIds",                   // owner_and_shared
+    "participants": ["participantFanIds"],                 // participants
+    "parties":      ["requesterFanId", "reviewerFanId"],   // parties — exactly two
+    "recipient":    "recipientFanId"                       // recipient
+  }
+}
+```
+
+| Key | Type | Consumed by | Meaning |
+|---|---|---|---|
+| `sharedWith` | one field name, `fanId[]`-typed | `owner_and_shared` | Everyone the instance was explicitly shared with |
+| `participants` | **list** of field names, each `fanId` or `fanId[]` | `participants` | The union of all named fields is the participant set |
+| `parties` | list of **exactly two** entries, each a field name **or** `{"role": "<roleId>"}` | `parties` | The two sides of a request |
+| `recipient` | one field name, `fanId` | `recipient` | The sole addressee |
+
+Every named field MUST be declared in this workflow's `instanceDataSchema`, and MUST be identity-typed.
+
+**Why this is declared rather than inferred.** There is no convention to infer from. The corpus names
+the two sides of a request `requester`/`reviewer`, `submitter`/`mentor`, `guardian`/`coach`; the payer
+`owner`, `member`, `guardian`, or `payer`. Inferring from every identity-shaped field would silently
+admit audit actors and senders as *readers*; a hard-coded prefix allowlist would silently refuse valid
+community-specific names. Both are guesses, and an access-control decision that guesses is the failure
+this construct exists to remove.
+
+### A party may be a role, not just a person
+
+An entry in `parties` is either an **instance-data field name** (the person named in that field) or a
+**role reference**:
+
+```jsonc
+"visibility": {
+  "default": "guarded",
+  "fields": { "parties": ["payerFanId", { "role": "masjid-admin" }] }
+}
+```
+
+**Why this exists.** Four shipped payment workflows have exactly one identifiable person; their second
+party is *the community* — a club, a mosque, a soccer org — which is not a person and therefore cannot
+be named by any instance-data field. This is also the correct home for the always-false comparisons
+communities keep reaching for (`$viewer == payerFanId || $viewer == 'masjid-admin'`): what they mean is
+*"this person, plus whoever holds role X"*, and now that is sayable.
+
+- The **exactly-two arity is retained.** D9's rationale — a read model that guesses would grant access
+  it was never told to grant — is untouched; a role entry counts as one of the two.
+- `<roleId>` must be declared in `experience.roles[]`; a dangling role is an error, exactly as for
+  `allowedRoleIds`.
+- A role object must carry **only** the `role` key. `{"role":"x","fanId":"y"}` is rejected rather than
+  partially honoured — silently ignoring the extra key would hide an authoring mistake behind a
+  working grant.
+- **Fails closed like everything else**: an empty viewer, an empty `roleId`, or a viewer whose role
+  cannot be resolved all deny. A viewer's role is resolved through the same lookup `allowedRoleIds`
+  uses, so the two constructs cannot disagree about who holds a role.
+
+> **Sequencing: role entries require a specVersion 4 package.** The validator reads declared roles from
+> `experience.roles[]`, which exists only after the `personas[]` → `roles[]` rename. A legacy package
+> legitimately still says `personas`/`personaId`, and the identity checks early-return for it — so a
+> role entry added to a legacy package would be reported as dangling. **Author role entries only in
+> migrated packages.** The four payment workflows above therefore gain theirs during Phase F, at the
+> same time as their rename, not before.
+
+**`participants` is a list, deliberately.** Two shapes exist in the corpus — a single
+`participantPersonaIds` list, and a `participantAPersonaId`/`participantBPersonaId` pair. Rather than
+force one to migrate, a community declares whichever fields it has and the engine unions them:
+`["participantFanIds"]` or `["participantAFanId", "participantBFanId"]` are both valid.
+
+**An omitted `recipient` means broadcast**, not "no one and not everyone". A `notificationInbox`
+workflow with no addressee falls back to the `default` visibility decision alone — which is the correct
+reading of a community-wide announcement, and still fails closed under `membersOnly`/`guarded`.
+
+**All four fail closed, asymmetrically.** An unset or empty field value matches nobody; it must never
+match a viewer whose own id is unset. This is what keeps seed data carrying no identity from rendering
+to everyone rather than to no one — see `CONTRACTS.md` §3's "all models fail closed".
+
+**These models widen, never narrow.** They are evaluated *in addition to* the `default` decision and
+the `owner` check, so declaring `fields` can only grant reads, never revoke one the default already
+allowed.
+
+> **Identity spelling during the straddle (D8).** These names are the specVersion 4 `*FanId`/`*FanIds`
+> forms. The corpus still carries `*PersonaId`/`*PersonaIds` in 129 places, and the rename is Phase F,
+> which is sequenced *after* the engine work — so the engine reads both spellings behind a single
+> helper, deleted in one edit at Phase F's closeout.
+
+**The requirement is conditional on this workflow's own visibility.** A mapping is required only when
+the workflow actually engages the identity-scoped layer — that is, when `visibility.default` is
+`guarded`, **or** a `readGuard` is declared at the workflow level or on any state. When the workflow is
+`public` or `membersOnly` with no guard anywhere, the archetype's identity model adds nothing (these
+models widen, never narrow — a mapping could only narrow a read that is already open), and no mapping
+is demanded. **Declaring one anyway stays legal and is still fully validated**: `dangling_visibility_field`
+and `invalid_parties_arity` fire exactly as they would otherwise.
+
+> Measured across all 11 shipped fixtures when this landed: `missing_visibility_fields` dropped from
+> 29 to 11, with no other finding type changing. The split was total — every removed case had no guard
+> at any level, every surviving case was `guarded` *and* carried a workflow-level `readGuard`.
+
+**Validator:** `missing_visibility_fields` (error) — the workflow engages identity-scoped reads (per the
+condition above), its archetype uses a model that needs a field mapping, and none is declared.
+`dangling_visibility_field` (error) — a named field is not in `instanceDataSchema`.
+`invalid_parties_arity` (error) — `parties` does not name exactly two entries.
+`dangling_visibility_role` (error) — a `{"role": …}` entry names a role not declared in
+`experience.roles[]`. `invalid_visibility_principal` (error) — a `parties` entry is neither a non-empty
+field name nor an object containing only a non-empty string `role`.
+
 ---
 
 ## `states`
@@ -73,7 +188,7 @@ workflow type omits `visibility` entirely — it never blocks `report.passed`, s
 "states": {
   "open":      { "label": "Signups open", "tone": "positive",
                  "editableFields": ["title", "capacity"],
-                 "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] } },
+                 "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
   "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
 }
 ```
@@ -128,7 +243,7 @@ plumbing.
 - **`editableFields` may only name fields whose `writableBy` is `"formEntry"`.** A field written by an
   effect is not user-editable, and listing it is a contradiction. → `effect_field_in_editable_fields`
   (error)
-- **`editGuard.allowedPersonaIds`, if present, must name declared personas.** (proposed rule,
+- **`editGuard.allowedRoleIds`, if present, must name declared personas.** (proposed rule,
   `dangling_edit_guard_persona` — not yet implemented, see `spec-version.json`)
 - **`creationGuard`, if present, must be a well-formed `WorkflowGuard`** — every field-name it references
   (e.g. `locationOverlap.locationField`) must be declared in this workflow's own `instanceDataSchema`.
@@ -145,6 +260,10 @@ plumbing.
 ```jsonc
 {
   "id": "rsvp-going",              // REQUIRED, unique within this workflow
+  "action": "respond",             // PROPOSED — REQUIRED on bespoke-archetype workflows,
+                                   // and absent on generic ones. Names which archetype
+                                   // action this transition is, which is what derives the
+                                   // permission it needs. See reference/permissions.md.
   "label": "I'm going",            // REQUIRED, non-empty — this is the button text
   "icon": "event_available",       // optional, Material icon name
   "tone": "primary",               // optional: primary | secondary | destructive
@@ -249,7 +368,7 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 
 ```jsonc
 "renderBindings": [
-  { "states": ["open"], "role": "any", "tabId": "calendar",
+  { "states": ["open"], "audience": "any", "tabId": "calendar",
     "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" }
 ]
 ```
@@ -258,7 +377,7 @@ Where instances of this workflow appear. Full detail: [render-bindings.md](./ren
 |---|---|---|---|
 | `states` | string[] | **yes** | Which states this binding applies to |
 | `role` | string | **yes** | `any` · `actor` · `receiver` |
-| `tabId` | string | **yes** | `home` · `calendar` · `marketplace` · `giving` · `admin` · `messages` |
+| `tabId` | string | **yes** | `home` / `messages` (always exist, system-guaranteed) or any id this community declares in `appShell.tabs[]`/`roleTabs[]` — see [render-bindings.md](./render-bindings.md#tabid--complete-rule) |
 | `cardSurfaceFamily` | string | **yes** | Which archetype renders it |
 | `bindingKind` | string | **yes** | `primary` (full, interactive) · `summary` (compact) |
 | `audienceMemberField` | string | no | Field holding the invited personas, for targeted visibility |
@@ -277,8 +396,8 @@ Full detail: [field-types.md](./field-types.md).
 "instanceDataSchema": {
   "title":      { "type": "text", "required": true, "writableBy": "formEntry",
                   "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-  "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
-  "goingCount": { "type": "number", "formula": "size(goingPersonaIds)" }   // computed
+  "goingFanIds": { "type": "fanId[]", "writableBy": "effect" },
+  "goingCount": { "type": "number", "formula": "size(goingFanIds)" }   // computed
 }
 ```
 
@@ -317,14 +436,14 @@ feature in one definition.
       "from": ["open"],
       "to": null,                                    // voting doesn't close the ballot
       "guard": {
-        // Cross-instance: the actor must appear in `goingPersonaIds` on the instance named by
+        // Cross-instance: the actor must appear in `goingFanIds` on the instance named by
         // THIS instance's `eventId` field. Enforced by the engine, not by hiding a button.
         "relatedInstanceField": "eventId",
-        "relatedListField": "goingPersonaIds"
+        "relatedListField": "goingFanIds"
       },
       "effects": [
         { "op": "append", "key": "ballots",
-          "value": { "personaId": "$actor", "choice": "{pendingChoice}" } }
+          "value": { "fanId": "$actor", "choice": "{pendingChoice}" } }
       ]
     },
     {
@@ -332,7 +451,7 @@ feature in one definition.
       "label": "Close vote",
       "from": ["open"],
       "to": "closed",
-      "guard": { "allowedPersonaIds": ["organizer"] },
+      "guard": { "allowedRoleIds": ["organizer"] },
       "effects": [
         {
           "op": "branch",
@@ -353,9 +472,9 @@ feature in one definition.
   ],
 
   "renderBindings": [
-    { "states": ["open"],   "role": "any", "tabId": "home",
+    { "states": ["open"],   "audience": "any", "tabId": "home",
       "cardSurfaceFamily": "votePoll", "bindingKind": "primary" },
-    { "states": ["closed"], "role": "any", "tabId": "home",
+    { "states": ["closed"], "audience": "any", "tabId": "home",
       "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
   ],
 

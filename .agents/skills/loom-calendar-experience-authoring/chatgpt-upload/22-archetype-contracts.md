@@ -1,6 +1,6 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.4.0
 status: proposed
 last_verified: 2026-08-14
 audience: llm-agent
@@ -67,18 +67,44 @@ that without the author writing it.
 Replaces hand-written `readGuard` formulas. A community declares `visibleTo` per state; the archetype
 supplies anything richer.
 
-| Model | Rule | Archetypes |
-|---|---|---|
-| `roles` | visible to the roles listed in the state's `visibleTo` | all |
-| `owner` | plus: whoever created the instance | all |
-| `owner_and_shared` | plus: anyone the instance was explicitly shared with | `documentLibrary` |
-| `participants` | plus: anyone in the instance's participant set | `discussionThread` |
-| `parties` | plus: the two named sides of a request | `approvalQueueItem`, `paymentCheckout` |
-| `recipient` | plus: the addressee only | `notificationInbox` |
+| Model | Rule | Archetypes | Reads |
+|---|---|---|---|
+| `roles` | visible to the roles listed in the state's `visibleTo` | all | — |
+| `owner` | plus: whoever created the instance | all | `createdByFanId` |
+| `owner_and_shared` | plus: anyone the instance was explicitly shared with | `documentLibrary` | `visibility.fields.sharedWith` |
+| `participants` | plus: anyone in the instance's participant set | `discussionThread` | `visibility.fields.participants` |
+| `parties` | plus: the two named sides of a request — each a person **or** a role | `approvalQueueItem`, `paymentCheckout` | `visibility.fields.parties` |
+| `recipient` | plus: the addressee only | `notificationInbox` | `visibility.fields.recipient` |
+
+**The archetype supplies the rule; the community supplies the fields.** The four models below `owner`
+read their identities from a declared `visibility.fields` mapping
+([`workflow-grammar.md`](../reference/workflow-grammar.md), decision D9, approved 2026-08-14) — because
+there is no convention to infer from. The corpus names the two sides of a request
+`requester`/`reviewer`, `submitter`/`mentor`, `guardian`/`coach`, and the payer `owner`, `member`,
+`guardian`, or `payer`. Guessing would admit audit actors and senders as readers; an allowlist of
+prefixes would refuse valid community names.
+
+`roles` and `owner` need no mapping, which is why they are universal and already enforced: `roles` is
+the existing `visibility.default` / `readGuard` path, and `owner` reads the instance's creator.
 
 **All models fail closed.** An identity field that is unset matches nobody. An instance belonging to
 no one is visible to no one — which is correct, and is why seed data carrying no identity renders
-nothing rather than leaking.
+nothing rather than leaking. The asymmetry matters: an unset field must not match an unset *viewer*.
+
+**They widen, never narrow.** Each is evaluated in addition to the `default` visibility decision, so a
+declared mapping can only grant a read, never revoke one the default already allowed.
+
+**Which is why the mapping is only *required* when identity-scoped reads actually engage.** Widening a
+read that is already open adds nothing, so a workflow that is `public` or `membersOnly` with no
+`readGuard` anywhere is not asked for a `visibility.fields` mapping. The requirement applies when
+`visibility.default` is `guarded`, or a `readGuard` is declared at the workflow level or on any state.
+Declaring a mapping outside those conditions stays legal and is still fully validated. See
+[`workflow-grammar.md`](../reference/workflow-grammar.md) § `visibility.fields` for the validator
+behaviour.
+
+> Note that `recipient`, despite appearing in the table above, is **not** enforced as a required
+> mapping by the validator — an omitted addressee means broadcast, which falls back to the `default`
+> decision and still fails closed under `membersOnly`/`guarded`.
 
 ---
 
@@ -144,6 +170,23 @@ Used by 8 communities — the most widely used archetype.
 `respond` moves that row between response states, so exclusivity is inherent rather than enforced.
 Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
 
+**Provisioning is archetype-owned, and is a built-in action.** A transition declaring `action: "create"`
+on an `event-rsvp` workflow fans out one response row per member, in the response workflow's declared
+initial state. The author declares nothing — no effect, no create action on the response type, no member
+list.
+
+> This is a deliberate choice between two workable designs, recorded because the rejected one is not
+> obviously wrong. The effect grammar *could* have carried a general per-member fan-out op, shaped
+> exactly like `generateRecurringInstances` — which already fans out over N dates without naming a single
+> date, proving an engine-resolved iteration domain needs no identity values in JSON. That was rejected in
+> favour of archetype ownership: a general op would let any community hand-roll per-member creation, which
+> is precisely the duplication the archetype exists to absorb. **The identity rule (§9) was never the
+> obstacle** — an earlier draft of this contract claimed it was, and that claim was false.
+
+Because provisioning is archetype-owned, `no_creation_path_for_editable_type` does not apply to a
+workflow reached through `responseTable.workflowType` — there is deliberately no authored creation path,
+for the same reason there is no authored `reminderFanIds`.
+
 > **Corrected 2026-08-14.** An earlier draft listed five per-person arrays here and claimed nothing
 > enforced exclusivity. Measuring the corpus disproved it: six of eight communities already use response
 > rows (inherent), Masjid Nur's arrays are hand-written correctly, and only Tabletop's `tournament-event`
@@ -155,10 +198,18 @@ Plus `reminderFanIds` on the event, which is genuinely a set and unambiguous.
 
 **Custom actions:** permitted.
 
-> **Response rows.** A community may put per-member responses in a separate workflow named by
-> `responseTable.workflowType`; it inherits this archetype (`permissions.md` §6 step 3b). Under this
-> contract that shape becomes optional rather than necessary, since the archetype now owns the
-> bookkeeping it existed to hold.
+> **Response rows.** Per-member responses live in a separate workflow named by
+> `responseTable.workflowType`, which inherits this archetype (`permissions.md` §6 step 3b). This shape
+> is **required**, not optional — it is what resolves the ambiguity described above, which the archetype
+> cannot resolve from the action alone. Six communities already model it, and all six happen to use
+> `pending · going · maybe · declined · waitlisted` — a convention, not a requirement. The archetype does
+> not fix the state set; communities declare their own.
+>
+> The engine creates rows eagerly at event creation — one per member, in the response workflow's declared
+> initial state. Which states mean "hasn't answered" is the community's choice, declared as
+> `responseTable.pendingStates` (a list). `withdraw_response` may target any state that is not already
+> the target of a `respond` transition offered from the same source. See
+> [`event-rsvp.md`](./event-rsvp.md) §4.
 
 ---
 

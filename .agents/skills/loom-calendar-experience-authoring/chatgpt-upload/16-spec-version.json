@@ -5,16 +5,47 @@
     "written against. A doc whose declared version differs from `current` below is STALE and must be",
     "re-verified before the Skill is allowed to rely on it. See _meta/publishing-flow.md.",
     "",
-    "Three layers are versioned independently, because they change at different rates. See",
-    "_meta/versioning-policy.md for what each governs and when to bump it."
+    "ONE number versions the whole package -- see `versionField` below and",
+    "_meta/versioning-policy.md. This is enforced by DocsSyncChecker, which runs as a test.",
+    "It was previously a convention that nothing executed, and it drifted three times."
   ],
-
-  "current": {
+  "current": 4,
+  "versionField": {
+    "$comment": [
+      "ONE version for the whole JSON specification, at package root.",
+      "Replaces schemaVersion, experience.experienceSchemaVersion and",
+      "experience.workflowGrammarVersion, which no package should carry any more.",
+      "",
+      "Starts at 4 deliberately: strictly greater than every value any of the",
+      "three legacy fields ever held, so a numeric comparison across the two",
+      "schemes cannot be misread. The distinct field name is what actually",
+      "disambiguates; the value is belt and braces."
+    ],
+    "field": "specVersion",
+    "location": "package root",
+    "bumpRule": "Breaking changes only, exactly as before -- an additive change (a new formula function, effect op, guard kind, or cardSurfaceFamily) does not bump. This is what stops a single number making every file spuriously old."
+  },
+  "legacyLayers": {
+    "$comment": [
+      "FROZEN HISTORY, not live. Until specVersion 4 the package carried three",
+      "independent version numbers. They are recorded here so the provenance of",
+      "older packages stays readable, and so the reasoning below is not lost.",
+      "",
+      "Why they were collapsed: three numbers were meant to keep the blast radius",
+      "honest, but nothing enforced them -- docs-sync-checker.md was specified and",
+      "never built, and it predicted this outcome in its own opening line. The",
+      "result was drift three times over: the CommunityVoteApi docs that survived",
+      "the API's deletion; grammar 2 shipping into every fixture's CONTENT while",
+      "all 13 kept declaring 1 for four months; and an identity rename that",
+      "renamed keys in all three layers while bumping only one.",
+      "",
+      "A change to any component now bumps the version of the whole package."
+    ],
     "envelope": 1,
     "experience": 2,
-    "grammar": 2
+    "grammar": 3,
+    "grammarNote": "Grammar was mid-flight at 3 (the roleId/fanId identity split) when the collapse happened. That change ships as specVersion 4."
   },
-
   "status": "provisional",
   "statusReason": [
     "PROVISIONAL, not frozen. Phase A.5 now parses the engine-native experience schema (v2), registers",
@@ -26,16 +57,13 @@
     "flips to `stable`. Until then, docs in this tree describe an intended contract, verified against",
     "the engine's parser and evaluator and the app-shell parser, but not yet end-to-end in the running UI."
   ],
-
   "released": "2026-07-14",
   "lastReviewed": "2026-08-05",
-
   "resolvedQuestions": {
     "$comment": "Open questions settled by reading the source, recorded so they are not re-litigated.",
     "stringLiteralsInFormulas": "RESOLVED 2026-07-14: string literals ARE supported, in both single and double quotes (formula_evaluator.dart:540). \"availabilityState == 'available'\" is valid. This was previously listed as an unknown.",
     "unaryNotOperator": "CORRECTED 2026-07-17: `negationOperators` below previously claimed BOTH `!` and `!=` are absent. Verified directly against the parser: only `!=` is actually absent (`_comparison()`, formula_evaluator.dart:428-436, never checks for it). Unary `!` genuinely works -- parsed by `_unary()` (:458-462) and evaluated (`!_bool(v)`, :236). `formulas.md` corrected to match."
   },
-
   "resolvedInGrammar": {
     "$comment": "Gaps that were in knownGaps and are now fully closed -- grammar, engine execution, AND validator coverage all confirmed. Moved here 2026-07-16 per the publishing flow (_meta/publishing-flow.md step 8), rather than deleted, so the resolution is traceable.",
     "transitionInputs": "GAP-1, RESOLVED 2026-07-16. `transitions[].inputs` + `{input.x}` interpolation + `renderBindings[].repeater.itemActions` are implemented and validated. Real engine execution confirmed: `applyTransition` accepts `inputs`, refuses when a `required` one is missing, and `{input.x}` resolves inside effects (including recursively in nested List/Map effect values) -- proven end-to-end by `tournament-ballot.cast-vote` in the frozen Tabletop Club JSON (two concurrent-shaped calls with different `choice` values produce two distinct, non-racing `tournament-vote` rows). Validator adds `unknown_input_type`, `unknown_input_reference`, `unknown_item_reference`. See `app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart` (`LoomWorkflowTransition.inputs`, `RepeaterSpec`/`RepeaterItemAction`), `effect_evaluator.dart` (`{input.x}`), `local_workflow_engine_api.dart` (`applyTransition`'s required-input check).",
@@ -48,40 +76,6 @@
     "combineDateAndTimeFormula": "IMPLEMENTED 2026-08-01 (Notifications Experience phase, CAL.Notify2.9). `combineDateAndTime(date, time)` is a public formula function backed by the shared value-parsing logic used by the `cancellationDeadline`/`locationOverlap` guards. It accepts an evaluated ISO date value and optional `HH:mm` value, returns local midnight when time is absent/null, and fails closed for missing or malformed values. The real validator accepts the function through the engine's formula vocabulary, enabling the frozen `event-rsvp`/`tournament-event` `reminderAt` computed fields.",
     "calendarReminderApi": "IMPLEMENTED 2026-08-01 (Notifications Experience phase, CAL.Notify2.9). `event-rsvp`/`tournament-event` now compute `reminderAt` from their event date/time and offset, while `event-rsvp-response` retains the engine-enforced `reminderSentAt` idempotency stamp. Calendar performs a client-orchestrated live-refresh check for each viewer's response row; when `now() >= reminderAt` and the row is eligible and unstamped, it creates a real `notification` row through the existing delivery choke point and applies `send-reminder` to stamp the response. The automatic Calendar action-chip row hides that internal transition; no Calendar-specific reminder UI is added."
   },
-
-  "layers": {
-    "envelope": {
-      "field": "schemaVersion",
-      "location": "package root",
-      "governs": "The install wrapper: packageId, communityId, communityHandle, displayName, extensionId, branding, seedDataFiles, experience.",
-      "supported": [1],
-      "current": 1
-    },
-    "experience": {
-      "field": "experience.experienceSchemaVersion",
-      "location": "inside the experience block",
-      "governs": "How the experience block declares workflows.",
-      "supported": [1, 2],
-      "current": 2,
-      "values": {
-        "1": "LEGACY shallow form. Flat workflows[] cards (workflowId/title/entryText/actionText/resultText/calendar?/responseChoices?) plus one bespoke top-level block per special feature. Cannot express a state machine, guard, effect, or formula. This is what the app loads today; the seven non-Tabletop communities still use it. Not recommended for new communities.",
-        "2": "ENGINE-NATIVE form. workflowDefinitions (real state machines) + workflowInstances (seed data), parsed by LoomWorkflowStateMachine.fromJson and executed by LocalWorkflowEngineApi. This is the target and what all docs in this tree describe."
-      }
-    },
-    "grammar": {
-      "field": "experience.workflowGrammarVersion",
-      "location": "inside the experience block",
-      "governs": "The grammar of each workflowDefinitions entry: states, transitions, guards, effects, renderBindings, instanceDataSchema, formulas.",
-      "supported": [1, 2],
-      "current": 2,
-      "requiredWhen": "experienceSchemaVersion == 2",
-      "values": {
-        "1": "Original renderBindings grammar. A member-create affordance was a single flat `creatable` object on a binding (byPersonaIds/label/prefill).",
-        "2": "BUMPED 2026-07-21. `creatable` is replaced by an `actions[]` array on a binding: archetype-owned actions, each with kind/label/byPersonaIds and optional workflowType/scope(tab|instance)/presentation(fab|button)/prefill. Generalizes creation into a scope+presentation model (tab-scoped FABs vs instance-scoped card buttons / contextual FABs) and is the extension point for future non-create action kinds. See render-bindings.md (`actions`) and proposedNotImplemented.actionsGrammar below."
-      }
-    }
-  },
-
   "groundedIn": {
     "$comment": "The code this specification is derived from. If any of these change, this spec may be stale.",
     "models": "app/packages/core/loom_workflow_engine/lib/src/models/workflow_models.dart",
@@ -91,7 +85,6 @@
     "bindingResolver": "app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart",
     "validator": "app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart"
   },
-
   "knownGaps": {
     "$comment": "Capabilities the docs describe as needed but the grammar does NOT yet support. Each must be closed or explicitly deferred before the Skill (Phase 3) can rely on this spec. GAP-1 and GAP-4 moved to `resolvedInGrammar` above, 2026-07-16.",
     "instanceCreation": "GAP-2 (LARGELY RESOLVED 2026-07-21; tab-scoped surface now proven across every real archetype, 2026-08-05). Grammar/model + tab-scoped UI are done. Grammar v2 (2026-07-21) replaced the flat `renderBindings[].creatable` object with an `actions[]` array (see grammar layer values.2 and proposedNotImplemented.actionsGrammar). Tab-scoped `create` actions are fully built and shipping end-to-end: `event-rsvp` (New event, CALR.3-3h2), `tournament-event` (New tournament, CALR.3b), and every other tab-level creation runs through the real generic creation pipeline (GenericWorkflowCreationCard via EngineNativeArchetypeCreationCard's cardSurfaceFamily dispatch), verified by full-suite tests. Tracker 3 Phases E and F additionally proved this pipeline on `game-purchase-proposal` (Propose a game) and `discussion-thread` (New thread), and Phase F added `personaId[]`-typed creation-field support (AudienceMultiSelectPicker), so tab-scoped creation is no longer Calendar-only infrastructure -- every one of Tabletop Club's six real tabs now has at least one working tab-scoped create action. What REMAINS is the instance-scoped surface (scope: instance -- a card `button` or a contextual FAB, with `{context.*}` resolution from the in-focus/owning instance), tracked in proposedNotImplemented.actionsGrammar and the tracker's CALR.4a-f rows.",
@@ -102,7 +95,6 @@
     "powExp": "`pow` / `exp` are not implemented (would be required for a true Elo expected-score calculation).",
     "stringConcatenation": "Formulas cannot concatenate strings. Use `labelTemplate` (e.g. \"{value} seats\") for display composition instead."
   },
-
   "proposedNotImplemented": {
     "$comment": "NEW grammar/engine surface designed 2026-07-17 for the Calendar redesign (event-rsvp per-row response table, Day/Week/Month/Pending views, real event creation). Fully specified and written into the frozen JSON + reference docs, but NONE of it is engine- or App-Shell-implemented yet -- tracked separately from knownGaps because these are net-new proposals, not gaps in an existing contract. See docs/references/communities/tabletop-club.md section 11's 2026-07-17 review-log row for the full context and the CAL/AS ticket gap list for implementation scope.",
     "createInstances": "New method on the ABSTRACT WorkflowEngineApi (not Local-only, unlike the existing install-time-only seedInstances) -- atomic bulk-create, needed so an event's per-member event-rsvp-response rows can be created as one real API operation, not N racy individual createInstance calls.",
@@ -124,9 +116,19 @@
     "notificationWorkflowType": "FIXTURE-LOCKED 2026-07-31 (CAL.Notify.3, commit `5c88c7c`) -- App-Shell rendering NOT implemented, deliberately deferred to a new Notifications Experience phase (see the tracker). A new, generic `notification` workflow type -- `unread` (initial) -> `read` (terminal) states, one `mark-read` transition gated by `actorEqualsFieldGuard` above, schema `{ recipientPersonaId, title, body, createdAt }`. Live in the frozen fixture: `respond-maybe`/`respond-declined`'s existing `transitionRelated` effects (waitlist promotion) gained `onSuccessEffects` creating a real notification targeting the promoted row's own `personaId`. Both real validators re-run clean (0/0) against the updated fixture. **Rendering plan superseded 2026-07-31 (CAL.Notify.4, attempted and reverted)**: the original plan (a `renderBindings[].tabId: \"calendar\"` entry + `rolesForInstance` lambda) was actually wired up and immediately crashed Calendar the moment a real notification instance existed via the genuine waitlist-promotion path -- root cause: Calendar's date-grid projection (`_CalendarEntry`, `part28_engine_native_calendar_surface.dart`) requires every rendered instance to carry a valid `eventDate`, unconditionally, regardless of `cardSurfaceFamily`. Confirmed this is not a Calendar-tab-compatible rendering shape at all. Per the user: notification rendering becomes its own dedicated phase (bell icon / dedicated tab / fixed top-of-tab card surface / FAB are the real candidate patterns, to be researched and decided during that phase's own design pass), which will also own Calendar's eventual integration with it (e.g. event-creator-scheduled reminders), not a bolt-on to the existing date grid.",
     "transitionInputDialogFields": "IMPLEMENTED 2026-07-26 (CAL.Calendar2.1, round 1) but never entered here until now -- a documentation gap, not an implementation gap. `transitions[].inputs[].{visibleWhen,options,modeGroup,modeValue}` (workflow-grammar.md's new `transitions[].inputs` section): a generic, schema-driven dialog (`GenericTransitionInputDialog`) auto-renders a form from any transition's declared `inputs`, replacing the one-off bespoke `_RecurrenceRulePickerDialog` `make-recurring` used to have (now deleted -- one input-collection code path, not two). `visibleWhen` is a live formula evaluated against persisted instance data merged with this dialog's in-progress values; `options` renders chips (single-select for `type: \"text\"`, multi-select for `type: \"list\"`); `modeGroup`/`modeValue` groups mutually-exclusive inputs behind one radio choice.",
     "transitionInputWritesToAndMaxSelections": "IMPLEMENTED 2026-07-26 (CAL.Calendar2.1 fix1, commit `58cba6f`). Closes the cardinality gap the implementation agent correctly declined to guess around: `byDayOfWeek` must be multi-select for weekly recurrence but exactly-one-select when paired with the monthly `lastOrNthWeekday` mode (`recurrence_evaluator.dart` enforces `bySetPos` requires `byDayOfWeek.length == 1`), and a single input spec has no way to express mode-conditional cardinality. Adds two fields to `transitions[].inputs[]`: `maxSelections: int?` caps a `type: \"list\"` + `options` (multi-select chip) input, evicting the oldest pick past the cap -- a UI-side single-select-via-chips convenience, most commonly `1`; `writesTo: string?` overrides the instance-data/`{input.x}` key an entry's value is collected under (default: its own map key), letting two mode-scoped inputs with different shapes share one logical output field since only one is ever visible/relevant at a time. The fixture's `make-recurring` transition now declares `byDayOfWeekWeekly` (unbounded, `visibleWhen: \"freq == 'weekly'\"`) and `byDayOfWeekMonthly` (`maxSelections: 1`, `modeGroup`/`modeValue` matching the existing `lastOrNthWeekday` radio), both `writesTo: \"byDayOfWeek\"`.",
-    "structuredRsvpDetailsRendering": "IMPLEMENTED 2026-07-26 (CAL.Calendar2.5b, folded into CAL.Calendar2.1 fix2, commit `58cba6f`). Once CAL.Calendar2.1's generic transition-input dialog landed, `respond-going`'s existing `dietaryNotes`/`comments` inputs (previously inert -- no collection mechanism existed) correctly began activating a real dialog on every RSVP. Built out fully rather than suppressed: `part28_engine_native_calendar_surface.dart`'s attendee list gained a new `_EventAttendeeEntry` (name + optional dietaryNotes/comments, populated from each response row) rendered as small indented lines beneath the existing `'• $name'` line, only when present.",
+    "structuredRsvpDetailsRendering": "IMPLEMENTED 2026-07-26 (CAL.Calendar2.5b, folded into CAL.Calendar2.1 fix2, commit `58cba6f`). Once CAL.Calendar2.1's generic transition-input dialog landed, `respond-going`'s existing `dietaryNotes`/`comments` inputs (previously inert -- no collection mechanism existed) correctly began activating a real dialog on every RSVP. Built out fully rather than suppressed: `part28_engine_native_calendar_surface.dart`'s attendee list gained a new `_EventAttendeeEntry` (name + optional dietaryNotes/comments, populated from each response row) rendered as small indented lines beneath the existing `'\u2022 $name'` line, only when present.",
     "notificationPresentationGrammar": "NEW 2026-07-31 (Notifications Experience phase, CAL.Notify2.2 -- JSON locked this revision, parsing not yet implemented). Top-level `experience.notificationPresentation: { style: \"bell\" | \"dedicatedTab\" | \"fixedCard\" | \"fab\" }` (render-bindings.md), community-wide (mirrors `creatableAction`'s exact shape/cascade convention). Selects which of four generic, archetype-agnostic rendering styles surfaces `notification` workflow-type instances to their recipient -- deliberately NOT another `renderBindings[].tabId` entry, since CAL.Notify.4 confirmed Calendar's own date-grid projection unconditionally requires a valid `eventDate` on every instance it renders, which a notification will never have. Tabletop Club activates `bell` (commit pending this revision); all four styles ship real and independently tested (CAL.Notify2.3-.6), not a subset-real/subset-documented split.",
     "notificationCoreDataLayer": "NEW 2026-07-31 (Notifications Experience phase, CAL.Notify2.1). A reusable data-layer piece (e.g. `NotificationInboxController`) exposing a live per-persona unread count (`engine.aggregate(workflowType: \"notification\", op: \"count\", filter: {recipientPersonaId, $state: \"unread\"})`) and a live list, shared by all four `notificationPresentation` styles. Not a new engine primitive -- reuses `aggregate`/`queryInstances`/`RepeaterSurface.live`, the exact idioms a confirmed-dead legacy notification inbox (`_NotificationInboxTabSurface`, `part02_tab_shell.dart`) already proved out against a disconnected mock engine; this wires the same idioms to the real community engine and the real `notification` workflow type instead.",
     "notificationDeliveryService": "NEW 2026-07-31 (Notifications Experience phase, CAL.Notify2.8). A local-only native OS notification layer, added because this engine has no backend server/push infrastructure anywhere (confirmed: fully local-first, zero network calls in the whole codebase) -- real remote push (FCM/APNs) was explicitly ruled out as requiring a genuinely new backend service. `NotificationDeliveryService` (abstract, one `deliver(notification)` method) + `LocalNotificationDeliveryService` (the only implementation, using the `flutter_local_notifications` plugin) is wired to the single choke point every notification-creating code path already funnels through, so a future real backend can swap the implementation behind the same interface without touching any call site."
+  },
+  "pendingMigration": {
+    "$comment": [
+      "Surfaces not yet carrying `specVersion`. The docs-sync checker treats an",
+      "entry here as a known exception and everything else as a failure, so this",
+      "list is the migration's own to-do -- it must reach empty."
+    ],
+    "communityFixtures": "All 11 docs/references/communities/*.jsonc still declare the legacy triple. They are regenerated through the authoring Skill, never hand-edited, and are stamped specVersion 4 by that regeneration.",
+    "packageGenerators": "The 11 app/packages/core/loom_communities_app_shell/tool/generate_*_package.dart stamp the legacy fields.",
+    "validator": "supportedEnvelopeVersions / supportedExperienceVersions / supportedGrammarVersions in community_package_validator.dart gate on the legacy triple."
   }
 }

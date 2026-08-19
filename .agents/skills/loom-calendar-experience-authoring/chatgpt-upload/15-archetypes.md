@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 2 }
+spec: 4
 doc_version: 1.6.0
 status: current
 last_verified: 2026-08-12
@@ -46,6 +46,12 @@ forward from a prior doc claim.
 
 ## The dispatch mechanism (read this before the table)
 
+> **This bespoke-vs-generic split is also what decides how permissions are derived.** A family with a
+> dispatcher case has a **closed action vocabulary** and its transitions must declare `action`; a family
+> that falls through to the generic card has an **open** one, declares no `action`, and derives its
+> permissions structurally instead. See [`reference/permissions.md`](../reference/permissions.md) —
+> which is also why community JSON never contains a permission.
+
 `EngineNativeArchetypeCard.build()` (`part27_engine_native_binding_dispatcher.dart`) is the **single**
 per-instance dispatch point `cardSurfaceFamily` is switched on. Six branches route to a bespoke widget;
 every other value falls to the generic card:
@@ -83,6 +89,42 @@ thread-detail code) are dead code for every real community, not load-bearing for
 superseding this doc's prior claim that they remained load-bearing for "the other seven, still-shallow-
 schema communities": that claim predated this session's Skill-authoring migration of all 10 communities to
 real engine-native JSON (2026-08-09 vs. 2026-08-10/11). Slated for removal in a dedicated follow-on pass.
+
+## Contracts — what each archetype guarantees
+
+The table below says what each archetype **is** and how far it is built. What each one **guarantees** —
+its actions, the per-person bookkeeping it owns, and its visibility model — is defined in
+[`CONTRACTS.md`](./CONTRACTS.md) and, per archetype, in the docs linked here.
+
+The distinction matters when authoring: a community declares which roles perform which actions, and the
+archetype supplies the rest. Fields an archetype owns are never declared by a community.
+
+| Archetype | Contract | Actions | Bookkeeping | Visibility |
+|---|---|---|---|---|
+| `event-rsvp` | [doc](./event-rsvp.md) | 11 | 5 response sets | `roles` + `owner` |
+| `equipment-loan` | [doc](./equipment-loan.md) | 14 | queue, holder | `roles` + `owner` |
+| `documentLibrary` | [doc](./document-library.md) | 19 | 6 engagement sets | `owner_and_shared` |
+| `exportWizard` | [doc](./export-wizard.md) | 11 | — | `roles` + `owner` |
+| `searchAiAnswer` | [doc](./search-ai-answer.md) | 7 | saved | `roles` + `owner` |
+| `votePoll` | [doc](./vote-poll.md) | 6 | who voted, never how | `roles` |
+| `approvalQueueItem` | [doc](./approval-queue-item.md) | *structural* | — | `parties` |
+| `formEntry` | [doc](./form-entry.md) | *structural* | — | `roles` + `owner` |
+| `discussionThread` | [doc](./discussion-thread.md) | *structural* | read, muted | `participants` |
+| `notificationInbox` | [doc](./notification-inbox.md) | *structural* | 4 engagement sets | `recipient` |
+| `paymentCheckout` | [doc](./payment-checkout.md) | *structural* | — | `parties` |
+| `statusTimeline` | [doc](./status-timeline.md) | *structural* | — | `roles` |
+| `table` | [doc](./table.md) | *structural* | — | `roles` + `owner` |
+
+**Every archetype accepts community-defined actions.** A transition that declares no `action` derives
+its permission structurally and renders in the generic button row — that is how 201 of the corpus's
+~450 transitions already work. The six with a named vocabulary offer *additional* semantics when you
+use it, not a restriction when you don't.
+
+**Where these rules are enforced today:** the client engine, over local sqlite. `readGuard` is evaluated
+only by `LocalWorkflowEngineApi`, which is the sole implementation of `WorkflowEngineApi`. There is no
+workflow service yet, so these rules are correct for the UI and are **not** a security boundary. The
+generated [`permissions-vocabulary.json`](../generated/permissions-vocabulary.json) records this per
+archetype as `enforcement: client_engine`.
 
 ## The archetypes (all 13, re-verified 2026-08-12)
 
@@ -187,8 +229,9 @@ the bar Phase 3 (the Skill) actually needs. See
 Phase G for the closing evidence (G.1-G.3 closed; G.4 is this documentation pass; G.5 is the pending
 human sign-off).
 
-`docs/CardSurfaces/` was **deleted 2026-08-14** as a byte-identical duplicate of the Build Plan
-copy. It was superseded long before that — every file invented a nonexistent
+`docs/CardSurfaces/` was **deleted 2026-08-14** as a byte-identical duplicate of
+`docs/Build Plan V2/Skill/components/card-surfaces/`, which every real code reference already
+pointed at. It was superseded long before that — every file invented a nonexistent
 `CommunityXxxApi`. Nothing from it is promoted here.
 
 Per-archetype JSON reference docs, now that generic reachability is confirmed live for all 9:

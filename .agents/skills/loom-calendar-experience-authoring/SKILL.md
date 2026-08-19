@@ -332,6 +332,21 @@ cp "$SRC/reference/theming.md"              "$DST/13-theming.md"
 cp "$SRC/reference/platform-services.md"    "$DST/14-platform-services.md"
 cp "$SRC/archetypes/README.md"              "$DST/15-archetypes.md"
 cp "$SRC/spec-version.json"                 "$DST/16-spec-version.json"
+cp "$SRC/reference/solved-patterns.md"      "$DST/20-solved-patterns.md"
+cp "$SRC/reference/permissions.md"          "$DST/21-permissions.md"
+cp "$SRC/archetypes/CONTRACTS.md"           "$DST/22-archetype-contracts.md"
+cp "$SRC/reference/identity-types.md"       "$DST/23-identity-types.md"
+
+# Per-archetype docs, 24-37. These carry the worked JSON examples -- the shape to
+# copy for each family -- and are the difference between knowing a rule and
+# knowing what it looks like. Numbered alphabetically so the set is stable.
+i=24
+for a in approval-queue-item approval-queue discussion-thread document-library \
+         equipment-loan event-rsvp export-wizard form-entry notification-inbox \
+         payment-checkout search-ai-answer status-timeline table vote-poll; do
+  cp "$SRC/archetypes/$a.md" "$DST/$(printf '%02d' $i)-archetype-$a.md"
+  i=$((i+1))
+done
 ```
 
 `00-INSTRUCTIONS.md`, `17-worked-example-calendar.jsonc`, and `18-validator-action-openapi.yaml` are

@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: 4
 doc_version: 1.0.0
 status: current
 last_verified: 2026-07-14
@@ -10,18 +10,21 @@ audience: llm-agent
 
 **The algorithm.** Follow these steps in order. Do not skip steps 6-8.
 
-> **Starting from a filled-in product doc?** (identity, personas, workflow types, surfaces, seed data —
-> this shape, not only a doc named exactly "Community Product Experience Template.") **One fact from that
-> conversion process is important enough to state directly here, not just in a file you might not have in
-> this bundle:** a product doc's "Persona Tabs, Pins, And Customization" table (listing which tabs each
-> persona is described as using) is **descriptive UX copy, not an access-control mechanism.** Per-persona
-> different tab sets are not real grammar in this schema version — every tab a workflow binds to is visible
-> to whichever persona a `role`/guard combination actually resolves for, regardless of what that table
-> says. Found 2026-08-10 (Skill Retrospective): an authoring pass read a persona's "required tabs" list,
-> concluded that persona could never see a card bound to a tab not on that list, and used that false belief
-> to justify dropping a real product-doc requirement — while the very same JSON it had just written already
-> used `role: "any"` on that exact tab, which the real grammar renders to everyone. Do not make this
-> inference; check the actual `tabId`/`role` resolution rules in `12-render-bindings.md` instead.
+> **Starting from a filled-in product doc?** If your input is a
+> [Community Product Experience Template](../../Build%20Plan%20V2/Skill/references/community-product-experience-template.md)
+> (identity, personas, workflow types, surfaces, seed data), read
+> [`06-product-doc-to-json.md`](./06-product-doc-to-json.md) **first** — it maps each of that template's
+> 11 sections to the JSON below, then hands you back here at Step 4 to emit and validate.
+>
+> **This applies to any product doc with the same shape, not only the literal named Template file.**
+> Found 2026-08-10 (Skill Retrospective, Chess Club): a doc gated on exact template identity got skipped
+> for a doc that was clearly the same family (identity/personas/surfaces/workflow-mapping/persona-state-
+> matrix tables, including a "Persona Tabs, Pins, And Customization" §3.1-style table) but wasn't the
+> literally-named file — and `06-product-doc-to-json.md` is exactly where the fact that would have
+> prevented a real defect lives ("per-persona different tab sets are NOT in grammar v1 at all"). **If the
+> product doc in front of you has a "Persona Tabs"/"Required tabs" table for any persona, read
+> `06-product-doc-to-json.md` unconditionally** — do not gate this read on matching the Template file by
+> name.
 
 ## Mental model (one paragraph)
 
@@ -90,16 +93,18 @@ with **zero**, and queued listings rendered **no buttons at all**. The validator
 (`stuck_state`), but the correct fix is to model it as data in the first place.
 
 **A second, related failure mode — check this explicitly whenever a doc uses the words "position,"
-"queue," "waiting list," or "ranking"/"leaderboard":** if members waiting for something need to see their
-**position**, that position is normally a formula (`indexOf(list, $viewer)`, `10-formulas.md`'s canonical
+"queue," "waiting list," or "ranking"/"leaderboard":** the states-vs-data decision above is not the only
+structural choice this kind of requirement forces. If members waiting for something need to see their
+**position**, that position is normally a formula (`indexOf(list, $viewer)`, `formulas.md`'s canonical
 Queue Position pattern) run against a **list on one shared instance** — which only works if the modeling
 choice one step earlier put waiting members on a shared list at all, not as their own separate per-member
-instances. Found 2026-08-10 (Skill Retrospective): an authoring pass picked a row-per-waiting-member shape
-(driven by which archetype looked like the best fit for the *primary* action) without cross-checking that
-shape against the doc's *other* stated requirements for the same surface, including "queue position" — by
-the time the mismatch was noticed, the structural choice was already locked in, and the requirement got
-dropped instead of the shape being reconsidered. **Do this cross-check here, in Step 3, before the
-archetype choice locks anything in** — see `20-solved-patterns.md` pattern 2 for the verified-correct
+instances. Found 2026-08-10 (Skill Retrospective, Chess Club `chess-pairing-queue`): an authoring pass
+picked a row-per-waiting-member shape (driven by which archetype's Card Surface Registry Mapping entry
+looked like the best fit for the *primary* action) without cross-checking that shape against the doc's
+*other* stated requirements for the same surface, including "queue position" — by the time the mismatch
+was noticed, the archetype/structural choice was already locked in, and the requirement got dropped instead
+of the shape being reconsidered. **Do this cross-check here, in Step 3, before the archetype choice locks
+anything in** — see `docs/references/reference/solved-patterns.md` pattern 2 for the verified-correct
 shared-container shape, and reconsider the states-vs-data/archetype decision together if a position-like
 requirement doesn't fit the shape you were about to pick.
 
@@ -208,11 +213,10 @@ For each type, decide where its instances appear, per state and per role.
 ]
 ```
 
-- `tabId` ∈ `calendar` · `marketplace` · `giving` · `admin` (plus any open-vocabulary custom name). `home`
-  and `messages` always exist without a declaration — the App Shell adds both unconditionally — but both
-  are still valid binding targets, and `messages` is specifically **where discussion threads belong**
-  (`render-bindings.md`'s tab table). Declaring either in `appShell.tabs[]` is optional and only affects
-  cosmetics (label/icon). `home` is valid but should stay curated, not a dumping ground (AP-10).
+- `tabId` — `home`/`messages` always exist; any other id must be declared in this community's own
+  `appShell.tabs[]`/`personaTabs[]` (see `reference/render-bindings.md`'s `tabId — complete
+  rule` section) before any `renderBindings` entry can reference it. Choose whatever name fits this
+  community's domain — `tabId` is not a reserved/closed vocabulary.
 - `role` ∈ `any` · `actor` · `receiver`
 - `bindingKind` ∈ `primary` (full/interactive) · `summary` (compact)
 - `cardSurfaceFamily` — **only** values from [`archetypes/README.md`](../archetypes/README.md)
@@ -276,20 +280,20 @@ output can mechanically verify nothing was silently dropped.
    - **Add the missing construct now**, then cite it (this is the common case — most gaps found this way
      are just an omission, fixable in the same pass).
    - **Mark it `not_implemented`, with `reasoning` that cites a real, checked constraint** — a specific
-     validator rule, a specific closed enum (`render-bindings.md`'s `tabId` list, `archetypes.md`'s 9 real
-     families), a specific missing `formulas.md` function, or a specific `platform-services.md` ❌
-     Not-implemented row. **Reasoning that isn't grounded in one of those citations is not a valid
-     `not_implemented` reason — re-read `render-bindings.md` before asserting a persona/tab/grammar
-     restriction exists.** This is exactly the check that would have caught Chess Club's false claim:
-     "Player has no admin-tab access" is not a real grammar restriction (per-persona tab sets are
-     explicitly not in grammar v1, and the workflow's own binding already used `role: "any"` on that tab) —
-     a `reasoning` field forced to cite where that constraint supposedly lives would have failed to find a
-     citation and forced the real fix instead.
-5. **Also check `solved-patterns.md`** (fetch it the same way you fetched this file, if it's part of your
-   read set — check `00-INSTRUCTIONS.md`'s current file list) for each requirement — if its shape matches a
-   named pattern there, use that pattern's verified-correct shape directly instead of re-deriving one from
-   scratch (and instead of reinventing the "looks plausible, is wrong" shape that pattern exists to warn
-   against).
+     validator rule, a specific closed enum (`archetypes/README.md`'s 9 real families — `tabId` is **not**
+     a closed enum as of this doc's current version; do not cite a tabId restriction as a reason unless the
+     community's own `appShell.tabs[]` genuinely doesn't declare the tab needed), a specific
+     missing `formulas.md` function, or a specific `platform-services.md` ❌ Not-implemented row. **Reasoning that isn't grounded in one of those citations is not a valid
+     `not_implemented` reason — re-read `guide/06-product-doc-to-json.md` and `render-bindings.md` before
+     asserting a persona/tab/grammar restriction exists.** This is exactly the check that would have caught
+     Chess Club's false claim: "Player has no admin-tab access" is not a real grammar restriction (per-
+     persona tab sets are explicitly not in grammar v1, and the workflow's own binding already used
+     `role: "any"` on that tab) — a `reasoning` field forced to cite where that constraint supposedly lives
+     would have failed to find a citation and forced the real fix instead.
+5. **Also check `docs/references/reference/solved-patterns.md`** for each requirement — if its shape
+   matches a named pattern there, use that pattern's verified-correct shape directly instead of re-deriving
+   one from scratch (and instead of reinventing the "looks plausible, is wrong" shape that pattern exists to
+   warn against).
 
 **Output format** — emit this as a real JSON artifact in your response (not prose describing that you did
 this check), one object per workflow:

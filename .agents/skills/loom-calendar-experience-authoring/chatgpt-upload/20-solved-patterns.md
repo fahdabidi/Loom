@@ -1,5 +1,5 @@
 ---
-spec: { envelope: 1, experience: 2, grammar: 1 }
+spec: 4
 doc_version: 1.6.0
 status: current
 last_verified: 2026-08-12
@@ -31,7 +31,7 @@ owner.
 **Looks plausible, is wrong:**
 ```jsonc
 { "id": "delist", "from": ["published"], "to": "delisted",
-  "guard": { "actorEqualsField": { "key": "ownerPersonaId" } } }
+  "guard": { "actorEqualsField": { "key": "ownerFanId" } } }
 ```
 Only the owner is checked. But `availabilityState` (available/requested/reserved/onLoan) is **orthogonal
 data**, not a separate FSM state (per AP-1) — so the item can still be `published` while actively on loan,
@@ -41,7 +41,7 @@ return path.
 **Verified-correct shape:**
 ```jsonc
 { "id": "delist", "from": ["published"], "to": "delisted",
-  "guard": { "actorEqualsField": { "key": "ownerPersonaId" },
+  "guard": { "actorEqualsField": { "key": "ownerFanId" },
              "instanceDataEquals": { "key": "availabilityState", "value": "available" } } }
 ```
 Delist only fires when nothing is actively borrowed/claimed — mirrors the pattern every sibling
@@ -75,40 +75,40 @@ member's position is their index in that list.
 position is genuinely visible (as an ordered list any viewer can read), without needing a per-viewer
 `indexOf` formula at all. If a numeric per-viewer position is specifically required (not just visible
 order), only then reach for `indexOf(waitingPlayerNames, playerId)` — but note this needs a resolvable
-individual identity (a real `personaId`), not a free-text name, so check the community's persona model
+individual identity (a real `fanId`), not a free-text name, so check the community's persona model
 first (see pattern 6 below).
 
 **Found in:** Chess Club's `chess-pairing-queue` — the first authoring pass used N separate instances,
 silently dropped "waiting players see queue position," and justified the drop with a claim (no admin-tab
-access for the waiting persona) that a `grep` of the package's own `role: "any"` binding directly
+access for the waiting persona) that a `grep` of the package's own `audience: "any"` binding directly
 contradicted. Redesigned to the shared-container shape above.
 
 ---
 
-## 3. Admin-created, member-received objects need `role: "any"` + `visibility.readGuard`, never `role: "actor"`/`"receiver"`
+## 3. Admin-created, member-received objects need `audience: "any"` + `visibility.readGuard`, never `audience: "actor"`/`"receiver"`
 
 **Requirement shape:** an admin/organizer publishes an announcement or sends a notification; a member
 receives and reads it.
 
 **Looks plausible, is wrong:**
 ```jsonc
-{ "states": ["sent"], "role": "receiver", "tabId": "home", ... }
+{ "states": ["sent"], "audience": "receiver", "tabId": "home", ... }
 ```
 On every tab except `admin`, `"receiver"` does not resolve the way its name suggests — it does not mean
 "whoever should receive this." Per `render-bindings.md`'s documented trap, non-`admin` tabs can only
-reliably resolve `role: "any"`; `"actor"`/`"receiver"` are creator-only semantics that produce a
-permanently dead card for anyone who isn't the literal `createdByPersonaId`. Since the admin created the
+reliably resolve `audience: "any"`; `"actor"`/`"receiver"` are creator-only semantics that produce a
+permanently dead card for anyone who isn't the literal `createdByFanId`. Since the admin created the
 announcement, a member's `home` tab binding using `"receiver"` never shows them anything.
 
 **Verified-correct shape:**
 ```jsonc
 "visibility": { "default": "guarded",
-                "readGuard": { "formula": "$viewer == recipientPersonaId || $viewer == 'community-admin'" } },
+                "readGuard": { "formula": "$viewer == recipientFanId || $viewer == 'community-admin'" } },
 "renderBindings": [
-  { "states": ["sent"], "role": "any", "tabId": "home", "cardSurfaceFamily": "notificationInbox", ... }
+  { "states": ["sent"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "notificationInbox", ... }
 ]
 ```
-`role: "any"` makes the card visible to everyone the binding's tab reaches; real per-recipient privacy
+`audience: "any"` makes the card visible to everyone the binding's tab reaches; real per-recipient privacy
 comes from `visibility.readGuard`, which is genuinely engine-enforced at the query layer — not the render
 binding's role, which only ever controls *card visibility given the row is already readable*, never
 row-level privacy.
@@ -171,7 +171,7 @@ effect on that real action:
   "effects": [
     ...,
     { "op": "createInstance", "workflowType": "donor-visibility-preference",
-      "fields": { "donorPersonaId": "{donorPersonaId}", "fund": "{fund}", "amountLabel": "{amountLabel}" } }
+      "fields": { "donorFanId": "{donorFanId}", "fund": "{fund}", "amountLabel": "{amountLabel}" } }
   ] }
 ```
 If it's genuinely a standalone, directly-creatable object instead, give it its own `kind: "create"` action
@@ -201,10 +201,10 @@ as a community "member" for this purpose, `membersOnly` silently leaks every ins
 excluded persona:
 ```jsonc
 "visibility": { "default": "guarded",
-                "readGuard": { "allowedPersonaIds": ["portability-owner", "portability-member"] } }
+                "readGuard": { "allowedRoleIds": ["portability-owner", "portability-member"] } }
 ```
 Before picking `membersOnly` for any workflow with a doc-stated visibility exclusion, check whether a
-sibling workflow in the *same package* already uses `guarded` + `readGuard.allowedPersonaIds` correctly for
+sibling workflow in the *same package* already uses `guarded` + `readGuard.allowedRoleIds` correctly for
 a similar need — if so, that's the mechanism to reuse, not a looser default.
 
 **Found in:** Data Portability Community's `export-package` used `membersOnly` (leaking to the Receiving
@@ -216,12 +216,12 @@ used `guarded` + a `readGuard` excluding that exact persona — the tighter patt
 ## 7. Stamp actor-identity fields via an effect on the workflow's own first transition — an equally valid alternative to `$actor` in create-action `prefill`
 
 **Requirement shape:** a self-created instance needs its owner/actor field
-(`ownerPersonaId`/`memberPersonaId`/`authorPersonaId`) populated with the real creating persona, for later
+(`ownerFanId`/`memberFanId`/`authorFanId`) populated with the real creating persona, for later
 `actorEqualsField` guards/`readGuard`s to work.
 
 **Also correct today (CJM.6 fixed, 2026-08-10):**
 ```jsonc
-"actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerPersonaId": "$actor" } }]
+"actions": [{ "kind": "create", "scope": "tab", "prefill": { "ownerFanId": "$actor" } }]
 ```
 `$actor` now correctly resolves in `prefill` for both creation scopes — this pattern was broken between
 when it was first tried and 2026-08-10, but is a safe default again. The pattern below remains an equally
@@ -233,20 +233,20 @@ entire grammar, used in nearly every community's transitions already.
 ```jsonc
 "states": {
   "offer": { "label": "Offer", "editableFields": ["priceLabel"],
-             "editGuard": { "allowedPersonaIds": ["ad-off-member"] } }
+             "editGuard": { "allowedRoleIds": ["ad-off-member"] } }
 },
 "transitions": [
   { "id": "start-checkout", "from": ["offer"], "to": "reviewing",
-    "guard": { "allowedPersonaIds": ["ad-off-member"] },
+    "guard": { "allowedRoleIds": ["ad-off-member"] },
     "effects": [
-      { "op": "set", "key": "memberPersonaId", "value": "$actor" },
+      { "op": "set", "key": "memberFanId", "value": "$actor" },
       { "op": "set", "key": "priceLabel", "value": "{priceLabel}" }
     ] }
 ]
 ```
 Two consequences to design around: (1) the un-stamped field must not be `required: true` (it's genuinely
 absent for the brief window between creation and the first transition firing), and (2) any guard/`readGuard`
-that would check the field on the pre-stamp state must fall back to `allowedPersonaIds` only (there's
+that would check the field on the pre-stamp state must fall back to `allowedRoleIds` only (there's
 nothing to check `actorEqualsField` against yet) — a state-level `readGuard` override on that one state
 (`workflow-grammar.md`'s per-state `readGuard`, IMPLEMENTED) keeps the creator able to see their own
 just-created, not-yet-stamped instance if the workflow-level `visibility` is `guarded`.
@@ -258,12 +258,12 @@ even after CJM.6 landed — both mechanisms work today, use whichever fits the w
 
 ---
 
-## 8. Every non-`home`/`messages` `tabId` used anywhere in `renderBindings` needs a matching `appShell.tabs[]`/`personaTabs[]` declaration — omitting it entirely is easy when focused on workflow content
+## 8. Every non-`home`/`messages` `tabId` used anywhere in `renderBindings` needs a matching `appShell.tabs[]`/`roleTabs[]` declaration — omitting it entirely is easy when focused on workflow content
 
 **Requirement shape:** a workflow's `renderBindings[].tabId` names a tab (e.g. `"calendar"`, `"organize"`,
 `"documents"`) that isn't `home`/`messages`. `tabId` is an open vocabulary — any name is valid — but every
 value used anywhere in the package must have a corresponding entry in the top-level `appShell.tabs[]`
-array (or `personaTabs[]` for a persona-scoped tab), or the validator rejects it with `unknown_tab_id`.
+array (or `roleTabs[]` for a persona-scoped tab), or the validator rejects it with `unknown_tab_id`.
 
 **Looks plausible but is wrong:** authoring every workflow's `renderBindings` correctly, including
 well-chosen custom `tabId` values that match the product doc's own vocabulary, and then simply never
@@ -287,12 +287,12 @@ value:
 }
 ```
 `rendererContractId` may be omitted (defaults to the generic list surface) unless the tab genuinely needs a
-bespoke renderer. See `render-bindings.md`'s `appShell.tabs[]` / `personaTabs[]` — tab declaration shape`
+bespoke renderer. See `render-bindings.md`'s `appShell.tabs[]` / `roleTabs[]` — tab declaration shape`
 section for the complete field list.
 
 **Self-check step to add, explicitly:** before finishing, grep your own draft for every distinct
 `renderBindings[].tabId` value across every workflow, then confirm each one (other than `home`/`messages`)
-has a matching `appShell.tabs[]`/`personaTabs[]` entry. Do this as a literal list-comparison step, separate
+has a matching `appShell.tabs[]`/`roleTabs[]` entry. Do this as a literal list-comparison step, separate
 from validating each `renderBindings` entry in isolation — the two checks catch different failure modes.
 
 **Found in:** Garden Club, re-authored via the Codex GitHub-fetch dispatch channel 2026-08-12 (Milestone
@@ -305,7 +305,7 @@ requirement correctly) — the missing piece was reinforcement at the point of f
 
 ---
 
-## 9. When updating an existing, already-shipped community, reuse its real `personaId`/`tabId` values exactly — never re-derive plausible-looking ones from the product doc's own prose
+## 9. When updating an existing, already-shipped community, reuse its real `roleId`/`tabId` values exactly — never re-derive plausible-looking ones from the product doc's own prose
 
 **Requirement shape:** the target is an update to a community that already has a real, committed JSON
 package — adding a new archetype, workflow, or field to something that already exists, not authoring a
@@ -315,16 +315,16 @@ zero-tool-access/Codex channels have no mechanism to see it at all) — so the f
 what identifiers the shipped file, or any real committed test that hardcodes those identifiers, already
 expect.
 
-**Looks plausible but is wrong:** deriving `personaId`/`tabId` values fresh from the product doc's own
+**Looks plausible but is wrong:** deriving `roleId`/`tabId` values fresh from the product doc's own
 vocabulary — reasonable-sounding, internally consistent, and structurally valid, but silently different from
 the identifiers the currently-shipped file and its tests actually use. The JSON validates cleanly in
 isolation; the defect only surfaces as a broken Dart test, or a broken guard/formula reference, once the new
 file replaces the old one — something no JSON-only validator run or self-check can catch.
 
 **Verified-correct shape:** the dispatching session (never the authoring agent itself) reads the currently-
-shipped fixture directly and supplies its real `personas[]` and `appShell.tabs[]` values as an explicit
+shipped fixture directly and supplies its real `roles[]` and `appShell.tabs[]` values as an explicit
 `## Existing identifiers — preserve these exactly` section appended to the target product doc, listing each
-`personaId`/`label`/`roleLabel` and `tabId`/`label` pair. The authoring agent reuses every listed value
+`roleId`/`label`/`roleLabel` and `tabId`/`label` pair. The authoring agent reuses every listed value
 exactly, and only introduces a genuinely new identifier when the requirements need one beyond what's listed
 — stated explicitly as such, not silently substituted for an existing one. This is supplying a fact about
 already-shipped state, not letting the agent "cheat" by reading a comparison artifact to copy an answer from
@@ -341,7 +341,7 @@ inspects the candidate JSON in isolation.
 
 ---
 
-## 10. A `documentLibrary` workflow defaults to `membersOnly` visibility with list-based access tracking — never a required singular `recipientPersonaId` behind a `guarded` default
+## 10. A `documentLibrary` workflow defaults to `membersOnly` visibility with list-based access tracking — never a required singular `recipientFanId` behind a `guarded` default
 
 **Requirement shape:** a community's documents/resources need to be readable by the general membership, with
 only a minority genuinely access-restricted (e.g. a leadership-only policy doc). The product doc almost
@@ -349,8 +349,8 @@ always names this as an anti-pattern to avoid directly ("hidden document link," 
 findable, not buried").
 
 **Looks plausible but is wrong:** modeling every document as a single-recipient row —
-`recipientPersonaId: { "type": "personaId", "required": true }` plus `"visibility": { "default": "guarded",
-"readGuard": { "formula": "$viewer == recipientPersonaId || ..." } }`. This looks like careful, privacy-
+`recipientFanId: { "type": "fanId", "required": true }` plus `"visibility": { "default": "guarded",
+"readGuard": { "formula": "$viewer == recipientFanId || ..." } }`. This looks like careful, privacy-
 conscious modeling, but a *required, singular* recipient field makes it structurally impossible to author a
 document instance visible to the general membership at all — every document, even a routine weekly notice,
 ends up hidden from everyone except one hand-picked persona. This is the exact anti-pattern the product doc
@@ -363,20 +363,20 @@ fields on one broadcast row, not a per-recipient gate on visibility itself:
 ```jsonc
 "visibility": { "default": "membersOnly" },
 "instanceDataSchema": {
-  "acknowledgedPersonaIds": { "type": "personaId[]", "writableBy": "effect" },
-  "accessRequestedPersonaIds": { "type": "personaId[]", "writableBy": "effect" }
+  "acknowledgedFanIds": { "type": "fanId[]", "writableBy": "effect" },
+  "accessRequestedFanIds": { "type": "fanId[]", "writableBy": "effect" }
 }
 ```
 Reserve a `guarded`/`readGuard` visibility override only for the genuinely small minority of documents that
 need real access restriction (e.g. a board-only financial record), and even then prefer a role-based guard
-(`allowedPersonaIds`) over a single required recipient, so the common case — most documents, visible to most
+(`allowedRoleIds`) over a single required recipient, so the common case — most documents, visible to most
 members — is never gated behind an easy-to-drop identity match.
 
 **Found in:** Masjid Nur, 2nd Milestone 1.5 dispatch (Codex GitHub-fetch channel, 2026-08-12) —
 `mosque-document-resource` used the required-singular-recipient shape above, confirmed by an independent
 Skill Output Judge to make every document invisible to the general membership by construction, contradicting
 the product doc's own stated anti-pattern. The currently-shipped fixture for the same community already
-proves the correct shape works (`membersOnly` default + `acknowledgedPersonaIds`/`accessRequestedPersonaIds`
+proves the correct shape works (`membersOnly` default + `acknowledgedFanIds`/`accessRequestedFanIds`
 list fields) — the fresh dispatch regressed away from an already-working pattern it had no visibility into.
 
 ---
@@ -402,7 +402,7 @@ such, not disguised as the automated version:
 ```jsonc
 {
   "id": "answer-query", "label": "Provide answer",
-  "guard": { "allowedPersonaIds": ["<admin-persona>"] },
+  "guard": { "allowedRoleIds": ["<admin-persona>"] },
   "inputs": {
     "answerBody": { "type": "text", "required": true },
     "citationLabel": { "type": "text", "required": true },
@@ -455,7 +455,7 @@ forever, exactly like `receiptId`/`transferId` already are, rather than treated 
 ```jsonc
 {
   "id": "generate-export", "from": ["ready"], "to": "generated",
-  "guard": { "allowedPersonaIds": ["<organizer-persona>"], "formula": "size(exportScope) > 0" },
+  "guard": { "allowedRoleIds": ["<organizer-persona>"], "formula": "size(exportScope) > 0" },
   "effects": [
     { "op": "set", "key": "generatedAt", "value": "$timestamp" },
     { "op": "set", "key": "statusMessage", "value": "Export generated; checksum pending platform verification" }
@@ -541,7 +541,7 @@ pass already caught and rejected.
 
 **Found in:** Neighborhood Book Club, 1st Milestone 1.5 dispatch (Codex GitHub-fetch channel, 2026-08-12) —
 `book-discussion-message` gained a full `send-invite`/`accept-invite`/`decline-invite`/`cancel-invite`
-subsystem with `invitationStatus`/`participantPersonaIds` fields, sourced from the same generic B25 addendum
+subsystem with `invitationStatus`/`participantFanIds` fields, sourced from the same generic B25 addendum
 phrasing already confirmed as cross-community boilerplate. The currently-shipped fixture had already declined
 to build this, with an explicit comment stating why. Caught by an independent Skill Output Judge dispatch,
 which traced the two `destructive_transition_ignores_availability_field` validator warnings on this
@@ -562,7 +562,7 @@ mistakes — no JSON-level fix exists for either until the underlying engine tic
   a custom-named event/response pair — which is every real community. Status: under investigation.
 - **CJM.6 — FIXED, 2026-08-10 (commits `8ec0af17`, `6df2024f`).** A `create` action's `prefill` now
   correctly resolves `$actor` (and `$timestamp`) for both `scope: "tab"` and `scope: "instance"` creates —
-  `"prefill": {"ownerPersonaId": "$actor"}"` is a safe, working pattern again. Independently re-verified via
+  `"prefill": {"ownerFanId": "$actor"}"` is a safe, working pattern again. Independently re-verified via
   a dedicated Regression Impact Judge dispatch against every real consumer (Camera Club, Garden Club,
   Masjid Nur, Riverside Youth Soccer, Data Portability Community, Chess Club) — each traced individually
   against its own guards/readGuards and confirmed genuinely repaired, not just compiling. Pattern 7 (stamp
