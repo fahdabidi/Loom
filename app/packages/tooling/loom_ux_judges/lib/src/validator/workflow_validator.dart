@@ -109,6 +109,10 @@ class WorkflowValidator {
     'map',
     'personaId',
     'personaId[]',
+    'fanId',
+    'fanId[]',
+    'roleId',
+    'roleId[]',
     'image',
     'text?',
     'textarea?',
@@ -120,6 +124,10 @@ class WorkflowValidator {
     'map?',
     'personaId?',
     'personaId[]?',
+    'fanId?',
+    'fanId[]?',
+    'roleId?',
+    'roleId[]?',
     'image?',
   };
 

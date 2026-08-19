@@ -260,6 +260,105 @@ void main() {
       );
     });
 
+    test('unknown_input_type: fanId transition input passes cleanly', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'inputs': {
+              'playerOneFanId': {'type': 'fanId'},
+            },
+          },
+        ],
+      );
+      final report = _validateWorkflows({'test': machine});
+      expect(
+        report.errors.where((f) => f.type == 'unknown_input_type'),
+        isEmpty,
+      );
+    });
+
+    test('unknown_input_type: fanId nullable and array forms pass cleanly', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'inputs': {
+              'optionalFanId': {'type': 'fanId?'},
+              'fanIds': {'type': 'fanId[]'},
+              'optionalFanIds': {'type': 'fanId[]?'},
+            },
+          },
+        ],
+      );
+      final report = _validateWorkflows({'test': machine});
+      expect(
+        report.errors.where((f) => f.type == 'unknown_input_type'),
+        isEmpty,
+      );
+    });
+
+    test('unknown_input_type: roleId and all forms pass cleanly', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'inputs': {
+              'roleId': {'type': 'roleId'},
+              'optionalRoleId': {'type': 'roleId?'},
+              'roleIds': {'type': 'roleId[]'},
+              'optionalRoleIds': {'type': 'roleId[]?'},
+            },
+          },
+        ],
+      );
+      final report = _validateWorkflows({'test': machine});
+      expect(
+        report.errors.where((f) => f.type == 'unknown_input_type'),
+        isEmpty,
+      );
+    });
+
+    test('unknown_input_type: legacy personaId and all forms still pass cleanly', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'inputs': {
+              'personaId': {'type': 'personaId'},
+              'optionalPersonaId': {'type': 'personaId?'},
+              'personaIds': {'type': 'personaId[]'},
+              'optionalPersonaIds': {'type': 'personaId[]?'},
+            },
+          },
+        ],
+      );
+      final report = _validateWorkflows({'test': machine});
+      expect(
+        report.errors.where((f) => f.type == 'unknown_input_type'),
+        isEmpty,
+      );
+    });
+
+    test('unknown_input_type: identity type near-misses remain unknown', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'inputs': {
+              'wrongCase': {'type': 'fanID'},
+              'wrongSeparator': {'type': 'fan_id'},
+              'legacyWrongCase': {'type': 'personaid'},
+            },
+          },
+        ],
+      );
+      final findings = _validateWorkflows(
+        {'test': machine},
+      ).errors.where((f) => f.type == 'unknown_input_type');
+      expect(findings, hasLength(3));
+    });
+
     // ---------------------------------------------------------------
     // 2. unknown_input_reference
     // ---------------------------------------------------------------
