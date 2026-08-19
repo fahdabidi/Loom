@@ -38,9 +38,26 @@ an earlier Milestone 1.5 dispatch for Masjid Nur invented `mosque-admin`/`mosque
 ones are `masjid-admin`/`community-member`) and added a `care` tab that a real committed test explicitly
 asserts must never appear for that community.
 
-Only introduce a new persona or tab if the target doc's requirements genuinely need one beyond what's
-listed — and if you do, say so explicitly in your Gaps/assumptions section, naming exactly which identifier
-is new and why the existing set didn't already cover the need.
+**This applies to every identifier class the section lists, not just personas and tabs.** The block
+also names the community's **workflow type ids** and its **seed `instanceId` values**, and both are
+load-bearing for exactly the same reason:
+
+- **Workflow type ids** are referenced by render bindings, seed data, and tests. Renaming one breaks
+  all three at once.
+- **Seed `instanceId`s** look like throwaway sample data and are not. Real widget-key assertions are
+  built from them — a test looks for `export-wizard-state-badge-<instanceId>-tile`, so renaming
+  `chess-export-august` to `chess-export-august-ready` breaks a passing test while the package still
+  validates perfectly clean. This is a confirmed defect, not a hypothetical: it happened on the first
+  Chess Club regeneration. Across this repo's suite there are ~172 hardcoded community identifier
+  strings of this kind.
+
+You may add seeds the product doc needs, and you may change an existing seed's **content** — its
+state, its field values, its identity fields renamed to the `*FanId` spelling. **Do not rename or
+drop an existing `instanceId`**, and keep each one attached to the same `workflowType` it had.
+
+Only introduce a new persona, tab, workflow type or seed id if the target doc's requirements genuinely
+need one beyond what's listed — and if you do, say so explicitly in your Gaps/assumptions section,
+naming exactly which identifier is new and why the existing set didn't already cover the need.
 
 If no `## Existing identifiers` section is present in the target doc, this is a brand-new community with
 nothing to preserve — author personas/tabs fresh as normal, per the rest of this document.
