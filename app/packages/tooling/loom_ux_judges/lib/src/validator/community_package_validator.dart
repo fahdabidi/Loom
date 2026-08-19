@@ -1071,8 +1071,12 @@ class CommunityPackageValidator {
             _finding(
               'missing_transition_action',
               'Transition "$label" of bespoke workflow "$type" must declare an '
-                  'action$via. Without it the transition derives no '
-                  'permission and will fail at runtime.',
+                  'action$via. Without it the transition still runs without an '
+                  'error, but the archetype\'s per-person bookkeeping for it is '
+                  'silently skipped. Bespoke families use a closed action '
+                  'vocabulary, so no permission can be derived and, unlike '
+                  'generic families, nothing structural can supply the missing '
+                  'action; the validator must catch the silent omission.',
               '$transitionPath/action',
             ),
           );

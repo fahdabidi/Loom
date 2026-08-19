@@ -97,6 +97,25 @@ void main() {
       expect(types, contains('missing_transition_action'));
     });
 
+    test('a missing action reports silent bookkeeping loss', () {
+      final report = CommunityPackageValidator().validate(
+        _package({
+          'club-event': _workflow(
+            family: 'event-rsvp',
+            transitions: [_transition('cancel-event')],
+          ),
+        }),
+      );
+      final finding = report.findings.singleWhere(
+        (finding) => finding.type == 'missing_transition_action',
+      );
+
+      expect(finding.message, contains('bookkeeping'));
+      expect(finding.message, contains('silently'));
+      expect(finding.message, isNot(contains('fail at runtime')));
+      expect(finding.message, isNot(contains('runtime failure')));
+    });
+
     test('an action outside the closed vocabulary is an error', () {
       final types = _errorTypes(
         _package({
