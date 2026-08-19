@@ -451,6 +451,45 @@ have told you. That note is more valuable than the fix.
 - An `unknown_key` finding means the parser **ignores** that key: whatever you meant by it is not
   happening. Do not "fix" it by deleting the key alone; work out which real key you needed.
 
+### How to fix a finding — declare the intent, never delete it
+
+**The governing rule: a finding almost always means something is referenced but not declared, or
+declared but ignored. The fix is to make the intent real. Deleting the reference also clears the
+finding, and is almost always wrong.**
+
+This matters because the validator cannot tell the two apart. A formula that referenced an undeclared
+field and a formula you deleted both produce a clean run — but one of them removed a capability the
+product doc asked for, silently, and nothing downstream will ever flag it. **When you clear a finding
+by removing something, say so explicitly in Gaps/assumptions and name what you removed.** If you
+cannot justify the removal there, it was the wrong fix.
+
+Two quick sanity checks on your own work, both cheap:
+
+- After a fix round, your schema, formula and transition **counts should generally go up, not down**.
+  A round that clears ten findings while shrinking the package is a warning sign about your own fix.
+- If a fix makes a workflow do *less* than the shipped package did, you have almost certainly removed
+  capability rather than declared intent.
+
+| Finding | What it means | The right fix | The wrong fix |
+|---|---|---|---|
+| `unknown_key` | The parser **ignores** this key. Whatever you meant by it never happens. | Work out which real key expresses the intent — the message lists the legal keys for that position — and use it. | Deleting the key. The intent goes with it. |
+| `unknown_instance_data_key` | A guard, effect, binding or seed names a field that `instanceDataSchema` never declares. | **Declare the field**, with the right type and `writableBy`. | Deleting the guard/effect/seed value that referenced it. |
+| `unknown_formula_field` | A formula reads a field that does not exist. | Declare the field the formula needs. | Deleting the formula, or the field it computes. |
+| `dangling_actor_equals_field` | A guard compares the actor to a field that is not declared, or is not identity-typed. | Declare it as `fanId`. If the guard meant a role, use `allowedRoleIds` instead — see rule 12b. | Dropping the guard. That silently opens up a read or a transition. |
+| `unknown_input_type` | A transition input names a type outside the closed set. | Use a real type. The message lists every legal one; `fanId`, `fanId[]`, `roleId` and their nullable forms are all valid. | Removing the input, or retyping it as `text` to make the error go away. |
+| `missing_transition_action` | A bespoke-family transition has no `action`. | Add the action from that family's closed vocabulary (rule 12). | Re-homing the workflow to a generic family to dodge the requirement. |
+| `no_creation_path_for_editable_type` | Nothing can ever create an instance of a workflow that has writable fields. | Add a `create` action, or a `createInstance` effect that produces it. | Making the fields non-writable, or deleting them. |
+| `no_render_binding_for_reachable_state` | A state renders nowhere. | Add the state to a binding's `states` list. | Deleting the state, or the transition that reaches it. **Exception:** response-row workflows correctly have no bindings — see the functional-correctness checklist. Leave those. |
+| `missing_visibility_fields` | An identity-scoped read needs a field mapping. | Declare the key the archetype's model requires (rule 12b's table). | Changing `visibility.default` to `membersOnly` to dodge the requirement — that changes who can read the workflow. |
+| `invalid_workflow_definition` | The workflow failed to parse. | Read the message for the exact type error and fix the shape. | Deleting the workflow. |
+| `unknown_instance_workflow_type` | A seed names a workflow type that does not exist. | Fix the type name, or declare the workflow. | Deleting the seed. |
+| `seed_instance_missing_creator` | A seed has no `createdByFanId`. | Add it — rule 12c. The value is a person. | Deleting the seed. |
+| `redundant_transition` | Two transitions share a guard and target from the same states. | If they really are one capability, remove one. If they are distinct operations, give them different targets or effects — and if they legitimately differ only in effects, say so in Gaps/assumptions and leave them. | Blindly deleting one. Approve and decline commonly share a target state and are not duplicates. |
+
+**When a finding recurs across rounds**, stop and re-read the reference doc for that construct rather
+than trying another edit. Fixing the same finding three times means you have the wrong model of the
+grammar, and the next edit will be wrong too.
+
 ### What the validator does not check
 
 It reads JSON grammar only. It cannot see the Dart Calendar surface's hardcoded field-name reads,
