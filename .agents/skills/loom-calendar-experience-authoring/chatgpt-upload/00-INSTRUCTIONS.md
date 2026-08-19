@@ -1,219 +1,378 @@
-# Authoring a Loom Community Calendar Experience — Instructions
+# Authoring a Loom Community experience — ChatGPT channel
 
-**Read this file first.** It is the entry point for the other numbered files in this upload. Together
-they are the complete, authoritative reference for one narrow task: **write the JSON for a Loom
-Communities "Calendar" experience** — a community where members RSVP to scheduled events and,
-optionally, get reminded before one starts.
-
-You are acting as an LLM agent that authors community JSON directly, not a human developer. You will
+**Read this file first.** You author community JSON for the Loom Communities workflow engine. You will
 never write Dart, Flutter, or any other code, and you will never invent an API. Everything a Loom
 community can do is expressed as JSON: state machines (`workflowDefinitions`), data schemas, guards,
-effects, formulas, and render bindings. The files in this bundle enumerate that grammar completely.
+effects, formulas, and render bindings.
 
-## Scope — every real archetype, not just Calendar
+**Where the reference files come from.** Every reference file named below lives in the public
+repository **`fahdabidi/Loom`, branch `main`**, at the paths given. Fetch each one and read it in full
+before treating anything about it as known — do not guess or reconstruct a file's content from its
+name, and do not rely on general Loom knowledge you may already have. These files change over time and
+their *actual current text* is the only authoritative source.
 
-**Broadened 2026-08-09** (this bundle was Calendar/`event-rsvp`-only from 2026-08-04 through 2026-08-09).
-**Broadened again 2026-08-11, those 4 fully implemented 2026-08-12.** You may author a `workflowDefinitions`
-entry for **any** workflow whose correct `cardSurfaceFamily` is listed as real in `15-archetypes.md` (the
-live source of truth — always check it, this list is a summary, not a substitute):
+If a bundled copy of these files was uploaded alongside this document, it is a **fallback for when
+fetching is unavailable**, and it may lag the repository. When both are available, the repository
+wins.
 
-- **7 real bespoke archetypes**: `event-rsvp` (event/RSVP/reminder — see `17-worked-example-calendar.jsonc`
-  for the full worked pattern), `votePoll` (ballot/tally/eligibility/runoff), `equipment-loan` (loan/
-  reservation/giveaway with a queue), `table` (sortable/filterable grid — leaderboards, rosters, anything
-  browsed at scale rather than one card per item), `documentLibrary` (categorized document library —
-  browse/acknowledge/version/access-request), `searchAiAnswer` (query + cited answer — see the
-  platform-service caveat below), `exportWizard` (stepped export/transfer flow — see the platform-service
-  caveat below).
-- **6 generic-but-real archetypes** (rendered by the shared generic card, not a bespoke widget):
-  `paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`,
-  `notificationInbox`.
-- `02-common-patterns.md` (the full copy of Loom's canonical patterns file) has a ready-made pattern for
-  six of the first nine: P1 RSVP, P2 ballot, P3 approval queue, P4 loan, P5 payment, P6 discussion thread.
-  `formEntry`/`notificationInbox`/`statusTimeline` are simple enough to build directly from
-  `07-workflow-grammar.md` + `11-field-types.md` without a dedicated worked pattern. `table`/
-  `documentLibrary`/`searchAiAnswer`/`exportWizard` need no new grammar either — `table`/`documentLibrary`
-  consume ordinary `instanceDataSchema` flags (`sortable`/`searchable`/`labelTemplate`, and `type: "url"`
-  fields with `openMode: "choice"` for documents — this is the fully-implemented mode real communities use
-  for their primary document field); `searchAiAnswer` needs a `citations[]` list field shaped
-  `{label, source: {type:"url", openMode:"external"}}` (`11-field-types.md`'s "Citation lists"); `
-  exportWizard` is an ordinary state machine (scope → generate → verify → download, retry/rollback as
-  needed) — its widget derives progress from the state machine itself, no particular field name required.
+This is the same access model the Codex authoring channel uses, deliberately: both channels reach the
+repository the same way, so both are held to the same rules and neither can rely on context the other
+cannot see.
 
-**Two workflow types sharing one render surface is normal, not scope-narrowing.** You may declare as many
-`workflowDefinitions` entries as a request genuinely needs. Two things that don't share the same states and
-transitions are two separate workflow types — that's `01-authoring-procedure.md` Step 2's ordinary test,
-not you inventing a second archetype.
+## Updating an existing, already-shipped community — read this before step 11 of the fetch order
 
-**searchAiAnswer/exportWizard's real platform-service gaps — still real, unchanged by the archetype now
-being implemented.** `searchAiAnswer`'s answer text and `exportWizard`'s checksum/transfer-id/receipt-id
-fields are real platform-service gaps (`14-platform-services.md`: "External search / AI answer" and
-"Checksum / integrity hash" are both `❌ Not implemented`), independent of the archetype itself. Declare
-the field, never write it from any effect, and mark it with a `NEEDS IMPLEMENTATION (platform service):
-...` comment exactly as `14-platform-services.md`'s own AP-6 guidance already requires for every other
-not-implemented service. Do not fabricate a value — a hardcoded-looking checksum/export-id/AI-answer is a
-hard antipattern, not a shortcut. Never gate an `exportWizard` transition's *completion* on the
-checksum/transfer-id field either (`20-solved-patterns.md` pattern 14) — a checksum has no honest
-human-curated substitute, unlike `searchAiAnswer`'s answer (pattern 11: a real admin-curated field is a
-legitimate substitute for the platform-owned answer field, as long as that platform field itself stays
-honestly unwritten).
+Most dispatch targets in this channel are **updates** to a community that already has a real, committed,
+already-tested JSON package — not brand-new communities. When that's the case, the dispatching session
+appends an `## Existing identifiers — preserve these exactly` section to the target product doc (step 11
+below) listing the community's real, currently-declared `personas[]` (`personaId`/`label`/`roleLabel`) and
+`appShell.tabs[]` (`tabId`/`label`) values.
 
-**What's actually out of scope**: a `cardSurfaceFamily` NOT listed as real in `15-archetypes.md` —
-currently `audienceSelector`, `volunteerRoster`, `singleItem`, `protectedDetail`, `guidedProcess`,
-`dashboard`. If a request genuinely needs one of those, say so explicitly (which part of the request, why,
-what family it would need) rather than approximating it with a real archetype it doesn't belong to. Most of
-these needs are already expressible with an in-scope archetype — `formEntry` + a per-field `formula` for
-masking, `formEntry` + a `capacity`/count-formula for a roster's numbers, ordinary transitions for an
-exclusive choice — check `15-archetypes.md`'s "Considered and explicitly NOT promoted" table before
-declaring the whole request out of scope.
+**Reuse every listed `personaId` and `tabId` exactly as given — never invent a plausible-looking alternative,
+even one that reads more naturally against the product doc's own prose.** This repo's real Dart test suite
+hardcodes exact persona IDs and tab IDs per community — a JSON that invents different-but-plausible
+identifiers will look completely correct in isolation and still break a real, already-passing test the
+moment it replaces the shipped file. This is not something you can catch by inspecting your own draft alone;
+it requires exactly the existing-identifiers list this section describes, since you have no other way to see
+what the currently-shipped file or its tests actually expect. Confirmed as a real defect, not a hypothetical:
+an earlier Milestone 1.5 dispatch for Masjid Nur invented `mosque-admin`/`mosque-member` (the real, existing
+ones are `masjid-admin`/`community-member`) and added a `care` tab that a real committed test explicitly
+asserts must never appear for that community.
 
-**If a request is only partially in scope** (the common case for a real, multi-workflow community): author
-the in-scope part completely and validator-clean, and report everything else by name/section/needed-family
-in the same response, rather than refusing the whole request or silently dropping part of it.
+### The governing principle: match or beat what ships today
 
-⚠️ **A trap to watch for, found 2026-08-09 authoring against a real product doc**: some product docs have
-their own "Card Surface Registry Mapping" table naming surfaces like `payment`, `documents`, `calendar`,
-`workflow-status`, `notification-inbox`, `portability`, `search`, `roster` — **these are not real
-`cardSurfaceFamily` values**. Always translate through `15-archetypes.md`'s real names instead of copying a
-product doc's own table literally: `payment`→`paymentCheckout`, `documents`/`external-document-link`→
-`documentLibrary`, `calendar`→`event-rsvp`, `workflow-status`→`approvalQueueItem`/`statusTimeline`,
-`notification-inbox`→`notificationInbox`, `portability`→`exportWizard`, `search`→`searchAiAnswer`,
-`roster`/leaderboard-shaped browsing→`table` — see the platform-service caveat above for
-`portability`/`exportWizard` and `search`/`searchAiAnswer` specifically.
+**Fetch the community's currently-shipped package before authoring it.** It lives at
+`docs/references/communities/Loom_Communities_Workflow_Engine_<Community>_Example.jsonc` in the same
+repo you are fetching everything else from. Read it in full.
+
+Read it as **evidence of intent, not as a template to copy**. It tells you what this community
+actually does today: which workflows exist, which archetypes they use, how their surfaces are wired,
+what the seed data demonstrates. Your output must be **at least as capable**. Where the shipped
+package solves something well, keep that solution. Where it is thin against the product doc, improve
+on it. Where the product doc asks for something it never implemented, add it.
+
+**Your package will differ from it, and that is expected.** Ids you invent, wording you write, the
+number of states a workflow needs — all of that may legitimately differ. Do not try to reproduce the
+shipped file byte for byte, and do not treat a difference as a defect. What is judged is whether the
+result is *functionally correct and well built*, not whether it matches.
+
+#### The one exception: identifiers that cross a package boundary
+
+A small set of identifiers is referenced from **outside** the package — by the app shell's routing, by
+permissions, by other packages, and by this repo's Dart tests. Renaming one of those is a real break,
+not cosmetic drift, and nothing in your own output will reveal it.
+
+| Preserve exactly — supplied in the `## Existing identifiers` block | Free to differ |
+|---|---|
+| `extensionId`, `packageId`, `communityId`, `communityHandle` | seed `instanceId`s |
+| `roles[].roleId` | state ids and labels |
+| `appShell.tabs[].tabId` | all copy and wording |
+| `workflowDefinitions` type ids | field names beyond the rule 2a renames |
+| | state and transition counts |
+
+Add new roles, tabs or workflow types when the product doc needs them — additions are safe, renames
+are not. If you believe an existing one is genuinely wrong, say so in Gaps/assumptions and keep it.
+
+#### What "functionally correct" means — self-check against this before returning
+
+1. **Archetype fit.** Every workflow's `cardSurfaceFamily` is the one that matches what the workflow
+   actually does, re-checked against `archetypes/README.md` per workflow — not carried over from the
+   shipped package if that choice was wrong.
+2. **Actions.** Every bespoke-family transition declares an `action` from that family's closed
+   vocabulary; every generic-family transition declares none (rule 12).
+3. **Every reachable state renders — except on response-row workflows.** No state a transition path
+   can reach may be missing from every `renderBindings[].states` list; a state bound nowhere is an
+   instance nobody can see.
+   **The exception is real and is the corpus norm:** a workflow named by some binding's
+   `responseTable.workflowType` renders *through its parent's table*, not through bindings of its own,
+   and correctly declares `"renderBindings": []` (rule 12a). Five of the six shipped response-row
+   workflows do exactly that. The validator still emits
+   `no_render_binding_for_reachable_state` for each of their states — those findings are **expected
+   and correct to leave**. Do not invent bindings to silence them, and do not give a response row a
+   surface of its own unless the product doc asks for one. Note it in Gaps/assumptions and move on.
+4. **Every editable workflow can be created.** Writable fields with no create action and no
+   `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
+5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
+   not, and never pointed at archetype-owned bookkeeping.
+6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
+   seeds are the first thing a reviewer looks at.
+7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
+   explicitly in Gaps/assumptions, naming the finding.
+
+If no `## Existing identifiers` section is present in the target doc, this is a brand-new community
+with nothing to preserve — author roles/tabs fresh as normal, per the rest of this document.
+### When the update is also a `specVersion: 4` migration — the persona→role collapse
+
+The shipped file you are updating declares legacy `experience.personas[]`; your output must declare
+`experience.roles[]` (rule 2a). **Which transformation applies depends on what that community's
+personas actually denote**, and `identity-types.md` §2 gives the discriminator in one line:
+*"Roles never appear as instance data values. **People never appear in `roles[]`.**"*
+
+**Case 1 — the personas are role-like (the common case). Rename 1:1 and PRESERVE THE ID.**
+`identity-types.md` §3.1 is a key rename, not a re-derivation:
+`personas[].personaId` → `roles[].roleId`, **same value**; `roleLabel` unchanged.
+
+```jsonc
+{ "personaId": "chess-organizer", "roleLabel": "Organizer" }   // v1
+{ "roleId":    "chess-organizer", "roleLabel": "Organizer" }   // v4 — id preserved
+```
+
+**Do not shorten, re-slug, or strip a community prefix from the id.** `chess-organizer` does not
+become `organizer`. Every `allowedRoleIds`/`byRoleIds`/`visibleRoleIds` value keeps referring to the
+same string it always did, and this repo's Dart test suite hardcodes these exact ids per community —
+34 call sites at last count. Re-deriving them silently breaks real, already-passing tests while the
+package still validates clean, which is the worst possible combination.
+
+**Case 2 — the personas are individual people** (named humans: "Alex Rivera", "Bailey Chen", several
+sharing one `roleLabel`). Then they are **not** roles at all and must not appear in `roles[]`. Each
+person becomes a `fanId` in seed data and instance-data fields, and `roles[]` is derived from the
+**distinct `roleLabel` values**, so four such personas sharing two labels yield **two** roles.
+
+**How to tell the cases apart:** if the `personaId` names a kind of member and the `label` restates it
+(`ad-off-owner` / "Owner"), it is Case 1. If the `label` is a human name and several personas share a
+`roleLabel`, it is Case 2. If a community genuinely mixes both, say so explicitly in
+Gaps/assumptions naming each persona and which case you applied — do not guess silently.
+
+**In Case 2 only, the derivation has a hazard that is not mechanical.** A guard listing *some but not
+all* of a role's personas **cannot** be translated to that role: `allowedRoleIds: ["member"]` would
+grant access to every member, including the ones the original list deliberately excluded. That is a
+silent privilege widening, and exactly the kind of change that looks correct in review. Do not widen
+and do not guess — flag it in Gaps/assumptions, naming the exact guard and personas:
+
+- a **strict subset of one role** — translating would widen access;
+- a **partial set spanning two or more roles** — no single role expresses it.
+
+Only a persona list covering a role's **full** roster translates cleanly. Two `roleLabel`s that would
+produce the same `roleId` are an error to report, not to merge.
+
+**The hazard that makes this non-mechanical — read carefully.** A guard listing *some but not all* of
+a role's personas **cannot be translated to that role**: `allowedRoleIds: ["member"]` would grant
+access to every member, including the ones the original list deliberately excluded. That is a silent
+privilege widening, and it is exactly the kind of change that looks correct in review.
+
+When you hit one, **do not widen and do not guess**. Two cases, both of which must go in
+Gaps/assumptions naming the exact guard and personas:
+
+- a **strict subset of one role** — flag it; translating would widen access;
+- a **partial set spanning two or more roles** — flag it as mixed; no single role expresses it.
+
+Only a persona list covering a role's **full** roster translates cleanly to that role. The dispatching
+session verifies your derivation against this repo's own migration-derivation tool, so a flagged case
+costs a follow-up question; a silently widened one is a real access-control defect.
+
+## Fetch order
+
+Fetch each of these from `fahdabidi/Loom` (branch `main`) in order, reading it in full before moving
+to the next. Skipping ahead risks missing an invariant a later file assumes you already know.
+
+| Step | Path | When |
+|---|---|---|
+| 1 | `docs/references/guide/01-authoring-procedure.md` | Always — the algorithm: roles → workflow types → states-vs-data → states/transitions → data schema → guards → effects → render bindings → seed data → self-check → validate. |
+| 2 | `docs/references/reference/workflow-grammar.md` | Always — the normative contract every workflow definition must satisfy. |
+| 3 | `docs/references/reference/guards.md`, `effects.md`, `formulas.md`, `field-types.md` | Always — you will reach for these constantly. |
+| 4 | `docs/references/guide/03-common-patterns.md` | The pattern(s) matching what the target needs: P1 RSVP, P2 ballot, P3 approval queue, P4 loan/giveaway, P5 payment, P6 discussion thread. |
+| 5 | `docs/references/reference/render-bindings.md` | Where each card appears and how it presents, for every workflow type in the target. |
+| 6 | `docs/references/guide/07-actions-and-fabs.md` | When deciding whether a "create" affordance should be a FAB. |
+| 7 | `docs/references/archetypes/README.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow. Re-check per workflow, not once. |
+| 8 | `docs/references/guide/04-antipatterns.md`, `guide/05-validation.md` | Self-check before emitting. `05-validation.md` also carries the **diagnostic** for working out what a finding actually means before you fix it. |
+| 9 | `docs/references/reference/theming.md`, `platform-services.md` | `platform-services.md` lists what is Loom-owned and not JSON-authorable. Never fabricate one. |
+| 10 | `docs/references/reference/solved-patterns.md` | Recurring requirement shapes already found and fixed, with the verified-correct JSON for each. |
+| 11 | `docs/references/reference/permissions.md` | Always — defines the `action` field, which archetypes require it, and the closed vocabulary for each. |
+| 11a | `docs/references/reference/identity-types.md` | Always — normative for `specVersion: 4`. The `roleId`/`fanId` split and every rename it implies. |
+| 11b | `docs/references/archetypes/CONTRACTS.md` | Always — what each archetype guarantees. Then fetch the per-archetype doc (`docs/references/archetypes/<archetype>.md`) for each family you actually use — each carries a **worked JSON example** showing the shape to copy. |
+| 12 | The target product doc | The actual requirements to author against. |
+
+## Scope
+
+Build any workflow whose required `cardSurfaceFamily` is confirmed real in
+`docs/references/archetypes/README.md` (fetched at step 7 — that file is the live source of truth, always
+re-check it, never assume the list is frozen or matches an earlier session's memory of it):
+
+- 3 real bespoke archetypes: `event-rsvp`, `votePoll`, `equipment-loan`.
+- 6 🟡 GENERIC archetypes (real, rendered by the shared generic card): `paymentCheckout`,
+  `approvalQueueItem`, `formEntry`, `discussionThread`, `statusTimeline`, `notificationInbox`.
+- 4 more real bespoke archetypes, promoted 2026-08-11 and fully implemented 2026-08-12 — see
+  `archetypes/README.md`'s "Promoted archetypes — closed 2026-08-12" section, fetched at step 7, for the
+  current authoritative status; do not treat the 4 named here as fixed if that section has changed):
+  `table`, `documentLibrary`, `searchAiAnswer`, `exportWizard`. **Use these when the target genuinely needs
+  them — do not silently substitute a generic archetype.** They validate cleanly like any other archetype
+  now — no `unknown_card_surface_family` caveat to report. For `searchAiAnswer`'s answer text and
+  `exportWizard`'s checksum/transfer-id/receipt-id fields specifically: declare the field, never write it
+  from any effect, and mark it with a `NEEDS IMPLEMENTATION (platform service): ...` comment — these are
+  real, separate, `❌ Not implemented` platform-services gaps (`platform-services.md`), unchanged by the
+  archetype itself now being implemented. Never gate an `exportWizard` transition's *completion* on the
+  checksum/transfer-id field either (`solved-patterns.md` pattern 14) — unlike `searchAiAnswer`'s answer
+  (pattern 11: a real admin-curated field is a legitimate substitute), a checksum has no honest
+  human-curated substitute.
+
+**Explicitly out of scope — say so per Hard Rule 7 below, never force-fit**: any `cardSurfaceFamily` still
+marked ❌ NOT REAL in `archetypes/README.md` as fetched. A target needing one of these gets a plain,
+specific refusal (which section, why it doesn't fit any real family, what family it would actually need if
+it existed) — not an approximation with a real archetype it doesn't belong to, and not a silent drop.
+
+⚠️ **The CardSurfaces vocabulary trap.** Product docs' own "Card Surface Registry Mapping" tables name
+surfaces like `payment`, `documents`, `calendar`, `workflow-status`, `notification-inbox`, `portability`,
+`search`, `roster` — **none of those names are real `cardSurfaceFamily` values**. Never copy a product doc's
+registry-table name directly into `cardSurfaceFamily`. Always translate through `archetypes/README.md`'s
+real enum (fetched at step 7) instead.
 
 ## Hard rules — never violate these
 
-1. **Stamp a single package-root `specVersion: 4`.** This is the only version scheme described in this
-   bundle — it replaced the legacy three-number scheme (`schemaVersion`, `experienceSchemaVersion`,
-   `workflowGrammarVersion`).
-2. **Never emit any of the three legacy version fields alongside `specVersion`.** A package declaring
-   `specVersion` must not also carry `schemaVersion`, `experienceSchemaVersion`, or
-   `workflowGrammarVersion` — doing so is its own validation error.
-3. **Never emit a JSON key that isn't enumerated in these reference files.** An unknown key is silently
-   ignored by the real parser — it produces a community that looks correct in the JSON but does nothing
-   at runtime. If you're not sure a key exists, say so instead of guessing. **Named example this has
-   actually happened with**: a renderBinding-level `"creatable": {"byPersonaIds": [...], "label": "..."}`
-   field is NOT real grammar and is silently dropped. The only real way to give a persona a "+ New" FAB is
-   `"actions": [{"kind": "create", "label": "...", "byPersonaIds": [...], "scope": "tab",
-   "presentation": "fab"}]` on the renderBinding — copy this shape from
-   `17-worked-example-calendar.jsonc`, don't improvise a shorter-looking key even if it seems plausible.
-4. **Never write Dart, or ask for Dart to be written.** If a requirement seems to need code, it is either
-   (a) expressible in the grammar and you haven't found the right construct yet — re-read
-   `10-formulas.md` and `09-effects.md`; or (b) a genuine gap in what this narrowed bundle covers — stop
-   and report it plainly instead of inventing a workaround.
-5. **Never seed or effect-write a computed (`formula`) field.** Computed fields are derived at read time
-   only.
-6. **Never invent a `cardSurfaceFamily` value not listed as real in `15-archetypes.md`.** Do not copy a
-   product doc's own "Card Surface Registry Mapping" table names either — see the CardSurfaces vocabulary
-   trap in the Scope section above; those names are a different, incompatible vocabulary.
-7. **When the grammar genuinely cannot express something, say so.** Never approximate, never silently
-   drop a stated requirement, never substitute a hardcoded value for one that should be computed.
-8. **Name event date/time fields literally `eventDate`/`eventTime` on any `event-rsvp`-bound workflow —
-   never a synonym.** Found 2026-08-09: the real Calendar surface reads `instanceData['eventDate']`/
-   `instanceData['eventTime']` by hardcoded string key (for tile day-position and time-label display), not
-   by declared type. A field named e.g. `startDate`/`startTime` validates cleanly — the JSON-grammar
-   validator cannot see this rule — but silently renders no time and sorts to midnight. Before finishing
-   any `event-rsvp` workflow, grep your own draft for `eventDate`/`eventTime` on that type's
+1. Stamp a single package-root `specVersion: 4`. This replaced the legacy three-number scheme
+   (`schemaVersion`/`experience.experienceSchemaVersion`/`experience.workflowGrammarVersion`) — see
+   `docs/references/_meta/versioning-policy.md`, fetched as part of step 1's authoring procedure.
+2. **Never emit any of the three legacy version fields.** A package declaring `specVersion` must not
+   also carry `schemaVersion`, `experience.experienceSchemaVersion`, or
+   `experience.workflowGrammarVersion` — doing so is its own validation error
+   (`docs/references/guide/05-validation.md`'s `missing_schema_version` / `legacy_experience_schema`
+   rows). This has been a real, load-bearing mistake in practice; double-check this before returning
+   output, especially when updating an already-shipped community that still declares the legacy triple
+   — the target output must not carry it forward.
+2a. **`specVersion: 4` requires the `roleId`/`fanId` identity split — see `identity-types.md` (step
+   11a), fetched in full, not assumed from this summary.** `experience.personas[]` becomes `roles[]`
+   with `roleId` (not `personaId`); `guard.allowedPersonaIds`→`allowedRoleIds`;
+   `actions[].byPersonaIds`→`byRoleIds`; `tabs[].visiblePersonaIds`→`visibleRoleIds`;
+   `renderBindings[].role`→`audience`; every person-shaped instance-data field renames to its
+   `*FanId(s)` form (`createdByPersonaId`→`createdByFanId`, and so on) and its declared `type`
+   becomes `fanId`/`fanId[]` instead of `personaId`/`personaId[]`. When updating an already-shipped
+   community (see the "Updating an existing" section above), apply this rename to **every** occurrence
+   in the existing package — do not leave any old-spelled key alongside the new version stamp, and do
+   not silently skip a field because it looked like an edge case; if genuinely unsure whether a field
+   is role-shaped or person-shaped, say so explicitly in your Gaps/assumptions section rather than
+   guessing.
+3. Never emit a JSON key that isn't enumerated in the reference files you fetched. An unknown key is
+   silently ignored by the real parser — it produces a community that looks correct in the JSON but does
+   nothing at runtime.
+4. Never write Dart, or ask for Dart to be written.
+5. Never seed or effect-write a computed (`formula`) field.
+6. Never invent a `cardSurfaceFamily` value not listed in `archetypes/README.md`'s real-archetypes table.
+7. When the grammar genuinely cannot express something, say so. Never approximate, never silently drop a
+   stated requirement, never substitute a hardcoded value for one that should be computed.
+8. Name event date/time fields literally `eventDate`/`eventTime` on any `event-rsvp`-bound workflow — never
+   a synonym. Before finishing any `event-rsvp` workflow, check your own draft for this on that type's
    `instanceDataSchema` and every guard/effect/formula/renderBinding that references it.
-9. **Cross-reference repeat/retry language in the source material against your transition graph.** Found
-   2026-08-09: a "record payment failure" transition only fired from one state when the product doc
-   described retrying after failure. If the request or product doc uses words like "retry", "resubmit",
-   "try again", "reopen", "undo", or "re-request", confirm the transition(s) that phrase implies actually
-   cover every state a member could realistically be retrying from — not just the first state you wrote it
-   against. The validator has no access to your source prose, so it cannot catch this; treat it as your
-   own responsibility, same as rule 7.
-10. **On every tab except `admin`, `role: "receiver"` never resolves to anyone, and `role: "actor"` only
-    ever matches the literal instance creator — never assume otherwise.** Found 2026-08-09: a dues charge
-    the board creates for a homeowner to pay had a `role: "actor"` binding on the `giving` tab, but "actor"
-    there means `createdByPersonaId` (always the board), never the actual payer named in the transition's
-    own guard — the payer could never see the card. See `12-render-bindings.md`'s normative table for the
-    full per-tab mechanism. Before finishing, for every `renderBinding` using `role: "actor"` or `"receiver"`
-    on a tab other than `admin`: confirm the persona the binding needs to reach really is always
-    `createdByPersonaId` for that instance type. If it isn't (the guard names a different field — a payer,
-    a recipient, a reservation owner, anyone who isn't guaranteed to be the creator), use `role: "any"`
-    instead — the transition's own guard still restricts who can act, widening the binding's role only
-    affects who can see the card. This never shows up as a validator finding — the JSON is grammar-valid
-    either way.
-11. **Build the requirement traceability table (`01-authoring-procedure.md` Step 9.5) and include it in
-    your final answer as a real artifact, not a claim that you checked.** For every workflow, every atomic
-    requirement from the product doc's tables gets a row: cite the exact JSON construct that satisfies it,
-    or mark `not_implemented` with `reasoning` that cites a real, checked constraint (a validator rule, a
-    closed enum, a missing `10-formulas.md` function, a `14-platform-services.md` ❌ Not-implemented row) —
-    never a guessed persona/tab restriction. Found 2026-08-10: a package silently dropped an explicit
-    "waiting players see queue position" requirement and justified the drop with a claim ("Player has no
-    admin-tab access") that contradicted both the grammar (per-persona tab sets aren't real in grammar v1)
-    and the package's own `role: "any"` binding on that exact tab. This rule exists because that kind of
-    self-contradiction survives every other check in this file — a clean validator response, and hard
-    rules 8-10, all check the JSON's internal consistency or specific known traps, never full doc-to-JSON
-    coverage.
+9. Cross-reference repeat/retry language in the target product doc against your transition graph — if it
+   uses "retry", "resubmit", "try again", "reopen", "undo", or "re-request", confirm the transition(s) that
+   phrase implies actually cover every state a member could realistically be retrying from.
+10. **In `specVersion: 4` this key is `audience`, not `role` (rule 2a) — the values below are unchanged.**
+    On every tab except `admin`, `audience: "receiver"` never resolves to anyone, and `audience: "actor"` only ever
+    matches the literal instance creator — never assume otherwise (see `render-bindings.md`'s normative
+    table, fetched at step 5). For every `renderBinding` using `audience: "actor"` or `"receiver"` on a
+    non-`admin` tab, confirm the persona it needs to reach really is always the instance creator; if not,
+    use `audience: "any"` instead.
+11. Build the requirement traceability table (`01-authoring-procedure.md` Step 9.5) and include it as a
+    real artifact in your final answer, not a claim that you checked. One row per atomic product-doc
+    requirement per workflow, citing the exact JSON construct that satisfies it, or `not_implemented` with
+    reasoning grounded in a real, checked constraint — never a guessed persona/tab restriction.
+12. **Declare `action` on every transition of a bespoke-archetype workflow, and never on a generic one.**
+    The six bespoke families (`event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`,
+    `searchAiAnswer`, `exportWizard`) each have a **closed** action vocabulary — see
+    `permissions.md` (fetched at step 11) for the exact list per family, and use only those values. The
+    seven generic families (`paymentCheckout`, `approvalQueueItem`, `formEntry`, `discussionThread`,
+    `statusTimeline`, `notificationInbox`, `table`) derive their permissions structurally and must carry
+    **no** `action` field at all. `table` is the one to watch: it renders as a grid and reads as bespoke,
+    but that is list layout only — it has no dispatcher case, so it takes no `action`. `action` is what the platform maps to the permission a transition needs.
+    **A missing one does not crash — and that is exactly why it matters.** The engine reads
+    `if (family == null || action == null) return sourceData;`: the transition still runs, and the
+    archetype's per-person bookkeeping for it silently never happens, with no error and no runtime
+    diagnostic. A crash would announce itself; this loses the archetype's guaranteed record-keeping
+    quietly and permanently, which is why the validator has to catch it and why you must not omit one.
+    Three further points, each of which has already caused a real defect:
+    (a) A workflow with `"renderBindings": []` that is named by some binding's `responseTable.workflowType`
+    **inherits that binding's archetype** (§6 step 3b) — so an RSVP response workflow is bespoke and its
+    transitions do need `action`. A workflow with no bindings and no `responseTable` owner derives nothing.
+    (b) The "Observed transitions" column is a **lookup aid, not authority**. When it disagrees with what
+    the transition's `guard`/`from`/`to`/`effects` actually do, the transition wins — `cancel-loan` means
+    `withdraw_request` in one community and `return` in another. Resolve from the column, then confirm
+    against the transition, and say so when they diverge.
+    (c) A workflow may mix one bespoke family with generic bindings; that is normal and the bespoke family
+    is the archetype. Only two or more *bespoke* families is an error.
+12a. **Never declare a field an archetype owns.** `CONTRACTS.md` (step 11b) lists the per-person
+    bookkeeping each archetype maintains itself — response sets, read/acknowledged/saved/downloaded
+    sets, queues. Declaring one of those in `instanceDataSchema`, or writing an `actorInList`
+    idempotence guard against it, duplicates logic the archetype already applies and is how the same
+    rule ends up expressed two different ways. (This rule was previously spliced into the middle of
+    rule 12's sentence about action vocabularies, leaving both unreadable; they are separate rules.)
 
-## Read order
+12b. **`visibility.fields` — declare it only when identity-scoped reads actually engage, use the key
+    the archetype's model requires, and get the `parties` shape right.** See
+    `workflow-grammar.md` § `visibility.fields` (step 2) and `CONTRACTS.md` §3 (step 11b), both
+    fetched in full — this summary is a pointer, not a substitute.
+    - **There are exactly four keys, and which one you need is decided by the archetype, not by you:**
 
-| Step | File | When |
-|---|---|---|
-| 1 | `01-authoring-procedure.md` | Always — read this in full before writing anything. It's the algorithm: personas → workflow types → states-vs-data → states/transitions → data schema → guards → effects → render bindings → seed data → self-check → (validate). |
-| 2 | `07-workflow-grammar.md` | Always — the normative contract every workflow definition must satisfy. |
-| 3 | `08-guards.md`, `09-effects.md`, `10-formulas.md`, `11-field-types.md` | Always — you will reach for these four constantly while writing transitions and data schemas. |
-| 4 | `02-common-patterns.md` | Read the pattern(s) matching what the request needs — **P1** RSVP with capacity/waitlist, **P2** ballot with tally/eligibility/runoff, **P3** approval queue (propose→decide), **P4** loan lifecycle with queue, **P5** payment, **P6** discussion thread. A community needing several archetypes means reading several patterns. |
-| 5 | `17-worked-example-calendar.jsonc` | The richer per-member-row pattern for `event-rsvp`: response rows (`event-rsvp-response`) plus a `notification` type, needed as soon as an event-shaped request includes reminders or other per-member follow-up. Read the comments — they explain why this shape exists and cite exactly which constructs are confirmed real. |
-| 6 | `12-render-bindings.md` | When deciding where each card appears and how it presents (tabs, roles, actions, FAB) — for every workflow type in the request, not just calendar-bound ones. |
-| 7 | `05-actions-and-fabs.md` | When deciding whether a "create" affordance should be a FAB, and how response/decision actions should present. |
-| 8 | `15-archetypes.md` | The source of truth for which `cardSurfaceFamily` is correct for **each** workflow in the request, and which values are real vs. not real — re-check this for every workflow type, not once. |
-| 9 | `03-antipatterns.md` | Before you finish — self-check your JSON against every detection rule in this file. |
-| 10 | `04-validation.md` | Before you finish — this is the error → fix table the real validator would use. Walk your JSON against it manually (see "On validation" below). |
-| 11 | `13-theming.md`, `14-platform-services.md`, `06-card-styling.md` | Only if the request touches branding/accent colors or asks for something that sounds like it needs a backend capability (payments, auth, storage) — `14-platform-services.md` lists the closed set of things that are Loom-owned, not JSON-authorable. |
-| 12 | `16-spec-version.json` | Machine-readable version numbers, for reference only. |
-| 13 | `18-validator-action-openapi.yaml` | Not a reading reference — this is the schema for the live `validateCommunityPackage`/`buildExtensionPackage`/`checkValidatorHealth` action. If it's configured as an action for you, use it per "On validation" below rather than reading it as prose. |
-| 14 | `19-debugging-validator-responses.md` | Read this **every time** `validateCommunityPackage` returns anything other than a clean pass, before deciding what to do about it. It defines the only two shapes a real response can have, and what to do if what you're looking at doesn't match either. |
-| 15 | `20-solved-patterns.md` | Always, before Step 9.5's traceability table — recurring requirement shapes already found and fixed in real community packages, with the verified-correct JSON shape for each. Check every workflow's requirements against this list; several of these shapes were independently reinvented as bugs more than once before being named here. |
-| 16 | `21-permissions.md` | Always — the `action` field and the closed action vocabulary per bespoke archetype. |
-| 17 | `22-archetype-contracts.md` | Always — what each archetype **guarantees** rather than what you declare: its actions, the per-person bookkeeping it owns, and its visibility model. **Never declare a field the archetype owns**, and never write an `actorInList` idempotence guard against one. |
+      | archetype visibility model | the key | archetypes |
+      |---|---|---|
+      | `owner_and_shared` | `sharedWith` | `documentLibrary` |
+      | `participants` | `participants` | `discussionThread` |
+      | `parties` | `parties` | `approvalQueueItem`, `paymentCheckout` |
+      | `recipient` | `recipient` | `notificationInbox` |
 
-## The `action` field, and what you must never author
+      `roles` and `owner` are visibility **models**, not keys — they read no instance data and take no
+      mapping. Writing `"fields": { "owner": "someFanId" }` is not a way to say "the owner reads it";
+      the owner already reads it, on every model. **An unrecognised key here is silently ignored**, so
+      the mapping the archetype actually needs goes missing while the package looks configured. This
+      is a confirmed defect, not a hypothetical: a `documentLibrary` was authored with
+      `fields.owner` and shipped a `missing_visibility_fields` error for the `sharedWith` it never
+      declared.
+    - A mapping is **required** only when the workflow's own `visibility.default` is `guarded`, **or**
+      it declares a `readGuard` at the workflow level or on any state. When the workflow is `public` or
+      `membersOnly` with no guard anywhere, **do not invent one** — the archetype's identity model can
+      only widen a read that is already open, so a mapping there adds nothing and risks naming the
+      wrong field.
+    - **Never point a mapping at archetype bookkeeping.** `sharedWith: "downloadedFanIds"` would grant
+      read access to everyone who already downloaded the document — circular, and wrong. It passes the
+      arity check while granting incorrectly, which is worse than failing. If the workflow has no field
+      that genuinely means "party", say so in Gaps/assumptions rather than picking the nearest
+      identity-shaped one.
+    - `parties` takes **exactly two** entries, each either an instance-data field name **or**
+      `{"role": "<roleId>"}` for a counterparty that is the community itself rather than a person — the
+      collecting side of a payment, the reviewing body of a request. A role entry's `<roleId>` must be
+      declared in `experience.roles[]`. A role object carries **only** the `role` key.
+    - Use a role party instead of reaching for a formula like `$viewer == 'some-role-id'`. That
+      comparison is always false — `$viewer` is a `fanId`, not a `roleId` — and the two conditions
+      inside one guard are ANDed, so a `readGuard` cannot express "this person **or** whoever holds
+      role X" at all. The role party is what expresses it, because archetype models widen rather than
+      replace. See `identity-types.md` §3.5 (step 11a).
 
-**Declare `action` on every transition of a bespoke-archetype workflow** — the six families with a
-dispatcher case: `event-rsvp`, `votePoll`, `equipment-loan`, `documentLibrary`, `searchAiAnswer`,
-`exportWizard` — using only the values listed for that family in `21-permissions.md`. **Never declare
-`action` on a generic-archetype transition** (`paymentCheckout`, `approvalQueueItem`, `formEntry`,
-`discussionThread`, `statusTimeline`, `notificationInbox`, `table`); those derive their permissions
-structurally. `table` is the trap: it renders as a grid and reads as bespoke, but that is list layout
-only — it has no dispatcher case and takes no `action`.
+12c. **Every seed instance MUST declare `createdByFanId`.** This is the single most damaging thing to
+    drop, because **nothing catches it**: the validator reports zero errors and zero warnings for a
+    seed with no creator, and the app then throws
+    `Bad state: Engine-native seed <id> is missing createdByPersonaId` at install time, so the whole
+    community fails to load. Confirmed on a real regeneration: all 10 Chess Club seeds lost their
+    creator, the package validated perfectly clean, and every engine-native test for that community
+    broke.
+    The trap is specific and easy to fall into: `createdByPersonaId` is a legacy key that rule 2a
+    forbids, and the correct response is to **rename it to `createdByFanId`**, never to delete it.
+    Its value is a **person** (a `fanId`), not a role — so it is one of the seed identity values that
+    keeps the community's existing persona-id strings, exactly as rule 2a describes for person-shaped
+    fields. Before returning any package, count your seeds and count your `createdByFanId` fields;
+    they must be equal.
 
-Three further points, each of which has already caused a real defect:
+12d. **Every workflow with writable fields needs a creation path**, unless it is genuinely seed-only.
+    A `formEntry`- or effect-authored field with no `renderBindings[].actions[].kind: "create"`
+    targeting it, and no `createInstance`/`generateRecurringInstances` effect producing it, means no
+    member can ever make one — the workflow exists but is unreachable. The validator reports this as
+    `no_creation_path_for_editable_type`. A regeneration dropped two such paths (an export wizard and
+    a document library) that the shipped package had, silently removing two real member capabilities.
+    **Treat a validator warning as something to fix or to justify explicitly in Gaps/assumptions —
+    never as acceptable noise.** Your target is zero errors *and* zero warnings.
 
-- A workflow with `"renderBindings": []` that is named by some binding's `responseTable.workflowType`
-  **inherits that binding's archetype**, so an RSVP response workflow is bespoke and its transitions do
-  need `action`. A workflow with no bindings and no `responseTable` owner derives nothing.
-- The "Observed transitions" column is a **lookup aid, not authority**. Where it disagrees with what the
-  transition's `guard`/`from`/`to`/`effects` actually do, the transition wins: `cancel-loan` means
-  `withdraw_request` in one community and `return` in another.
-- A workflow may mix one bespoke family with generic bindings — normal, and the bespoke family is the
-  archetype. Only two or more *bespoke* families is an error.
-
-Guards are keyed `allowedPersonaIds` / `byPersonaIds`, never `allowedRoleIds` / `byRoleIds`. Personas
-become roles at install time; the JSON only ever says persona.
-
-`action` is what the platform maps to the permission a transition needs. A missing or misnamed one
-silently leaves a permission ungranted, and the action then fails at runtime for a reason no author can
-see from the JSON.
-
-**Never author a permission, a user, or a membership.** Permissions are derived from your
-`allowedPersonaIds`/`byPersonaIds` combined with `action`. Joining a community, approving a member, and
-assigning someone a persona are App Shell experiences, not workflows. Domain processes that accompany
-joining — signing a waiver, paying a registration fee, a reviewer approving a player — remain
-legitimate workflows; only the membership grant itself is out of scope.
+13. **Never author a permission, a user, or a membership.** Permissions are derived from your
+    `allowedRoleIds`/`byRoleIds` (the `specVersion: 4` spellings — see rule 2a) plus `action` —
+    writing one is always wrong. Likewise never model
+    joining a community, approving a member, or assigning someone a persona as a workflow: that is an App
+    Shell experience backed by the App Access service. Domain processes that *accompany* joining (signing a
+    waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
+    membership grant itself that must not be one.
 
 ## Two valid RSVP shapes — pick deliberately
 
-- **`02-common-patterns.md`'s P1** (a `goingPersonaIds[]` / `maybePersonaIds[]` / `waitlistPersonaIds[]`
-  list on the event itself) is simpler and is the right choice for plain "members RSVP" with no per-member
-  follow-up.
-- **The `event-rsvp` / `event-rsvp-response` pair** in `17-worked-example-calendar.jsonc` (one row per
-  event per member) is required as soon as you need to do anything *per member* afterward — most
-  importantly, **sending a reminder notification**, since a notification's recipient must be read off a
-  real field on a real row (`{personaId}`), not extracted from inside a shared list. If the request
-  mentions reminders, notifications, or "let each member manage their own RSVP," use this shape.
+- The plain `goingPersonaIds[]`/`maybePersonaIds[]`/`waitlistPersonaIds[]` list pattern (P1 in
+  `03-common-patterns.md`) for "members RSVP" with no per-member follow-up.
+- The `event-rsvp`/`event-rsvp-response` per-member-row pattern, required as soon as anything per-member
+  happens afterward — most importantly a reminder notification, since a notification's recipient must be
+  read off a real row's own field, not extracted from inside a shared list.
 
-Do not mix the two within one workflow type — pick one per community.
+Do not mix the two within one workflow type.
 
 ## On validation — a mandatory validate-and-fix loop, done BEFORE you show anything
 
@@ -319,11 +478,13 @@ that no real validator ran:
 
 ## What to deliver
 
-1. **One JSON (or JSONC) file**, structured exactly like `17-worked-example-calendar.jsonc`'s envelope
-   (`schemaVersion`, `packageId`, `communityId`, `communityHandle`, `displayName`, `extensionId`,
-   `branding`, `seedDataFiles`, `idempotencyKey`, then the `experience` block). Give the community its own
-   identity (name, tagline, accent color, personas) appropriate to whatever was actually requested — reuse
-   the workflow-definition *shapes*, not the literal Riverbend Run Club content.
+1. **One JSON (or JSONC) file** carrying the package envelope: `specVersion` (the value `4`, and
+   **not** `schemaVersion` — see hard rules 1 and 2; this list previously named `schemaVersion` here,
+   which directly contradicted them), `packageId`, `communityId`, `communityHandle`, `displayName`,
+   `extensionId`, `branding`, `seedDataFiles`, `idempotencyKey`, then the `experience` block. Give the
+   community its own identity (name, tagline, accent color, and `roles[]` — not `personas[]`, see rule
+   2a) appropriate to whatever was actually requested. Reuse the workflow-definition *shapes* from the
+   worked examples, never their literal content.
 2. The **requirement traceability table** (hard rule 11 / `01-authoring-procedure.md` Step 9.5) — the real
    JSON artifact, one object per workflow, not a prose claim that you checked coverage.
 3. A short **"Gaps / assumptions"** section after the JSON: anything the grammar couldn't express, anything
