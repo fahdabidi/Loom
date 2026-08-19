@@ -48,18 +48,46 @@ nothing to preserve — author personas/tabs fresh as normal, per the rest of th
 ### When the update is also a `specVersion: 4` migration — the persona→role collapse
 
 The shipped file you are updating declares legacy `experience.personas[]`; your output must declare
-`experience.roles[]` (rule 2a). **These are not the same list renamed.** A persona is an individual
-(Alex, Bailey, Casey); a role is a *kind* of member. Roles derive from the **distinct `roleLabel`
-values** across the personas, so four personas whose `roleLabel`s are Member/Member/Member/Moderator
-collapse to **two** roles. Do not emit one role per persona.
+`experience.roles[]` (rule 2a). **Which transformation applies depends on what that community's
+personas actually denote**, and `identity-types.md` §2 gives the discriminator in one line:
+*"Roles never appear as instance data values. **People never appear in `roles[]`.**"*
 
-- `roles[]` entries are `{"roleId": "<slug-of-roleLabel>", "label": "<roleLabel>"}`.
-- The listed `personaId` values do **not** become `roleId`s. They are individuals — wherever one names
-  a *person* (seed data, instance-data identity fields) it becomes a `fanId`; wherever a *guard*
-  selected people by persona, it becomes `allowedRoleIds`/`byRoleIds`/`visibleRoleIds` naming the
-  role(s) those personas belong to.
-- **Two `roleLabel`s that slug to the same `roleId` are an error, not something to merge.** Say so in
-  Gaps/assumptions rather than picking one.
+**Case 1 — the personas are role-like (the common case). Rename 1:1 and PRESERVE THE ID.**
+`identity-types.md` §3.1 is a key rename, not a re-derivation:
+`personas[].personaId` → `roles[].roleId`, **same value**; `roleLabel` unchanged.
+
+```jsonc
+{ "personaId": "chess-organizer", "roleLabel": "Organizer" }   // v1
+{ "roleId":    "chess-organizer", "roleLabel": "Organizer" }   // v4 — id preserved
+```
+
+**Do not shorten, re-slug, or strip a community prefix from the id.** `chess-organizer` does not
+become `organizer`. Every `allowedRoleIds`/`byRoleIds`/`visibleRoleIds` value keeps referring to the
+same string it always did, and this repo's Dart test suite hardcodes these exact ids per community —
+34 call sites at last count. Re-deriving them silently breaks real, already-passing tests while the
+package still validates clean, which is the worst possible combination.
+
+**Case 2 — the personas are individual people** (named humans: "Alex Rivera", "Bailey Chen", several
+sharing one `roleLabel`). Then they are **not** roles at all and must not appear in `roles[]`. Each
+person becomes a `fanId` in seed data and instance-data fields, and `roles[]` is derived from the
+**distinct `roleLabel` values**, so four such personas sharing two labels yield **two** roles.
+
+**How to tell the cases apart:** if the `personaId` names a kind of member and the `label` restates it
+(`ad-off-owner` / "Owner"), it is Case 1. If the `label` is a human name and several personas share a
+`roleLabel`, it is Case 2. If a community genuinely mixes both, say so explicitly in
+Gaps/assumptions naming each persona and which case you applied — do not guess silently.
+
+**In Case 2 only, the derivation has a hazard that is not mechanical.** A guard listing *some but not
+all* of a role's personas **cannot** be translated to that role: `allowedRoleIds: ["member"]` would
+grant access to every member, including the ones the original list deliberately excluded. That is a
+silent privilege widening, and exactly the kind of change that looks correct in review. Do not widen
+and do not guess — flag it in Gaps/assumptions, naming the exact guard and personas:
+
+- a **strict subset of one role** — translating would widen access;
+- a **partial set spanning two or more roles** — no single role expresses it.
+
+Only a persona list covering a role's **full** roster translates cleanly. Two `roleLabel`s that would
+produce the same `roleId` are an error to report, not to merge.
 
 **The hazard that makes this non-mechanical — read carefully.** A guard listing *some but not all* of
 a role's personas **cannot be translated to that role**: `allowedRoleIds: ["member"]` would grant
