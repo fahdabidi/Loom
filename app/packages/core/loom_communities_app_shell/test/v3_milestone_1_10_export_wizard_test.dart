@@ -15,8 +15,6 @@ const _chessFixtureRelative =
 const _cedarFixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc';
 
-const _cedarInstanceId = 'hoa-export-board-records-2026-q2';
-
 const _chessPersona = 'chess-organizer';
 const _cedarPersona = 'hoa-board';
 const _adminTab = 'admin';
@@ -175,13 +173,18 @@ LoomWorkflowStateMachine _exportWorkflow(LoomExperienceDefinition experience) {
 
 LoomWorkflowSeedInstance _exportSeed(
   LoomExperienceDefinition experience,
-  String workflowType,
-) {
+  String workflowType, {
+  String? currentState,
+}) {
   final seeds = experience.workflowInstances;
   if (seeds == null) {
     throw StateError('Fixture has no workflow seed instances');
   }
-  return seeds.singleWhere((seed) => seed.workflowType == workflowType);
+  return seeds.singleWhere(
+    (seed) =>
+        seed.workflowType == workflowType &&
+        (currentState == null || seed.currentState == currentState),
+  );
 }
 
 String? _historyFieldKey(LoomWorkflowStateMachine workflow) {
@@ -242,12 +245,39 @@ String _fixtureFactText(InstanceDataField field, Object? value) {
       .trim();
 }
 
-Map<String, String> _expectedTileFacts({
+bool _fixtureRendersAsParagraph(InstanceDataField schema, Object? value) {
+  final type = schema.type.toLowerCase();
+  return (type == 'text' || type == 'textarea') &&
+      value.toString().length > (schema.maxLength ?? 80);
+}
+
+// Mirrors `_humanizeFactField` in
+// `lib/src/part18_marketplace_rendering.dart`.
+String _humanizeFixtureFactField(String field) => field
+    .replaceAllMapped(
+      RegExp(r'([a-z])([A-Z])'),
+      (match) => '${match[1]} ${match[2]}',
+    )
+    .replaceAll('_', ' ')
+    .replaceFirstMapped(RegExp(r'^.'), (match) => match[0]!.toUpperCase());
+
+List<String> _fixtureFactTexts(
+  String fieldName,
+  InstanceDataField field,
+  Object? value,
+) {
+  if (_fixtureRendersAsParagraph(field, value)) {
+    return <String>[_humanizeFixtureFactField(fieldName), value.toString()];
+  }
+  return <String>[_fixtureFactText(field, value)];
+}
+
+Map<String, List<String>> _expectedTileFacts({
   required LoomWorkflowStateMachine workflow,
   required WorkflowInstance instance,
 }) {
   final historyKey = _historyFieldKey(workflow);
-  final expected = <String, String>{};
+  final expected = <String, List<String>>{};
   for (final entry in workflow.instanceDataSchema.entries) {
     final key = entry.key;
     final field = entry.value;
@@ -263,16 +293,21 @@ Map<String, String> _expectedTileFacts({
     if (hasFormula && !hasLabelTemplate) continue;
     final value = instance.instanceData[key];
     if (field.hideWhenEmpty && _isEmptyFixtureValue(value)) continue;
-    final text = _fixtureFactText(field, value);
-    if (text.isNotEmpty) expected[key] = text;
+    final texts = _fixtureFactTexts(key, field, value);
+    if (texts.any((text) => text.isNotEmpty)) expected[key] = texts;
   }
   return expected;
 }
 
-void _expectFactTexts(Finder factsFinder, Iterable<String> expectedTexts) {
+void _expectFactTexts(
+  Finder factsFinder,
+  Iterable<Iterable<String>> expectedTextGroups,
+) {
   final counts = <String, int>{};
-  for (final text in expectedTexts) {
-    counts.update(text, (count) => count + 1, ifAbsent: () => 1);
+  for (final texts in expectedTextGroups) {
+    for (final text in texts) {
+      counts.update(text, (count) => count + 1, ifAbsent: () => 1);
+    }
   }
   for (final entry in counts.entries) {
     expect(
@@ -344,8 +379,8 @@ void main() {
         ValueKey('export-wizard-facts-$chessInstanceId-tile'),
       );
       expect(factsFinder, findsOneWidget);
-      // Fact-pill text includes the schema's whole labelTemplate, including
-      // any prefix (and {value.length}) rather than only the seed's raw value.
+      // Fixture-derived expectations follow the renderer's pill/paragraph
+      // branch, including the whole labelTemplate for short pill values.
       _expectFactTexts(factsFinder, expectedFacts.values);
       expect(
         find.byKey(
@@ -444,50 +479,68 @@ void main() {
       ))!;
       addTearDown(() => tester.runAsync(installed.dispose));
 
-      await tester.pumpWidget(_host(installed, _cedarPersona));
-      await _openTab(tester, _adminTab);
-      final badgeFinder = find.byKey(
-        const ValueKey('export-wizard-state-badge-$_cedarInstanceId-tile'),
+      final exportWorkflow = _exportWorkflow(installed.experience);
+      final exportSeed = _exportSeed(
+        installed.experience,
+        exportWorkflow.workflowType,
+        currentState: 'ready',
       );
-      await _pumpUntilNoThrow(tester, badgeFinder);
-
-      expect(find.byKey(const ValueKey('export-wizard-facts-$_cedarInstanceId-tile')), findsOneWidget);
-      expect(find.text('Ready for download'), findsOneWidget);
-      expect(
-        find.text('Board records through 2026 Q2'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Approved minutes, governing-document versions, architectural case audit, and offline payment ledger'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('export-wizard-history-heading-$_cedarInstanceId-tile')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('export-wizard-history-$_cedarInstanceId-tile-0'),
-        ),
-        findsOneWidget,
-      );
-      // Kebab-case values that look like identifiers get humanized by the
-      // shared fact-pill renderer's _valueText (manual-review -> Manual
-      // Review, awaiting-platform -> Awaiting Platform) -- confirmed via
-      // part18_marketplace_rendering.dart's _looksLikeIdentifierValue/
-      // humanizeIdentifierValue.
-      expect(find.text('Verification: Manual Review'), findsOneWidget);
-      expect(find.text('Checksum status: Awaiting Platform'), findsOneWidget);
-      expect(find.text('Transfer ID:'), findsNothing);
-
+      final cedarInstanceId = exportSeed.instanceId;
       var instance = (await tester.runAsync(
         () => _queryInstance(
           engine: installed.engine,
-          instanceId: _cedarInstanceId,
+          instanceId: cedarInstanceId,
           personaId: _cedarPersona,
           tabId: _adminTab,
         ),
       ))!;
+      final currentState = exportWorkflow.states[instance.currentState];
+      if (currentState == null) {
+        throw StateError(
+          'Export seed ${instance.instanceId} has undeclared state '
+          '${instance.currentState}',
+        );
+      }
+      final expectedFacts = _expectedTileFacts(
+        workflow: exportWorkflow,
+        instance: instance,
+      );
+
+      await tester.pumpWidget(_host(installed, _cedarPersona));
+      await _openTab(tester, _adminTab);
+      final badgeFinder = find.byKey(
+        ValueKey('export-wizard-state-badge-$cedarInstanceId-tile'),
+      );
+      await _pumpUntilNoThrow(tester, badgeFinder);
+
+      expect(
+        find.descendant(
+          of: badgeFinder,
+          matching: find.text(currentState.label),
+        ),
+        findsOneWidget,
+      );
+      final factsFinder = find.byKey(
+        ValueKey('export-wizard-facts-$cedarInstanceId-tile'),
+      );
+      expect(factsFinder, findsOneWidget);
+      // Fixture-derived expectations follow the renderer's pill/paragraph
+      // branch, including the whole labelTemplate for short pill values.
+      _expectFactTexts(factsFinder, expectedFacts.values);
+      expect(
+        find.byKey(
+          ValueKey('export-wizard-history-heading-$cedarInstanceId-tile'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          ValueKey('export-wizard-history-$cedarInstanceId-tile-0'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Transfer ID:'), findsNothing);
+
       final readyActions = (await tester.runAsync(
         () => _queryTransitions(
           engine: installed.engine,
@@ -502,7 +555,7 @@ void main() {
         ),
       );
       final beginTransferKey = ValueKey(
-        'export-wizard-$_cedarInstanceId-action-${beginTransfer.id}',
+        'export-wizard-$cedarInstanceId-action-${beginTransfer.id}',
       );
       await _pumpUntilNoThrow(tester, find.byKey(beginTransferKey));
       await _tapVisible(tester, find.byKey(beginTransferKey));
@@ -513,7 +566,7 @@ void main() {
       instance = (await tester.runAsync(
         () => _queryInstance(
           engine: installed.engine,
-          instanceId: _cedarInstanceId,
+          instanceId: cedarInstanceId,
           personaId: _cedarPersona,
           tabId: _adminTab,
         ),
@@ -530,7 +583,7 @@ void main() {
         orElse: () => throw StateError('Could not locate transfer-complete transition'),
       );
       final recordTransferKey = ValueKey(
-        'export-wizard-$_cedarInstanceId-action-${recordTransfer.id}',
+        'export-wizard-$cedarInstanceId-action-${recordTransfer.id}',
       );
       await _pumpUntilNoThrow(tester, find.byKey(recordTransferKey));
       await _tapVisible(tester, find.byKey(recordTransferKey));
@@ -542,7 +595,7 @@ void main() {
       instance = (await tester.runAsync(
         () => _queryInstance(
           engine: installed.engine,
-          instanceId: _cedarInstanceId,
+          instanceId: cedarInstanceId,
           personaId: _cedarPersona,
           tabId: _adminTab,
         ),
@@ -559,19 +612,19 @@ void main() {
         orElse: () => throw StateError('Could not locate rollback transition'),
       );
       final rollbackKey = ValueKey(
-        'export-wizard-$_cedarInstanceId-action-${rollback.id}',
+        'export-wizard-$cedarInstanceId-action-${rollback.id}',
       );
       await _pumpUntilNoThrow(tester, find.byKey(rollbackKey));
       await _tapVisible(tester, find.byKey(rollbackKey));
       await _pumpUntilFound(
         tester,
         find.byKey(
-          const ValueKey('export-wizard-off-path-$_cedarInstanceId-tile'),
+          ValueKey('export-wizard-off-path-$cedarInstanceId-tile'),
         ),
       );
       expect(
         find.byKey(
-          const ValueKey('export-wizard-off-path-$_cedarInstanceId-tile'),
+          ValueKey('export-wizard-off-path-$cedarInstanceId-tile'),
         ),
         findsOneWidget,
       );
