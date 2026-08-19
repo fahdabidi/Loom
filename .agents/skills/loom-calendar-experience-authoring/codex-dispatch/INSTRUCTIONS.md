@@ -278,6 +278,29 @@ real enum (fetched at step 7) instead.
       role X" at all. The role party is what expresses it, because archetype models widen rather than
       replace. See `identity-types.md` §3.5 (step 11a).
 
+12c. **Every seed instance MUST declare `createdByFanId`.** This is the single most damaging thing to
+    drop, because **nothing catches it**: the validator reports zero errors and zero warnings for a
+    seed with no creator, and the app then throws
+    `Bad state: Engine-native seed <id> is missing createdByPersonaId` at install time, so the whole
+    community fails to load. Confirmed on a real regeneration: all 10 Chess Club seeds lost their
+    creator, the package validated perfectly clean, and every engine-native test for that community
+    broke.
+    The trap is specific and easy to fall into: `createdByPersonaId` is a legacy key that rule 2a
+    forbids, and the correct response is to **rename it to `createdByFanId`**, never to delete it.
+    Its value is a **person** (a `fanId`), not a role — so it is one of the seed identity values that
+    keeps the community's existing persona-id strings, exactly as rule 2a describes for person-shaped
+    fields. Before returning any package, count your seeds and count your `createdByFanId` fields;
+    they must be equal.
+
+12d. **Every workflow with writable fields needs a creation path**, unless it is genuinely seed-only.
+    A `formEntry`- or effect-authored field with no `renderBindings[].actions[].kind: "create"`
+    targeting it, and no `createInstance`/`generateRecurringInstances` effect producing it, means no
+    member can ever make one — the workflow exists but is unreachable. The validator reports this as
+    `no_creation_path_for_editable_type`. A regeneration dropped two such paths (an export wizard and
+    a document library) that the shipped package had, silently removing two real member capabilities.
+    **Treat a validator warning as something to fix or to justify explicitly in Gaps/assumptions —
+    never as acceptable noise.** Your target is zero errors *and* zero warnings.
+
 13. **Never author a permission, a user, or a membership.** Permissions are derived from your
     `allowedRoleIds`/`byRoleIds` (the `specVersion: 4` spellings — see rule 2a) plus `action` —
     writing one is always wrong. Likewise never model
