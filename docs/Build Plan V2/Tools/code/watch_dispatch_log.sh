@@ -62,7 +62,18 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LABEL="${1:?usage: watch_dispatch_log.sh <label> [post-completion-sleep-seconds]}"
 POST_SLEEP="${2:-5}"
 LOG="$REPO_ROOT/.codex-logs/${LABEL}_dispatch.out.log"
-PID_FILE="$REPO_ROOT/.codex-logs/.last_dispatch.pid"
+# Which pid file identifies this dispatch's process. The implementation agent
+# writes .last_dispatch.pid; the Skill-authoring agent writes
+# .last_skill_authoring_dispatch.pid. Watching the wrong one is not a harmless
+# mismatch -- it reads a *stale, already-finished* pid from an earlier dispatch
+# and reports DISPATCH-DIED immediately, for a run that is alive and healthy.
+# Observed 2026-08-18 on the AdFreeCommunity regeneration. Set DISPATCH_PID_FILE
+# (absolute, or relative to .codex-logs/) when watching a Skill dispatch.
+PID_FILE_NAME="${DISPATCH_PID_FILE:-.last_dispatch.pid}"
+case "$PID_FILE_NAME" in
+  /*) PID_FILE="$PID_FILE_NAME" ;;
+  *)  PID_FILE="$REPO_ROOT/.codex-logs/$PID_FILE_NAME" ;;
+esac
 
 # How long to wait for a trailing completion line after the process disappears,
 # before declaring it died. Covers the normal race where the process exits a
