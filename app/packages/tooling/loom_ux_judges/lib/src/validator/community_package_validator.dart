@@ -219,7 +219,12 @@ class CommunityPackageValidator {
         declaredTabIds: declaredTabIds,
       ).validate(workflows).findings,
     );
-    findings.addAll(_validateVisibilityFields(rawDefinitions));
+    findings.addAll(
+      _validateVisibilityFields(
+        rawDefinitions,
+        declaredRoles: experience['roles'],
+      ),
+    );
     findings.addAll(_validateTransitionActions(rawDefinitions));
     findings.addAll(_validateResponseRowSweep(rawDefinitions));
     findings.addAll(_validateRedundantTransitions(rawDefinitions));
@@ -598,13 +603,20 @@ class CommunityPackageValidator {
   /// reads the raw workflow JSON only after resolution because the mapping's
   /// key presence and list entries are authoring details that must retain their
   /// exact source locations in findings.
-  List<ValidationFinding> _validateVisibilityFields(Map<Object?, Object?> raw) {
+  List<ValidationFinding> _validateVisibilityFields(
+    Map<Object?, Object?> raw, {
+    required Object? declaredRoles,
+  }) {
     const resolver = ArchetypeResolver();
     final definitions = <String, Object?>{
       for (final entry in raw.entries) entry.key.toString(): entry.value,
     };
     final archetypes = resolver.resolveAll(definitions);
     final findings = <ValidationFinding>[];
+    final declaredRoleIds = <String>{
+      for (final role in (declaredRoles as List? ?? const []))
+        if (role is Map && role['roleId'] is String) role['roleId'] as String,
+    };
 
     for (final entry in definitions.entries) {
       final type = entry.key;
@@ -674,16 +686,61 @@ class CommunityPackageValidator {
       }
 
       checkField(fields['sharedWith'], '$path/sharedWith');
-      for (final key in const ['participants', 'parties']) {
-        final values = fields[key];
-        if (values is! List) continue;
-        for (var i = 0; i < values.length; i++) {
-          checkField(values[i], '$path/$key[$i]');
+      final participants = fields['participants'];
+      if (participants is List) {
+        for (var i = 0; i < participants.length; i++) {
+          checkField(participants[i], '$path/participants[$i]');
         }
       }
       checkField(fields['recipient'], '$path/recipient');
 
       final parties = fields['parties'];
+      if (parties is List) {
+        for (var i = 0; i < parties.length; i++) {
+          final principal = parties[i];
+          final location = '$path/parties[$i]';
+          if (principal is String) {
+            if (principal.isEmpty) {
+              findings.add(
+                _finding(
+                  'invalid_visibility_principal',
+                  'A `visibility.fields.parties` string must be a non-empty '
+                      'instance-data field name.',
+                  location,
+                ),
+              );
+            }
+            checkField(principal, location);
+            continue;
+          }
+          if (principal is Map &&
+              principal.length == 1 &&
+              principal.containsKey('role') &&
+              principal['role'] is String &&
+              (principal['role'] as String).isNotEmpty) {
+            final roleId = principal['role'] as String;
+            if (!declaredRoleIds.contains(roleId)) {
+              findings.add(
+                _finding(
+                  'dangling_visibility_role',
+                  'A role named in `visibility.fields.parties` is not declared '
+                      'in `experience.roles[]`.',
+                  location,
+                ),
+              );
+            }
+            continue;
+          }
+          findings.add(
+            _finding(
+              'invalid_visibility_principal',
+              'A `visibility.fields.parties` entry must be a non-empty field '
+                  'name or an object containing only a non-empty string role.',
+              location,
+            ),
+          );
+        }
+      }
       if (fields.containsKey('parties') &&
           parties is List &&
           parties.length != 2) {

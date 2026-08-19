@@ -476,15 +476,36 @@ class LoomWorkflowState {
 /// The workflow-level default visibility vocabulary.
 enum WorkflowVisibilityDefault { public, membersOnly, guarded }
 
-/// Instance-data fields that supply identities to archetype visibility models.
+/// One principal admitted by a `visibility.fields.parties` declaration.
+sealed class WorkflowVisibilityPrincipal {
+  const WorkflowVisibilityPrincipal();
+}
+
+/// The individual identity stored in an instance-data field.
+final class WorkflowVisibilityFieldPrincipal
+    extends WorkflowVisibilityPrincipal {
+  final String fieldName;
+
+  const WorkflowVisibilityFieldPrincipal({required this.fieldName});
+}
+
+/// Every viewer whose explicitly resolved persona type equals [roleId].
+final class WorkflowVisibilityRolePrincipal
+    extends WorkflowVisibilityPrincipal {
+  final String roleId;
+
+  const WorkflowVisibilityRolePrincipal({required this.roleId});
+}
+
+/// Principals that supply identities to archetype visibility models.
 ///
-/// These names are declared by the workflow. The engine must never infer an
-/// identity field from its schema or name, because audit actors and senders are
-/// identity-shaped data but are not necessarily readers.
+/// Field-principal names are declared by the workflow. The engine must never
+/// infer an identity field from its schema or name, because audit actors and
+/// senders are identity-shaped data but are not necessarily readers.
 class WorkflowVisibilityFields {
   final String? sharedWith;
   final List<String> participants;
-  final List<String> parties;
+  final List<WorkflowVisibilityPrincipal> parties;
   final String? recipient;
 
   const WorkflowVisibilityFields({
@@ -539,7 +560,36 @@ class WorkflowVisibilityFields {
       return raw;
     }
 
-    final parties = stringList('parties');
+    List<WorkflowVisibilityPrincipal> partyList() {
+      final raw = value['parties'];
+      if (raw == null) return const [];
+      if (raw is! List) {
+        throw const FormatException(
+          'Workflow visibility.fields.parties must be a list of principals.',
+        );
+      }
+      return raw
+          .map((entry) {
+            if (entry is String && entry.isNotEmpty) {
+              return WorkflowVisibilityFieldPrincipal(fieldName: entry);
+            }
+            if (entry is Map &&
+                entry.length == 1 &&
+                entry.containsKey('role')) {
+              final roleId = entry['role'];
+              if (roleId is String && roleId.isNotEmpty) {
+                return WorkflowVisibilityRolePrincipal(roleId: roleId);
+              }
+            }
+            throw const FormatException(
+              'Workflow visibility.fields.parties entries must be non-empty '
+              'field names or objects containing only a non-empty role.',
+            );
+          })
+          .toList(growable: false);
+    }
+
+    final parties = partyList();
     if (value.containsKey('parties') && parties.length != 2) {
       throw const FormatException(
         'Workflow visibility.fields.parties must name exactly two fields.',

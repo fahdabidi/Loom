@@ -96,29 +96,115 @@ void main() {
       expect(machine.visibility.fields.sharedWith, 'sharedWithFanIds');
       expect(machine.visibility.fields.participants, ['participantFanIds']);
       expect(machine.visibility.fields.parties, [
-        'requesterFanId',
-        'reviewerFanId',
+        isA<WorkflowVisibilityFieldPrincipal>().having(
+          (principal) => principal.fieldName,
+          'fieldName',
+          'requesterFanId',
+        ),
+        isA<WorkflowVisibilityFieldPrincipal>().having(
+          (principal) => principal.fieldName,
+          'fieldName',
+          'reviewerFanId',
+        ),
       ]);
       expect(machine.visibility.fields.recipient, 'recipientFanId');
+    });
 
+    test('role parties entries parse as role principals', () {
+      final fields = WorkflowVisibilityFields.fromJson({
+        'parties': [
+          {'role': 'requester'},
+          {'role': 'reviewer'},
+        ],
+      });
+
+      expect(fields.parties, [
+        isA<WorkflowVisibilityRolePrincipal>().having(
+          (principal) => principal.roleId,
+          'roleId',
+          'requester',
+        ),
+        isA<WorkflowVisibilityRolePrincipal>().having(
+          (principal) => principal.roleId,
+          'roleId',
+          'reviewer',
+        ),
+      ]);
+    });
+
+    test('mixed field and role parties entries parse', () {
+      final fields = WorkflowVisibilityFields.fromJson({
+        'parties': [
+          'payerFanId',
+          {'role': 'finance-admin'},
+        ],
+      });
+
+      expect(fields.parties, [
+        isA<WorkflowVisibilityFieldPrincipal>().having(
+          (principal) => principal.fieldName,
+          'fieldName',
+          'payerFanId',
+        ),
+        isA<WorkflowVisibilityRolePrincipal>().having(
+          (principal) => principal.roleId,
+          'roleId',
+          'finance-admin',
+        ),
+      ]);
+    });
+
+    final malformedPartyPrincipals = <String, Object?>{
+      'empty string': '',
+      'non-string non-map entry': 7,
+      'map missing role': {'fanId': 'payerFanId'},
+      'empty role': {'role': ''},
+      'non-string role': {'role': 7},
+      'role map with an unknown key': {
+        'role': 'finance-admin',
+        'fanId': 'payerFanId',
+      },
+    };
+    for (final entry in malformedPartyPrincipals.entries) {
+      test('rejects malformed parties principal: ${entry.key}', () {
+        expect(
+          () => WorkflowVisibilityFields.fromJson({
+            'parties': ['payerFanId', entry.value],
+          }),
+          throwsA(isA<FormatException>()),
+        );
+      });
+    }
+
+    test('parties arity counts role principals and remains exactly two', () {
       expect(
-        () => _machine('invalid-parties', {
-          'initialState': 'open',
-          'states': {
-            'open': {'label': 'Open'},
-          },
-          'transitions': <Map<String, dynamic>>[],
-          'visibility': {
-            'fields': {
-              'parties': ['requesterFanId'],
-            },
-          },
+        () => WorkflowVisibilityFields.fromJson({
+          'parties': [
+            {'role': 'requester'},
+          ],
         }),
         throwsA(
           isA<FormatException>().having(
             (error) => error.message,
             'message',
-            contains('exactly two fields'),
+            'Workflow visibility.fields.parties must name exactly two fields.',
+          ),
+        ),
+      );
+
+      expect(
+        () => WorkflowVisibilityFields.fromJson({
+          'parties': [
+            'payerFanId',
+            {'role': 'finance-admin'},
+            {'role': 'auditor'},
+          ],
+        }),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Workflow visibility.fields.parties must name exactly two fields.',
           ),
         ),
       );

@@ -11,12 +11,18 @@ import 'package:test/test.dart';
 const _visibilityFindingTypes = {
   'missing_visibility_fields',
   'dangling_visibility_field',
+  'dangling_visibility_role',
+  'invalid_visibility_principal',
   'invalid_parties_arity',
 };
 
-Map<String, Object?> _package(Map<String, Object?> workflow) => {
+Map<String, Object?> _package(
+  Map<String, Object?> workflow, {
+  List<Map<String, Object?>> roles = const [],
+}) => {
   'specVersion': 4,
   'experience': {
+    'roles': roles,
     'workflowDefinitions': {'subject': workflow},
   },
 };
@@ -57,16 +63,24 @@ Map<String, Object?> _workflow({
   ],
 };
 
-List<ValidationFinding> _visibilityFindings(Map<String, Object?> workflow) =>
+List<ValidationFinding> _visibilityFindings(
+  Map<String, Object?> workflow, {
+  List<Map<String, Object?>> roles = const [],
+}) =>
     CommunityPackageValidator()
-        .validate(_package(workflow))
+        .validate(_package(workflow, roles: roles))
         .findings
         .where((finding) => _visibilityFindingTypes.contains(finding.type))
         .toList();
 
-List<ValidationFinding> _ofType(Map<String, Object?> workflow, String type) =>
+List<ValidationFinding> _ofType(
+  Map<String, Object?> workflow,
+  String type, {
+  List<Map<String, Object?>> roles = const [],
+}) =>
     _visibilityFindings(
       workflow,
+      roles: roles,
     ).where((finding) => finding.type == type).toList();
 
 void main() {
@@ -284,6 +298,119 @@ void main() {
     });
   });
 
+  group('visibility party role principals', () {
+    test('declared role passes without a dangling finding', () {
+      final findings = _visibilityFindings(
+        _workflow(
+          family: 'paymentCheckout',
+          schema: {
+            'payerFanId': {'type': 'fanId'},
+          },
+          fields: {
+            'parties': [
+              'payerFanId',
+              {'role': 'finance-admin'},
+            ],
+          },
+        ),
+        roles: const [
+          {'roleId': 'finance-admin', 'label': 'Finance admin'},
+        ],
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test('undeclared role emits dangling_visibility_role', () {
+      final findings = _ofType(
+        _workflow(
+          family: 'paymentCheckout',
+          schema: {
+            'payerFanId': {'type': 'fanId'},
+          },
+          fields: {
+            'parties': [
+              'payerFanId',
+              {'role': 'missing-role'},
+            ],
+          },
+        ),
+        'dangling_visibility_role',
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.isWarning, isFalse);
+      expect(
+        findings.single.location,
+        'experience/workflowDefinitions/subject/visibility/fields/parties[1]',
+      );
+      expect(
+        findings.single.message,
+        'A role named in `visibility.fields.parties` is not declared in '
+        '`experience.roles[]`.',
+      );
+    });
+
+    final malformedPrincipals = <String, Object?>{
+      'empty string': '',
+      'non-string non-map entry': 7,
+      'map missing role': {'fanId': 'payerFanId'},
+      'empty role': {'role': ''},
+      'non-string role': {'role': 7},
+      'role map with an unknown key': {
+        'role': 'finance-admin',
+        'fanId': 'payerFanId',
+      },
+    };
+    for (final entry in malformedPrincipals.entries) {
+      test('malformed ${entry.key} emits invalid_visibility_principal', () {
+        final findings = _ofType(
+          _workflow(
+            family: 'paymentCheckout',
+            schema: {
+              'payerFanId': {'type': 'fanId'},
+            },
+            fields: {
+              'parties': ['payerFanId', entry.value],
+            },
+          ),
+          'invalid_visibility_principal',
+          roles: const [
+            {'roleId': 'finance-admin', 'label': 'Finance admin'},
+          ],
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.isWarning, isFalse);
+        expect(
+          findings.single.location,
+          'experience/workflowDefinitions/subject/visibility/fields/parties[1]',
+        );
+      });
+    }
+
+    test('role objects do not emit dangling_visibility_field', () {
+      expect(
+        _ofType(
+          _workflow(
+            family: 'paymentCheckout',
+            schema: {
+              'payerFanId': {'type': 'fanId'},
+            },
+            fields: {
+              'parties': [
+                'payerFanId',
+                {'role': 'finance-admin'},
+              ],
+            },
+          ),
+          'dangling_visibility_field',
+        ),
+        isEmpty,
+      );
+    });
+  });
+
   group('invalid_parties_arity', () {
     for (final fields in const <List<String>>[
       [],
@@ -325,6 +452,30 @@ void main() {
             },
           ),
           'invalid_parties_arity',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('counts a role principal as one of exactly two entries', () {
+      expect(
+        _ofType(
+          _workflow(
+            family: 'paymentCheckout',
+            schema: {
+              'payerFanId': {'type': 'fanId'},
+            },
+            fields: {
+              'parties': [
+                'payerFanId',
+                {'role': 'finance-admin'},
+              ],
+            },
+          ),
+          'invalid_parties_arity',
+          roles: const [
+            {'roleId': 'finance-admin', 'label': 'Finance admin'},
+          ],
         ),
         isEmpty,
       );

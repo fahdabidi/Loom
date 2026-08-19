@@ -565,12 +565,17 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         ),
       ),
       VisibilityModel.parties => fields.parties.any(
-        (field) => _identityFieldMatchesDuringD8Straddle(
-          instance.instanceData,
-          field,
-          personaId,
-          shape: _IdentityFieldShape.scalar,
-        ),
+        (principal) => switch (principal) {
+          WorkflowVisibilityFieldPrincipal(:final fieldName) =>
+            _identityFieldMatchesDuringD8Straddle(
+              instance.instanceData,
+              fieldName,
+              personaId,
+              shape: _IdentityFieldShape.scalar,
+            ),
+          WorkflowVisibilityRolePrincipal(:final roleId) =>
+            _visibilityRoleMatches(personaId, roleId),
+        },
       ),
       VisibilityModel.recipient =>
         fields.recipient != null &&
@@ -582,6 +587,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             ),
       VisibilityModel.roles || VisibilityModel.owner || null => false,
     };
+  }
+
+  bool _visibilityRoleMatches(String personaId, String roleId) {
+    if (personaId.isEmpty || roleId.isEmpty) return false;
+    final resolvedRoleId = _personaTypeById[personaId];
+    return resolvedRoleId != null && resolvedRoleId == roleId;
   }
 
   /// Reads both the specVersion 4 `*FanId(s)` spelling and the legacy
@@ -2230,7 +2241,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               if (machine.visibility.fields.participants.isNotEmpty)
                 'participants': machine.visibility.fields.participants,
               if (machine.visibility.fields.parties.isNotEmpty)
-                'parties': machine.visibility.fields.parties,
+                'parties': [
+                  for (final principal in machine.visibility.fields.parties)
+                    switch (principal) {
+                      WorkflowVisibilityFieldPrincipal(:final fieldName) =>
+                        fieldName,
+                      WorkflowVisibilityRolePrincipal(:final roleId) => {
+                        'role': roleId,
+                      },
+                    },
+                ],
               if (machine.visibility.fields.recipient != null)
                 'recipient': machine.visibility.fields.recipient,
             },

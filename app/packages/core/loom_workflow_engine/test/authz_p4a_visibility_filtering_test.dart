@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
@@ -71,6 +73,29 @@ Future<List<WorkflowInstance>> _read(
   cursor: cursor,
   query: const SurfaceQuery(sort: SortSpec(key: 'title')),
 )).items;
+
+Future<LocalWorkflowEngineApi> _partiesApi({
+  required List<Object?> parties,
+  Map<String, dynamic> data = const {},
+}) async {
+  final api = _api(activeMembershipLookup: (_) => false);
+  api.registerDefinition(
+    _machine(
+      'payment',
+      defaultVisibility: 'membersOnly',
+      visibilityFields: <String, dynamic>{'parties': parties},
+      renderBindings: <Map<String, dynamic>>[_binding('paymentCheckout')],
+    ),
+  );
+  await _create(
+    api,
+    workflowType: 'payment',
+    creator: 'seed',
+    title: 'private payment',
+    data: data,
+  );
+  return api;
+}
 
 void main() {
   test(
@@ -462,6 +487,154 @@ void main() {
       expect(await _read(api, ''), isEmpty);
       expect(await _read(api, 'named-viewer'), isEmpty);
     });
+
+    test('role party admits a viewer whose resolved role matches', () async {
+      final api = await _partiesApi(
+        parties: [
+          {'role': 'finance-admin'},
+          {'role': 'auditor'},
+        ],
+      );
+      api.setPersonaType('admin-account', 'finance-admin');
+
+      expect(await _read(api, 'admin-account'), hasLength(1));
+    });
+
+    test('role party denies a viewer with a different resolved role', () async {
+      final api = await _partiesApi(
+        parties: [
+          {'role': 'finance-admin'},
+          {'role': 'auditor'},
+        ],
+      );
+      api.setPersonaType('member-account', 'member');
+
+      expect(await _read(api, 'member-account'), isEmpty);
+    });
+
+    test('role party denies a viewer absent from the persona type map', () async {
+      final api = await _partiesApi(
+        parties: [
+          {'role': 'finance-admin'},
+          {'role': 'auditor'},
+        ],
+      );
+
+      expect(await _read(api, 'unregistered-account'), isEmpty);
+    });
+
+    test('role party denies an empty viewer id', () async {
+      final api = await _partiesApi(
+        parties: [
+          {'role': 'finance-admin'},
+          {'role': 'auditor'},
+        ],
+      );
+      api.setPersonaType('', 'finance-admin');
+
+      expect(await _read(api, ''), isEmpty);
+    });
+
+    test('mixed field and role parties admit both principal kinds', () async {
+      final api = await _partiesApi(
+        parties: [
+          'payerFanId',
+          {'role': 'finance-admin'},
+        ],
+        data: <String, dynamic>{'payerPersonaId': 'payer-account'},
+      );
+      api
+        ..setPersonaType('admin-account', 'finance-admin')
+        ..setPersonaType('member-account', 'member');
+
+      expect(await _read(api, 'payer-account'), hasLength(1));
+      expect(await _read(api, 'admin-account'), hasLength(1));
+      expect(await _read(api, 'member-account'), isEmpty);
+    });
+
+    test('empty declared role denies even an empty resolved role', () async {
+      final parsed = _machine(
+        'payment',
+        defaultVisibility: 'membersOnly',
+        visibilityFields: <String, dynamic>{
+          'parties': <String>['payerFanId', 'recipientFanId'],
+        },
+        renderBindings: <Map<String, dynamic>>[_binding('paymentCheckout')],
+      );
+      final machine = LoomWorkflowStateMachine(
+        workflowType: parsed.workflowType,
+        initialState: parsed.initialState,
+        states: parsed.states,
+        transitions: parsed.transitions,
+        renderBindings: parsed.renderBindings,
+        instanceDataSchema: parsed.instanceDataSchema,
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.membersOnly,
+          fields: WorkflowVisibilityFields(
+            parties: [
+              WorkflowVisibilityRolePrincipal(roleId: ''),
+              WorkflowVisibilityFieldPrincipal(
+                fieldName: 'payerFanId',
+              ),
+            ],
+          ),
+        ),
+      );
+      final api = _api(activeMembershipLookup: (_) => false)
+        ..registerDefinition(machine)
+        ..setPersonaType('viewer', '');
+      await _create(
+        api,
+        workflowType: 'payment',
+        creator: 'seed',
+        title: 'empty-role payment',
+      );
+
+      expect(await _read(api, 'viewer'), isEmpty);
+    });
+
+    test(
+      'registerDefinition preserves role principals in persisted JSON',
+      () async {
+        final db = WorkflowDatabase.memory();
+        final api = LocalWorkflowEngineApi(
+          db: db,
+          communityId: 'serialization',
+        );
+        api.registerDefinition(
+          _machine(
+            'payment',
+            defaultVisibility: 'membersOnly',
+            visibilityFields: <String, dynamic>{
+              'parties': [
+                'payerFanId',
+                {'role': 'finance-admin'},
+              ],
+            },
+            renderBindings: <Map<String, dynamic>>[
+              _binding('paymentCheckout'),
+            ],
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'payment',
+          creator: 'seed',
+          title: 'serialization barrier',
+        );
+
+        final serialized = jsonDecode(
+          (await db.loadDefinitionJson('serialization_payment'))!,
+        ) as Map<String, dynamic>;
+        expect(
+          (serialized['visibility'] as Map<String, dynamic>)['fields'],
+          containsPair('parties', [
+            'payerFanId',
+            {'role': 'finance-admin'},
+          ]),
+        );
+      },
+    );
   });
 
   group('recipient visibility model', () {
