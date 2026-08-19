@@ -38,54 +38,60 @@ an earlier Milestone 1.5 dispatch for Masjid Nur invented `mosque-admin`/`mosque
 ones are `masjid-admin`/`community-member`) and added a `care` tab that a real committed test explicitly
 asserts must never appear for that community.
 
-### The governing principle: this is a migration, not a rewrite
+### The governing principle: match or beat what ships today
 
-When an `## Existing identifiers` section is present, **your job is to carry the existing package
-forward, changing what the migration and the product doc actually require and leaving everything else
-alone.** It is not to re-imagine the community from the product doc as though nothing existed.
+**Fetch the community's currently-shipped package before authoring it.** It lives at
+`docs/references/communities/Loom_Communities_Workflow_Engine_<Community>_Example.jsonc` in the same
+repo you are fetching everything else from. Read it in full.
 
-Concretely, **preserve existing material verbatim unless something forces a change**:
+Read it as **evidence of intent, not as a template to copy**. It tells you what this community
+actually does today: which workflows exist, which archetypes they use, how their surfaces are wired,
+what the seed data demonstrates. Your output must be **at least as capable**. Where the shipped
+package solves something well, keep that solution. Where it is thin against the product doc, improve
+on it. Where the product doc asks for something it never implemented, add it.
 
-- every identifier the block lists — roles, tabs, workflow types, state ids, seed ids;
-- **user-visible copy**: state `label`s, action labels, and seed instance-data text. This repo's
-  widget tests assert on these by exact string — one looks for the text `"Ready to export"`, so
-  relabelling that state to `"Ready to generate"` breaks a passing test while the package still
-  validates with zero errors. There are ~172 hardcoded community strings of this kind across the
-  suite.
+**Your package will differ from it, and that is expected.** Ids you invent, wording you write, the
+number of states a workflow needs — all of that may legitimately differ. Do not try to reproduce the
+shipped file byte for byte, and do not treat a difference as a defect. What is judged is whether the
+result is *functionally correct and well built*, not whether it matches.
 
-What *should* change: the version stamp, every identity key and type renamed per rule 2a, `action`
-declarations added where rule 12 requires them, `visibility.fields` corrected per rule 12b, and
-anything the product doc requires that the shipped package genuinely lacks. Additions are welcome —
-new workflows, new states, new seeds — as long as nothing existing is renamed, relabelled or dropped.
+#### The one exception: identifiers that cross a package boundary
 
-If you believe an existing label or value is actually wrong against the product doc, **say so in
-Gaps/assumptions and leave it as it is**. A reviewer can accept a flagged wording change in seconds;
-an unflagged one is found by a failing test hours later.
+A small set of identifiers is referenced from **outside** the package — by the app shell's routing, by
+permissions, by other packages, and by this repo's Dart tests. Renaming one of those is a real break,
+not cosmetic drift, and nothing in your own output will reveal it.
 
-**This applies to every identifier class the section lists, not just personas and tabs.** The block
-also names the community's **workflow type ids** and its **seed `instanceId` values**, and both are
-load-bearing for exactly the same reason:
+| Preserve exactly — supplied in the `## Existing identifiers` block | Free to differ |
+|---|---|
+| `extensionId`, `packageId`, `communityId`, `communityHandle` | seed `instanceId`s |
+| `roles[].roleId` | state ids and labels |
+| `appShell.tabs[].tabId` | all copy and wording |
+| `workflowDefinitions` type ids | field names beyond the rule 2a renames |
+| | state and transition counts |
 
-- **Workflow type ids** are referenced by render bindings, seed data, and tests. Renaming one breaks
-  all three at once.
-- **Seed `instanceId`s** look like throwaway sample data and are not. Real widget-key assertions are
-  built from them — a test looks for `export-wizard-state-badge-<instanceId>-tile`, so renaming
-  `chess-export-august` to `chess-export-august-ready` breaks a passing test while the package still
-  validates perfectly clean. This is a confirmed defect, not a hypothetical: it happened on the first
-  Chess Club regeneration. Across this repo's suite there are ~172 hardcoded community identifier
-  strings of this kind.
+Add new roles, tabs or workflow types when the product doc needs them — additions are safe, renames
+are not. If you believe an existing one is genuinely wrong, say so in Gaps/assumptions and keep it.
 
-You may add seeds the product doc needs, and you may change an existing seed's **content** — its
-state, its field values, its identity fields renamed to the `*FanId` spelling. **Do not rename or
-drop an existing `instanceId`**, and keep each one attached to the same `workflowType` it had.
+#### What "functionally correct" means — self-check against this before returning
 
-Only introduce a new persona, tab, workflow type or seed id if the target doc's requirements genuinely
-need one beyond what's listed — and if you do, say so explicitly in your Gaps/assumptions section,
-naming exactly which identifier is new and why the existing set didn't already cover the need.
+1. **Archetype fit.** Every workflow's `cardSurfaceFamily` is the one that matches what the workflow
+   actually does, re-checked against `archetypes/README.md` per workflow — not carried over from the
+   shipped package if that choice was wrong.
+2. **Actions.** Every bespoke-family transition declares an `action` from that family's closed
+   vocabulary; every generic-family transition declares none (rule 12).
+3. **Every reachable state renders.** No state that a transition path can reach may be missing from
+   every `renderBindings[].states` list. An unreachable-to-the-UI state is an instance nobody can see.
+4. **Every editable workflow can be created.** Writable fields with no create action and no
+   `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
+5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
+   not, and never pointed at archetype-owned bookkeeping.
+6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
+   seeds are the first thing a reviewer looks at.
+7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
+   explicitly in Gaps/assumptions, naming the finding.
 
-If no `## Existing identifiers` section is present in the target doc, this is a brand-new community with
-nothing to preserve — author personas/tabs fresh as normal, per the rest of this document.
-
+If no `## Existing identifiers` section is present in the target doc, this is a brand-new community
+with nothing to preserve — author roles/tabs fresh as normal, per the rest of this document.
 ### When the update is also a `specVersion: 4` migration — the persona→role collapse
 
 The shipped file you are updating declares legacy `experience.personas[]`; your output must declare
