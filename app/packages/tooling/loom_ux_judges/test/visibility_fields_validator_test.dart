@@ -9,6 +9,7 @@ import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:test/test.dart';
 
 const _visibilityFindingTypes = {
+  'unknown_visibility_field_key',
   'missing_visibility_fields',
   'dangling_visibility_field',
   'dangling_visibility_role',
@@ -84,6 +85,134 @@ List<ValidationFinding> _ofType(
     ).where((finding) => finding.type == type).toList();
 
 void main() {
+  group('unknown_visibility_field_key', () {
+    test(
+      'owner model key on documentLibrary also leaves sharedWith missing',
+      () {
+        final findings = _visibilityFindings(
+          _workflow(
+            family: 'documentLibrary',
+            visibilityDefault: 'guarded',
+            visibilityReadGuard: const {},
+            fields: const {'owner': 'documentOwnerFanId'},
+          ),
+        );
+        final unknown = findings
+            .where((finding) => finding.type == 'unknown_visibility_field_key')
+            .toList();
+
+        expect(unknown, hasLength(1));
+        expect(unknown.single.isWarning, isFalse);
+        expect(
+          unknown.single.location,
+          'experience/workflowDefinitions/subject/visibility/fields/owner',
+        );
+        expect(
+          unknown.single.message,
+          'Unknown `visibility.fields` key `owner`. The legal keys are '
+          '`sharedWith`, `participants`, `parties`, and `recipient`. `owner` '
+          'is a visibility model, not a `visibility.fields` key. This '
+          "workflow's archetype requires the `sharedWith` key for its "
+          'visibility model.',
+        );
+        expect(
+          findings.where(
+            (finding) => finding.type == 'missing_visibility_fields',
+          ),
+          hasLength(1),
+        );
+      },
+    );
+
+    const legalCases = <String, Object>{
+      'sharedWith': 'sharedFanIds',
+      'participants': ['participantFanId'],
+      'parties': ['payerFanId', 'payeeFanId'],
+      'recipient': 'recipientFanId',
+    };
+
+    for (final entry in legalCases.entries) {
+      test('accepts the legal ${entry.key} key', () {
+        expect(
+          _ofType(
+            _workflow(
+              family: 'documentLibrary',
+              schema: {
+                'sharedFanIds': {'type': 'fanId[]'},
+                'participantFanId': {'type': 'fanId'},
+                'payerFanId': {'type': 'fanId'},
+                'payeeFanId': {'type': 'fanId'},
+                'recipientFanId': {'type': 'fanId'},
+              },
+              fields: {entry.key: entry.value},
+            ),
+            'unknown_visibility_field_key',
+          ),
+          isEmpty,
+        );
+      });
+    }
+
+    test('fires once for each of two unrecognised keys', () {
+      final findings = _ofType(
+        _workflow(
+          family: 'documentLibrary',
+          fields: const {'roles': 'boardRoleId', 'viewer': 'viewerFanId'},
+        ),
+        'unknown_visibility_field_key',
+      );
+
+      expect(findings, hasLength(2));
+      expect(
+        findings.map((finding) => finding.location),
+        containsAll([
+          'experience/workflowDefinitions/subject/visibility/fields/roles',
+          'experience/workflowDefinitions/subject/visibility/fields/viewer',
+        ]),
+      );
+      expect(
+        findings
+            .singleWhere((finding) => finding.location.endsWith('/roles'))
+            .message,
+        contains(
+          '`roles` is a visibility model, not a `visibility.fields` key.',
+        ),
+      );
+    });
+
+    test('fires only for an unrecognised key beside a legal key', () {
+      final findings = _ofType(
+        _workflow(
+          family: 'documentLibrary',
+          schema: {
+            'sharedFanIds': {'type': 'fanId[]'},
+          },
+          fields: const {
+            'sharedWith': 'sharedFanIds',
+            'owner': 'documentOwnerFanId',
+          },
+        ),
+        'unknown_visibility_field_key',
+      );
+
+      expect(findings, hasLength(1));
+      expect(
+        findings.single.location,
+        'experience/workflowDefinitions/subject/visibility/fields/owner',
+      );
+    });
+
+    test('does not fire when visibility.fields is absent', () {
+      expect(
+        _ofType(
+          _workflow(family: 'documentLibrary'),
+          'unknown_visibility_field_key',
+        ),
+        isEmpty,
+      );
+    });
+  });
+
   group('missing_visibility_fields', () {
     const cases = {
       'owner_and_shared': ('documentLibrary', 'sharedWith', 'sharedFanIds'),

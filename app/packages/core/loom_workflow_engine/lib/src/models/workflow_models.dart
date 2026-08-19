@@ -2,6 +2,17 @@
 /// Each input is resolved from the caller-supplied values map
 /// and interpolated as {input.<name>} inside effect values.
 class TransitionInputSpec {
+  static const jsonKeys = <String>{
+    'type',
+    'required',
+    'visibleWhen',
+    'options',
+    'modeGroup',
+    'modeValue',
+    'maxSelections',
+    'writesTo',
+  };
+
   final String type;
   final bool required;
   final String? visibleWhen;
@@ -39,6 +50,8 @@ class TransitionInputSpec {
 
 /// A scalar field whose value must equal the acting individual persona ID.
 class ActorEqualsFieldGuard {
+  static const jsonKeys = <String>{'key'};
+
   final String key;
 
   const ActorEqualsFieldGuard({required this.key});
@@ -49,6 +62,21 @@ class ActorEqualsFieldGuard {
 
 /// A guard condition on a transition. All non-null fields must pass (AND semantics).
 class WorkflowGuard {
+  static const jsonKeys = <String>{
+    'allowedRoleIds',
+    'allowedPersonaIds',
+    'actorInList',
+    'actorEqualsField',
+    'instanceDataEquals',
+    'formula',
+    'relatedInstanceField',
+    'relatedListField',
+    'relatedAggregate',
+    'cancellationDeadline',
+    'locationOverlap',
+    'requiresWorkflowsComplete',
+  };
+
   final List<String>? allowedPersonaIds;
   final ListMembershipGuard? actorInList;
   final ActorEqualsFieldGuard? actorEqualsField;
@@ -81,8 +109,8 @@ class WorkflowGuard {
       allowedPersonaIds:
           ((json['allowedRoleIds'] ?? json['allowedPersonaIds'])
                   as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+              ?.map((e) => e as String)
+              .toList(),
       actorInList: json['actorInList'] != null
           ? ListMembershipGuard.fromJson(
               json['actorInList'] as Map<String, dynamic>,
@@ -140,6 +168,8 @@ class WorkflowGuard {
 /// A cutoff that permits a transition only while enough time remains before
 /// an instance's date (and optional time) field.
 class CancellationDeadlineGuard {
+  static const jsonKeys = <String>{'dateField', 'timeField', 'hoursBefore'};
+
   final String dateField;
   final String? timeField;
   final num hoursBefore;
@@ -162,6 +192,13 @@ class CancellationDeadlineGuard {
 /// type. Evaluation requires a live sibling-instance query, so it is handled
 /// by [LocalWorkflowEngineApi] rather than [evaluateGuard].
 class LocationOverlapGuard {
+  static const jsonKeys = <String>{
+    'locationField',
+    'dateField',
+    'timeField',
+    'durationMinutes',
+  };
+
   final String locationField;
   final String dateField;
   final String? timeField;
@@ -185,6 +222,17 @@ class LocationOverlapGuard {
 
 /// A live aggregate over instances in a related workflow type.
 class RelatedAggregateGuard {
+  static const jsonKeys = <String>{
+    'workflowType',
+    'filter',
+    'op',
+    'field',
+    'comparator',
+    'compareTo',
+  };
+
+  static const compareToJsonKeys = <String>{'relatedInstanceField', 'field'};
+
   final String workflowType;
   final Map<String, dynamic> filter;
   final String op;
@@ -215,6 +263,13 @@ class RelatedAggregateGuard {
 /// A query that selects an instance to transition from another instance's
 /// effect.
 class RelatedTransitionQuery {
+  static const jsonKeys = <String>{
+    'workflowType',
+    'filter',
+    'sortKey',
+    'limit',
+  };
+
   final String workflowType;
   final Map<String, dynamic> filter;
   final String? sortKey;
@@ -237,6 +292,8 @@ class RelatedTransitionQuery {
 }
 
 class RelatedListGuard {
+  static const jsonKeys = <String>{'relatedInstanceField', 'relatedListField'};
+
   final String relatedInstanceField;
   final String relatedListField;
   const RelatedListGuard({
@@ -253,6 +310,8 @@ class RelatedListGuard {
 /// Guards that check list membership: whether a persona ID is present or absent
 /// in a list-valued `instanceData` field.
 class ListMembershipGuard {
+  static const jsonKeys = <String>{'key', 'present'};
+
   final String key;
   final bool present;
 
@@ -268,6 +327,8 @@ class ListMembershipGuard {
 
 /// Guards that check value equality on an arbitrary `instanceData` field.
 class KeyValueGuard {
+  static const jsonKeys = <String>{'key', 'value'};
+
   final String key;
   final dynamic value;
 
@@ -280,6 +341,23 @@ class KeyValueGuard {
 
 /// An effect applied to `instanceData` on a successful transition.
 class WorkflowEffect {
+  static const jsonKeys = <String>{
+    'op',
+    'key',
+    'value',
+    'workflowType',
+    'fields',
+    'relatedInstance',
+    'relatedQuery',
+    'transitionId',
+    'anchorField',
+    'recurrenceRule',
+    'if',
+    'then',
+    'else',
+    'onSuccessEffects',
+  };
+
   /// Operation: `set`, `appendUnique`, `removeValue`, `increment`, `decrement`,
   /// plus presentation-only ops like `removeFromTileGrid`.
   final String op;
@@ -364,6 +442,20 @@ class WorkflowEffect {
 
 /// A single transition: a label, icon, source states, target state, guard, effects.
 class LoomWorkflowTransition {
+  static const jsonKeys = <String>{
+    'id',
+    'label',
+    'action',
+    'icon',
+    'tone',
+    'from',
+    'to',
+    'inputs',
+    'guard',
+    'effects',
+    'linkedWorkflowId',
+  };
+
   final String id;
   final String label;
   final String? action;
@@ -420,9 +512,20 @@ class LoomWorkflowTransition {
 
 /// Metadata for a single state.
 class LoomWorkflowState {
+  static const jsonKeys = <String>{
+    'label',
+    'tone',
+    'editableFields',
+    'editGuard',
+    'creationGuard',
+    'readGuard',
+    'isTerminal',
+  };
+
   final String label;
   final String? tone;
   final List<String>? editableFields;
+
   /// Optional, closed-by-default authorization for rendering field editors.
   ///
   /// This deliberately remains null when omitted from JSON. Unlike transition
@@ -503,6 +606,13 @@ final class WorkflowVisibilityRolePrincipal
 /// infer an identity field from its schema or name, because audit actors and
 /// senders are identity-shaped data but are not necessarily readers.
 class WorkflowVisibilityFields {
+  static const jsonKeys = <String>{
+    'sharedWith',
+    'participants',
+    'parties',
+    'recipient',
+  };
+
   final String? sharedWith;
   final List<String> participants;
   final List<WorkflowVisibilityPrincipal> parties;
@@ -611,6 +721,8 @@ class WorkflowVisibilityFields {
 /// an explicitly declared `public` block so validators can warn about legacy
 /// workflows without changing their public default behavior.
 class WorkflowVisibility {
+  static const jsonKeys = <String>{'default', 'readGuard', 'fields'};
+
   final WorkflowVisibilityDefault defaultValue;
   final WorkflowGuard? readGuard;
   final WorkflowVisibilityFields fields;
@@ -643,9 +755,9 @@ class WorkflowVisibility {
       'membersOnly' => WorkflowVisibilityDefault.membersOnly,
       'guarded' => WorkflowVisibilityDefault.guarded,
       _ => throw FormatException(
-          'Invalid workflow visibility.default "$rawDefault". '
-          'Expected one of: public, membersOnly, guarded.',
-        ),
+        'Invalid workflow visibility.default "$rawDefault". '
+        'Expected one of: public, membersOnly, guarded.',
+      ),
     };
 
     final rawReadGuard = value['readGuard'];
@@ -679,6 +791,8 @@ class WorkflowVisibility {
 
 /// A single action button on a repeated item in a repeater (GAP-1).
 class RepeaterItemAction {
+  static const jsonKeys = <String>{'transitionId', 'inputs'};
+
   final String transitionId;
   final Map<String, dynamic>? inputs;
 
@@ -693,6 +807,8 @@ class RepeaterItemAction {
 
 /// Specification for a repeater widget that renders per-item action buttons (GAP-1).
 class RepeaterSpec {
+  static const jsonKeys = <String>{'source', 'itemActions'};
+
   final String source;
   final List<RepeaterItemAction> itemActions;
 
@@ -713,6 +829,19 @@ class RepeaterSpec {
 /// This deliberately parses all fields for both action kinds. Conditional
 /// validation belongs in the validator rather than the JSON model.
 class WorkflowAction {
+  static const jsonKeys = <String>{
+    'kind',
+    'label',
+    'byRoleIds',
+    'byPersonaIds',
+    'workflowType',
+    'transitionId',
+    'scope',
+    'presentation',
+    'prefill',
+    'inputs',
+  };
+
   final String kind;
   final String? label;
   final List<String>? byPersonaIds;
@@ -757,6 +886,23 @@ class WorkflowAction {
 /// A render binding: where a workflow instance of a given state and role
 /// should be rendered (tab + card surface family).
 class RenderBinding {
+  static const jsonKeys = <String>{
+    'states',
+    'audience',
+    'role',
+    'tabId',
+    'cardSurfaceFamily',
+    'bindingKind',
+    'audienceMemberField',
+    'styleField',
+    'repeater',
+    'actions',
+    'responseTable',
+    'filterableFacets',
+  };
+
+  static const bindingKindValues = <String>{'primary', 'summary'};
+
   final List<String> states;
   final String role;
   final String tabId;
@@ -801,7 +947,8 @@ class RenderBinding {
       repeater: json['repeater'] != null
           ? RepeaterSpec.fromJson(json['repeater'] as Map<String, dynamic>)
           : null,
-      actions: (json['actions'] as List<dynamic>?)
+      actions:
+          (json['actions'] as List<dynamic>?)
               ?.map((e) => WorkflowAction.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -818,6 +965,12 @@ class RenderBinding {
 }
 
 class ResponseTableSpec {
+  static const jsonKeys = <String>{
+    'workflowType',
+    'eventField',
+    'pendingStates',
+  };
+
   final String workflowType;
   final String eventField;
   final List<String> pendingStates;
@@ -837,6 +990,8 @@ class ResponseTableSpec {
 }
 
 class FilterableFacetSpec {
+  static const jsonKeys = <String>{'field', 'label'};
+
   final String field;
   final String label;
   const FilterableFacetSpec({required this.field, required this.label});
@@ -849,6 +1004,26 @@ class FilterableFacetSpec {
 
 /// Schema metadata for a single field in `instanceData`.
 class InstanceDataField {
+  static const jsonKeys = <String>{
+    'type',
+    'required',
+    'writableBy',
+    'storage',
+    'storageTarget',
+    'searchable',
+    'sortable',
+    'displayIcon',
+    'labelTemplate',
+    'displayContexts',
+    'hideWhenEmpty',
+    'maxLength',
+    'source',
+    'formula',
+    'visibleWhenEditing',
+    'openMode',
+    'itemSchema',
+  };
+
   final String type;
   final bool required;
   final String? writableBy; // "formEntry" | "effect"
@@ -934,6 +1109,15 @@ class InstanceDataField {
 
 /// A domain-agnostic workflow state machine definition.
 class LoomWorkflowStateMachine {
+  static const jsonKeys = <String>{
+    'initialState',
+    'states',
+    'transitions',
+    'renderBindings',
+    'instanceDataSchema',
+    'visibility',
+  };
+
   final String workflowType;
   final String initialState;
   final Map<String, LoomWorkflowState> states;

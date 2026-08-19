@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/evaluator/recurrence_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 class CommunityPackageValidator {
@@ -60,7 +61,7 @@ class CommunityPackageValidator {
       ]) {
         final present = legacy[0].startsWith('experience.')
             ? (package['experience'] is Map &&
-                (package['experience'] as Map).containsKey(legacy[1]))
+                  (package['experience'] as Map).containsKey(legacy[1]))
             : package.containsKey(legacy[1]);
         if (present) {
           findings.add(
@@ -117,7 +118,9 @@ class CommunityPackageValidator {
         return ValidationReport(findings);
       }
     }
-    findings.addAll(_validateIdentityKeys(package, experience, isSpecVersioned));
+    findings.addAll(
+      _validateIdentityKeys(package, experience, isSpecVersioned),
+    );
     return _validateBody(package, experience, findings);
   }
 
@@ -193,6 +196,7 @@ class CommunityPackageValidator {
       );
       return ValidationReport(findings);
     }
+    findings.addAll(_validateUnknownWorkflowKeys(rawDefinitions));
     final personas = _personaIds(experience['personas']);
     final declaredTabIds = _declaredTabIds(package);
     final workflows = <String, LoomWorkflowStateMachine>{};
@@ -480,7 +484,8 @@ class CommunityPackageValidator {
   }
 
   Set<String> _declaredTabIds(Map<String, dynamic> package) {
-    final appShell = _objectMap(package['appShell']) ??
+    final appShell =
+        _objectMap(package['appShell']) ??
         _objectMap(package['appShellCustomization']) ??
         _objectMap(_objectMap(package['extension'])?['appShell']);
     if (appShell == null) return {};
@@ -512,6 +517,457 @@ class CommunityPackageValidator {
   Map<String, Object?>? _objectMap(Object? value) {
     return value is Map<String, Object?> ? value : null;
   }
+
+  /// Reports keys that the workflow parser would otherwise ignore.
+  ///
+  /// The legal sets live on the parser-side model classes, beside their
+  /// `fromJson` factories. Dynamic maps whose keys are authored data rather
+  /// than grammar (`fields`, `filter`, `prefill`, and action inputs) are
+  /// deliberately not traversed.
+  List<ValidationFinding> _validateUnknownWorkflowKeys(
+    Map<Object?, Object?> rawDefinitions,
+  ) {
+    const resolver = ArchetypeResolver();
+    final findings = <ValidationFinding>[];
+    final definitions = <String, Object?>{
+      for (final entry in rawDefinitions.entries)
+        entry.key.toString(): entry.value,
+    };
+    final archetypes = resolver.resolveAll(definitions);
+
+    for (final entry in definitions.entries) {
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+      final workflowPath = 'experience/workflowDefinitions/${entry.key}';
+      _addUnknownKeyFindings(
+        workflow,
+        legalKeys: LoomWorkflowStateMachine.jsonKeys,
+        position: 'workflow definition',
+        path: workflowPath,
+        findings: findings,
+      );
+
+      final visibility = workflow['visibility'];
+      if (visibility is Map) {
+        final visibilityPath = '$workflowPath/visibility';
+        _addUnknownKeyFindings(
+          visibility,
+          legalKeys: WorkflowVisibility.jsonKeys,
+          position: 'visibility',
+          path: visibilityPath,
+          findings: findings,
+          keyExplanation: (key) {
+            if (WorkflowVisibilityDefault.values.any(
+              (value) => value.name == key,
+            )) {
+              return '`$key` is a `visibility.default` value, not a key.';
+            }
+            return null;
+          },
+        );
+        _validateGuardUnknownKeys(
+          visibility['readGuard'],
+          '$visibilityPath/readGuard',
+          findings,
+        );
+
+        final fields = visibility['fields'];
+        if (fields is Map) {
+          final model = ArchetypeResolver
+              .contracts[archetypes[entry.key]?.family]
+              ?.visibility;
+          final requiredKey = switch (model) {
+            VisibilityModel.ownerAndShared => 'sharedWith',
+            VisibilityModel.participants => 'participants',
+            VisibilityModel.parties => 'parties',
+            VisibilityModel.roles ||
+            VisibilityModel.owner ||
+            VisibilityModel.recipient ||
+            null => null,
+          };
+          _addUnknownKeyFindings(
+            fields,
+            legalKeys: WorkflowVisibilityFields.jsonKeys,
+            position: 'visibility.fields',
+            path: '$visibilityPath/fields',
+            findings: findings,
+            keyExplanation: (key) {
+              final explanations = <String>[];
+              if (VisibilityModel.values.any(
+                (value) => _visibilityModelJsonValue(value) == key,
+              )) {
+                explanations.add(
+                  '`$key` is a visibility model value, not a '
+                  '`visibility.fields` key.',
+                );
+              }
+              if (requiredKey != null) {
+                explanations.add(
+                  "This workflow's archetype requires the `$requiredKey` key "
+                  'for its visibility model.',
+                );
+              }
+              return explanations.isEmpty ? null : explanations.join(' ');
+            },
+          );
+        }
+      }
+
+      final states = workflow['states'];
+      if (states is Map) {
+        for (final stateEntry in states.entries) {
+          final state = stateEntry.value;
+          if (state is! Map) continue;
+          final statePath = '$workflowPath/states/${stateEntry.key}';
+          _addUnknownKeyFindings(
+            state,
+            legalKeys: LoomWorkflowState.jsonKeys,
+            position: 'state',
+            path: statePath,
+            findings: findings,
+          );
+          for (final guardKey in const [
+            'editGuard',
+            'creationGuard',
+            'readGuard',
+          ]) {
+            _validateGuardUnknownKeys(
+              state[guardKey],
+              '$statePath/$guardKey',
+              findings,
+            );
+          }
+        }
+      }
+
+      final transitions = workflow['transitions'];
+      if (transitions is List) {
+        for (var i = 0; i < transitions.length; i++) {
+          final transition = transitions[i];
+          if (transition is! Map) continue;
+          final transitionPath = '$workflowPath/transitions[$i]';
+          _addUnknownKeyFindings(
+            transition,
+            legalKeys: LoomWorkflowTransition.jsonKeys,
+            position: 'transition',
+            path: transitionPath,
+            findings: findings,
+          );
+          _validateGuardUnknownKeys(
+            transition['guard'],
+            '$transitionPath/guard',
+            findings,
+          );
+
+          final inputs = transition['inputs'];
+          if (inputs is Map) {
+            for (final inputEntry in inputs.entries) {
+              final input = inputEntry.value;
+              if (input is! Map) continue;
+              _addUnknownKeyFindings(
+                input,
+                legalKeys: TransitionInputSpec.jsonKeys,
+                position: 'transition input',
+                path: '$transitionPath/inputs/${inputEntry.key}',
+                findings: findings,
+              );
+            }
+          }
+          _validateEffectListUnknownKeys(
+            transition['effects'],
+            '$transitionPath/effects',
+            findings,
+          );
+        }
+      }
+
+      final renderBindings = workflow['renderBindings'];
+      if (renderBindings is List) {
+        for (var i = 0; i < renderBindings.length; i++) {
+          final binding = renderBindings[i];
+          if (binding is! Map) continue;
+          final bindingPath = '$workflowPath/renderBindings[$i]';
+          _addUnknownKeyFindings(
+            binding,
+            legalKeys: RenderBinding.jsonKeys,
+            position: 'render binding',
+            path: bindingPath,
+            findings: findings,
+            keyExplanation: (key) =>
+                RenderBinding.bindingKindValues.contains(key)
+                ? '`$key` is a `bindingKind` value, not a render-binding key.'
+                : null,
+          );
+
+          final actions = binding['actions'];
+          if (actions is List) {
+            for (
+              var actionIndex = 0;
+              actionIndex < actions.length;
+              actionIndex++
+            ) {
+              final action = actions[actionIndex];
+              if (action is! Map) continue;
+              _addUnknownKeyFindings(
+                action,
+                legalKeys: WorkflowAction.jsonKeys,
+                position: 'render-binding action',
+                path: '$bindingPath/actions[$actionIndex]',
+                findings: findings,
+              );
+            }
+          }
+
+          final responseTable = binding['responseTable'];
+          if (responseTable is Map) {
+            _addUnknownKeyFindings(
+              responseTable,
+              legalKeys: ResponseTableSpec.jsonKeys,
+              position: 'responseTable',
+              path: '$bindingPath/responseTable',
+              findings: findings,
+            );
+          }
+
+          final repeater = binding['repeater'];
+          if (repeater is Map) {
+            final repeaterPath = '$bindingPath/repeater';
+            _addUnknownKeyFindings(
+              repeater,
+              legalKeys: RepeaterSpec.jsonKeys,
+              position: 'repeater',
+              path: repeaterPath,
+              findings: findings,
+            );
+            final itemActions = repeater['itemActions'];
+            if (itemActions is List) {
+              for (
+                var actionIndex = 0;
+                actionIndex < itemActions.length;
+                actionIndex++
+              ) {
+                final action = itemActions[actionIndex];
+                if (action is! Map) continue;
+                _addUnknownKeyFindings(
+                  action,
+                  legalKeys: RepeaterItemAction.jsonKeys,
+                  position: 'repeater item action',
+                  path: '$repeaterPath/itemActions[$actionIndex]',
+                  findings: findings,
+                );
+              }
+            }
+          }
+
+          final facets = binding['filterableFacets'];
+          if (facets is List) {
+            for (var facetIndex = 0; facetIndex < facets.length; facetIndex++) {
+              final facet = facets[facetIndex];
+              if (facet is! Map) continue;
+              _addUnknownKeyFindings(
+                facet,
+                legalKeys: FilterableFacetSpec.jsonKeys,
+                position: 'filterable facet',
+                path: '$bindingPath/filterableFacets[$facetIndex]',
+                findings: findings,
+              );
+            }
+          }
+        }
+      }
+
+      final schema = workflow['instanceDataSchema'];
+      if (schema is Map) {
+        for (final fieldEntry in schema.entries) {
+          _validateInstanceDataFieldUnknownKeys(
+            fieldEntry.value,
+            '$workflowPath/instanceDataSchema/${fieldEntry.key}',
+            findings,
+          );
+        }
+      }
+    }
+    return findings;
+  }
+
+  void _validateGuardUnknownKeys(
+    Object? rawGuard,
+    String path,
+    List<ValidationFinding> findings,
+  ) {
+    if (rawGuard is! Map) return;
+    _addUnknownKeyFindings(
+      rawGuard,
+      legalKeys: WorkflowGuard.jsonKeys,
+      position: 'guard',
+      path: path,
+      findings: findings,
+    );
+
+    void checkNested(String key, Set<String> legalKeys, String position) {
+      final value = rawGuard[key];
+      if (value is! Map) return;
+      _addUnknownKeyFindings(
+        value,
+        legalKeys: legalKeys,
+        position: position,
+        path: '$path/$key',
+        findings: findings,
+      );
+    }
+
+    checkNested(
+      'actorInList',
+      ListMembershipGuard.jsonKeys,
+      'actorInList guard',
+    );
+    checkNested(
+      'actorEqualsField',
+      ActorEqualsFieldGuard.jsonKeys,
+      'actorEqualsField guard',
+    );
+    checkNested(
+      'instanceDataEquals',
+      KeyValueGuard.jsonKeys,
+      'instanceDataEquals guard',
+    );
+    checkNested(
+      'cancellationDeadline',
+      CancellationDeadlineGuard.jsonKeys,
+      'cancellationDeadline guard',
+    );
+    checkNested(
+      'locationOverlap',
+      LocationOverlapGuard.jsonKeys,
+      'locationOverlap guard',
+    );
+
+    final relatedAggregate = rawGuard['relatedAggregate'];
+    if (relatedAggregate is Map) {
+      final aggregatePath = '$path/relatedAggregate';
+      _addUnknownKeyFindings(
+        relatedAggregate,
+        legalKeys: RelatedAggregateGuard.jsonKeys,
+        position: 'relatedAggregate guard',
+        path: aggregatePath,
+        findings: findings,
+      );
+      final compareTo = relatedAggregate['compareTo'];
+      if (compareTo is Map) {
+        _addUnknownKeyFindings(
+          compareTo,
+          legalKeys: RelatedAggregateGuard.compareToJsonKeys,
+          position: 'relatedAggregate compareTo reference',
+          path: '$aggregatePath/compareTo',
+          findings: findings,
+        );
+      }
+    }
+  }
+
+  void _validateEffectListUnknownKeys(
+    Object? rawEffects,
+    String path,
+    List<ValidationFinding> findings,
+  ) {
+    if (rawEffects is! List) return;
+    for (var i = 0; i < rawEffects.length; i++) {
+      final effect = rawEffects[i];
+      if (effect is! Map) continue;
+      final effectPath = '$path[$i]';
+      _addUnknownKeyFindings(
+        effect,
+        legalKeys: WorkflowEffect.jsonKeys,
+        position: 'effect',
+        path: effectPath,
+        findings: findings,
+      );
+
+      final relatedQuery = effect['relatedQuery'];
+      if (relatedQuery is Map) {
+        _addUnknownKeyFindings(
+          relatedQuery,
+          legalKeys: RelatedTransitionQuery.jsonKeys,
+          position: 'related transition query',
+          path: '$effectPath/relatedQuery',
+          findings: findings,
+        );
+      }
+
+      final recurrenceRule = effect['recurrenceRule'];
+      if (recurrenceRule is Map) {
+        _addUnknownKeyFindings(
+          recurrenceRule,
+          legalKeys: RecurrenceRule.jsonKeys,
+          position: 'recurrence rule',
+          path: '$effectPath/recurrenceRule',
+          findings: findings,
+        );
+      }
+
+      for (final branchKey in const ['then', 'else', 'onSuccessEffects']) {
+        _validateEffectListUnknownKeys(
+          effect[branchKey],
+          '$effectPath/$branchKey',
+          findings,
+        );
+      }
+    }
+  }
+
+  void _validateInstanceDataFieldUnknownKeys(
+    Object? rawField,
+    String path,
+    List<ValidationFinding> findings,
+  ) {
+    if (rawField is! Map) return;
+    _addUnknownKeyFindings(
+      rawField,
+      legalKeys: InstanceDataField.jsonKeys,
+      position: 'instance-data field schema',
+      path: path,
+      findings: findings,
+    );
+    final itemSchema = rawField['itemSchema'];
+    if (itemSchema is! Map) return;
+    for (final itemEntry in itemSchema.entries) {
+      _validateInstanceDataFieldUnknownKeys(
+        itemEntry.value,
+        '$path/itemSchema/${itemEntry.key}',
+        findings,
+      );
+    }
+  }
+
+  void _addUnknownKeyFindings(
+    Map<Object?, Object?> object, {
+    required Set<String> legalKeys,
+    required String position,
+    required String path,
+    required List<ValidationFinding> findings,
+    String? Function(String key)? keyExplanation,
+  }) {
+    final legalList = legalKeys.map((key) => '`$key`').join(', ');
+    for (final rawKey in object.keys) {
+      final key = rawKey.toString();
+      if (rawKey is String && legalKeys.contains(key)) continue;
+      final explanation = keyExplanation?.call(key);
+      findings.add(
+        _finding(
+          'unknown_key',
+          'Unknown key `$key` in $position. The parser ignores it. '
+              'Legal keys for this position: $legalList.'
+              '${explanation == null ? '' : ' $explanation'}',
+          '$path/$key',
+        ),
+      );
+    }
+  }
+
+  String _visibilityModelJsonValue(VisibilityModel model) => switch (model) {
+    VisibilityModel.ownerAndShared => 'owner_and_shared',
+    _ => model.name,
+  };
 
   /// identity-types.md — the `roleId` / `fanId` split, enforced from
   /// specVersion 4.
@@ -655,7 +1111,6 @@ class CommunityPackageValidator {
 
       final family = archetypes[type]?.family;
       final model = ArchetypeResolver.contracts[family]?.visibility;
-      if (model == null) continue;
 
       final path = 'experience/workflowDefinitions/$type/visibility/fields';
       final visibility = workflow['visibility'];
@@ -678,7 +1133,8 @@ class CommunityPackageValidator {
         VisibilityModel.parties => 'parties',
         VisibilityModel.roles ||
         VisibilityModel.owner ||
-        VisibilityModel.recipient => null,
+        VisibilityModel.recipient ||
+        null => null,
       };
 
       if (engagesIdentityScopedLayer &&
@@ -698,6 +1154,30 @@ class CommunityPackageValidator {
       }
 
       if (fields == null) continue;
+      const legalKeys = {'sharedWith', 'participants', 'parties', 'recipient'};
+      for (final rawKey in fields.keys) {
+        final key = rawKey.toString();
+        if (rawKey is String && legalKeys.contains(key)) continue;
+
+        final modelRatherThanKey = key == 'roles' || key == 'owner'
+            ? ' `$key` is a visibility model, not a `visibility.fields` key.'
+            : '';
+        final archetypeRequirement = requiredKey != null
+            ? " This workflow's archetype requires the `$requiredKey` key "
+                  'for its visibility model.'
+            : '';
+        findings.add(
+          _finding(
+            'unknown_visibility_field_key',
+            'Unknown `visibility.fields` key `$key`. The legal keys are '
+                '`sharedWith`, `participants`, `parties`, and `recipient`.'
+                '$modelRatherThanKey$archetypeRequirement',
+            '$path/$key',
+          ),
+        );
+      }
+
+      if (model == null) continue;
       final schema = workflow['instanceDataSchema'];
       final declaredFields = schema is Map
           ? schema.keys.map((key) => key.toString()).toSet()
@@ -829,9 +1309,9 @@ class CommunityPackageValidator {
           final to = a['to'];
           if (to == null || to != b['to']) continue;
 
-          final overlap = sourcesOf(a).toSet().intersection(
-            sourcesOf(b).toSet(),
-          );
+          final overlap = sourcesOf(
+            a,
+          ).toSet().intersection(sourcesOf(b).toSet());
           if (overlap.isEmpty) continue;
 
           // Same destination is not enough. Two transitions legitimately share
@@ -940,7 +1420,8 @@ class CommunityPackageValidator {
       for (final transition in transitions) {
         if (transition is! Map) continue;
         final to = transition['to'];
-        final terminal = (to is String &&
+        final terminal =
+            (to is String &&
                 states is Map &&
                 states[to] is Map &&
                 (states[to] as Map)['isTerminal'] == true) ||
@@ -1031,7 +1512,9 @@ class CommunityPackageValidator {
   ///
   /// Reads the raw definitions on purpose: `LoomWorkflowStateMachine.fromJson`
   /// only picks out the keys it knows, and `action` is not one of them.
-  List<ValidationFinding> _validateTransitionActions(Map<Object?, Object?> raw) {
+  List<ValidationFinding> _validateTransitionActions(
+    Map<Object?, Object?> raw,
+  ) {
     const resolver = ArchetypeResolver();
     final definitions = <String, Object?>{
       for (final entry in raw.entries) entry.key.toString(): entry.value,
@@ -1092,8 +1575,8 @@ class CommunityPackageValidator {
         }
 
         if (action == null) {
-          final via = archetype.origin ==
-                  ArchetypeOrigin.inheritedFromResponseTable
+          final via =
+              archetype.origin == ArchetypeOrigin.inheritedFromResponseTable
               ? ' (archetype inherited from "${archetype.inheritedFrom}" via '
                     'its binding\'s responseTable)'
               : '';
@@ -1118,7 +1601,7 @@ class CommunityPackageValidator {
             !resolver.isActionInVocabulary(family, action)) {
           final allowed =
               (ArchetypeResolver.bespokeVocabularies[family]?.toList() ??
-                  const <String>[])
+                    const <String>[])
                 ..sort();
           findings.add(
             _finding(

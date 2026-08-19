@@ -1,5 +1,14 @@
 /// A fully-resolved recurrence pattern.
 class RecurrenceRule {
+  static const jsonKeys = <String>{
+    'freq',
+    'interval',
+    'count',
+    'byDayOfWeek',
+    'byMonthDay',
+    'bySetPos',
+  };
+
   final String freq;
   final int interval;
   final int count;
@@ -71,8 +80,13 @@ class RecurrenceRule {
     final bySetPos = json['bySetPos'];
     if (bySetPos != null &&
         (bySetPos is! String ||
-            !const {'first', 'second', 'third', 'fourth', 'last'}
-                .contains(bySetPos))) {
+            !const {
+              'first',
+              'second',
+              'third',
+              'fourth',
+              'last',
+            }.contains(bySetPos))) {
       throw StateError('recurrenceRule.bySetPos is invalid');
     }
 
@@ -87,7 +101,9 @@ class RecurrenceRule {
     }
     if (freq == 'monthly') {
       if (byMonthDay != null && bySetPos != null) {
-        throw StateError('monthly byMonthDay and bySetPos are mutually exclusive');
+        throw StateError(
+          'monthly byMonthDay and bySetPos are mutually exclusive',
+        );
       }
       if (bySetPos != null && byDayOfWeek?.length != 1) {
         throw StateError('monthly bySetPos requires exactly one byDayOfWeek');
@@ -119,7 +135,10 @@ const _isoWeekdays = {
 };
 
 /// Computes exactly [RecurrenceRule.count] occurrences, including [anchor].
-List<DateTime> computeRecurrenceOccurrences(DateTime anchor, RecurrenceRule rule) {
+List<DateTime> computeRecurrenceOccurrences(
+  DateTime anchor,
+  RecurrenceRule rule,
+) {
   switch (rule.freq) {
     case 'daily':
       return List.generate(
@@ -150,8 +169,7 @@ List<DateTime> computeRecurrenceOccurrences(DateTime anchor, RecurrenceRule rule
     case 'monthly':
       return List.generate(rule.count, (i) {
         final monthOffset = rule.interval * i;
-        final targetYear =
-            anchor.year + (anchor.month - 1 + monthOffset) ~/ 12;
+        final targetYear = anchor.year + (anchor.month - 1 + monthOffset) ~/ 12;
         final targetMonth = (anchor.month - 1 + monthOffset) % 12 + 1;
         final lastDay = DateTime(targetYear, targetMonth + 1, 0).day;
         final setPos = rule.bySetPos;
@@ -168,19 +186,13 @@ List<DateTime> computeRecurrenceOccurrences(DateTime anchor, RecurrenceRule rule
             final firstOfMonth = DateTime(targetYear, targetMonth, 1);
             final firstMatchDay =
                 1 + ((weekday - firstOfMonth.weekday + 7) % 7);
-            const ordinals = {
-              'first': 0,
-              'second': 1,
-              'third': 2,
-              'fourth': 3,
-            };
+            const ordinals = {'first': 0, 'second': 1, 'third': 2, 'fourth': 3};
             final requestedDay = firstMatchDay + 7 * ordinals[setPos]!;
             if (requestedDay <= lastDay) {
               day = requestedDay;
             } else {
               final lastOfMonth = DateTime(targetYear, targetMonth + 1, 0);
-              day = lastOfMonth.day -
-                  ((lastOfMonth.weekday - weekday + 7) % 7);
+              day = lastOfMonth.day - ((lastOfMonth.weekday - weekday + 7) % 7);
             }
           }
         }
