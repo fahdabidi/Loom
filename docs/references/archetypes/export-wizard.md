@@ -72,3 +72,99 @@ what made it possible to widen that vocabulary from evidence rather than inventi
 - **`record-download` means different things in different families.** In `exportWizard` it is
   `record_outcome` (the owner recording that a download happened); in `documentLibrary` it is
   `download`. Both are correct per family, but a reader moving between them will be surprised.
+
+## 6. Worked example
+
+A complete, correct `exportWizard` workflow. The shape matters more than the wording — copy the
+structure, not the copy.
+
+```jsonc
+"club-export-package": {
+  "initialState": "ready",
+  "visibility": { "default": "guarded",
+                  "readGuard": { "allowedRoleIds": ["club-organizer"] } },
+
+  "instanceDataSchema": {
+    "exportLabel":   { "type": "text",   "required": true },
+    "exportScope":   { "type": "list",   "required": true,
+                       "labelTemplate": "Scope: {value}" },
+    "statusMessage": { "type": "text",   "writableBy": "effect" },
+    "exportHistory": { "type": "list",   "writableBy": "effect" },
+    "createdByFanId":{ "type": "fanId",  "required": true }
+  },
+
+  "states": {
+    "ready":       { "label": "Ready to export", "tone": "info",
+                     "editableFields": ["exportLabel", "exportScope"],
+                     "editGuard": { "allowedRoleIds": ["club-organizer"] } },
+    "generated":   { "label": "Export generated", "tone": "positive" },
+    "rolled-back": { "label": "Export rolled back", "tone": "warning" },
+    "cancelled":   { "label": "Export cancelled", "tone": "negative",
+                     "isTerminal": true }
+  },
+
+  "transitions": [
+    { "id": "change-export-scope", "action": "configure_scope",
+      "label": "Change scope", "from": ["ready", "rolled-back"], "to": null,
+      "guard": { "allowedRoleIds": ["club-organizer"] },
+      "inputs": { "exportScope": { "type": "list", "required": true } },
+      "effects": [
+        { "op": "set", "key": "exportScope", "value": "{input.exportScope}" },
+        { "op": "append", "key": "exportHistory",
+          "value": { "action": "scope-changed", "actorFanId": "$actor", "at": "$timestamp" } }
+      ] },
+
+    { "id": "generate-export", "action": "run",
+      "label": "Generate export", "tone": "primary",
+      "from": ["ready"], "to": "generated",
+      "guard": { "allowedRoleIds": ["club-organizer"] },
+      "effects": [
+        { "op": "set", "key": "statusMessage", "value": "Export generated" },
+        { "op": "append", "key": "exportHistory",
+          "value": { "action": "generated", "actorFanId": "$actor", "at": "$timestamp" } }
+      ] },
+
+    { "id": "rollback-export", "action": "rollback",
+      "label": "Roll back", "from": ["generated"], "to": "rolled-back",
+      "guard": { "allowedRoleIds": ["club-organizer"] } },
+
+    { "id": "cancel-export", "action": "cancel",
+      "label": "Cancel export", "tone": "destructive",
+      "from": ["ready", "rolled-back"], "to": "cancelled",
+      "guard": { "allowedRoleIds": ["club-organizer"] } }
+  ],
+
+  "renderBindings": [
+    { "tabId": "admin", "audience": "any",
+      "cardSurfaceFamily": "exportWizard", "bindingKind": "primary",
+      "states": ["ready", "generated", "rolled-back", "cancelled"],
+      "actions": [ { "kind": "create", "label": "New export" } ] }
+  ]
+}
+```
+
+### Why each part is the way it is
+
+- **Every transition declares an `action`.** `exportWizard` is bespoke, so the closed vocabulary in §1
+  applies and a missing `action` silently skips archetype bookkeeping (`permissions.md` §4).
+- **`change-export-scope` has `"to": null`.** It edits in place without leaving `ready`. A self-loop
+  written as `"to": "ready"` would work, but `null` states the intent.
+- **The `renderBindings[].states` list names every state.** Omitting one hides instances sitting in it
+  — the validator's `no_render_binding_for_reachable_state`.
+- **There is a `create` action.** Without one, and with no `createInstance` effect anywhere, nobody can
+  ever start an export: `no_creation_path_for_editable_type`.
+- **`labelTemplate` on `exportScope`.** The fact-pill renderer prints the template with `{value}`
+  substituted, so this field renders as `Scope: match results, rankings`. Declare it when a field
+  reads better with a prefix.
+- **Visibility is `guarded`.** Every one of the corpus's 14 `exportWizard` workflows is (§ opening) —
+  an export contains whatever the exporter could read, so it is never `public`.
+- **No per-person bookkeeping fields.** §2: this archetype owns none. Do not declare
+  `downloadedFanIds`-style sets here.
+
+### What not to do
+
+- Do not fabricate a `checksum`, `transferId`, or `receiptId` value. Those are platform-owned
+  (`platform-services.md`); declare the field if the product needs it and leave it unwritten, with a
+  `NEEDS IMPLEMENTATION (platform service)` comment.
+- Do not map `start-preview-export` to `run`. It is `preview` — the longer pattern wins (§1).
+- Do not give a generic-family workflow an `action`. Only the six bespoke families take one.
