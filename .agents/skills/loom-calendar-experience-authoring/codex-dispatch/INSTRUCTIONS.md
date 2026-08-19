@@ -374,46 +374,77 @@ real enum (fetched at step 7) instead.
 
 Do not mix the two within one workflow type.
 
-## On validation — no live validator call in this channel; a mandatory manual self-check instead
+## On validation — call the real validator and iterate until it is clean
 
-**Confirmed by direct testing (2026-08-11), not assumed:** this sandbox's shell-level network access is
-broken for arbitrary HTTPS endpoints — a plain `curl` to the validator's own health-check URL fails at DNS
-resolution before it ever reaches the tunnel. The only network path confirmed to work reliably from inside
-this sandbox is the built-in `github.fetch_file` tool (a first-party Codex "app," not a general-purpose HTTP
-client). There is no configured MCP server and no other fetch tool available (`codex mcp list` returns
-none). **Do not attempt to call the validator HTTP endpoint from inside this session** — a shell `curl`/
-`wget`/`fetch` to it will fail, and burning turns retrying it (proxies, DNS-over-HTTPS workarounds, browser-
-emulation tricks) wastes the dispatch budget for no benefit. This is a known, structural limitation of this
-channel, not something a cleverer request will route around.
+**You have a live validator. Use it. Do not return a package you have not validated.**
 
-Real validator confirmation happens **outside this session, after you return your answer**: the dispatching
-session runs your JSON through the real validator (or the equivalent local `dart run
-community_package_validator.dart`) itself and reports the result back. Your job is to make that first real
-run come back clean, via a rigorous **manual** self-check performed before you show anything:
+A Loom validator HTTP server runs on this machine, and your sandbox has network access to it. The
+dispatching session starts it and refuses to dispatch you if it is not answering, so it is up:
 
-1. Draft the complete package internally. Do not show it yet.
-2. Walk every detection rule in `04-antipatterns.md` by hand against your own draft, one rule at a time.
-3. Walk the error → fix table in `05-validation.md` by hand — for each row, check whether your draft could
-   trigger it, not just whether it obviously does.
-4. Run hard rules 8, 9, 10, and 11 explicitly — these never ran through the validator even in the channels
-   where a live validator is reachable (it only checks JSON grammar, not the Dart Calendar surface's
-   hardcoded field-name reads, not your source product-doc prose, not which `role` values actually resolve
-   to a real viewer per tab), so they need the same manual rigor regardless of channel.
-5. Re-read your own draft once more end to end, specifically hunting for: an unknown key (Hard Rule 3), a
-   fabricated platform-service value (`platform-services.md`), and a `cardSurfaceFamily` not in
-   `archetypes/README.md`'s real-archetypes table (Hard Rule 6). Any `unknown_card_surface_family` finding
-   at this point is a real defect to fix, not an expected result — all 13 archetypes, including
-   `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, validate cleanly as of 2026-08-12.
-6. **Do this as its own separate pass, not folded into step 5** (a whole-package omission is easy to miss
-   while reviewing each `renderBindings` entry in isolation — this has happened in practice, see
-   `solved-patterns.md` pattern 8): list every distinct non-`home`/`messages` `tabId` value used anywhere
-   across the whole package, then confirm each one has a matching `appShell.tabs[]`/`roleTabs[]` entry.
-   `home` and `messages` are exempt because the App Shell adds both unconditionally — they need no
-   declaration, though binding content to them is entirely valid (`messages` is where discussion threads
-   belong). Missing this produces `unknown_tab_id` findings, one per undeclared tab.
-7. State clearly and plainly in your final answer that this was a **manual self-check, no live validator
-   ran in this channel** — never imply or fabricate a validator response you did not actually obtain. If you
-   are not fully confident a check passes, say so explicitly rather than asserting it does.
+```bash
+curl -s -m 10 http://127.0.0.1:8787/health
+# {"status":"ok"}
+```
+
+Verified working from inside this sandbox on 2026-08-19 — both `GET /health` and `POST /validate`.
+This replaces the previous manual-only self-check, which was written when the sandbox had no network
+at all.
+
+### The loop
+
+1. Draft the complete package to a file in your working directory. Do not show it yet.
+2. `POST` it to `/validate`:
+
+   ```bash
+   curl -s -m 30 -X POST -H 'Content-Type: application/json' \
+     --data-binary @your-package.jsonc \
+     http://127.0.0.1:8787/validate
+   ```
+
+   The body may be JSON or JSONC — comments are stripped server-side. The response is a
+   `ValidationReport`: `{"status", "errorCount", "warningCount", "findings":[{"type","message","location","isWarning"}]}`.
+3. **Fix every error.** Each finding carries the exact `location` path and a `type` naming the rule.
+   Fix the cause, not the symptom — a finding is telling you something real about the package.
+4. Re-validate. Repeat until `errorCount` is **0**.
+5. Then address warnings the same way, except where a warning is expected and correct to leave — see
+   the response-row exception in the functional-correctness checklist. Justify every warning you
+   leave in Gaps/assumptions, naming the finding type.
+6. Only then return your answer.
+
+**Returning a package with `errorCount > 0` is a failed dispatch.** You had the tool that would have
+caught it. If you cannot make a finding go away, say so explicitly in Gaps/assumptions, quote the
+finding, and explain what you tried — do not quietly return it.
+
+### Reading findings
+
+- `location` is a path into your own package, e.g.
+  `experience/workflowDefinitions/hoa-member-document/visibility/fields/owner`. Go to exactly that
+  spot.
+- `type` names the rule. When a message names legal values or the key a construct requires, that is
+  the answer, not a hint — `unknown_key` will tell you which keys are legal for that position.
+- An `unknown_key` finding means the parser **ignores** that key: whatever you meant by it is not
+  happening. Do not "fix" it by deleting the key alone; work out which real key you needed.
+
+### What the validator does not check
+
+It reads JSON grammar only. It cannot see the Dart Calendar surface's hardcoded field-name reads,
+your source product doc's prose, or which `audience` values resolve to a real viewer per tab. So
+**still** walk these by hand before returning, exactly as before:
+
+1. Every detection rule in `04-antipatterns.md`, one at a time, against your own draft.
+2. The error → fix table in `05-validation.md` — for each row, ask whether your draft *could* trigger
+   it, not just whether it obviously does.
+3. Hard rules 8, 9, 10 and 11 explicitly.
+4. A separate whole-package pass listing every distinct non-`home`/`messages` `tabId` used anywhere,
+   confirming each has a matching `appShell.tabs[]` entry. Do this as its own step, not folded into
+   reviewing bindings one at a time — a whole-package omission is easy to miss that way
+   (`solved-patterns.md` pattern 8).
+
+### What to report
+
+State the **final** `/validate` response — `status`, `errorCount`, `warningCount` — and how many
+validate-and-fix rounds you took. If you left any warning standing, list each with its type and your
+justification. Never describe a validator result you did not actually obtain.
 
 ## What to deliver
 
@@ -443,10 +474,12 @@ run come back clean, via a rigorous **manual** self-check performed before you s
    cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
    listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
    `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
-4. Your manual self-check results — plainly stated, per the "On validation" section above: which rules you
-   checked, and an explicit statement that no live validator ran in this channel (the dispatching session
-   runs the real validator against your JSON after you return it, and will follow up separately if it finds
-   something your self-check missed).
+4. Your validation results, per the "On validation" section above: the **final** `/validate` response
+   (`status`, `errorCount`, `warningCount`), how many validate-and-fix rounds you took, and every
+   warning you left standing with its type and your justification. Plus the manual checks that the
+   validator cannot make — the `04-antipatterns.md` walk, the `05-validation.md` table walk, hard
+   rules 8/9/10/11, and the whole-package tab audit — stated as what you actually checked. Never
+   describe a validator result you did not obtain.
 
 Do not attempt to build an installable `.loom-init.zip`/`.loom-extension.zip` pair — that is the dispatching
 session's job, not yours, for this channel.
