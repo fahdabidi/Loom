@@ -293,9 +293,26 @@ real enum (fetched at step 7) instead.
     rule ends up expressed two different ways. (This rule was previously spliced into the middle of
     rule 12's sentence about action vocabularies, leaving both unreadable; they are separate rules.)
 
-12b. **`visibility.fields` — declare it only when identity-scoped reads actually engage, and get the
-    `parties` shape right.** See `workflow-grammar.md` § `visibility.fields` (step 2) and
-    `CONTRACTS.md` §3 (step 11b), both fetched in full — this summary is a pointer, not a substitute.
+12b. **`visibility.fields` — declare it only when identity-scoped reads actually engage, use the key
+    the archetype's model requires, and get the `parties` shape right.** See
+    `workflow-grammar.md` § `visibility.fields` (step 2) and `CONTRACTS.md` §3 (step 11b), both
+    fetched in full — this summary is a pointer, not a substitute.
+    - **There are exactly four keys, and which one you need is decided by the archetype, not by you:**
+
+      | archetype visibility model | the key | archetypes |
+      |---|---|---|
+      | `owner_and_shared` | `sharedWith` | `documentLibrary` |
+      | `participants` | `participants` | `discussionThread` |
+      | `parties` | `parties` | `approvalQueueItem`, `paymentCheckout` |
+      | `recipient` | `recipient` | `notificationInbox` |
+
+      `roles` and `owner` are visibility **models**, not keys — they read no instance data and take no
+      mapping. Writing `"fields": { "owner": "someFanId" }` is not a way to say "the owner reads it";
+      the owner already reads it, on every model. **An unrecognised key here is silently ignored**, so
+      the mapping the archetype actually needs goes missing while the package looks configured. This
+      is a confirmed defect, not a hypothetical: a `documentLibrary` was authored with
+      `fields.owner` and shipped a `missing_visibility_fields` error for the `sharedWith` it never
+      declared.
     - A mapping is **required** only when the workflow's own `visibility.default` is `guarded`, **or**
       it declares a `readGuard` at the workflow level or on any state. When the workflow is `public` or
       `membersOnly` with no guard anywhere, **do not invent one** — the archetype's identity model can
