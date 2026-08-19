@@ -79,8 +79,16 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    shipped package if that choice was wrong.
 2. **Actions.** Every bespoke-family transition declares an `action` from that family's closed
    vocabulary; every generic-family transition declares none (rule 12).
-3. **Every reachable state renders.** No state that a transition path can reach may be missing from
-   every `renderBindings[].states` list. An unreachable-to-the-UI state is an instance nobody can see.
+3. **Every reachable state renders — except on response-row workflows.** No state a transition path
+   can reach may be missing from every `renderBindings[].states` list; a state bound nowhere is an
+   instance nobody can see.
+   **The exception is real and is the corpus norm:** a workflow named by some binding's
+   `responseTable.workflowType` renders *through its parent's table*, not through bindings of its own,
+   and correctly declares `"renderBindings": []` (rule 12a). Five of the six shipped response-row
+   workflows do exactly that. The validator still emits
+   `no_render_binding_for_reachable_state` for each of their states — those findings are **expected
+   and correct to leave**. Do not invent bindings to silence them, and do not give a response row a
+   surface of its own unless the product doc asks for one. Note it in Gaps/assumptions and move on.
 4. **Every editable workflow can be created.** Writable fields with no create action and no
    `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
 5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
