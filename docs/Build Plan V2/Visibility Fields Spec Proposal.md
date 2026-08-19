@@ -21,32 +21,55 @@ express what the communities actually mean.
 
 ## 1. The evidence
 
-Every workflow whose archetype uses a visibility model that reads instance-data identities was checked
-against the identity fields it actually declares (script: `audit_visibility_expressiveness.py`, run
-against all 11 shipped fixtures).
+**Re-derived 2026-08-18 from the validator itself**, run over all 11 shipped fixtures, replacing the
+earlier `audit_visibility_expressiveness.py` numbers. The audit script was wrong and the correction
+matters, so it is recorded rather than quietly overwritten.
 
 ```
-TOTAL findings needing visibility.fields: 39
-  SATISFIABLE (enough identity fields exist): 28
-  UNSATISFIABLE (cannot be expressed today):  11
+missing_visibility_fields, actual validator output: 29
+  Change 1 removes the requirement entirely:        18
+  Still required after Change 1:                    11
+     of which expressible today (enough fields):     7
+     of which need Change 2 (person + non-person):   4
 ```
 
-The 11 unsatisfiable cases split into two distinct causes.
+**What the audit script got wrong.** It counted 39 findings, including every `recipient`-model
+workflow. The validator's `requiredKey` switch maps `VisibilityModel.recipient => null`
+(`community_package_validator.dart:622-631`), so **the rule never fires for `recipient` at all** —
+those 10 findings do not exist. Two rows in the original Cause A table (`book-selection-publish`,
+`tabletop-meetup-announcement`) and one in §4 (`platform-top-banner-no-fill`) were therefore never
+blocking anything.
 
-### Cause A — the rule fires on workflows that are not identity-scoped at all (7 cases)
+The lesson is the standing one: the validator is the oracle, not a script written alongside the
+analysis. The *reasoning* below survived the correction — Cause B still names exactly the same four
+payment workflows — but the totals did not.
 
-| Community | Workflow | Model | `visibility.default` | `readGuard` | identity fields |
-|---|---|---|---|---|---|
-| ChessClub | `chess-match-result` | parties | `membersOnly` | none | 0 |
-| ChessClub | `chess-pairing-queue` | parties | `membersOnly` | none | 0 |
-| NeighborhoodBookClub | `book-selection-publish` | recipient | **`public`** | none | 0 |
-| NeighborhoodBookClub | `book-nomination` | parties | `membersOnly` | none | 1 |
-| Phase1_TabletopClub | `tabletop-club-dues-payment` | parties | unset | none | 0 |
-| Phase1_TabletopClub | `tabletop-meetup-announcement` | recipient | unset | none | 0 |
-| AdFreeCommunity | `ad-off-community-checkout` | parties | `membersOnly` | none | 1 |
+The 11 cases surviving Change 1 split into two distinct causes.
 
-None of these gate reads on *who you are*. They gate on membership, or they are public. `book-selection-publish`
-is the clearest: it is **public**, and the validator still demands a `recipient` mapping.
+### Cause A — the rule fires on workflows that are not identity-scoped at all (18 cases)
+
+Verified against the corpus: **every** one of these 18 has no `readGuard` at the workflow level and
+none at any state, and a `default` of `membersOnly`, `public`, or unset.
+
+| Community | Workflows | `visibility.default` |
+|---|---|---|
+| ChessClub | `chess-match-result`, `chess-pairing-queue`, `chess-discussion-thread`, `chess-rules-documents` | `membersOnly` |
+| NeighborhoodBookClub | `book-nomination`, `book-reading-material`, `book-discussion-message` | `membersOnly` |
+| Phase1_TabletopClub | `tabletop-club-dues-payment`, `game-purchase-proposal`, `discussion-thread` | unset |
+| MasjidNur | `mosque-document-resource`, `mosque-discussion-thread` | `membersOnly` |
+| RiversideYouthSoccer | `soccer-waiver-document`, `soccer-team-discussion` | `membersOnly` |
+| AdFreeCommunity | `ad-off-community-checkout` | `membersOnly` |
+| CedarCommonsHOA | `hoa-member-document` | `membersOnly` |
+| GardenClub | `plant-exchange-submission` | `membersOnly` |
+| CameraClub | `critique-submission` | **`public`** |
+
+None of these gate reads on *who you are*. They gate on membership, or they are public.
+`critique-submission` is the clearest: it is **public**, and the validator still demands a `parties`
+mapping — a mapping that could only ever narrow a read that is already open to everyone.
+
+**The split is total, with no ambiguous middle:** all 18 removed cases have zero guards of any kind,
+and all 11 surviving cases are `guarded` *and* carry a workflow-level `readGuard`. That is a strong
+signal the condition in Change 1 is drawn at the right line rather than fitted to the data.
 
 `CONTRACTS.md` defines these models as **additive** — `roles` → "**plus:** the owner" → "**plus:** the two
 named sides". A workflow that is already `public` or `membersOnly` has nothing for `parties`/`recipient`
@@ -71,7 +94,7 @@ identity-vs-role comparisons. Communities keep reaching for that broken construc
 is *"this person, plus whoever holds role X"*, and the grammar has no way to say it. **The broken
 comparisons are a symptom of Cause B, not an unrelated defect.**
 
-## 2. Change 1 — make the requirement conditional (resolves Cause A, 7 cases)
+## 2. Change 1 — make the requirement conditional (resolves Cause A, 18 cases)
 
 **Today:** the validator requires `visibility.fields.<key>` whenever the workflow's archetype has an
 identity-reading visibility model, regardless of that workflow's own `visibility`.
@@ -116,29 +139,31 @@ a sentinel — also gives the seven broken `$viewer == 'role'` comparisons a cor
 two-layer split `identity-types.md` §3.5 already describes. If a genuine no-role counterparty appears
 later, a sentinel can be added then; it is not needed now.
 
-## 4. Open question — a third problem this surfaced
+## 4. The third problem — resolved, not deferred
 
-**Some "satisfiable" cases have enough identity fields, but none that mean "party".** The fields present
-are **per-person bookkeeping the archetype itself owns** (`CONTRACTS.md`: read/acknowledged/saved/
-downloaded sets), not access-control lists:
+This was filed as an open question. Re-derivation closed it: **every case in it is gone**, so nothing
+carries into Phase F.
 
-| Community | Workflow | Required key | Only candidate fields |
+The problem was real — some workflows have enough identity fields to satisfy the arity check, but none
+that *mean* "party". The fields present are **per-person bookkeeping the archetype itself owns**
+(`CONTRACTS.md`: read/acknowledged/saved/downloaded sets), not access-control lists. Naming
+`downloadedPersonaIds` as `sharedWith` would grant read to everyone who already downloaded the
+document — circular, and worse than failing, because it passes validation while granting wrongly.
+
+| Community | Workflow | Required key | Status |
 |---|---|---|---|
-| ChessClub | `chess-rules-documents` | `sharedWith` | `downloadedPersonaIds` |
-| MasjidNur | `mosque-document-resource` | `sharedWith` | 7 fields, all bookkeeping |
-| CedarCommonsHOA | `hoa-member-document` | `sharedWith` | 5 fields, all bookkeeping |
-| MemberSocialSpace | `platform-top-banner-no-fill` | `recipient` | `reasonInspectedByPersonaIds` |
+| ChessClub | `chess-rules-documents` | `sharedWith` | removed by Change 1 (`membersOnly`, no guard) |
+| MasjidNur | `mosque-document-resource` | `sharedWith` | removed by Change 1 |
+| CedarCommonsHOA | `hoa-member-document` | `sharedWith` | removed by Change 1 |
+| RiversideYouthSoccer | `soccer-team-discussion` | `participants` | removed by Change 1 (0 identity fields) |
+| MemberSocialSpace | `platform-top-banner-no-fill` | `recipient` | **never a finding** — the rule does not fire for `recipient` |
 
-Naming `downloadedPersonaIds` as `sharedWith` would grant read access to everyone who has already
-downloaded it — **circular, and wrong**. These pass the arity check while producing an incorrect grant,
-which is worse than failing.
+That the bookkeeping-vs-party confusion lands *exclusively* on workflows with no identity-scoped
+visibility is not a coincidence: a workflow that never gated reads on identity had no reason to declare
+an access-control field in the first place. Change 1 removes the demand at its source.
 
-Also miscounted as satisfiable by the audit: `soccer-team-discussion` has the `participants` model, **zero**
-identity fields, and no arity rule — so it satisfies the check while being unable to name anyone.
-
-**Most of these are `membersOnly` with no `readGuard`, so Change 1 resolves them** by removing the
-requirement entirely. The residue should be reviewed case by case during Phase F rather than pre-decided
-here. **Recommendation: adopt Changes 1 and 2 now; treat this as a Phase F review item.**
+**This also dissolves the concern recorded in the Document ACL proposal §5** about pointing
+`sharedWith` at a bookkeeping array — all four `documentLibrary` cases above are Change-1 removals.
 
 ## 5. What changes, concretely
 
@@ -189,12 +214,18 @@ consistency the change requires.
 
 ## 6. Expected effect on Phase F
 
-| | Findings |
-|---|---|
-| Before | 39 required, 11 unexpressible |
-| After Change 1 | ~7 no longer required at all |
-| After Change 2 | 4 become expressible |
-| Remaining | 28 mechanical, minus those Change 1 removes; plus the §4 review items |
+| | Findings | Running total |
+|---|---|---|
+| Actual validator output today | 29 | **29** |
+| After Change 1 (18 no longer required) | −18 | **11** |
+| After Change 2 (4 become expressible) | −4 | **7** |
+| Mechanical: declare a mapping from fields that already exist | −6 | **1** |
+| Residue: `platform-blocked-target` | — | **1** |
+
+The 4 Change-2 cases are exactly the payment workflows in §3. The 6 mechanical ones —
+`hoa-dues-payment`, `hoa-committee-decision`, `mosque-care-request`, `platform-message-thread`,
+`platform-connection`, `soccer-guardian-join-approval` — each already declare two or more genuine
+identity fields and need only the mapping written down.
 
 `platform-blocked-target` (the one-legitimate-reader block record) is **not** resolved by either change —
 it is `guarded` with a real `readGuard`, so Change 1 does not apply, and its counterparty is a person who
