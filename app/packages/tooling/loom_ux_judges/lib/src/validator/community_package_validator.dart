@@ -255,6 +255,28 @@ class CommunityPackageValidator {
       } else {
         instances[id] = instance;
       }
+      final seedCreator = _seedCreatorDuringD8Straddle(instance);
+      if (seedCreator == null) {
+        final instanceLabel = instance.containsKey('instanceId')
+            ? ' "${instance['instanceId']}"'
+            : '';
+        final creatorKey = instance.containsKey('createdByFanId')
+            ? 'createdByFanId'
+            : instance.containsKey('createdByPersonaId')
+            ? 'createdByPersonaId'
+            : 'createdByFanId';
+        findings.add(
+          _finding(
+            'seed_instance_missing_creator',
+            'Seed instance$instanceLabel must declare a non-empty creator '
+                'using createdByFanId (or legacy createdByPersonaId during '
+                'the D8 straddle). Without that creator, the community fails '
+                'to install. The field identifies a person (fanId), not a '
+                'role.',
+            '$path/$creatorKey',
+          ),
+        );
+      }
       final type = instance['workflowType'];
       final workflow = type is String ? workflows[type] : null;
       if (workflow == null) {
@@ -447,6 +469,14 @@ class CommunityPackageValidator {
         )
         .whereType<String>()
         .toSet();
+  }
+
+  String? _seedCreatorDuringD8Straddle(Map<String, dynamic> instance) {
+    for (final key in const ['createdByFanId', 'createdByPersonaId']) {
+      final value = instance[key];
+      if (value is String && value.trim().isNotEmpty) return value;
+    }
+    return null;
   }
 
   Set<String> _declaredTabIds(Map<String, dynamic> package) {

@@ -1,4 +1,5 @@
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
+import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:test/test.dart';
 
 Map<String, dynamic> definition({Map<String, dynamic> schema = const {}}) =>
@@ -46,6 +47,7 @@ Map<String, dynamic> seed({
   'workflowType': type,
   'currentState': state,
   'instanceData': data,
+  'createdByFanId': 'fan-one',
 };
 Map<String, dynamic> pkg({Map<String, dynamic>? experience}) =>
     <String, dynamic>{
@@ -64,6 +66,24 @@ List<String> findings(Map<String, dynamic> p) => CommunityPackageValidator()
     .findings
     .map((f) => f.type)
     .toList();
+
+Map<String, dynamic> specV4Pkg() {
+  final package = pkg()
+    ..remove('schemaVersion')
+    ..['specVersion'] = 4;
+  final experience = package['experience'] as Map<String, dynamic>
+    ..remove('experienceSchemaVersion')
+    ..remove('workflowGrammarVersion');
+  package['experience'] = experience;
+  return package;
+}
+
+List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
+    CommunityPackageValidator()
+        .validate(package)
+        .findings
+        .where((finding) => finding.type == 'seed_instance_missing_creator')
+        .toList();
 
 void main() {
   group('CommunityPackageValidator Ticket B rules', () {
@@ -267,6 +287,120 @@ void main() {
 
       expect(findings(p), contains('unknown_tab_id'));
     });
+  });
+
+  group('seed instance creator validation', () {
+    test('seed with createdByFanId has no missing-creator finding', () {
+      expect(missingCreatorFindings(specV4Pkg()), isEmpty);
+    });
+
+    test(
+      'seed with legacy createdByPersonaId has no missing-creator finding during straddle',
+      () {
+        final package = specV4Pkg();
+        final instance =
+            ((package['experience']
+                        as Map<String, dynamic>)['workflowInstances']
+                    as List<dynamic>)[0]
+                as Map<String, dynamic>;
+        instance
+          ..remove('createdByFanId')
+          ..['createdByPersonaId'] = 'fan-one';
+
+        expect(missingCreatorFindings(package), isEmpty);
+      },
+    );
+
+    test('seed with neither creator field reports install-blocking error', () {
+      final package = specV4Pkg();
+      final instance =
+          ((package['experience'] as Map<String, dynamic>)['workflowInstances']
+                  as List<dynamic>)[0]
+              as Map<String, dynamic>;
+      instance.remove('createdByFanId');
+
+      final finding = missingCreatorFindings(package).single;
+      expect(finding.isWarning, isFalse);
+      expect(
+        finding.location,
+        'experience/workflowInstances[0]/createdByFanId',
+      );
+      expect(
+        finding.message,
+        allOf(
+          contains('Seed instance "one"'),
+          contains('community fails to install'),
+          contains('person (fanId), not a role'),
+        ),
+      );
+    });
+
+    test('seed with empty or whitespace-only creator reports an error', () {
+      for (final creator in ['', ' \t ']) {
+        final package = specV4Pkg();
+        final instance =
+            ((package['experience']
+                        as Map<String, dynamic>)['workflowInstances']
+                    as List<dynamic>)[0]
+                as Map<String, dynamic>;
+        instance['createdByFanId'] = creator;
+
+        expect(
+          missingCreatorFindings(package),
+          hasLength(1),
+          reason: 'creator "$creator" must be rejected',
+        );
+      }
+    });
+
+    test('seed with non-string creator reports an error', () {
+      final package = specV4Pkg();
+      final instance =
+          ((package['experience'] as Map<String, dynamic>)['workflowInstances']
+                  as List<dynamic>)[0]
+              as Map<String, dynamic>;
+      instance['createdByFanId'] = 42;
+
+      expect(missingCreatorFindings(package), hasLength(1));
+    });
+
+    test('several creatorless seeds report one error per seed', () {
+      final package = specV4Pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowInstances'] = <dynamic>[
+        seed(id: 'missing')..remove('createdByFanId'),
+        seed(id: 'valid'),
+        seed(id: 'blank')..['createdByFanId'] = '   ',
+        seed(id: 'non-string')..['createdByFanId'] = false,
+      ];
+
+      final creatorFindings = missingCreatorFindings(package);
+      expect(creatorFindings, hasLength(3));
+      expect(creatorFindings.map((finding) => finding.location), <String>[
+        'experience/workflowInstances[0]/createdByFanId',
+        'experience/workflowInstances[2]/createdByFanId',
+        'experience/workflowInstances[3]/createdByFanId',
+      ]);
+      expect(
+        creatorFindings.map((finding) => finding.message),
+        everyElement(contains('community fails to install')),
+      );
+      expect(creatorFindings[0].message, contains('"missing"'));
+      expect(creatorFindings[1].message, contains('"blank"'));
+      expect(creatorFindings[2].message, contains('"non-string"'));
+    });
+
+    test(
+      'package with no workflowInstances has no missing-creator finding',
+      () {
+        final package = specV4Pkg();
+        (package['experience'] as Map<String, dynamic>).remove(
+          'workflowInstances',
+        );
+
+        expect(missingCreatorFindings(package), isEmpty);
+      },
+    );
   });
 }
 
