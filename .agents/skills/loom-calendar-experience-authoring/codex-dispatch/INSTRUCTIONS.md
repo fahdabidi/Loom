@@ -38,6 +38,30 @@ an earlier Milestone 1.5 dispatch for Masjid Nur invented `mosque-admin`/`mosque
 ones are `masjid-admin`/`community-member`) and added a `care` tab that a real committed test explicitly
 asserts must never appear for that community.
 
+### The governing principle: this is a migration, not a rewrite
+
+When an `## Existing identifiers` section is present, **your job is to carry the existing package
+forward, changing what the migration and the product doc actually require and leaving everything else
+alone.** It is not to re-imagine the community from the product doc as though nothing existed.
+
+Concretely, **preserve existing material verbatim unless something forces a change**:
+
+- every identifier the block lists — roles, tabs, workflow types, state ids, seed ids;
+- **user-visible copy**: state `label`s, action labels, and seed instance-data text. This repo's
+  widget tests assert on these by exact string — one looks for the text `"Ready to export"`, so
+  relabelling that state to `"Ready to generate"` breaks a passing test while the package still
+  validates with zero errors. There are ~172 hardcoded community strings of this kind across the
+  suite.
+
+What *should* change: the version stamp, every identity key and type renamed per rule 2a, `action`
+declarations added where rule 12 requires them, `visibility.fields` corrected per rule 12b, and
+anything the product doc requires that the shipped package genuinely lacks. Additions are welcome —
+new workflows, new states, new seeds — as long as nothing existing is renamed, relabelled or dropped.
+
+If you believe an existing label or value is actually wrong against the product doc, **say so in
+Gaps/assumptions and leave it as it is**. A reviewer can accept a flagged wording change in seconds;
+an unflagged one is found by a failing test hours later.
+
 **This applies to every identifier class the section lists, not just personas and tabs.** The block
 also names the community's **workflow type ids** and its **seed `instanceId` values**, and both are
 load-bearing for exactly the same reason:
