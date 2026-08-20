@@ -140,6 +140,7 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `dangling_instance_data_key` | Guard/effect names an undeclared field | Declare it in `instanceDataSchema`, or fix the typo |
 | `unknown_effect_op` | `op` isn't one of the twelve | See [effects.md](../reference/effects.md) |
 | `computed_field_written_by_effect` | An effect writes a `formula` field | Delete the effect. Computed fields are read-only. |
+| `computed_field_cannot_be_required` | A field declares a `formula` (or `source`) **and** `required: true` | Remove `required: true`, keep the formula. Never the reverse — the formula is what supplies the value. The engine checks `required` **before** evaluating formulas, so this declaration makes every instance of that workflow fail to create (`Required field is missing or null`) and the package fails to install even though it validated clean. |
 | `dangling_related_instance_field` | `relatedInstance` / `relatedInstanceField` names an undeclared field | Declare the id-holding field on **this** workflow |
 | `dangling_create_instance_target` | `createInstance.workflowType` doesn't exist | Declare the target type, or fix the name |
 | `dangling_requires_workflows_complete` | Prerequisite workflow doesn't exist | Declare it, or drop the guard |

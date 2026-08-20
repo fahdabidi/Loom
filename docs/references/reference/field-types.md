@@ -203,6 +203,13 @@ top-level or inside an `itemSchema`, no new rule ids needed). `itemSchema` on a 
 - A computed OR query-backed field MUST NOT be effect-written (`computed_field_written_by_effect`) or
   seeded (`computed_field_seeded`) — both checks now cover `source` fields the same way they've always
   covered `formula` fields (widened in Phase A′, 2026-07-16).
+- A computed OR query-backed field MUST NOT be marked `required: true`
+  (`computed_field_cannot_be_required`). Nobody writes such a field, so a `required` flag on it can
+  never be satisfied by an author — and the **engine enforces `required` before it evaluates the
+  formula**, so every attempt to create an instance of that workflow fails with
+  `Validation error on "<field>": Required field is missing or null`, taking the whole package down
+  at install. The fix is always to drop `required`, never to drop the formula: the formula is what
+  supplies the value.
 - **If a value can be derived, derive it.** See [formulas.md](./formulas.md).
 
 ## `source` — query-backed fields (GAP-4, executed as of Phase A′, 2026-07-16)
@@ -317,6 +324,7 @@ person → `person_outline`, place → `location_on_outlined`, capacity → `gro
 | A computed OR query-backed field may not be seeded | `computed_field_seeded` |
 | Every `instanceData` key must be declared here | `unknown_instance_data_key` |
 | Every `required: true` non-computed, non-query-backed field must be present in seeds | `missing_required_field` |
+| A computed OR query-backed field may not be marked `required: true` | `computed_field_cannot_be_required` |
 | A `sortable` table column requires `sortable: true` on the field | `sortable_column_without_backing_field` |
 | `source` must parse as `query(type where foreignField == localField)` | `invalid_source_query_syntax` |
 | `source`'s `workflowType` must be a declared type | `dangling_source_query_workflow_type` |
