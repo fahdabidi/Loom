@@ -94,7 +94,11 @@ echo "since last check: ${elapsed}s"
 printf '  log grew        : %+d bytes\n' "$d_size"
 printf '  files modified  : %d (was %d)\n' "$files" "$files_prev"
 printf '  wrote a file    : %s\n' "$([ "$wrote" = 1 ] && echo yes || echo no)"
-printf '  last file write : %ds ago\n' "$since_write"
+if [ "$newest" -gt 0 ]; then
+  printf '  last file write : %ds ago\n' "$since_write"
+else
+  echo '  last file write : (nothing modified yet)'
+fi
 
 progress=no
 [ "$wrote" = 1 ] && progress=yes
