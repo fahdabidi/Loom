@@ -72,6 +72,8 @@ LoomWorkflowStateMachine _machine({
   WorkflowGuard? editGuard,
   WorkflowGuard? creationGuard,
   List<LoomWorkflowTransition> transitions = const [],
+  List<WorkflowAction> actions = const [],
+  Map<String, LoomWorkflowState> additionalStates = const {},
 }) {
   return LoomWorkflowStateMachine(
     workflowType: workflowType,
@@ -83,6 +85,7 @@ LoomWorkflowStateMachine _machine({
         editGuard: editGuard,
         creationGuard: creationGuard,
       ),
+      ...additionalStates,
     },
     transitions: transitions,
     renderBindings: [
@@ -92,6 +95,7 @@ LoomWorkflowStateMachine _machine({
         tabId: tabId,
         cardSurfaceFamily: 'workflow-status',
         bindingKind: 'primary',
+        actions: actions,
       ),
     ],
     visibility: visibility,
@@ -126,100 +130,105 @@ LoomExperienceDefinition _experience(
 }
 
 void main() {
-  test('personaHasPermission allows public read permissions', () {
+  test('personaHasPermission derives visibility from transition roles', () {
     final experience = _experience({
-      'public-workflow': _machine(
-        workflowType: 'public-workflow',
+      'calendar-workflow': _machine(
+        workflowType: 'calendar-workflow',
         tabId: 'calendar',
-        visibility: const WorkflowVisibility(isDeclared: false),
+        transitions: const [
+          LoomWorkflowTransition(
+            id: 'publish',
+            label: 'Publish',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(allowedPersonaIds: ['member']),
+          ),
+        ],
       ),
     });
 
     expect(
-      personaHasPermission(
-        experience,
-        'outsider',
-        'community.surface.calendar.read',
-        tabId: 'calendar',
-      ),
-      isTrue,
-    );
-  });
-
-  test('personaHasPermissionAsync reuses active membership lookup', () async {
-    final experience = _experience({
-      'members-workflow': _machine(
-        workflowType: 'members-workflow',
-        tabId: 'calendar',
-        visibility: const WorkflowVisibility(
-          defaultValue: WorkflowVisibilityDefault.membersOnly,
-        ),
-      ),
-    });
-
-    expect(
-      await personaHasPermissionAsync(
-        experience,
-        'member',
-        'community.surface.calendar.read',
-        tabId: 'calendar',
-        activeMembershipLookup: (_) => true,
-      ),
+      personaHasPermission(experience, 'member', tabId: 'calendar'),
       isTrue,
     );
     expect(
-      await personaHasPermissionAsync(
-        experience,
-        'outsider',
-        'community.surface.calendar.read',
-        tabId: 'calendar',
-        activeMembershipLookup: (_) => false,
-      ),
+      personaHasPermission(experience, 'outsider', tabId: 'calendar'),
       isFalse,
     );
   });
 
-  test('personaHasPermission evaluates guarded read admissibility', () {
+  test('personaHasPermission derives visibility from create-action roles', () {
     final experience = _experience({
-      'guarded-workflow': _machine(
-        workflowType: 'guarded-workflow',
+      'creatable-workflow': _machine(
+        workflowType: 'creatable-workflow',
         tabId: 'calendar',
-        visibility: const WorkflowVisibility(
-          defaultValue: WorkflowVisibilityDefault.guarded,
-          readGuard: WorkflowGuard(allowedPersonaIds: ['member']),
-        ),
+        actions: const [
+          WorkflowAction(kind: 'create', byPersonaIds: ['member']),
+        ],
       ),
     });
 
     expect(
-      personaHasPermission(
-        experience,
-        'member',
-        'community.surface.calendar.read',
-        tabId: 'calendar',
-      ),
+      personaHasPermission(experience, 'member', tabId: 'calendar'),
       isTrue,
     );
     expect(
-      personaHasPermission(
-        experience,
-        'outsider',
-        'community.surface.calendar.read',
-        tabId: 'calendar',
-      ),
+      personaHasPermission(experience, 'outsider', tabId: 'calendar'),
       isFalse,
     );
   });
 
-  test('tab visibility enforces its required permission by default', () {
+  test(
+    'personaHasPermission ignores read visibility and uses any transition',
+    () {
+      final experience = _experience({
+        'guarded-workflow': _machine(
+          workflowType: 'guarded-workflow',
+          tabId: 'calendar',
+          visibility: const WorkflowVisibility(
+            defaultValue: WorkflowVisibilityDefault.guarded,
+            readGuard: WorkflowGuard(allowedPersonaIds: ['outsider']),
+          ),
+          additionalStates: const {
+            'not-rendered': LoomWorkflowState(label: 'Not rendered'),
+          },
+          transitions: const [
+            LoomWorkflowTransition(
+              id: 'publish',
+              label: 'Publish',
+              from: ['not-rendered'],
+              to: 'not-rendered',
+              guard: WorkflowGuard(allowedPersonaIds: ['member']),
+            ),
+          ],
+        ),
+      });
+
+      expect(
+        personaHasPermission(experience, 'member', tabId: 'calendar'),
+        isTrue,
+      );
+      expect(
+        personaHasPermission(experience, 'outsider', tabId: 'calendar'),
+        isFalse,
+      );
+    },
+  );
+
+  test('tab visibility enforces derived role guards by default', () {
     final experience = _experience({
       'guarded-workflow': _machine(
         workflowType: 'guarded-workflow',
         tabId: 'private-surface',
-        visibility: const WorkflowVisibility(
-          defaultValue: WorkflowVisibilityDefault.guarded,
-          readGuard: WorkflowGuard(allowedPersonaIds: ['member']),
-        ),
+        transitions: const [
+          LoomWorkflowTransition(
+            id: 'publish',
+            label: 'Publish',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(allowedPersonaIds: ['member']),
+          ),
+        ],
       ),
     });
     const tab = LoomAppShellTabSpec(
@@ -228,11 +237,18 @@ void main() {
       icon: Icons.folder_open_outlined,
       description: 'Private member content.',
       visiblePersonaIds: ['member', 'outsider'],
-      requiredPermission: 'community.surface.workflow.read',
+    );
+    const narrowedTab = LoomAppShellTabSpec(
+      tabId: 'private-surface',
+      label: 'Narrowed private surface',
+      icon: Icons.folder_open_outlined,
+      description: 'Explicitly narrowed private member content.',
+      visiblePersonaIds: ['outsider'],
     );
 
     expect(tab.isVisibleFor('member', experience: experience), isTrue);
     expect(tab.isVisibleFor('outsider', experience: experience), isFalse);
+    expect(narrowedTab.isVisibleFor('member', experience: experience), isFalse);
     expect(
       tab.isVisibleFor(
         'outsider',
@@ -243,37 +259,45 @@ void main() {
     );
   });
 
-  test('guarded field principals admit potentially owned rows', () {
+  test('runtime-only actor guards leave a bound tab visible', () {
     final experience = _experience({
       'party-workflow': _machine(
         workflowType: 'party-workflow',
-        tabId: 'home',
-        visibility: const WorkflowVisibility(
-          defaultValue: WorkflowVisibilityDefault.guarded,
-          readGuard: WorkflowGuard(allowedPersonaIds: ['organizer']),
-          fields: WorkflowVisibilityFields(
-            parties: [
-              WorkflowVisibilityFieldPrincipal(fieldName: 'ownerFanId'),
-              WorkflowVisibilityRolePrincipal(roleId: 'organizer'),
-            ],
+        tabId: 'owned-items',
+        transitions: const [
+          LoomWorkflowTransition(
+            id: 'update-own-item',
+            label: 'Update',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(
+              actorEqualsField: ActorEqualsFieldGuard(key: 'ownerFanId'),
+            ),
           ),
-        ),
+          LoomWorkflowTransition(
+            id: 'leave-owned-list',
+            label: 'Leave',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(
+              actorInList: ListMembershipGuard(
+                key: 'participantFanIds',
+                present: true,
+              ),
+            ),
+          ),
+        ],
       ),
     });
 
     expect(
-      personaHasPermission(
-        experience,
-        'member',
-        'community.surface.navigation.read',
-        workflowType: 'party-workflow',
-      ),
+      personaHasPermission(experience, 'member', tabId: 'owned-items'),
       isTrue,
     );
   });
 
   test(
-    'personaHasPermission derives configure access from transition, edit, and creation guards',
+    'only transition and create-action role guards derive tab visibility',
     () {
       final experience = _experience({
         'transition-workflow': _machine(
@@ -287,6 +311,7 @@ void main() {
               to: 'published',
               guard: const WorkflowGuard(
                 allowedPersonaIds: ['transition-persona'],
+                actorEqualsField: ActorEqualsFieldGuard(key: 'ownerFanId'),
               ),
             ),
           ],
@@ -303,42 +328,40 @@ void main() {
             allowedPersonaIds: ['creation-persona'],
           ),
         ),
+        'create-action-workflow': _machine(
+          workflowType: 'create-action-workflow',
+          tabId: 'admin',
+          actions: const [
+            WorkflowAction(
+              kind: 'create',
+              byPersonaIds: ['create-action-persona'],
+            ),
+          ],
+        ),
       });
 
       expect(
+        personaHasPermission(experience, 'transition-persona', tabId: 'admin'),
+        isTrue,
+      );
+      expect(
+        personaHasPermission(experience, 'edit-persona', tabId: 'admin'),
+        isFalse,
+      );
+      expect(
+        personaHasPermission(experience, 'creation-persona', tabId: 'admin'),
+        isFalse,
+      );
+      expect(
         personaHasPermission(
           experience,
-          'transition-persona',
-          'community.surface.navigation.configure',
+          'create-action-persona',
           tabId: 'admin',
         ),
         isTrue,
       );
       expect(
-        personaHasPermission(
-          experience,
-          'edit-persona',
-          'community.surface.navigation.configure',
-          tabId: 'admin',
-        ),
-        isTrue,
-      );
-      expect(
-        personaHasPermission(
-          experience,
-          'creation-persona',
-          'community.surface.navigation.configure',
-          tabId: 'admin',
-        ),
-        isTrue,
-      );
-      expect(
-        personaHasPermission(
-          experience,
-          'outsider',
-          'community.surface.navigation.configure',
-          tabId: 'admin',
-        ),
+        personaHasPermission(experience, 'outsider', tabId: 'admin'),
         isFalse,
       );
     },
@@ -355,6 +378,15 @@ void main() {
             defaultValue: WorkflowVisibilityDefault.guarded,
             readGuard: WorkflowGuard(allowedPersonaIds: ['member']),
           ),
+          transitions: const [
+            LoomWorkflowTransition(
+              id: 'publish',
+              label: 'Publish',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(allowedPersonaIds: ['member']),
+            ),
+          ],
         ),
       });
       const appShellConfiguration = <String, Object?>{
@@ -364,7 +396,10 @@ void main() {
             'label': 'Private surface',
             'icon': 'documents',
             'rendererContractId': 'documents-library-detail',
-            'requiredPermission': 'community.surface.workflow.read',
+            // Ad-Free still carries this deferred field. The app shell must
+            // ignore it rather than parse it or reject the community.
+            'requiredPermission': 'deliberately.not.a.real.permission',
+            'permission': 'also.deliberately.ignored',
           },
         ],
       };
@@ -402,6 +437,73 @@ void main() {
     },
   );
 
+  test('home and messages remain present without derivable role guards', () {
+    final experience = _experience(const {});
+
+    final tabs = appShellTabsFor(experience: experience, personaId: 'outsider');
+
+    expect(tabs.map((tab) => tab.tabId), ['home', 'messages']);
+  });
+
+  test('an unguarded workflow leaves its custom tab visible', () {
+    final experience = _experience({
+      'unguarded-workflow': _machine(
+        workflowType: 'unguarded-workflow',
+        tabId: 'unguarded',
+      ),
+    });
+    const appShellConfiguration = <String, Object?>{
+      'tabs': [
+        {
+          'tabId': 'unguarded',
+          'label': 'Unguarded',
+          'rendererContractId': 'engine-native-generic-list',
+        },
+      ],
+    };
+
+    final tabs = appShellTabsFor(
+      experience: experience,
+      personaId: 'member',
+      appShellConfiguration: appShellConfiguration,
+    );
+
+    expect(
+      personaHasPermission(experience, 'member', tabId: 'unguarded'),
+      isTrue,
+    );
+    expect(
+      personaHasPermission(experience, 'outsider', tabId: 'unguarded'),
+      isTrue,
+    );
+    expect(tabs.map((tab) => tab.tabId), contains('unguarded'));
+  });
+
+  test('a declarative tab with no bound workflow stays public', () {
+    final experience = _experience(const {});
+    const appShellConfiguration = <String, Object?>{
+      'tabs': [
+        {
+          'tabId': 'static-help',
+          'label': 'Help',
+          'rendererContractId': 'documents-library-detail',
+        },
+      ],
+    };
+
+    final tabs = appShellTabsFor(
+      experience: experience,
+      personaId: 'member',
+      appShellConfiguration: appShellConfiguration,
+    );
+
+    expect(
+      personaHasPermission(experience, 'member', tabId: 'static-help'),
+      isTrue,
+    );
+    expect(tabs.map((tab) => tab.tabId), contains('static-help'));
+  });
+
   test(
     'engine boundary re-checks query and transition surface access',
     () async {
@@ -413,6 +515,15 @@ void main() {
             defaultValue: WorkflowVisibilityDefault.guarded,
             readGuard: WorkflowGuard(allowedPersonaIds: ['member']),
           ),
+          transitions: const [
+            LoomWorkflowTransition(
+              id: 'publish',
+              label: 'Publish',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(allowedPersonaIds: ['member']),
+            ),
+          ],
         ),
       });
       final engine = LocalWorkflowEngineApi(
@@ -428,7 +539,6 @@ void main() {
               return personaHasPermission(
                 experience,
                 personaId,
-                'community.surface.workflow.read',
                 tabId: tabId,
                 workflowType: workflowType,
                 personaTypeId: personaTypeId,

@@ -592,7 +592,6 @@ class LoomAppShellTabSpec {
     this.cardSurfaceFamilies = const [],
     this.pinnedWorkflowIds = const [],
     this.visiblePersonaIds = const [],
-    this.requiredPermission = 'community.surface.navigation.read',
   });
 
   final String tabId;
@@ -606,7 +605,6 @@ class LoomAppShellTabSpec {
   final List<String> cardSurfaceFamilies;
   final List<String> pinnedWorkflowIds;
   final List<String> visiblePersonaIds;
-  final String requiredPermission;
 
   bool isVisibleFor(
     String personaId, {
@@ -615,6 +613,9 @@ class LoomAppShellTabSpec {
     bool? hasActiveMembership,
     String? personaTypeId,
   }) {
+    if (tabId == 'home' || tabId == 'messages') {
+      return true;
+    }
     if (visiblePersonaIds.isNotEmpty &&
         !visiblePersonaIds.contains(personaId)) {
       return false;
@@ -625,10 +626,8 @@ class LoomAppShellTabSpec {
     return personaHasPermission(
       experience,
       personaId,
-      requiredPermission,
       tabId: tabId,
       personaTypeId: personaTypeId,
-      hasActiveMembership: hasActiveMembership,
     );
   }
 
@@ -677,7 +676,6 @@ class LoomDeclarativeTabSpec {
     this.cardSurfaceFamilies = const [],
     this.pinnedWorkflowIds = const [],
     this.visiblePersonaIds = const [],
-    this.requiredPermission = 'community.surface.navigation.read',
   });
 
   final String tabId;
@@ -691,7 +689,6 @@ class LoomDeclarativeTabSpec {
   final List<String> cardSurfaceFamilies;
   final List<String> pinnedWorkflowIds;
   final List<String> visiblePersonaIds;
-  final String requiredPermission;
 
   LoomAppShellTabSpec toTabSpec() {
     return LoomAppShellTabSpec(
@@ -706,7 +703,6 @@ class LoomDeclarativeTabSpec {
       cardSurfaceFamilies: cardSurfaceFamilies,
       pinnedWorkflowIds: pinnedWorkflowIds,
       visiblePersonaIds: visiblePersonaIds,
-      requiredPermission: requiredPermission,
     );
   }
 }

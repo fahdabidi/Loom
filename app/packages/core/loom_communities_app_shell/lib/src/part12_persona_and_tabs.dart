@@ -217,53 +217,6 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   ];
 }
 
-/// Resolves the permission declared by the tab a workflow engine call is
-/// trying to reach. This is intentionally read-only metadata resolution; it
-/// does not apply the persona visibility filter used by [appShellTabsFor].
-String? requiredPermissionForTab({
-  required LoomExperienceDefinition experience,
-  required String tabId,
-  String personaId = '',
-  Map<String, Object?> appShellConfiguration = const {},
-}) {
-  final configured = _declarativeTabSpecsFor(
-    personaId: personaId,
-    appShellConfiguration: appShellConfiguration,
-  );
-  for (final spec in configured.reversed) {
-    if (spec.tabId == tabId) return spec.requiredPermission;
-  }
-
-  final generated = _generatedAppShellTabsFor();
-  for (final tab in generated) {
-    if (tab.tabId == tabId) return tab.requiredPermission;
-  }
-
-  // Keep permissions for internal engine surfaces discoverable even when the
-  // surface is not represented by a visible app-shell tab.
-  return switch (tabId) {
-    'home' => 'community.surface.navigation.read',
-    'calendar' => 'community.surface.calendar.read',
-    'documents' => 'community.surface.documents.read',
-    'marketplace' => 'community.surface.marketplace.read',
-    'giving' => 'community.surface.payments.read',
-    'requests' => 'community.surface.requests.read',
-    'care' || 'roster' => 'community.surface.care.read',
-    'admin' => 'community.surface.navigation.configure',
-    // Engine-native notification surfaces use this internal tab ID even when
-    // they are mounted as AppBar/FAB/fixed-card chrome rather than a tab. The
-    // notification controller still applies recipientFanId filtering;
-    // this only makes the synthetic inbox surface resolve to the existing
-    // messages permission at the engine boundary.
-    'notifications' ||
-    'notification-inbox' ||
-    'messages' => 'community.surface.messages.read',
-    'export' || 'search' => 'community.surface.documents.read',
-    'timeline' || 'details' || 'form' => 'community.surface.workflow.read',
-    _ => null,
-  };
-}
-
 List<LoomAppShellTabSpec> _generatedAppShellTabsFor() {
   return const [
     const LoomAppShellTabSpec(
@@ -275,7 +228,6 @@ List<LoomAppShellTabSpec> _generatedAppShellTabsFor() {
       pinningPolicy: 'none-declared-for-home',
       pinningPolicyRationale:
           'Home intentionally keeps the first visible surface in focus instead of pinning one workflow across every community.',
-      requiredPermission: 'community.surface.navigation.read',
     ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
@@ -286,7 +238,6 @@ List<LoomAppShellTabSpec> _generatedAppShellTabsFor() {
       pinningPolicy: 'none-declared-for-messages',
       pinningPolicyRationale:
           'Messages uses a conversation surface rather than a pinned workflow card, so no pinned card surface is appropriate.',
-      requiredPermission: 'community.surface.messages.read',
     ),
   ];
 }
@@ -337,7 +288,6 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         cardSurfaceFamilies: generated.cardSurfaceFamilies,
         pinnedWorkflowIds: generated.pinnedWorkflowIds,
         visiblePersonaIds: generated.visiblePersonaIds,
-        requiredPermission: generated.requiredPermission,
       );
     } else {
       mergedById[override.tabId] = override.toTabSpec();
@@ -448,9 +398,6 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
       'pinnedWorkflowIds',
     ]),
     visiblePersonaIds: _readShellStringList(value, const ['visibleRoleIds']),
-    requiredPermission:
-        _readShellString(value, const ['requiredPermission', 'permission']) ??
-        'community.surface.navigation.read',
   );
 }
 
@@ -565,127 +512,76 @@ bool _personaCanAdministerAnyWorkflow(
   });
 }
 
-/// Resolves the permission carried by a tab spec against the workflow
-/// definitions that can actually render on that surface.
+/// Derives whether a role can act in a workflow-backed surface.
 ///
-/// The synchronous form is used during tab construction. Membership lookups
-/// are asynchronous in the engine, so callers that have the live lookup
-/// should use [personaHasPermissionAsync] at an engine boundary. A supplied
-/// [hasActiveMembership] snapshot keeps the synchronous tab path deterministic
-/// and fails closed for `membersOnly` when no active account is known.
+/// A role is admitted when it appears in a transition's `allowedRoleIds` or
+/// in a render binding's `kind: create` action `byRoleIds`. The derivation
+/// scans every transition and create action on every workflow bound to the
+/// requested tab. Per-instance ownership guards cannot be resolved before
+/// rows are loaded, so a surface with runtime-only actor guards remains
+/// visible and lets the engine's instance filtering produce the empty state.
 bool personaHasPermission(
   LoomExperienceDefinition experience,
-  String personaId,
-  String requiredPermission, {
+  String personaId, {
   String? tabId,
   String? workflowType,
   String? personaTypeId,
-  bool? hasActiveMembership,
 }) {
-  final permission = requiredPermission.trim();
-  if (permission.isEmpty) return false;
-  final subjectPersonaId = personaTypeId ?? personaId;
-  final definitions = _permissionWorkflowDefinitions(
-    experience,
-    permission,
-    tabId: tabId,
-    workflowType: workflowType,
-  );
-  final isReadPermission = permission.endsWith('.read');
-
-  if (isReadPermission) {
-    // Legacy workflow definitions have no workflow-level visibility block and
-    // therefore retain their historical public-read behavior.
-    if (definitions.isEmpty) return true;
-    return definitions.any(
-      (definition) => _readPermissionCouldAdmitPersona(
-        definition,
-        experience,
-        subjectPersonaId,
-        hasActiveMembership: hasActiveMembership,
-      ),
-    );
-  }
-
-  // Keep the existing JSON-derived admin check as the first write-side path;
-  // the generalized guard scan below extends it to ordinary workflow writes,
-  // edits, and creation guards without duplicating its legacy behavior.
-  if (permission.endsWith('.configure') &&
-      _personaCanAdministerAnyWorkflow(experience, subjectPersonaId)) {
+  if (tabId == 'home' || tabId == 'messages') {
     return true;
   }
-  if (definitions.isEmpty) {
-    return _personaCanAdministerAnyWorkflow(experience, subjectPersonaId);
-  }
-  return definitions.any(
-    (definition) =>
-        _writePermissionAllowsPersona(definition, experience, subjectPersonaId),
-  );
-}
-
-/// Async companion for the engine boundary. It deliberately shares the same
-/// definition/guard logic as [personaHasPermission] while resolving the
-/// injected P4a membership lookup only for `membersOnly` workflows.
-Future<bool> personaHasPermissionAsync(
-  LoomExperienceDefinition experience,
-  String personaId,
-  String requiredPermission, {
-  ActiveMembershipLookup? activeMembershipLookup,
-  String? tabId,
-  String? workflowType,
-  String? personaTypeId,
-  bool? hasActiveMembership,
-}) async {
-  final permission = requiredPermission.trim();
-  if (permission.isEmpty) return false;
-  if (!permission.endsWith('.read')) {
-    return personaHasPermission(
-      experience,
-      personaId,
-      permission,
-      tabId: tabId,
-      workflowType: workflowType,
-      personaTypeId: personaTypeId,
-      hasActiveMembership: hasActiveMembership,
-    );
-  }
-
-  final definitions = _permissionWorkflowDefinitions(
+  final subjectPersonaId = personaTypeId ?? personaId;
+  final definitions = _surfaceWorkflowDefinitions(
     experience,
-    permission,
     tabId: tabId,
     workflowType: workflowType,
   );
-  if (definitions.isEmpty) return true;
-  final subjectPersonaId = personaTypeId ?? personaId;
-  bool? membership;
+  if (definitions.isEmpty) {
+    // A declarative tab does not have to be workflow-backed. With no bound
+    // workflow there is no workflow role guard to narrow its visibility, so
+    // preserve the historical public-read behavior for these surfaces.
+    return true;
+  }
+
+  var hasRoleGuard = false;
   for (final definition in definitions) {
-    switch (definition.visibility.defaultValue) {
-      case WorkflowVisibilityDefault.public:
-        return true;
-      case WorkflowVisibilityDefault.membersOnly:
-        membership ??= hasActiveMembership;
-        membership ??= activeMembershipLookup == null
-            ? false
-            : await activeMembershipLookup(personaId);
-        if (membership == true) return true;
-      case WorkflowVisibilityDefault.guarded:
-        if (_readPermissionCouldAdmitPersona(
-          definition,
+    for (final transition in definition.transitions) {
+      final allowedRoleIds = transition.guard.allowedPersonaIds;
+      if (allowedRoleIds != null && allowedRoleIds.isNotEmpty) {
+        hasRoleGuard = true;
+        if (_personaMatchesAllowedIds(
+          allowedRoleIds,
           experience,
           subjectPersonaId,
-          hasActiveMembership: membership,
         )) {
           return true;
         }
+      }
+    }
+
+    for (final binding in definition.renderBindings) {
+      for (final action in binding.actions) {
+        if (action.kind != 'create') continue;
+        final byRoleIds = action.byPersonaIds;
+        if (byRoleIds == null || byRoleIds.isEmpty) continue;
+        hasRoleGuard = true;
+        if (_personaMatchesAllowedIds(
+          byRoleIds,
+          experience,
+          subjectPersonaId,
+        )) {
+          return true;
+        }
+      }
     }
   }
-  return false;
+
+  if (hasRoleGuard) return false;
+  return true;
 }
 
-List<LoomWorkflowStateMachine> _permissionWorkflowDefinitions(
-  LoomExperienceDefinition experience,
-  String permission, {
+List<LoomWorkflowStateMachine> _surfaceWorkflowDefinitions(
+  LoomExperienceDefinition experience, {
   String? tabId,
   String? workflowType,
 }) {
@@ -706,128 +602,7 @@ List<LoomWorkflowStateMachine> _permissionWorkflowDefinitions(
           definition,
     ];
   }
-
-  final domain = _permissionDomain(permission);
-  final aliases = _permissionTabAliases(domain);
-  final matching = [
-    for (final definition in definitions)
-      if (definition.renderBindings.any(
-        (binding) => aliases.contains(binding.tabId),
-      ))
-        definition,
-  ];
-  if (matching.isNotEmpty) return matching;
-  if (definitions.length == 1) return definitions;
-  return const [];
-}
-
-String _permissionDomain(String permission) {
-  final parts = permission.split('.');
-  return parts.length >= 4 ? parts[2] : '';
-}
-
-Set<String> _permissionTabAliases(String domain) {
-  return switch (domain) {
-    'navigation' => const {'home', 'admin'},
-    'calendar' => const {'calendar', 'schedule'},
-    'documents' => const {'documents', 'export', 'search'},
-    'marketplace' => const {'marketplace', 'library'},
-    'payments' || 'payment' => const {'giving', 'payments'},
-    'requests' || 'approval' => const {'requests', 'request', 'admin'},
-    'care' || 'volunteer' => const {'care', 'roster'},
-    'messages' ||
-    'social' ||
-    'thread' ||
-    'inbox' => const {'messages', 'notifications', 'notification-inbox'},
-    'workflow' || 'workflow-status' => const {
-      'home',
-      'requests',
-      'timeline',
-      'details',
-      'form',
-    },
-    _ => {domain},
-  };
-}
-
-bool _readPermissionCouldAdmitPersona(
-  LoomWorkflowStateMachine definition,
-  LoomExperienceDefinition experience,
-  String personaId, {
-  bool? hasActiveMembership,
-}) {
-  switch (definition.visibility.defaultValue) {
-    case WorkflowVisibilityDefault.public:
-      return true;
-    case WorkflowVisibilityDefault.membersOnly:
-      return hasActiveMembership == true;
-    case WorkflowVisibilityDefault.guarded:
-      final fields = definition.visibility.fields;
-      if (fields.sharedWith != null ||
-          fields.participants.isNotEmpty ||
-          fields.recipient != null ||
-          fields.parties.any(
-            (principal) => switch (principal) {
-              WorkflowVisibilityFieldPrincipal() => true,
-              WorkflowVisibilityRolePrincipal(:final roleId) =>
-                roleId == personaId,
-            },
-          )) {
-        // Field principals are instance-scoped: this coarse surface check
-        // must admit a persona who could own a matching row. The engine's
-        // per-instance visibility check still enforces the concrete identity
-        // before returning data.
-        return true;
-      }
-      final guards = <WorkflowGuard>[];
-      for (final state in definition.states.values) {
-        final guard = state.readGuard ?? definition.visibility.readGuard;
-        if (guard != null) guards.add(guard);
-      }
-      if (guards.isEmpty) return false;
-      return guards.any(
-        (guard) => _readGuardCouldAdmitPersona(guard, experience, personaId),
-      );
-  }
-}
-
-bool _readGuardCouldAdmitPersona(
-  WorkflowGuard guard,
-  LoomExperienceDefinition experience,
-  String personaId,
-) {
-  final allowed = guard.allowedPersonaIds;
-  if (allowed != null &&
-      allowed.isNotEmpty &&
-      !_personaMatchesAllowedIds(allowed, experience, personaId)) {
-    return false;
-  }
-  // Other guard shapes describe instance data that could be authored for this
-  // persona. Without live instances, their existence is possible rather than
-  // disproven; this mirrors availableTransitions' guard-admissibility model.
-  return true;
-}
-
-bool _writePermissionAllowsPersona(
-  LoomWorkflowStateMachine definition,
-  LoomExperienceDefinition experience,
-  String personaId,
-) {
-  bool guardAllows(WorkflowGuard? guard) {
-    final allowed = guard?.allowedPersonaIds;
-    return allowed != null &&
-        allowed.isNotEmpty &&
-        _personaMatchesAllowedIds(allowed, experience, personaId);
-  }
-
-  if (definition.transitions.any(
-    (transition) => guardAllows(transition.guard),
-  )) {
-    return true;
-  }
-  return definition.states.values.any(
-    (state) => guardAllows(state.editGuard) || guardAllows(state.creationGuard),
-  );
+  return definitions;
 }
 
 bool _personaMatchesAllowedIds(

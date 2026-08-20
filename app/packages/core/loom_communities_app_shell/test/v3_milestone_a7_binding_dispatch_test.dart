@@ -570,7 +570,17 @@ void main() {
             'states': {
               'open': {'label': 'Open'},
             },
-            'transitions': <dynamic>[],
+            'transitions': [
+              {
+                'id': 'complete',
+                'label': 'Complete',
+                'from': ['open'],
+                'to': 'open',
+                'guard': {
+                  'allowedRoleIds': ['local-member'],
+                },
+              },
+            ],
             'renderBindings': [
               {
                 'tabId': tabId,

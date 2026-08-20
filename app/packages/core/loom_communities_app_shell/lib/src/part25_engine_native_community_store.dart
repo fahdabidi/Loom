@@ -275,18 +275,15 @@ class _EngineNativeCommunityStore {
     }) async {
       final effectivePersonaTypeId = personaTypeId ?? personaId;
       if (tabId != null) {
-        final permission = requiredPermissionForTab(
-          experience: experience,
-          tabId: tabId,
-          personaId: effectivePersonaTypeId,
-          appShellConfiguration: appShellConfiguration,
-        );
-        if (permission == null) return false;
-        return personaHasPermissionAsync(
+        // Notification chrome is backed by the always-present Messages
+        // platform surface but uses an internal query ID. Instance filtering
+        // still limits the result to the addressed recipient.
+        if (tabId == 'notifications' || tabId == 'notification-inbox') {
+          return true;
+        }
+        return personaHasPermission(
           experience,
           personaId,
-          permission,
-          activeMembershipLookup: activeMembershipLookup,
           tabId: tabId,
           personaTypeId: effectivePersonaTypeId,
         );
@@ -296,30 +293,12 @@ class _EngineNativeCommunityStore {
           ? null
           : experience.workflowDefinitions?[workflowType];
       if (machine == null) return true;
-      final permissions = <String>{};
-      for (final binding in machine.renderBindings) {
-        final permission = requiredPermissionForTab(
-          experience: experience,
-          tabId: binding.tabId,
-          personaId: effectivePersonaTypeId,
-          appShellConfiguration: appShellConfiguration,
-        );
-        if (permission != null) permissions.add(permission);
-      }
-      if (permissions.isEmpty) return true;
-      for (final permission in permissions) {
-        if (await personaHasPermissionAsync(
-          experience,
-          personaId,
-          permission,
-          activeMembershipLookup: activeMembershipLookup,
-          workflowType: workflowType,
-          personaTypeId: effectivePersonaTypeId,
-        )) {
-          return true;
-        }
-      }
-      return false;
+      return personaHasPermission(
+        experience,
+        personaId,
+        workflowType: workflowType,
+        personaTypeId: effectivePersonaTypeId,
+      );
     });
   }
 }

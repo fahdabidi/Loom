@@ -312,8 +312,8 @@ void main() {
       'Review proposals and publish club updates.',
     );
     expect(
-      organizerAdmin.requiredPermission,
-      'community.surface.navigation.configure',
+      organizerAdmin.isVisibleFor('tabletop-organizer', experience: experience),
+      isTrue,
     );
     expect(organizerAdmin.rendererContractId, 'admin-review-compose-queue');
     expect(organizerAdmin.visiblePersonaIds, ['tabletop-organizer']);
