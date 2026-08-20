@@ -223,6 +223,7 @@ class CommunityPackageValidator {
         declaredTabIds: declaredTabIds,
       ).validate(workflows).findings,
     );
+    findings.addAll(_validateComputedFieldsAreNotRequired(workflows));
     findings.addAll(
       _validateVisibilityFields(
         rawDefinitions,
@@ -401,6 +402,42 @@ class CommunityPackageValidator {
       }
     }
     return ValidationReport(findings);
+  }
+
+  List<ValidationFinding> _validateComputedFieldsAreNotRequired(
+    Map<String, LoomWorkflowStateMachine> workflows,
+  ) {
+    final findings = <ValidationFinding>[];
+    for (final workflowEntry in workflows.entries) {
+      for (final fieldEntry in workflowEntry.value.instanceDataSchema.entries) {
+        final field = fieldEntry.value;
+        if (!field.required ||
+            (field.formula == null && field.source == null)) {
+          continue;
+        }
+        final remediation = field.formula != null
+            ? 'declares a formula and is also marked required. A '
+                  'formula-computed field is derived by the engine, so '
+                  'requiring it makes instance creation fail with "Required '
+                  'field is missing or null". Remove \'required: true\' -- the '
+                  'formula supplies the value.'
+            : 'declares a source and is also marked required. A query-backed '
+                  "field is populated on read from another workflow's rows, "
+                  'so requiring it makes instance creation fail with "Required '
+                  'field is missing or null". Remove \'required: true\' -- the '
+                  'query supplies the value.';
+        findings.add(
+          _finding(
+            'computed_field_cannot_be_required',
+            "Field '${fieldEntry.key}' in workflow '${workflowEntry.key}' "
+                '$remediation',
+            'experience/workflowDefinitions/${workflowEntry.key}/'
+                'instanceDataSchema/${fieldEntry.key}/required',
+          ),
+        );
+      }
+    }
+    return findings;
   }
 
   void _checkReference(

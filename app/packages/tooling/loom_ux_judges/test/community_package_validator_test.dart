@@ -402,6 +402,213 @@ void main() {
       },
     );
   });
+
+  group('computed and query-backed field required validation', () {
+    List<ValidationFinding> computedFieldRequiredFindings(
+      Map<String, dynamic> package,
+    ) => CommunityPackageValidator()
+        .validate(package)
+        .errors
+        .where((finding) => finding.type == 'computed_field_cannot_be_required')
+        .toList();
+
+    test('formula plus required true produces exactly one error', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'queueLength': <String, dynamic>{
+              'type': 'number',
+              'required': true,
+              'formula': 'size(queuedFanIds)',
+            },
+            'queuedFanIds': <String, dynamic>{'type': 'list'},
+          },
+        ),
+      };
+
+      final formulaRequired = computedFieldRequiredFindings(package);
+
+      expect(formulaRequired, hasLength(1));
+      expect(formulaRequired.single.isWarning, isFalse);
+      expect(formulaRequired.single.message, contains("Field 'queueLength'"));
+      expect(formulaRequired.single.message, contains("workflow 'thing'"));
+      expect(
+        formulaRequired.single.message,
+        contains("Remove 'required: true' -- the formula supplies the value."),
+      );
+    });
+
+    test('formula without required produces no error', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'total': <String, dynamic>{'type': 'number', 'formula': '1'},
+          },
+        ),
+      };
+
+      expect(computedFieldRequiredFindings(package), isEmpty);
+    });
+
+    test('required without formula produces no error', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'name': <String, dynamic>{'type': 'string', 'required': true},
+          },
+        ),
+      };
+
+      expect(computedFieldRequiredFindings(package), isEmpty);
+    });
+
+    test('reports every offending field across different workflows', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'queue': definition(
+          schema: <String, dynamic>{
+            'queueLength': <String, dynamic>{
+              'type': 'number',
+              'required': true,
+              'formula': 'size(queuedFanIds)',
+            },
+            'queuedFanIds': <String, dynamic>{'type': 'list'},
+          },
+        ),
+        'roster': definition(
+          schema: <String, dynamic>{
+            'memberCount': <String, dynamic>{
+              'type': 'number',
+              'required': true,
+              'formula': 'size(memberFanIds)',
+            },
+            'memberFanIds': <String, dynamic>{'type': 'list'},
+          },
+        ),
+      };
+
+      final formulaRequired = computedFieldRequiredFindings(package);
+
+      expect(formulaRequired, hasLength(2));
+      expect(
+        formulaRequired.map((finding) => finding.message),
+        containsAll(<Matcher>[
+          allOf(contains("workflow 'queue'"), contains("Field 'queueLength'")),
+          allOf(contains("workflow 'roster'"), contains("Field 'memberCount'")),
+        ]),
+      );
+    });
+
+    test('source plus required true produces exactly one error', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'responses': <String, dynamic>{
+              'type': 'list',
+              'required': true,
+              'source': 'query(response where thingId == id)',
+            },
+          },
+        ),
+        'response': definition(
+          schema: <String, dynamic>{
+            'thingId': <String, dynamic>{'type': 'string'},
+          },
+        ),
+      };
+
+      final sourceRequired = computedFieldRequiredFindings(package);
+
+      expect(sourceRequired, hasLength(1));
+      expect(sourceRequired.single.isWarning, isFalse);
+      expect(sourceRequired.single.message, contains("Field 'responses'"));
+      expect(sourceRequired.single.message, contains("workflow 'thing'"));
+      expect(
+        sourceRequired.single.message,
+        contains(
+          "query-backed field is populated on read from another workflow's rows",
+        ),
+      );
+      expect(
+        sourceRequired.single.message,
+        contains("Remove 'required: true' -- the query supplies the value."),
+      );
+    });
+
+    test('source without required produces no error', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'responses': <String, dynamic>{
+              'type': 'list',
+              'source': 'query(response where thingId == id)',
+            },
+          },
+        ),
+        'response': definition(
+          schema: <String, dynamic>{
+            'thingId': <String, dynamic>{'type': 'string'},
+          },
+        ),
+      };
+
+      expect(computedFieldRequiredFindings(package), isEmpty);
+    });
+
+    test('reports formula and source fields with field-specific messages', () {
+      final package = pkg();
+      final experience = package['experience'] as Map<String, dynamic>;
+      experience['workflowDefinitions'] = <String, dynamic>{
+        'thing': definition(
+          schema: <String, dynamic>{
+            'responseCount': <String, dynamic>{
+              'type': 'number',
+              'required': true,
+              'formula': 'size(responses)',
+            },
+            'responses': <String, dynamic>{
+              'type': 'list',
+              'required': true,
+              'source': 'query(response where thingId == id)',
+            },
+          },
+        ),
+        'response': definition(
+          schema: <String, dynamic>{
+            'thingId': <String, dynamic>{'type': 'string'},
+          },
+        ),
+      };
+
+      final requiredComputedFields = computedFieldRequiredFindings(package);
+
+      expect(requiredComputedFields, hasLength(2));
+      expect(
+        requiredComputedFields.map((finding) => finding.message),
+        containsAll(<Matcher>[
+          allOf(
+            contains("Field 'responseCount'"),
+            contains('formula supplies the value'),
+          ),
+          allOf(
+            contains("Field 'responses'"),
+            contains('query supplies the value'),
+          ),
+        ]),
+      );
+    });
+  });
 }
 
 Map<String, dynamic> _ballotPackage(String eventId) {
