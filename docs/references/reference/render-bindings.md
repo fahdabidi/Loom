@@ -479,7 +479,9 @@ and the community's tab declaration agree on the same string.
       "cardSurfaceFamilies": [ /* ... */ ],  // optional — restricts which archetypes this tab shows, if set
       "pinnedWorkflowIds": [ /* ... */ ], // optional
       "visibleRoleIds": [ /* ... */ ], // optional — omit for visible-to-all
-      "requiredPermission": "community.surface.navigation.read"  // optional, has a default
+      "requiredPermission": "community.surface.navigation.read"  // optional, defaults to `.read` --
+                                                                  // but see "declare it on every
+                                                                  // privileged tab" below
     }
   ],
   "roleTabs": {
@@ -493,6 +495,36 @@ and the community's tab declaration agree on the same string.
 default for nearly every custom tab, since it already handles live queries, pagination, and dispatches each
 instance to its own `cardSurfaceFamily`-declared archetype. Only specify a different `rendererContractId` if
 building a genuinely bespoke, non-generic tab surface.
+
+### `requiredPermission` — declare it on every privileged tab
+
+The permission a viewer must hold for the tab to appear at all. There are exactly two values:
+
+| Value | Meaning | Use for |
+|---|---|---|
+| `community.surface.navigation.read` | ordinary navigation | the default — any tab a member may see |
+| `community.surface.navigation.configure` | administrative access | any tab that configures, moderates or administers the community |
+
+**It is optional and it defaults to `community.surface.navigation.read`. That default is a
+privilege decision, so declaring it is not optional in practice for an administrative tab.** A tab
+that manages the community and omits `requiredPermission` is readable by every member, silently.
+
+Declare `community.surface.navigation.configure` on any tab whose content configures or moderates
+the community — an `admin` tab is the obvious case, but so is anything exposing membership
+approval, role assignment, community settings, or moderation queues. Judge it by what the tab
+*does*, not by what it is named: a tab called `settings` or `moderation` needs it just as much as
+one called `admin`.
+
+Do **not** put `configure` on an ordinary content tab. Over-declaring is its own defect — it hides
+a tab from the members it was built for.
+
+> **Why this is spelled out.** Until 2026-08-20 the app shell supplied
+> `community.surface.navigation.configure` for the `admin` tab from a hardcoded per-community table
+> in `part12_persona_and_tabs.dart`. When that table was deleted — correctly, so that a tab exists
+> because a community declares it rather than because the shell guessed — every Admin tab across
+> all ten communities that declare one fell back to `navigation.read`, because **none of the eleven
+> packages declared `requiredPermission` on any tab**. Nobody had ever needed to: the shell was
+> supplying the value invisibly. The grammar supported it the whole time. State it.
 
 `home` and `messages` never need a declaration to exist, but a declaration for either is still honored for
 cosmetic overrides (custom label/icon/description) if a community wants to rename `messages` to
