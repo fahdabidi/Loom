@@ -2394,7 +2394,8 @@
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin",
         "description": "Settlement, allocation correction, and audit operations.",
-        "visibleRoleIds": ["ad-off-owner"]
+        "visibleRoleIds": ["ad-off-owner"],
+        "requiredPermission": "community.surface.navigation.configure"
       }
     ]
   }
