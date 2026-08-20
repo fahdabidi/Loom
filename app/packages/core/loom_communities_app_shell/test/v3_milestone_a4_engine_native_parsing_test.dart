@@ -25,7 +25,12 @@ File _repositoryFile(String relativePath) {
   throw StateError('Fixture not found: $relativePath');
 }
 
-Map<String, Object?> _tabletopExperience() {
+typedef _PackageExperience = ({
+  Map<String, Object?> experience,
+  int? specVersion,
+});
+
+_PackageExperience _tabletopPackage() {
   final package =
       jsonDecode(
             stripJsonComments(
@@ -33,14 +38,20 @@ Map<String, Object?> _tabletopExperience() {
             ),
           )
           as Map<String, dynamic>;
-  return Map<String, Object?>.from(package['experience'] as Map);
+  return (
+    experience: Map<String, Object?>.from(package['experience'] as Map),
+    specVersion: package['specVersion'] as int?,
+  );
 }
 
-Map<String, Object?> _legacyExperience() {
+_PackageExperience _legacyPackage() {
   final package =
       jsonDecode(_repositoryFile(_legacyRelativePath).readAsStringSync())
           as Map<String, dynamic>;
-  return Map<String, Object?>.from(package['experience'] as Map);
+  return (
+    experience: Map<String, Object?>.from(package['experience'] as Map),
+    specVersion: package['specVersion'] as int?,
+  );
 }
 
 Map<String, Object?> _v2Experience({int grammarVersion = 1}) =>
@@ -261,9 +272,11 @@ void main() {
   });
 
   test('1 parses the real Tabletop engine-native package completely', () {
+    final package = _tabletopPackage();
     final experience = experienceForExtensionId(
       'a4-tabletop-real-fixture',
-      experienceConfiguration: _tabletopExperience(),
+      specVersion: package.specVersion,
+      experienceConfiguration: package.experience,
     );
     final definitions = experience.workflowDefinitions;
     final instances = experience.workflowInstances;
@@ -427,9 +440,11 @@ void main() {
   });
 
   test('legacy notification presentation parses for both schema paths', () {
+    final package = _legacyPackage();
     final experience = experienceForExtensionId(
       'a4-legacy-notification-presentation',
-      experienceConfiguration: _legacyExperience()
+      specVersion: package.specVersion,
+      experienceConfiguration: package.experience
         ..['notificationPresentation'] = <String, Object?>{
           'style': 'dedicatedTab',
         },
@@ -438,9 +453,11 @@ void main() {
   });
 
   test('2 absent stamp preserves the legacy shallow projection', () {
+    final package = _legacyPackage();
     final experience = experienceForExtensionId(
       'a4-legacy-absent',
-      experienceConfiguration: _legacyExperience(),
+      specVersion: package.specVersion,
+      experienceConfiguration: package.experience,
     );
     expect(_legacyProjection(experience), <Object?>[
       'Tabletop Club',
@@ -495,23 +512,29 @@ void main() {
   });
 
   test('3 explicit legacy version matches absent-stamp legacy parsing', () {
+    final absentPackage = _legacyPackage();
     final absent = experienceForExtensionId(
       'a4-legacy-absent-comparison',
-      experienceConfiguration: _legacyExperience(),
+      specVersion: absentPackage.specVersion,
+      experienceConfiguration: absentPackage.experience,
     );
+    final explicitPackage = _legacyPackage();
     final explicit = experienceForExtensionId(
       'a4-legacy-explicit',
-      experienceConfiguration: _legacyExperience()
+      specVersion: explicitPackage.specVersion,
+      experienceConfiguration: explicitPackage.experience
         ..['experienceSchemaVersion'] = 1,
     );
     expect(_legacyProjection(explicit), _legacyProjection(absent));
   });
 
   test('4 unsupported experience version throws FormatException', () {
-    final config = _legacyExperience()..['experienceSchemaVersion'] = 99;
+    final package = _legacyPackage();
+    final config = package.experience..['experienceSchemaVersion'] = 99;
     expect(
       () => experienceForExtensionId(
         'a4-unsupported-experience',
+        specVersion: package.specVersion,
         experienceConfiguration: config,
       ),
       throwsA(isA<FormatException>()),
