@@ -309,6 +309,7 @@ class ArchetypeResolver {
       'withdraw_response',
       'join_waitlist',
       'set_reminder',
+      'deliver_reminder',
       'propose_change',
       'record_outcome',
     },

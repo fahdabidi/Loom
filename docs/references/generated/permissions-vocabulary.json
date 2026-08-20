@@ -230,6 +230,7 @@
       "actions": [
         "cancel",
         "create",
+        "deliver_reminder",
         "edit",
         "join_waitlist",
         "propose_change",
@@ -243,6 +244,7 @@
       "permissions": [
         "event_rsvp.cancel",
         "event_rsvp.create",
+        "event_rsvp.deliver_reminder",
         "event_rsvp.edit",
         "event_rsvp.join_waitlist",
         "event_rsvp.propose_change",
