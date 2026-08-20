@@ -199,16 +199,6 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   Map<String, Object?> appShellConfiguration = const {},
   bool? hasActiveMembership,
 }) {
-  final packageDeclarativeSpecs = [
-    ..._declarativeTabSpecsFromConfiguration(appShellConfiguration['tabs']),
-    ..._declarativeTabSpecsFromPersonaConfiguration(
-      appShellConfiguration['roleTabs'],
-      personaId: personaId,
-    ),
-  ];
-  final usesComputedPermissionFallback =
-      experience.workflowDefinitions != null ||
-      packageDeclarativeSpecs.isNotEmpty;
   final generatedTabs = _generatedAppShellTabsFor();
   final tabs = _mergeDeclarativeTabSpecs(
     personaId: personaId,
@@ -220,7 +210,6 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       if (tab.isVisibleFor(
         personaId,
         experience: experience,
-        enforceRequiredPermission: usesComputedPermissionFallback,
         hasActiveMembership: hasActiveMembership,
         personaTypeId: personaId,
       ))

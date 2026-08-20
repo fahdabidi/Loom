@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
@@ -210,6 +211,38 @@ void main() {
     );
   });
 
+  test('tab visibility enforces its required permission by default', () {
+    final experience = _experience({
+      'guarded-workflow': _machine(
+        workflowType: 'guarded-workflow',
+        tabId: 'private-surface',
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedPersonaIds: ['member']),
+        ),
+      ),
+    });
+    const tab = LoomAppShellTabSpec(
+      tabId: 'private-surface',
+      label: 'Private surface',
+      icon: Icons.folder_open_outlined,
+      description: 'Private member content.',
+      visiblePersonaIds: ['member', 'outsider'],
+      requiredPermission: 'community.surface.workflow.read',
+    );
+
+    expect(tab.isVisibleFor('member', experience: experience), isTrue);
+    expect(tab.isVisibleFor('outsider', experience: experience), isFalse);
+    expect(
+      tab.isVisibleFor(
+        'outsider',
+        experience: experience,
+        enforceRequiredPermission: false,
+      ),
+      isTrue,
+    );
+  });
+
   test('guarded field principals admit potentially owned rows', () {
     final experience = _experience({
       'party-workflow': _machine(
@@ -312,7 +345,7 @@ void main() {
   );
 
   test(
-    'declarative tabs use computed permission fallback while package tabs keep explicit role lists',
+    'declarative tabs enforce computed permissions and package tabs respect role lists',
     () {
       final declarativeExperience = _experience({
         'private-workflow': _machine(

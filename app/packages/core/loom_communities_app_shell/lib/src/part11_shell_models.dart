@@ -611,12 +611,13 @@ class LoomAppShellTabSpec {
   bool isVisibleFor(
     String personaId, {
     LoomExperienceDefinition? experience,
-    bool enforceRequiredPermission = false,
+    bool enforceRequiredPermission = true,
     bool? hasActiveMembership,
     String? personaTypeId,
   }) {
-    if (visiblePersonaIds.isNotEmpty) {
-      return visiblePersonaIds.contains(personaId);
+    if (visiblePersonaIds.isNotEmpty &&
+        !visiblePersonaIds.contains(personaId)) {
+      return false;
     }
     if (!enforceRequiredPermission || experience == null) {
       return true;
