@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_ux_judges/community_remote_migration.dart';
@@ -104,15 +105,66 @@ void main() {
       );
     });
 
+    test('parses specVersion 4 roles using roleId', () {
+      expect(package.workflowGrammarVersion, 4);
+      expect(
+        package.personas
+            .map(
+              (persona) =>
+                  (persona.personaId, persona.label, persona.roleLabel),
+            )
+            .toList(),
+        [
+          ('member', 'Member', 'Member'),
+          ('moderator', 'Moderator', 'Moderator'),
+        ],
+      );
+    });
+
+    test('uses specVersion 4 as the install payload grammarVersion', () {
+      expect(
+        plan.installCommunityPackagePayload,
+        containsPair('grammarVersion', 4),
+      );
+    });
+
+    test('rejects a package with neither roles nor personas clearly', () {
+      final root = jsonDecode(jsonEncode(package.root)) as Map<String, dynamic>;
+      final experience = root['experience'] as Map<String, dynamic>;
+      experience
+        ..remove('roles')
+        ..remove('personas');
+
+      expect(
+        () => ParsedCommunityPackage.parse(jsonEncode(root)),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'experience.roles or experience.personas must not be empty.',
+          ),
+        ),
+      );
+    });
+
     test('derives createRoleIds from create-action byPersonaIds', () {
       final workflows = _workflowsByType(plan);
 
-      expect(workflows['platform-message-thread']?['createRoleIds'], [
-        'member',
-      ]);
-      expect(workflows['platform-connection']?['createRoleIds'], ['member']);
-      expect(workflows['platform-blocked-target']?['createRoleIds'], isEmpty);
-      expect(plan.cleanCreateActionCount, 2);
+      expect(
+        {
+          for (final entry in workflows.entries)
+            entry.key: entry.value['createRoleIds'],
+        },
+        {
+          'platform-message-thread': ['member'],
+          'platform-connection': ['member'],
+          'platform-blocked-target': <String>[],
+          'platform-in-stream-ad': ['moderator'],
+          'platform-top-banner-no-fill': ['moderator'],
+          'platform-sensitive-no-fill': ['moderator'],
+        },
+      );
+      expect(plan.cleanCreateActionCount, 6);
       expect(plan.flaggedCreateActionCount, 0);
     });
 
@@ -131,8 +183,8 @@ void main() {
       }
     });
 
-    test('audits every real legacy guard and translates full rosters', () {
-      expect(plan.cleanGuardCount, 21);
+    test('passes through v4 role guards without legacy guard audits', () {
+      expect(plan.cleanGuardCount, 0);
       expect(plan.flaggedGuardCount, 0);
       expect(plan.findings, isEmpty);
 
@@ -153,7 +205,7 @@ void main() {
     });
 
     test(
-      'passes definitions through under specVersion 4 with clean guards translated',
+      'passes definitions through under specVersion 4 with role guards intact',
       () {
         expect(plan.replaceWorkflowDefinitionsPayload['specVersion'], 4);
         final definitions =
@@ -161,8 +213,17 @@ void main() {
         final messageThread = definitions['platform-message-thread'] as Map;
         final states = messageThread['states'] as Map;
         final draft = states['draft'] as Map;
-        expect(draft['editGuard'], containsPair('allowedRoleIds', ['member']));
+        expect(
+          draft['editGuard'],
+          containsPair('actorEqualsField', {'key': 'participantAFanId'}),
+        );
         expect(draft['editGuard'], isNot(contains('allowedPersonaIds')));
+
+        final startThreadGuard =
+            ((messageThread['transitions'] as List).first as Map)['guard']
+                as Map;
+        expect(startThreadGuard, containsPair('allowedRoleIds', ['member']));
+        expect(startThreadGuard, isNot(contains('allowedPersonaIds')));
 
         final inStreamAd = definitions['platform-in-stream-ad'] as Map;
         final fullRosterGuard =
@@ -201,6 +262,38 @@ void main() {
       },
     );
   });
+
+  group('legacy package parsing', () {
+    late ParsedCommunityPackage package;
+
+    setUpAll(() async {
+      package = await ParsedCommunityPackage.fromFile(
+        _communityFixture(
+          'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+        ),
+      );
+    });
+
+    test('preserves persona and workflowGrammarVersion values', () {
+      expect(package.communityId, 'community_garden_club');
+      expect(package.communityHandle, 'garden-club');
+      expect(package.displayName, 'Garden Club');
+      expect(package.extensionId, 'ext_garden_club');
+      expect(package.workflowGrammarVersion, 1);
+      expect(
+        package.personas
+            .map(
+              (persona) =>
+                  (persona.personaId, persona.label, persona.roleLabel),
+            )
+            .toList(),
+        [
+          ('garden-member', 'Member', 'Member'),
+          ('garden-coordinator', 'Coordinator', 'Coordinator'),
+        ],
+      );
+    });
+  });
 }
 
 Map<String, Map<String, Object?>> _workflowsByType(
@@ -214,9 +307,13 @@ Map<String, Map<String, Object?>> _workflowsByType(
 };
 
 File _memberSocialFixture() {
-  const relativePath =
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc';
+  return _communityFixture(
+    'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc',
+  );
+}
+
+File _communityFixture(String fileName) {
+  final relativePath = 'docs/references/communities/$fileName';
   var directory = Directory.current;
   for (var depth = 0; depth < 8; depth++) {
     final candidate = File('${directory.path}/$relativePath');

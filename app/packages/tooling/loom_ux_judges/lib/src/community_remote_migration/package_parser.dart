@@ -89,40 +89,50 @@ class ParsedCommunityPackage {
       );
     }
 
-    final rawPersonas = experience['personas'];
+    final rawPersonas = experience['roles'] ?? experience['personas'];
     if (rawPersonas is! List || rawPersonas.isEmpty) {
-      throw const FormatException('experience.personas must not be empty.');
+      throw const FormatException(
+        'experience.roles or experience.personas must not be empty.',
+      );
     }
+    final personasPath = experience['roles'] != null
+        ? 'experience.roles'
+        : 'experience.personas';
     final personas = <MigrationPersona>[];
     for (var index = 0; index < rawPersonas.length; index++) {
       final raw = rawPersonas[index];
       if (raw is! Map) {
-        throw FormatException('experience.personas[$index] must be an object.');
+        throw FormatException('$personasPath[$index] must be an object.');
       }
       final persona = Map<String, dynamic>.from(raw);
+      final personaIdKey = persona['roleId'] != null ? 'roleId' : 'personaId';
       personas.add(
         MigrationPersona(
           personaId: _requiredString(
             persona,
-            'personaId',
-            prefix: 'experience.personas[$index].',
+            personaIdKey,
+            prefix: '$personasPath[$index].',
           ),
           label: _requiredString(
             persona,
             'label',
-            prefix: 'experience.personas[$index].',
+            prefix: '$personasPath[$index].',
           ),
           roleLabel: _requiredString(
             persona,
             'roleLabel',
-            prefix: 'experience.personas[$index].',
+            prefix: '$personasPath[$index].',
           ),
         ),
       );
     }
 
-    final grammarVersion = experience['workflowGrammarVersion'];
+    final specVersion = decoded['specVersion'];
+    final grammarVersion = specVersion ?? experience['workflowGrammarVersion'];
     if (grammarVersion is! int) {
+      if (specVersion != null) {
+        throw const FormatException('specVersion must be an integer.');
+      }
       throw const FormatException(
         'experience.workflowGrammarVersion must be an integer.',
       );
