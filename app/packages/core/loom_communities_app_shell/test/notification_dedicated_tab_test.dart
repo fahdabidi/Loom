@@ -22,13 +22,13 @@ Map<String, dynamic> _notificationDefinition() => {
       'from': ['unread'],
       'to': 'read',
       'guard': {
-        'actorEqualsField': {'key': 'recipientPersonaId'},
+        'actorEqualsField': {'key': 'recipientFanId'},
       },
     },
   ],
   'instanceDataSchema': {
-    'recipientPersonaId': {
-      'type': 'personaId',
+    'recipientFanId': {
+      'type': 'fanId',
       'required': true,
       'writableBy': 'effect',
       'storage': 'inline',
@@ -64,9 +64,9 @@ Map<String, dynamic> _notificationSeed({
   'instanceId': instanceId,
   'workflowType': NotificationInboxController.workflowType,
   'currentState': currentState,
-  'createdByPersonaId': 'notification-effect',
+  'createdByFanId': 'notification-effect',
   'instanceData': {
-    'recipientPersonaId': recipientPersonaId,
+    'recipientFanId': recipientPersonaId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',
@@ -76,17 +76,15 @@ Map<String, dynamic> _notificationSeed({
 Map<String, Object?> _experienceConfiguration(
   List<Map<String, dynamic>> seeds,
 ) => {
-  'experienceSchemaVersion': 2,
-  'workflowGrammarVersion': 1,
-  'personas': [
+  'roles': [
     {
-      'personaId': _personaA,
+      'roleId': _personaA,
       'label': 'Member A',
       'roleLabel': 'Member',
       'description': 'Member A notifications',
     },
     {
-      'personaId': _personaB,
+      'roleId': _personaB,
       'label': 'Member B',
       'roleLabel': 'Member',
       'description': 'Member B notifications',
@@ -117,6 +115,7 @@ Future<WorkflowEngineApi> _installEngine(
   experienceForExtensionId(
     extensionId,
     displayName: 'Engine-native Community',
+    specVersion: currentCommunitySpecVersion,
     experienceConfiguration: experienceConfiguration,
   );
   return workflowEngineForExtensionId(extensionId);
@@ -133,6 +132,7 @@ LocalInstalledCommunity _community({
   cardImageAssetId: null,
   heroImageAssetId: null,
   accentColor: '#246B62',
+  specVersion: currentCommunitySpecVersion,
   appShellConfiguration: _appShellConfiguration,
   experienceConfiguration: experienceConfiguration,
 );

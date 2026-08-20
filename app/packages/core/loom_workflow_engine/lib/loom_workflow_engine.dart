@@ -12,4 +12,5 @@ export 'src/evaluator/role_resolver.dart';
 export 'src/evaluator/transition_evaluator.dart';
 export 'src/models/workflow_archetypes.dart';
 export 'src/models/workflow_models.dart';
+export 'src/spec_version.dart';
 export 'src/store/database.dart';

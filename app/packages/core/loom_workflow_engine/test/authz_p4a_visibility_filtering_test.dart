@@ -34,7 +34,7 @@ Map<String, dynamic> _binding(
   Map<String, dynamic>? responseTable,
 }) => <String, dynamic>{
   'states': <String>['open'],
-  'role': 'any',
+  'audience': 'any',
   'tabId': 'home',
   'cardSurfaceFamily': family,
   'bindingKind': 'primary',
@@ -107,7 +107,7 @@ void main() {
           'guarded',
           defaultVisibility: 'guarded',
           readGuard: <String, dynamic>{
-            'allowedPersonaIds': <String>['reviewer'],
+            'allowedRoleIds': <String>['reviewer'],
           },
         ),
       );
@@ -162,10 +162,10 @@ void main() {
         'state-guarded',
         defaultVisibility: 'guarded',
         readGuard: <String, dynamic>{
-          'allowedPersonaIds': <String>['reviewer'],
+          'allowedRoleIds': <String>['reviewer'],
         },
         stateReadGuard: <String, dynamic>{
-          'allowedPersonaIds': <String>['editor'],
+          'allowedRoleIds': <String>['editor'],
         },
       ),
     );
@@ -209,23 +209,26 @@ void main() {
   // Phase A -- the `owner` visibility model (CONTRACTS.md §3). Every archetype
   // supports it, so it is enforced here rather than per-archetype.
   group('owner visibility model', () {
-    test('the creator reads their own membersOnly instance without membership', () async {
-      final api = _api(activeMembershipLookup: (_) => false);
-      api.registerDefinition(
-        _machine('members-only', defaultVisibility: 'membersOnly'),
-      );
-      await _create(
-        api,
-        workflowType: 'members-only',
-        creator: 'author',
-        title: 'my own request',
-      );
+    test(
+      'the creator reads their own membersOnly instance without membership',
+      () async {
+        final api = _api(activeMembershipLookup: (_) => false);
+        api.registerDefinition(
+          _machine('members-only', defaultVisibility: 'membersOnly'),
+        );
+        await _create(
+          api,
+          workflowType: 'members-only',
+          creator: 'author',
+          title: 'my own request',
+        );
 
-      // Before this model existed, `author` could not read the very request
-      // they had submitted the moment their membership lapsed.
-      expect(await _read(api, 'author'), hasLength(1));
-      expect(await _read(api, 'someone-else'), isEmpty);
-    });
+        // Before this model existed, `author` could not read the very request
+        // they had submitted the moment their membership lapsed.
+        expect(await _read(api, 'author'), hasLength(1));
+        expect(await _read(api, 'someone-else'), isEmpty);
+      },
+    );
 
     test('an instance with no creator is readable by nobody', () async {
       final api = _api(activeMembershipLookup: (_) => false);
@@ -246,33 +249,36 @@ void main() {
       expect(await _read(api, 'anyone'), isEmpty);
     });
 
-    test('ownership does not widen a guarded instance to other viewers', () async {
-      final api = _api();
-      api.registerDefinition(
-        _machine(
-          'guarded',
-          defaultVisibility: 'guarded',
-          readGuard: <String, dynamic>{
-            'allowedPersonaIds': <String>['reviewer'],
-          },
-        ),
-      );
-      await _create(
-        api,
-        workflowType: 'guarded',
-        creator: 'author',
-        title: 'sensitive',
-      );
+    test(
+      'ownership does not widen a guarded instance to other viewers',
+      () async {
+        final api = _api();
+        api.registerDefinition(
+          _machine(
+            'guarded',
+            defaultVisibility: 'guarded',
+            readGuard: <String, dynamic>{
+              'allowedRoleIds': <String>['reviewer'],
+            },
+          ),
+        );
+        await _create(
+          api,
+          workflowType: 'guarded',
+          creator: 'author',
+          title: 'sensitive',
+        );
 
-      expect(await _read(api, 'author'), hasLength(1));
-      expect(await _read(api, 'reviewer'), hasLength(1));
-      expect(await _read(api, 'bystander'), isEmpty);
-    });
+        expect(await _read(api, 'author'), hasLength(1));
+        expect(await _read(api, 'reviewer'), hasLength(1));
+        expect(await _read(api, 'bystander'), isEmpty);
+      },
+    );
   });
 
   group('owner_and_shared visibility model', () {
     test(
-      'admits shared viewers under both D8 spellings and refuses others',
+      'admits shared viewers through v4 fan-id fields and refuses others',
       () async {
         final api = _api(
           activeMembershipLookup: (personaId) => personaId == 'default-reader',
@@ -291,9 +297,9 @@ void main() {
           api,
           workflowType: 'documents',
           creator: 'seed',
-          title: 'legacy spelling',
+          title: 'first shared viewer',
           data: <String, dynamic>{
-            'sharedWithPersonaIds': <String>['legacy-reader'],
+            'sharedWithFanIds': <String>['first-reader'],
           },
         );
         await _create(
@@ -306,7 +312,7 @@ void main() {
           },
         );
 
-        expect(await _read(api, 'legacy-reader'), hasLength(1));
+        expect(await _read(api, 'first-reader'), hasLength(1));
         expect(await _read(api, 'current-reader'), hasLength(1));
         expect(await _read(api, 'wrong-reader'), isEmpty);
         expect(await _read(api, 'default-reader'), hasLength(2));
@@ -382,12 +388,12 @@ void main() {
           creator: 'seed',
           title: 'private thread',
           data: <String, dynamic>{
-            'participantPersonaIds': <String>['legacy-participant'],
+            'participantFanIds': <String>['first-participant'],
             'participantBFanId': 'current-participant',
           },
         );
 
-        expect(await _read(api, 'legacy-participant'), hasLength(1));
+        expect(await _read(api, 'first-participant'), hasLength(1));
         expect(await _read(api, 'current-participant'), hasLength(1));
         expect(await _read(api, 'wrong-reader'), isEmpty);
         expect(await _read(api, 'default-reader'), hasLength(1));
@@ -450,7 +456,7 @@ void main() {
             creator: 'seed',
             title: entry.key,
             data: <String, dynamic>{
-              'requesterPersonaId': '${entry.key}-requester',
+              'requesterFanId': '${entry.key}-requester',
               'reviewerFanId': '${entry.key}-reviewer',
             },
           );
@@ -512,16 +518,19 @@ void main() {
       expect(await _read(api, 'member-account'), isEmpty);
     });
 
-    test('role party denies a viewer absent from the persona type map', () async {
-      final api = await _partiesApi(
-        parties: [
-          {'role': 'finance-admin'},
-          {'role': 'auditor'},
-        ],
-      );
+    test(
+      'role party denies a viewer absent from the persona type map',
+      () async {
+        final api = await _partiesApi(
+          parties: [
+            {'role': 'finance-admin'},
+            {'role': 'auditor'},
+          ],
+        );
 
-      expect(await _read(api, 'unregistered-account'), isEmpty);
-    });
+        expect(await _read(api, 'unregistered-account'), isEmpty);
+      },
+    );
 
     test('role party denies an empty viewer id', () async {
       final api = await _partiesApi(
@@ -541,7 +550,7 @@ void main() {
           'payerFanId',
           {'role': 'finance-admin'},
         ],
-        data: <String, dynamic>{'payerPersonaId': 'payer-account'},
+        data: <String, dynamic>{'payerFanId': 'payer-account'},
       );
       api
         ..setPersonaType('admin-account', 'finance-admin')
@@ -573,9 +582,7 @@ void main() {
           fields: WorkflowVisibilityFields(
             parties: [
               WorkflowVisibilityRolePrincipal(roleId: ''),
-              WorkflowVisibilityFieldPrincipal(
-                fieldName: 'payerFanId',
-              ),
+              WorkflowVisibilityFieldPrincipal(fieldName: 'payerFanId'),
             ],
           ),
         ),
@@ -611,9 +618,7 @@ void main() {
                 {'role': 'finance-admin'},
               ],
             },
-            renderBindings: <Map<String, dynamic>>[
-              _binding('paymentCheckout'),
-            ],
+            renderBindings: <Map<String, dynamic>>[_binding('paymentCheckout')],
           ),
         );
         await _create(
@@ -623,9 +628,9 @@ void main() {
           title: 'serialization barrier',
         );
 
-        final serialized = jsonDecode(
-          (await db.loadDefinitionJson('serialization_payment'))!,
-        ) as Map<String, dynamic>;
+        final serialized =
+            jsonDecode((await db.loadDefinitionJson('serialization_payment'))!)
+                as Map<String, dynamic>;
         expect(
           (serialized['visibility'] as Map<String, dynamic>)['fields'],
           containsPair('parties', [
@@ -659,7 +664,7 @@ void main() {
           workflowType: 'notifications',
           creator: 'sender',
           title: 'private notification',
-          data: <String, dynamic>{'recipientPersonaId': 'addressee'},
+          data: <String, dynamic>{'recipientFanId': 'addressee'},
         );
 
         expect(await _read(api, 'addressee'), hasLength(1));

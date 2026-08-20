@@ -177,7 +177,7 @@ void main() {
             'workflowType': responseWorkflowType,
             'instanceData': {
               'eventId': 'fabricated-event',
-              'personaId': 'fan-victim',
+              'fanId': 'fan-victim',
             },
           },
         ),
@@ -357,8 +357,8 @@ void main() {
           body: {
             'workflowType': responseWorkflowType,
             'initialInstanceDataList': [
-              {'eventId': 'fabricated-event', 'personaId': 'fan-victim'},
-              {'eventId': 'fabricated-event', 'personaId': 'fan-other'},
+              {'eventId': 'fabricated-event', 'fanId': 'fan-victim'},
+              {'eventId': 'fabricated-event', 'fanId': 'fan-other'},
             ],
           },
         ),
@@ -849,7 +849,7 @@ void main() {
             'column': 'amount',
             'op': 'count',
             // A body value cannot select aggregate's unscoped engine path.
-            'personaId': null,
+            'fanId': null,
           },
         ),
       );
@@ -1217,7 +1217,7 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
           'label': 'Draft',
           'editableFields': ['title', 'computedTitle', 'effectOnly'],
           'editGuard': {
-            'allowedPersonaIds': ['fan-editor'],
+            'allowedRoleIds': ['fan-editor'],
           },
         },
       },
@@ -1300,7 +1300,7 @@ Future<void> _installCreatableDefinition(
   definition['renderBindings'] = [
     {
       'states': ['draft'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'home',
       'cardSurfaceFamily': family,
       'bindingKind': 'primary',
@@ -1331,7 +1331,7 @@ Future<void> _installResponseTableDefinitionPair(
   eventDefinition['renderBindings'] = [
     {
       'states': ['draft'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'calendar',
       'cardSurfaceFamily': 'event-rsvp',
       'bindingKind': 'primary',
@@ -1351,7 +1351,7 @@ Future<void> _installResponseTableDefinitionPair(
     'renderBindings': <Map<String, dynamic>>[],
     'instanceDataSchema': {
       'eventId': {'type': 'text', 'required': true},
-      'personaId': {'type': 'text', 'required': true},
+      'fanId': {'type': 'fanId', 'required': true},
     },
   };
 

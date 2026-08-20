@@ -23,7 +23,7 @@ class ParsedCommunityPackage {
     required this.communityHandle,
     required this.displayName,
     required this.extensionId,
-    required this.workflowGrammarVersion,
+    required this.specVersion,
     required this.personas,
     required this.rawWorkflowDefinitions,
     required this.workflowDefinitions,
@@ -36,7 +36,7 @@ class ParsedCommunityPackage {
   final String communityHandle;
   final String displayName;
   final String extensionId;
-  final int workflowGrammarVersion;
+  final int specVersion;
   final List<MigrationPersona> personas;
   final Map<String, Object?> rawWorkflowDefinitions;
   final Map<String, LoomWorkflowStateMachine> workflowDefinitions;
@@ -60,6 +60,22 @@ class ParsedCommunityPackage {
     }
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('The community package must be an object.');
+    }
+
+    final specVersion = decoded['specVersion'];
+    if (specVersion is! int) {
+      throw const FormatException(
+        'Packages must declare specVersion: $currentCommunitySpecVersion. '
+        'Pre-v4 packages are unsupported. See '
+        'docs/references/reference/identity-types.md.',
+      );
+    }
+    if (specVersion != currentCommunitySpecVersion) {
+      throw FormatException(
+        'Unsupported specVersion "$specVersion". Packages must declare '
+        'specVersion: $currentCommunitySpecVersion. See '
+        'docs/references/reference/identity-types.md.',
+      );
     }
 
     final experience = _requiredObject(decoded, 'experience');
@@ -89,15 +105,11 @@ class ParsedCommunityPackage {
       );
     }
 
-    final rawPersonas = experience['roles'] ?? experience['personas'];
+    final rawPersonas = experience['roles'];
     if (rawPersonas is! List || rawPersonas.isEmpty) {
-      throw const FormatException(
-        'experience.roles or experience.personas must not be empty.',
-      );
+      throw const FormatException('experience.roles must not be empty.');
     }
-    final personasPath = experience['roles'] != null
-        ? 'experience.roles'
-        : 'experience.personas';
+    const personasPath = 'experience.roles';
     final personas = <MigrationPersona>[];
     for (var index = 0; index < rawPersonas.length; index++) {
       final raw = rawPersonas[index];
@@ -105,12 +117,11 @@ class ParsedCommunityPackage {
         throw FormatException('$personasPath[$index] must be an object.');
       }
       final persona = Map<String, dynamic>.from(raw);
-      final personaIdKey = persona['roleId'] != null ? 'roleId' : 'personaId';
       personas.add(
         MigrationPersona(
           personaId: _requiredString(
             persona,
-            personaIdKey,
+            'roleId',
             prefix: '$personasPath[$index].',
           ),
           label: _requiredString(
@@ -127,17 +138,6 @@ class ParsedCommunityPackage {
       );
     }
 
-    final specVersion = decoded['specVersion'];
-    final grammarVersion = specVersion ?? experience['workflowGrammarVersion'];
-    if (grammarVersion is! int) {
-      if (specVersion != null) {
-        throw const FormatException('specVersion must be an integer.');
-      }
-      throw const FormatException(
-        'experience.workflowGrammarVersion must be an integer.',
-      );
-    }
-
     return ParsedCommunityPackage._(
       sourcePath: sourcePath,
       root: decoded,
@@ -146,7 +146,7 @@ class ParsedCommunityPackage {
       communityHandle: _requiredString(decoded, 'communityHandle'),
       displayName: _requiredString(decoded, 'displayName'),
       extensionId: _requiredString(decoded, 'extensionId'),
-      workflowGrammarVersion: grammarVersion,
+      specVersion: specVersion,
       personas: List.unmodifiable(personas),
       rawWorkflowDefinitions: Map.unmodifiable(rawDefinitions),
       workflowDefinitions: Map.unmodifiable(parsedDefinitions),

@@ -1,13 +1,13 @@
-// Garden Club — engine-native community package.
-// Authored from the supplied Garden Club Product Experience using the live
-// fahdabidi/Loom main-branch references fetched on 2026-08-11.
+// Garden Club — specVersion 4 engine-native community package.
+// Re-authored from the supplied Garden Club Product Experience and the
+// shipped package using the live fahdabidi/Loom main-branch references.
 //
 // Workflow split note: the product-doc umbrella "garden-tool-loan-giveaway"
 // becomes two types because a reversible loan/custody cycle and a terminal
 // giveaway transfer do not have the same states or transitions.
 
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "packageId": "init_garden_club_2",
   "communityId": "community_garden_club",
   "communityHandle": "garden-club",
@@ -15,11 +15,9 @@
   "extensionId": "ext_garden_club",
   "branding": { "accentColor": "#3F7D4A" },
   "seedDataFiles": [],
-  "idempotencyKey": "init-garden-club-v2",
+  "idempotencyKey": "init-garden-club-v4",
 
   "experience": {
-    "experienceSchemaVersion": 2,
-    "workflowGrammarVersion": 1,
     "displayName": "Garden Club",
     "tagline": "RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable.",
     "accentColor": "#3F7D4A",
@@ -39,15 +37,15 @@
     },
     "notificationPresentation": { "style": "bell" },
 
-    "personas": [
+    "roles": [
       {
-        "personaId": "garden-member",
+        "roleId": "garden-member",
         "label": "Member",
         "roleLabel": "Member",
         "description": "RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts."
       },
       {
-        "personaId": "garden-coordinator",
+        "roleId": "garden-coordinator",
         "label": "Coordinator",
         "roleLabel": "Coordinator",
         "description": "Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports."
@@ -69,9 +67,12 @@
               "location",
               "capacity",
               "recurrenceLabel",
-              "reminderOffsetHours"
+              "reminderOffsetHours",
+              "durationMinutes",
+              "workType",
+              "accessibilityNote"
             ],
-            "editGuard": { "allowedPersonaIds": ["garden-coordinator"] }
+            "editGuard": { "allowedRoleIds": ["garden-coordinator"] }
           },
           "cancelled": {
             "label": "Cancelled",
@@ -82,12 +83,13 @@
         "transitions": [
           {
             "id": "make-recurring",
+            "action": "edit",
             "label": "Repeat this event",
             "icon": "event_repeat",
             "tone": "secondary",
             "from": ["open"],
             "to": null,
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+            "guard": { "allowedRoleIds": ["garden-coordinator"] },
             "inputs": {
               "freq": {
                 "type": "text",
@@ -107,9 +109,12 @@
                   "eventTime": "{eventTime}",
                   "location": "{location}",
                   "capacity": "{capacity}",
-                  "coordinatorPersonaId": "{coordinatorPersonaId}",
+                  "coordinatorFanId": "{coordinatorFanId}",
                   "recurrenceLabel": "{recurrenceLabel}",
                   "reminderOffsetHours": "{reminderOffsetHours}",
+                  "durationMinutes": "{durationMinutes}",
+                  "workType": "{workType}",
+                  "accessibilityNote": "{accessibilityNote}",
                   "seriesId": "$newSeriesId"
                 },
                 "recurrenceRule": {
@@ -122,18 +127,61 @@
           },
           {
             "id": "cancel-event",
+            "action": "cancel",
             "label": "Cancel event",
             "icon": "cancel",
             "tone": "destructive",
             "from": ["open"],
             "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["garden-coordinator"] }
+            "guard": { "allowedRoleIds": ["garden-coordinator"] },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "garden-event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "pending" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "garden-event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "going" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "garden-event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "maybe" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "garden-event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "declined" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "garden-event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "waitlisted" }
+                },
+                "transitionId": "event-cancelled"
+              }
+            ]
           }
         ],
         "renderBindings": [
           {
             "states": ["open"],
-            "role": "any",
+            "audience": "any",
             "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "primary",
@@ -141,15 +189,12 @@
               {
                 "kind": "create",
                 "label": "New garden event",
-                "byPersonaIds": ["garden-coordinator"],
+                "byRoleIds": ["garden-coordinator"],
                 "scope": "tab",
                 "presentation": "fab",
-                "prefill": { "coordinatorPersonaId": "$actor" }
+                "prefill": { "coordinatorFanId": "$actor" }
               }
             ],
-            // NEEDS IMPLEMENTATION (App Shell): solved-patterns.md CJM.5 says the
-            // event-rsvp detail card still hardcodes the literal type names
-            // event-rsvp/event-rsvp-response instead of consuming this declaration.
             "responseTable": {
               "workflowType": "garden-event-rsvp-response",
               "eventField": "eventId",
@@ -158,14 +203,14 @@
           },
           {
             "states": ["cancelled"],
-            "role": "any",
+            "audience": "any",
             "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "summary"
           },
           {
             "states": ["open", "cancelled"],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "summary"
@@ -219,8 +264,8 @@
             "labelTemplate": "{value} spots",
             "displayContexts": ["tile", "detail"]
           },
-          "coordinatorPersonaId": {
-            "type": "personaId",
+          "coordinatorFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "storage": "inline",
@@ -258,7 +303,7 @@
           },
           "coordinatorResponseRoster": {
             "type": "list",
-            "formula": "if($viewer == coordinatorPersonaId, responses, null)",
+            "formula": "if($viewer == coordinatorFanId, responses, null)",
             "displayIcon": "groups_2",
             "labelTemplate": "Attendance roster: {value}",
             "hideWhenEmpty": true,
@@ -298,6 +343,30 @@
             "labelTemplate": "Full: {value}",
             "displayContexts": ["detail"]
           },
+          "durationMinutes": {
+            "type": "number",
+            "writableBy": "formEntry",
+            "displayIcon": "timer",
+            "labelTemplate": "{value} minutes",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "workType": {
+            "type": "text",
+            "writableBy": "formEntry",
+            "displayIcon": "compost",
+            "labelTemplate": "Seasonal focus: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "accessibilityNote": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "accessible",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
           "seriesId": {
             "type": "text",
             "writableBy": "effect",
@@ -315,19 +384,25 @@
           "going": { "label": "Going", "tone": "positive" },
           "maybe": { "label": "Maybe", "tone": "info" },
           "declined": { "label": "Not attending", "tone": "negative" },
-          "waitlisted": { "label": "Waitlisted", "tone": "warning" }
+          "waitlisted": { "label": "Waitlisted", "tone": "warning" },
+          "cancelled": {
+            "label": "Event cancelled",
+            "tone": "negative",
+            "isTerminal": true
+          }
         },
         "transitions": [
           {
             "id": "respond-going",
+            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
             "from": ["pending", "maybe", "declined", "waitlisted"],
             "to": "going",
             "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "actorEqualsField": { "key": "personaId" },
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" },
               "relatedAggregate": {
                 "workflowType": "garden-event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
@@ -345,14 +420,15 @@
           },
           {
             "id": "respond-maybe",
+            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
             "from": ["pending", "going", "declined", "waitlisted"],
             "to": "maybe",
             "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "actorEqualsField": { "key": "personaId" }
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" }
             },
             "effects": [
               { "op": "set", "key": "respondedAt", "value": "$timestamp" }
@@ -360,14 +436,15 @@
           },
           {
             "id": "respond-declined",
+            "action": "respond",
             "label": "Not attending",
             "icon": "event_busy",
             "tone": "destructive",
             "from": ["pending", "going", "maybe", "waitlisted"],
             "to": "declined",
             "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "actorEqualsField": { "key": "personaId" }
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" }
             },
             "effects": [
               { "op": "set", "key": "respondedAt", "value": "$timestamp" }
@@ -375,14 +452,15 @@
           },
           {
             "id": "respond-waitlist",
+            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
             "from": ["pending", "maybe", "declined"],
             "to": "waitlisted",
             "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "actorEqualsField": { "key": "personaId" },
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" },
               "relatedAggregate": {
                 "workflowType": "garden-event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
@@ -400,14 +478,15 @@
           },
           {
             "id": "add-reminder",
+            "action": "set_reminder",
             "label": "Add reminder",
             "icon": "add_alert",
             "tone": "secondary",
             "from": ["pending", "going", "maybe", "waitlisted"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-member", "garden-coordinator"],
-              "actorEqualsField": { "key": "personaId" }
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" }
             },
             "inputs": {
               "dueAt": { "type": "text", "required": true }
@@ -418,7 +497,7 @@
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{personaId}",
+                  "recipientFanId": "{fanId}",
                   "title": "Garden event reminder",
                   "body": "Your saved garden event is coming up. Open Calendar for the current date, place, capacity, and RSVP.",
                   "createdAt": "$timestamp",
@@ -427,6 +506,32 @@
                 }
               }
             ]
+          },
+          {
+            "id": "withdraw-rsvp",
+            "action": "withdraw_response",
+            "label": "Cancel RSVP",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["going", "maybe", "waitlisted"],
+            "to": "pending",
+            "guard": {
+              "allowedRoleIds": ["garden-member", "garden-coordinator"],
+              "actorEqualsField": { "key": "fanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "respondedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "event-cancelled",
+            "action": "cancel",
+            "label": "Event cancelled",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "declined", "waitlisted"],
+            "to": "cancelled",
+            "guard": { "allowedRoleIds": ["garden-coordinator"] }
           }
         ],
         "renderBindings": [],
@@ -436,8 +541,8 @@
             "required": true,
             "storage": "inline"
           },
-          "personaId": {
-            "type": "personaId",
+          "fanId": {
+            "type": "fanId",
             "required": true,
             "storage": "inline"
           },
@@ -459,8 +564,9 @@
         "visibility": {
           "default": "guarded",
           "readGuard": {
-            "formula": "$viewer == recipientPersonaId"
-          }
+            "formula": "$viewer == recipientFanId"
+          },
+          "fields": { "recipient": "recipientFanId" }
         },
         "states": {
           "unread": { "label": "Unread", "tone": "info" },
@@ -479,14 +585,29 @@
             "from": ["unread"],
             "to": "read",
             "guard": {
-              "actorEqualsField": { "key": "recipientPersonaId" }
+              "actorEqualsField": { "key": "recipientFanId" }
             }
           }
         ],
-        "renderBindings": [],
+        "renderBindings": [
+          {
+            "states": ["unread"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["read"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "summary"
+          }
+        ],
         "instanceDataSchema": {
-          "recipientPersonaId": {
-            "type": "personaId",
+          "recipientFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "storage": "inline"
@@ -547,13 +668,14 @@
               "offerType",
               "notes",
               "pickupWindow",
+              "safePickupDetails",
               "availabilityNote",
               "contactInfo",
               "privacyLabel",
               "privacyAcknowledged"
             ],
             "editGuard": {
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "actorEqualsField": { "key": "ownerFanId" }
             }
           },
           "submitted": {
@@ -580,14 +702,15 @@
             "from": ["draft"],
             "to": "submitted",
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "privacyAcknowledged",
                 "value": true
               }
             },
             "effects": [
-              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "set", "key": "handoffStatus", "value": "awaiting-review" }
             ]
           },
           {
@@ -598,25 +721,28 @@
             "from": ["submitted"],
             "to": "reviewed",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"]
+              "allowedRoleIds": ["garden-coordinator"]
             },
             "inputs": {
-              "handoffRecipientPersonaId": {
-                "type": "text",
+              "handoffRecipientFanId": {
+                "type": "fanId",
                 "required": true
-              }
+              },
+              "reviewNote": { "type": "text", "required": true }
             },
             "effects": [
               {
                 "op": "set",
-                "key": "reviewedByPersonaId",
+                "key": "reviewedByFanId",
                 "value": "$actor"
               },
               {
                 "op": "set",
-                "key": "handoffRecipientPersonaId",
-                "value": "{input.handoffRecipientPersonaId}"
+                "key": "handoffRecipientFanId",
+                "value": "{input.handoffRecipientFanId}"
               },
+              { "op": "set", "key": "reviewNote", "value": "{input.reviewNote}" },
+              { "op": "set", "key": "handoffStatus", "value": "approved" },
               { "op": "set", "key": "reviewedAt", "value": "$timestamp" }
             ]
           },
@@ -628,14 +754,18 @@
             "from": ["draft", "submitted"],
             "to": "withdrawn",
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" }
-            }
+              "actorEqualsField": { "key": "ownerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "handoffStatus", "value": "withdrawn" },
+              { "op": "set", "key": "withdrawnAt", "value": "$timestamp" }
+            ]
           }
         ],
         "renderBindings": [
           {
             "states": ["draft"],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "home",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary",
@@ -643,37 +773,37 @@
               {
                 "kind": "create",
                 "label": "Offer or request a plant",
-                "byPersonaIds": ["garden-member"],
+                "byRoleIds": ["garden-member"],
                 "scope": "tab",
                 "presentation": "fab",
-                "prefill": { "ownerPersonaId": "$actor" }
+                "prefill": { "ownerFanId": "$actor" }
               }
             ]
           },
           {
             "states": ["submitted", "withdrawn"],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "home",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
           },
           {
             "states": ["reviewed"],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "summary"
           },
           {
             "states": ["submitted"],
-            "role": "any",
+            "audience": "any",
             "tabId": "organize",
             "cardSurfaceFamily": "approvalQueueItem",
             "bindingKind": "primary"
           },
           {
             "states": ["reviewed"],
-            "role": "any",
+            "audience": "any",
             "tabId": "organize",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
@@ -714,6 +844,15 @@
             "labelTemplate": "Pickup: {value}",
             "displayContexts": ["tile", "detail"]
           },
+          "safePickupDetails": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "local_shipping",
+            "labelTemplate": "Safe pickup: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
           "availabilityNote": {
             "type": "text",
             "required": true,
@@ -742,8 +881,8 @@
             "writableBy": "formEntry",
             "displayContexts": []
           },
-          "ownerPersonaId": {
-            "type": "personaId",
+          "ownerFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "storage": "inline",
@@ -759,13 +898,13 @@
             "displayIcon": "outbox",
             "labelTemplate": "Submitted {value}"
           },
-          "reviewedByPersonaId": {
-            "type": "personaId?",
+          "reviewedByFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "displayContexts": []
           },
-          "handoffRecipientPersonaId": {
-            "type": "personaId?",
+          "handoffRecipientFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "displayContexts": []
           },
@@ -777,9 +916,33 @@
             "displayIcon": "task_alt",
             "labelTemplate": "Reviewed {value}"
           },
+          "reviewNote": {
+            "type": "textarea",
+            "writableBy": "effect",
+            "displayIcon": "rate_review",
+            "labelTemplate": "Review: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "handoffStatus": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "handshake",
+            "labelTemplate": "Handoff: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "withdrawnAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "undo",
+            "labelTemplate": "Withdrawn {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
           "contactInfoDisplay": {
             "type": "text",
-            "formula": "if($viewer == ownerPersonaId || $viewer == reviewedByPersonaId || $viewer == handoffRecipientPersonaId, contactInfo, 'Protected until approved handoff')",
+            "formula": "if($viewer == ownerFanId || $viewer == reviewedByFanId || $viewer == handoffRecipientFanId, contactInfo, 'Protected until approved handoff')",
             "displayIcon": "contact_mail",
             "labelTemplate": "Contact: {value}",
             "displayContexts": ["detail"]
@@ -794,9 +957,19 @@
           "published": {
             "label": "Listed for loan",
             "tone": "positive",
-            "editableFields": ["title", "toolDescription", "coordinatorPersonaId", "ownerContactInfo", "conditionNote"],
+            "editableFields": [
+              "title",
+              "toolDescription",
+              "coordinatorFanId",
+              "ownerContactInfo",
+              "conditionNote",
+              "loanTerms",
+              "pickupInstructions",
+              "returnInstructions",
+              "careInstructions"
+            ],
             "editGuard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -812,18 +985,19 @@
         "transitions": [
           {
             "id": "request-loan",
+            "action": "request",
             "label": "Request loan",
             "icon": "arrow_forward",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-member"],
+              "allowedRoleIds": ["garden-member"],
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
               },
-              "formula": "if(ownerPersonaId == $actor, false, if(size(queuedPersonaIds) == 0, true, indexOf(queuedPersonaIds, $actor) == 0))"
+              "formula": "if(ownerFanId == $actor, false, true)"
             },
             "inputs": {
               "pickupWindow": { "type": "text", "required": true },
@@ -838,7 +1012,7 @@
               },
               {
                 "op": "set",
-                "key": "borrowerPersonaId",
+                "key": "borrowerFanId",
                 "value": "$actor"
               },
               {
@@ -862,15 +1036,10 @@
                 "value": "$timestamp"
               },
               {
-                "op": "removeValue",
-                "key": "queuedPersonaIds",
-                "value": "$actor"
-              },
-              {
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{ownerPersonaId}",
+                  "recipientFanId": "{ownerFanId}",
                   "title": "Tool loan requested",
                   "body": "{title} was requested. Review the pickup and due terms in Marketplace.",
                   "createdAt": "$timestamp",
@@ -882,58 +1051,37 @@
           },
           {
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "queue",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-member"],
-              "actorInList": {
-                "key": "queuedPersonaIds",
-                "present": false
-              },
-              "formula": "if(ownerPersonaId == $actor, false, availabilityState == 'reserved' || availabilityState == 'onLoan')"
-            },
-            "effects": [
-              {
-                "op": "appendUnique",
-                "key": "queuedPersonaIds",
-                "value": "$actor"
-              }
-            ]
+              "allowedRoleIds": ["garden-member"],
+              "formula": "if(ownerFanId == $actor, false, availabilityState == 'reserved' || availabilityState == 'onLoan')"
+            }
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
-            "guard": {
-              "allowedPersonaIds": ["garden-member"],
-              "actorInList": {
-                "key": "queuedPersonaIds",
-                "present": true
-              }
-            },
-            "effects": [
-              {
-                "op": "removeValue",
-                "key": "queuedPersonaIds",
-                "value": "$actor"
-              }
-            ]
+            "guard": { "allowedRoleIds": ["garden-member"] }
           },
           {
             "id": "confirm-pickup",
+            "action": "take_custody",
             "label": "Confirm pickup",
             "icon": "handshake",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "reserved"
@@ -945,23 +1093,19 @@
                 "key": "availabilityState",
                 "value": "onLoan"
               },
-              {
-                "op": "set",
-                "key": "currentHolderPersonaId",
-                "value": "{borrowerPersonaId}"
-              },
               { "op": "set", "key": "borrowedAt", "value": "$timestamp" }
             ]
           },
           {
             "id": "decline-loan",
+            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel_presentation",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "reserved"
@@ -972,7 +1116,7 @@
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{borrowerPersonaId}",
+                  "recipientFanId": "{borrowerFanId}",
                   "title": "Loan request declined",
                   "body": "The owner declined the current request for {title}.",
                   "createdAt": "$timestamp",
@@ -985,7 +1129,7 @@
                 "key": "availabilityState",
                 "value": "available"
               },
-              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerFanId", "value": null },
               { "op": "set", "key": "borrowerContactInfo", "value": null },
               { "op": "set", "key": "pickupWindow", "value": null },
               { "op": "set", "key": "dueDate", "value": null }
@@ -993,13 +1137,14 @@
           },
           {
             "id": "cancel-loan",
+            "action": "withdraw_request",
             "label": "Cancel loan",
             "icon": "undo",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "borrowerPersonaId" },
+              "actorEqualsField": { "key": "borrowerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "reserved"
@@ -1010,7 +1155,7 @@
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{ownerPersonaId}",
+                  "recipientFanId": "{ownerFanId}",
                   "title": "Loan request cancelled",
                   "body": "The borrower cancelled the current request for {title}.",
                   "createdAt": "$timestamp",
@@ -1023,7 +1168,7 @@
                 "key": "availabilityState",
                 "value": "available"
               },
-              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerFanId", "value": null },
               { "op": "set", "key": "borrowerContactInfo", "value": null },
               { "op": "set", "key": "pickupWindow", "value": null },
               { "op": "set", "key": "dueDate", "value": null }
@@ -1031,13 +1176,14 @@
           },
           {
             "id": "return-item",
+            "action": "return",
             "label": "Return item",
             "icon": "assignment_return",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "actorEqualsField": { "key": "borrowerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "onLoan"
@@ -1048,7 +1194,7 @@
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{ownerPersonaId}",
+                  "recipientFanId": "{ownerFanId}",
                   "title": "Tool returned",
                   "body": "{title} was marked returned and is available again.",
                   "createdAt": "$timestamp",
@@ -1067,22 +1213,22 @@
                 "value": "returned"
               },
               { "op": "set", "key": "returnedAt", "value": "$timestamp" },
-              { "op": "set", "key": "borrowerPersonaId", "value": null },
+              { "op": "set", "key": "borrowerFanId", "value": null },
               { "op": "set", "key": "borrowerContactInfo", "value": null },
-              { "op": "set", "key": "currentHolderPersonaId", "value": null },
               { "op": "set", "key": "pickupWindow", "value": null },
               { "op": "set", "key": "dueDate", "value": null }
             ]
           },
           {
             "id": "pause-listing",
+            "action": "pause_listing",
             "label": "Pause listing",
             "icon": "pause_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -1094,13 +1240,14 @@
           },
           {
             "id": "resume-listing",
+            "action": "list_item",
             "label": "Resume listing",
             "icon": "play_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "paused"
@@ -1116,13 +1263,14 @@
           },
           {
             "id": "mark-damaged",
+            "action": "report_issue",
             "label": "Mark damaged",
             "icon": "build_circle",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "actorEqualsField": { "key": "borrowerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "onLoan"
@@ -1138,18 +1286,19 @@
                 "key": "conditionNote",
                 "value": "{input.conditionNote}"
               },
-              { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" }
+              { "op": "set", "key": "flaggedByFanId", "value": "$actor" }
             ]
           },
           {
             "id": "report-lost",
+            "action": "report_issue",
             "label": "Report lost",
             "icon": "report_problem",
             "tone": "destructive",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "currentHolderPersonaId" },
+              "actorEqualsField": { "key": "borrowerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "onLoan"
@@ -1158,12 +1307,12 @@
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "lost" },
               { "op": "set", "key": "conditionState", "value": "lost" },
-              { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "flaggedByFanId", "value": "$actor" },
               {
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{ownerPersonaId}",
+                  "recipientFanId": "{ownerFanId}",
                   "title": "Tool reported lost",
                   "body": "The current holder reported {title} lost.",
                   "createdAt": "$timestamp",
@@ -1175,13 +1324,14 @@
           },
           {
             "id": "report-issue",
+            "action": "report_issue",
             "label": "Report issue",
             "icon": "feedback",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "formula": "ownerPersonaId == $actor || currentHolderPersonaId == $actor"
+              "formula": "ownerFanId == $actor || borrowerFanId == $actor"
             },
             "inputs": {
               "issueNote": { "type": "text", "required": true }
@@ -1192,18 +1342,19 @@
                 "key": "conditionNote",
                 "value": "{input.issueNote}"
               },
-              { "op": "set", "key": "flaggedByPersonaId", "value": "$actor" }
+              { "op": "set", "key": "flaggedByFanId", "value": "$actor" }
             ]
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
             "from": ["published"],
             "to": "delisted",
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -1215,13 +1366,14 @@
           },
           {
             "id": "retire-lost-item",
+            "action": "delist",
             "label": "Retire lost item",
             "icon": "delete_forever",
             "tone": "destructive",
             "from": ["published"],
             "to": "delisted",
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "lost"
@@ -1235,7 +1387,7 @@
         "renderBindings": [
           {
             "states": ["published"],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "primary",
@@ -1243,29 +1395,28 @@
               {
                 "kind": "create",
                 "label": "List a tool to loan",
-                "byPersonaIds": ["garden-member", "garden-coordinator"],
+                "byRoleIds": ["garden-member", "garden-coordinator"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
-                  "ownerPersonaId": "$actor",
+                  "ownerFanId": "$actor",
                   "mode": "loan",
                   "availabilityState": "available",
-                  "conditionState": "good",
-                  "queuedPersonaIds": []
+                  "conditionState": "good"
                 }
               }
             ]
           },
           {
             "states": ["delisted"],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "summary"
           },
           {
             "states": ["published"],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "summary"
@@ -1297,16 +1448,16 @@
             "labelTemplate": "Mode: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          "ownerPersonaId": {
-            "type": "personaId",
+          "ownerFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "displayIcon": "person_outline",
             "labelTemplate": "Owner: {value}",
             "displayContexts": ["detail"]
           },
-          "coordinatorPersonaId": {
-            "type": "personaId",
+          "coordinatorFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "formEntry",
             "displayContexts": []
@@ -1325,8 +1476,8 @@
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
           },
-          "borrowerPersonaId": {
-            "type": "personaId?",
+          "borrowerFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "displayContexts": []
           },
@@ -1334,20 +1485,6 @@
             "type": "text?",
             "writableBy": "effect",
             "displayContexts": []
-          },
-          "currentHolderPersonaId": {
-            "type": "personaId?",
-            "writableBy": "effect",
-            "displayContexts": []
-          },
-          "queuedPersonaIds": {
-            "type": "personaId[]",
-            "required": true,
-            "writableBy": "effect",
-            "displayIcon": "groups_outlined",
-            "labelTemplate": "Queue: {value.length}",
-            "hideWhenEmpty": true,
-            "displayContexts": ["tile", "detail"]
           },
           "pickupWindow": {
             "type": "text?",
@@ -1402,25 +1539,47 @@
             "hideWhenEmpty": true,
             "displayContexts": ["detail"]
           },
-          "flaggedByPersonaId": {
-            "type": "personaId?",
+          "loanTerms": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "gavel",
+            "labelTemplate": "Loan terms: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "pickupInstructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "where_to_vote",
+            "labelTemplate": "Pickup instructions: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "returnInstructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "assignment_return",
+            "labelTemplate": "Return instructions: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "careInstructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "cleaning_services",
+            "labelTemplate": "Tool care: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "flaggedByFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "hideWhenEmpty": true,
             "displayContexts": []
-          },
-          "queueLength": {
-            "type": "number",
-            "formula": "size(queuedPersonaIds)",
-            "displayIcon": "format_list_numbered",
-            "labelTemplate": "{value} waiting",
-            "displayContexts": ["detail"]
-          },
-          "myQueuePlace": {
-            "type": "number",
-            "formula": "indexOf(queuedPersonaIds, $viewer) + 1",
-            "displayIcon": "pin",
-            "labelTemplate": "Your queue position: {value}",
-            "displayContexts": ["detail"]
           },
           "isAvailable": {
             "type": "bool",
@@ -1436,23 +1595,23 @@
             "labelTemplate": "Overdue: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          "currentHolderDisplay": {
+          "custodyDisplay": {
             "type": "text",
-            "formula": "if(currentHolderPersonaId == null, 'No current holder', if($viewer == ownerPersonaId || $viewer == currentHolderPersonaId || $viewer == coordinatorPersonaId, currentHolderPersonaId, 'Checked out to a club member'))",
+            "formula": "if(availabilityState == 'onLoan', if($viewer == ownerFanId || $viewer == borrowerFanId || $viewer == coordinatorFanId, borrowerFanId, 'Checked out to a club member'), 'No current holder')",
             "displayIcon": "person_pin",
             "labelTemplate": "Current holder: {value}",
             "displayContexts": ["tile", "detail"]
           },
           "ownerContactDisplay": {
             "type": "text",
-            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || (($viewer == borrowerPersonaId || $viewer == currentHolderPersonaId) && availabilityState == 'onLoan'), ownerContactInfo, 'Protected until approved pickup handoff')",
+            "formula": "if($viewer == ownerFanId || $viewer == coordinatorFanId || ($viewer == borrowerFanId && availabilityState == 'onLoan'), ownerContactInfo, 'Protected until approved pickup handoff')",
             "displayIcon": "contact_mail",
             "labelTemplate": "Owner contact: {value}",
             "displayContexts": ["detail"]
           },
           "borrowerContactDisplay": {
             "type": "text",
-            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == borrowerPersonaId || $viewer == currentHolderPersonaId, borrowerContactInfo, 'Protected until approved pickup handoff')",
+            "formula": "if($viewer == ownerFanId || $viewer == coordinatorFanId || $viewer == borrowerFanId, borrowerContactInfo, 'Protected until approved pickup handoff')",
             "displayIcon": "contact_phone",
             "labelTemplate": "Borrower contact: {value}",
             "hideWhenEmpty": true,
@@ -1468,9 +1627,18 @@
           "published": {
             "label": "Available to claim",
             "tone": "positive",
-            "editableFields": ["title", "itemDescription", "coordinatorPersonaId", "ownerContactInfo", "conditionNote"],
+            "editableFields": [
+              "title",
+              "itemDescription",
+              "coordinatorFanId",
+              "ownerContactInfo",
+              "conditionNote",
+              "transferTerms",
+              "pickupInstructions",
+              "careInstructions"
+            ],
             "editGuard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -1491,18 +1659,19 @@
         "transitions": [
           {
             "id": "claim-giveaway",
+            "action": "claim",
             "label": "Claim giveaway",
             "icon": "volunteer_activism",
             "tone": "primary",
             "from": ["published"],
             "to": "given",
             "guard": {
-              "allowedPersonaIds": ["garden-member"],
+              "allowedRoleIds": ["garden-member"],
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
               },
-              "formula": "if(ownerPersonaId == $actor, false, true)"
+              "formula": "if(ownerFanId == $actor, false, true)"
             },
             "inputs": {
               "pickupWindow": { "type": "text", "required": true },
@@ -1510,7 +1679,7 @@
             },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": null },
-              { "op": "set", "key": "claimantPersonaId", "value": "$actor" },
+              { "op": "set", "key": "claimantFanId", "value": "$actor" },
               {
                 "op": "set",
                 "key": "pickupWindow",
@@ -1526,7 +1695,7 @@
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "{ownerPersonaId}",
+                  "recipientFanId": "{ownerFanId}",
                   "title": "Giveaway claimed",
                   "body": "{title} was claimed. Review the pickup window in Marketplace.",
                   "createdAt": "$timestamp",
@@ -1538,13 +1707,14 @@
           },
           {
             "id": "pause-giveaway",
+            "action": "pause_listing",
             "label": "Pause listing",
             "icon": "pause_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -1556,13 +1726,14 @@
           },
           {
             "id": "resume-giveaway",
+            "action": "list_item",
             "label": "Resume listing",
             "icon": "play_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "paused"
@@ -1578,13 +1749,14 @@
           },
           {
             "id": "delist-giveaway",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
             "from": ["published"],
             "to": "delisted",
             "guard": {
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "actorEqualsField": { "key": "ownerFanId" },
               "instanceDataEquals": {
                 "key": "availabilityState",
                 "value": "available"
@@ -1598,7 +1770,7 @@
         "renderBindings": [
           {
             "states": ["published"],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "primary",
@@ -1606,11 +1778,11 @@
               {
                 "kind": "create",
                 "label": "Give away a garden item",
-                "byPersonaIds": ["garden-member", "garden-coordinator"],
+                "byRoleIds": ["garden-member", "garden-coordinator"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
-                  "ownerPersonaId": "$actor",
+                  "ownerFanId": "$actor",
                   "mode": "giveaway",
                   "availabilityState": "available",
                   "conditionState": "good"
@@ -1620,14 +1792,14 @@
           },
           {
             "states": ["given", "delisted"],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "summary"
           },
           {
             "states": ["published"],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "summary"
@@ -1659,16 +1831,16 @@
             "labelTemplate": "Mode: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          "ownerPersonaId": {
-            "type": "personaId",
+          "ownerFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "displayIcon": "person_outline",
             "labelTemplate": "Owner: {value}",
             "displayContexts": ["detail"]
           },
-          "coordinatorPersonaId": {
-            "type": "personaId",
+          "coordinatorFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "formEntry",
             "displayContexts": []
@@ -1703,8 +1875,35 @@
             "hideWhenEmpty": true,
             "displayContexts": ["detail"]
           },
-          "claimantPersonaId": {
-            "type": "personaId?",
+          "transferTerms": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "handshake",
+            "labelTemplate": "Transfer terms: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "pickupInstructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "where_to_vote",
+            "labelTemplate": "Pickup instructions: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "careInstructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "eco",
+            "labelTemplate": "Reuse note: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "claimantFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "displayContexts": []
           },
@@ -1728,23 +1927,30 @@
             "labelTemplate": "Claimed {value}",
             "hideWhenEmpty": true
           },
+          "transferSummary": {
+            "type": "text",
+            "formula": "if(claimantFanId == null, 'Awaiting claim', 'Ownership transferred')",
+            "displayIcon": "published_with_changes",
+            "labelTemplate": "Transfer: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
           "claimantDisplay": {
             "type": "text",
-            "formula": "if(claimantPersonaId == null, 'Not claimed', if($viewer == ownerPersonaId || $viewer == claimantPersonaId || $viewer == coordinatorPersonaId, claimantPersonaId, 'Claimed by a club member'))",
+            "formula": "if(claimantFanId == null, 'Not claimed', if($viewer == ownerFanId || $viewer == claimantFanId || $viewer == coordinatorFanId, claimantFanId, 'Claimed by a club member'))",
             "displayIcon": "person_pin",
             "labelTemplate": "Claim: {value}",
             "displayContexts": ["detail"]
           },
           "ownerContactDisplay": {
             "type": "text",
-            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == claimantPersonaId, ownerContactInfo, 'Protected until ownership handoff')",
+            "formula": "if($viewer == ownerFanId || $viewer == coordinatorFanId || $viewer == claimantFanId, ownerContactInfo, 'Protected until ownership handoff')",
             "displayIcon": "contact_mail",
             "labelTemplate": "Owner contact: {value}",
             "displayContexts": ["detail"]
           },
           "claimantContactDisplay": {
             "type": "text",
-            "formula": "if($viewer == ownerPersonaId || $viewer == coordinatorPersonaId || $viewer == claimantPersonaId, claimantContactInfo, 'Protected until ownership handoff')",
+            "formula": "if($viewer == ownerFanId || $viewer == coordinatorFanId || $viewer == claimantFanId, claimantContactInfo, 'Protected until ownership handoff')",
             "displayIcon": "contact_phone",
             "labelTemplate": "Claimant contact: {value}",
             "hideWhenEmpty": true,
@@ -1758,7 +1964,7 @@
         "visibility": {
           "default": "guarded",
           "readGuard": {
-            "allowedPersonaIds": ["garden-member", "garden-coordinator"]
+            "allowedRoleIds": ["garden-member", "garden-coordinator"]
           }
         },
         "states": {
@@ -1773,8 +1979,8 @@
               "exportableDataSummary"
             ],
             "editGuard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             }
           },
           "redaction-review": {
@@ -1794,112 +2000,130 @@
         "transitions": [
           {
             "id": "open-redaction-preview",
+            "action": "preview",
             "label": "Review redaction preview",
             "icon": "policy",
             "tone": "primary",
             "from": ["scope-selection"],
             "to": "redaction-review",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" },
               "formula": "size(selectedSchemaIds) > 0"
-            }
+            },
+            "effects": [
+              { "op": "set", "key": "statusMessage", "value": "Reviewing redaction preview" },
+              { "op": "set", "key": "redactionStatus", "value": "previewed" }
+            ]
           },
           {
             "id": "approve-redaction",
+            "action": "approve_redaction",
             "label": "Approve redaction",
             "icon": "verified_user",
             "tone": "primary",
             "from": ["redaction-review"],
             "to": "ready",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "effects": [
               {
                 "op": "set",
                 "key": "redactionApprovedAt",
                 "value": "$timestamp"
-              }
+              },
+              { "op": "set", "key": "redactionStatus", "value": "approved" },
+              { "op": "set", "key": "statusMessage", "value": "Redaction approved; ready to run" }
             ]
           },
           {
             "id": "start-export",
+            "action": "run",
             "label": "Export",
             "icon": "file_download",
             "tone": "primary",
             "from": ["ready"],
             "to": "processing",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" },
               "formula": "operationMode == 'export'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
-              { "op": "set", "key": "errorMessage", "value": null }
+              { "op": "set", "key": "errorMessage", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Generating export package" }
             ]
           },
           {
             "id": "start-transfer",
+            "action": "run",
             "label": "Start transfer",
             "icon": "send_to_mobile",
             "tone": "primary",
             "from": ["ready"],
             "to": "processing",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" },
               "formula": "operationMode == 'transfer'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
-              { "op": "set", "key": "errorMessage", "value": null }
+              { "op": "set", "key": "errorMessage", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Transfer in progress" }
             ]
           },
           {
             "id": "start-import",
+            "action": "run",
             "label": "Import data",
             "icon": "upload_file",
             "tone": "primary",
             "from": ["ready"],
             "to": "processing",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" },
               "formula": "operationMode == 'import'"
             },
             "effects": [
               { "op": "set", "key": "operationStartedAt", "value": "$timestamp" },
-              { "op": "set", "key": "errorMessage", "value": null }
+              { "op": "set", "key": "errorMessage", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Import in progress" }
             ]
           },
           {
             "id": "complete-operation",
+            "action": "record_outcome",
             "label": "Confirm completion",
             "icon": "task_alt",
             "tone": "primary",
             "from": ["processing"],
             "to": "exported",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "effects": [
-              { "op": "set", "key": "exportedAt", "value": "$timestamp" }
+              { "op": "set", "key": "exportedAt", "value": "$timestamp" },
+              { "op": "set", "key": "downloadStatus", "value": "available" },
+              { "op": "set", "key": "statusMessage", "value": "Operation complete; platform checksum and opaque IDs remain pending" }
             ]
           },
           {
             "id": "fail-operation",
+            "action": "record_outcome",
             "label": "Record export error",
             "icon": "error_outline",
             "tone": "secondary",
             "from": ["processing"],
             "to": "error",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "inputs": {
               "errorMessage": { "type": "text", "required": true }
@@ -1909,77 +2133,90 @@
                 "op": "set",
                 "key": "errorMessage",
                 "value": "{input.errorMessage}"
-              }
+              },
+              { "op": "set", "key": "statusMessage", "value": "Operation failed; retry or change scope" }
             ]
           },
           {
             "id": "retry-export",
+            "action": "retry",
             "label": "Retry",
             "icon": "refresh",
             "tone": "primary",
             "from": ["error"],
             "to": "ready",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "effects": [
-              { "op": "set", "key": "errorMessage", "value": null }
+              { "op": "set", "key": "errorMessage", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Ready to retry" }
             ]
           },
           {
             "id": "rollback-export",
+            "action": "rollback",
             "label": "Rollback",
             "icon": "settings_backup_restore",
             "tone": "secondary",
             "from": ["exported"],
             "to": "ready",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "effects": [
               { "op": "set", "key": "rolledBackAt", "value": "$timestamp" },
-              { "op": "set", "key": "exportedAt", "value": null }
+              { "op": "set", "key": "exportedAt", "value": null },
+              { "op": "set", "key": "rollbackStatus", "value": "rolled-back" },
+              { "op": "set", "key": "downloadStatus", "value": "unavailable" },
+              { "op": "set", "key": "statusMessage", "value": "Rolled back; review scope before rerunning" }
             ]
           },
           {
             "id": "change-scope",
+            "action": "configure_scope",
             "label": "Change scope",
             "icon": "tune",
             "tone": "secondary",
             "from": ["redaction-review", "ready", "error", "exported"],
             "to": "scope-selection",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
             },
             "effects": [
-              { "op": "set", "key": "errorMessage", "value": null }
+              { "op": "set", "key": "errorMessage", "value": null },
+              { "op": "set", "key": "statusMessage", "value": "Scope reopened for changes" }
             ]
           },
           {
             "id": "download-export",
+            "action": "download",
             "label": "Download export",
             "icon": "download",
             "tone": "primary",
             "from": ["exported"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" },
-              "formula": "operationMode == 'export' && checksumVerified"
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" },
+              "formula": "operationMode == 'export'"
             },
             "effects": [
               {
                 "op": "set",
                 "key": "downloadRequestedAt",
                 "value": "$timestamp"
-              }
+              },
+              { "op": "set", "key": "downloadStatus", "value": "download-requested" },
+              { "op": "set", "key": "statusMessage", "value": "Download requested; checksum remains pending platform verification" }
             ]
           },
           {
             "id": "cancel-transfer",
+            "action": "cancel",
             "label": "Cancel transfer",
             "icon": "cancel",
             "tone": "destructive",
@@ -1992,9 +2229,12 @@
             ],
             "to": "cancelled",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "ownerPersonaId" }
-            }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "ownerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "statusMessage", "value": "Operation cancelled" }
+            ]
           }
         ],
         "renderBindings": [
@@ -2008,7 +2248,7 @@
               "error",
               "cancelled"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "summary"
@@ -2023,7 +2263,7 @@
               "error",
               "cancelled"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "documents",
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "primary",
@@ -2031,11 +2271,11 @@
               {
                 "kind": "create",
                 "label": "New export package",
-                "byPersonaIds": ["garden-coordinator"],
+                "byRoleIds": ["garden-coordinator"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
-                  "ownerPersonaId": "$actor"
+                  "ownerFanId": "$actor"
                 }
               }
             ]
@@ -2084,8 +2324,8 @@
             "labelTemplate": "Exportable data: {value}",
             "displayContexts": ["detail"]
           },
-          "ownerPersonaId": {
-            "type": "personaId",
+          "ownerFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "displayIcon": "admin_panel_settings",
@@ -2179,6 +2419,38 @@
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
           },
+          "statusMessage": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "info_outline",
+            "labelTemplate": "Status: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "redactionStatus": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "shield",
+            "labelTemplate": "Redaction: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "downloadStatus": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "download_for_offline",
+            "labelTemplate": "Download: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "rollbackStatus": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "settings_backup_restore",
+            "labelTemplate": "Rollback: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
           "scopeCount": {
             "type": "number",
             "formula": "size(selectedSchemaIds)",
@@ -2201,11 +2473,15 @@
               "shiftDate",
               "shiftTime",
               "location",
-              "capacity"
+              "capacity",
+              "careCategory",
+              "instructions",
+              "signupCutoff",
+              "weatherPlan"
             ],
             "editGuard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "coordinatorPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "coordinatorFanId" }
             }
           },
           "closed": {
@@ -2223,24 +2499,24 @@
             "from": ["open"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-member"],
+              "allowedRoleIds": ["garden-member"],
               "actorInList": {
-                "key": "signedUpPersonaIds",
+                "key": "signedUpFanIds",
                 "present": false
               },
-              "formula": "size(signedUpPersonaIds) < capacity"
+              "formula": "size(signedUpFanIds) < capacity"
             },
             "effects": [
               {
                 "op": "appendUnique",
-                "key": "signedUpPersonaIds",
+                "key": "signedUpFanIds",
                 "value": "$actor"
               },
               {
                 "op": "createInstance",
                 "workflowType": "garden-notification",
                 "fields": {
-                  "recipientPersonaId": "$actor",
+                  "recipientFanId": "$actor",
                   "title": "Volunteer shift confirmed",
                   "body": "You're signed up for {shiftTitle}. Open Care for the current time, place, and remaining spots.",
                   "createdAt": "$timestamp",
@@ -2258,16 +2534,16 @@
             "from": ["open"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["garden-member"],
+              "allowedRoleIds": ["garden-member"],
               "actorInList": {
-                "key": "signedUpPersonaIds",
+                "key": "signedUpFanIds",
                 "present": true
               }
             },
             "effects": [
               {
                 "op": "removeValue",
-                "key": "signedUpPersonaIds",
+                "key": "signedUpFanIds",
                 "value": "$actor"
               }
             ]
@@ -2280,29 +2556,29 @@
             "from": ["open"],
             "to": "closed",
             "guard": {
-              "allowedPersonaIds": ["garden-coordinator"],
-              "actorEqualsField": { "key": "coordinatorPersonaId" }
+              "allowedRoleIds": ["garden-coordinator"],
+              "actorEqualsField": { "key": "coordinatorFanId" }
             }
           }
         ],
         "renderBindings": [
           {
             "states": ["open"],
-            "role": "any",
+            "audience": "any",
             "tabId": "care",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary"
           },
           {
             "states": ["closed"],
-            "role": "any",
+            "audience": "any",
             "tabId": "care",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "summary"
           },
           {
             "states": ["open"],
-            "role": "any",
+            "audience": "any",
             "tabId": "organize",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary",
@@ -2310,26 +2586,26 @@
               {
                 "kind": "create",
                 "label": "New volunteer shift",
-                "byPersonaIds": ["garden-coordinator"],
+                "byRoleIds": ["garden-coordinator"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
-                  "coordinatorPersonaId": "$actor",
-                  "signedUpPersonaIds": []
+                  "coordinatorFanId": "$actor",
+                  "signedUpFanIds": []
                 }
               }
             ]
           },
           {
             "states": ["closed"],
-            "role": "any",
+            "audience": "any",
             "tabId": "organize",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "summary"
           },
           {
             "states": ["open"],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "summary"
@@ -2378,42 +2654,81 @@
             "labelTemplate": "{value} spots",
             "displayContexts": ["tile", "detail"]
           },
-          "coordinatorPersonaId": {
-            "type": "personaId",
+          "careCategory": {
+            "type": "text",
+            "writableBy": "formEntry",
+            "displayIcon": "yard",
+            "labelTemplate": "Care task: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "instructions": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "checklist",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "signupCutoff": {
+            "type": "date?",
+            "writableBy": "formEntry",
+            "displayIcon": "timer_off",
+            "labelTemplate": "Sign up by {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "weatherPlan": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "maxLength": 500,
+            "displayIcon": "cloud",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "coordinatorFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "displayContexts": []
           },
-          "signedUpPersonaIds": {
-            "type": "personaId[]",
+          "signedUpFanIds": {
+            "type": "fanId[]",
             "required": true,
             "writableBy": "effect",
             "displayContexts": []
           },
           "signedUpCount": {
             "type": "number",
-            "formula": "size(signedUpPersonaIds)",
+            "formula": "size(signedUpFanIds)",
             "displayIcon": "how_to_reg",
             "labelTemplate": "Signed up: {value}",
             "displayContexts": ["tile", "detail"]
           },
           "openSpotsRemaining": {
             "type": "number",
-            "formula": "capacity - size(signedUpPersonaIds)",
+            "formula": "capacity - size(signedUpFanIds)",
             "displayIcon": "event_seat",
             "labelTemplate": "{value} spots left",
             "displayContexts": ["tile", "detail"]
           },
           "isFull": {
             "type": "bool",
-            "formula": "size(signedUpPersonaIds) >= capacity",
+            "formula": "size(signedUpFanIds) >= capacity",
             "displayIcon": "event_busy",
             "labelTemplate": "Full: {value}",
             "displayContexts": ["detail"]
           },
+          "viewerSignedUp": {
+            "type": "bool",
+            "formula": "contains(signedUpFanIds, $viewer)",
+            "displayIcon": "person_add_alt_1",
+            "labelTemplate": "You are signed up: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
           "coordinatorRoster": {
             "type": "list",
-            "formula": "if($viewer == coordinatorPersonaId, signedUpPersonaIds, null)",
+            "formula": "if($viewer == coordinatorFanId, signedUpFanIds, null)",
             "displayIcon": "groups_2",
             "labelTemplate": "Roster: {value}",
             "hideWhenEmpty": true,
@@ -2428,26 +2743,29 @@
         "instanceId": "spring-workshop",
         "workflowType": "garden-event-rsvp",
         "currentState": "open",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "title": "Spring Workshop: Pollinator-Friendly Planting",
-          "eventDate": "2026-08-15",
+          "eventDate": "2027-03-13",
           "eventTime": "10:00",
           "location": "Community Garden — Plot A",
           "capacity": 2,
-          "coordinatorPersonaId": "garden-coordinator",
+          "coordinatorFanId": "garden-coordinator",
           "recurrenceLabel": "Monthly on the second Saturday",
-          "reminderOffsetHours": 24
+          "reminderOffsetHours": 24,
+          "durationMinutes": 120,
+          "workType": "Pollinator habitat workshop",
+          "accessibilityNote": "Paved path to Plot A; seated potting station available."
         }
       },
       {
         "instanceId": "spring-workshop-response-coordinator",
         "workflowType": "garden-event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "eventId": "spring-workshop",
-          "personaId": "garden-coordinator",
+          "fanId": "garden-coordinator",
           "respondedAt": "2026-08-05T09:00:00-07:00"
         }
       },
@@ -2455,10 +2773,10 @@
         "instanceId": "spring-workshop-response-rina",
         "workflowType": "garden-event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "eventId": "spring-workshop",
-          "personaId": "garden-member-rina",
+          "fanId": "garden-member-rina",
           "respondedAt": "2026-08-06T17:45:00-07:00"
         }
       },
@@ -2466,139 +2784,173 @@
         "instanceId": "spring-workshop-response-member",
         "workflowType": "garden-event-rsvp-response",
         "currentState": "pending",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "eventId": "spring-workshop",
-          "personaId": "garden-member-maya"
+          "fanId": "garden-member-maya"
+        }
+      },
+      {
+        "instanceId": "spring-workshop-reminder-maya",
+        "workflowType": "garden-notification",
+        "currentState": "unread",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "recipientFanId": "garden-member-maya",
+          "title": "Spring workshop reminder",
+          "body": "Pollinator-Friendly Planting is coming up. Open Calendar to confirm or change your RSVP.",
+          "createdAt": "2027-03-11T10:00:00-08:00",
+          "dueAt": "2027-03-12T10:00:00-08:00",
+          "sourceWorkflowType": "garden-event-rsvp-response"
         }
       },
       {
         "instanceId": "tomato-seedling-offer",
         "workflowType": "plant-exchange-submission",
         "currentState": "reviewed",
-        "createdByPersonaId": "garden-member",
+        "createdByFanId": "garden-member",
         "instanceData": {
           "plantVariety": "Brandywine tomato seedlings",
           "offerType": "offer",
           "notes": "Six sturdy seedlings from the spring sowing, ready for larger pots.",
           "pickupWindow": "Saturday 9–11am at the community shed",
+          "safePickupDetails": "Meet beside the public shed door; no home address is shared.",
           "availabilityNote": "Six available",
           "contactInfo": "Use the private club-message handoff",
           "privacyLabel": "Contact visible only to submitter, reviewer, and approved recipient",
           "privacyAcknowledged": true,
-          "ownerPersonaId": "garden-member",
+          "ownerFanId": "garden-member",
           "submittedAt": "2026-08-05T13:00:00-07:00",
-          "reviewedByPersonaId": "garden-coordinator",
-          "handoffRecipientPersonaId": "garden-member",
-          "reviewedAt": "2026-08-06T10:30:00-07:00"
+          "reviewedByFanId": "garden-coordinator",
+          "handoffRecipientFanId": "garden-member",
+          "reviewedAt": "2026-08-06T10:30:00-07:00",
+          "reviewNote": "Public summary approved; private contact may be shared with the named recipient.",
+          "handoffStatus": "approved"
         }
       },
       {
         "instanceId": "basil-start-request",
         "workflowType": "plant-exchange-submission",
         "currentState": "submitted",
-        "createdByPersonaId": "garden-member",
+        "createdByFanId": "garden-member",
         "instanceData": {
           "plantVariety": "Genovese basil starts",
           "offerType": "request",
           "notes": "Seeking two starts for the shared herb bed.",
           "pickupWindow": "Weekday evenings after 6pm",
+          "safePickupDetails": "Exchange at the staffed community garden gate.",
           "availabilityNote": "Request open",
           "contactInfo": "Use the private club-message handoff",
           "privacyLabel": "Contact protected until coordinator-approved handoff",
           "privacyAcknowledged": true,
-          "ownerPersonaId": "garden-member",
-          "submittedAt": "2026-08-07T18:15:00-07:00"
+          "ownerFanId": "garden-member",
+          "submittedAt": "2026-08-07T18:15:00-07:00",
+          "handoffStatus": "awaiting-review"
         }
       },
       {
         "instanceId": "steel-wheelbarrow",
         "workflowType": "garden-tool-loan",
         "currentState": "published",
-        "createdByPersonaId": "garden-member",
+        "createdByFanId": "garden-member",
         "instanceData": {
           "title": "Steel wheelbarrow",
           "toolDescription": "Sturdy wheelbarrow for moving mulch and soil.",
           "mode": "loan",
-          "ownerPersonaId": "garden-member",
-          "coordinatorPersonaId": "garden-coordinator",
+          "ownerFanId": "garden-member",
+          "coordinatorFanId": "garden-coordinator",
           "ownerContactInfo": "Private club message to member Alex",
           "availabilityState": "available",
-          "queuedPersonaIds": [],
           "conditionState": "good",
-          "conditionNote": "Tire inflated and handles secure."
+          "conditionNote": "Tire inflated and handles secure.",
+          "loanTerms": "Two-week loan; return clean and dry.",
+          "pickupInstructions": "Collect from the locked tool shed after confirming with the owner.",
+          "returnInstructions": "Return to the labeled wheelbarrow bay.",
+          "careInstructions": "Rinse the tray after moving soil or compost."
         }
       },
       {
         "instanceId": "club-hand-tool-set",
         "workflowType": "garden-tool-loan",
         "currentState": "published",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "title": "Club hand-tool set",
           "toolDescription": "Trowel, pruners, cultivator, and soil knife in a canvas tote.",
           "mode": "loan",
-          "ownerPersonaId": "garden-coordinator",
-          "coordinatorPersonaId": "garden-coordinator",
+          "ownerFanId": "garden-coordinator",
+          "coordinatorFanId": "garden-coordinator",
           "ownerContactInfo": "Private club message to the tool coordinator",
           "availabilityState": "onLoan",
-          "borrowerPersonaId": "garden-member-rina",
+          "borrowerFanId": "garden-member-rina",
           "borrowerContactInfo": "Private club message to Rina",
-          "currentHolderPersonaId": "garden-member-rina",
-          "queuedPersonaIds": ["garden-member-maya"],
           "pickupWindow": "Saturday mornings",
           "dueDate": "2026-08-20",
           "requestedAt": "2026-07-31T16:00:00-07:00",
           "borrowedAt": "2026-08-01T09:30:00-07:00",
           "conditionState": "good",
-          "conditionNote": "Pruners cleaned after last use."
+          "conditionNote": "Pruners cleaned after last use.",
+          "loanTerms": "One-week club loan; queue order is maintained by the equipment-loan archetype.",
+          "pickupInstructions": "Collect the canvas tote from the coordinator shelf.",
+          "returnInstructions": "Return every tool to the tote and leave it on the coordinator shelf.",
+          "careInstructions": "Brush soil from blades and wipe pruners after use."
         }
       },
       {
         "instanceId": "terracotta-pots-giveaway",
         "workflowType": "garden-tool-giveaway",
         "currentState": "published",
-        "createdByPersonaId": "garden-member",
+        "createdByFanId": "garden-member",
         "instanceData": {
           "title": "Terracotta pots — assorted sizes",
           "itemDescription": "Twelve clean pots from 10cm to 25cm, free for reuse.",
           "mode": "giveaway",
-          "ownerPersonaId": "garden-member",
-          "coordinatorPersonaId": "garden-coordinator",
+          "ownerFanId": "garden-member",
+          "coordinatorFanId": "garden-coordinator",
           "ownerContactInfo": "Private club message to member Maya",
           "availabilityState": "available",
           "conditionState": "good",
-          "conditionNote": "No cracks; mineral marks remain on two pots."
+          "conditionNote": "No cracks; mineral marks remain on two pots.",
+          "transferTerms": "Free to a club member for garden reuse.",
+          "pickupInstructions": "Collect from the public pot rack during garden hours.",
+          "careInstructions": "Please reuse or recycle any pots you do not need."
         }
       },
       {
         "instanceId": "fall-export-package",
         "workflowType": "garden-export-custom-schemas",
         "currentState": "ready",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "operationMode": "export",
           "selectedSchemaIds": ["garden_event", "plant_exchange"],
           "destination": "Neighborhood Association archive",
           "redactionPreview": "Private contact details removed; event attendance reduced to participation status and counts.",
           "exportableDataSummary": "garden_event titles, dates, locations, capacity and attendance status; plant_exchange public summaries and review state.",
-          "ownerPersonaId": "garden-coordinator",
-          "redactionApprovedAt": "2026-08-08T14:00:00-07:00"
+          "ownerFanId": "garden-coordinator",
+          "redactionApprovedAt": "2026-08-08T14:00:00-07:00",
+          "statusMessage": "Redaction approved; ready to run. Checksum will remain pending until the platform service exists.",
+          "redactionStatus": "approved",
+          "downloadStatus": "unavailable"
         }
       },
       {
         "instanceId": "mulch-delivery-shift",
         "workflowType": "garden-volunteer-shift",
         "currentState": "open",
-        "createdByPersonaId": "garden-coordinator",
+        "createdByFanId": "garden-coordinator",
         "instanceData": {
           "shiftTitle": "Mulch delivery and bed top-up",
-          "shiftDate": "2026-08-16",
+          "shiftDate": "2026-09-05",
           "shiftTime": "08:30",
           "location": "North garden beds",
           "capacity": 4,
-          "coordinatorPersonaId": "garden-coordinator",
-          "signedUpPersonaIds": ["garden-member"]
+          "careCategory": "Mulch and soil care",
+          "instructions": "Top up the north beds to a 7 cm mulch layer without covering plant crowns.",
+          "signupCutoff": "2026-09-04",
+          "weatherPlan": "Light rain: proceed. Heavy rain: coordinator posts a new date.",
+          "coordinatorFanId": "garden-coordinator",
+          "signedUpFanIds": ["garden-member"]
         }
       }
     ]
@@ -2618,14 +2970,16 @@
         "label": "Calendar",
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "calendar_today",
-        "description": "Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders."
+        "description": "Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders.",
+        "pinnedWorkflowIds": ["garden-event-rsvp"]
       },
       {
         "tabId": "marketplace",
         "label": "Marketplace",
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "yard",
-        "description": "Browse, list, borrow, queue for, return, or give away garden items."
+        "description": "Browse, list, borrow, queue for, return, or give away garden items.",
+        "pinnedWorkflowIds": ["garden-tool-loan", "garden-tool-giveaway"]
       },
       {
         "tabId": "care",
@@ -2633,7 +2987,8 @@
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "volunteer_activism",
         "description": "Member volunteer shifts with remaining spots and sign-up state.",
-        "visiblePersonaIds": ["garden-member"]
+        "pinnedWorkflowIds": ["garden-volunteer-shift"],
+        "visibleRoleIds": ["garden-member"]
       },
       {
         "tabId": "documents",
@@ -2641,7 +2996,8 @@
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "folder",
         "description": "Coordinator-owned export scope, redaction, integrity, history, and portability state.",
-        "visiblePersonaIds": ["garden-coordinator"]
+        "pinnedWorkflowIds": ["garden-export-custom-schemas"],
+        "visibleRoleIds": ["garden-coordinator"]
       },
       {
         "tabId": "organize",
@@ -2649,12 +3005,9 @@
         "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin_panel_settings",
         "description": "Coordinator review queues, approved handoffs, and volunteer roster management.",
-        "visiblePersonaIds": ["garden-coordinator"]
+        "pinnedWorkflowIds": ["plant-exchange-submission", "garden-volunteer-shift"],
+        "visibleRoleIds": ["garden-coordinator"]
       }
     ]
-    // NEEDS IMPLEMENTATION (grammar/App Shell): the product doc asks for
-    // different persona-specific instance pins on structural Home. Guide 06
-    // explicitly says per-persona pinned surfaces are not grammar-v1 behavior.
   }
 }
-

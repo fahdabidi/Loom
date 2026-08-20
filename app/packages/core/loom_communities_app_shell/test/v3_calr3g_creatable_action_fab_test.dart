@@ -95,7 +95,7 @@ void _addSecondCalendarCreateAction(Map<String, dynamic> source) {
   first['actions'] = <dynamic>[
     <String, dynamic>{
       'kind': 'create',
-      'byPersonaIds': <String>['tabletop-organizer'],
+      'byRoleIds': <String>['tabletop-organizer'],
       'label': 'New synthetic event',
     },
   ];

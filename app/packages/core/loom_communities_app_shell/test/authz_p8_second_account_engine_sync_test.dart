@@ -21,20 +21,19 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
   cardImageAssetId: null,
   heroImageAssetId: null,
   accentColor: '#246B62',
+  specVersion: 4,
   experienceConfiguration: <String, Object?>{
-    'experienceSchemaVersion': 2,
-    'workflowGrammarVersion': 1,
     'tagline': 'AuthZ.P8 second-account sync regression',
-    'personas': <Object?>[
+    'roles': <Object?>[
       <String, Object?>{
-        'personaId': _openPersonaId,
+        'roleId': _openPersonaId,
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'Open member.',
         'accessMode': 'open',
       },
       <String, Object?>{
-        'personaId': _boardPersonaId,
+        'roleId': _boardPersonaId,
         'label': 'Board',
         'roleLabel': 'Board',
         'description': 'Board-level manager.',
@@ -55,14 +54,14 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
             'from': <String>['pending'],
             'to': 'approved',
             'guard': <String, Object?>{
-              'allowedPersonaIds': <String>[_boardPersonaId],
+              'allowedRoleIds': <String>[_boardPersonaId],
             },
           },
         ],
         'renderBindings': <Object?>[
           <String, Object?>{
             'states': <String>['pending'],
-            'role': 'receiver',
+            'audience': 'receiver',
             'tabId': 'admin',
             'cardSurfaceFamily': 'approvalQueueItem',
             'bindingKind': 'primary',
@@ -78,7 +77,7 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
         'instanceId': _adminWorkflowInstanceId,
         'workflowType': 'admin-review',
         'currentState': 'pending',
-        'createdByPersonaId': _boardPersonaId,
+        'createdByFanId': _boardPersonaId,
         'instanceData': <String, Object?>{'title': 'Board-only instance'},
       },
     ],
@@ -154,7 +153,9 @@ Future<void> _selectAccountFromSpecificPersonDialog(
 }
 
 Future<void> _setSignupPersona(WidgetTester tester, String personaId) async {
-  final personaDropdown = find.byKey(const ValueKey('open-signup-persona-dropdown'));
+  final personaDropdown = find.byKey(
+    const ValueKey('open-signup-persona-dropdown'),
+  );
   await tester.ensureVisible(personaDropdown);
   await tester.tap(personaDropdown);
   await tester.pumpAndSettle();
@@ -173,7 +174,9 @@ Future<String> _createBoardAccountFromPushedAuth(
   LocalAuthApi authApi,
 ) async {
   await _setSignupPersona(tester, _boardPersonaId);
-  final displayNameField = find.byKey(const ValueKey('open-signup-display-name'));
+  final displayNameField = find.byKey(
+    const ValueKey('open-signup-display-name'),
+  );
   await tester.ensureVisible(displayNameField);
   await tester.enterText(displayNameField, _freshBoardAccountDisplayName);
   await tester.tap(find.byKey(const ValueKey('open-signup-submit')));
@@ -206,7 +209,9 @@ void _assertAdminQuerySuccess(WidgetTester tester, String accountId) {
     findsNothing,
   );
   expect(
-    find.byKey(const ValueKey('generic-instance-card-$_adminWorkflowInstanceId')),
+    find.byKey(
+      const ValueKey('generic-instance-card-$_adminWorkflowInstanceId'),
+    ),
     findsOneWidget,
   );
 }
@@ -243,7 +248,10 @@ void main() {
       _assertAdminQuerySuccess(tester, freshBoardAccountId);
 
       await _openSpecificPersonSignIn(tester);
-      await _selectAccountFromSpecificPersonDialog(tester, _openAccountDisplayName);
+      await _selectAccountFromSpecificPersonDialog(
+        tester,
+        _openAccountDisplayName,
+      );
       expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
 
       final existingBoardResult = await authApi.signUp(

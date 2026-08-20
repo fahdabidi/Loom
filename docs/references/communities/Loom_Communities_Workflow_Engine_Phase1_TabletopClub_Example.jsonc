@@ -1,8 +1,7 @@
 // Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc
 //
-// THE authoritative Tabletop Club community definition — the full desired experience, expressed in
-// the ENGINE-NATIVE schema (Experience Content v2), stamped with all three schema versions per
-// Loom_Communities_Workflow_Engine_JSON_Schema_Versions.md.
+// Tabletop Club community definition — the full desired experience, migrated to the
+// engine-native specVersion 4 package grammar and its roleId/fanId identity model.
 //
 // Every workflow, state, transition, guard, effect, formula, and render binding below is written in
 // the grammar the real engine already parses (`LoomWorkflowStateMachine.fromJson`,
@@ -11,26 +10,23 @@
 // decorative fixture: a real backend would run this as-is; the demo runs the same API against a local
 // WorkflowDatabase (real interface, stubbed transitions).
 //
-// STATUS: this file is written BEFORE the code that loads it. The engine can already execute every
-// construct used here, but the app-shell cannot yet LOAD `experience.workflowDefinitions` at install
-// time, render instances generically, or dispatch by `renderBindings`. Those are milestones 1.27-1.31
-// in Loom_Communities_Workflow_Engine_3.md. Constructs that additionally need NEW engine/app
-// capability (beyond wiring) are marked inline with "NEEDS IMPLEMENTATION".
+// Platform/App-Shell capabilities that JSON cannot supply are recorded in the delivery's
+// Gaps / assumptions section; no unsupported JSON construct is used as a placeholder for them.
 //
 // Replaces the previous draft of this file, which mixed the legacy shallow form (flat `workflows[]` +
 // bespoke `tournamentBallot`/`marketplaceListings` blocks) with new content. Two substantive model
 // corrections carried into this version:
 //   1. The "afternoon tournament" calendar RSVP and the ballot's tournament event were two separate
 //      things describing ONE real-world event. They are now a single `tournament-event` instance whose
-//      `goingPersonaIds` is what the ballot's cross-instance eligibility guard actually reads.
+//      `goingFanIds` is what the ballot's cross-instance eligibility guard actually reads.
 //   2. The old `tabletop-committee-decision` card asserted "a member proposed Wingspan" as a scripted
 //      fact with no workflow that let a member propose anything. Replaced by a real
 //      `game-purchase-proposal` type: a member really submits, an organizer really decides, and the
 //      member really sees the outcome on their own proposal.
 
 {
-  // ---- Package Envelope Schema v1 ----
-  "schemaVersion": 1,
+  // ---- Package envelope ----
+  "specVersion": 4,
   "packageId": "init_verify_tabletop_club_2",
   "communityId": "community_verify_tabletop_club",
   "communityHandle": "tabletop-club",
@@ -47,9 +43,7 @@
   "idempotencyKey": "init-verify-tabletop-club-v2",
 
   "experience": {
-    // ---- Experience Content Schema v2 (engine-native) + Workflow Grammar v1 ----
-    "experienceSchemaVersion": 2,
-    "workflowGrammarVersion": 1,
+    // ---- Engine-native experience ----
 
     "displayName": "Tabletop Club",
     "tagline": "Board game nights, tournaments, loaner games, and dues for local tabletop fans.",
@@ -63,12 +57,8 @@
       "tabThemes": {
         "giving": { "accent": "#8A5A34" }
       },
-      // PROPOSED 2026-07-24, not yet implemented (spec-version.json proposedNotImplemented.
-      // calendarDateRailBinding). Replaces the agenda row's hardcoded weekday-abbrev/day-number date
-      // rail with an explicit, community-configurable list -- this example reproduces today's exact
-      // default (first two entries) and adds a third: a small badge showing how many events land on
-      // that day, driven by the existing computation model's `count` function over the day's own
-      // instances, with zero new App Shell code once this is implemented.
+      // Community-configurable agenda date rail: the first two entries reproduce the default and the
+      // third adds a small badge showing how many events land on that day.
       "calendar": {
         "dateRail": {
           "entries": [
@@ -80,8 +70,8 @@
       }
     },
 
-    // PROPOSED 2026-07-20 (render-bindings.md) -- resolves (1) which FAB layout renders when two or
-    // more `creatable` bindings target the same tab, and (2) how the tapped action's own archetype
+    // Resolves (1) which FAB layout renders when two or more create actions target the same tab, and
+    // (2) how the tapped action's own archetype
     // card surface is presented. Calendar is the first tab to need the multi-action case: event-rsvp's
     // "New event" today, and tournament-event's "New tournament" once CALR.3b lands -- both creatable,
     // both on tabId "calendar". The community default keeps creation forms as the "expand and hover"
@@ -109,15 +99,15 @@
       "style": "bell"
     },
 
-    "personas": [
+    "roles": [
       {
-        "personaId": "tabletop-organizer",
+        "roleId": "tabletop-organizer",
         "label": "Organizer",
         "roleLabel": "Organizer",
         "description": "Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues."
       },
       {
-        "personaId": "tabletop-member",
+        "roleId": "tabletop-member",
         "label": "Member",
         "roleLabel": "Member",
         "description": "RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues."
@@ -140,6 +130,7 @@
       // -------------------------------------------------------------------------------------------
       "event-rsvp": {
         "initialState": "open",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "open": {
             "label": "RSVP open",
@@ -161,27 +152,37 @@
               "title", "eventDate", "eventTime", "location", "host", "capacity",
               "allDay", "eventEndDate", "locationType", "videoLink"
             ],
-            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] },
-            "creationGuard": {
-              "locationOverlap": {
-                "locationField": "location",
-                "dateField": "eventDate",
-                "timeField": "eventTime",
-                "durationMinutes": 120
-              }
-            }
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "cancel-event",
+            "action": "cancel",
             "label": "Cancel event",
             "icon": "cancel",
             "tone": "destructive",
             "from": ["open"],
             "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [
+              { "op": "transitionRelated", "transitionId": "cancel-pending-response",
+                "relatedQuery": { "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "pending" } } },
+              { "op": "transitionRelated", "transitionId": "cancel-going-response",
+                "relatedQuery": { "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "going" } } },
+              { "op": "transitionRelated", "transitionId": "cancel-maybe-response",
+                "relatedQuery": { "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "maybe" } } },
+              { "op": "transitionRelated", "transitionId": "cancel-declined-response",
+                "relatedQuery": { "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "declined" } } },
+              { "op": "transitionRelated", "transitionId": "cancel-waitlisted-response",
+                "relatedQuery": { "workflowType": "event-rsvp-response",
+                  "filter": { "eventId": "{id}", "$state": "waitlisted" } } }
+            ]
           },
           {
             // IMPLEMENTED 2026-07-25 (CAL.Recurrence, effects.md op 12). Orthogonal, no-state-change
@@ -190,13 +191,14 @@
             // "seriesId == null" formula guard self-removes this button after it fires once, since a
             // series can only be created from its anchor a single time.
             "id": "make-recurring",
+            "action": "edit",
             "label": "Make recurring",
             "icon": "event_repeat",
             "tone": "secondary",
             "from": ["open"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-organizer"],
+              "allowedRoleIds": ["tabletop-organizer"],
               "formula": "seriesId == null"
             },
             // Optional recurrenceRule fields (interval/byDayOfWeek/byMonthDay/bySetPos) are genuinely
@@ -269,10 +271,10 @@
           }
         ],
         "renderBindings": [
-          { "states": ["open"], "role": "any", "tabId": "calendar",
+          { "states": ["open"], "audience": "any", "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "New event", "byPersonaIds": ["tabletop-organizer"],
+              { "kind": "create", "label": "New event", "byRoleIds": ["tabletop-organizer"],
                 "scope": "tab", "presentation": "fab" }
             ],
             // Points the generic archetype at the per-member response table instead of a hardcoded
@@ -293,7 +295,9 @@
             // to add its own categories, same rationale as responseTable/filterableFacets above.
             "styleField": "cardStyleId"
           },
-          { "states": ["cancelled"], "role": "any", "tabId": "calendar",
+          { "states": ["cancelled"], "audience": "any", "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" },
+          { "states": ["open"], "audience": "any", "tabId": "home",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
@@ -302,7 +306,7 @@
           "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"] },
-          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline", "visibleWhenEditing": "!(allDay == true)",
+          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "location": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
@@ -311,19 +315,8 @@
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "groups_outlined", "labelTemplate": "{value} seats" },
 
-          // Notifications Experience, PROPOSED (new phase, 2026-07-31). reminderOffsetHours is organizer-
-          // set at creation (defaults to 24 if omitted -- see the "open" state's own default note above);
-          // already-functional today via the generic editor (plain formEntry, no engine dependency).
-          // reminderAt (the actual computed reminder timestamp) is DELIBERATELY NOT added yet: it needs a
-          // new combineDateAndTime formula function (formulas.md, PROPOSED, not yet engine-implemented)
-          // to combine eventDate+eventTime into one real timestamp before subtracting the offset -- the
-          // same lesson CAL.Calendar2.2's cancellationDeadline guard already taught: eventDate alone
-          // parses to midnight, so subtracting hours from JUST the date would make the reminder
-          // inaccurately early for any event with a real time-of-day. Confirmed the real validator
-          // actively rejects an unrecognized formula function name (unlike guard/effect shapes, which
-          // tolerate additive-but-inert keys) -- so unlike most other held-back capabilities this session,
-          // `reminderAt` cannot be authored into the fixture at all until CAL.Notify2.9 implements
-          // combineDateAndTime; it lands atomically with that engine work, not ahead of it.
+          // Organizer-set reminder offset plus the computed timestamp. Combining eventDate and eventTime
+          // avoids the midnight-only cutoff error that occurs when subtracting from a date alone.
           "reminderOffsetHours": { "type": "number", "writableBy": "formEntry", "storage": "inline",
             "displayContexts": [] },
           "reminderAt": { "type": "date",
@@ -339,7 +332,7 @@
             "displayContexts": ["detail"] },
           "locationType": { "type": "text", "writableBy": "formEntry", "storage": "inline",
             "displayContexts": [] },
-          "videoLink": { "type": "text", "writableBy": "formEntry", "storage": "inline", "visibleWhenEditing": "locationType == 'video'",
+          "videoLink": { "type": "url?", "writableBy": "formEntry", "storage": "inline", "openMode": "choice",
             "displayIcon": "videocam_outlined", "labelTemplate": "{value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
 
@@ -394,42 +387,39 @@
       // insert-only and immutable, but an RSVP response is MUTABLE — a member can change their mind,
       // so this type has real transitions between real states, not a single terminal one.
       //
-      // Every current community member gets a row the moment an event is created (bulk-created via
-      // the real, abstract WorkflowEngineApi.createInstances — see CAL.1/CAL.3 gaps), all starting in
-      // "pending". This is what makes every RSVP action a plain, race-free applyTransition on an
+      // The event-rsvp archetype provisions a row per member when an event is created, all starting in
+      // "pending". This makes every RSVP action a plain, race-free applyTransition on an
       // already-existing row — never a racy "does a row exist yet" check.
       // -------------------------------------------------------------------------------------------
       "event-rsvp-response": {
         "initialState": "pending",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "pending":    { "label": "No response yet", "tone": "info" },
           "going":      { "label": "Going",      "tone": "positive" },
           "maybe":      { "label": "Maybe",      "tone": "info" },
           "declined":   { "label": "Can't go",   "tone": "negative" },
-          "waitlisted": { "label": "Waitlisted", "tone": "secondary" }
+          "waitlisted": { "label": "Waitlisted", "tone": "secondary" },
+          "cancelled": { "label": "Event cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "respond-going",
+            "action": "respond",
             "label": "Going",
             "icon": "event_available",
             "tone": "primary",
             "from": ["pending", "maybe", "declined", "waitlisted"],
             "to": "going",
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              // Cross-instance aggregate: sum this event's OWN going-rows' partySize live and compare
-              // against capacity read off the related event-rsvp instance named by this row's own
-              // eventId. CAL.Calendar2.8, PROPOSED -- depends on RelatedAggregateGuard gaining a `field`
-              // parameter wired through to aggregate()'s real `column` argument (currently hardcoded
-              // `''`, so `sum` silently computes garbage today -- see guards.md's correction note and
-              // spec-version.json's relatedAggregateFieldParam). This op/field pairing is INERT until
-              // that engine fix ships alongside it in the same pass -- both land together, atomically.
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              // Count going response rows live. The current guard implementation safely supports only
+              // `count`; partySize remains collected for the planned plus-one upgrade, but is not used
+              // for enforcement until relatedAggregate.field is implemented.
               "relatedAggregate": {
                 "workflowType": "event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
-                "op": "sum",
-                "field": "partySize",
+                "op": "count",
                 "comparator": "<",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
               }
@@ -456,12 +446,13 @@
           },
           {
             "id": "respond-maybe",
+            "action": "respond",
             "label": "Maybe",
             "icon": "help_outline",
             "tone": "secondary",
             "from": ["pending", "going", "declined", "waitlisted"],
             "to": "maybe",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-member", "tabletop-organizer"] },
             // IMPLEMENTED 2026-07-25 (transitionRelated, effects.md op 11). Fires unconditionally on
             // every leave, regardless of which state was left. Correctness comes from respond-going's
             // OWN relatedAggregate guard re-evaluating live against the resolved target: if no seat
@@ -469,7 +460,7 @@
             // fails and this is a silent no-op, not an error.
             // onSuccessEffects (CAL.Notify.1/.3, PROPOSED) -- only runs when the promotion genuinely
             // happens (the target's own relatedAggregate guard passed), never on the silent-no-op path.
-            // Interpolated against the TARGET row's own data, so {personaId} resolves to the promoted
+            // Interpolated against the TARGET row's own data, so {fanId} resolves to the promoted
             // member, not whoever left the "going" state.
             "effects": [
               { "op": "transitionRelated",
@@ -484,7 +475,7 @@
                   { "op": "createInstance",
                     "workflowType": "notification",
                     "fields": {
-                      "recipientPersonaId": "{personaId}",
+                      "recipientFanId": "{fanId}",
                       "title": "You're off the waitlist!",
                       "body": "A seat opened up and you've been added to the going list.",
                       "createdAt": "$timestamp"
@@ -494,12 +485,13 @@
           },
           {
             "id": "respond-declined",
+            "action": "respond",
             "label": "Can't go",
             "icon": "event_busy",
             "tone": "destructive",
             "from": ["pending", "going", "maybe", "waitlisted"],
             "to": "declined",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-member", "tabletop-organizer"] },
             // IMPLEMENTED 2026-07-25 -- see respond-maybe's identical note above.
             // onSuccessEffects (CAL.Notify.1/.3, PROPOSED) -- see respond-maybe's identical note above.
             "effects": [
@@ -515,7 +507,7 @@
                   { "op": "createInstance",
                     "workflowType": "notification",
                     "fields": {
-                      "recipientPersonaId": "{personaId}",
+                      "recipientFanId": "{fanId}",
                       "title": "You're off the waitlist!",
                       "body": "A seat opened up and you've been added to the going list.",
                       "createdAt": "$timestamp"
@@ -528,13 +520,14 @@
             // button cannot appear (or fire) while seats remain. Same intent as the old formula guard,
             // now evaluated against the live row count instead of a stored list's size.
             "id": "respond-waitlist",
+            "action": "join_waitlist",
             "label": "Join waitlist",
             "icon": "groups",
             "tone": "secondary",
             "from": ["pending", "maybe", "declined"],
             "to": "waitlisted",
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
               "relatedAggregate": {
                 "workflowType": "event-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" },
@@ -562,10 +555,11 @@
             // "declined" is deliberately excluded from "from" -- a member who declined doesn't want a
             // reminder for an event they're not attending.
             "id": "send-reminder",
+            "action": "set_reminder",
             "label": "Send reminder",
             "from": ["pending", "maybe", "going", "waitlisted"],
             "to": null,
-            "guard": { "actorEqualsField": { "key": "personaId" } },
+            "guard": { "actorEqualsField": { "key": "fanId" } },
             "inputs": {
               "notificationTitle": { "type": "text", "required": true },
               "notificationBody": { "type": "text", "required": true },
@@ -575,23 +569,53 @@
               { "op": "createInstance",
                 "workflowType": "notification",
                 "fields": {
-                  "recipientPersonaId": "{personaId}",
+                  "recipientFanId": "{fanId}",
                   "title": "{input.notificationTitle}",
                   "body": "{input.notificationBody}",
                   "createdAt": "{input.notificationCreatedAt}"
                 } },
               { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
             ]
+          },
+          {
+            "id": "cancel-pending-response", "action": "cancel", "label": "Close cancelled event response",
+            "from": ["pending"], "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [ { "op": "set", "key": "responseBeforeCancellation", "value": "pending" } ]
+          },
+          {
+            "id": "cancel-going-response", "action": "cancel", "label": "Close cancelled event response",
+            "from": ["going"], "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [ { "op": "set", "key": "responseBeforeCancellation", "value": "going" } ]
+          },
+          {
+            "id": "cancel-maybe-response", "action": "cancel", "label": "Close cancelled event response",
+            "from": ["maybe"], "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [ { "op": "set", "key": "responseBeforeCancellation", "value": "maybe" } ]
+          },
+          {
+            "id": "cancel-declined-response", "action": "cancel", "label": "Close cancelled event response",
+            "from": ["declined"], "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [ { "op": "set", "key": "responseBeforeCancellation", "value": "declined" } ]
+          },
+          {
+            "id": "cancel-waitlisted-response", "action": "cancel", "label": "Close cancelled event response",
+            "from": ["waitlisted"], "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [ { "op": "set", "key": "responseBeforeCancellation", "value": "waitlisted" } ]
           }
         ],
         "renderBindings": [],
         "instanceDataSchema": {
           "eventId":   { "type": "text", "required": true, "storage": "inline" },
-          "personaId": { "type": "text", "required": true, "storage": "inline" },
+          "fanId": { "type": "fanId", "required": true, "storage": "inline" },
           // IMPLEMENTED 2026-07-25 -- stamped by respond-waitlist's own `set` effect above, read as
           // the sortKey by respond-maybe/respond-declined's transitionRelated effects. Written by
           // effect only, never by the member directly.
-          "rsvpedAt":  { "type": "text", "writableBy": "effect", "storage": "inline" },
+          "rsvpedAt":  { "type": "date?", "writableBy": "effect", "storage": "inline" },
 
           // NEW 2026-07-26 (CAL.Calendar2.5b, PROPOSED). Written by respond-going's own new `set`
           // effects above via {input.x} tokens -- writableBy stays "effect" (never formEntry) because
@@ -609,18 +633,22 @@
           // client-orchestrated reminder check: written once a reminder notification has genuinely been
           // created for this (event, persona) pair, so a later poll never creates a second one for the
           // same response row.
-          "reminderSentAt": { "type": "text", "writableBy": "effect", "storage": "inline" }
+          "reminderSentAt": { "type": "date?", "writableBy": "effect", "storage": "inline" },
+          "responseBeforeCancellation": { "type": "text", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "history", "labelTemplate": "Last RSVP: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
 
       // -------------------------------------------------------------------------------------------
       // TOURNAMENT EVENT — the same real-world event the members RSVP to on Calendar AND the event the
-      // ballot's cross-instance eligibility guard reads (`goingPersonaIds`). One instance, two render
+      // ballot's cross-instance eligibility guard reads (`goingFanIds`). One instance, two render
       // bindings. `selectedGame` starts "TBD" and is written by the ballot's close transition via a
       // real cross-instance `set` effect — never by hand.
       // -------------------------------------------------------------------------------------------
       "tournament-event": {
         "initialState": "open",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "open": {
             "label": "Signups open",
@@ -632,84 +660,83 @@
               "title", "eventDate", "eventTime", "location", "host", "minimumAttendance",
               "allDay", "eventEndDate", "locationType", "videoLink"
             ],
-            "editGuard": { "allowedPersonaIds": ["tabletop-organizer"] },
-            "creationGuard": {
-              "locationOverlap": {
-                "locationField": "location",
-                "dateField": "eventDate",
-                "timeField": "eventTime",
-                "durationMinutes": 120
-              }
-            }
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "rsvp-going",
+            "action": "respond",
             "label": "I'm going",
             "icon": "event_available",
             "tone": "primary",
             "from": ["open"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "actorInList": { "key": "goingPersonaIds", "present": false }
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "goingFanIds", "present": false }
             },
             "effects": [
-              { "op": "appendUnique", "key": "goingPersonaIds", "value": "$actor" }
+              { "op": "appendUnique", "key": "goingFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "rsvp-withdraw",
+            "action": "withdraw_response",
             "label": "Can't make it",
             "icon": "event_busy",
             "tone": "secondary",
             "from": ["open"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "actorInList": { "key": "goingPersonaIds", "present": true }
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "goingFanIds", "present": true }
             },
             "effects": [
-              { "op": "removeValue", "key": "goingPersonaIds", "value": "$actor" }
+              { "op": "removeValue", "key": "goingFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "cancel-tournament",
+            "action": "cancel",
             "label": "Cancel tournament",
             "icon": "cancel",
             "tone": "destructive",
             "from": ["open"],
             "to": "cancelled",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] }
           }
         ],
         "renderBindings": [
           // Shows on Calendar as a real event...
-          { "states": ["open"], "role": "any", "tabId": "calendar",
+          { "states": ["open"], "audience": "any", "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
-            // Event CREATION only — RSVP tracking (goingPersonaIds) deliberately NOT converted to the
+            // Event CREATION only — RSVP tracking (goingFanIds) deliberately NOT converted to the
             // event-rsvp-response table pattern in this pass: tournament-event has no capacity ceiling
             // (only a minimumAttendance quorum, inverted semantics from event-rsvp's guard), so reusing
             // that type verbatim would be wrong. Tracked as an explicit, named gap — see the gap list —
             // not silently extended here.
             "actions": [
-              { "kind": "create", "label": "New tournament", "byPersonaIds": ["tabletop-organizer"],
+              { "kind": "create", "label": "New tournament", "byRoleIds": ["tabletop-organizer"],
                 "scope": "tab", "presentation": "fab" },
               // Instance-scoped: a button ON this tournament's own card that creates a ballot for it.
               // {context.id} = this tournament instance's id, which is exactly the ballot's eventId.
               // Grammar v2 owns an action on the archetype whose card hosts it (the tournament), not on
               // the type it creates (the ballot) — so this moved here off tournament-ballot's binding.
               { "kind": "create", "workflowType": "tournament-ballot",
-                "label": "Create ballot for this tournament", "byPersonaIds": ["tabletop-organizer"],
+                "label": "Create ballot for this tournament", "byRoleIds": ["tabletop-organizer"],
                 "scope": "instance", "presentation": "button",
                 "prefill": { "eventId": "{context.id}" } }
             ],
             "styleField": "cardStyleId" },
           // ...and on Home as the attendance/context card sitting alongside the ballot card.
           // (Ballot is a Home card, NOT its own tab — the dedicated 'ballot' tab is removed at 1.30.)
-          { "states": ["open"], "role": "any", "tabId": "home",
+          { "states": ["open"], "audience": "any", "tabId": "home",
+            "cardSurfaceFamily": "votePoll", "bindingKind": "summary" },
+          { "states": ["cancelled"], "audience": "any", "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" },
+          { "states": ["cancelled"], "audience": "any", "tabId": "home",
             "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
@@ -718,7 +745,7 @@
           "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "storage": "inline",
             "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"] },
-          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline", "visibleWhenEditing": "!(allDay == true)",
+          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "location": { "type": "text", "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
@@ -745,20 +772,20 @@
             "displayContexts": ["detail"] },
           "locationType": { "type": "text", "writableBy": "formEntry", "storage": "inline",
             "displayContexts": [] },
-          "videoLink": { "type": "text", "writableBy": "formEntry", "storage": "inline", "visibleWhenEditing": "locationType == 'video'",
+          "videoLink": { "type": "url?", "writableBy": "formEntry", "storage": "inline", "openMode": "choice",
             "displayIcon": "videocam_outlined", "labelTemplate": "{value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
 
-          "goingPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline" },
+          "goingFanIds": { "type": "fanId[]", "writableBy": "effect", "storage": "inline" },
           "selectedGame": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayIcon": "casino", "labelTemplate": "Selected game: {value}",
             "displayContexts": ["tile", "detail"] },
 
           // Computed — the live "Accepted: N / M" display and the quorum gate.
-          "accepted": { "type": "number", "formula": "size(goingPersonaIds)",
+          "accepted": { "type": "number", "formula": "size(goingFanIds)",
             "displayIcon": "groups_outlined", "labelTemplate": "Accepted: {value}",
             "displayContexts": ["tile", "detail"] },
-          "quorumMet": { "type": "bool", "formula": "size(goingPersonaIds) >= minimumAttendance" },
+          "quorumMet": { "type": "bool", "formula": "size(goingFanIds) >= minimumAttendance" },
 
           // Constant style slot — every tournament-event instance is conceptually one category
           // ("tournament"), unlike event-rsvp which varies per instance's own `category` field. Still a
@@ -778,17 +805,21 @@
       // -------------------------------------------------------------------------------------------
       "tournament-ballot": {
         "initialState": "open",
+        "visibility": { "default": "membersOnly" },
         "states": {
           // Nothing is user-editable on an EXISTING ballot — a vote is not a field on the ballot, it
           // is a ROW in the `tournament-vote` table (see below). `editableFields` here is consumed only
           // once, at creation time, by this binding's own `creatable` form — not a later edit surface.
           "open":   { "label": "Voting open", "tone": "positive",
-            "editableFields": ["candidates", "deadline", "reminderOffset", "notificationsEnabled"] },
-          "closed": { "label": "Closed", "tone": "info", "isTerminal": true }
+            "editableFields": ["candidates", "deadline", "reminderOffset", "notificationsEnabled"],
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
+          "closed": { "label": "Closed", "tone": "info", "isTerminal": true },
+          "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "cast-vote",
+            "action": "vote",
             "label": "Vote",
             "icon": "how_to_vote",
             "tone": "primary",
@@ -802,12 +833,12 @@
               "choice": { "type": "text", "required": true }
             },
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              // Cross-instance eligibility: the actor must appear in `goingPersonaIds` on the instance
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              // Cross-instance eligibility: the actor must appear in `goingFanIds` on the instance
               // named by this ballot's `eventId` field. Real engine guard — a non-RSVP'd persona is
               // genuinely blocked at applyTransition, not merely hidden.
               "relatedInstanceField": "eventId",
-              "relatedListField": "goingPersonaIds"
+              "relatedListField": "goingFanIds"
             },
             "effects": [
               // INSERT one row into the vote table. Atomic; no read-modify-write of a shared list.
@@ -815,19 +846,20 @@
                 "workflowType": "tournament-vote",
                 "fields": {
                   "ballotId": "{id}",
-                  "voterId": "$actor",
+                  "voterFanId": "$actor",
                   "choice": "{input.choice}"
                 } }
             ]
           },
           {
             "id": "close-vote",
+            "action": "close",
             "label": "Close vote",
             "icon": "how_to_vote_outlined",
             "tone": "primary",
             "from": ["open"],
             "to": "closed",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
             "effects": [
               {
                 "op": "branch",
@@ -859,11 +891,24 @@
                 ]
               }
             ]
+          },
+          {
+            "id": "cancel-vote",
+            "action": "close",
+            "label": "Cancel ballot",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "cancelled",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [
+              { "op": "set", "key": "outcome", "value": "cancelled" }
+            ]
           }
         ],
         "renderBindings": [
           {
-            "states": ["open"], "role": "any", "tabId": "home",
+            "states": ["open"], "audience": "any", "tabId": "home",
             "cardSurfaceFamily": "votePoll", "bindingKind": "primary",
             // Per-candidate Vote buttons. The repeater walks `candidates` and, for each one, offers
             // `cast-vote` with that candidate's id supplied as the transition's `choice` input.
@@ -880,7 +925,7 @@
               ]
             }
           },
-          { "states": ["closed"], "role": "any", "tabId": "home",
+          { "states": ["closed", "cancelled"], "audience": "any", "tabId": "home",
             "cardSurfaceFamily": "votePoll", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
@@ -942,13 +987,14 @@
       //     shared list to read-modify-write, and no shared scratch field to overwrite.
       //   * DERIVED, never stored. The tally is groupCount over these rows. No counter to increment,
       //     so no counter can drift from the votes it claims to summarise.
-      //   * It keeps the facts. voterId + choice means a vote can be audited, changed, or limited to
+      //   * It keeps the facts. voterFanId + choice means a vote can be audited, changed, or limited to
       //     one-per-person. A bare per-option counter throws all of that away.
       //
       // It renders nowhere on its own (no renderBindings) — it exists to be aggregated.
       // -------------------------------------------------------------------------------------------
       "tournament-vote": {
         "initialState": "cast",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "cast": { "label": "Vote cast", "tone": "positive", "isTerminal": true }
         },
@@ -956,7 +1002,7 @@
         "renderBindings": [],
         "instanceDataSchema": {
           "ballotId": { "type": "text",      "required": true, "storage": "inline", "sortable": true },
-          "voterId":  { "type": "personaId", "required": true, "storage": "inline" },
+          "voterFanId":  { "type": "fanId", "required": true, "storage": "inline" },
           "choice":   { "type": "text",      "required": true, "storage": "inline", "sortable": true }
         }
       },
@@ -973,6 +1019,11 @@
       // -------------------------------------------------------------------------------------------
       "notification": {
         "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "recipientFanId" } },
+          "fields": { "recipient": "recipientFanId" }
+        },
         "states": {
           "unread": { "label": "Unread", "tone": "info" },
           "read": { "label": "Read", "isTerminal": true }
@@ -985,15 +1036,15 @@
             "tone": "secondary",
             "from": ["unread"],
             "to": "read",
-            "guard": { "actorEqualsField": { "key": "recipientPersonaId" } }
+            "guard": { "actorEqualsField": { "key": "recipientFanId" } }
           }
         ],
         "renderBindings": [],
         "instanceDataSchema": {
-          "recipientPersonaId": { "type": "personaId", "required": true, "writableBy": "effect", "storage": "inline" },
+          "recipientFanId": { "type": "fanId", "required": true, "writableBy": "effect", "storage": "inline" },
           "title":     { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
           "body":      { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
-          "createdAt": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true }
+          "createdAt": { "type": "date", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true }
         }
       },
 
@@ -1008,26 +1059,30 @@
       // -------------------------------------------------------------------------------------------
       "equipment-loan": {
         "initialState": "published",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "published": { "label": "In library", "tone": "positive" },
+          "published": { "label": "In library", "tone": "positive",
+            "editableFields": ["title", "category", "condition", "description"],
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
           "delisted": { "label": "Delisted", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "borrow",
+            "action": "request",
             "label": "Request loan",
             "icon": "arrow_forward",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member"],
+              "allowedRoleIds": ["tabletop-member"],
               "instanceDataEquals": { "key": "availabilityState", "value": "available" },
               "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
             },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "onLoan" },
-              { "op": "set", "key": "holderPersonaId", "value": "$actor" }
+              { "op": "set", "key": "holderFanId", "value": "$actor" }
             ]
             // (was linkedWorkflowId: "tabletop-game-loan" — removed 2026-07-15: that type is no longer a
             // throwaway confirmation stub, it is now the real peer game-sharing type. The borrow effects
@@ -1037,63 +1092,89 @@
             // Allowed whether or not the item is currently out: queue-behind-a-loan (common) and
             // reserve-ahead on a high-demand item that's technically free (also valid).
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "add_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member"],
-              "actorInList": { "key": "queuedPersonaIds", "present": false }
+              "allowedRoleIds": ["tabletop-member"],
+              "actorInList": { "key": "queuedFanIds", "present": false }
             },
             "effects": [
-              { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" }
+              { "op": "appendUnique", "key": "queuedFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member"],
-              "actorInList": { "key": "queuedPersonaIds", "present": true }
+              "allowedRoleIds": ["tabletop-member"],
+              "actorInList": { "key": "queuedFanIds", "present": true }
             },
             "effects": [
-              { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" }
+              { "op": "removeValue", "key": "queuedFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "return",
+            "action": "return",
             "label": "Return",
             "icon": "keyboard_return",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "instanceDataEquals": { "key": "availabilityState", "value": "onLoan" },
+              "actorEqualsField": { "key": "holderFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "holderFanId", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+            ]
+          },
+          {
+            "id": "organizer-return",
+            "action": "return",
+            "label": "Record return",
+            "icon": "assignment_return",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["tabletop-organizer"],
               "instanceDataEquals": { "key": "availabilityState", "value": "onLoan" }
             },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "available" },
-              { "op": "set", "key": "holderPersonaId", "value": null },
+              { "op": "set", "key": "holderFanId", "value": null },
               { "op": "set", "key": "dueDate", "value": null }
             ]
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist",
             "icon": "delete_outline",
             "tone": "destructive",
             "from": ["published"],
             "to": "delisted",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+            "guard": {
+              "allowedRoleIds": ["tabletop-organizer"],
+              "instanceDataEquals": { "key": "availabilityState", "value": "available" },
+              "formula": "size(queuedFanIds) == 0"
+            }
           }
         ],
         "renderBindings": [
-          { "states": ["published"], "role": "any", "tabId": "marketplace",
+          { "states": ["published"], "audience": "any", "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
             // Transition-FAB pattern (grammar v2, NOT YET APP-SHELL-IMPLEMENTED — see
             // spec-version.json -> proposedNotImplemented.actionsGrammar): "borrow" is already a
@@ -1101,12 +1182,17 @@
             // changes how it PRESENTS -- pulled out of the automatic button row into its own
             // contextual FAB, since "request a loan" is this card's single primary action, while
             // join-queue/leave-queue/return/delist stay in the row exactly as before. No
-            // byPersonaIds/workflowType/prefill here: "borrow"'s own guard above remains the sole
+            // byRoleIds/workflowType/prefill here: "borrow"'s own guard above remains the sole
             // eligibility check.
             "actions": [
+              { "kind": "create", "label": "Add club game", "byRoleIds": ["tabletop-organizer"],
+                "scope": "tab", "presentation": "fab",
+                "prefill": { "availabilityState": "available", "queuedFanIds": [] } },
               { "kind": "transition", "transitionId": "borrow", "label": "Request loan",
                 "presentation": "fab" }
-            ] }
+            ] },
+          { "states": ["delisted"], "audience": "any", "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
@@ -1121,10 +1207,10 @@
             "storage": "inline", "searchable": true, "displayContexts": ["detail"] },
           "availabilityState": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayContexts": ["tile", "detail"] },
-          "holderPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "holderFanId": { "type": "fanId?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "person_outline", "labelTemplate": "Holder: {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "queuedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+          "queuedFanIds": { "type": "fanId[]", "writableBy": "effect", "storage": "inline",
             "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "dueDate": { "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
@@ -1132,36 +1218,57 @@
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
 
           // Computed — "you are #N in the queue", replacing hand-counted queue math.
-          "queueLength": { "type": "number", "formula": "size(queuedPersonaIds)" },
+          "queueLength": { "type": "number", "formula": "size(queuedFanIds)" },
           "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
         }
       },
 
       "equipment-giveaway": {
         "initialState": "available",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "available": { "label": "Free to a good home", "tone": "positive" },
-          "claimed": { "label": "Claimed", "tone": "positive", "isTerminal": true }
+          "available": { "label": "Free to a good home", "tone": "positive",
+            "editableFields": ["title", "category", "condition", "description"],
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
+          "claimed": { "label": "Claimed", "tone": "positive", "isTerminal": true },
+          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "claim",
+            "action": "claim",
             "label": "Claim giveaway",
             "icon": "check_circle",
             "tone": "primary",
             "from": ["available"],
             "to": "claimed",
-            "guard": { "allowedPersonaIds": ["tabletop-member"] },
+            "guard": { "allowedRoleIds": ["tabletop-member"] },
             "effects": [
-              { "op": "set", "key": "claimedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "claimedByFanId", "value": "$actor" },
               { "op": "removeFromTileGrid" }
             ]
             // (was linkedWorkflowId: "tabletop-game-loan" — removed 2026-07-15, see the borrow note above.)
+          },
+          {
+            "id": "withdraw-giveaway",
+            "action": "delist",
+            "label": "Withdraw giveaway",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["available"],
+            "to": "withdrawn",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] }
           }
         ],
         "renderBindings": [
-          { "states": ["available"], "role": "any", "tabId": "marketplace",
-            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
+          { "states": ["available"], "audience": "any", "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
+            "actions": [
+              { "kind": "create", "label": "Offer club giveaway",
+                "byRoleIds": ["tabletop-organizer"], "scope": "tab", "presentation": "fab" }
+            ] },
+          { "states": ["claimed", "withdrawn"], "audience": "any", "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
@@ -1173,7 +1280,7 @@
             "displayIcon": "verified_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"] },
           "description": { "type": "textarea", "writableBy": "formEntry", "storage": "inline",
             "searchable": true, "displayContexts": ["detail"] },
-          "claimedByPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "claimedByFanId": { "type": "fanId?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "person_outline", "labelTemplate": "Claimed by: {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] }
         }
@@ -1192,51 +1299,47 @@
       // instance (`to: null` transitions), because those coexist: a game can be on loan AND have a queue
       // AND have a next-borrower awaiting approval all at once.
       //
-      // OWNER-ONLY actions (approve/decline/delist) use a `formula` guard `ownerPersonaId == $actor` — a
+      // OWNER-ONLY actions (approve/decline/delist) use a `formula` guard `ownerFanId == $actor` — a
       // real engine guard; formula guards bind $actor (guard_evaluator.dart:39-46). No new grammar.
       //
-      // NEEDS IMPLEMENTATION (honest gaps — flagged, never faked):
-      //  * `creatable` (GAP-2) below lets any member list their own game, but auto-setting the new
-      //    listing's ownerPersonaId to the CREATOR needs the GAP-2 creator binding
-      //    (Loom_Communities_Workflow_Engine_3_GrammarExtensions.md). Until then owner is seeded/effect-set.
-      //  * PER-INDIVIDUAL identity: this demo authenticates as one of TWO roles (tabletop-member /
-      //    tabletop-organizer), so `ownerPersonaId == $actor` distinguishes ROLE, not individual member.
-      //    True "only THIS owner" needs per-user identity (a platform service) — the same limitation the
-      //    tournament-vote rows note. A real backend with per-user ids runs this guard correctly as-is.
-      //  * AUTO-PROMOTE the head of the queue to pendingRequest on return, and COMPUTE a due date
-      //    (now + loan period) on approve/renew: neither a list-head function nor date arithmetic that
-      //    RETURNS a date exists in the 20-function formula vocabulary (reference/formulas.md). Left
-      //    explicit, not approximated.
+      // KNOWN GAPS (flagged, never faked):
+      // The create action pre-fills ownerFanId from the individual $actor. The remaining expressiveness
+      // gap is queue-head promotion on return: the formula/effect grammar has no list-head extraction
+      // primitive, so the queued member re-requests and the owner still approves every hand-off.
       // -------------------------------------------------------------------------------------------
       "tabletop-game-loan": {
         "initialState": "published",
+        "visibility": { "default": "membersOnly" },
         "states": {
           "published": { "label": "Shared with the club", "tone": "positive",
-                         "editableFields": ["title", "category", "condition", "description"] },
+                         "editableFields": ["title", "category", "condition", "description"],
+                         "editGuard": { "actorEqualsField": { "key": "ownerFanId" } } },
           "delisted": { "label": "Delisted", "isTerminal": true }
         },
         "transitions": [
           {
             "id": "request-borrow",
+            "action": "request",
             "label": "Request to borrow",
             "icon": "pan_tool_alt",
             "tone": "primary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
               "instanceDataEquals": { "key": "availabilityState", "value": "available" },
               "requiresWorkflowsComplete": ["tabletop-club-dues-payment"],
               // Any member EXCEPT the owner, and only when no one is already awaiting approval. No `!=`
               // or `!` operator exists, so both conditions are restructured with if().
-              "formula": "if(ownerPersonaId == $actor, false, if(pendingRequestPersonaId == null, true, false))"
+              "formula": "if(ownerFanId == $actor, false, if(pendingRequestFanId == null, true, false))"
             },
             "effects": [
-              { "op": "set", "key": "pendingRequestPersonaId", "value": "$actor" }
+              { "op": "set", "key": "pendingRequestFanId", "value": "$actor" }
             ]
           },
           {
             "id": "approve-request",
+            "action": "decide_request",
             "label": "Approve request",
             "icon": "check_circle",
             "tone": "primary",
@@ -1244,29 +1347,36 @@
             "to": null,
             // Owner-only: it is THEIR game, so THEY decide who borrows it next — the key difference from
             // the club library's open-access borrow rule.
-            "guard": { "formula": "ownerPersonaId == $actor" },
+            "guard": { "actorEqualsField": { "key": "ownerFanId" } },
+            "inputs": {
+              "dueDate": { "type": "text", "required": true }
+            },
             "effects": [
-              { "op": "set", "key": "holderPersonaId", "value": "{pendingRequestPersonaId}" },
+              { "op": "set", "key": "holderFanId", "value": "{pendingRequestFanId}" },
               { "op": "set", "key": "availabilityState", "value": "loaned" },
-              { "op": "set", "key": "pendingRequestPersonaId", "value": null }
-              // NEEDS IMPLEMENTATION: set dueDate = now + loan period. No formula function RETURNS a
-              // computed date, so a real due date cannot be derived here — deliberately not faked.
+              { "op": "set", "key": "dueDate", "value": "{input.dueDate}" },
+              { "op": "append", "key": "custodyHistory",
+                "value": { "holderFanId": "{pendingRequestFanId}", "approvedByFanId": "$actor",
+                           "dueDate": "{input.dueDate}", "approvedAt": "$timestamp" } },
+              { "op": "set", "key": "pendingRequestFanId", "value": null }
             ]
           },
           {
             "id": "decline-request",
+            "action": "decide_request",
             "label": "Decline request",
             "icon": "cancel",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
-            "guard": { "formula": "ownerPersonaId == $actor" },
+            "guard": { "actorEqualsField": { "key": "ownerFanId" } },
             "effects": [
-              { "op": "set", "key": "pendingRequestPersonaId", "value": null }
+              { "op": "set", "key": "pendingRequestFanId", "value": null }
             ]
           },
           {
             "id": "join-queue",
+            "action": "join_queue",
             "label": "Join queue",
             "icon": "add_circle_outline",
             "tone": "secondary",
@@ -1275,31 +1385,34 @@
             // Allowed whether or not it is currently out (reserve-ahead), like the club library's queue —
             // but never for the owner's own game.
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "actorInList": { "key": "queuedPersonaIds", "present": false },
-              "formula": "if(ownerPersonaId == $actor, false, true)"
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "queuedFanIds", "present": false },
+              "instanceDataEquals": { "key": "availabilityState", "value": "loaned" },
+              "formula": "if(ownerFanId == $actor, false, true)"
             },
             "effects": [
-              { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" }
+              { "op": "appendUnique", "key": "queuedFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "leave-queue",
+            "action": "leave_queue",
             "label": "Leave queue",
             "icon": "remove_circle_outline",
             "tone": "secondary",
             "from": ["published"],
             "to": null,
             "guard": {
-              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
-              "actorInList": { "key": "queuedPersonaIds", "present": true }
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "queuedFanIds", "present": true }
             },
             "effects": [
-              { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" }
+              { "op": "removeValue", "key": "queuedFanIds", "value": "$actor" }
             ]
           },
           {
             "id": "return-game",
+            "action": "return",
             "label": "Return",
             "icon": "keyboard_return",
             "tone": "primary",
@@ -1308,19 +1421,22 @@
             // Only the current holder returns it.
             "guard": {
               "instanceDataEquals": { "key": "availabilityState", "value": "loaned" },
-              "formula": "holderPersonaId == $actor"
+              "formula": "holderFanId == $actor"
             },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "available" },
-              { "op": "set", "key": "holderPersonaId", "value": null },
-              { "op": "set", "key": "dueDate", "value": null }
-              // NEEDS IMPLEMENTATION: if the queue is non-empty, promote its head to
-              // pendingRequestPersonaId (every hand-off still goes through the owner). No list-head
+              { "op": "set", "key": "holderFanId", "value": null },
+              { "op": "set", "key": "dueDate", "value": null },
+              { "op": "append", "key": "custodyHistory",
+                "value": { "returnedByFanId": "$actor", "returnedAt": "$timestamp" } }
+              // KNOWN GAP: if the queue is non-empty, promote its head to
+              // pendingRequestFanId (every hand-off still goes through the owner). No list-head
               // function exists in the formula vocabulary, so the next borrower re-requests for now.
             ]
           },
           {
             "id": "renew",
+            "action": "renew",
             "label": "Renew loan",
             "icon": "update",
             "tone": "secondary",
@@ -1328,16 +1444,21 @@
             "to": null,
             // Holder may renew ONLY when nobody is waiting (product spec §3). A guard allows one `formula`
             // key, so both conditions (holder AND empty queue) are folded into one expression.
-            "guard": { "formula": "if(holderPersonaId == $actor, size(queuedPersonaIds) == 0, false)" },
+            "guard": { "formula": "if(holderFanId == $actor, size(queuedFanIds) == 0, false)" },
+            "inputs": {
+              "newDueDate": { "type": "text", "required": true }
+            },
             "effects": [
-              // NEEDS IMPLEMENTATION: extend dueDate by the loan period (date arithmetic returning a date
-              // is not in the formula vocabulary). The empty-queue GUARD is fully real; the date bump is
-              // the gap.
-              { "op": "set", "key": "renewedAt", "value": "$timestamp" }
+              { "op": "set", "key": "dueDate", "value": "{input.newDueDate}" },
+              { "op": "set", "key": "renewedAt", "value": "$timestamp" },
+              { "op": "append", "key": "custodyHistory",
+                "value": { "renewedByFanId": "$actor", "newDueDate": "{input.newDueDate}",
+                           "renewedAt": "$timestamp" } }
             ]
           },
           {
             "id": "report-issue",
+            "action": "report_issue",
             "label": "Report an issue",
             "icon": "report_problem",
             "tone": "destructive",
@@ -1345,33 +1466,43 @@
             "to": null,
             // Holder or owner may flag a lost/damaged game; it goes unavailable and is flagged for the
             // owner's attention.
-            "guard": { "formula": "if(holderPersonaId == $actor, true, ownerPersonaId == $actor)" },
+            "guard": { "formula": "if(holderFanId == $actor, true, ownerFanId == $actor)" },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "reported" },
-              { "op": "set", "key": "issueReported", "value": true }
+              { "op": "set", "key": "issueReported", "value": true },
+              { "op": "append", "key": "custodyHistory",
+                "value": { "reportedByFanId": "$actor", "reportedAt": "$timestamp" } }
             ]
           },
           {
             "id": "delist",
+            "action": "delist",
             "label": "Delist my game",
             "icon": "delete_outline",
             "tone": "destructive",
             "from": ["published"],
             "to": "delisted",
-            "guard": { "formula": "ownerPersonaId == $actor" }
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": { "key": "availabilityState", "value": "available" },
+              "formula": "pendingRequestFanId == null"
+            }
           }
         ],
         "renderBindings": [
-          { "states": ["published"], "role": "any", "tabId": "marketplace",
+          { "states": ["published"], "audience": "any", "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
-            // GAP-2: any member can share a game they own. NEEDS IMPLEMENTATION: auto-set ownerPersonaId
-            // to the creator (see header). Consistent with game-purchase-proposal / discussion-thread,
-            // which also declare a tab-scoped create action forward-looking in this same file.
+            // Any member can share a game they own; ownerFanId is prefilled from $actor.
             "actions": [
               { "kind": "create", "label": "Share a game",
-                "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
-                "scope": "tab", "presentation": "fab" }
-            ] }
+                "byRoleIds": ["tabletop-member", "tabletop-organizer"],
+                "scope": "tab", "presentation": "fab",
+                "prefill": { "ownerFanId": "$actor", "availabilityState": "available",
+                             "queuedFanIds": [], "issueReported": false,
+                             "custodyHistory": [] } }
+            ] },
+          { "states": ["delisted"], "audience": "any", "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
@@ -1384,18 +1515,18 @@
           "description": { "type": "textarea", "maxLength": 500, "writableBy": "formEntry",
             "storage": "inline", "searchable": true, "displayContexts": ["detail"] },
           // The distinguishing field vs. the club library: WHICH member personally owns this listing.
-          "ownerPersonaId": { "type": "personaId", "required": true, "writableBy": "effect",
+          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "effect",
             "storage": "inline", "displayIcon": "person", "labelTemplate": "Shared by {value}",
             "displayContexts": ["tile", "detail"] },
           "availabilityState": { "type": "text", "writableBy": "effect", "storage": "inline",
             "displayContexts": ["tile", "detail"] },
-          "holderPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "holderFanId": { "type": "fanId?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "person_outline", "labelTemplate": "With {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "pendingRequestPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "pendingRequestFanId": { "type": "fanId?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "pan_tool_alt", "labelTemplate": "Awaiting approval: {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "queuedPersonaIds": { "type": "personaId[]", "writableBy": "effect", "storage": "inline",
+          "queuedFanIds": { "type": "fanId[]", "writableBy": "effect", "storage": "inline",
             "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "dueDate": { "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
@@ -1404,9 +1535,12 @@
           "renewedAt": { "type": "date?", "writableBy": "effect", "storage": "inline",
             "hideWhenEmpty": true },
           "issueReported": { "type": "bool", "writableBy": "effect", "storage": "inline" },
+          "custodyHistory": { "type": "list", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "history", "labelTemplate": "{value.length} custody events",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
 
           // Computed — derived on read, never stored, never seeded.
-          "queueLength": { "type": "number", "formula": "size(queuedPersonaIds)" },
+          "queueLength": { "type": "number", "formula": "size(queuedFanIds)" },
           "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
         }
       },
@@ -1416,9 +1550,17 @@
       // -------------------------------------------------------------------------------------------
       "tabletop-club-dues-payment": {
         "initialState": "unpaid",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "payerFanId" } },
+          "fields": { "parties": ["payerFanId", { "role": "tabletop-organizer" }] }
+        },
         "states": {
-          "unpaid": { "label": "Unpaid", "tone": "warning" },
-          "paid": { "label": "Paid", "tone": "positive", "isTerminal": true }
+          "unpaid": { "label": "Unpaid", "tone": "warning",
+            "editableFields": ["payerFanId", "amountLabel", "purpose", "recipient", "cadence", "entitlement"],
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
+          "paid": { "label": "Paid", "tone": "positive", "isTerminal": true },
+          "waived": { "label": "Waived or cancelled", "tone": "info", "isTerminal": true }
         },
         "transitions": [
           {
@@ -1428,36 +1570,68 @@
             "tone": "primary",
             "from": ["unpaid"],
             "to": "paid",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            "guard": {
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
             "effects": [
               { "op": "set", "key": "receiptStatus", "value": "complete" },
               { "op": "set", "key": "paidAt", "value": "$timestamp" }
-              // NEEDS IMPLEMENTATION (platform service): a real generated receipt id. Payment
+              // PLATFORM GAP: a real generated receipt id. Payment
               // processing + ID generation are the two opaque platform services named in
               // ComputationModel.md §8 — they cannot be field math, so they stay engine-provided and
               // demo-stubbed (canned success + generated id). Today `receiptId` would be hardcoded,
               // which is exactly the anti-pattern the audit flagged, so it is deliberately absent
               // rather than faked.
             ]
+          },
+          {
+            "id": "cancel-dues-charge",
+            "label": "Waive or cancel charge",
+            "icon": "money_off",
+            "tone": "destructive",
+            "from": ["unpaid"],
+            "to": "waived",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
+            "effects": [
+              { "op": "set", "key": "receiptStatus", "value": "waived" }
+            ]
           }
         ],
         "renderBindings": [
-          { "states": ["unpaid", "paid"], "role": "actor", "tabId": "giving",
-            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" }
+          { "states": ["unpaid"], "audience": "any", "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" },
+          { "states": ["paid", "waived"], "audience": "any", "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout", "bindingKind": "summary" },
+          { "states": ["unpaid", "paid", "waived"], "audience": "any", "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary",
+            "actions": [
+              { "kind": "create", "label": "New dues charge",
+                "byRoleIds": ["tabletop-organizer"], "scope": "tab", "presentation": "fab",
+                "prefill": { "receiptStatus": "" } }
+            ] }
         ],
         "instanceDataSchema": {
-          "amountLabel": { "type": "text", "required": true, "storage": "inline",
+          "payerFanId": { "type": "fanId", "required": true, "writableBy": "formEntry", "storage": "inline",
+            "displayIcon": "person_outline", "labelTemplate": "Payer: {value}",
+            "displayContexts": ["detail"] },
+          "amountLabel": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "payments_outlined", "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"] },
-          "purpose": { "type": "text", "required": true, "storage": "inline",
+          "purpose": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
             "displayIcon": "receipt_long", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "recipient": { "type": "text", "storage": "inline", "displayIcon": "account_balance_outlined",
+          "recipient": { "type": "text", "writableBy": "formEntry", "storage": "inline", "displayIcon": "account_balance_outlined",
             "labelTemplate": "Recipient: {value}", "displayContexts": ["detail"] },
-          "cadence": { "type": "text", "storage": "inline", "displayIcon": "repeat",
+          "cadence": { "type": "text", "writableBy": "formEntry", "storage": "inline", "displayIcon": "repeat",
             "labelTemplate": "{value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "entitlement": { "type": "text", "storage": "inline", "displayIcon": "verified_outlined",
+          "entitlement": { "type": "text", "writableBy": "formEntry", "storage": "inline", "displayIcon": "verified_outlined",
             "labelTemplate": "{value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "receiptStatus": { "type": "text", "writableBy": "effect", "storage": "inline" },
+          // NEEDS IMPLEMENTATION (platform service): real receipt-id generation. Declared for the
+          // payment surface, never seeded and never written by a JSON effect.
+          "receiptId": { "type": "text?", "writableBy": "effect", "storage": "inline",
+            "displayIcon": "confirmation_number", "labelTemplate": "Receipt: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "paidAt": { "type": "date?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "schedule", "labelTemplate": "Paid {value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] }
@@ -1487,16 +1661,23 @@
       // -------------------------------------------------------------------------------------------
       "game-purchase-proposal": {
         "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedRoleIds": ["tabletop-organizer"] },
+          "fields": { "parties": ["proposedByFanId", { "role": "tabletop-organizer" }] }
+        },
         "states": {
           "draft": {
             "label": "Draft",
-            "editableFields": ["gameName", "reason"]
+            "editableFields": ["gameName", "reason"],
+            "editGuard": { "actorEqualsField": { "key": "proposedByFanId" } }
           },
           "pending": { "label": "Awaiting decision", "tone": "info" },
           "changes-requested": {
             "label": "Changes requested",
             "tone": "warning",
-            "editableFields": ["gameName", "reason"]
+            "editableFields": ["gameName", "reason"],
+            "editGuard": { "actorEqualsField": { "key": "proposedByFanId" } }
           },
           "approved": { "label": "Approved", "tone": "positive", "isTerminal": true },
           "rejected": { "label": "Rejected", "tone": "negative", "isTerminal": true }
@@ -1509,9 +1690,12 @@
             "tone": "primary",
             "from": ["draft", "changes-requested"],
             "to": "pending",
-            "guard": { "allowedPersonaIds": ["tabletop-member"] },
+            "guard": {
+              "allowedRoleIds": ["tabletop-member"],
+              "actorEqualsField": { "key": "proposedByFanId" }
+            },
             "effects": [
-              { "op": "set", "key": "proposedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "proposedByFanId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ]
           },
@@ -1522,9 +1706,9 @@
             "tone": "primary",
             "from": ["pending"],
             "to": "approved",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
             "effects": [
-              { "op": "set", "key": "decidedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "decidedByFanId", "value": "$actor" },
               { "op": "set", "key": "decidedAt", "value": "$timestamp" }
             ]
           },
@@ -1535,9 +1719,9 @@
             "tone": "secondary",
             "from": ["pending"],
             "to": "changes-requested",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
             "effects": [
-              { "op": "set", "key": "decidedByPersonaId", "value": "$actor" }
+              { "op": "set", "key": "decidedByFanId", "value": "$actor" }
             ]
           },
           {
@@ -1547,9 +1731,9 @@
             "tone": "destructive",
             "from": ["pending"],
             "to": "rejected",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
             "effects": [
-              { "op": "set", "key": "decidedByPersonaId", "value": "$actor" },
+              { "op": "set", "key": "decidedByFanId", "value": "$actor" },
               { "op": "set", "key": "decidedAt", "value": "$timestamp" }
             ]
           }
@@ -1558,19 +1742,22 @@
           // Member composes / revises on Home. A tab-scoped create action gives a real "+ Propose a
           // game" affordance — a member may author as many proposals as they like, not just edit one
           // pre-seeded draft.
-          { "states": ["draft", "changes-requested"], "role": "actor", "tabId": "home",
+          { "states": ["draft", "changes-requested"], "audience": "actor", "tabId": "home",
             "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
             "actions": [
-              { "kind": "create", "label": "Propose a game", "byPersonaIds": ["tabletop-member"],
-                "scope": "tab", "presentation": "fab" }
+              { "kind": "create", "label": "Propose a game", "byRoleIds": ["tabletop-member"],
+                "scope": "tab", "presentation": "fab",
+                "prefill": { "proposedByFanId": "$actor" } }
             ] },
           // Member watches their own submitted proposal's real status.
-          { "states": ["pending", "approved", "rejected"], "role": "actor", "tabId": "home",
+          { "states": ["pending", "approved", "rejected"], "audience": "actor", "tabId": "home",
             "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
           // Organizer's live pending queue — a Repeater bound to queryInstances(state == pending), so a
           // newly submitted proposal simply appears. This is the real "decision" surface.
-          { "states": ["pending"], "role": "receiver", "tabId": "admin",
-            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" }
+          { "states": ["pending"], "audience": "receiver", "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary" },
+          { "states": ["changes-requested", "approved", "rejected"], "audience": "any", "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "gameName": { "type": "text", "required": true, "maxLength": 80, "writableBy": "formEntry",
@@ -1578,13 +1765,13 @@
             "displayContexts": ["tile", "detail"] },
           "reason": { "type": "textarea", "required": true, "maxLength": 500, "writableBy": "formEntry",
             "storage": "inline", "displayContexts": ["detail"] },
-          "proposedByPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "proposedByFanId": { "type": "fanId", "required": true, "writableBy": "effect", "storage": "inline",
             "displayIcon": "person_outline", "labelTemplate": "Proposed by {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "submittedAt": { "type": "date?", "writableBy": "effect", "storage": "inline", "sortable": true,
             "displayIcon": "schedule", "labelTemplate": "Submitted {value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
-          "decidedByPersonaId": { "type": "personaId?", "writableBy": "effect", "storage": "inline",
+          "decidedByFanId": { "type": "fanId?", "writableBy": "effect", "storage": "inline",
             "displayIcon": "gavel", "labelTemplate": "Decided by {value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
           "decidedAt": { "type": "date?", "writableBy": "effect", "storage": "inline",
@@ -1597,9 +1784,12 @@
       // -------------------------------------------------------------------------------------------
       "tabletop-meetup-announcement": {
         "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
         "states": {
-          "draft": { "label": "Draft", "editableFields": ["title", "body"] },
-          "published": { "label": "Published", "tone": "positive", "isTerminal": true }
+          "draft": { "label": "Draft", "editableFields": ["title", "body"],
+            "editGuard": { "allowedRoleIds": ["tabletop-organizer"] } },
+          "published": { "label": "Published", "tone": "positive", "isTerminal": true },
+          "withdrawn": { "label": "Withdrawn", "tone": "negative", "isTerminal": true }
         },
         "transitions": [
           {
@@ -1609,17 +1799,32 @@
             "tone": "primary",
             "from": ["draft"],
             "to": "published",
-            "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] },
             "effects": [
               { "op": "set", "key": "publishedAt", "value": "$timestamp" }
             ]
+          },
+          {
+            "id": "withdraw-announcement",
+            "label": "Discard announcement",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["draft"],
+            "to": "withdrawn",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] }
           }
         ],
         "renderBindings": [
-          { "states": ["draft"], "role": "actor", "tabId": "admin",
-            "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-          { "states": ["published"], "role": "any", "tabId": "home",
-            "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" }
+          { "states": ["draft"], "audience": "actor", "tabId": "admin",
+            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+            "actions": [
+              { "kind": "create", "label": "New announcement",
+                "byRoleIds": ["tabletop-organizer"], "scope": "tab", "presentation": "fab" }
+            ] },
+          { "states": ["published"], "audience": "any", "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" },
+          { "states": ["withdrawn"], "audience": "actor", "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
@@ -1646,11 +1851,17 @@
       // -------------------------------------------------------------------------------------------
       "discussion-thread": {
         "initialState": "open",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorInList": { "key": "participantFanIds", "present": true } },
+          "fields": { "participants": ["participantFanIds"] }
+        },
         "states": {
           // These are what the `creatable` form collects when a member starts a new thread. Without
           // them, a created thread would have no subject — and `subject` is required.
           "open": { "label": "Open", "tone": "positive",
-                    "editableFields": ["subject", "participantPersonaIds"] },
+                    "editableFields": ["subject", "participantFanIds"],
+                    "editGuard": { "actorEqualsField": { "key": "threadOwnerFanId" } } },
           "archived": { "label": "Archived", "isTerminal": true }
         },
         "transitions": [
@@ -1661,14 +1872,17 @@
             "tone": "primary",
             "from": ["open"],
             "to": null,
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            "guard": {
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "participantFanIds", "present": true }
+            },
             // The body travels WITH the transition. The old design wrote a shared `pendingMessage`
             // field on the thread and then fired a parameterless transition — two members typing at
             // once and one posts the other's text.
             "inputs": { "body": { "type": "text", "required": true } },
             "effects": [
               { "op": "append", "key": "messages",
-                "value": { "senderPersonaId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } },
+                "value": { "senderFanId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } },
               { "op": "set", "key": "unread", "value": true }
             ]
           },
@@ -1679,7 +1893,10 @@
             "tone": "secondary",
             "from": ["open"],
             "to": null,
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+            "guard": {
+              "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
+              "actorInList": { "key": "participantFanIds", "present": true }
+            },
             "effects": [
               { "op": "set", "key": "unread", "value": false }
             ]
@@ -1691,25 +1908,41 @@
             "tone": "secondary",
             "from": ["open"],
             "to": "archived",
-            "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] }
+            "guard": { "actorEqualsField": { "key": "threadOwnerFanId" } }
+          },
+          {
+            "id": "organizer-archive",
+            "label": "Archive as organizer",
+            "icon": "admin_panel_settings",
+            "tone": "destructive",
+            "from": ["open"],
+            "to": "archived",
+            "guard": { "allowedRoleIds": ["tabletop-organizer"] }
           }
         ],
         "renderBindings": [
           // A tab-scoped create action is the reported-missing "start a new thread" affordance.
-          { "states": ["open"], "role": "any", "tabId": "messages",
+          { "states": ["open"], "audience": "any", "tabId": "messages",
             "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
             "actions": [
               { "kind": "create", "label": "New thread",
-                "byPersonaIds": ["tabletop-member", "tabletop-organizer"],
-                "scope": "tab", "presentation": "fab" }
-            ] }
+                "byRoleIds": ["tabletop-member", "tabletop-organizer"],
+                "scope": "tab", "presentation": "fab",
+                "prefill": { "threadOwnerFanId": "$actor", "participantFanIds": ["$actor"],
+                             "messages": [], "unread": false } }
+            ] },
+          { "states": ["archived"], "audience": "any", "tabId": "messages",
+            "cardSurfaceFamily": "discussionThread", "bindingKind": "summary" }
         ],
         "instanceDataSchema": {
           "subject": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
             "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "threadOwnerFanId": { "type": "fanId", "required": true, "writableBy": "effect",
+            "storage": "inline", "displayIcon": "person_outline",
+            "labelTemplate": "Started by {value}", "displayContexts": ["detail"] },
           // formEntry so the `creatable` form can collect it (an audienceSelector-style member picker)
           // when a member starts a new thread.
-          "participantPersonaIds": { "type": "personaId[]", "writableBy": "formEntry",
+          "participantFanIds": { "type": "fanId[]", "writableBy": "formEntry",
             "storage": "inline",
             "displayIcon": "groups_outlined", "labelTemplate": "{value.length} participants",
             "displayContexts": ["detail"] },
@@ -1735,7 +1968,7 @@
         "instanceId": "event-friday-game-night",
         "workflowType": "event-rsvp",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Friday game night",
           "eventDate": "2026-07-10",
@@ -1753,54 +1986,54 @@
       // One row per real seeded account (tabletop-organizer + tabletop-member-03..14, per
       // part30_local_auth_api.dart's _seedTabletopAccounts) — bulk-created the moment the event
       // above was created, mirroring what CAL.1/CAL.3's real createInstances flow will do going
-      // forward. States preserve the exact same scenario the old goingPersonaIds/maybePersonaIds
-      // lists encoded: 11 members going, the organizer maybe, member-14 never having responded.
+      // forward. States preserve the exact same scenario the old goingFanIds/maybePersonaIds
+      // response lists encoded: 11 members going, the organizer maybe, member-14 never having responded.
       { "instanceId": "resp-friday-organizer", "workflowType": "event-rsvp-response",
-        "currentState": "maybe", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-organizer", "partySize": 1 } },
+        "currentState": "maybe", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-organizer", "partySize": 1 } },
       { "instanceId": "resp-friday-member-03", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-03", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-03", "partySize": 1 } },
       { "instanceId": "resp-friday-member-04", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-04", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-04", "partySize": 1 } },
       { "instanceId": "resp-friday-member-05", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-05", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-05", "partySize": 1 } },
       { "instanceId": "resp-friday-member-06", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-06", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-06", "partySize": 1 } },
       { "instanceId": "resp-friday-member-07", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-07", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-07", "partySize": 1 } },
       { "instanceId": "resp-friday-member-08", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-08", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-08", "partySize": 1 } },
       { "instanceId": "resp-friday-member-09", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-09", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-09", "partySize": 1 } },
       { "instanceId": "resp-friday-member-10", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-10", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-10", "partySize": 1 } },
       { "instanceId": "resp-friday-member-11", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-11", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-11", "partySize": 1 } },
       { "instanceId": "resp-friday-member-12", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-12", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-12", "partySize": 1 } },
       { "instanceId": "resp-friday-member-13", "workflowType": "event-rsvp-response",
-        "currentState": "going", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-13", "partySize": 1 } },
+        "currentState": "going", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-13", "partySize": 1 } },
       { "instanceId": "resp-friday-member-14", "workflowType": "event-rsvp-response",
-        "currentState": "pending", "createdByPersonaId": "tabletop-organizer",
-        "instanceData": { "eventId": "event-friday-game-night", "personaId": "tabletop-member-14", "partySize": 1 } },
+        "currentState": "pending", "createdByFanId": "tabletop-organizer",
+        "instanceData": { "eventId": "event-friday-game-night", "fanId": "tabletop-member-14", "partySize": 1 } },
 
       // ---- Calendar + Home: the summer tournament (drives ballot eligibility) --------------------
       {
         "instanceId": "event-summer-tournament",
         "workflowType": "tournament-event",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Summer tournament",
           "eventDate": "2026-07-10",
@@ -1809,7 +2042,7 @@
           "host": "Priya Nair (Tournament Lead)",
           "minimumAttendance": 8,
           // These are the personas the ballot's cross-instance guard will actually check.
-          "goingPersonaIds": [
+          "goingFanIds": [
             "tabletop-member", "tabletop-member-03", "tabletop-member-04",
             "tabletop-member-05", "tabletop-member-06", "tabletop-member-07",
             "tabletop-member-08", "tabletop-member-09"
@@ -1824,7 +2057,7 @@
         "instanceId": "ballot-summer-tournament",
         "workflowType": "tournament-ballot",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-summer-tournament",
           "round": "initial",
@@ -1856,31 +2089,45 @@
       // (and therefore a real runoff) live, by voting for wingspan or azul.
       {
         "instanceId": "vote-m03-catan", "workflowType": "tournament-vote", "currentState": "cast",
-        // createdByPersonaId is the gated ROLE that created this record (matches how guards actually
-        // authenticate: allowedPersonaIds does a literal string match against the acting persona, and
+        // createdByFanId is the gated ROLE that created this record (matches how guards actually
+        // authenticate: allowedRoleIds does a literal string match against the acting persona, and
         // this app only ever runs as one of the two declared roles). The specific walk-on member is
-        // carried by `voterId` below, which is display/tally data, not a gate-checked identity.
-        "createdByPersonaId": "tabletop-member",
+        // carried by `voterFanId` below, which is display/tally data, not a gate-checked identity.
+        "createdByFanId": "tabletop-member",
         "instanceData": { "ballotId": "ballot-summer-tournament",
-                          "voterId": "tabletop-member-03", "choice": "catan" }
+                          "voterFanId": "tabletop-member-03", "choice": "catan" }
       },
       {
         "instanceId": "vote-m04-wingspan", "workflowType": "tournament-vote", "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": { "ballotId": "ballot-summer-tournament",
-                          "voterId": "tabletop-member-04", "choice": "wingspan" }
+                          "voterFanId": "tabletop-member-04", "choice": "wingspan" }
       },
       {
         "instanceId": "vote-m05-catan", "workflowType": "tournament-vote", "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": { "ballotId": "ballot-summer-tournament",
-                          "voterId": "tabletop-member-05", "choice": "catan" }
+                          "voterFanId": "tabletop-member-05", "choice": "catan" }
       },
       {
         "instanceId": "vote-m06-azul", "workflowType": "tournament-vote", "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": { "ballotId": "ballot-summer-tournament",
-                          "voterId": "tabletop-member-06", "choice": "azul" }
+                          "voterFanId": "tabletop-member-06", "choice": "azul" }
+      },
+
+      // ---- Bell: targeted in-app notification --------------------------------------------------
+      {
+        "instanceId": "notification-tournament-reminder",
+        "workflowType": "notification",
+        "currentState": "unread",
+        "createdByFanId": "tabletop-organizer",
+        "instanceData": {
+          "recipientFanId": "tabletop-member",
+          "title": "Summer tournament reminder",
+          "body": "The Summer tournament starts at 1:00 PM in the main hall.",
+          "createdAt": "2026-07-10T10:00:00.000Z"
+        }
       },
 
       // ---- Marketplace: the club game library ---------------------------------------------------
@@ -1888,15 +2135,15 @@
         "instanceId": "listing-catan",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Catan",
           "category": "Board Games",
           "condition": "Like new",
           "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "queuedFanIds": [],
           "dueDate": null
         }
       },
@@ -1904,15 +2151,15 @@
         "instanceId": "listing-wingspan",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Wingspan",
           "category": "Board Games",
           "condition": "Excellent",
           "description": "Award-winning engine-building bird game. Includes European expansion.",
           "availabilityState": "onLoan",
-          "holderPersonaId": "tabletop-member-03",
-          "queuedPersonaIds": ["tabletop-member"],
+          "holderFanId": "tabletop-member-03",
+          "queuedFanIds": ["tabletop-member"],
           "dueDate": "2026-07-17"
         }
       },
@@ -1920,7 +2167,7 @@
         "instanceId": "listing-root",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Root",
           "category": "Strategy Games",
@@ -1929,8 +2176,8 @@
           // Available but reserved-ahead: the "available + queued" case that the old flat "queued"
           // STATE could not express (and which produced the zero-actions bug).
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "queuedPersonaIds": ["tabletop-member-04", "tabletop-member-05"],
+          "holderFanId": null,
+          "queuedFanIds": ["tabletop-member-04", "tabletop-member-05"],
           "dueDate": null
         }
       },
@@ -1938,13 +2185,13 @@
         "instanceId": "listing-old-catan",
         "workflowType": "equipment-giveaway",
         "currentState": "available",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Catan (retired club copy)",
           "category": "Board Games",
           "condition": "Fair",
           "description": "Free to a member — retired club copy, replaced by the newer set above.",
-          "claimedByPersonaId": null
+          "claimedByFanId": null
         }
       },
 
@@ -1958,40 +2205,45 @@
         "instanceId": "share-ticket-to-ride",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Ticket to Ride",
           "category": "Family Games",
           "condition": "Excellent",
           "description": "My personal copy — cross-country train routes, plays great at 2-5.",
-          "ownerPersonaId": "tabletop-member",
+          "ownerFanId": "tabletop-member",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "pendingRequestPersonaId": null,
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "pendingRequestFanId": null,
+          "queuedFanIds": [],
           "dueDate": null,
-          "issueReported": false
+          "issueReported": false,
+          "custodyHistory": []
         }
       },
       {
         // On loan, with two members queued behind it. Owner/holder/queue use specific member display
-        // ids (like the goingPersonaIds / voterId seeds) for realism.
+        // ids (like the goingFanIds / voterFanId seeds) for realism.
         "instanceId": "share-gloomhaven",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Gloomhaven",
           "category": "Campaign Games",
           "condition": "Good",
           "description": "Big legacy dungeon-crawler. Heavy box — local pickup only, please.",
-          "ownerPersonaId": "tabletop-member-14",
+          "ownerFanId": "tabletop-member-14",
           "availabilityState": "loaned",
-          "holderPersonaId": "tabletop-member-03",
-          "pendingRequestPersonaId": null,
-          "queuedPersonaIds": ["tabletop-member-07", "tabletop-member-09"],
+          "holderFanId": "tabletop-member-03",
+          "pendingRequestFanId": null,
+          "queuedFanIds": ["tabletop-member-07", "tabletop-member-09"],
           "dueDate": "2026-07-24",
-          "issueReported": false
+          "issueReported": false,
+          "custodyHistory": [
+            { "holderFanId": "tabletop-member-03", "approvedByFanId": "tabletop-member-14",
+              "dueDate": "2026-07-24", "approvedAt": "2026-07-10T18:00:00.000Z" }
+          ]
         }
       },
       {
@@ -1999,19 +2251,20 @@
         "instanceId": "share-azul",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Azul",
           "category": "Abstract Games",
           "condition": "Like new",
           "description": "Tile-drafting, quick to teach. Happy to lend it around the club.",
-          "ownerPersonaId": "tabletop-member-05",
+          "ownerFanId": "tabletop-member-05",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "pendingRequestPersonaId": "tabletop-member-11",
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "pendingRequestFanId": "tabletop-member-11",
+          "queuedFanIds": [],
           "dueDate": null,
-          "issueReported": false
+          "issueReported": false,
+          "custodyHistory": []
         }
       },
 
@@ -2020,8 +2273,9 @@
         "instanceId": "dues-2026-q3-member",
         "workflowType": "tabletop-club-dues-payment",
         "currentState": "unpaid",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
+          "payerFanId": "tabletop-member",
           "amountLabel": "$15.00",
           "purpose": "Quarterly club dues",
           "recipient": "Tabletop Club treasury",
@@ -2038,13 +2292,13 @@
         "instanceId": "proposal-wingspan",
         "workflowType": "game-purchase-proposal",
         "currentState": "approved",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "gameName": "Wingspan",
           "reason": "Award-winning engine-building game about birds — would round out our strategy shelf and plays well at 2-5.",
-          "proposedByPersonaId": "tabletop-member",
+          "proposedByFanId": "tabletop-member",
           "submittedAt": "2026-07-02T14:00:00.000Z",
-          "decidedByPersonaId": "tabletop-organizer",
+          "decidedByFanId": "tabletop-organizer",
           "decidedAt": "2026-07-03T09:30:00.000Z"
         }
       },
@@ -2054,13 +2308,13 @@
         "instanceId": "proposal-brass",
         "workflowType": "game-purchase-proposal",
         "currentState": "pending",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "gameName": "Brass: Birmingham",
           "reason": "Heavier economic game — several members have asked for something meatier than our current shelf.",
-          "proposedByPersonaId": "tabletop-member",
+          "proposedByFanId": "tabletop-member",
           "submittedAt": "2026-07-08T19:15:00.000Z",
-          "decidedByPersonaId": null,
+          "decidedByFanId": null,
           "decidedAt": null
         }
       },
@@ -2073,12 +2327,12 @@
       {
         "instanceId": "announcement-room-change",
         "workflowType": "tabletop-meetup-announcement",
-        "currentState": "draft",
-        "createdByPersonaId": "tabletop-organizer",
+        "currentState": "published",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Game night moves to the larger room",
           "body": "Starting next week, Friday game night moves to the larger room to make space for the growing tournament bracket.",
-          "publishedAt": null
+          "publishedAt": "2026-07-09T16:00:00.000Z"
         }
       },
 
@@ -2087,15 +2341,16 @@
         "instanceId": "thread-welcome",
         "workflowType": "discussion-thread",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "subject": "Welcome new members!",
-          "participantPersonaIds": ["tabletop-organizer", "tabletop-member"],
+          "threadOwnerFanId": "tabletop-organizer",
+          "participantFanIds": ["tabletop-organizer", "tabletop-member"],
           "messages": [
-            { "senderPersonaId": "tabletop-organizer",
+            { "senderFanId": "tabletop-organizer",
               "body": "Welcome to the Tabletop Club! Our first game night is Friday at 7pm in the community room.",
               "timestamp": "2026-07-01T10:00:00.000Z" },
-            { "senderPersonaId": "tabletop-member",
+            { "senderFanId": "tabletop-member",
               "body": "Thanks! I'll bring snacks and my copy of Catan.",
               "timestamp": "2026-07-01T11:30:00.000Z" }
           ],
@@ -2106,15 +2361,16 @@
         "instanceId": "thread-game-suggestions",
         "workflowType": "discussion-thread",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "subject": "Game suggestions for next week",
-          "participantPersonaIds": ["tabletop-member", "tabletop-organizer"],
+          "threadOwnerFanId": "tabletop-member",
+          "participantFanIds": ["tabletop-member", "tabletop-organizer"],
           "messages": [
-            { "senderPersonaId": "tabletop-member",
+            { "senderFanId": "tabletop-member",
               "body": "Can we try Wingspan this week? I've been wanting to play it.",
               "timestamp": "2026-07-02T14:00:00.000Z" },
-            { "senderPersonaId": "tabletop-organizer",
+            { "senderFanId": "tabletop-organizer",
               "body": "Great idea — I'll reserve the main table and bring my copy.",
               "timestamp": "2026-07-02T14:45:00.000Z" }
           ],
@@ -2125,6 +2381,12 @@
   },
   "appShell": {
     "tabs": [
+      {
+        "tabId": "home",
+        "label": "Home",
+        "iconKey": "home",
+        "description": "Pinned ballots, the next game night, and proposal status."
+      },
       {
         "tabId": "calendar",
         "label": "Calendar",
@@ -2147,7 +2409,14 @@
         "tabId": "admin",
         "label": "Admin",
         "iconKey": "admin",
-        "description": "Role-specific publishing, approvals, and operations."
+        "description": "Role-specific publishing, approvals, and operations.",
+        "visibleRoleIds": ["tabletop-organizer"]
+      },
+      {
+        "tabId": "messages",
+        "label": "Messages",
+        "iconKey": "forum",
+        "description": "Club discussion threads and replies."
       }
     ]
   }

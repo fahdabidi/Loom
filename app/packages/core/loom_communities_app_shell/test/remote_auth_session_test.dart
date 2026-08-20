@@ -45,9 +45,8 @@ final class _FakeWorkflowEngineApi implements WorkflowEngineApi {
 void _installEngineNativeTestExperience(String extensionId) {
   experienceForExtensionId(
     extensionId,
+    specVersion: currentCommunitySpecVersion,
     experienceConfiguration: const <String, Object?>{
-      'experienceSchemaVersion': 2,
-      'workflowGrammarVersion': 1,
       'workflowDefinitions': <String, Object?>{
         'remote-workflow': <String, Object?>{
           'initialState': 'open',
@@ -63,7 +62,7 @@ void _installEngineNativeTestExperience(String extensionId) {
           'workflowType': 'remote-workflow',
           'currentState': 'open',
           'instanceData': <String, Object?>{},
-          'createdByPersonaId': 'member',
+          'createdByFanId': 'member',
         },
       ],
     },

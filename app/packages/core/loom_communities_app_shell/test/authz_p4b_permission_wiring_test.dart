@@ -149,6 +149,35 @@ void main() {
     );
   });
 
+  test('guarded field principals admit potentially owned rows', () {
+    final experience = _experience({
+      'party-workflow': _machine(
+        workflowType: 'party-workflow',
+        tabId: 'home',
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedPersonaIds: ['organizer']),
+          fields: WorkflowVisibilityFields(
+            parties: [
+              WorkflowVisibilityFieldPrincipal(fieldName: 'ownerFanId'),
+              WorkflowVisibilityRolePrincipal(roleId: 'organizer'),
+            ],
+          ),
+        ),
+      ),
+    });
+
+    expect(
+      personaHasPermission(
+        experience,
+        'member',
+        'community.surface.navigation.read',
+        workflowType: 'party-workflow',
+      ),
+      isTrue,
+    );
+  });
+
   test(
     'personaHasPermission derives configure access from transition, edit, and creation guards',
     () {
@@ -262,7 +291,10 @@ void main() {
         isNot(contains('private-surface')),
       );
 
-      final hardcoded = experienceForExtensionId('ext_youth_soccer');
+      final hardcoded = experienceForExtensionId(
+        'ext_youth_soccer',
+        specVersion: currentCommunitySpecVersion,
+      );
       final guardianTabs = appShellTabsFor(
         experience: hardcoded,
         personaId: 'guardian',

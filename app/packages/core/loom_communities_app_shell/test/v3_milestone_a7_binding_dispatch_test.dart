@@ -34,7 +34,7 @@ Map<String, dynamic> _binding(
 }) => {
   'tabId': tabId,
   'states': states,
-  'role': role,
+  'audience': role,
   'cardSurfaceFamily': cardSurfaceFamily,
   'bindingKind': 'primary',
   if (audienceMemberField != null) 'audienceMemberField': audienceMemberField,
@@ -230,7 +230,7 @@ void main() {
       _binding(
         'calendar',
         role: 'receiver',
-        audienceMemberField: 'invitedPersonaIds',
+        audienceMemberField: 'invitedFanIds',
       ),
     ]);
     local.registerDefinition(machine);
@@ -240,7 +240,7 @@ void main() {
       initialInstanceData: {
         'title': 'invite',
         'audienceScope': 'selected',
-        'invitedPersonaIds': ['invited'],
+        'invitedFanIds': ['invited'],
       },
     );
     Future<List<EngineNativeResolvedBinding>> load(String persona) async {
@@ -463,25 +463,25 @@ void main() {
         ({required tabId, required personaId, required limit, cursor}) =>
             b.future,
       );
-      final machine = _machine(
-        'stale',
-        [
-          _binding('calendar'),
-          _binding('giving'),
-        ],
+      final machine = _machine('stale', [
+        _binding('calendar'),
+        _binding('giving'),
+      ]);
+      Widget widget(
+        WorkflowEngineApi engine,
+        String tab,
+        String persona,
+      ) => _host(
+        EngineNativeBindingDispatcher(
+          engine: engine,
+          definitions: {'stale': machine},
+          tabId: tab,
+          personaId: persona,
+          builder: (_, bindings, __) => Text(
+            'published-$persona-${bindings.map((b) => b.instance.instanceId).join(",")}',
+          ),
+        ),
       );
-      Widget widget(WorkflowEngineApi engine, String tab, String persona) =>
-          _host(
-            EngineNativeBindingDispatcher(
-              engine: engine,
-              definitions: {'stale': machine},
-              tabId: tab,
-              personaId: persona,
-              builder: (_, bindings, __) => Text(
-                'published-$persona-${bindings.map((b) => b.instance.instanceId).join(",")}',
-              ),
-            ),
-          );
       await tester.pumpWidget(widget(engineA, 'calendar', 'A'));
       expect(
         find.byKey(const Key('engine-native-bindings-loading-calendar-A')),
@@ -509,21 +509,24 @@ void main() {
 
       final staleCalendar = Completer<InstancePage>();
       final staleGiving = Completer<InstancePage>();
-      final oldWithTwoTabCompletions = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) {
-          if (tabId == 'calendar') return staleCalendar.future;
-          if (tabId == 'giving') return staleGiving.future;
-          return Future.value(const InstancePage(items: []));
-        },
+      final oldWithTwoTabCompletions = _CountingEngine(({
+        required tabId,
+        required personaId,
+        required limit,
+        cursor,
+      }) {
+        if (tabId == 'calendar') return staleCalendar.future;
+        if (tabId == 'giving') return staleGiving.future;
+        return Future.value(const InstancePage(items: []));
+      });
+      await tester.pumpWidget(
+        widget(oldWithTwoTabCompletions, 'calendar', 'C'),
       );
-      await tester.pumpWidget(widget(oldWithTwoTabCompletions, 'calendar', 'C'));
       expect(
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
       );
-      await tester.pumpWidget(
-        widget(oldWithTwoTabCompletions, 'giving', 'C'),
-      );
+      await tester.pumpWidget(widget(oldWithTwoTabCompletions, 'giving', 'C'));
       await tester.pump();
       expect(
         find.byKey(const Key('engine-native-bindings-loading-giving-C')),
@@ -541,12 +544,11 @@ void main() {
         InstancePage(items: [_instance('stale-calendar', 'stale')]),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining('published-C-stale-calendar'),
-        findsNothing,
-      );
+      expect(find.textContaining('published-C-stale-calendar'), findsNothing);
       expect(find.textContaining('published-C-fresh-giving'), findsOneWidget);
-      await tester.pumpWidget(widget(oldWithTwoTabCompletions, 'calendar', 'C'));
+      await tester.pumpWidget(
+        widget(oldWithTwoTabCompletions, 'calendar', 'C'),
+      );
       expect(
         find.byKey(const Key('engine-native-bindings-loading-calendar-C')),
         findsOneWidget,
@@ -561,8 +563,6 @@ void main() {
       const tabInstanceId = 'custom-instance-1';
       const extensionId = 'ext-a7-generic-tab-test';
       const experienceConfiguration = {
-        'experienceSchemaVersion': 2,
-        'workflowGrammarVersion': 1,
         'workflowDefinitions': {
           'schedule': {
             'workflowId': 'schedule',
@@ -575,7 +575,7 @@ void main() {
               {
                 'tabId': tabId,
                 'states': ['open'],
-                'role': 'any',
+                'audience': 'any',
                 'cardSurfaceFamily': 'event',
                 'bindingKind': 'primary',
               },
@@ -588,13 +588,14 @@ void main() {
             'workflowType': 'schedule',
             'currentState': 'open',
             'instanceData': {'title': 'Sprint planning'},
-            'createdByPersonaId': 'owner',
+            'createdByFanId': 'owner',
           },
         ],
       };
 
       final experience = experienceForExtensionId(
         extensionId,
+        specVersion: currentCommunitySpecVersion,
         experienceConfiguration: experienceConfiguration,
       );
       await workflowEngineForExtensionId(extensionId);
@@ -603,10 +604,7 @@ void main() {
         personaId: 'local-member',
         appShellConfiguration: const {
           'tabs': [
-            {
-              'tabId': tabId,
-              'label': 'Custom schedule',
-            },
+            {'tabId': tabId, 'label': 'Custom schedule'},
           ],
         },
       );
@@ -650,7 +648,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.byKey(const Key('engine-native-list-item-$tabId-$tabInstanceId-0')),
+        find.byKey(
+          const Key('engine-native-list-item-$tabId-$tabInstanceId-0'),
+        ),
         findsOneWidget,
       );
       expect(
@@ -803,9 +803,8 @@ void main() {
 
       final experience = experienceForExtensionId(
         'ext-a7-table-bulk',
+        specVersion: currentCommunitySpecVersion,
         experienceConfiguration: {
-          'experienceSchemaVersion': 2,
-          'workflowGrammarVersion': 1,
           'workflowDefinitions': {
             workflowType: {
               'workflowId': workflowType,
@@ -841,9 +840,7 @@ void main() {
                   'displayContexts': ['tile'],
                 },
               },
-              'renderBindings': [
-                _binding(tabId, cardSurfaceFamily: 'table'),
-              ],
+              'renderBindings': [_binding(tabId, cardSurfaceFamily: 'table')],
             },
           },
           'workflowInstances': [
@@ -857,7 +854,7 @@ void main() {
                 'score': 100,
                 'delta': 1,
               },
-              'createdByPersonaId': 'owner',
+              'createdByFanId': 'owner',
             },
             {
               'instanceId': b,
@@ -869,7 +866,7 @@ void main() {
                 'score': 95,
                 'delta': 0,
               },
-              'createdByPersonaId': 'owner',
+              'createdByFanId': 'owner',
             },
             {
               'instanceId': c,
@@ -881,7 +878,7 @@ void main() {
                 'score': 80,
                 'delta': -1,
               },
-              'createdByPersonaId': 'owner',
+              'createdByFanId': 'owner',
             },
           ],
         },
@@ -921,9 +918,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(
-          ValueKey('workflow-table-row-$tabId-$workflowType-$a-0'),
-        ),
+        find.byKey(ValueKey('workflow-table-row-$tabId-$workflowType-$a-0')),
         findsOneWidget,
       );
       expect(
@@ -962,7 +957,11 @@ void main() {
             'searchable': true,
             'displayContexts': ['tile'],
           },
-          'title': {'type': 'text', 'searchable': true, 'displayContexts': ['tile']},
+          'title': {
+            'type': 'text',
+            'searchable': true,
+            'displayContexts': ['tile'],
+          },
         },
       );
       final eventMachine = _machine(
@@ -996,9 +995,8 @@ void main() {
 
       final experience = experienceForExtensionId(
         'ext-a7-table-mixed',
+        specVersion: currentCommunitySpecVersion,
         experienceConfiguration: {
-          'experienceSchemaVersion': 2,
-          'workflowGrammarVersion': 1,
           'workflowDefinitions': {
             tableType: {
               'workflowId': tableType,
@@ -1020,9 +1018,7 @@ void main() {
                   'displayContexts': ['tile'],
                 },
               },
-              'renderBindings': [
-                _binding(tabId, cardSurfaceFamily: 'table'),
-              ],
+              'renderBindings': [_binding(tabId, cardSurfaceFamily: 'table')],
             },
             eventType: {
               'workflowId': eventType,
@@ -1081,10 +1077,7 @@ void main() {
         find.byKey(ValueKey('engine-native-list-item-$tabId-$nonTable-0')),
         findsOneWidget,
       );
-      expect(
-        find.byType(WorkflowTableArchetypeCard),
-        findsNWidgets(1),
-      );
+      expect(find.byType(WorkflowTableArchetypeCard), findsNWidgets(1));
       expect(find.byType(EngineNativeArchetypeCard), findsOneWidget);
     },
   );

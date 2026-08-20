@@ -530,7 +530,7 @@ Map<String, dynamic> _workflowDefinition(String roleId) => {
   'renderBindings': [
     {
       'states': ['draft'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'calendar',
       'cardSurfaceFamily': 'event-rsvp',
       'bindingKind': 'primary',

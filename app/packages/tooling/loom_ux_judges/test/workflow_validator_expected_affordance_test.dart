@@ -30,9 +30,7 @@ ValidationReport _validate(Map<String, LoomWorkflowStateMachine> workflows) =>
 ValidationReport _validateWithDeclaredTabIds(
   Map<String, LoomWorkflowStateMachine> workflows, {
   Set<String>? declaredTabIds,
-}) => WorkflowValidator(
-      declaredTabIds: declaredTabIds,
-    ).validate(workflows);
+}) => WorkflowValidator(declaredTabIds: declaredTabIds).validate(workflows);
 
 bool _hasWarning(ValidationReport report, String type) =>
     report.warnings.any((f) => f.type == type);
@@ -58,7 +56,7 @@ LoomWorkflowStateMachine _machineWithTabAndFamily({
   renderBindings: [
     {
       'states': ['open', 'done'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': tabId,
       'cardSurfaceFamily': cardSurfaceFamily,
       'bindingKind': 'summary',
@@ -87,7 +85,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -99,8 +97,7 @@ void main() {
 
       expect(
         report.warnings.where(
-          (finding) =>
-              finding.type == 'no_render_binding_for_reachable_state',
+          (finding) => finding.type == 'no_render_binding_for_reachable_state',
         ),
         hasLength(1),
       );
@@ -114,50 +111,56 @@ void main() {
       );
     });
 
-    test('does not fire for an unreachable state lacking renderBinding coverage', () {
-      final report = _validate({
-        'event': _machine(
-          'event',
-          states: {
-            'open': {'label': 'Open'},
-            'under-review': {'label': 'Under Review'},
-            'orphan': {'label': 'Orphan', 'isTerminal': true},
-          },
-          transitions: [
-            {
-              'id': 'submit',
-              'label': 'Submit',
-              'from': ['open'],
-              'to': 'under-review',
+    test(
+      'does not fire for an unreachable state lacking renderBinding coverage',
+      () {
+        final report = _validate({
+          'event': _machine(
+            'event',
+            states: {
+              'open': {'label': 'Open'},
+              'under-review': {'label': 'Under Review'},
+              'orphan': {'label': 'Orphan', 'isTerminal': true},
             },
-          ],
-          renderBindings: [
-            {
-              'states': ['open', 'under-review'],
-              'role': 'any',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'summary',
-            },
-          ],
-          visibility: {'default': 'public'},
-        ),
-      });
+            transitions: [
+              {
+                'id': 'submit',
+                'label': 'Submit',
+                'from': ['open'],
+                'to': 'under-review',
+              },
+            ],
+            renderBindings: [
+              {
+                'states': ['open', 'under-review'],
+                'audience': 'any',
+                'tabId': 'calendar',
+                'cardSurfaceFamily': 'event-rsvp',
+                'bindingKind': 'summary',
+              },
+            ],
+            visibility: {'default': 'public'},
+          ),
+        });
 
-      expect(report.errors, isNotEmpty, reason: 'unreachable_state should remain');
-      expect(
-        report.errors.any(
-          (finding) => finding.type == 'unreachable_state',
-        ),
-        isTrue,
-      );
-      expect(
-        report.warnings.any(
-          (finding) => finding.type == 'no_render_binding_for_reachable_state',
-        ),
-        isFalse,
-      );
-    });
+        expect(
+          report.errors,
+          isNotEmpty,
+          reason: 'unreachable_state should remain',
+        );
+        expect(
+          report.errors.any((finding) => finding.type == 'unreachable_state'),
+          isTrue,
+        );
+        expect(
+          report.warnings.any(
+            (finding) =>
+                finding.type == 'no_render_binding_for_reachable_state',
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('no_read_visibility_declared', () {
@@ -179,7 +182,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -216,7 +219,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -268,7 +271,7 @@ void main() {
             'label': 'Open',
             'editableFields': ['title'],
             'editGuard': {
-              'allowedPersonaIds': ['organizer'],
+              'allowedRoleIds': ['organizer'],
             },
           },
         },
@@ -287,7 +290,10 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'editable_fields_without_edit_guard'), isFalse);
+      expect(
+        _hasWarning(report, 'editable_fields_without_edit_guard'),
+        isFalse,
+      );
     });
 
     test('does not fire when editableFields is absent', () {
@@ -308,7 +314,10 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'editable_fields_without_edit_guard'), isFalse);
+      expect(
+        _hasWarning(report, 'editable_fields_without_edit_guard'),
+        isFalse,
+      );
     });
   });
 
@@ -322,7 +331,7 @@ void main() {
           'label': 'Open',
           'editableFields': ['title'],
           'editGuard': {
-            'allowedPersonaIds': ['organizer'],
+            'allowedRoleIds': ['organizer'],
           },
         },
       },
@@ -340,18 +349,24 @@ void main() {
       renderBindings: renderBindings,
     );
 
-    test('fires when no create action and no creation effect target the type', () {
-      final report = _validate({'event': editableType()});
+    test(
+      'fires when no create action and no creation effect target the type',
+      () {
+        final report = _validate({'event': editableType()});
 
-      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isTrue);
-    });
+        expect(
+          _hasWarning(report, 'no_creation_path_for_editable_type'),
+          isTrue,
+        );
+      },
+    );
 
     test('does not fire when a create action targets the type', () {
       final machine = editableType(
         renderBindings: [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',
@@ -369,60 +384,75 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isFalse);
-    });
-
-    test('does not fire when another type\'s effect creates it via createInstance', () {
-      final creator = _machine(
-        'trigger',
-        states: {
-          'open': {'label': 'Open'},
-        },
-        transitions: [
-          {
-            'id': 'spawn',
-            'label': 'Spawn',
-            'from': ['open'],
-            'to': null,
-            'effects': [
-              {
-                'op': 'createInstance',
-                'workflowType': 'event',
-                'fields': {'title': 'x'},
-              },
-            ],
-          },
-        ],
+      expect(
+        _hasWarning(report, 'no_creation_path_for_editable_type'),
+        isFalse,
       );
-
-      final report = _validate({'event': editableType(), 'trigger': creator});
-
-      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isFalse);
     });
 
-    test('fires for a type with only effect-written fields and no creation path', () {
-      final machine = _machine(
-        'event-rsvp-response',
-        states: {
-          'pending': {'label': 'Pending'},
-        },
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Going',
-            'from': ['pending'],
-            'to': null,
+    test(
+      'does not fire when another type\'s effect creates it via createInstance',
+      () {
+        final creator = _machine(
+          'trigger',
+          states: {
+            'open': {'label': 'Open'},
           },
-        ],
-        schema: {
-          'eventId': {'type': 'text', 'writableBy': 'effect'},
-        },
-      );
+          transitions: [
+            {
+              'id': 'spawn',
+              'label': 'Spawn',
+              'from': ['open'],
+              'to': null,
+              'effects': [
+                {
+                  'op': 'createInstance',
+                  'workflowType': 'event',
+                  'fields': {'title': 'x'},
+                },
+              ],
+            },
+          ],
+        );
 
-      final report = _validate({'event-rsvp-response': machine});
+        final report = _validate({'event': editableType(), 'trigger': creator});
 
-      expect(_hasWarning(report, 'no_creation_path_for_editable_type'), isTrue);
-    });
+        expect(
+          _hasWarning(report, 'no_creation_path_for_editable_type'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'fires for a type with only effect-written fields and no creation path',
+      () {
+        final machine = _machine(
+          'event-rsvp-response',
+          states: {
+            'pending': {'label': 'Pending'},
+          },
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Going',
+              'from': ['pending'],
+              'to': null,
+            },
+          ],
+          schema: {
+            'eventId': {'type': 'text', 'writableBy': 'effect'},
+          },
+        );
+
+        final report = _validate({'event-rsvp-response': machine});
+
+        expect(
+          _hasWarning(report, 'no_creation_path_for_editable_type'),
+          isTrue,
+        );
+      },
+    );
 
     test('does not fire when fields are purely computed/formula', () {
       final machine = _machine(
@@ -444,7 +474,7 @@ void main() {
         renderBindings: [
           {
             'states': ['pending'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'summary',
@@ -465,71 +495,70 @@ void main() {
     LoomWorkflowStateMachine machine({
       bool destructiveGuardsAvailability = false,
       bool siblingGuardsAvailability = true,
-    }) =>
-        _machine(
-          'event',
-          states: {
-            'open': {'label': 'Open'},
-            'delisted': {'label': 'Delisted', 'isTerminal': true},
-            'cancelled': {'label': 'Cancelled'},
-          },
-          transitions: [
-            {
-              'id': 'cancel',
-              'label': 'Cancel',
-              'from': ['open'],
-              'to': 'cancelled',
-              if (siblingGuardsAvailability)
-                'guard': {
-                  'instanceDataEquals': {
-                    'key': 'availabilityState',
-                    'value': 'listed',
-                  },
-                },
+    }) => _machine(
+      'event',
+      states: {
+        'open': {'label': 'Open'},
+        'delisted': {'label': 'Delisted', 'isTerminal': true},
+        'cancelled': {'label': 'Cancelled'},
+      },
+      transitions: [
+        {
+          'id': 'cancel',
+          'label': 'Cancel',
+          'from': ['open'],
+          'to': 'cancelled',
+          if (siblingGuardsAvailability)
+            'guard': {
+              'instanceDataEquals': {
+                'key': 'availabilityState',
+                'value': 'listed',
+              },
             },
-            {
-              'id': 'delist',
-              'label': 'Delist',
-              'from': ['open'],
-              'to': 'delisted',
-              if (destructiveGuardsAvailability)
-                'guard': {
-                  'instanceDataEquals': {
-                    'key': 'availabilityState',
-                    'value': 'listed',
-                  },
-                },
+        },
+        {
+          'id': 'delist',
+          'label': 'Delist',
+          'from': ['open'],
+          'to': 'delisted',
+          if (destructiveGuardsAvailability)
+            'guard': {
+              'instanceDataEquals': {
+                'key': 'availabilityState',
+                'value': 'listed',
+              },
             },
-          ],
-          schema: {
-            'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
-          },
-          renderBindings: [
+        },
+      ],
+      schema: {
+        'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
+      },
+      renderBindings: [
+        {
+          'states': ['open', 'cancelled', 'delisted'],
+          'audience': 'any',
+          'tabId': 'calendar',
+          'cardSurfaceFamily': 'event-rsvp',
+          'bindingKind': 'primary',
+        },
+        {
+          'states': ['open', 'cancelled', 'delisted'],
+          'audience': 'any',
+          'tabId': 'calendar',
+          'cardSurfaceFamily': 'event-rsvp',
+          'bindingKind': 'summary',
+          'actions': [
             {
-              'states': ['open', 'cancelled', 'delisted'],
-              'role': 'any',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'primary',
-            },
-            {
-              'states': ['open', 'cancelled', 'delisted'],
-              'role': 'any',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'summary',
-              'actions': [
-                {
-                  'kind': 'create',
-                  'label': 'New event',
-                  'scope': 'tab',
-                  'presentation': 'fab',
-                },
-              ],
+              'kind': 'create',
+              'label': 'New event',
+              'scope': 'tab',
+              'presentation': 'fab',
             },
           ],
-          visibility: {'default': 'public'},
-        );
+        },
+      ],
+      visibility: {'default': 'public'},
+    );
 
     test(
       'fires when destructive terminal transition lacks availability guard on this workflow',
@@ -556,7 +585,8 @@ void main() {
 
         expect(
           report.warnings.any(
-            (f) => f.type == 'destructive_transition_ignores_availability_field',
+            (f) =>
+                f.type == 'destructive_transition_ignores_availability_field',
           ),
           isFalse,
         );
@@ -569,45 +599,44 @@ void main() {
     // ${...} at all, so the formula branch silently never matched anything).
     LoomWorkflowStateMachine formulaGuardedMachine({
       bool destructiveGuardsAvailability = false,
-    }) =>
-        _machine(
-          'listing',
-          states: {
-            'open': {'label': 'Open'},
-            'delisted': {'label': 'Delisted', 'isTerminal': true},
-            'cancelled': {'label': 'Cancelled'},
-          },
-          transitions: [
-            {
-              'id': 'cancel',
-              'label': 'Cancel',
-              'from': ['open'],
-              'to': 'cancelled',
-              'guard': {'formula': 'availabilityState == "available"'},
-            },
-            {
-              'id': 'delist',
-              'label': 'Delist',
-              'from': ['open'],
-              'to': 'delisted',
-              if (destructiveGuardsAvailability)
-                'guard': {'formula': 'availabilityState == "available"'},
-            },
-          ],
-          schema: {
-            'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
-          },
-          renderBindings: [
-            {
-              'states': ['open', 'cancelled', 'delisted'],
-              'role': 'any',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'primary',
-            },
-          ],
-          visibility: {'default': 'public'},
-        );
+    }) => _machine(
+      'listing',
+      states: {
+        'open': {'label': 'Open'},
+        'delisted': {'label': 'Delisted', 'isTerminal': true},
+        'cancelled': {'label': 'Cancelled'},
+      },
+      transitions: [
+        {
+          'id': 'cancel',
+          'label': 'Cancel',
+          'from': ['open'],
+          'to': 'cancelled',
+          'guard': {'formula': 'availabilityState == "available"'},
+        },
+        {
+          'id': 'delist',
+          'label': 'Delist',
+          'from': ['open'],
+          'to': 'delisted',
+          if (destructiveGuardsAvailability)
+            'guard': {'formula': 'availabilityState == "available"'},
+        },
+      ],
+      schema: {
+        'availabilityState': {'type': 'text', 'writableBy': 'formEntry'},
+      },
+      renderBindings: [
+        {
+          'states': ['open', 'cancelled', 'delisted'],
+          'audience': 'any',
+          'tabId': 'calendar',
+          'cardSurfaceFamily': 'event-rsvp',
+          'bindingKind': 'primary',
+        },
+      ],
+      visibility: {'default': 'public'},
+    );
 
     test(
       'fires when the sibling guards availability via formula, not instanceDataEquals',
@@ -634,7 +663,8 @@ void main() {
 
         expect(
           report.warnings.any(
-            (f) => f.type == 'destructive_transition_ignores_availability_field',
+            (f) =>
+                f.type == 'destructive_transition_ignores_availability_field',
           ),
           isFalse,
         );
@@ -677,7 +707,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'primary',
@@ -695,9 +725,9 @@ void main() {
       );
       expect(
         report.warnings.any(
-              (f) =>
-                  f.type == 'possible_fabricated_identifier' &&
-                  f.message.contains('sha256-chess-2026') &&
+          (f) =>
+              f.type == 'possible_fabricated_identifier' &&
+              f.message.contains('sha256-chess-2026') &&
               f.location.startsWith('event/'),
         ),
         isTrue,
@@ -718,11 +748,7 @@ void main() {
               'from': ['open'],
               'to': null,
               'effects': [
-                {
-                  'op': 'set',
-                  'key': 'checksum',
-                  'value': '{checksumValue}',
-                },
+                {'op': 'set', 'key': 'checksum', 'value': '{checksumValue}'},
               ],
             },
           ],
@@ -732,7 +758,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'primary',
@@ -751,50 +777,54 @@ void main() {
       });
 
       expect(
-        report.warnings.any(
-          (f) => f.type == 'possible_fabricated_identifier',
-        ),
+        report.warnings.any((f) => f.type == 'possible_fabricated_identifier'),
         isFalse,
       );
     });
   });
 
   group('no_destructive_exit_for_managed_type', () {
-    test('fires for a primary-bound, editGuard-managed type with no destructive transition', () {
-      final machine = _machine(
-        'event',
-        states: {
-          'open': {
-            'label': 'Open',
-            'editGuard': {
-              'allowedPersonaIds': ['organizer'],
+    test(
+      'fires for a primary-bound, editGuard-managed type with no destructive transition',
+      () {
+        final machine = _machine(
+          'event',
+          states: {
+            'open': {
+              'label': 'Open',
+              'editGuard': {
+                'allowedRoleIds': ['organizer'],
+              },
             },
           },
-        },
-        transitions: [
-          {
-            'id': 'noop',
-            'label': 'Noop',
-            'tone': 'primary',
-            'from': ['open'],
-            'to': null,
-          },
-        ],
-        renderBindings: [
-          {
-            'states': ['open'],
-            'role': 'any',
-            'tabId': 'calendar',
-            'cardSurfaceFamily': 'event-rsvp',
-            'bindingKind': 'primary',
-          },
-        ],
-      );
+          transitions: [
+            {
+              'id': 'noop',
+              'label': 'Noop',
+              'tone': 'primary',
+              'from': ['open'],
+              'to': null,
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['open'],
+              'audience': 'any',
+              'tabId': 'calendar',
+              'cardSurfaceFamily': 'event-rsvp',
+              'bindingKind': 'primary',
+            },
+          ],
+        );
 
-      final report = _validate({'event': machine});
+        final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'no_destructive_exit_for_managed_type'), isTrue);
-    });
+        expect(
+          _hasWarning(report, 'no_destructive_exit_for_managed_type'),
+          isTrue,
+        );
+      },
+    );
 
     test('does not fire when a destructive-toned transition exists', () {
       final machine = _machine(
@@ -803,7 +833,7 @@ void main() {
           'open': {
             'label': 'Open',
             'editGuard': {
-              'allowedPersonaIds': ['organizer'],
+              'allowedRoleIds': ['organizer'],
             },
           },
           'cancelled': {'label': 'Cancelled', 'isTerminal': true},
@@ -820,7 +850,7 @@ void main() {
         renderBindings: [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',
@@ -830,7 +860,10 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'no_destructive_exit_for_managed_type'), isFalse);
+      expect(
+        _hasWarning(report, 'no_destructive_exit_for_managed_type'),
+        isFalse,
+      );
     });
 
     test('does not fire when the type has no primary binding', () {
@@ -840,7 +873,7 @@ void main() {
           'open': {
             'label': 'Open',
             'editGuard': {
-              'allowedPersonaIds': ['organizer'],
+              'allowedRoleIds': ['organizer'],
             },
           },
         },
@@ -855,7 +888,7 @@ void main() {
         renderBindings: [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'summary',
@@ -865,7 +898,10 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'no_destructive_exit_for_managed_type'), isFalse);
+      expect(
+        _hasWarning(report, 'no_destructive_exit_for_managed_type'),
+        isFalse,
+      );
     });
 
     test('does not fire when no state declares an editGuard', () {
@@ -885,7 +921,7 @@ void main() {
         renderBindings: [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',
@@ -895,7 +931,10 @@ void main() {
 
       final report = _validate({'event': machine});
 
-      expect(_hasWarning(report, 'no_destructive_exit_for_managed_type'), isFalse);
+      expect(
+        _hasWarning(report, 'no_destructive_exit_for_managed_type'),
+        isFalse,
+      );
     });
   });
 
@@ -906,7 +945,9 @@ void main() {
         final report = _validate({
           'event': _machine(
             'event',
-            states: {'open': {'label': 'Open'}},
+            states: {
+              'open': {'label': 'Open'},
+            },
             transitions: [
               {
                 'id': 'noop',
@@ -919,7 +960,7 @@ void main() {
             renderBindings: [
               {
                 'states': ['open'],
-                'role': 'receiver',
+                'audience': 'receiver',
                 'tabId': 'messages',
                 'cardSurfaceFamily': 'event-rsvp',
                 'bindingKind': 'summary',
@@ -943,7 +984,9 @@ void main() {
         final report = _validate({
           'event': _machine(
             'event',
-            states: {'open': {'label': 'Open'}},
+            states: {
+              'open': {'label': 'Open'},
+            },
             transitions: [
               {
                 'id': 'noop',
@@ -956,11 +999,11 @@ void main() {
             renderBindings: [
               {
                 'states': ['open'],
-                'role': 'receiver',
+                'audience': 'receiver',
                 'tabId': 'messages',
                 'cardSurfaceFamily': 'event-rsvp',
                 'bindingKind': 'summary',
-                'audienceMemberField': 'recipientPersonaId',
+                'audienceMemberField': 'recipientFanId',
               },
             ],
           ),
@@ -979,7 +1022,9 @@ void main() {
       final report = _validate({
         'event': _machine(
           'event',
-          states: {'open': {'label': 'Open'}},
+          states: {
+            'open': {'label': 'Open'},
+          },
           transitions: [
             {
               'id': 'noop',
@@ -992,7 +1037,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'receiver',
+              'audience': 'receiver',
               'tabId': 'admin',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -1002,9 +1047,7 @@ void main() {
       });
 
       expect(
-        report.warnings.where(
-          (finding) => finding.type == 'dead_role_binding',
-        ),
+        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
         isEmpty,
       );
     });
@@ -1013,7 +1056,9 @@ void main() {
       final report = _validate({
         'event': _machine(
           'event',
-          states: {'open': {'label': 'Open'}},
+          states: {
+            'open': {'label': 'Open'},
+          },
           transitions: [
             {
               'id': 'noop',
@@ -1026,7 +1071,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'actor',
+              'audience': 'actor',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -1036,9 +1081,7 @@ void main() {
       });
 
       expect(
-        report.warnings.where(
-          (finding) => finding.type == 'dead_role_binding',
-        ),
+        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
         hasLength(1),
       );
     });
@@ -1047,7 +1090,9 @@ void main() {
       final report = _validate({
         'event': _machine(
           'event',
-          states: {'open': {'label': 'Open'}},
+          states: {
+            'open': {'label': 'Open'},
+          },
           transitions: [
             {
               'id': 'noop',
@@ -1060,7 +1105,7 @@ void main() {
           renderBindings: [
             {
               'states': ['open'],
-              'role': 'any',
+              'audience': 'any',
               'tabId': 'calendar',
               'cardSurfaceFamily': 'event-rsvp',
               'bindingKind': 'summary',
@@ -1070,48 +1115,40 @@ void main() {
       });
 
       expect(
-        report.warnings.where(
-          (finding) => finding.type == 'dead_role_binding',
-        ),
+        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
         isEmpty,
       );
     });
   });
 
   group('known_card_surface_family_and_tab_id', () {
-    test(
-      'fires for unknown cardSurfaceFamily',
-      () {
-        final report = _validate({
-          'event': _machineWithTabAndFamily(
-            cardSurfaceFamily: 'not-a-known-family',
-          ),
-        });
+    test('fires for unknown cardSurfaceFamily', () {
+      final report = _validate({
+        'event': _machineWithTabAndFamily(
+          cardSurfaceFamily: 'not-a-known-family',
+        ),
+      });
 
-        expect(
-          report.errors.any(
-            (finding) => finding.type == 'unknown_card_surface_family',
-          ),
-          isTrue,
-        );
-      },
-    );
+      expect(
+        report.errors.any(
+          (finding) => finding.type == 'unknown_card_surface_family',
+        ),
+        isTrue,
+      );
+    });
 
-    test(
-      'does not fire for known cardSurfaceFamily',
-      () {
-        final report = _validate({
-          'event': _machineWithTabAndFamily(cardSurfaceFamily: 'event-rsvp'),
-        });
+    test('does not fire for known cardSurfaceFamily', () {
+      final report = _validate({
+        'event': _machineWithTabAndFamily(cardSurfaceFamily: 'event-rsvp'),
+      });
 
-        expect(
-          report.errors.any(
-            (finding) => finding.type == 'unknown_card_surface_family',
-          ),
-          isFalse,
-        );
-      },
-    );
+      expect(
+        report.errors.any(
+          (finding) => finding.type == 'unknown_card_surface_family',
+        ),
+        isFalse,
+      );
+    });
 
     test('accepts built-in tabId values even without custom declarations', () {
       for (final tabId in ['home', 'messages']) {
@@ -1127,28 +1164,21 @@ void main() {
       }
     });
 
-    test(
-      'allows custom tabId when declared in appShell/ personaTabs',
-      () {
-        final report = _validateWithDeclaredTabIds(
-          {
-            'event': _machineWithTabAndFamily(tabId: 'community-home'),
-          },
-          declaredTabIds: {'community-home'},
-        );
+    test('allows custom tabId when declared in appShell/ personaTabs', () {
+      final report = _validateWithDeclaredTabIds(
+        {'event': _machineWithTabAndFamily(tabId: 'community-home')},
+        declaredTabIds: {'community-home'},
+      );
 
-        expect(
-          report.errors.any((finding) => finding.type == 'unknown_tab_id'),
-          isFalse,
-        );
-      },
-    );
+      expect(
+        report.errors.any((finding) => finding.type == 'unknown_tab_id'),
+        isFalse,
+      );
+    });
 
     test('rejects custom tabId with no matching declaration', () {
       final report = _validateWithDeclaredTabIds(
-        {
-          'event': _machineWithTabAndFamily(tabId: 'ghost-tab'),
-        },
+        {'event': _machineWithTabAndFamily(tabId: 'ghost-tab')},
         declaredTabIds: {'other-tab'},
       );
 

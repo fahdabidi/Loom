@@ -14,13 +14,13 @@ String _marketplaceFixtureJson() {
   "workflowDefinitions": {
     "equipment-loan": {
       "renderBindings": [
-        { "states": ["draft"], "role": "actor", "tabId": "marketplace",
+        { "states": ["draft"], "audience": "actor", "tabId": "marketplace",
           "cardSurfaceFamily": "listing-editor", "bindingKind": "primary" },
-        { "states": ["pending-review"], "role": "actor", "tabId": "marketplace",
+        { "states": ["pending-review"], "audience": "actor", "tabId": "marketplace",
           "cardSurfaceFamily": "listing-status-badge", "bindingKind": "summary" },
-        { "states": ["pending-review"], "role": "receiver", "tabId": "admin",
+        { "states": ["pending-review"], "audience": "receiver", "tabId": "admin",
           "cardSurfaceFamily": "listing-review-queue-item", "bindingKind": "primary" },
-        { "states": ["published"], "role": "any", "tabId": "marketplace",
+        { "states": ["published"], "audience": "any", "tabId": "marketplace",
           "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
       ],
       "initialState": "draft",
@@ -42,14 +42,14 @@ String _marketplaceFixtureJson() {
           "writableBy": "formEntry", "storage": "inline", "sortable": true,
           "displayIcon": "verified_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"]
         },
-        "holderPersonaId": {
-          "type": "personaId?",
+        "holderFanId": {
+          "type": "fanId?",
           "writableBy": "effect", "sortable": false,
           "displayIcon": "person_outline", "labelTemplate": "Holder: {value}",
           "displayContexts": ["tile","detail"]
         },
-        "queuedPersonaIds": {
-          "type": "personaId[]",
+        "queuedFanIds": {
+          "type": "fanId[]",
           "writableBy": "effect",
           "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}",
           "displayContexts": ["tile","detail"], "hideWhenEmpty": true
@@ -67,18 +67,18 @@ String _marketplaceFixtureJson() {
         {
           "id": "submit-listing", "label": "Submit for review", "icon": "send", "tone": "primary",
           "from": ["draft"], "to": "pending-review",
-          "guard": { "allowedPersonaIds": ["tabletop-member"] }
+          "guard": { "allowedRoleIds": ["tabletop-member"] }
         },
         {
           "id": "approve-listing", "label": "Approve", "icon": "check_circle", "tone": "primary",
           "from": ["pending-review"], "to": "published",
-          "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+          "guard": { "allowedRoleIds": ["tabletop-organizer"] },
           "effects": [{ "op": "set", "key": "availabilityState", "value": "available" }]
         },
         {
           "id": "reject-listing", "label": "Send back", "icon": "undo", "tone": "secondary",
           "from": ["pending-review"], "to": "draft",
-          "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+          "guard": { "allowedRoleIds": ["tabletop-organizer"] }
         },
         {
           "id": "borrow",
@@ -86,12 +86,12 @@ String _marketplaceFixtureJson() {
           "icon": "arrow_forward", "tone": "primary",
           "from": ["published"], "to": null,
           "guard": {
-            "allowedPersonaIds": ["tabletop-member"],
+            "allowedRoleIds": ["tabletop-member"],
             "instanceDataEquals": { "key": "availabilityState", "value": "available" }
           },
           "effects": [
             { "op": "set", "key": "availabilityState", "value": "onLoan" },
-            { "op": "set", "key": "holderPersonaId", "value": "$actor" }
+            { "op": "set", "key": "holderFanId", "value": "$actor" }
           ],
           "linkedWorkflowId": "tabletop-game-loan"
         },
@@ -101,11 +101,11 @@ String _marketplaceFixtureJson() {
           "icon": "add_circle_outline", "tone": "secondary",
           "from": ["published"], "to": null,
           "guard": {
-            "allowedPersonaIds": ["tabletop-member"],
-            "actorInList": { "key": "queuedPersonaIds", "present": false }
+            "allowedRoleIds": ["tabletop-member"],
+            "actorInList": { "key": "queuedFanIds", "present": false }
           },
           "effects": [
-            { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" }
+            { "op": "appendUnique", "key": "queuedFanIds", "value": "$actor" }
           ]
         },
         {
@@ -114,11 +114,11 @@ String _marketplaceFixtureJson() {
           "icon": "remove_circle_outline", "tone": "secondary",
           "from": ["published"], "to": null,
           "guard": {
-            "allowedPersonaIds": ["tabletop-member"],
-            "actorInList": { "key": "queuedPersonaIds", "present": true }
+            "allowedRoleIds": ["tabletop-member"],
+            "actorInList": { "key": "queuedFanIds", "present": true }
           },
           "effects": [
-            { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" }
+            { "op": "removeValue", "key": "queuedFanIds", "value": "$actor" }
           ]
         },
         {
@@ -127,33 +127,33 @@ String _marketplaceFixtureJson() {
           "icon": "keyboard_return", "tone": "primary",
           "from": ["published"], "to": null,
           "guard": {
-            "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+            "allowedRoleIds": ["tabletop-member", "tabletop-organizer"],
             "instanceDataEquals": { "key": "availabilityState", "value": "onLoan" }
           },
           "effects": [
             { "op": "set", "key": "availabilityState", "value": "available" },
-            { "op": "set", "key": "holderPersonaId", "value": null },
+            { "op": "set", "key": "holderFanId", "value": null },
             { "op": "set", "key": "dueDate", "value": null }
           ]
         },
         {
           "id": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
           "from": ["published"], "to": "delisted",
-          "guard": { "allowedPersonaIds": ["tabletop-member-owner", "tabletop-organizer"] }
+          "guard": { "allowedRoleIds": ["tabletop-member-owner", "tabletop-organizer"] }
         }
       ]
     },
     "equipment-giveaway": {
       "renderBindings": [
-        { "states": ["available", "claimed"], "role": "any", "tabId": "marketplace",
+        { "states": ["available", "claimed"], "audience": "any", "tabId": "marketplace",
           "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
       ],
       "initialState": "available",
       "instanceDataSchema": {
         "title": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
           "searchable": true, "sortable": true, "displayContexts": ["tile","detail"] },
-        "claimedByPersonaId": {
-          "type": "personaId?", "writableBy": "effect",
+        "claimedByFanId": {
+          "type": "fanId?", "writableBy": "effect",
           "displayIcon": "person_outline", "labelTemplate": "Claimed by: {value}",
           "displayContexts": ["tile","detail"], "hideWhenEmpty": true
         }
@@ -169,9 +169,9 @@ String _marketplaceFixtureJson() {
           "icon": "check_circle", "tone": "primary",
           "from": ["available"],
           "to": "claimed",
-          "guard": { "allowedPersonaIds": ["tabletop-member"] },
+          "guard": { "allowedRoleIds": ["tabletop-member"] },
           "effects": [
-            { "op": "set", "key": "claimedByPersonaId", "value": "$actor" }
+            { "op": "set", "key": "claimedByFanId", "value": "$actor" }
           ],
           "linkedWorkflowId": "tabletop-game-loan"
         }
@@ -219,14 +219,11 @@ void main() {
 
     test('actorInList: present=true and persona IS in list → passes', () {
       final guard = const WorkflowGuard(
-        actorInList: ListMembershipGuard(
-          key: 'queuedPersonaIds',
-          present: true,
-        ),
+        actorInList: ListMembershipGuard(key: 'queuedFanIds', present: true),
       );
       expect(
         evaluateGuard(guard, 'bob', {
-          'queuedPersonaIds': ['alice', 'bob'],
+          'queuedFanIds': ['alice', 'bob'],
         }),
         isTrue,
       );
@@ -234,14 +231,11 @@ void main() {
 
     test('actorInList: present=true and persona NOT in list → fails', () {
       final guard = const WorkflowGuard(
-        actorInList: ListMembershipGuard(
-          key: 'queuedPersonaIds',
-          present: true,
-        ),
+        actorInList: ListMembershipGuard(key: 'queuedFanIds', present: true),
       );
       expect(
         evaluateGuard(guard, 'charlie', {
-          'queuedPersonaIds': ['alice', 'bob'],
+          'queuedFanIds': ['alice', 'bob'],
         }),
         isFalse,
       );
@@ -249,14 +243,11 @@ void main() {
 
     test('actorInList: present=false and persona NOT in list → passes', () {
       final guard = const WorkflowGuard(
-        actorInList: ListMembershipGuard(
-          key: 'queuedPersonaIds',
-          present: false,
-        ),
+        actorInList: ListMembershipGuard(key: 'queuedFanIds', present: false),
       );
       expect(
         evaluateGuard(guard, 'charlie', {
-          'queuedPersonaIds': ['alice', 'bob'],
+          'queuedFanIds': ['alice', 'bob'],
         }),
         isTrue,
       );
@@ -264,14 +255,11 @@ void main() {
 
     test('actorInList: present=false and persona IS in list → fails', () {
       final guard = const WorkflowGuard(
-        actorInList: ListMembershipGuard(
-          key: 'queuedPersonaIds',
-          present: false,
-        ),
+        actorInList: ListMembershipGuard(key: 'queuedFanIds', present: false),
       );
       expect(
         evaluateGuard(guard, 'bob', {
-          'queuedPersonaIds': ['alice', 'bob'],
+          'queuedFanIds': ['alice', 'bob'],
         }),
         isFalse,
       );
@@ -405,22 +393,18 @@ void main() {
 
     test('set: resolves \$actor to personaId', () {
       final effects = [
-        const WorkflowEffect(
-          op: 'set',
-          key: 'holderPersonaId',
-          value: r'$actor',
-        ),
+        const WorkflowEffect(op: 'set', key: 'holderFanId', value: r'$actor'),
       ];
       final result = applyEffects(effects, 'bob-42', {});
-      expect(result, {'holderPersonaId': 'bob-42'});
+      expect(result, {'holderFanId': 'bob-42'});
     });
 
     test('set: writes null (key set to null)', () {
       final effects = [
-        const WorkflowEffect(op: 'set', key: 'holderPersonaId', value: null),
+        const WorkflowEffect(op: 'set', key: 'holderFanId', value: null),
       ];
-      final result = applyEffects(effects, 'bob', {'holderPersonaId': 'alice'});
-      expect(result, {'holderPersonaId': null});
+      final result = applyEffects(effects, 'bob', {'holderFanId': 'alice'});
+      expect(result, {'holderFanId': null});
     });
 
     test('set: overwrites existing value', () {
@@ -684,8 +668,8 @@ void main() {
         'title': 'Catan',
         'category': 'Board Games',
         'condition': 'Like new',
-        'holderPersonaId': null,
-        'queuedPersonaIds': <String>[],
+        'holderFanId': null,
+        'queuedFanIds': <String>[],
       };
 
       // Member submits for review.
@@ -748,8 +732,8 @@ void main() {
         final data = <String, dynamic>{
           'title': 'Catan',
           'availabilityState': 'available',
-          'holderPersonaId': null,
-          'queuedPersonaIds': <String>[],
+          'holderFanId': null,
+          'queuedFanIds': <String>[],
         };
 
         final actions = availableTransitions(
@@ -775,7 +759,7 @@ void main() {
           'onLoan',
           reason: 'availabilityState changed independently from currentState',
         );
-        expect(newData['holderPersonaId'], 'tabletop-member');
+        expect(newData['holderFanId'], 'tabletop-member');
       },
     );
 
@@ -785,8 +769,8 @@ void main() {
         final state = 'published';
         final data = <String, dynamic>{
           'availabilityState': 'onLoan',
-          'holderPersonaId': 'tabletop-member',
-          'queuedPersonaIds': <String>[],
+          'holderFanId': 'tabletop-member',
+          'queuedFanIds': <String>[],
           'dueDate': '2026-07-17',
         };
 
@@ -804,7 +788,7 @@ void main() {
 
         expect(newState, 'published');
         expect(newData['availabilityState'], 'available');
-        expect(newData['holderPersonaId'], isNull);
+        expect(newData['holderFanId'], isNull);
         expect(newData['dueDate'], isNull);
       },
     );
@@ -813,8 +797,8 @@ void main() {
       var state = 'published';
       final data = <String, dynamic>{
         'availabilityState': 'available',
-        'holderPersonaId': null,
-        'queuedPersonaIds': <String>[],
+        'holderFanId': null,
+        'queuedFanIds': <String>[],
       };
 
       // Only owners/organizers can delist.
@@ -847,8 +831,8 @@ void main() {
           'title': 'Catan',
           'category': 'Board Games',
           'condition': 'Like new',
-          'holderPersonaId': null,
-          'queuedPersonaIds': <String>[],
+          'holderFanId': null,
+          'queuedFanIds': <String>[],
         };
 
         // Step 1: draft → pending-review (submit-listing).

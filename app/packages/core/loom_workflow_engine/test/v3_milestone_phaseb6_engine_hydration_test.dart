@@ -23,7 +23,7 @@ Map<String, dynamic> _voteDefinition() => {
   'transitions': <Map<String, dynamic>>[],
   'instanceDataSchema': {
     'ballotId': {'type': 'text', 'required': true},
-    'voterId': {'type': 'personaId', 'required': true},
+    'voterId': {'type': 'fanId', 'required': true},
     'choice': {'type': 'text', 'required': true},
   },
 };
@@ -41,7 +41,7 @@ Map<String, dynamic> _ballotDefinition() => {
       'from': ['open'],
       'to': 'closed',
       'guard': {
-        'allowedPersonaIds': ['tabletop-organizer'],
+        'allowedRoleIds': ['tabletop-organizer'],
       },
       'effects': [
         {

@@ -232,7 +232,7 @@ void main() {
       const jsoncBody = '''
       {
         // a line comment
-        "schemaVersion": 1,
+        "specVersion": 4,
         "packageId": "init_x_1",
         "communityId": "community_x",
         "communityHandle": "x",
@@ -242,10 +242,8 @@ void main() {
         /* a block
            comment */
         "experience": {
-          "experienceSchemaVersion": 2,
-          "workflowGrammarVersion": 1,
           "displayName": "X",
-          "personas": [],
+          "roles": [],
           "workflowDefinitions": {}
         }
       }
@@ -478,7 +476,7 @@ void main() {
 }
 
 const _hikeClubPackage = {
-  'schemaVersion': 1,
+  'specVersion': 4,
   'packageId': 'init_hiking_club_1',
   'communityId': 'community_hiking_club',
   'communityHandle': 'hiking-club',
@@ -496,20 +494,18 @@ const _hikeClubPackage = {
     ],
   },
   'experience': {
-    'experienceSchemaVersion': 2,
-    'workflowGrammarVersion': 1,
     'displayName': 'Hiking Club',
     'tagline': 'Weekend trails.',
     'accentColor': '#2D6A4F',
-    'personas': [
+    'roles': [
       {
-        'personaId': 'hiking-organizer',
+        'roleId': 'hiking-organizer',
         'label': 'Organizer',
         'roleLabel': 'Organizer',
         'description': 'Plans hikes.',
       },
       {
-        'personaId': 'hiking-member',
+        'roleId': 'hiking-member',
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'Joins hikes.',
@@ -525,7 +521,7 @@ const _hikeClubPackage = {
             'tone': 'positive',
             'editableFields': ['title', 'capacity'],
             'editGuard': {
-              'allowedPersonaIds': ['hiking-organizer'],
+              'allowedRoleIds': ['hiking-organizer'],
             },
           },
           'cancelled': {
@@ -543,16 +539,12 @@ const _hikeClubPackage = {
             'from': ['open'],
             'to': null,
             'guard': {
-              'allowedPersonaIds': ['hiking-member'],
-              'actorInList': {'key': 'goingPersonaIds', 'present': false},
-              'formula': 'size(goingPersonaIds) < capacity',
+              'allowedRoleIds': ['hiking-member'],
+              'actorInList': {'key': 'goingFanIds', 'present': false},
+              'formula': 'size(goingFanIds) < capacity',
             },
             'effects': [
-              {
-                'op': 'appendUnique',
-                'key': 'goingPersonaIds',
-                'value': r'$actor',
-              },
+              {'op': 'appendUnique', 'key': 'goingFanIds', 'value': r'$actor'},
             ],
           },
           {
@@ -563,14 +555,14 @@ const _hikeClubPackage = {
             'from': ['open'],
             'to': 'cancelled',
             'guard': {
-              'allowedPersonaIds': ['hiking-organizer'],
+              'allowedRoleIds': ['hiking-organizer'],
             },
           },
         ],
         'renderBindings': [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',
@@ -578,7 +570,7 @@ const _hikeClubPackage = {
               {
                 'kind': 'create',
                 'label': 'New hike',
-                'byPersonaIds': ['hiking-organizer'],
+                'byRoleIds': ['hiking-organizer'],
                 'scope': 'tab',
                 'presentation': 'fab',
               },
@@ -586,7 +578,7 @@ const _hikeClubPackage = {
           },
           {
             'states': ['cancelled'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'summary',
@@ -603,7 +595,7 @@ const _hikeClubPackage = {
             'required': true,
             'writableBy': 'formEntry',
           },
-          'goingPersonaIds': {'type': 'personaId[]', 'writableBy': 'effect'},
+          'goingFanIds': {'type': 'fanId[]', 'writableBy': 'effect'},
         },
       },
     },
@@ -612,7 +604,7 @@ const _hikeClubPackage = {
         'instanceId': 'hike-eagle-ridge',
         'workflowType': 'hike-rsvp',
         'currentState': 'open',
-        'createdByPersonaId': 'hiking-organizer',
+        'createdByFanId': 'hiking-organizer',
         'instanceData': {'title': 'Eagle Ridge loop', 'capacity': 12},
       },
     ],
@@ -620,7 +612,7 @@ const _hikeClubPackage = {
 };
 
 const _noEditGuardOrCreatePackage = {
-  'schemaVersion': 1,
+  'specVersion': 4,
   'packageId': 'init_no_gaps_1',
   'communityId': 'community_no_gaps',
   'communityHandle': 'no-gaps',
@@ -628,12 +620,10 @@ const _noEditGuardOrCreatePackage = {
   'extensionId': 'ext_no_gaps',
   'seedDataFiles': <dynamic>[],
   'experience': {
-    'experienceSchemaVersion': 2,
-    'workflowGrammarVersion': 1,
     'displayName': 'No Gaps',
-    'personas': [
+    'roles': [
       {
-        'personaId': 'organizer',
+        'roleId': 'organizer',
         'label': 'Organizer',
         'roleLabel': 'Organizer',
         'description': 'Manages things.',
@@ -660,7 +650,7 @@ const _noEditGuardOrCreatePackage = {
         'renderBindings': [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'formEntry',
             'bindingKind': 'primary',
@@ -680,7 +670,7 @@ const _noEditGuardOrCreatePackage = {
         'instanceId': 'thing-1',
         'workflowType': 'thing',
         'currentState': 'open',
-        'createdByPersonaId': 'organizer',
+        'createdByFanId': 'organizer',
         'instanceData': {'title': 'Only ever this one'},
       },
     ],

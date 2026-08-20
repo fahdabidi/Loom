@@ -8,12 +8,12 @@ LoomWorkflowStateMachine _eventMachine() => LoomWorkflowStateMachine.fromJson({
   'states': {
     'open': {
       'label': 'Open',
-      'editableFields': ['goingPersonaIds'],
+      'editableFields': ['goingFanIds'],
     },
   },
   'transitions': <Map<String, dynamic>>[],
   'instanceDataSchema': {
-    'goingPersonaIds': {'type': 'list', 'writableBy': 'formEntry'},
+    'goingFanIds': {'type': 'fanId[]', 'writableBy': 'formEntry'},
   },
 }, 'event');
 
@@ -31,7 +31,7 @@ LoomWorkflowStateMachine _voteMachine() => LoomWorkflowStateMachine.fromJson({
       'to': 'cast',
       'guard': {
         'relatedInstanceField': 'eventId',
-        'relatedListField': 'goingPersonaIds',
+        'relatedListField': 'goingFanIds',
       },
     },
   ],
@@ -70,7 +70,7 @@ void main() {
         workflowType: 'event',
         personaId: 'host',
         initialInstanceData: {
-          'goingPersonaIds': <String>['eligible-member'],
+          'goingFanIds': <String>['eligible-member'],
         },
       );
       final vote = await api.createInstance(

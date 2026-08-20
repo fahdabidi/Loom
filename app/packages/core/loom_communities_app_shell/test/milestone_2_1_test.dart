@@ -33,10 +33,7 @@ void main() {
         find.byKey(const ValueKey('audience-selector-individual')),
         findsNothing,
       );
-      expect(submitted, {
-        'audienceScope': 'all',
-        'invitedPersonaIds': <String>[],
-      });
+      expect(submitted, {'audienceScope': 'all', 'invitedFanIds': <String>[]});
 
       await tester.tap(find.byKey(const ValueKey('audience-selector-scope')));
       await tester.pumpAndSettle();
@@ -57,7 +54,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(submitted, {
         'audienceScope': 'selected',
-        'invitedPersonaIds': ['alice', 'bob'],
+        'invitedFanIds': ['alice', 'bob'],
       });
 
       await tester.tap(find.byKey(const ValueKey('audience-selector-scope')));
@@ -75,7 +72,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(submitted, {
         'audienceScope': 'individual',
-        'invitedPersonaIds': ['cora'],
+        'invitedFanIds': ['cora'],
       });
     });
   });

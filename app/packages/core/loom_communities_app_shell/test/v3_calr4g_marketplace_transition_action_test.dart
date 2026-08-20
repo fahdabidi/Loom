@@ -193,7 +193,7 @@ void _addShareGameActorPrefill(Map<String, dynamic> source) {
         (action['label'] == 'Share a game'),
   );
   final share = Map<String, dynamic>.from(actions[shareIndex] as Map)
-    ..['prefill'] = <String, dynamic>{'ownerPersonaId': '\$actor'};
+    ..['prefill'] = <String, dynamic>{'ownerFanId': '\$actor'};
   actions[shareIndex] = share;
   marketplaceBinding['actions'] = actions;
   bindings[marketplaceIndex] = marketplaceBinding;
@@ -369,8 +369,11 @@ void main() {
             limit: 100,
           );
           return home.items
-              .where((item) => item.instanceData['title'] == 'Owner field smoke test')
-              .map((item) => item.instanceData['ownerPersonaId'])
+              .where(
+                (item) =>
+                    item.instanceData['title'] == 'Owner field smoke test',
+              )
+              .map((item) => item.instanceData['ownerFanId'])
               .toSet();
         });
         expect(ownerIds, contains('tabletop-member'));

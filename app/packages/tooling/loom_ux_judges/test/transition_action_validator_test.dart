@@ -12,12 +12,10 @@ import 'package:test/test.dart';
 /// Minimal package skeleton: enough envelope for the validator to reach the
 /// workflow definitions, nothing more.
 Map<String, Object?> _package(Map<String, Object?> workflowDefinitions) => {
-  'schemaVersion': 1,
+  'specVersion': 4,
   'experience': {
-    'experienceSchemaVersion': 2,
-    'workflowGrammarVersion': 1,
-    'personas': [
-      {'personaId': 'member', 'label': 'Member'},
+    'roles': [
+      {'roleId': 'member', 'label': 'Member'},
     ],
     'workflowDefinitions': workflowDefinitions,
   },
@@ -37,7 +35,7 @@ Map<String, Object?> _workflow({
   'renderBindings': [
     {
       'states': ['open'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'home',
       'cardSurfaceFamily': family,
       'bindingKind': 'primary',
@@ -46,7 +44,7 @@ Map<String, Object?> _workflow({
     for (final extra in extraFamilies)
       {
         'states': ['open'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'admin',
         'cardSurfaceFamily': extra,
         'bindingKind': 'summary',
@@ -121,9 +119,7 @@ void main() {
         _package({
           'club-event': _workflow(
             family: 'event-rsvp',
-            transitions: [
-              _transition('cancel-event', action: 'obliterate'),
-            ],
+            transitions: [_transition('cancel-event', action: 'obliterate')],
           ),
         }),
       );
@@ -138,9 +134,7 @@ void main() {
         _package({
           'book-vote': _workflow(
             family: 'votePoll',
-            transitions: [
-              _transition('cancel-vote', action: 'withdraw_vote'),
-            ],
+            transitions: [_transition('cancel-vote', action: 'withdraw_vote')],
           ),
         }),
       );
@@ -178,9 +172,7 @@ void main() {
         _package({
           'rankings': _workflow(
             family: 'table',
-            transitions: [
-              _transition('publish-ranking', action: 'publish'),
-            ],
+            transitions: [_transition('publish-ranking', action: 'publish')],
           ),
         }),
       );
@@ -212,9 +204,7 @@ void main() {
         'states': {
           'pending': {'label': 'Pending'},
         },
-        'transitions': [
-          _transition('respond-going', action: responseAction),
-        ],
+        'transitions': [_transition('respond-going', action: responseAction)],
         // The shape that caused the bug: no bindings at all.
         'renderBindings': <Object?>[],
       },
@@ -223,10 +213,7 @@ void main() {
     test('a response workflow with no action is an error, not ignored', () {
       // Before §6 step 3b these derived nothing and passed silently, leaving
       // 26 real member actions ungated across five communities.
-      expect(
-        _errorTypes(rsvpPair()),
-        contains('missing_transition_action'),
-      );
+      expect(_errorTypes(rsvpPair()), contains('missing_transition_action'));
     });
 
     test('it resolves against the inherited family\'s vocabulary', () {
@@ -304,10 +291,14 @@ void main() {
   group('permission ids', () {
     test('are <archetype_snake_case>.<action>', () {
       const resolver = ArchetypeResolver();
-      expect(resolver.permissionId('event-rsvp', 'respond'),
-          equals('event_rsvp.respond'));
-      expect(resolver.permissionId('searchAiAnswer', 'moderate'),
-          equals('search_ai_answer.moderate'));
+      expect(
+        resolver.permissionId('event-rsvp', 'respond'),
+        equals('event_rsvp.respond'),
+      );
+      expect(
+        resolver.permissionId('searchAiAnswer', 'moderate'),
+        equals('search_ai_answer.moderate'),
+      );
       expect(resolver.permissionId('table', 'view'), equals('table.view'));
     });
   });

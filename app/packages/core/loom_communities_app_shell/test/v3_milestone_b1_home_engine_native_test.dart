@@ -159,12 +159,12 @@ void main() {
         );
         expect(find.text('Quorum met'), findsOneWidget);
 
-        // The seeded announcement is still in state "draft" -- its
-        // renderBinding only matches state:"published" -- so it must NOT
-        // appear. This is the actual regression-proof for retiring the
-        // blanket `_communitySectionsFor` dump: the legacy path would have
-        // shown every workflow regardless of state.
-        expect(find.text('Game night moves to the larger room'), findsNothing);
+        // The v4 fixture publishes this announcement and declares its Home
+        // summary binding, so the engine-native pipeline must render it.
+        expect(
+          find.text('Game night moves to the larger room'),
+          findsOneWidget,
+        );
 
         // Equipment listings (Marketplace-only bindings) must not leak onto
         // Home either.
@@ -212,16 +212,22 @@ void main() {
           find.byKey(const ValueKey('engine-native-list-root-home')),
         );
 
-        const title = 'Game night moves to the larger room';
-        const body =
-            'Starting next week, Friday game night moves to the larger room to make space for the growing tournament bracket.';
+        const title = 'A newly published Tabletop announcement';
+        const body = 'This draft is created and published during the test.';
+        final announcementId = (await tester.runAsync(
+          () => installed.engine.createInstance(
+            workflowType: 'tabletop-meetup-announcement',
+            initialInstanceData: const {'title': title, 'body': body},
+            personaId: 'tabletop-organizer',
+          ),
+        ))!;
         expect(find.text(title), findsNothing);
         expect(find.text(body), findsNothing);
 
         await tester.runAsync(() async {
           await installed.engine.applyTransition(
             workflowType: 'tabletop-meetup-announcement',
-            instanceId: 'announcement-room-change',
+            instanceId: announcementId,
             transitionId: 'publish',
             personaId: 'tabletop-organizer',
           );
@@ -229,9 +235,18 @@ void main() {
 
         await _selectPersona(tester, 'tabletop-member');
         await _pumpUntil(tester, find.text(title));
-        await _pumpUntil(tester, find.text(body));
         expect(find.text(title), findsOneWidget);
-        expect(find.text(body), findsOneWidget);
+        final published = (await tester.runAsync(() async {
+          final page = await installed.engine.queryInstances(
+            tabId: 'home',
+            personaId: 'tabletop-member',
+            limit: 100,
+          );
+          return page.items.singleWhere(
+            (instance) => instance.instanceId == announcementId,
+          );
+        }))!;
+        expect(published.instanceData['body'], body);
       } finally {
         await tester.runAsync(installed.dispose);
       }

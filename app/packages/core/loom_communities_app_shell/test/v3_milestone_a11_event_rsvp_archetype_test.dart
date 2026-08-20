@@ -114,14 +114,32 @@ Future<_InstalledTabletop> _install(
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
+    final isTabletop = source['displayName'] == 'Tabletop Club';
+    final seedFrom = isTabletop
+        ? 'ext_verify_tabletop_club'
+        : community.extensionId;
+    final accounts = await LocalAuthApi().listAccounts(
+      communityExtensionId: seedFrom,
+    );
+    final shellAccounts = isTabletop
+        ? await activeAuthForCommunity(
+            community: community,
+            experience: experience,
+            personaTypeId: 'tabletop-organizer',
+          ).listAccounts(communityExtensionId: community.extensionId)
+        : _gardenAccounts;
+    final authorizationAccounts = [...accounts, ...shellAccounts];
+    configureEngineAuthorizationForExtensionId(
+      extensionId: community.extensionId,
+      appShellConfiguration: community.appShellConfiguration,
+      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+        (account) =>
+            account.accountId == personaId &&
+            account.status == MembershipStatus.active,
+      ),
+    );
     if (engine is LocalWorkflowEngineApi) {
-      final seedFrom = source['displayName'] == 'Tabletop Club'
-          ? 'ext_verify_tabletop_club'
-          : community.extensionId;
-      final accounts = await LocalAuthApi().listAccounts(
-        communityExtensionId: seedFrom,
-      );
-      for (final account in accounts) {
+      for (final account in authorizationAccounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
       }
     }
@@ -148,15 +166,7 @@ String _identityFieldName(
   }
   final fanIdField = fieldStem.isEmpty ? 'fanId' : '${fieldStem}FanId';
   if (workflow.instanceDataSchema.containsKey(fanIdField)) return fanIdField;
-  final personaIdField = fieldStem.isEmpty
-      ? 'personaId'
-      : '${fieldStem}PersonaId';
-  if (workflow.instanceDataSchema.containsKey(personaIdField)) {
-    return personaIdField;
-  }
-  throw StateError(
-    '$workflowType declares neither $fanIdField nor $personaIdField',
-  );
+  throw StateError('$workflowType does not declare $fanIdField');
 }
 
 Widget _calendar(
@@ -286,6 +296,10 @@ Future<void> _openEventCreation(
     tester,
     find.byKey(const ValueKey('new-event-editor-title')),
   );
+  await _pumpUntilCreatableFabReady(
+    tester,
+    find.byKey(const ValueKey('new-event-editor-title')),
+  );
 }
 
 Future<void> _pumpUntilCreatableFabReady(
@@ -358,7 +372,10 @@ Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _confirmPickerDialog(WidgetTester tester) async {
-  final dialog = find.byType(AlertDialog);
+  final dialog = find.byWidgetPredicate(
+    (widget) => widget is DatePickerDialog || widget is TimePickerDialog,
+    description: 'date or time picker dialog',
+  );
   await _pumpUntil(tester, dialog);
   expect(dialog, findsOneWidget);
   final confirm = find.descendant(of: dialog, matching: find.text('OK'));
@@ -436,10 +453,19 @@ Future<void> _tapRsvpAction(
       final input = find.byKey(
         ValueKey('generic-transition-input-${entry.key}'),
       );
-      if (input.evaluate().isEmpty) continue;
-      await _pumpUntil(tester, input);
-      await tester.ensureVisible(input);
-      await tester.enterText(input, entry.value);
+      if (input.evaluate().isNotEmpty) {
+        await _pumpUntil(tester, input);
+        await tester.ensureVisible(input);
+        await tester.enterText(input, entry.value);
+      } else {
+        final option = find.byKey(
+          ValueKey('generic-transition-input-${entry.key}-${entry.value}'),
+        );
+        await _pumpUntil(tester, option);
+        await tester.ensureVisible(option);
+        await tester.tap(option);
+        await tester.pump();
+      }
     }
     final confirm = find.byKey(
       const ValueKey('generic-transition-input-confirm'),
@@ -949,11 +975,39 @@ void main() {
       if (engine is LocalWorkflowEngineApi) {
         engine.setPersonaType('tabletop-member-15', 'tabletop-member');
       }
+      const lateJoinerAccounts = <LoomAccount>[
+        LoomAccount(
+          accountId: 'tabletop-organizer',
+          displayName: 'Alex T.',
+          personaTypeId: 'tabletop-organizer',
+        ),
+        LoomAccount(
+          accountId: 'tabletop-member-15',
+          displayName: 'Late joiner',
+          personaTypeId: 'tabletop-member',
+        ),
+      ];
+      final auth = activeAuthForCommunity(
+        community: installed.community,
+        experience: installed.experience,
+        accountId: 'tabletop-member-15',
+        accounts: lateJoinerAccounts,
+      );
+      configureEngineAuthorizationForExtensionId(
+        extensionId: installed.community.extensionId,
+        appShellConfiguration: installed.community.appShellConfiguration,
+        activeMembershipLookup: (personaId) async => lateJoinerAccounts.any(
+          (account) =>
+              account.accountId == personaId &&
+              account.status == MembershipStatus.active,
+        ),
+      );
       await tester.pumpWidget(
         _calendar(
           installed,
           'tabletop-member',
           accountId: 'tabletop-member-15',
+          authApi: auth,
         ),
       );
       await _selectAgenda(tester, 'event-friday-game-night', 0);
@@ -1542,11 +1596,14 @@ void main() {
         );
         await _pumpUntil(tester, cancelAction);
         expect(cancelAction, findsOneWidget);
+        // Response-table actions use the same create-or-get behavior as the
+        // frozen Tabletop late-joiner case: the control is available before a
+        // row exists, and tapping it materializes the viewer's response row.
         expect(
           find.byKey(
             ValueKey('event-rsvp-$customInstanceId-action-respond-going'),
           ),
-          findsNothing,
+          findsOneWidget,
         );
       } finally {
         await tester.runAsync(installed.dispose);
@@ -1702,7 +1759,7 @@ void main() {
         await tester.ensureVisible(eventDate);
         await tester.tap(eventDate);
         await tester.pump();
-        final dateDialog = find.byType(AlertDialog);
+        final dateDialog = find.byType(DatePickerDialog);
         await _pumpUntil(tester, dateDialog);
         expect(dateDialog, findsOneWidget);
         final day = find.descendant(of: dateDialog, matching: find.text('20'));
@@ -1872,6 +1929,20 @@ void main() {
           personaTypeId: 'tabletop-organizer',
           accounts: testAccounts,
         );
+        configureEngineAuthorizationForExtensionId(
+          extensionId: installed.community.extensionId,
+          appShellConfiguration: installed.community.appShellConfiguration,
+          activeMembershipLookup: (personaId) async => testAccounts.any(
+            (account) =>
+                account.accountId == personaId &&
+                account.status == MembershipStatus.active,
+          ),
+        );
+        if (installed.engine case final LocalWorkflowEngineApi engine) {
+          for (final account in testAccounts) {
+            engine.setPersonaType(account.accountId, account.personaTypeId);
+          }
+        }
         await tester.pumpWidget(_app(installed, authApi: auth));
         await _selectCalendar(tester);
         await _openEventCreation(tester);
@@ -1894,7 +1965,7 @@ void main() {
         await tester.ensureVisible(eventDate);
         await tester.tap(eventDate);
         await tester.pump();
-        final dateDialog = find.byType(AlertDialog);
+        final dateDialog = find.byType(DatePickerDialog);
         await _pumpUntil(tester, dateDialog);
         expect(dateDialog, findsOneWidget);
         final day = find.descendant(of: dateDialog, matching: find.text('15'));
@@ -1916,7 +1987,7 @@ void main() {
         await _pollUntilObservation(tester, () async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            personaId: 'calr3-organizer',
             limit: 100,
           );
           final events = page.items
@@ -1931,11 +2002,37 @@ void main() {
             'matching events=${events.length}',
           );
         }, description: 'created CALR.3 event');
+        await _pollUntilObservation(tester, () async {
+          final eventPage = await installed.engine.queryInstances(
+            tabId: 'calendar',
+            personaId: 'calr3-organizer',
+            limit: 100,
+          );
+          final event = eventPage.items.singleWhere(
+            (item) =>
+                item.workflowType == 'event-rsvp' &&
+                item.instanceData['title'] == 'CALR.3 test event',
+          );
+          final responsePage =
+              await (installed.engine as LocalWorkflowEngineApi).queryInstances(
+                tabId: 'calendar',
+                personaId: 'calr3-organizer',
+                workflowType: 'event-rsvp-response',
+                limit: 100,
+              );
+          final responseCount = responsePage.items
+              .where((item) => item.instanceData['eventId'] == event.instanceId)
+              .length;
+          return _PollObservation(
+            responseCount == testAccounts.length,
+            'response rows=$responseCount',
+          );
+        }, description: 'CALR.3 response fan-out');
 
         final result = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            personaId: 'calr3-organizer',
             limit: 100,
           );
           final event = page.items.singleWhere(
@@ -1946,12 +2043,21 @@ void main() {
           final accounts = await auth.listAccounts(
             communityExtensionId: installed.community.extensionId,
           );
-          final responses = page.items.where(
-            (item) =>
-                item.workflowType == 'event-rsvp-response' &&
-                item.instanceData['eventId'] == event.instanceId,
+          final responses = await (installed.engine as LocalWorkflowEngineApi)
+              .queryInstances(
+                tabId: 'calendar',
+                personaId: 'calr3-organizer',
+                workflowType: 'event-rsvp-response',
+                limit: 100,
+              );
+          return (
+            accounts: accounts,
+            responses: responses.items
+                .where(
+                  (item) => item.instanceData['eventId'] == event.instanceId,
+                )
+                .toList(),
           );
-          return (accounts: accounts, responses: responses.toList());
         }))!;
         expect(result.responses, hasLength(result.accounts.length));
         final responseIdentityField = _identityFieldName(

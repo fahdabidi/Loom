@@ -40,6 +40,22 @@ dynamic _resolveInstanceScopedValue(
   WorkflowInstance? instance, {
   String? actorId,
 }) {
+  if (value is List) {
+    return [
+      for (final item in value)
+        _resolveInstanceScopedValue(item, instance, actorId: actorId),
+    ];
+  }
+  if (value is Map) {
+    return <String, dynamic>{
+      for (final entry in value.entries)
+        '${entry.key}': _resolveInstanceScopedValue(
+          entry.value,
+          instance,
+          actorId: actorId,
+        ),
+    };
+  }
   if (value is! String) return value;
   if (value == '\$actor') return actorId ?? value;
   final withTimestamp = value.replaceAll(

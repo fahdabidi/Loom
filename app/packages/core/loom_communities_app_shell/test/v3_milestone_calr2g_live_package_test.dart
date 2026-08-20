@@ -44,6 +44,15 @@ void main() {
         final accounts = await LocalAuthApi().listAccounts(
           communityExtensionId: _extensionId,
         );
+        configureEngineAuthorizationForExtensionId(
+          extensionId: community.extensionId,
+          appShellConfiguration: community.appShellConfiguration,
+          activeMembershipLookup: (personaId) async => accounts.any(
+            (account) =>
+                account.accountId == personaId &&
+                account.status == MembershipStatus.active,
+          ),
+        );
         for (final account in accounts) {
           engine.setPersonaType(account.accountId, account.personaTypeId);
         }

@@ -21,33 +21,33 @@ LoomWorkflowStateMachine _loanMachine() {
     {
       "id": "submit-listing", "label": "Submit for review", "icon": "send", "tone": "primary",
       "from": ["draft"], "to": "published",
-      "guard": { "allowedPersonaIds": ["member", "member-1", "member-2", "member-owner"] }
+      "guard": { "allowedRoleIds": ["member", "member-1", "member-2", "member-owner"] }
     },
     {
       "id": "join-queue",
       "label": "Join queue", "icon": "add_circle_outline", "tone": "secondary",
       "from": ["published"], "to": null,
       "guard": {
-        "allowedPersonaIds": ["member", "member-1", "member-2", "alice", "bob", "member-owner"],
-        "actorInList": { "key": "queuedPersonaIds", "present": false }
+        "allowedRoleIds": ["member", "member-1", "member-2", "alice", "bob", "member-owner"],
+        "actorInList": { "key": "queuedFanIds", "present": false }
       },
-      "effects": [{ "op": "appendUnique", "key": "queuedPersonaIds", "value": "\$actor" }]
+      "effects": [{ "op": "appendUnique", "key": "queuedFanIds", "value": "\$actor" }]
     },
     {
       "id": "leave-queue",
       "label": "Leave queue", "icon": "remove_circle_outline", "tone": "secondary",
       "from": ["published"], "to": null,
       "guard": {
-        "allowedPersonaIds": ["member", "member-1", "member-2", "alice", "bob", "member-owner"],
-        "actorInList": { "key": "queuedPersonaIds", "present": true }
+        "allowedRoleIds": ["member", "member-1", "member-2", "alice", "bob", "member-owner"],
+        "actorInList": { "key": "queuedFanIds", "present": true }
       },
-      "effects": [{ "op": "removeValue", "key": "queuedPersonaIds", "value": "\$actor" }]
+      "effects": [{ "op": "removeValue", "key": "queuedFanIds", "value": "\$actor" }]
     }
   ],
   "renderBindings": [
-    { "states": ["draft"], "role": "actor", "tabId": "marketplace",
+    { "states": ["draft"], "audience": "actor", "tabId": "marketplace",
       "cardSurfaceFamily": "listing-editor", "bindingKind": "primary" },
-    { "states": ["published"], "role": "any", "tabId": "marketplace",
+    { "states": ["published"], "audience": "any", "tabId": "marketplace",
       "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
   ],
   "instanceDataSchema": {
@@ -68,12 +68,12 @@ LoomWorkflowStateMachine _loanMachine() {
       "type": "textarea", "required": false, "maxLength": 500,
       "writableBy": "formEntry", "storage": "inline", "sortable": false
     },
-    "holderPersonaId": {
-      "type": "personaId?",
+    "holderFanId": {
+      "type": "fanId?",
       "writableBy": "effect", "sortable": false
     },
-    "queuedPersonaIds": {
-      "type": "personaId[]",
+    "queuedFanIds": {
+      "type": "fanId[]",
       "writableBy": "effect"
     }
   }
@@ -129,7 +129,7 @@ void main() {
             'category': 'Board Games',
             'condition': 'Like new',
             'description': 'A classic game.',
-            'queuedPersonaIds': <String>[],
+            'queuedFanIds': <String>[],
           },
           personaId: 'member-1',
         );
@@ -197,28 +197,25 @@ void main() {
         expect(inst.instanceData['title'], 'Catan v2');
       });
 
-      test(
-        'editing a non-editable field (holderPersonaId) is rejected',
-        () async {
-          final api = await _makeApi();
-          final id = await api.createInstance(
-            workflowType: 'equipment-loan',
-            initialInstanceData: {'title': 'Catan'},
-            personaId: 'member-1',
-          );
+      test('editing a non-editable field (holderFanId) is rejected', () async {
+        final api = await _makeApi();
+        final id = await api.createInstance(
+          workflowType: 'equipment-loan',
+          initialInstanceData: {'title': 'Catan'},
+          personaId: 'member-1',
+        );
 
-          // holderPersonaId is writableBy: "effect" — not in editableFields.
-          await expectLater(
-            api.updateInstanceFields(
-              workflowType: 'equipment-loan',
-              instanceId: id,
-              fieldUpdates: {'holderPersonaId': 'alice'},
-              personaId: 'member-1',
-            ),
-            throwsA(isA<WorkflowAuthorizationError>()),
-          );
-        },
-      );
+        // holderFanId is writableBy: "effect" — not in editableFields.
+        await expectLater(
+          api.updateInstanceFields(
+            workflowType: 'equipment-loan',
+            instanceId: id,
+            fieldUpdates: {'holderFanId': 'alice'},
+            personaId: 'member-1',
+          ),
+          throwsA(isA<WorkflowAuthorizationError>()),
+        );
+      });
 
       test(
         'leaving required fields empty still succeeds (required NOT enforced here)',
@@ -260,10 +257,7 @@ void main() {
           // Create a published instance.
           final id = await api.createInstance(
             workflowType: 'equipment-loan',
-            initialInstanceData: {
-              'title': 'Catan',
-              'queuedPersonaIds': <String>[],
-            },
+            initialInstanceData: {'title': 'Catan', 'queuedFanIds': <String>[]},
             personaId: 'member',
           );
           // First, submit it so it's published.
@@ -315,7 +309,7 @@ void main() {
             personaId: 'member-owner',
           );
           final inst = page.items.firstWhere((i) => i.instanceId == id);
-          final queue = inst.instanceData['queuedPersonaIds'] as List;
+          final queue = inst.instanceData['queuedFanIds'] as List;
           expect(queue, ['member']);
         },
       );
@@ -332,7 +326,7 @@ void main() {
             workflowType: 'equipment-loan',
             initialInstanceData: {
               'title': 'Item ${i.toString().padLeft(3, '0')}',
-              'queuedPersonaIds': <String>[],
+              'queuedFanIds': <String>[],
             },
             personaId: 'member-1',
           );
@@ -389,7 +383,7 @@ void main() {
               workflowType: 'equipment-loan',
               initialInstanceData: {
                 'title': 'Item ${i.toString().padLeft(3, '0')}',
-                'queuedPersonaIds': <String>[],
+                'queuedFanIds': <String>[],
               },
               personaId: 'member-1',
             );
@@ -426,12 +420,12 @@ void main() {
           // Seed two items: "A" and "C".
           final idA = await api.createInstance(
             workflowType: 'equipment-loan',
-            initialInstanceData: {'title': 'A', 'queuedPersonaIds': <String>[]},
+            initialInstanceData: {'title': 'A', 'queuedFanIds': <String>[]},
             personaId: 'member-1',
           );
           final idC = await api.createInstance(
             workflowType: 'equipment-loan',
-            initialInstanceData: {'title': 'C', 'queuedPersonaIds': <String>[]},
+            initialInstanceData: {'title': 'C', 'queuedFanIds': <String>[]},
             personaId: 'member-1',
           );
 
@@ -453,7 +447,7 @@ void main() {
             workflowType: 'equipment-loan',
             initialInstanceData: {
               'title': '0-Aardvark',
-              'queuedPersonaIds': <String>[],
+              'queuedFanIds': <String>[],
             },
             personaId: 'member-1',
           );
@@ -492,7 +486,7 @@ void main() {
             initialInstanceData: {
               'title': 'Zeta-${i.toString()}',
               'category': 'Alpha-${i.toString()}',
-              'queuedPersonaIds': <String>[],
+              'queuedFanIds': <String>[],
             },
             personaId: 'member-1',
           );
@@ -611,17 +605,17 @@ void main() {
   },
   "transitions": [
     { "id": "claim", "label": "Claim", "from": ["available"], "to": "claimed",
-      "guard": { "allowedPersonaIds": ["member"] },
-      "effects": [{ "op": "set", "key": "claimedByPersonaId", "value": "\$actor" }] }
+      "guard": { "allowedRoleIds": ["member"] },
+      "effects": [{ "op": "set", "key": "claimedByFanId", "value": "\$actor" }] }
   ],
   "renderBindings": [
-    { "states": ["available","claimed"], "role": "any", "tabId": "marketplace",
+    { "states": ["available","claimed"], "audience": "any", "tabId": "marketplace",
       "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
   ],
   "instanceDataSchema": {
     "title":           { "type": "text", "required": true, "writableBy": "formEntry",
                          "storage": "inline", "sortable": true },
-    "claimedByPersonaId": { "type": "personaId?", "writableBy": "effect", "sortable": false }
+    "claimedByFanId": { "type": "fanId?", "writableBy": "effect", "sortable": false }
   }
 }
 ''';

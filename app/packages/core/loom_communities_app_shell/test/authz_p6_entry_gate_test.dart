@@ -13,7 +13,7 @@ const _entryWorkflowDefinitions = <String, Object?>{
     'renderBindings': <Object?>[
       <String, Object?>{
         'states': <String>['ready'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'home',
         'cardSurfaceFamily': 'workflow-status',
         'bindingKind': 'primary',
@@ -23,7 +23,7 @@ const _entryWorkflowDefinitions = <String, Object?>{
 };
 
 const _openPersona = <String, Object?>{
-  'personaId': 'open-member',
+  'roleId': 'open-member',
   'label': 'Open member',
   'roleLabel': 'Member',
   'description': 'Joins this open community.',
@@ -31,7 +31,7 @@ const _openPersona = <String, Object?>{
 };
 
 const _approvalPersona = <String, Object?>{
-  'personaId': 'approval-member',
+  'roleId': 'approval-member',
   'label': 'Approval member',
   'roleLabel': 'Member',
   'description': 'Requests access to this community.',
@@ -39,7 +39,7 @@ const _approvalPersona = <String, Object?>{
 };
 
 const _invitePersona = <String, Object?>{
-  'personaId': 'invite-member',
+  'roleId': 'invite-member',
   'label': 'Invite member',
   'roleLabel': 'Member',
   'description': 'Joins this community with an invite.',
@@ -59,42 +59,18 @@ LocalInstalledCommunity _engineCommunity({
     cardImageAssetId: null,
     heroImageAssetId: null,
     accentColor: '#246B62',
+    specVersion: 4,
     experienceConfiguration: <String, Object?>{
-      'experienceSchemaVersion': 2,
-      'workflowGrammarVersion': 1,
       'tagline': 'AuthZ.P6 entry gate fixture',
-      'personas': personas,
+      'roles': personas,
       'workflowDefinitions': _entryWorkflowDefinitions,
       'workflowInstances': <Object?>[
         <String, Object?>{
           'instanceId': 'entry-content-1',
           'workflowType': 'entry-content',
           'currentState': 'ready',
-          'createdByPersonaId': personas.first['personaId'],
+          'createdByFanId': personas.first['roleId'],
           'instanceData': <String, Object?>{'title': 'Community content'},
-        },
-      ],
-    },
-  );
-}
-
-LocalInstalledCommunity _legacyCommunity() {
-  return const LocalInstalledCommunity(
-    communityId: 'authz-p6-legacy',
-    displayName: 'Legacy community',
-    extensionId: 'authz-p6-legacy-extension',
-    logoAssetId: null,
-    cardImageAssetId: null,
-    heroImageAssetId: null,
-    accentColor: '#246B62',
-    experienceConfiguration: <String, Object?>{
-      'workflows': <Object?>[
-        <String, Object?>{
-          'workflowId': 'legacy-content',
-          'title': 'Legacy content',
-          'entryText': 'Legacy content is available.',
-          'actionText': 'Open legacy content.',
-          'resultText': 'Legacy content opened.',
         },
       ],
     },
@@ -228,17 +204,4 @@ void main() {
       );
     },
   );
-
-  testWidgets('legacy-schema community still renders without the entry gate', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_host(_legacyCommunity()));
-    await _settle(tester);
-
-    expect(find.byKey(const ValueKey('community-entry-gate')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('local-extension-authz-p6-legacy-extension')),
-      findsOneWidget,
-    );
-  });
 }

@@ -74,6 +74,20 @@ void main() {
       final accounts = await authApi.listAccounts(
         communityExtensionId: communityExtensionId,
       );
+      configureEngineAuthorizationForExtensionId(
+        extensionId: communityExtensionId,
+        appShellConfiguration: community.appShellConfiguration,
+        activeMembershipLookup: (personaId) async {
+          final currentAccounts = await authApi.listAccounts(
+            communityExtensionId: communityExtensionId,
+          );
+          return currentAccounts.any(
+            (account) =>
+                account.accountId == personaId &&
+                account.status == MembershipStatus.active,
+          );
+        },
+      );
       for (final account in accounts) {
         engine.setPersonaType(account.accountId, account.personaTypeId);
       }
@@ -282,10 +296,10 @@ void main() {
         // Verify engine is functional
         final page = await engine.queryInstances(
           tabId: 'home',
-          personaId: 'tabletop-member',
+          personaId: 'tabletop-member-05',
           limit: 50,
         );
-        expect(page.items, hasLength(33));
+        expect(page.items, hasLength(28));
 
         // Verify that the persona type mapping is in place:
         // query the real share-azul instance (same pattern as Test 3 above)

@@ -164,8 +164,18 @@ void main() {
           findsOneWidget,
         );
         expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
-        expect(find.text(r'$15.00'), findsOneWidget);
-        expect(find.text('Quarterly club dues'), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Text && widget.data == r'$15.00',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Text && widget.data == 'Quarterly club dues',
+          ),
+          findsOneWidget,
+        );
 
         // The app bar is community chrome and intentionally stays at the
         // community accent. Card/header surfaces in the selected tab must use

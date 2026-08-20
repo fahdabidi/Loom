@@ -14,12 +14,12 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
       'from': ['unread'],
       'to': 'read',
       'guard': {
-        'actorEqualsField': {'key': 'recipientPersonaId'},
+        'actorEqualsField': {'key': 'recipientFanId'},
       },
     },
   ],
   'instanceDataSchema': {
-    'recipientPersonaId': {'type': 'personaId'},
+    'recipientFanId': {'type': 'fanId'},
   },
 }, 'notification');
 
@@ -42,7 +42,7 @@ void main() {
       final matching = await api.createInstance(
         workflowType: 'notification',
         personaId: 'creator',
-        initialInstanceData: {'recipientPersonaId': 'recipient-1'},
+        initialInstanceData: {'recipientFanId': 'recipient-1'},
       );
       await api.applyTransition(
         workflowType: 'notification',
@@ -55,7 +55,7 @@ void main() {
       final mismatched = await api.createInstance(
         workflowType: 'notification',
         personaId: 'creator',
-        initialInstanceData: {'recipientPersonaId': 'recipient-1'},
+        initialInstanceData: {'recipientFanId': 'recipient-1'},
       );
       await expectLater(
         api.applyTransition(

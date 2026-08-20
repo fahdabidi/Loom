@@ -101,10 +101,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       ),
       'save': ('savedFanIds', _ArchetypeBookkeepingOperation.addActor),
       'unsave': ('savedFanIds', _ArchetypeBookkeepingOperation.removeActor),
-      'download': (
-        'downloadedFanIds',
-        _ArchetypeBookkeepingOperation.addActor,
-      ),
+      'download': ('downloadedFanIds', _ArchetypeBookkeepingOperation.addActor),
       'request_access': (
         'accessRequestedFanIds',
         _ArchetypeBookkeepingOperation.addActor,
@@ -550,14 +547,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return switch (model) {
       VisibilityModel.ownerAndShared =>
         fields.sharedWith != null &&
-            _identityFieldMatchesDuringD8Straddle(
+            _identityFieldMatches(
               instance.instanceData,
               fields.sharedWith!,
               personaId,
               shape: _IdentityFieldShape.list,
             ),
       VisibilityModel.participants => fields.participants.any(
-        (field) => _identityFieldMatchesDuringD8Straddle(
+        (field) => _identityFieldMatches(
           instance.instanceData,
           field,
           personaId,
@@ -567,7 +564,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       VisibilityModel.parties => fields.parties.any(
         (principal) => switch (principal) {
           WorkflowVisibilityFieldPrincipal(:final fieldName) =>
-            _identityFieldMatchesDuringD8Straddle(
+            _identityFieldMatches(
               instance.instanceData,
               fieldName,
               personaId,
@@ -579,7 +576,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       ),
       VisibilityModel.recipient =>
         fields.recipient != null &&
-            _identityFieldMatchesDuringD8Straddle(
+            _identityFieldMatches(
               instance.instanceData,
               fields.recipient!,
               personaId,
@@ -595,14 +592,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return resolvedRoleId != null && resolvedRoleId == roleId;
   }
 
-  /// Reads both the specVersion 4 `*FanId(s)` spelling and the legacy
-  /// `*PersonaId(s)` spelling required by decision D8. Phase F deletes this
-  /// straddle helper once the corpus rename is complete.
+  /// Reads the declared specVersion 4 identity field exactly as authored.
   ///
   /// Empty viewers and empty/unset field values never match. The declared
-  /// field name is the only source of truth; the suffix alias is compatibility,
-  /// not permission to scan other identity-shaped instance data.
-  bool _identityFieldMatchesDuringD8Straddle(
+  /// field name is the only source of truth.
+  bool _identityFieldMatches(
     Map<String, dynamic> instanceData,
     String declaredField,
     String personaId, {
@@ -611,7 +605,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }) {
     if (declaredField.isEmpty) return false;
 
-    final spellings = _identityFieldSpellingsDuringD8Straddle(declaredField);
+    final spellings = <String>[declaredField];
     candidateSpellings?.addAll(spellings);
     if (personaId.isEmpty) return false;
 
@@ -632,40 +626,6 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       }
     }
     return false;
-  }
-
-  /// Returns the two temporary identity spellings accepted during D8.
-  ///
-  /// Both visibility reads and archetype-owned writes use this one alias
-  /// expansion so the Phase F cleanup has a single compatibility seam.
-  List<String> _identityFieldSpellingsDuringD8Straddle(String declaredField) {
-    final spellings = <String>[declaredField];
-    if (declaredField == 'fanIds') {
-      spellings.add('personaIds');
-    } else if (declaredField == 'fanId') {
-      spellings.add('personaId');
-    } else if (declaredField == 'personaIds') {
-      spellings.add('fanIds');
-    } else if (declaredField == 'personaId') {
-      spellings.add('fanId');
-    } else if (declaredField.endsWith('FanIds')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'FanIds'.length)}PersonaIds',
-      );
-    } else if (declaredField.endsWith('FanId')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'FanId'.length)}PersonaId',
-      );
-    } else if (declaredField.endsWith('PersonaIds')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'PersonaIds'.length)}FanIds',
-      );
-    } else if (declaredField.endsWith('PersonaId')) {
-      spellings.add(
-        '${declaredField.substring(0, declaredField.length - 'PersonaId'.length)}FanId',
-      );
-    }
-    return spellings;
   }
 
   String _cursorForRow(String sortKey, WorkflowInstanceRow row) {
@@ -1163,23 +1123,15 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       );
     }
 
-    final identitySpellings = _identityFieldSpellingsDuringD8Straddle(
-      'personaId',
-    );
-    String? identityField;
-    for (final spelling in identitySpellings) {
-      if (responseMachine.instanceDataSchema.containsKey(spelling)) {
-        identityField = spelling;
-        break;
-      }
-    }
-    if (identityField == null) {
+    const responseIdentityField = 'fanId';
+    if (!responseMachine.instanceDataSchema.containsKey(
+      responseIdentityField,
+    )) {
       throw StateError(
         'event-rsvp response workflow ${responseSpec.workflowType} must '
-        'declare personaId or fanId in instanceDataSchema',
+        'declare fanId in instanceDataSchema',
       );
     }
-    final responseIdentityField = identityField;
 
     final registeredIds = _personaTypeById.keys.toList(growable: false);
     final membershipLookup = _activeMembershipLookup;
@@ -1196,7 +1148,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     )).where((row) => row[responseSpec.eventField] == eventInstanceId);
     for (final memberId in memberIds) {
       final alreadyExists = existingRows.any(
-        (row) => _identityFieldMatchesDuringD8Straddle(
+        (row) => _identityFieldMatches(
           row,
           responseIdentityField,
           memberId,
@@ -1532,7 +1484,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final (contractField, operation) = rule;
 
     final candidateSpellings = <String>[];
-    final actorIsPresent = _identityFieldMatchesDuringD8Straddle(
+    final actorIsPresent = _identityFieldMatches(
       sourceData,
       contractField,
       personaId,
@@ -1623,7 +1575,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
     if (start == null || overlap.durationMinutes <= 0) return false;
     final end = start.add(
-      Duration(milliseconds: (overlap.durationMinutes * Duration.millisecondsPerMinute).round()),
+      Duration(
+        milliseconds: (overlap.durationMinutes * Duration.millisecondsPerMinute)
+            .round(),
+      ),
     );
 
     for (final candidate in await _readAllInstancesOfType(workflowType)) {
@@ -1638,7 +1593,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       );
       if (candidateStart == null) continue;
       final candidateEnd = candidateStart.add(
-        Duration(milliseconds: (overlap.durationMinutes * Duration.millisecondsPerMinute).round()),
+        Duration(
+          milliseconds:
+              (overlap.durationMinutes * Duration.millisecondsPerMinute)
+                  .round(),
+        ),
       );
       if (start.isBefore(candidateEnd) && candidateStart.isBefore(end)) {
         return false;
@@ -1827,13 +1786,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             for (final entry in relatedQuery.filter.entries)
               entry.key: _resolveRelatedAggregateValue(entry.value, computed),
           };
-          final matches = (await _readAllInstancesOfType(relatedQuery.workflowType))
-              .where(
-                (row) => filter.entries.every(
-                  (entry) => row[entry.key] == entry.value,
-                ),
-              )
-              .toList();
+          final matches =
+              (await _readAllInstancesOfType(relatedQuery.workflowType))
+                  .where(
+                    (row) => filter.entries.every(
+                      (entry) => row[entry.key] == entry.value,
+                    ),
+                  )
+                  .toList();
           final sortKey = relatedQuery.sortKey;
           if (sortKey != null) {
             matches.sort((left, right) {
@@ -1851,7 +1811,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           if (matches.isEmpty) continue;
           final targetId = matches.first[r'$id'];
           if (targetId is! String) {
-            throw StateError('transitionRelated match is missing reserved \$id');
+            throw StateError(
+              'transitionRelated match is missing reserved \$id',
+            );
           }
           try {
             final resolved = await _resolveTransition(
@@ -1890,7 +1852,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           final anchorField = effect.anchorField;
           final fields = effect.fields;
           final recurrenceRuleTemplate = effect.recurrenceRule;
-          if (workflowType == null || anchorField == null || fields == null ||
+          if (workflowType == null ||
+              anchorField == null ||
+              fields == null ||
               recurrenceRuleTemplate == null) {
             throw StateError(
               'generateRecurringInstances requires workflowType, anchorField, fields, '
@@ -1904,8 +1868,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           }
 
           final seriesId = _generateId();
-          final fieldsWithSeriesToken =
-              substituteSeriesIdToken(fields, seriesId);
+          final fieldsWithSeriesToken = substituteSeriesIdToken(
+            fields,
+            seriesId,
+          );
           final resolvedRule = resolveEffectValue(
             recurrenceRuleTemplate,
             personaId,
@@ -1935,8 +1901,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           for (var i = 1; i < occurrenceDates.length; i++) {
             final occurrenceFields =
                 Map<String, dynamic>.from(fieldsWithSeriesToken)
-                  ..[anchorField] =
-                      occurrenceDates[i].toIso8601String().substring(0, 10);
+                  ..[anchorField] = occurrenceDates[i]
+                      .toIso8601String()
+                      .substring(0, 10);
             final resolvedFields = resolveEffectValue(
               occurrenceFields,
               personaId,
@@ -2197,7 +2164,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             .map(
               (b) => {
                 'states': b.states,
-                'role': b.role,
+                'audience': b.role,
                 'tabId': b.tabId,
                 'cardSurfaceFamily': b.cardSurfaceFamily,
                 'bindingKind': b.bindingKind,
@@ -2268,7 +2235,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final m = <String, dynamic>{};
     if (guard.allowedPersonaIds != null &&
         guard.allowedPersonaIds!.isNotEmpty) {
-      m['allowedPersonaIds'] = guard.allowedPersonaIds;
+      m['allowedRoleIds'] = guard.allowedPersonaIds;
     }
     if (guard.actorInList != null) {
       m['actorInList'] = {

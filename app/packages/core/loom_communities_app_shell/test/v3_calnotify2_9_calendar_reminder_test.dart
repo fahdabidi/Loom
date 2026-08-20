@@ -36,6 +36,7 @@ Future<_ReminderHarness> _installReminderFixture({
   final responseId = 'response-$extensionId';
   final experience = experienceForExtensionId(
     extensionId,
+    specVersion: currentCommunitySpecVersion,
     experienceConfiguration: _configuration(
       eventId: eventId,
       responseId: responseId,
@@ -74,7 +75,7 @@ Map<String, Object?> _configuration({
         'instanceId': currentEventId,
         'workflowType': 'event-rsvp',
         'currentState': 'open',
-        'createdByPersonaId': _memberPersonaId,
+        'createdByFanId': _memberPersonaId,
         'instanceData': {
           'title': index == 0
               ? 'Friday game night'
@@ -87,23 +88,18 @@ Map<String, Object?> _configuration({
         'instanceId': currentResponseId,
         'workflowType': 'event-rsvp-response',
         'currentState': responseState,
-        'createdByPersonaId': _memberPersonaId,
-        'instanceData': {
-          'eventId': currentEventId,
-          'personaId': _memberPersonaId,
-        },
+        'createdByFanId': _memberPersonaId,
+        'instanceData': {'eventId': currentEventId, 'fanId': _memberPersonaId},
       });
   }
 
   return {
-    'experienceSchemaVersion': 2,
-    'workflowGrammarVersion': 1,
     'displayName': 'Reminder Test Tabletop Club',
     'tagline': 'Synthetic calendar reminder coverage.',
     'accentColor': '#6B4EFF',
-    'personas': [
+    'roles': [
       {
-        'personaId': _memberPersonaId,
+        'roleId': _memberPersonaId,
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'A synthetic tabletop club member.',
@@ -119,7 +115,7 @@ Map<String, Object?> _configuration({
         'renderBindings': [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',
@@ -195,7 +191,7 @@ Map<String, Object?> _configuration({
             'from': ['pending', 'maybe', 'going', 'waitlisted'],
             'to': null,
             'guard': {
-              'actorEqualsField': {'key': 'personaId'},
+              'actorEqualsField': {'key': 'fanId'},
             },
             'inputs': {
               'notificationTitle': {'type': 'text', 'required': true},
@@ -207,7 +203,7 @@ Map<String, Object?> _configuration({
                 'op': 'createInstance',
                 'workflowType': 'notification',
                 'fields': {
-                  'recipientPersonaId': '{personaId}',
+                  'recipientFanId': '{fanId}',
                   'title': '{input.notificationTitle}',
                   'body': '{input.notificationBody}',
                   'createdAt': '{input.notificationCreatedAt}',
@@ -217,7 +213,7 @@ Map<String, Object?> _configuration({
                 {
                   'op': 'createInstance',
                   'workflowType': 'notification',
-                  'fields': {'recipientPersonaId': '{personaId}'},
+                  'fields': {'recipientFanId': '{fanId}'},
                 },
               {'op': 'set', 'key': 'reminderSentAt', 'value': r'$timestamp'},
             ],
@@ -226,7 +222,7 @@ Map<String, Object?> _configuration({
         'renderBindings': <Object?>[],
         'instanceDataSchema': {
           'eventId': {'type': 'text', 'required': true, 'storage': 'inline'},
-          'personaId': {'type': 'text', 'required': true, 'storage': 'inline'},
+          'fanId': {'type': 'fanId', 'required': true, 'storage': 'inline'},
           'reminderSentAt': {
             'type': 'text',
             'writableBy': 'effect',
@@ -243,8 +239,8 @@ Map<String, Object?> _configuration({
         'transitions': <Object?>[],
         'renderBindings': <Object?>[],
         'instanceDataSchema': {
-          'recipientPersonaId': {
-            'type': 'personaId',
+          'recipientFanId': {
+            'type': 'fanId',
             'required': true,
             'writableBy': 'effect',
             'storage': 'inline',
@@ -572,7 +568,7 @@ void main() {
         personaId: _memberPersonaId,
         limit: 100,
       )).items.singleWhere((item) => item.workflowType == 'notification');
-      expect(notification.instanceData['recipientPersonaId'], _memberPersonaId);
+      expect(notification.instanceData['recipientFanId'], _memberPersonaId);
       expect(notification.instanceData['title'], 'Reminder: Friday game night');
       expect(
         notification.instanceData['body'],

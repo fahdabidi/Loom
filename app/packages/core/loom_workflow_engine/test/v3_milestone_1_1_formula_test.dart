@@ -202,7 +202,7 @@ void main() {
         'renderBindings': [
           {
             'states': ['open'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'calendar',
             'cardSurfaceFamily': 'event-rsvp',
             'bindingKind': 'primary',

@@ -22,9 +22,9 @@ class NotificationInboxController {
   Future<int> unreadCount() async {
     final count = await engine.aggregate(
       workflowType: workflowType,
-      column: 'recipientPersonaId',
+      column: 'recipientFanId',
       op: 'count',
-      filter: {'recipientPersonaId': personaId, r'$state': 'unread'},
+      filter: {'recipientFanId': personaId, r'$state': 'unread'},
       personaId: personaId,
     );
     return (count as num).toInt();
@@ -77,7 +77,7 @@ class NotificationInboxController {
       .where(
         (item) =>
             item.workflowType == workflowType &&
-            item.instanceData['recipientPersonaId'] == personaId,
+            item.instanceData['recipientFanId'] == personaId,
       )
       .toList(growable: false);
 

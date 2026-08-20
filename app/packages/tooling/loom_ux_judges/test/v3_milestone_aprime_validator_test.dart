@@ -38,8 +38,9 @@ ValidationReport _validateWorkflows(
   Map<String, LoomWorkflowStateMachine> workflows, {
   Set<String>? knownPersonaIds,
 }) {
-  return WorkflowValidator(knownPersonaIds: knownPersonaIds)
-      .validate(workflows);
+  return WorkflowValidator(
+    knownPersonaIds: knownPersonaIds,
+  ).validate(workflows);
 }
 
 bool _hasError(ValidationReport report, String type) =>
@@ -71,7 +72,7 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
@@ -101,15 +102,24 @@ void main() {
     }) {
       test('$type: flags invalid action', () {
         expect(
-          _hasError(actionReport([invalid], transitions: transitions, additionalWorkflows: additionalWorkflows), type),
+          _hasError(
+            actionReport(
+              [invalid],
+              transitions: transitions,
+              additionalWorkflows: additionalWorkflows,
+            ),
+            type,
+          ),
           isTrue,
         );
       });
       test('$type: valid action passes', () {
         expect(
-          actionReport([valid], transitions: transitions, additionalWorkflows: additionalWorkflows)
-              .errors
-              .where((finding) => finding.type == type),
+          actionReport(
+            [valid],
+            transitions: transitions,
+            additionalWorkflows: additionalWorkflows,
+          ).errors.where((finding) => finding.type == type),
           isEmpty,
         );
       });
@@ -136,7 +146,12 @@ void main() {
     final targetWorkflow = _machine(
       'target',
       transitions: const [
-        {'id': 'go', 'label': 'Go', 'from': ['start'], 'to': 'done'},
+        {
+          'id': 'go',
+          'label': 'Go',
+          'from': ['start'],
+          'to': 'done',
+        },
       ],
     );
     actionRule(
@@ -170,15 +185,23 @@ void main() {
     );
     actionRule(
       'transition_action_cannot_set_prefill',
-      {'kind': 'transition', 'transitionId': 'approve', 'prefill': const <String, dynamic>{}},
-      {'kind': 'transition', 'transitionId': 'approve', 'inputs': const <String, dynamic>{}},
+      {
+        'kind': 'transition',
+        'transitionId': 'approve',
+        'prefill': const <String, dynamic>{},
+      },
+      {
+        'kind': 'transition',
+        'transitionId': 'approve',
+        'inputs': const <String, dynamic>{},
+      },
     );
     actionRule(
       'transition_action_cannot_set_by_persona_ids',
       {
         'kind': 'transition',
         'transitionId': 'approve',
-        'byPersonaIds': ['member'],
+        'byRoleIds': ['member'],
       },
       {'kind': 'transition', 'transitionId': 'approve'},
     );
@@ -195,33 +218,51 @@ void main() {
         'inputs': {'note': 'value'},
       },
     );
-    test('duplicate_action_transition_id: flags duplicate transition actions', () {
-      expect(
-        _hasError(
-          actionReport([
-            {'kind': 'transition', 'transitionId': 'approve'},
-            {'kind': 'transition', 'transitionId': 'approve'},
-          ]),
-          'duplicate_action_transition_id',
-        ),
-        isTrue,
-      );
-    });
-    test('duplicate_action_transition_id: distinct transition actions pass', () {
-      expect(
-        actionReport(
-          [
-            {'kind': 'transition', 'transitionId': 'approve'},
-            {'kind': 'transition', 'transitionId': 'reject'},
-          ],
-          transitions: const [
-            {'id': 'approve', 'label': 'Approve', 'from': ['start'], 'to': 'done'},
-            {'id': 'reject', 'label': 'Reject', 'from': ['start'], 'to': 'done'},
-          ],
-        ).errors.where((finding) => finding.type == 'duplicate_action_transition_id'),
-        isEmpty,
-      );
-    });
+    test(
+      'duplicate_action_transition_id: flags duplicate transition actions',
+      () {
+        expect(
+          _hasError(
+            actionReport([
+              {'kind': 'transition', 'transitionId': 'approve'},
+              {'kind': 'transition', 'transitionId': 'approve'},
+            ]),
+            'duplicate_action_transition_id',
+          ),
+          isTrue,
+        );
+      },
+    );
+    test(
+      'duplicate_action_transition_id: distinct transition actions pass',
+      () {
+        expect(
+          actionReport(
+            [
+              {'kind': 'transition', 'transitionId': 'approve'},
+              {'kind': 'transition', 'transitionId': 'reject'},
+            ],
+            transitions: const [
+              {
+                'id': 'approve',
+                'label': 'Approve',
+                'from': ['start'],
+                'to': 'done',
+              },
+              {
+                'id': 'reject',
+                'label': 'Reject',
+                'from': ['start'],
+                'to': 'done',
+              },
+            ],
+          ).errors.where(
+            (finding) => finding.type == 'duplicate_action_transition_id',
+          ),
+          isEmpty,
+        );
+      },
+    );
 
     // ---------------------------------------------------------------
     // 1. unknown_input_type
@@ -319,7 +360,7 @@ void main() {
       );
     });
 
-    test('unknown_input_type: legacy personaId and all forms still pass cleanly', () {
+    test('unknown_input_type: legacy personaId forms are rejected', () {
       final machine = _machine(
         'test',
         transitions: [
@@ -336,7 +377,7 @@ void main() {
       final report = _validateWorkflows({'test': machine});
       expect(
         report.errors.where((f) => f.type == 'unknown_input_type'),
-        isEmpty,
+        hasLength(4),
       );
     });
 
@@ -353,9 +394,9 @@ void main() {
           },
         ],
       );
-      final findings = _validateWorkflows(
-        {'test': machine},
-      ).errors.where((f) => f.type == 'unknown_input_type');
+      final findings = _validateWorkflows({
+        'test': machine,
+      }).errors.where((f) => f.type == 'unknown_input_type');
       expect(findings, hasLength(3));
     });
 
@@ -371,11 +412,7 @@ void main() {
               'name': {'type': 'text'},
             },
             'effects': [
-              {
-                'op': 'set',
-                'key': 'title',
-                'value': '{input.missing}',
-              },
+              {'op': 'set', 'key': 'title', 'value': '{input.missing}'},
             ],
           },
         ],
@@ -388,56 +425,52 @@ void main() {
     });
 
     test(
-        'unknown_input_reference: {input.x} matching declared input passes',
-        () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'inputs': {
-              'name': {'type': 'text'},
+      'unknown_input_reference: {input.x} matching declared input passes',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'inputs': {
+                'name': {'type': 'text'},
+              },
+              'effects': [
+                {'op': 'set', 'key': 'title', 'value': '{input.name}'},
+              ],
             },
-            'effects': [
-              {
-                'op': 'set',
-                'key': 'title',
-                'value': '{input.name}',
-              },
-            ],
+          ],
+          schema: {
+            'title': {'type': 'text', 'writableBy': 'effect'},
           },
-        ],
-        schema: {
-          'title': {'type': 'text', 'writableBy': 'effect'},
-        },
-      );
-      final report = _validateWorkflows({'test': machine});
-      expect(
-        report.errors.where((f) => f.type == 'unknown_input_reference'),
-        isEmpty,
-      );
-    });
+        );
+        final report = _validateWorkflows({'test': machine});
+        expect(
+          report.errors.where((f) => f.type == 'unknown_input_reference'),
+          isEmpty,
+        );
+      },
+    );
 
-    test('unknown_input_reference: no inputs declared but effect uses {input.x}', () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'effects': [
-              {
-                'op': 'set',
-                'key': 'title',
-                'value': '{input.anything}',
-              },
-            ],
+    test(
+      'unknown_input_reference: no inputs declared but effect uses {input.x}',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'effects': [
+                {'op': 'set', 'key': 'title', 'value': '{input.anything}'},
+              ],
+            },
+          ],
+          schema: {
+            'title': {'type': 'text', 'writableBy': 'effect'},
           },
-        ],
-        schema: {
-          'title': {'type': 'text', 'writableBy': 'effect'},
-        },
-      );
-      final report = _validateWorkflows({'test': machine});
-      expect(_hasError(report, 'unknown_input_reference'), isTrue);
-    });
+        );
+        final report = _validateWorkflows({'test': machine});
+        expect(_hasError(report, 'unknown_input_reference'), isTrue);
+      },
+    );
 
     // ---------------------------------------------------------------
     // 3. unknown_item_reference
@@ -471,7 +504,7 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
@@ -524,7 +557,7 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
@@ -555,44 +588,44 @@ void main() {
     // 4. create-action byPersonaIds dangling persona (uses
     //    dangling_allowed_persona_id)
     // ---------------------------------------------------------------
-    test('dangling_allowed_persona_id: flags unknown persona in create action', () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Go',
-            'from': ['start'],
-            'to': 'done',
-          },
-        ],
-        renderBindings: [
-          {
-            'states': ['start'],
-            'role': 'any',
-            'tabId': 'home',
-            'cardSurfaceFamily': 'default',
-            'bindingKind': 'primary',
-            'actions': [
-              {
-                'kind': 'create',
-                'byPersonaIds': ['ghost-persona'],
-                'label': 'Create',
-              },
-            ],
-          },
-        ],
-      );
+    test(
+      'dangling_allowed_persona_id: flags unknown persona in create action',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Go',
+              'from': ['start'],
+              'to': 'done',
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['start'],
+              'audience': 'any',
+              'tabId': 'home',
+              'cardSurfaceFamily': 'default',
+              'bindingKind': 'primary',
+              'actions': [
+                {
+                  'kind': 'create',
+                  'byRoleIds': ['ghost-persona'],
+                  'label': 'Create',
+                },
+              ],
+            },
+          ],
+        );
 
-      final report = _validateWorkflows(
-        {'test': machine},
-        knownPersonaIds: {'real-persona'},
-      );
-      expect(
-        _hasWarning(report, 'dangling_allowed_persona_id'),
-        isTrue,
-      );
-    });
+        final report = _validateWorkflows(
+          {'test': machine},
+          knownPersonaIds: {'real-persona'},
+        );
+        expect(_hasWarning(report, 'dangling_allowed_persona_id'), isTrue);
+      },
+    );
 
     test('dangling_allowed_persona_id: known persona passes', () {
       final machine = _machine(
@@ -608,14 +641,14 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
             'actions': [
               {
                 'kind': 'create',
-                'byPersonaIds': ['real-persona'],
+                'byRoleIds': ['real-persona'],
                 'label': 'Create',
               },
             ],
@@ -628,8 +661,7 @@ void main() {
         knownPersonaIds: {'real-persona'},
       );
       expect(
-        report.warnings
-            .where((f) => f.type == 'dangling_allowed_persona_id'),
+        report.warnings.where((f) => f.type == 'dangling_allowed_persona_id'),
         isEmpty,
       );
     });
@@ -651,14 +683,14 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
             'actions': [
               {
                 'kind': 'create',
-                'byPersonaIds': ['real-persona'],
+                'byRoleIds': ['real-persona'],
                 'label': 'Create',
                 'prefill': {'notInSchema': 'value'},
               },
@@ -688,7 +720,7 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
@@ -727,9 +759,11 @@ void main() {
       });
 
       expect(
-        report.errors.where((f) =>
-            f.type == 'dangling_instance_data_key' &&
-            f.location.endsWith('actions/prefill/eventId')),
+        report.errors.where(
+          (f) =>
+              f.type == 'dangling_instance_data_key' &&
+              f.location.endsWith('actions/prefill/eventId'),
+        ),
         isEmpty,
       );
     });
@@ -748,14 +782,14 @@ void main() {
         renderBindings: [
           {
             'states': ['start'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'home',
             'cardSurfaceFamily': 'default',
             'bindingKind': 'primary',
             'actions': [
               {
                 'kind': 'create',
-                'byPersonaIds': ['real-persona'],
+                'byRoleIds': ['real-persona'],
                 'label': 'Create',
                 'prefill': {'total': '42'},
               },
@@ -771,73 +805,75 @@ void main() {
       expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
     });
 
-    test('computed_field_written_by_effect: prefill writes source-backed field', () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Go',
-            'from': ['start'],
-            'to': 'done',
+    test(
+      'computed_field_written_by_effect: prefill writes source-backed field',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Go',
+              'from': ['start'],
+              'to': 'done',
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['start'],
+              'audience': 'any',
+              'tabId': 'home',
+              'cardSurfaceFamily': 'default',
+              'bindingKind': 'primary',
+              'actions': [
+                {
+                  'kind': 'create',
+                  'byRoleIds': ['real-persona'],
+                  'label': 'Create',
+                  'prefill': {'ballots': '[]'},
+                },
+              ],
+            },
+          ],
+          schema: {
+            'ballots': {
+              'type': 'list',
+              'source': 'query(target where ballotId == id)',
+            },
           },
-        ],
-        renderBindings: [
-          {
-            'states': ['start'],
-            'role': 'any',
-            'tabId': 'home',
-            'cardSurfaceFamily': 'default',
-            'bindingKind': 'primary',
-            'actions': [
-              {
-                'kind': 'create',
-                'byPersonaIds': ['real-persona'],
-                'label': 'Create',
-                'prefill': {'ballots': '[]'},
-              },
-            ],
-          },
-        ],
-        schema: {
-          'ballots': {
-            'type': 'list',
-            'source': 'query(target where ballotId == id)',
-          },
-        },
-      );
+        );
 
-      final report = _validateWorkflows({'test': machine});
-      expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
-    });
+        final report = _validateWorkflows({'test': machine});
+        expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
+      },
+    );
 
     // ---------------------------------------------------------------
     // 6. context_reference_outside_instance_action
     // ---------------------------------------------------------------
-    test('context_reference_outside_instance_action: flags {context.x} in effect', () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'effects': [
-              {
-                'op': 'set',
-                'key': 'title',
-                'value': '{context.viewerId}',
-              },
-            ],
+    test(
+      'context_reference_outside_instance_action: flags {context.x} in effect',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'effects': [
+                {'op': 'set', 'key': 'title', 'value': '{context.viewerId}'},
+              ],
+            },
+          ],
+          schema: {
+            'title': {'type': 'text', 'writableBy': 'effect'},
           },
-        ],
-        schema: {
-          'title': {'type': 'text', 'writableBy': 'effect'},
-        },
-      );
-      final report = _validateWorkflows({'test': machine});
-      expect(
-        _hasError(report, 'context_reference_outside_instance_action'),
-        isTrue,
-      );
-    });
+        );
+        final report = _validateWorkflows({'test': machine});
+        expect(
+          _hasError(report, 'context_reference_outside_instance_action'),
+          isTrue,
+        );
+      },
+    );
 
     // ---------------------------------------------------------------
     // 7. GAP-4 source query validation
@@ -854,10 +890,7 @@ void main() {
           },
         ],
         schema: {
-          'ballots': {
-            'type': 'list',
-            'source': 'not a valid query',
-          },
+          'ballots': {'type': 'list', 'source': 'not a valid query'},
         },
       );
       final report = _validateWorkflows({'test': machine});
@@ -883,10 +916,7 @@ void main() {
         },
       );
       final report = _validateWorkflows({'test': machine});
-      expect(
-        _hasError(report, 'dangling_source_query_workflow_type'),
-        isTrue,
-      );
+      expect(_hasError(report, 'dangling_source_query_workflow_type'), isTrue);
     });
 
     test('source query: foreignField not in target schema', () {
@@ -923,10 +953,7 @@ void main() {
         },
       );
 
-      final report = _validateWorkflows({
-        'source': source,
-        'target': target,
-      });
+      final report = _validateWorkflows({'source': source, 'target': target});
       expect(_hasError(report, 'dangling_instance_data_key'), isTrue);
     });
 
@@ -964,10 +991,7 @@ void main() {
         },
       );
 
-      final report = _validateWorkflows({
-        'source': source,
-        'target': target,
-      });
+      final report = _validateWorkflows({'source': source, 'target': target});
       expect(_hasError(report, 'dangling_instance_data_key'), isTrue);
     });
 
@@ -1005,16 +1029,15 @@ void main() {
         },
       );
 
-      final report = _validateWorkflows({
-        'source': source,
-        'target': target,
-      });
+      final report = _validateWorkflows({'source': source, 'target': target});
       expect(
-        report.errors.where((f) =>
-            f.type == 'invalid_source_query_syntax' ||
-            f.type == 'dangling_source_query_workflow_type' ||
-            (f.type == 'dangling_instance_data_key' &&
-                f.message.contains('source query'))),
+        report.errors.where(
+          (f) =>
+              f.type == 'invalid_source_query_syntax' ||
+              f.type == 'dangling_source_query_workflow_type' ||
+              (f.type == 'dangling_instance_data_key' &&
+                  f.message.contains('source query')),
+        ),
         isEmpty,
       );
     });
@@ -1023,74 +1046,69 @@ void main() {
     // 8. Widen computed_field_written_by_effect for source-backed fields
     // ---------------------------------------------------------------
     test(
-        'computed_field_written_by_effect: effect writes source-backed field',
-        () {
-      final machine = _machine(
-        'test',
-        transitions: [
-          {
-            'effects': [
-              {
-                'op': 'set',
-                'key': 'ballots',
-                'value': '[]',
-              },
-            ],
+      'computed_field_written_by_effect: effect writes source-backed field',
+      () {
+        final machine = _machine(
+          'test',
+          transitions: [
+            {
+              'effects': [
+                {'op': 'set', 'key': 'ballots', 'value': '[]'},
+              ],
+            },
+          ],
+          schema: {
+            'ballots': {
+              'type': 'list',
+              'source': 'query(target where field == id)',
+            },
           },
-        ],
-        schema: {
-          'ballots': {
-            'type': 'list',
-            'source': 'query(target where field == id)',
-          },
-        },
-      );
-      final report = _validateWorkflows({'test': machine});
-      expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
-    });
+        );
+        final report = _validateWorkflows({'test': machine});
+        expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
+      },
+    );
 
     test(
-        'computed_field_written_by_effect: createInstance writes source-backed field',
-        () {
-      final target = _machine(
-        'target',
-        schema: {
-          'ballots': {
-            'type': 'list',
-            'source': 'query(other where field == id)',
+      'computed_field_written_by_effect: createInstance writes source-backed field',
+      () {
+        final target = _machine(
+          'target',
+          schema: {
+            'ballots': {
+              'type': 'list',
+              'source': 'query(other where field == id)',
+            },
           },
-        },
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Go',
-            'from': ['start'],
-            'to': 'done',
-          },
-        ],
-      );
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Go',
+              'from': ['start'],
+              'to': 'done',
+            },
+          ],
+        );
 
-      final source = _machine(
-        'source',
-        transitions: [
-          {
-            'effects': [
-              {
-                'op': 'createInstance',
-                'workflowType': 'target',
-                'fields': {'ballots': '[]'},
-              },
-            ],
-          },
-        ],
-      );
+        final source = _machine(
+          'source',
+          transitions: [
+            {
+              'effects': [
+                {
+                  'op': 'createInstance',
+                  'workflowType': 'target',
+                  'fields': {'ballots': '[]'},
+                },
+              ],
+            },
+          ],
+        );
 
-      final report = _validateWorkflows({
-        'source': source,
-        'target': target,
-      });
-      expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
-    });
+        final report = _validateWorkflows({'source': source, 'target': target});
+        expect(_hasError(report, 'computed_field_written_by_effect'), isTrue);
+      },
+    );
 
     // ---------------------------------------------------------------
     // Helper: resolve the Tabletop Club fixture path by walking up
@@ -1108,7 +1126,10 @@ void main() {
         if (parent.path == directory.path) break;
         directory = parent;
       }
-      throw const FileSystemException('Fixture not found', _tabletopFixtureRelative);
+      throw const FileSystemException(
+        'Fixture not found',
+        _tabletopFixtureRelative,
+      );
     }
 
     // ---------------------------------------------------------------
@@ -1164,7 +1185,8 @@ void main() {
       expect(
         newFindings,
         isEmpty,
-        reason: 'New checks must not introduce false positives against '
+        reason:
+            'New checks must not introduce false positives against '
             'the frozen Tabletop Club JSON. Got: ${newFindings.map((f) => '${f.type}: ${f.message}').join('\n')}',
       );
     });

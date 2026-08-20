@@ -71,6 +71,35 @@ Future<_InstalledTabletop> _install(String extensionId) async {
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      specVersion: community.specVersion,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    final accounts = await LocalAuthApi().listAccounts(
+      communityExtensionId: 'ext_verify_tabletop_club',
+    );
+    final shellAccounts = await activeAuthForCommunity(
+      community: community,
+      experience: experience,
+      personaTypeId: 'tabletop-organizer',
+    ).listAccounts(communityExtensionId: community.extensionId);
+    final authorizationAccounts = [...accounts, ...shellAccounts];
+    configureEngineAuthorizationForExtensionId(
+      extensionId: community.extensionId,
+      appShellConfiguration: community.appShellConfiguration,
+      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+        (account) =>
+            account.accountId == personaId &&
+            account.status == MembershipStatus.active,
+      ),
+    );
+    if (engine is LocalWorkflowEngineApi) {
+      for (final account in authorizationAccounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
     return _InstalledTabletop(community, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
@@ -347,7 +376,7 @@ void main() {
         expect(
           afterRows.any(
             (row) =>
-                row.instanceData['voterId'] == 'tabletop-member' &&
+                row.instanceData['voterFanId'] == 'tabletop-member' &&
                 row.instanceData['choice'] == 'catan',
           ),
           isTrue,
@@ -549,7 +578,7 @@ void main() {
         expect(afterRefusedRows, hasLength(4));
         expect(
           afterRefusedRows.any(
-            (row) => row.instanceData['voterId'] == 'tabletop-organizer',
+            (row) => row.instanceData['voterFanId'] == 'tabletop-organizer',
           ),
           isFalse,
         );
@@ -572,7 +601,7 @@ void main() {
         expect(
           afterEligibleRows.any(
             (row) =>
-                row.instanceData['voterId'] == 'tabletop-member' &&
+                row.instanceData['voterFanId'] == 'tabletop-member' &&
                 row.instanceData['choice'] == 'catan',
           ),
           isTrue,

@@ -26,9 +26,8 @@ void main() {
 
     experienceForExtensionId(
       expectedExtensionId,
+      specVersion: currentCommunitySpecVersion,
       experienceConfiguration: const <String, Object?>{
-        'experienceSchemaVersion': 2,
-        'workflowGrammarVersion': 1,
         'workflowDefinitions': <String, Object?>{
           'seam-workflow': <String, Object?>{
             'initialState': 'open',
@@ -44,7 +43,7 @@ void main() {
             'workflowType': 'seam-workflow',
             'currentState': 'open',
             'instanceData': <String, Object?>{},
-            'createdByPersonaId': 'member',
+            'createdByFanId': 'member',
           },
         ],
       },

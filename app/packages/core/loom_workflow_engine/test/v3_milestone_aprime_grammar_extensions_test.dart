@@ -12,7 +12,7 @@ void main() {
         'label': 'Open',
         'editableFields': ['title'],
         'editGuard': <String, dynamic>{
-          'allowedPersonaIds': ['tabletop-organizer'],
+          'allowedRoleIds': ['tabletop-organizer'],
         },
       });
       final unguarded = LoomWorkflowState.fromJson(<String, dynamic>{
@@ -31,7 +31,7 @@ void main() {
       final state = LoomWorkflowState.fromJson(<String, dynamic>{
         'label': 'Draft',
         'readGuard': <String, dynamic>{
-          'allowedPersonaIds': ['reviewer'],
+          'allowedRoleIds': ['reviewer'],
         },
       });
 
@@ -57,7 +57,7 @@ void main() {
             'default': entry.key,
             if (entry.key == 'guarded')
               'readGuard': {
-                'allowedPersonaIds': ['reviewer'],
+                'allowedRoleIds': ['reviewer'],
               },
           },
         });
@@ -65,10 +65,7 @@ void main() {
         expect(machine.visibility.isDeclared, isTrue);
         expect(machine.visibility.defaultValue, entry.value);
         if (entry.key == 'guarded') {
-          expect(
-            machine.visibility.readGuard!.allowedPersonaIds,
-            ['reviewer'],
-          );
+          expect(machine.visibility.readGuard!.allowedPersonaIds, ['reviewer']);
         } else {
           expect(machine.visibility.readGuard, isNull);
         }
@@ -272,7 +269,7 @@ void main() {
     test('render binding fromJson parses optional styleField', () {
       final styled = RenderBinding.fromJson(<String, dynamic>{
         'states': ['open'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'calendar',
         'cardSurfaceFamily': 'event-rsvp',
         'bindingKind': 'primary',
@@ -280,7 +277,7 @@ void main() {
       });
       final unstyled = RenderBinding.fromJson(<String, dynamic>{
         'states': ['open'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'calendar',
         'cardSurfaceFamily': 'event-rsvp',
         'bindingKind': 'primary',
@@ -288,26 +285,6 @@ void main() {
 
       expect(styled.styleField, 'cardStyleId');
       expect(unstyled.styleField, isNull);
-    });
-
-    test('render binding accepts legacy role and v4 audience identically', () {
-      final shared = <String, dynamic>{
-        'states': ['open'],
-        'tabId': 'home',
-        'cardSurfaceFamily': 'statusTimeline',
-        'bindingKind': 'primary',
-      };
-      final legacy = RenderBinding.fromJson(<String, dynamic>{
-        ...shared,
-        'role': 'receiver',
-      });
-      final v4 = RenderBinding.fromJson(<String, dynamic>{
-        ...shared,
-        'audience': 'receiver',
-      });
-
-      expect(legacy.role, 'receiver');
-      expect(v4.role, legacy.role);
     });
 
     test('transition fromJson parses inputs from frozen JSON fragment', () {
@@ -319,9 +296,9 @@ void main() {
         'from': ['open'],
         'to': null,
         'guard': <String, dynamic>{
-          'allowedPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+          'allowedRoleIds': ['tabletop-member', 'tabletop-organizer'],
           'relatedInstanceField': 'eventId',
-          'relatedListField': 'goingPersonaIds',
+          'relatedListField': 'goingFanIds',
         },
         'inputs': <String, dynamic>{
           'choice': <String, dynamic>{'type': 'text', 'required': true},
@@ -357,7 +334,7 @@ void main() {
     test('render binding fromJson parses repeater and itemActions', () {
       final b = RenderBinding.fromJson(<String, dynamic>{
         'states': ['open'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'home',
         'cardSurfaceFamily': 'votePoll',
         'bindingKind': 'primary',
@@ -375,23 +352,20 @@ void main() {
       expect(b.repeater!.source, 'candidates');
       expect(b.repeater!.itemActions, hasLength(1));
       expect(b.repeater!.itemActions.first.transitionId, 'cast-vote');
-      expect(
-        b.repeater!.itemActions.first.inputs,
-        {'choice': '{item.id}'},
-      );
+      expect(b.repeater!.itemActions.first.inputs, {'choice': '{item.id}'});
     });
 
     test('render binding fromJson parses create action with prefill', () {
       final b = RenderBinding.fromJson(<String, dynamic>{
         'states': ['draft'],
-        'role': 'actor',
+        'audience': 'actor',
         'tabId': 'home',
         'cardSurfaceFamily': 'form-entry',
         'bindingKind': 'primary',
         'actions': [
           <String, dynamic>{
             'kind': 'create',
-            'byPersonaIds': ['tabletop-member'],
+            'byRoleIds': ['tabletop-member'],
             'label': 'Propose a game',
             'workflowType': 'game-purchase-proposal',
             'scope': 'instance',
@@ -409,31 +383,17 @@ void main() {
       expect(b.actions.single.prefill, {'title': '{context.gameName}'});
     });
 
-    test('workflow action accepts legacy and v4 role keys identically', () {
-      final legacy = WorkflowAction.fromJson(<String, dynamic>{
-        'kind': 'create',
-        'byPersonaIds': ['tabletop-member'],
-      });
-      final v4 = WorkflowAction.fromJson(<String, dynamic>{
-        'kind': 'create',
-        'byRoleIds': ['tabletop-member'],
-      });
-
-      expect(legacy.byPersonaIds, ['tabletop-member']);
-      expect(v4.byPersonaIds, legacy.byPersonaIds);
-    });
-
     test('create action parses without optional prefill', () {
       final b = RenderBinding.fromJson(<String, dynamic>{
         'states': ['draft'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'home',
         'cardSurfaceFamily': 'form-entry',
         'bindingKind': 'primary',
         'actions': [
           <String, dynamic>{
             'kind': 'create',
-            'byPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+            'byRoleIds': ['tabletop-member', 'tabletop-organizer'],
             'label': 'Start a new thread',
           },
         ],
@@ -442,139 +402,148 @@ void main() {
       expect(b.actions.single.prefill, isNull);
     });
 
-    test('transition action parses all fields without kind-specific validation', () {
-      final b = RenderBinding.fromJson(<String, dynamic>{
-        'states': ['open'],
-        'role': 'any',
-        'tabId': 'marketplace',
-        'cardSurfaceFamily': 'equipment-loan',
-        'bindingKind': 'primary',
-        'actions': [
-          <String, dynamic>{
-            'kind': 'transition',
-            'transitionId': 'borrow',
-            'label': 'Request loan',
-            'byPersonaIds': ['tabletop-member'],
-            'workflowType': 'equipment-loan',
-            'scope': 'instance',
-            'presentation': 'fab',
-            'prefill': <String, dynamic>{'equipmentId': '{context.id}'},
-            'inputs': <String, dynamic>{'equipmentId': '{context.id}'},
-          },
-        ],
-      });
-      final action = b.actions.single;
-      expect(action.kind, 'transition');
-      expect(action.label, 'Request loan');
-      expect(action.transitionId, 'borrow');
-      expect(action.byPersonaIds, ['tabletop-member']);
-      expect(action.workflowType, 'equipment-loan');
-      expect(action.scope, 'instance');
-      expect(action.presentation, 'fab');
-      expect(action.prefill, {'equipmentId': '{context.id}'});
-      expect(action.inputs, {'equipmentId': '{context.id}'});
-    });
+    test(
+      'transition action parses all fields without kind-specific validation',
+      () {
+        final b = RenderBinding.fromJson(<String, dynamic>{
+          'states': ['open'],
+          'audience': 'any',
+          'tabId': 'marketplace',
+          'cardSurfaceFamily': 'equipment-loan',
+          'bindingKind': 'primary',
+          'actions': [
+            <String, dynamic>{
+              'kind': 'transition',
+              'transitionId': 'borrow',
+              'label': 'Request loan',
+              'byRoleIds': ['tabletop-member'],
+              'workflowType': 'equipment-loan',
+              'scope': 'instance',
+              'presentation': 'fab',
+              'prefill': <String, dynamic>{'equipmentId': '{context.id}'},
+              'inputs': <String, dynamic>{'equipmentId': '{context.id}'},
+            },
+          ],
+        });
+        final action = b.actions.single;
+        expect(action.kind, 'transition');
+        expect(action.label, 'Request loan');
+        expect(action.transitionId, 'borrow');
+        expect(action.byPersonaIds, ['tabletop-member']);
+        expect(action.workflowType, 'equipment-loan');
+        expect(action.scope, 'instance');
+        expect(action.presentation, 'fab');
+        expect(action.prefill, {'equipmentId': '{context.id}'});
+        expect(action.inputs, {'equipmentId': '{context.id}'});
+      },
+    );
   });
 
   // ── 2. {input.x} interpolation resolves correctly ────────────────────
-  test('{input.x} creates distinct rows per call via createInstance effect',
-      () async {
-    final api = LocalWorkflowEngineApi(
-      db: WorkflowDatabase.memory(),
-      communityId: 'gap1-test',
-    );
-    api.setPersonaType('voter-1', 'member');
+  test(
+    '{input.x} creates distinct rows per call via createInstance effect',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'gap1-test',
+      );
+      api.setPersonaType('voter-1', 'member');
 
-    // Register the vote-row type (the child created by the transition)
-    api.registerDefinition(
-      _machine('vote-row', {
-        'initialState': 'cast',
-        'states': {
-          'cast': {'label': 'Cast', 'isTerminal': true},
-        },
-        'transitions': <Map<String, dynamic>>[],
-        'instanceDataSchema': {
-          'ballotId': {'type': 'string'},
-          'voterId': {'type': 'string'},
-          'choice': {'type': 'string'},
-        },
-      }),
-    );
-
-    // Register a ballot type whose cast-vote transition takes a `choice` input
-    // and writes it into a child vote-row via createInstance.
-    api.registerDefinition(
-      _machine('ballot', {
-        'initialState': 'open',
-        'states': {
-          'open': {'label': 'Open'},
-          'closed': {'label': 'Closed', 'isTerminal': true},
-        },
-        'transitions': [
-          {
-            'id': 'cast-vote',
-            'label': 'Vote',
-            'from': ['open'],
-            'to': null,
-            'guard': {'allowedPersonaIds': ['member']},
-            'inputs': {'choice': {'type': 'text', 'required': true}},
-            'effects': [
-              {
-                'op': 'createInstance',
-                'workflowType': 'vote-row',
-                'fields': {
-                  'ballotId': '{id}',
-                  'voterId': r'$actor',
-                  'choice': '{input.choice}',
-                },
-              },
-            ],
+      // Register the vote-row type (the child created by the transition)
+      api.registerDefinition(
+        _machine('vote-row', {
+          'initialState': 'cast',
+          'states': {
+            'cast': {'label': 'Cast', 'isTerminal': true},
           },
-        ],
-        'instanceDataSchema': <String, dynamic>{},
-      }),
-    );
+          'transitions': <Map<String, dynamic>>[],
+          'instanceDataSchema': {
+            'ballotId': {'type': 'string'},
+            'voterId': {'type': 'string'},
+            'choice': {'type': 'string'},
+          },
+        }),
+      );
 
-    final ballotId = await api.createInstance(
-      workflowType: 'ballot',
-      personaId: 'voter-1',
-      initialInstanceData: <String, dynamic>{},
-    );
+      // Register a ballot type whose cast-vote transition takes a `choice` input
+      // and writes it into a child vote-row via createInstance.
+      api.registerDefinition(
+        _machine('ballot', {
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
+            'closed': {'label': 'Closed', 'isTerminal': true},
+          },
+          'transitions': [
+            {
+              'id': 'cast-vote',
+              'label': 'Vote',
+              'from': ['open'],
+              'to': null,
+              'guard': {
+                'allowedRoleIds': ['member'],
+              },
+              'inputs': {
+                'choice': {'type': 'text', 'required': true},
+              },
+              'effects': [
+                {
+                  'op': 'createInstance',
+                  'workflowType': 'vote-row',
+                  'fields': {
+                    'ballotId': '{id}',
+                    'voterId': r'$actor',
+                    'choice': '{input.choice}',
+                  },
+                },
+              ],
+            },
+          ],
+          'instanceDataSchema': <String, dynamic>{},
+        }),
+      );
 
-    // First vote: Catan
-    await api.applyTransition(
-      workflowType: 'ballot',
-      instanceId: ballotId,
-      transitionId: 'cast-vote',
-      personaId: 'voter-1',
-      inputs: <String, dynamic>{'choice': 'Catan'},
-    );
+      final ballotId = await api.createInstance(
+        workflowType: 'ballot',
+        personaId: 'voter-1',
+        initialInstanceData: <String, dynamic>{},
+      );
 
-    // Second vote: Azul (same ballot, different choice)
-    await api.applyTransition(
-      workflowType: 'ballot',
-      instanceId: ballotId,
-      transitionId: 'cast-vote',
-      personaId: 'voter-1',
-      inputs: <String, dynamic>{'choice': 'Azul'},
-    );
+      // First vote: Catan
+      await api.applyTransition(
+        workflowType: 'ballot',
+        instanceId: ballotId,
+        transitionId: 'cast-vote',
+        personaId: 'voter-1',
+        inputs: <String, dynamic>{'choice': 'Catan'},
+      );
 
-    // Read back all vote rows
-    final page = await api.queryInstances(
-      tabId: 'x',
-      personaId: 'voter-1',
-      limit: 50,
-    );
-    final votes = page.items
-        .where((i) => i.workflowType == 'vote-row')
-        .toList();
+      // Second vote: Azul (same ballot, different choice)
+      await api.applyTransition(
+        workflowType: 'ballot',
+        instanceId: ballotId,
+        transitionId: 'cast-vote',
+        personaId: 'voter-1',
+        inputs: <String, dynamic>{'choice': 'Azul'},
+      );
 
-    expect(votes, hasLength(2));
-    expect(
-      votes.map((v) => v.instanceData['choice']).toSet(),
-      {'Catan', 'Azul'},
-    );
-  });
+      // Read back all vote rows
+      final page = await api.queryInstances(
+        tabId: 'x',
+        personaId: 'voter-1',
+        limit: 50,
+      );
+      final votes = page.items
+          .where((i) => i.workflowType == 'vote-row')
+          .toList();
+
+      expect(votes, hasLength(2));
+      expect(votes.map((v) => v.instanceData['choice']).toSet(), {
+        'Catan',
+        'Azul',
+      });
+    },
+  );
 
   // ── 3. Required input missing ────────────────────────────────────────
   test('applyTransition refuses when required input is missing', () async {
@@ -597,8 +566,12 @@ void main() {
             'label': 'Vote',
             'from': ['open'],
             'to': 'open',
-            'guard': {'allowedPersonaIds': ['member']},
-            'inputs': {'choice': {'type': 'text', 'required': true}},
+            'guard': {
+              'allowedRoleIds': ['member'],
+            },
+            'inputs': {
+              'choice': {'type': 'text', 'required': true},
+            },
             'effects': <Map<String, dynamic>>[],
           },
         ],
@@ -656,11 +629,14 @@ void main() {
         _machine('tournament-event', {
           'initialState': 'open',
           'states': {
-            'open': {'label': 'Open', 'editableFields': ['goingPersonaIds']},
+            'open': {
+              'label': 'Open',
+              'editableFields': ['goingFanIds'],
+            },
           },
           'transitions': <Map<String, dynamic>>[],
           'instanceDataSchema': {
-            'goingPersonaIds': {'type': 'list'},
+            'goingFanIds': {'type': 'list'},
           },
         }),
       );
@@ -696,11 +672,13 @@ void main() {
               'from': ['open'],
               'to': null,
               'guard': {
-                'allowedPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+                'allowedRoleIds': ['tabletop-member', 'tabletop-organizer'],
                 'relatedInstanceField': 'eventId',
-                'relatedListField': 'goingPersonaIds',
+                'relatedListField': 'goingFanIds',
               },
-              'inputs': {'choice': {'type': 'text', 'required': true}},
+              'inputs': {
+                'choice': {'type': 'text', 'required': true},
+              },
               'effects': [
                 {
                   'op': 'createInstance',
@@ -721,20 +699,16 @@ void main() {
               'source': 'query(tournament-vote where ballotId == id)',
             },
             'voteCounts': {
-              'type': 'map', 'formula': 'groupCount(ballots, choice)',
+              'type': 'map',
+              'formula': 'groupCount(ballots, choice)',
             },
-            'totalVotes': {
-              'type': 'number', 'formula': 'size(ballots)',
-            },
-            'winner': {
-              'type': 'string', 'formula': 'argMaxKey(voteCounts)',
-            },
+            'totalVotes': {'type': 'number', 'formula': 'size(ballots)'},
+            'winner': {'type': 'string', 'formula': 'argMaxKey(voteCounts)'},
             'tiedCandidates': {
-              'type': 'list', 'formula': 'topKeys(voteCounts)',
+              'type': 'list',
+              'formula': 'topKeys(voteCounts)',
             },
-            'isTie': {
-              'type': 'bool', 'formula': 'size(tiedCandidates) > 1',
-            },
+            'isTie': {'type': 'bool', 'formula': 'size(tiedCandidates) > 1'},
           },
         }),
       );
@@ -749,9 +723,7 @@ void main() {
           workflowType: 'tournament-event',
           currentState: 'open',
           instanceData: <String, dynamic>{
-            'goingPersonaIds': [
-              'member-03', 'member-04', 'member-05', 'member-06',
-            ],
+            'goingFanIds': ['member-03', 'member-04', 'member-05', 'member-06'],
           },
           createdByPersonaId: 'organizer',
         ),
@@ -762,9 +734,7 @@ void main() {
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
-          instanceData: <String, dynamic>{
-            'eventId': 'event-summer',
-          },
+          instanceData: <String, dynamic>{'eventId': 'event-summer'},
           createdByPersonaId: 'organizer',
         ),
       ]);
@@ -833,12 +803,10 @@ void main() {
       expect(ballots, hasLength(4));
 
       // Each row carries its own choice and voterId
-      final choices =
-          ballots.map((b) => (b as Map)['choice'] as String).toList();
-      expect(
-        choices..sort(),
-        ['azul', 'catan', 'catan', 'wingspan'],
-      );
+      final choices = ballots
+          .map((b) => (b as Map)['choice'] as String)
+          .toList();
+      expect(choices..sort(), ['azul', 'catan', 'catan', 'wingspan']);
     });
 
     test('formulas compute over hydrated source data', () async {
@@ -848,9 +816,7 @@ void main() {
           workflowType: 'tournament-event',
           currentState: 'open',
           instanceData: <String, dynamic>{
-            'goingPersonaIds': [
-              'member-03', 'member-04', 'member-05', 'member-06',
-            ],
+            'goingFanIds': ['member-03', 'member-04', 'member-05', 'member-06'],
           },
           createdByPersonaId: 'organizer',
         ),
@@ -861,9 +827,7 @@ void main() {
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
-          instanceData: <String, dynamic>{
-            'eventId': 'event-summer',
-          },
+          instanceData: <String, dynamic>{'eventId': 'event-summer'},
           createdByPersonaId: 'organizer',
         ),
         const WorkflowInstance(
@@ -945,7 +909,7 @@ void main() {
           workflowType: 'tournament-event',
           currentState: 'open',
           instanceData: <String, dynamic>{
-            'goingPersonaIds': ['member-03'],
+            'goingFanIds': ['member-03'],
           },
           createdByPersonaId: 'organizer',
         ),
@@ -956,9 +920,7 @@ void main() {
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
-          instanceData: <String, dynamic>{
-            'eventId': 'event-summer',
-          },
+          instanceData: <String, dynamic>{'eventId': 'event-summer'},
           createdByPersonaId: 'organizer',
         ),
         const WorkflowInstance(
@@ -992,10 +954,7 @@ void main() {
         personaId: 'member-03',
       );
       expect(transitions, isNotEmpty);
-      expect(
-        transitions.any((t) => t.id == 'cast-vote'),
-        isTrue,
-      );
+      expect(transitions.any((t) => t.id == 'cast-vote'), isTrue);
     });
 
     test('applyTransition result hydrates source fields', () async {
@@ -1005,7 +964,7 @@ void main() {
           workflowType: 'tournament-event',
           currentState: 'open',
           instanceData: <String, dynamic>{
-            'goingPersonaIds': ['member-03'],
+            'goingFanIds': ['member-03'],
           },
           createdByPersonaId: 'organizer',
         ),
@@ -1016,9 +975,7 @@ void main() {
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
-          instanceData: <String, dynamic>{
-            'eventId': 'event-summer',
-          },
+          instanceData: <String, dynamic>{'eventId': 'event-summer'},
           createdByPersonaId: 'organizer',
         ),
       ]);
@@ -1046,7 +1003,7 @@ void main() {
           workflowType: 'tournament-event',
           currentState: 'open',
           instanceData: <String, dynamic>{
-            'goingPersonaIds': ['member-03'],
+            'goingFanIds': ['member-03'],
           },
           createdByPersonaId: 'organizer',
         ),
@@ -1057,9 +1014,7 @@ void main() {
           instanceId: 'ballot-summer',
           workflowType: 'tournament-ballot',
           currentState: 'open',
-          instanceData: <String, dynamic>{
-            'eventId': 'event-summer',
-          },
+          instanceData: <String, dynamic>{'eventId': 'event-summer'},
           createdByPersonaId: 'organizer',
         ),
         const WorkflowInstance(

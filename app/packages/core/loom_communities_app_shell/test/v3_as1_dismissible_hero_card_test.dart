@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 LocalInstalledCommunity _community({
   required String communityId,
   required String displayName,
@@ -14,24 +16,30 @@ LocalInstalledCommunity _community({
   cardImageAssetId: null,
   heroImageAssetId: null,
   accentColor: '#4a3b2a',
+  specVersion: 4,
   experienceConfiguration: {
-    'workflows': [
-      {
-        'workflowId': '$communityId-activity',
-        'title': '$displayName activity',
-        'entryText': 'Community activity is available.',
-        'actionText': 'Open activity.',
-        'resultText': 'Activity opened.',
-      },
+    'roles': [
+      {'roleId': '$communityId-member', 'label': 'Member'},
     ],
-    'personas': [
-      {
-        'personaId': '$communityId-member',
-        'label': 'Member',
-        'roleLabel': 'Member',
-        'description': '$displayName member',
+    'workflowDefinitions': {
+      '$communityId-activity': {
+        'initialState': 'open',
+        'states': {
+          'open': {'label': '$displayName activity'},
+        },
+        'transitions': <Object?>[],
+        'renderBindings': [
+          {
+            'states': ['open'],
+            'audience': 'any',
+            'tabId': 'home',
+            'cardSurfaceFamily': 'statusTimeline',
+            'bindingKind': 'summary',
+          },
+        ],
+        'instanceDataSchema': <String, Object?>{},
       },
-    ],
+    },
   },
 );
 
@@ -39,10 +47,26 @@ Widget _host(ValueNotifier<LocalInstalledCommunity> currentCommunity) =>
     MaterialApp(
       home: ValueListenableBuilder<LocalInstalledCommunity>(
         valueListenable: currentCommunity,
-        builder: (context, community, child) => LocalExtensionScreen(
-          community: community,
-          seedDataFiles: const [],
-        ),
+        builder: (context, community, child) {
+          final experience = experienceForExtensionId(
+            community.extensionId,
+            displayName: community.displayName,
+            specVersion: community.specVersion,
+            experienceConfiguration: community.experienceConfiguration,
+          );
+          return KeyedSubtree(
+            key: ValueKey(community.extensionId),
+            child: LocalExtensionScreen(
+              community: community,
+              seedDataFiles: const [],
+              authApi: activeAuthForCommunity(
+                community: community,
+                experience: experience,
+                personaTypeId: '${community.communityId}-member',
+              ),
+            ),
+          );
+        },
       ),
     );
 
