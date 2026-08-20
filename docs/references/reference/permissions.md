@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.5.0
+doc_version: 1.6.0
 status: current
-last_verified: 2026-08-17
+last_verified: 2026-08-20
 audience: llm-agent
 derived_from:
   - docs/API/OpenAPI/identity/app-access-api.openapi.yaml
@@ -148,9 +148,28 @@ author the action the transition actually performs and say so.
 | `respond` | `event_rsvp.respond` | `rsvp-going`, `rsvp-maybe`, `rsvp-not-going`, `respond-going`, `respond-maybe`, `respond-declined`, `accept-match`, `decline-match` |
 | `withdraw_response` | `event_rsvp.withdraw_response` | `rsvp-withdraw`, `cancel-rsvp` |
 | `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist`, `respond-waitlist` |
-| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `send-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
+| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
+| `deliver_reminder` | `event_rsvp.deliver_reminder` | `send-reminder` — **platform-applied, never user-tapped.** The Calendar sweep applies it through the `dueNotifications({asOf})` platform service. **No role is granted it**, so it renders as no button anywhere, by the ordinary derivation in §1 rather than any special case. |
 | `propose_change` | `event_rsvp.propose_change` | `suggest-new-time` |
 | `record_outcome` | `event_rsvp.record_outcome` | `record-result`, `flag-reservation-conflict` |
+
+
+**`set_reminder` versus `deliver_reminder`** — these look alike and are opposite, in the same way
+`cancel-rsvp` and `cancel-tournament` are. `set_reminder` is a member asking to be reminded, and the
+product docs treat it as an ordinary action: Garden Club's lists "RSVP / **add reminder**" beside
+RSVP itself. `deliver_reminder` is the platform sending the reminder it was asked for; Tabletop's
+describes it as a "Calendar reminder-scheduling API" with an idempotency stamp, not as something a
+member does.
+
+The distinction has to be declared because **nothing structural separates them**. Guard shape nearly
+does — a member-tapped reminder usually carries `allowedRoleIds` while a delivered one is guarded by
+`actorEqualsField` alone — but that gets 8 of the corpus's 10 reminder transitions right and breaks
+on the other two, so it is a correlation, not the rule.
+
+Declaring it as a distinct action is what makes it enforceable, and it needs no new mechanism: a
+`deliver_reminder` transition names no role, so §1's derivation grants it to nobody, so it renders
+as no button. Until 2026-08-20 the app shell instead kept a hardcoded list of transition **ids** to
+hide, which silently hid nothing in the eight communities that spell theirs differently.
 
 `cancel-rsvp` and `cancel-tournament` read alike and mean opposite things — withdrawing your own
 attendance versus calling off the event for everyone. The literal `cancel-rsvp` entry under

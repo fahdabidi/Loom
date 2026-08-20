@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.4.0
+doc_version: 1.5.0
 status: proposed
-last_verified: 2026-08-14
+last_verified: 2026-08-20
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_communities_app_shell/lib/src/part27_engine_native_binding_dispatcher.dart
@@ -164,7 +164,7 @@ matched by name in `part36`. Everything else falls to the generic row.
 Used by 8 communities — the most widely used archetype.
 
 **Actions (11):** `view` · `create` · `edit` · `cancel` · `reopen` · `respond` · `withdraw_response` ·
-`join_waitlist` · `set_reminder` · `propose_change` · `record_outcome`
+`join_waitlist` · `set_reminder` · `deliver_reminder` · `propose_change` · `record_outcome`
 
 **Bookkeeping:** the **response row** — one instance per member per event, whose state is the answer.
 `respond` moves that row between response states, so exclusivity is inherent rather than enforced.
