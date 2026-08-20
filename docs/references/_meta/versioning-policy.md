@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 2.0.0
+doc_version: 2.1.0
 status: current
-last_verified: 2026-08-14
+last_verified: 2026-08-19
 ---
 
 # Versioning policy
@@ -92,6 +92,74 @@ warning.
 An **absent** `specVersion` is likewise an error, not a default. Defaulting would mean a package that
 forgot its stamp gets parsed as whatever the loader assumes — and the grammar-2 incident above is
 exactly what that looks like in practice.
+
+## Capabilities — what the version number cannot tell you
+
+The bump rule above is correct and it leaves a real hole. Because an additive change does **not**
+bump the version, `specVersion: 4` cannot tell you whether a particular build implements a
+`cardSurfaceFamily`, effect op or guard kind that was added after that build shipped. Two builds
+both honestly claim 4; one renders the package and one silently does not.
+
+That silence is the failure mode this document already names as the most dangerous in the system.
+Capabilities close it, by the same rule and for the same reason as an unknown version: **a loader
+that meets a capability it does not implement must refuse the package, loudly.**
+
+### Declaring capabilities
+
+A package **may** carry a package-root `requiresCapabilities` array:
+
+```jsonc
+{
+  "specVersion": 4,
+  "requiresCapabilities": ["archetype.searchAiAnswer", "effect.transitionRelated"],
+  ...
+}
+```
+
+Entries are namespaced by what they name:
+
+| Namespace | Names | Example |
+|---|---|---|
+| `archetype.` | a `cardSurfaceFamily` | `archetype.searchAiAnswer` |
+| `effect.` | an effect `op` | `effect.transitionRelated` |
+| `guard.` | a guard kind | `guard.relatedListMembership` |
+| `formula.` | a formula function | `formula.groupCount` |
+| `field.` | an `instanceDataSchema` `type` | `field.url` |
+
+### Rules
+
+- **Optional.** An absent `requiresCapabilities` means "nothing beyond the baseline for this
+  `specVersion`" — which is what most packages will honestly be.
+- **Declare only what postdates the baseline.** A capability that shipped *with* a `specVersion`
+  is implied by that version and must not be listed. Listing the whole baseline would make every
+  package noisy and the array meaningless.
+- **Declare everything you actually use** from beyond the baseline. This is the half that makes
+  the mechanism worth having.
+- **A loader refuses on any entry it does not implement**, naming the entry — never a generic
+  failure, and never a best-effort parse. `unsupported_capability` is an **error**.
+- **A loader refuses on any entry it does not recognise at all.** An unknown namespace or an
+  unknown name is a package written against something newer, which is precisely the case that
+  must fail loudly.
+
+### The validator keeps the declaration honest
+
+A declaration nothing checks will rot, exactly as the three-number scheme did. So the validator
+enforces both directions:
+
+- A package that **uses** a post-baseline capability without declaring it → error
+  (`undeclared_capability`). Without this the array is optional in practice as well as in
+  principle, and nobody fills it in.
+- A package that **declares** a capability it never uses → error (`unused_capability`). Without
+  this, declarations accumulate defensively until they mean nothing.
+
+Both are errors rather than warnings for the reason stated at the top of this section: the
+alternative is silent divergence between what a package needs and what a build provides.
+
+### What this is not
+
+It is **not** a second version number, and it must never be used as one. Capabilities name
+individual constructs. If a change is breaking rather than additive, it bumps `specVersion` — the
+bump rule is unchanged by any of this.
 
 ## Docs carry the stamp too
 

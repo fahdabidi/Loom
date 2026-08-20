@@ -1,7 +1,7 @@
 ---
 spec: 4
 doc_version: 1.0.0
-status: proposed
+status: partially-approved
 last_verified: 2026-08-19
 audience: llm-agent
 ---
@@ -119,7 +119,10 @@ instead of rendering it wrongly. This closes the additive-change gap the bump ru
 and it fails loudly rather than silently — the failure mode that has cost the most on this
 project.
 
-**This one changes the grammar**, so it is a spec decision rather than an implementation ticket.
+**Approved by the user 2026-08-19 and now specified** in `docs/references/_meta/versioning-policy.md`
+(section "Capabilities — what the version number cannot tell you"), which the authoring Skill already
+fetches. Implementation — validator rules `unsupported_capability`, `undeclared_capability` and
+`unused_capability`, plus the loader refusal — is a ticket, staged behind the specVersion-4-only cut.
 
 ## Sequencing
 
