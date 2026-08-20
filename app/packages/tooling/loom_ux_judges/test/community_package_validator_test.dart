@@ -243,6 +243,78 @@ void main() {
 
       expect(findings(p), contains('unknown_tab_id'));
     });
+
+    test(
+      '19 tab requiredPermission produces one finding and omission produces none',
+      () {
+        final p = pkg();
+        final e = p['experience'] as Map<String, dynamic>;
+        e['workflowDefinitions'] = <String, dynamic>{
+          'thing': <String, dynamic>{
+            ...definitionWithBinding(
+              tabId: 'admin',
+              cardSurfaceFamily: 'statusTimeline',
+            ),
+            'visibility': <String, dynamic>{'default': 'public'},
+          },
+        };
+        final tab = <String, dynamic>{
+          'tabId': 'admin',
+          'label': 'Admin',
+          'rendererContractId': 'engine-native-generic-list',
+          'requiredPermission': 'community.surface.navigation.configure',
+        };
+        p['appShell'] = <String, dynamic>{
+          'tabs': <dynamic>[tab],
+        };
+
+        final report = CommunityPackageValidator().validate(p);
+        expect(report.findings, hasLength(1));
+        final finding = report.findings.single;
+        expect(finding.type, 'tab_declares_permission');
+        expect(finding.location, 'appShell/tabs[0]/requiredPermission');
+        expect(finding.message, contains('surfaces, not capabilities'));
+        expect(finding.message, contains('role guards'));
+        expect(finding.message, contains('render-bindings.md'));
+
+        tab.remove('requiredPermission');
+        expect(CommunityPackageValidator().validate(p).findings, isEmpty);
+      },
+    );
+
+    test('20 historical permission alias is rejected in roleTabs', () {
+      final p = pkg();
+      final e = p['experience'] as Map<String, dynamic>;
+      e['workflowDefinitions'] = <String, dynamic>{
+        'thing': <String, dynamic>{
+          ...definitionWithBinding(
+            tabId: 'member-tools',
+            cardSurfaceFamily: 'statusTimeline',
+          ),
+          'visibility': <String, dynamic>{'default': 'public'},
+        },
+      };
+      p['appShell'] = <String, dynamic>{
+        'roleTabs': <String, dynamic>{
+          'member': <dynamic>[
+            <String, dynamic>{
+              'tabId': 'member-tools',
+              'label': 'Member tools',
+              'rendererContractId': 'engine-native-generic-list',
+              'permission': 'community.surface.navigation.read',
+            },
+          ],
+        },
+      };
+
+      final report = CommunityPackageValidator().validate(p);
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'tab_declares_permission');
+      expect(
+        report.findings.single.location,
+        'appShell/roleTabs/member[0]/permission',
+      );
+    });
   });
 
   group('seed instance creator validation', () {

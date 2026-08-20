@@ -82,6 +82,7 @@ class CommunityPackageValidator {
     final experience = Map<String, dynamic>.from(rawExperience);
 
     findings.addAll(_validateIdentityKeys(package, experience));
+    findings.addAll(_validateTabPermissionDeclarations(package));
     return _validateBody(package, experience, findings);
   }
 
@@ -404,6 +405,63 @@ class CommunityPackageValidator {
     final value = instance['createdByFanId'];
     if (value is String && value.trim().isNotEmpty) return value;
     return null;
+  }
+
+  List<ValidationFinding> _validateTabPermissionDeclarations(
+    Map<String, dynamic> package,
+  ) {
+    final findings = <ValidationFinding>[];
+
+    void validateTab(Object? rawTab, String path) {
+      if (rawTab is! Map) return;
+      for (final key in const ['requiredPermission', 'permission']) {
+        if (!rawTab.containsKey(key)) continue;
+        findings.add(
+          _finding(
+            'tab_declares_permission',
+            'Tabs are surfaces, not capabilities, so a tab cannot grant or '
+                'require a permission. permissions.md §1 defines permissions '
+                'solely from role/action statements and says community JSON '
+                'never contains a permission. Remove "$key"; tab visibility '
+                'is derived from the role guards on workflows bound to the '
+                'tab, so there is nothing to replace. See '
+                'docs/references/reference/render-bindings.md, "Tab visibility '
+                'is derived, never declared".',
+            '$path/$key',
+          ),
+        );
+      }
+    }
+
+    void validateAppShell(Object? rawAppShell, String path) {
+      if (rawAppShell is! Map) return;
+
+      final tabs = rawAppShell['tabs'];
+      if (tabs is List) {
+        for (var i = 0; i < tabs.length; i++) {
+          validateTab(tabs[i], '$path/tabs[$i]');
+        }
+      }
+
+      final roleTabs = rawAppShell['roleTabs'];
+      if (roleTabs is! Map) return;
+      for (final entry in roleTabs.entries) {
+        final tabsForRole = entry.value;
+        if (tabsForRole is! List) continue;
+        for (var i = 0; i < tabsForRole.length; i++) {
+          validateTab(tabsForRole[i], '$path/roleTabs/${entry.key}[$i]');
+        }
+      }
+    }
+
+    validateAppShell(package['appShell'], 'appShell');
+    validateAppShell(package['appShellCustomization'], 'appShellCustomization');
+    final extension = package['extension'];
+    if (extension is Map) {
+      validateAppShell(extension['appShell'], 'extension/appShell');
+    }
+
+    return findings;
   }
 
   Set<String> _declaredTabIds(Map<String, dynamic> package) {
