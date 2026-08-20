@@ -515,11 +515,12 @@ bool _personaCanAdministerAnyWorkflow(
 /// Derives whether a role can act in a workflow-backed surface.
 ///
 /// A role is admitted when it appears in a transition's `allowedRoleIds` or
-/// in a render binding's `kind: create` action `byRoleIds`. The derivation
-/// scans every transition and create action on every workflow bound to the
-/// requested tab. Per-instance ownership guards cannot be resolved before
-/// rows are loaded, so a surface with runtime-only actor guards remains
-/// visible and lets the engine's instance filtering produce the empty state.
+/// in a render binding's `kind: create` action `byRoleIds`. An unguarded or
+/// runtime-only guarded transition also admits the role: per-instance guards
+/// cannot be resolved before rows are loaded, so the engine's instance
+/// filtering must produce the empty state. The derivation scans every
+/// transition and create action on every workflow bound to the requested tab,
+/// including response workflows reached through `responseTable`.
 bool personaHasPermission(
   LoomExperienceDefinition experience,
   String personaId, {
@@ -547,15 +548,16 @@ bool personaHasPermission(
   for (final definition in definitions) {
     for (final transition in definition.transitions) {
       final allowedRoleIds = transition.guard.allowedPersonaIds;
-      if (allowedRoleIds != null && allowedRoleIds.isNotEmpty) {
-        hasRoleGuard = true;
-        if (_personaMatchesAllowedIds(
-          allowedRoleIds,
-          experience,
-          subjectPersonaId,
-        )) {
-          return true;
-        }
+      if (allowedRoleIds == null || allowedRoleIds.isEmpty) {
+        return true;
+      }
+      hasRoleGuard = true;
+      if (_personaMatchesAllowedIds(
+        allowedRoleIds,
+        experience,
+        subjectPersonaId,
+      )) {
+        return true;
       }
     }
 
@@ -576,8 +578,7 @@ bool personaHasPermission(
     }
   }
 
-  if (hasRoleGuard) return false;
-  return true;
+  return !hasRoleGuard;
 }
 
 List<LoomWorkflowStateMachine> _surfaceWorkflowDefinitions(
@@ -596,9 +597,18 @@ List<LoomWorkflowStateMachine> _surfaceWorkflowDefinitions(
     ];
   }
   if (tabId != null) {
+    final responseWorkflowTypes = <String>{
+      for (final definition in definitions)
+        for (final binding in definition.renderBindings)
+          if (binding.tabId == tabId && binding.responseTable != null)
+            binding.responseTable!.workflowType,
+    };
     return [
       for (final definition in definitions)
-        if (definition.renderBindings.any((binding) => binding.tabId == tabId))
+        if (definition.renderBindings.any(
+              (binding) => binding.tabId == tabId,
+            ) ||
+            responseWorkflowTypes.contains(definition.workflowType))
           definition,
     ];
   }

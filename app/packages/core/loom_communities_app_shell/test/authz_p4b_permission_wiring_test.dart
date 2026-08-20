@@ -74,6 +74,8 @@ LoomWorkflowStateMachine _machine({
   List<LoomWorkflowTransition> transitions = const [],
   List<WorkflowAction> actions = const [],
   Map<String, LoomWorkflowState> additionalStates = const {},
+  ResponseTableSpec? responseTable,
+  bool bindToTab = true,
 }) {
   return LoomWorkflowStateMachine(
     workflowType: workflowType,
@@ -88,16 +90,19 @@ LoomWorkflowStateMachine _machine({
       ...additionalStates,
     },
     transitions: transitions,
-    renderBindings: [
-      RenderBinding(
-        states: const ['open'],
-        role: 'any',
-        tabId: tabId,
-        cardSurfaceFamily: 'workflow-status',
-        bindingKind: 'primary',
-        actions: actions,
-      ),
-    ],
+    renderBindings: bindToTab
+        ? [
+            RenderBinding(
+              states: const ['open'],
+              role: 'any',
+              tabId: tabId,
+              cardSurfaceFamily: 'workflow-status',
+              bindingKind: 'primary',
+              actions: actions,
+              responseTable: responseTable,
+            ),
+          ]
+        : const [],
     visibility: visibility,
   );
 }
@@ -177,6 +182,117 @@ void main() {
       isFalse,
     );
   });
+
+  test('personaHasPermission follows responseTable workflow roles', () {
+    final experience = _experience({
+      'event': _machine(
+        workflowType: 'event',
+        tabId: 'calendar',
+        transitions: const [
+          LoomWorkflowTransition(
+            id: 'cancel',
+            label: 'Cancel',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(allowedPersonaIds: ['outsider']),
+          ),
+        ],
+        responseTable: const ResponseTableSpec(
+          workflowType: 'event-response',
+          eventField: 'eventId',
+          pendingStates: ['open'],
+        ),
+      ),
+      'event-response': _machine(
+        workflowType: 'event-response',
+        tabId: 'not-directly-bound',
+        bindToTab: false,
+        transitions: const [
+          LoomWorkflowTransition(
+            id: 'respond',
+            label: 'Respond',
+            from: ['open'],
+            to: 'open',
+            guard: WorkflowGuard(allowedPersonaIds: ['member']),
+          ),
+        ],
+      ),
+    });
+
+    expect(
+      personaHasPermission(experience, 'member', tabId: 'calendar'),
+      isTrue,
+    );
+    expect(
+      personaHasPermission(experience, 'outsider', tabId: 'calendar'),
+      isTrue,
+    );
+  });
+
+  test(
+    'runtime-only or unguarded transitions prevent other role guards vetoing',
+    () {
+      final runtimeGuardedExperience = _experience({
+        'mixed-workflow': _machine(
+          workflowType: 'mixed-workflow',
+          tabId: 'mixed',
+          transitions: const [
+            LoomWorkflowTransition(
+              id: 'member-action',
+              label: 'Member action',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(allowedPersonaIds: ['member']),
+            ),
+            LoomWorkflowTransition(
+              id: 'owned-action',
+              label: 'Owned action',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(
+                actorEqualsField: ActorEqualsFieldGuard(key: 'ownerFanId'),
+              ),
+            ),
+          ],
+        ),
+      });
+      final unguardedExperience = _experience({
+        'mixed-workflow': _machine(
+          workflowType: 'mixed-workflow',
+          tabId: 'mixed',
+          transitions: const [
+            LoomWorkflowTransition(
+              id: 'member-action',
+              label: 'Member action',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(allowedPersonaIds: ['member']),
+            ),
+            LoomWorkflowTransition(
+              id: 'open-action',
+              label: 'Open action',
+              from: ['open'],
+              to: 'open',
+              guard: WorkflowGuard(),
+            ),
+          ],
+        ),
+      });
+
+      expect(
+        personaHasPermission(
+          runtimeGuardedExperience,
+          'outsider',
+          tabId: 'mixed',
+        ),
+        isTrue,
+      );
+      expect(
+        personaHasPermission(unguardedExperience, 'outsider', tabId: 'mixed'),
+        isTrue,
+      );
+    },
+  );
 
   test(
     'personaHasPermission ignores read visibility and uses any transition',
