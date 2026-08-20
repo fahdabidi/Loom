@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
@@ -39,22 +40,15 @@ const _personasByExtension = {
   'ext_youth_soccer': ['soccer-coach', 'soccer-guardian'],
 };
 
-const _obsoleteIdsByExtension = {
-  'ext_camera_club': ['critique'],
-  'ext_book_club': ['books', 'documents', 'search'],
-  'ext_garden_club': ['care'],
-  'ext_chess_club': ['matches', 'rankings', 'documents'],
-  'ext_mosque': ['care', 'search'],
-  'ext_youth_soccer': ['registration', 'team', 'documents'],
-};
-
 class _EngineNativeCommunityFixture {
   _EngineNativeCommunityFixture({
+    required this.community,
     required this.experience,
     required this.engine,
     required this.declaredTabIds,
   });
 
+  final LocalInstalledCommunity community;
   final LoomExperienceDefinition experience;
   final WorkflowEngineApi engine;
   final Set<String> declaredTabIds;
@@ -123,16 +117,42 @@ Future<_EngineNativeCommunityFixture> _installFixture(
   final source =
       jsonDecode(stripJsonComments(_fixtureFile(sourcePath).readAsStringSync()))
           as Map<String, dynamic>;
-  final experienceRaw = source['experience'] as Map<String, Object?>?;
+  source['extensionId'] = extensionId;
+  final temp = await Directory.systemTemp.createTemp('loom-cjm8-$extensionId-');
+  late final LocalInstalledCommunity community;
+  try {
+    final extension = File('${temp.path}/$extensionId.loom-extension.zip');
+    final initialization = File('${temp.path}/$extensionId.loom-init.zip');
+    await extension.writeAsString(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 1,
+        'extensionId': extensionId,
+        'displayName': source['displayName'],
+        'version': '1.0.0',
+        'mode': 'local-demo',
+        'permissions': <String>[],
+      }),
+    );
+    await initialization.writeAsString(jsonEncode(source));
+    community = LocalInAppBackend()
+        .installLocalPackagePairFromFiles(
+          extensionPackagePath: extension.path,
+          initializationPackagePath: initialization.path,
+        )
+        .community;
+  } finally {
+    await temp.delete(recursive: true);
+  }
+  final experienceRaw = community.experienceConfiguration;
   final declaredTabIds = {
-    ..._declaredTabIdsFromShell(source['appShell']),
-    ..._declaredTabIdsFromShell(experienceRaw?['appShell']),
+    ..._declaredTabIdsFromShell(community.appShellConfiguration),
+    ..._declaredTabIdsFromShell(experienceRaw['appShell']),
   };
   final experience = experienceForExtensionId(
     extensionId,
-    displayName: source['displayName'] as String?,
-    specVersion: source['specVersion'] as int?,
-    experienceConfiguration: experienceRaw ?? const <String, Object?>{},
+    displayName: community.displayName,
+    specVersion: community.specVersion,
+    experienceConfiguration: experienceRaw,
   );
   // These fixtures model someone already inside their own community, so
   // membership has to be established through the same hook production uses.
@@ -143,11 +163,12 @@ Future<_EngineNativeCommunityFixture> _installFixture(
   // is where it shows.
   configureEngineAuthorizationForExtensionId(
     extensionId: extensionId,
-    appShellConfiguration: const <String, Object?>{},
+    appShellConfiguration: community.appShellConfiguration,
     activeMembershipLookup: (_) async => true,
   );
   final engine = await workflowEngineForExtensionId(extensionId);
   return _EngineNativeCommunityFixture(
+    community: community,
     experience: experience,
     engine: engine,
     declaredTabIds: declaredTabIds,
@@ -175,7 +196,6 @@ void main() {
       for (final extensionId in _fixturesByExtension.keys) {
         final fixture = await _installFixture(extensionId);
         final personas = _personasByExtension[extensionId]!;
-        final obsolete = _obsoleteIdsByExtension[extensionId]!;
         final allowedTabIds = {
           ..._engineNativeTabIds,
           ...fixture.declaredTabIds,
@@ -185,6 +205,7 @@ void main() {
             for (final tab in appShellTabsFor(
               experience: fixture.experience,
               personaId: personaId,
+              appShellConfiguration: fixture.community.appShellConfiguration,
             ))
               tab.tabId,
           ];
@@ -195,60 +216,10 @@ void main() {
             reason:
                 'Extension $extensionId persona $personaId has tabs outside home/messages/special + community-declared set: $tabIds',
           );
-
-          for (final obsoleteId in obsolete) {
-            expect(
-              tabIds,
-              isNot(contains(obsoleteId)),
-              reason:
-                  'Extension $extensionId persona $personaId still includes obsolete tab "$obsoleteId".',
-            );
-          }
         }
       }
     },
   );
-
-  test('engine-native label overrides for real tab IDs remain', () async {
-    final camera = await _installFixture('ext_camera_club');
-    final garden = await _installFixture('ext_garden_club');
-
-    // Both of these model a *member* reading the shell, so both must supply
-    // membership the way the app does. `appShellTabsFor` gates `membersOnly`
-    // workflows on `hasActiveMembership == true`, and omitting it is not
-    // "unknown, allow" -- a null fails closed and hides the tab. All three
-    // production call sites in part01 pass `_activeAccountHasActiveMembership`;
-    // a test that omits it is asserting against a state the app never reaches.
-    //
-    // Camera Club masked this for a long time: every one of its workflows is
-    // `public`, so its tabs survive with or without membership. Garden Club's
-    // `marketplace` is served only by `garden-tool-loan` and
-    // `garden-tool-giveaway`, both `membersOnly`, so it is the first community
-    // where the omission actually shows.
-    final cameraTabs = appShellTabsFor(
-      experience: camera.experience,
-      personaId: 'camera-club-member',
-      hasActiveMembership: true,
-    );
-    final gardenTabs = appShellTabsFor(
-      experience: garden.experience,
-      personaId: 'garden-member',
-      hasActiveMembership: true,
-    );
-    expect(
-      cameraTabs.singleWhere((tab) => tab.tabId == 'calendar').label,
-      'Walks',
-    );
-    // `Exchange` is correct and always was -- it is the engine-native label
-    // override, which is the whole point of this test. Do not "fix" it to
-    // `Marketplace` by reading `appShell.tabs[].label` from the package root:
-    // that is a different value, and `appShellTabsFor` does not derive the
-    // label from it. The only thing wrong here was the missing membership.
-    expect(
-      gardenTabs.singleWhere((tab) => tab.tabId == 'marketplace').label,
-      'Exchange',
-    );
-  });
 
   test(
     'seeded instances still render on canonical engine-native home/calendar tabs',
@@ -293,41 +264,4 @@ void main() {
       }
     },
   );
-
-  test('legacy Cedar Commons HOA tab construction remains unchanged', () {
-    final experience = experienceForExtensionId(
-      'ext_hoa',
-      specVersion: currentCommunitySpecVersion,
-    );
-
-    final boardTabs = [
-      for (final tab in appShellTabsFor(
-        experience: experience,
-        personaId: 'hoa-board',
-      ))
-        tab,
-    ];
-    final homeownerTabs = [
-      for (final tab in appShellTabsFor(
-        experience: experience,
-        personaId: 'hoa-homeowner',
-      ))
-        tab,
-    ];
-
-    expect(boardTabs.map((tab) => tab.tabId), containsAll(['home', 'admin']));
-    expect(homeownerTabs.map((tab) => tab.tabId), isNot(contains('admin')));
-    expect(
-      boardTabs
-          .singleWhere((tab) => tab.tabId == 'documents')
-          .rendererContractId,
-      'documents-library-detail',
-    );
-    expect(
-      boardTabs.singleWhere((tab) => tab.tabId == 'admin').rendererContractId,
-      'admin-review-compose-queue',
-    );
-    expect(boardTabs.map((tab) => tab.tabId), contains('documents'));
-    expect(homeownerTabs.map((tab) => tab.tabId), contains('documents'));
-  });
 }

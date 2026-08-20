@@ -1,6 +1,67 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+
+const _youthSoccerFixture =
+    'docs/references/communities/Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc';
+
+({LocalInstalledCommunity community, LoomExperienceDefinition experience})
+_installYouthSoccerFixture() {
+  var directory = Directory.current;
+  File? fixture;
+  for (var i = 0; i < 8; i++) {
+    final candidate = File('${directory.path}/$_youthSoccerFixture');
+    if (candidate.existsSync()) {
+      fixture = candidate;
+      break;
+    }
+    directory = directory.parent;
+  }
+  if (fixture == null) {
+    throw StateError('Could not locate fixture: $_youthSoccerFixture');
+  }
+
+  final source =
+      jsonDecode(stripJsonComments(fixture.readAsStringSync()))
+          as Map<String, dynamic>;
+  final extensionId = source['extensionId'] as String;
+  final temp = Directory.systemTemp.createTempSync('loom-authz-p4b-');
+  try {
+    final extension = File('${temp.path}/$extensionId.loom-extension.zip');
+    final initialization = File('${temp.path}/$extensionId.loom-init.zip');
+    extension.writeAsStringSync(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 1,
+        'extensionId': extensionId,
+        'displayName': source['displayName'],
+        'version': '1.0.0',
+        'mode': 'local-demo',
+        'permissions': <String>[],
+      }),
+    );
+    initialization.writeAsStringSync(jsonEncode(source));
+    final community = LocalInAppBackend()
+        .installLocalPackagePairFromFiles(
+          extensionPackagePath: extension.path,
+          initializationPackagePath: initialization.path,
+        )
+        .community;
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      specVersion: community.specVersion,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    return (community: community, experience: experience);
+  } finally {
+    temp.deleteSync(recursive: true);
+  }
+}
 
 LoomWorkflowStateMachine _machine({
   required String workflowType,
@@ -251,7 +312,7 @@ void main() {
   );
 
   test(
-    'declarative tabs use computed permission fallback while hardcoded archetypes keep explicit lists',
+    'declarative tabs use computed permission fallback while package tabs keep explicit role lists',
     () {
       final declarativeExperience = _experience({
         'private-workflow': _machine(
@@ -291,21 +352,20 @@ void main() {
         isNot(contains('private-surface')),
       );
 
-      final hardcoded = experienceForExtensionId(
-        'ext_youth_soccer',
-        specVersion: currentCommunitySpecVersion,
-      );
+      final installed = _installYouthSoccerFixture();
       final guardianTabs = appShellTabsFor(
-        experience: hardcoded,
-        personaId: 'guardian',
+        experience: installed.experience,
+        personaId: 'soccer-guardian',
+        appShellConfiguration: installed.community.appShellConfiguration,
       );
       final coachTabs = appShellTabsFor(
-        experience: hardcoded,
-        personaId: 'coach',
+        experience: installed.experience,
+        personaId: 'soccer-coach',
+        appShellConfiguration: installed.community.appShellConfiguration,
       );
-      expect(guardianTabs.map((tab) => tab.tabId), contains('payments'));
-      expect(guardianTabs.map((tab) => tab.tabId), isNot(contains('coach')));
-      expect(coachTabs.map((tab) => tab.tabId), contains('coach'));
+      expect(guardianTabs.map((tab) => tab.tabId), contains('giving'));
+      expect(guardianTabs.map((tab) => tab.tabId), isNot(contains('admin')));
+      expect(coachTabs.map((tab) => tab.tabId), contains('admin'));
     },
   );
 
