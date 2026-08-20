@@ -81,12 +81,12 @@ void main() {
         'states': {
           'open': {
             'label': 'Open',
-            'editableFields': ['goingPersonaIds', 'selectedGame'],
+            'editableFields': ['goingFanIds', 'selectedGame'],
           },
         },
         'transitions': <Map<String, dynamic>>[],
         'instanceDataSchema': {
-          'goingPersonaIds': {'type': 'list'},
+          'goingFanIds': {'type': 'list'},
           'selectedGame': {'type': 'string'},
         },
       }),
@@ -95,10 +95,10 @@ void main() {
       _machine('ballot', {
         'initialState': 'open',
         'states': {
-            'open': {
-              'label': 'Open',
-              'editableFields': ['pendingChoice', 'ballots'],
-            },
+          'open': {
+            'label': 'Open',
+            'editableFields': ['pendingChoice', 'ballots'],
+          },
           'closed': {'label': 'Closed'},
         },
         'transitions': [
@@ -109,13 +109,13 @@ void main() {
             'to': 'open',
             'guard': {
               'relatedInstanceField': 'eventId',
-              'relatedListField': 'goingPersonaIds',
+              'relatedListField': 'goingFanIds',
             },
             'effects': [
               {
                 'op': 'append',
                 'key': 'ballots',
-                'value': {'personaId': r'$actor', 'choice': '{pendingChoice}'},
+                'value': {'fanId': r'$actor', 'choice': '{pendingChoice}'},
               },
             ],
           },
@@ -153,7 +153,7 @@ void main() {
       workflowType: 'event',
       personaId: 'organizer',
       initialInstanceData: {
-        'goingPersonaIds': ['a', 'b', 'c', 'd', 'e'],
+        'goingFanIds': ['a', 'b', 'c', 'd', 'e'],
         'selectedGame': 'TBD',
       },
     );

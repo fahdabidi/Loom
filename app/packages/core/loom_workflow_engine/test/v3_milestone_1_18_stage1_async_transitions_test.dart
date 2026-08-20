@@ -17,12 +17,12 @@ void main() {
         'states': {
           'open': {
             'label': 'Open',
-            'editableFields': ['goingPersonaIds'],
+            'editableFields': ['goingFanIds'],
           },
         },
         'transitions': <Map<String, dynamic>>[],
         'instanceDataSchema': {
-          'goingPersonaIds': {'type': 'list', 'writableBy': 'formEntry'},
+          'goingFanIds': {'type': 'list', 'writableBy': 'formEntry'},
         },
       }),
     );
@@ -41,7 +41,7 @@ void main() {
             'to': 'cast',
             'guard': {
               'relatedInstanceField': 'eventId',
-              'relatedListField': 'goingPersonaIds',
+              'relatedListField': 'goingFanIds',
             },
           },
         ],
@@ -54,7 +54,7 @@ void main() {
       workflowType: 'event',
       personaId: 'host',
       initialInstanceData: {
-        'goingPersonaIds': <String>['eligible-member'],
+        'goingFanIds': <String>['eligible-member'],
       },
     );
     final vote = await api.createInstance(

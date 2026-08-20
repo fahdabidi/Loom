@@ -204,7 +204,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   final packageDeclarativeSpecs = [
     ..._declarativeTabSpecsFromConfiguration(appShellConfiguration['tabs']),
     ..._declarativeTabSpecsFromPersonaConfiguration(
-      appShellConfiguration['personaTabs'],
+      appShellConfiguration['roleTabs'],
       personaId: personaId,
     ),
   ];
@@ -277,11 +277,12 @@ String? requiredPermissionForTab({
     'admin' => 'community.surface.navigation.configure',
     // Engine-native notification surfaces use this internal tab ID even when
     // they are mounted as AppBar/FAB/fixed-card chrome rather than a tab. The
-    // notification controller still applies recipientPersonaId filtering;
+    // notification controller still applies recipientFanId filtering;
     // this only makes the synthetic inbox surface resolve to the existing
     // messages permission at the engine boundary.
-    'notifications' || 'notification-inbox' || 'messages' =>
-      'community.surface.messages.read',
+    'notifications' ||
+    'notification-inbox' ||
+    'messages' => 'community.surface.messages.read',
     'export' || 'search' => 'community.surface.documents.read',
     'timeline' || 'details' || 'form' => 'community.surface.workflow.read',
     _ => null,
@@ -585,9 +586,8 @@ bool _hasEngineNativeBinding(
   String tabId,
 ) =>
     experience.workflowDefinitions?.values.any(
-      (definition) => definition.renderBindings.any(
-        (binding) => binding.tabId == tabId,
-      ),
+      (definition) =>
+          definition.renderBindings.any((binding) => binding.tabId == tabId),
     ) ??
     false;
 
@@ -635,14 +635,14 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         // _personaCanAdministerAnyWorkflow above, in _generatedAppShellTabsFor).
         // A legacy declarative override that declares its OWN real,
         // persona-independent permission list (e.g. ext_hoa's admin tab:
-        // visiblePersonaIds: ['hoa-board']) must keep governing final
+        // visibleRoleIds: ['hoa-board']) must keep governing final
         // visibility -- preferring the generated value here would let
         // "admin" leak to any persona the (legacy, quirky, unrelated to
         // this ticket) _personaCanAdministerAnyWorkflow heuristic happens
         // to also generate an entry for, discarding the override's real
         // permission list. Only fall back to generated's value when the
         // override didn't declare one at all (the common case once Ticket 4
-        // adds cosmetic-only JSON declarations with no visiblePersonaIds).
+        // adds cosmetic-only JSON declarations with no visibleRoleIds).
         visiblePersonaIds: override.visiblePersonaIds.isNotEmpty
             ? override.visiblePersonaIds
             : generated.visiblePersonaIds,
@@ -656,7 +656,7 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   // collapses duplicates, but this ordering pass emits one entry per
   // *occurrence*, so any tabId appearing twice in `overrides` renders the same
   // tab twice. That happens for real -- `overrides` concatenates the
-  // configuration's `tabs` and this persona's `personaTabs`, and installing a
+  // configuration's `tabs` and this role's `roleTabs`, and installing a
   // package over an already-preloaded shell contributes both. Set semantics
   // keep first-occurrence order while making the id unique by construction.
   final orderedIds = <String>{
@@ -686,8 +686,7 @@ List<LoomAppShellTabSpec> _engineNativeTabsFrom(
   ];
 }
 
-bool _isEngineNativeTabId(String tabId) =>
-    _engineNativeTabIds.contains(tabId);
+bool _isEngineNativeTabId(String tabId) => _engineNativeTabIds.contains(tabId);
 
 const _engineNativeTabIds = {
   'home',
@@ -714,7 +713,7 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
     appShellConfiguration['tabs'],
   );
   final packagePersona = _declarativeTabSpecsFromPersonaConfiguration(
-    appShellConfiguration['personaTabs'],
+    appShellConfiguration['roleTabs'],
     personaId: personaId,
   );
   // The static per-extension tables below are the legacy, hardcoded-by-
@@ -729,7 +728,7 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   // to the generic hardcoded fallback. Filtering to the closed six keeps
   // obsolete custom ids (critique, books, matches, rankings, etc.) out
   // while preserving the special-4's legitimate overrides; once a real
-  // appShell.tabs[]/personaTabs JSON declaration exists for the same tabId
+  // appShell.tabs[]/roleTabs JSON declaration exists for the same tabId
   // (packageGlobal/packagePersona below), it's appended after this table in
   // the returned list, so later-wins merge order in
   // _mergeDeclarativeTabSpecs already gives JSON declarations precedence --
@@ -812,11 +811,7 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
       'pinnedSurfaces',
       'pinnedWorkflowIds',
     ]),
-    visiblePersonaIds: _readShellStringList(value, const [
-      'visibleRoleIds',
-      'visiblePersonaIds',
-      'personas',
-    ]),
+    visiblePersonaIds: _readShellStringList(value, const ['visibleRoleIds']),
     requiredPermission:
         _readShellString(value, const ['requiredPermission', 'permission']) ??
         'community.surface.navigation.read',
@@ -1446,9 +1441,8 @@ bool _personaCanAdministerAnyWorkflow(
   final engineDefinitions = experience.workflowDefinitions;
   if (engineDefinitions != null && engineDefinitions.isNotEmpty) {
     final engineAdminDefinitions = engineDefinitions.values.where(
-      (definition) => definition.renderBindings.any(
-        (binding) => binding.tabId == 'admin',
-      ),
+      (definition) =>
+          definition.renderBindings.any((binding) => binding.tabId == 'admin'),
     );
     if (engineAdminDefinitions.isNotEmpty) {
       // Engine-native experiences intentionally do not populate the legacy
@@ -1693,6 +1687,23 @@ bool _readPermissionCouldAdmitPersona(
     case WorkflowVisibilityDefault.membersOnly:
       return hasActiveMembership == true;
     case WorkflowVisibilityDefault.guarded:
+      final fields = definition.visibility.fields;
+      if (fields.sharedWith != null ||
+          fields.participants.isNotEmpty ||
+          fields.recipient != null ||
+          fields.parties.any(
+            (principal) => switch (principal) {
+              WorkflowVisibilityFieldPrincipal() => true,
+              WorkflowVisibilityRolePrincipal(:final roleId) =>
+                roleId == personaId,
+            },
+          )) {
+        // Field principals are instance-scoped: this coarse surface check
+        // must admit a persona who could own a matching row. The engine's
+        // per-instance visibility check still enforces the concrete identity
+        // before returning data.
+        return true;
+      }
       final guards = <WorkflowGuard>[];
       for (final state in definition.states.values) {
         final guard = state.readGuard ?? definition.visibility.readGuard;

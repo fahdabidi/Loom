@@ -1521,17 +1521,13 @@ class LoomWorkflowSeedInstance {
         instanceData: json['instanceData'] is Map
             ? Map<String, dynamic>.from(json['instanceData'] as Map)
             : const {},
-        // D8 straddle: remove with the engine helper when the corpus rename
-        // completes.
-        createdByPersonaId: _seedCreatorDuringD8Straddle(json),
+        createdByPersonaId: _seedCreator(json),
       );
 }
 
-String? _seedCreatorDuringD8Straddle(Map<String, dynamic> json) {
-  for (final key in const ['createdByFanId', 'createdByPersonaId']) {
-    final value = json[key];
-    if (value is String && value.isNotEmpty) return value;
-  }
+String? _seedCreator(Map<String, dynamic> json) {
+  final value = json['createdByFanId'];
+  if (value is String && value.isNotEmpty) return value;
   return null;
 }
 

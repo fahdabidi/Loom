@@ -78,7 +78,7 @@ void main() {
         personaId: 'tabletop-member',
       );
       expect(result.newState, 'onLoan');
-      expect(result.newInstanceData['holderPersonaId'], 'tabletop-member');
+      expect(result.newInstanceData['holderFanId'], 'tabletop-member');
       db.close();
     });
 
@@ -200,13 +200,13 @@ LoomWorkflowStateMachine _loanMachine() {
           requiresWorkflowsComplete: ['tabletop-membership-dues-current'],
         ),
         effects: [
-          WorkflowEffect(op: 'set', key: 'holderPersonaId', value: r'$actor'),
+          WorkflowEffect(op: 'set', key: 'holderFanId', value: r'$actor'),
         ],
       ),
     ],
     instanceDataSchema: {
       'title': InstanceDataField(type: 'string', required: true),
-      'holderPersonaId': InstanceDataField(type: 'string'),
+      'holderFanId': InstanceDataField(type: 'string'),
     },
   );
 }
@@ -220,5 +220,5 @@ Map<String, dynamic> _duesData() {
 }
 
 Map<String, dynamic> _listingData() {
-  return {'title': 'Root', 'holderPersonaId': ''};
+  return {'title': 'Root', 'holderFanId': ''};
 }

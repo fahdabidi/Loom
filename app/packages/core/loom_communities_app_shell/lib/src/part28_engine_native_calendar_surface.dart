@@ -839,7 +839,7 @@ class _EngineNativeCalendarContentState
       return const _ViewerResponseLookup.invalid();
     }
     for (final response in (responses as List<dynamic>? ?? const <dynamic>[])) {
-      if (response is Map && response['personaId'] == widget.personaId) {
+      if (response is Map && response['fanId'] == widget.personaId) {
         return _ViewerResponseLookup.found(Map<String, dynamic>.from(response));
       }
     }
@@ -1697,7 +1697,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final responses = _viewerResponseRows;
     if (responses is! List) return null;
     for (final response in responses) {
-      if (response is Map && response['personaId'] == widget.personaId) {
+      if (response is Map && response['fanId'] == widget.personaId) {
         return Map<String, dynamic>.from(response);
       }
     }
@@ -1743,7 +1743,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (responses is! List) return const [];
       for (final response in responses) {
         if (response is! Map) continue;
-        final personaId = response['personaId']?.toString();
+        final personaId = response['fanId']?.toString();
         if (personaId == null || personaId.isEmpty) continue;
         final state = response['\$state']?.toString() ?? 'pending';
         (groups[_attendeeStateLabel(state)] ??= []).add(
@@ -1757,8 +1757,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       }
     } else {
       for (final entry in const [
-        ('Going', 'goingPersonaIds'),
-        ('Waitlisted', 'waitlistPersonaIds'),
+        ('Going', 'goingFanIds'),
+        ('Waitlisted', 'waitlistFanIds'),
       ]) {
         final personaIds = _instance.instanceData[entry.$2];
         if (personaIds is! List) continue;
@@ -1830,7 +1830,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       final syntheticResponse = response == null && responseMachine != null
           ? <String, dynamic>{
               responseTable!.eventField: instance.instanceId,
-              'personaId': personaId,
+              'fanId': personaId,
             }
           : null;
       final responseActions = responseTable == null
@@ -1849,7 +1849,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               workflowType: responseTable.workflowType,
               // No row exists yet, so there is no id to name. Guards that
               // resolve per-instance data still see the synthetic row's own
-              // fields (notably `personaId`, which `actorEqualsField` reads).
+              // fields (notably `fanId`, which `actorEqualsField` reads).
               instanceId: '',
               currentState: responseMachine!.initialState,
               instanceData: syntheticResponse,
@@ -1912,8 +1912,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final response = _viewerResponse;
     final responseTable = widget.binding.responseTable;
     final appliesToEvent = _eventActionIds.contains(transitionId);
-    final appliesToResponse = !appliesToEvent &&
-        _responseActionIds.contains(transitionId);
+    final appliesToResponse =
+        !appliesToEvent && _responseActionIds.contains(transitionId);
     // A response action with no response table is a malformed package, not a
     // user error -- but it must still say so rather than swallow the tap.
     if (appliesToResponse && _usesResponseRows && responseTable == null) {
@@ -1954,11 +1954,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               initialInstanceDataList: [
                 {
                   responseTable.eventField: instance.instanceId,
-                  // All six response tables in the corpus declare `personaId`.
-                  // This becomes `fanId` at the specVersion 4 identity rename;
-                  // `responseTable` should declare the field outright rather
-                  // than have this infer it -- tracked in §8.
-                  'personaId': personaId,
+                  // All response tables in the specVersion 4 corpus declare
+                  // the individual identity field as `fanId`.
+                  'fanId': personaId,
                 },
               ],
               personaId: personaId,
@@ -2377,13 +2375,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final pid = widget.personaId;
     switch (action.id) {
       case 'rsvp-going':
-        return (data['goingPersonaIds'] as List?)?.contains(pid) ?? false;
+        return (data['goingFanIds'] as List?)?.contains(pid) ?? false;
       case 'rsvp-maybe':
-        return (data['maybePersonaIds'] as List?)?.contains(pid) ?? false;
+        return (data['maybeFanIds'] as List?)?.contains(pid) ?? false;
       case 'rsvp-not-going':
-        return (data['notGoingPersonaIds'] as List?)?.contains(pid) ?? false;
+        return (data['notGoingFanIds'] as List?)?.contains(pid) ?? false;
       case 'join-waitlist':
-        return (data['waitlistPersonaIds'] as List?)?.contains(pid) ?? false;
+        return (data['waitlistFanIds'] as List?)?.contains(pid) ?? false;
       default:
         return false;
     }
@@ -2594,8 +2592,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final quorumMet = data['quorumMet'];
     final response = _viewerResponse;
     final waitlistIds =
-        (data['waitlistPersonaIds'] as List?)?.cast<String>() ??
-        const <String>[];
+        (data['waitlistFanIds'] as List?)?.cast<String>() ?? const <String>[];
     final onWaitlist = response == null
         ? waitlistIds.contains(widget.personaId)
         : response['\$state'] == 'waitlisted';
@@ -3072,7 +3069,9 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                   )
                                 : modernTheme.resolvedFill,
                             border: Border.all(
-                              color: isToday ? todayAccent : modernTheme.resolvedBorder,
+                              color: isToday
+                                  ? todayAccent
+                                  : modernTheme.resolvedBorder,
                               width: isToday ? 2 : 1,
                             ),
                           ),
@@ -3098,49 +3097,47 @@ class _EngineNativeMonthGrid extends StatelessWidget {
                                             onSelectEntry(entry.identity),
                                         child:
                                             entry.resolved.binding.styleField ==
-                                                    null
-                                                ? Text(
-                                                    entry.title,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
+                                                null
+                                            ? Text(
+                                                entry.title,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color:
+                                                      modernTheme.resolvedBody,
+                                                ),
+                                              )
+                                            : Row(
+                                                children: [
+                                                  Container(
+                                                    width: 5,
+                                                    height: 5,
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          right: 3,
+                                                        ),
+                                                    decoration: BoxDecoration(
                                                       color:
-                                                          modernTheme.resolvedBody,
-                                                    ),
-                                                  )
-                                                : Row(
-                                                    children: [
-                                                      Container(
-                                                        width: 5,
-                                                        height: 5,
-                                                        margin:
-                                                            const EdgeInsets.only(
-                                                              right: 3,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              _calendarEntryStyleColor(
-                                                                entry,
-                                                                accent,
-                                                              ),
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          entry.title,
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          style: TextStyle(
-                                                            color: modernTheme
-                                                                .resolvedBody,
+                                                          _calendarEntryStyleColor(
+                                                            entry,
+                                                            accent,
                                                           ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                      shape: BoxShape.circle,
+                                                    ),
                                                   ),
-                                        ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      entry.title,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        color: modernTheme
+                                                            .resolvedBody,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                      ),
                                   ],
                                 ),
                               ),

@@ -158,8 +158,8 @@ void main() {
                 'title': 'Catan',
                 'category': 'Board games',
                 'condition': 'Mint condition',
-                'holderPersonaId': 'Alice',
-                'queuedPersonaIds': <String>[],
+                'holderFanId': 'Alice',
+                'queuedFanIds': <String>[],
                 'dueDate': '2025-01-01',
               },
               instanceDataSchema: equipmentLoanDefaultInstanceDataSchema,
@@ -174,7 +174,7 @@ void main() {
         expect(find.text('Mint condition'), findsOneWidget);
         expect(find.text('Holder: Alice'), findsOneWidget);
         expect(
-          find.byKey(const ValueKey('workflow-fact-persona-holderPersonaId')),
+          find.byKey(const ValueKey('workflow-fact-persona-holderFanId')),
           findsOneWidget,
         );
         expect(find.byIcon(Icons.groups_outlined), findsNothing);
@@ -187,8 +187,8 @@ void main() {
                 'title': 'Catan',
                 'category': 'Board games',
                 'condition': 'Mint condition',
-                'holderPersonaId': 'Alice',
-                'queuedPersonaIds': ['m1', 'm2', 'm3'],
+                'holderFanId': 'Alice',
+                'queuedFanIds': ['m1', 'm2', 'm3'],
                 'dueDate': '2025-01-01',
               },
               instanceDataSchema: equipmentLoanDefaultInstanceDataSchema,
@@ -242,7 +242,10 @@ void main() {
           const ValueKey('workflow-fact-paragraph-description'),
         );
         expect(paragraph, findsOneWidget);
-        expect(find.descendant(of: paragraph, matching: find.text(description)), findsOneWidget);
+        expect(
+          find.descendant(of: paragraph, matching: find.text(description)),
+          findsOneWidget,
+        );
       },
     );
 
@@ -255,10 +258,7 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: WorkflowFactPillRow(
-                instanceData: {
-                  'title': itemName,
-                  'holderPersonaId': owner,
-                },
+                instanceData: {'title': itemName, 'holderFanId': owner},
                 instanceDataSchema: {
                   'title': WorkflowFactPillFieldSchema(
                     type: 'text',
@@ -267,8 +267,8 @@ void main() {
                     labelTemplate: '{value}',
                     displayContexts: ['tile'],
                   ),
-                  'holderPersonaId': WorkflowFactPillFieldSchema(
-                    type: 'personaId',
+                  'holderFanId': WorkflowFactPillFieldSchema(
+                    type: 'fanId',
                     maxLines: 2,
                     displayIcon: 'person_outline',
                     labelTemplate: 'Holder: {value}',
@@ -291,7 +291,8 @@ void main() {
         expect(itemPillText.maxLines, equals(2));
         final ownerPillText = tester.widget<Text>(
           find.byWidgetPredicate(
-            (widget) => widget is Text && widget.data == 'Holder: Garden Coordinator',
+            (widget) =>
+                widget is Text && widget.data == 'Holder: Garden Coordinator',
           ),
         );
         expect(ownerPillText.maxLines, equals(2));
@@ -337,14 +338,14 @@ void main() {
             'title': 'Catan',
             'category': 'Board games',
             'condition': 'Mint',
-            'holderPersonaId': 'Alice',
-            'queuedPersonaIds': ['m1', 'm2'],
+            'holderFanId': 'Alice',
+            'queuedFanIds': ['m1', 'm2'],
           },
           'equipment-giveaway': const {
             'title': 'Dice',
             'category': 'Board games',
             'condition': 'Excellent',
-            'claimedByPersonaId': 'Alice',
+            'claimedByFanId': 'Alice',
           },
         };
 

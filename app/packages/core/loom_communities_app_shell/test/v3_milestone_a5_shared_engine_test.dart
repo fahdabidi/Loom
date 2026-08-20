@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+
+import 'authz_p6_test_helpers.dart';
 
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
@@ -54,6 +57,29 @@ void main() {
         experienceConfiguration: community.experienceConfiguration,
       );
       final engine = await workflowEngineForExtensionId(community.extensionId);
+      final accounts = await LocalAuthApi().listAccounts(
+        communityExtensionId: community.extensionId,
+      );
+      final shellAccounts = await activeAuthForCommunity(
+        community: community,
+        experience: resolved,
+        personaTypeId: 'tabletop-member',
+      ).listAccounts(communityExtensionId: community.extensionId);
+      final authorizationAccounts = [...accounts, ...shellAccounts];
+      configureEngineAuthorizationForExtensionId(
+        extensionId: community.extensionId,
+        appShellConfiguration: community.appShellConfiguration,
+        activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+          (account) =>
+              account.accountId == personaId &&
+              account.status == MembershipStatus.active,
+        ),
+      );
+      if (engine is LocalWorkflowEngineApi) {
+        for (final account in authorizationAccounts) {
+          engine.setPersonaType(account.accountId, account.personaTypeId);
+        }
+      }
       final rows = (await engine.queryInstances(
         tabId: 'home',
         personaId: 'tabletop-member',
@@ -81,6 +107,7 @@ void main() {
         'announcement-room-change',
         'thread-welcome',
         'thread-game-suggestions',
+        'notification-tournament-reminder',
         'resp-friday-organizer',
         'resp-friday-member-03',
         'resp-friday-member-04',
@@ -95,7 +122,7 @@ void main() {
         'resp-friday-member-13',
         'resp-friday-member-14',
       };
-      expect(rows, hasLength(33));
+      expect(rows, hasLength(34));
       expect(rows.map((row) => row.instanceId), unorderedEquals(expectedIds));
 
       final expectedSeeds = <String, LoomWorkflowSeedInstance>{
@@ -154,7 +181,7 @@ void main() {
         personaId: 'tabletop-member',
         limit: 50,
       )).items;
-      expect(repeatedRows, hasLength(33));
+      expect(repeatedRows, hasLength(34));
       expect(
         repeatedRows.map((row) => row.instanceId),
         unorderedEquals(expectedIds),
@@ -165,7 +192,7 @@ void main() {
         initialInstanceData: const <String, dynamic>{
           'title': 'Smoke-test listing',
           'category': 'Board Games',
-          'ownerPersonaId': 'tabletop-member',
+          'ownerFanId': 'tabletop-member',
         },
         personaId: 'tabletop-member',
       );

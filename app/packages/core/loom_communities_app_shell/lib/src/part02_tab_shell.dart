@@ -788,17 +788,17 @@ class _MessagesEngineStore {
         initialInstanceData: {
           'threadId': thread.threadId,
           'subject': thread.subject,
-          'participantPersonaIds': thread.participantPersonaIds,
+          'participantFanIds': thread.participantPersonaIds,
           'messages': [
             for (final message in thread.messages)
               {
                 'messageId': message.messageId,
-                'senderPersonaId': message.senderPersonaId,
+                'senderFanId': message.senderPersonaId,
                 'body': message.body,
                 'timestamp': message.timestamp.toUtc().toIso8601String(),
               },
           ],
-          'readByPersonaIds': const <String>[],
+          'readByFanIds': const <String>[],
           'muted': thread.muted,
           'archived': thread.archived,
           'draftBody': '',
@@ -811,7 +811,7 @@ class _MessagesEngineStore {
           initialInstanceData: {
             'threadId': thread.threadId,
             'messageId': message.messageId,
-            'senderPersonaId': message.senderPersonaId,
+            'senderFanId': message.senderPersonaId,
             'body': message.body,
             'timestamp': message.timestamp.toUtc().toIso8601String(),
           },
@@ -906,13 +906,14 @@ class _MessagesEngineStore {
   );
 
   bool isVisibleTo(WorkflowInstance thread, String personaId) =>
-      (thread.instanceData['participantPersonaIds'] as List? ?? const [])
-          .contains(personaId);
+      (thread.instanceData['participantFanIds'] as List? ?? const []).contains(
+        personaId,
+      );
   bool isMuted(WorkflowInstance thread) => thread.instanceData['muted'] == true;
   bool isArchived(WorkflowInstance thread) =>
       thread.instanceData['archived'] == true;
   bool isUnread(WorkflowInstance thread, String personaId) =>
-      !(thread.instanceData['readByPersonaIds'] as List? ?? const []).contains(
+      !(thread.instanceData['readByFanIds'] as List? ?? const []).contains(
         personaId,
       );
   String lastPreview(WorkflowInstance thread) {
@@ -926,7 +927,7 @@ class _MessagesEngineStore {
     subject: '${thread.instanceData['subject'] ?? ''}',
     participantPersonaIds: [
       for (final id
-          in thread.instanceData['participantPersonaIds'] as List? ?? const [])
+          in thread.instanceData['participantFanIds'] as List? ?? const [])
         '$id',
     ],
     messages: _messages(thread),
@@ -939,7 +940,7 @@ class _MessagesEngineStore {
       if (raw is Map)
         LoomMessage(
           messageId: '${raw['messageId'] ?? ''}',
-          senderPersonaId: '${raw['senderPersonaId'] ?? ''}',
+          senderPersonaId: '${raw['senderFanId'] ?? ''}',
           body: '${raw['body'] ?? ''}',
           timestamp:
               DateTime.tryParse('${raw['timestamp'] ?? ''}')?.toLocal() ??
@@ -965,7 +966,7 @@ class _MessagesEngineStore {
         effects: [
           WorkflowEffect(
             op: 'appendUnique',
-            key: 'readByPersonaIds',
+            key: 'readByFanIds',
             value: r'$actor',
           ),
         ],
@@ -981,7 +982,7 @@ class _MessagesEngineStore {
             key: 'messages',
             value: {
               'messageId': r'$timestamp-$actor',
-              'senderPersonaId': r'$actor',
+              'senderFanId': r'$actor',
               'body': '{draftBody}',
               'timestamp': r'$timestamp',
             },
@@ -992,7 +993,7 @@ class _MessagesEngineStore {
             fields: {
               'threadId': '{threadId}',
               'messageId': r'$timestamp-$actor',
-              'senderPersonaId': r'$actor',
+              'senderFanId': r'$actor',
               'body': '{draftBody}',
               'timestamp': r'$timestamp',
             },
@@ -1018,9 +1019,9 @@ class _MessagesEngineStore {
         searchable: true,
         sortable: true,
       ),
-      'participantPersonaIds': InstanceDataField(type: 'list', required: true),
+      'participantFanIds': InstanceDataField(type: 'fanId[]', required: true),
       'messages': InstanceDataField(type: 'list', writableBy: 'effect'),
-      'readByPersonaIds': InstanceDataField(type: 'list', writableBy: 'effect'),
+      'readByFanIds': InstanceDataField(type: 'fanId[]', writableBy: 'effect'),
       'muted': InstanceDataField(type: 'boolean'),
       'archived': InstanceDataField(type: 'boolean'),
       'draftBody': InstanceDataField(type: 'text'),
@@ -1035,7 +1036,7 @@ class _MessagesEngineStore {
     instanceDataSchema: const {
       'threadId': InstanceDataField(type: 'string', required: true),
       'messageId': InstanceDataField(type: 'string', required: true),
-      'senderPersonaId': InstanceDataField(type: 'string', required: true),
+      'senderFanId': InstanceDataField(type: 'fanId', required: true),
       'body': InstanceDataField(type: 'text', required: true, searchable: true),
       'timestamp': InstanceDataField(type: 'text', required: true),
     },
@@ -1514,8 +1515,8 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
     final responseLabel = responseId == null
         ? ''
         : _labelForResponse(responseId);
-    final goingPersonaIds = _stringList(data['goingPersonaIds']);
-    final waitlistedPersonaIds = _stringList(data['waitlistedPersonaIds']);
+    final goingPersonaIds = _stringList(data['goingFanIds']);
+    final waitlistedPersonaIds = _stringList(data['waitlistedFanIds']);
     final capacity =
         _intData(data['capacity']) ??
         _capacityFromLabel(item.capacityLabel) ??
@@ -1528,7 +1529,7 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
       'location': data['location'] ?? item.location ?? '',
       'capacityLabel': _capacityLabel(goingPersonaIds.length, capacity),
       'rsvpStatus': responseLabel,
-      'waitlistedPersonaIds': waitlistedPersonaIds,
+      'waitlistedFanIds': waitlistedPersonaIds,
       'reminderState': widget.reminderEnabled ? 'Reminder set' : '',
     };
   }

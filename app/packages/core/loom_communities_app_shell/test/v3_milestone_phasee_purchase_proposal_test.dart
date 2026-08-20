@@ -111,9 +111,11 @@ Future<void> _selectTab(
 }) async {
   final tab = find.byKey(ValueKey('community-tab-$tabId'));
   await _pumpUntil(tester, tab);
+  final root = find.byKey(ValueKey(rootKey));
+  if (root.evaluate().isNotEmpty) return;
   await tester.ensureVisible(tab);
   await tester.tap(tab);
-  await _pumpUntil(tester, find.byKey(ValueKey(rootKey)));
+  await _pumpUntil(tester, root);
 }
 
 Future<WorkflowInstance> _proposalByTitle(
@@ -175,13 +177,43 @@ Future<String> _createAndSubmitProposal(
   await _pumpUntil(tester, submit);
   await tester.ensureVisible(submit);
   await tester.tap(submit);
+  WorkflowInstance? pending;
+  WorkflowInstance? lastObserved;
+  for (var attempt = 0; attempt < 40; attempt++) {
+    final current = (await tester.runAsync(
+      () => _proposalByTitle(engine, title),
+    ))!;
+    lastObserved = current;
+    if (current.currentState == 'pending') {
+      pending = current;
+      break;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  final errorText = find
+      .byKey(ValueKey('generic-instance-error-${draft.instanceId}'))
+      .evaluate()
+      .map((element) => element.widget)
+      .whereType<Text>()
+      .map((text) => text.data)
+      .whereType<String>()
+      .join(' | ');
+  expect(
+    pending,
+    isNotNull,
+    reason:
+        'Submit should move $title to pending; '
+        'lastState=${lastObserved?.currentState}, '
+        'data=${lastObserved?.instanceData}, error=$errorText',
+  );
+  final submitted = pending!;
   await _pumpUntilGone(tester, submit);
 
-  final pending = (await tester.runAsync(
-    () => _proposalByTitle(engine, title),
-  ))!;
-  expect(pending.currentState, 'pending');
-  return pending.instanceId;
+  expect(submitted.currentState, 'pending');
+  return submitted.instanceId;
 }
 
 Finder _card(String instanceId) =>
@@ -192,8 +224,10 @@ Finder _action(String instanceId, String transitionId) =>
 
 Future<void> _decideFromAdmin(
   WidgetTester tester, {
+  required WorkflowEngineApi engine,
   required String instanceId,
   required String transitionId,
+  required String expectedState,
 }) async {
   final card = _card(instanceId);
   await _pumpUntil(tester, card);
@@ -201,7 +235,35 @@ Future<void> _decideFromAdmin(
   await _pumpUntil(tester, action);
   await tester.ensureVisible(action);
   await tester.tap(action);
-  await _pumpUntilGone(tester, card);
+  WorkflowInstance? decided;
+  for (var attempt = 0; attempt < 40; attempt++) {
+    final page = (await tester.runAsync(
+      () => engine.queryInstances(
+        tabId: 'admin',
+        personaId: 'tabletop-organizer',
+        limit: 100,
+      ),
+    ))!;
+    final matches = page.items.where(
+      (instance) => instance.instanceId == instanceId,
+    );
+    final current = matches.isEmpty ? null : matches.first;
+    if (current?.currentState == expectedState) {
+      decided = current;
+      break;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  expect(
+    decided,
+    isNotNull,
+    reason: '$transitionId should move $instanceId to $expectedState.',
+  );
+  await _pumpUntilGone(tester, action);
+  expect(card, findsOneWidget);
 }
 
 void main() {
@@ -216,16 +278,18 @@ void main() {
       specVersion: source['specVersion'] as int?,
       experienceConfiguration: source['experience'] as Map<String, Object?>,
     );
-    const appShellConfiguration = <String, Object?>{
-      'tabs': <Object?>[
-        <String, Object?>{
-          'tabId': 'admin',
-          'label': 'Organizer desk',
-          'iconKey': 'board',
-          'description': 'Review proposals and publish club updates.',
-        },
-      ],
-    };
+    final appShellConfiguration = Map<String, Object?>.from(
+      source['appShell']! as Map,
+    );
+    final tabs = (appShellConfiguration['tabs']! as List)
+        .map((tab) => Map<String, Object?>.from(tab as Map))
+        .toList();
+    final admin = tabs.singleWhere((tab) => tab['tabId'] == 'admin');
+    admin
+      ..['label'] = 'Organizer desk'
+      ..['iconKey'] = 'board'
+      ..['description'] = 'Review proposals and publish club updates.';
+    appShellConfiguration['tabs'] = tabs;
 
     final memberTabIds = appShellTabsFor(
       experience: experience,
@@ -363,45 +427,45 @@ void main() {
 
         await _decideFromAdmin(
           tester,
+          engine: installed.engine,
           instanceId: approvedId,
           transitionId: 'approve',
+          expectedState: 'approved',
         );
         final approved = (await tester.runAsync(
           () => _proposalByTitle(installed.engine, approvedTitle),
         ))!;
         expect(approved.currentState, 'approved');
-        expect(
-          approved.instanceData['decidedByPersonaId'],
-          'tabletop-organizer',
-        );
+        expect(approved.instanceData['decidedByFanId'], 'tabletop-organizer');
         expect(approved.instanceData['decidedAt'], isNotNull);
 
         await _decideFromAdmin(
           tester,
+          engine: installed.engine,
           instanceId: rejectedId,
           transitionId: 'reject',
+          expectedState: 'rejected',
         );
         final rejected = (await tester.runAsync(
           () => _proposalByTitle(installed.engine, rejectedTitle),
         ))!;
         expect(rejected.currentState, 'rejected');
-        expect(
-          rejected.instanceData['decidedByPersonaId'],
-          'tabletop-organizer',
-        );
+        expect(rejected.instanceData['decidedByFanId'], 'tabletop-organizer');
         expect(rejected.instanceData['decidedAt'], isNotNull);
 
         await _decideFromAdmin(
           tester,
+          engine: installed.engine,
           instanceId: changesId,
           transitionId: 'request-changes',
+          expectedState: 'changes-requested',
         );
         final changesRequested = (await tester.runAsync(
           () => _proposalByTitle(installed.engine, changesTitle),
         ))!;
         expect(changesRequested.currentState, 'changes-requested');
         expect(
-          changesRequested.instanceData['decidedByPersonaId'],
+          changesRequested.instanceData['decidedByFanId'],
           'tabletop-organizer',
         );
 

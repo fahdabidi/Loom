@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 import 'package:test/test.dart';
@@ -17,9 +14,7 @@ LoomWorkflowStateMachine makeMachine({
   return LoomWorkflowStateMachine(
     workflowType: workflowType,
     initialState: initialState,
-    states: states.map(
-      (k, v) => MapEntry(k, LoomWorkflowState.fromJson(v)),
-    ),
+    states: states.map((k, v) => MapEntry(k, LoomWorkflowState.fromJson(v))),
     transitions: transitions
         .map((t) => LoomWorkflowTransition.fromJson(t))
         .toList(),
@@ -31,195 +26,6 @@ LoomWorkflowStateMachine makeMachine({
     ),
   );
 }
-
-/// Strips // and /* */ comments from JSONC content, string-aware
-/// (replicates the logic in the CLI's _stripComments).
-String _stripJsoncComments(String content) {
-  final buf = StringBuffer();
-  var i = 0;
-  var inString = false;
-  const space = ' ';
-
-  while (i < content.length) {
-    if (inString && content[i] == '\\' && i + 1 < content.length) {
-      buf.write(content[i]);
-      i++;
-      buf.write(content[i]);
-      i++;
-      continue;
-    }
-
-    if (content[i] == '"') {
-      inString = !inString;
-      buf.write(content[i]);
-      i++;
-      continue;
-    }
-
-    if (!inString &&
-        i + 1 < content.length &&
-        content[i] == '/' &&
-        content[i + 1] == '*') {
-      buf.write(space); buf.write(space);
-      i += 2;
-      while (i + 1 < content.length) {
-        if (content[i] == '*' && content[i + 1] == '/') {
-          buf.write(space); buf.write(space);
-          i += 2;
-          break;
-        }
-        buf.write(content[i] == '\n' ? '\n' : space);
-        i++;
-      }
-      continue;
-    }
-
-    if (!inString &&
-        i + 1 < content.length &&
-        content[i] == '/' &&
-        content[i + 1] == '/') {
-      buf.write(space); buf.write(space);
-      i += 2;
-      while (i < content.length && content[i] != '\n') {
-        buf.write(space);
-        i++;
-      }
-      if (i < content.length && content[i] == '\n') {
-        buf.write('\n');
-        i++;
-      }
-      continue;
-    }
-
-    buf.write(content[i]);
-    i++;
-  }
-
-  return buf.toString().trim();
-}
-
-class _FixtureBundle {
-  const _FixtureBundle({required this.workflows, required this.personas});
-
-  final Map<String, LoomWorkflowStateMachine> workflows;
-  final Set<String> personas;
-}
-
-String _resolveMarketplaceFixturePath() {
-  const relativePath =
-      'docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-      'Loom_Communities_Workflow_Engine_Marketplace_Example.jsonc';
-
-  var directory = Directory.current;
-  for (var i = 0; i < 8; i++) {
-    final candidate = File('${directory.path}/$relativePath');
-    if (candidate.existsSync()) {
-      return candidate.path;
-    }
-
-    final parent = directory.parent;
-    if (parent.path == directory.path) break;
-    directory = parent;
-  }
-
-  throw const FileSystemException('Fixture not found', relativePath);
-}
-
-/// Loads workflow definitions from a JSONC file at [path],
-/// using the same parsing logic as the CLI.
-_FixtureBundle _loadFixtureBundle(String path) {
-  final file = File(path);
-  if (!file.existsSync()) {
-    throw FileSystemException('Fixture not found', path);
-  }
-  final content = _stripJsoncComments(file.readAsStringSync());
-  final json = jsonDecode(content) as Map<String, dynamic>;
-
-  final personas = <String>{};
-  if (json['personas'] is List<dynamic>) {
-    for (final persona in (json['personas'] as List<dynamic>)) {
-      if (persona is String && persona.isNotEmpty) {
-        personas.add(persona);
-      }
-    }
-  }
-
-  final defs = json['workflowDefinitions'] as Map<String, dynamic>? ?? json;
-
-  final workflows = defs.map((k, v) {
-    final definition = v as Map<String, dynamic>;
-    return MapEntry(
-      k,
-      LoomWorkflowStateMachine.fromJson(definition, k),
-    );
-  });
-
-  return _FixtureBundle(workflows: workflows, personas: personas);
-}
-
-/// The six "expected affordance" warning types added alongside the
-/// ChatGPT-authored Apartment Events review (Skill test, 2026-08-03), the
-/// CJM.4 render-binding-coverage check, and the CJM.5 dead-role-binding check
-/// (both 2026-08-09): editable_fields_without_edit_guard,
-/// no_creation_path_for_editable_type, no_destructive_exit_for_managed_type,
-/// no_read_visibility_declared, no_render_binding_for_reachable_state, and
-/// dead_role_binding.
-/// These are real, previously
-/// invisible create/edit/cancel-affordance gaps in several of this file's
-/// legacy Phase 5 migration fixtures -- not a validator regression. Fixing
-/// each fixture is tracked separately; these tests should keep failing on
-/// any OTHER new finding type, so this only tolerates the six known ones.
-void _expectCleanExceptKnownAffordanceGaps(ValidationReport report) {
-  // These fixtures also predate the tabId-open/archetype-closed migration's
-  // canonical 9-value cardSurfaceFamily registry -- they were authored
-  // against the original, much broader Phase 5 concept catalog
-  // (documentLibrary, dashboard, calendarAgenda, stateMachineGrid, etc.),
-  // which the migration's own evidence trail confirmed is not used by any
-  // real (docs/references/communities) fixture. unknown_card_surface_family
-  // is a real, correctly-identified finding on this legacy content, not a
-  // validator bug -- rewriting these historical design-phase example files
-  // to the new closed vocabulary is out of scope here (they are not live
-  // product content). Any OTHER new error type should still fail the test.
-  final unexpectedErrors = report.errors
-      .where((f) => f.type != 'unknown_card_surface_family')
-      .toList();
-  expect(
-    unexpectedErrors,
-    isEmpty,
-    reason: 'Unexpected new error type(s): '
-        '${unexpectedErrors.map((f) => '${f.type} @ ${f.location}').toSet()}',
-  );
-  final unexpected = report.warnings
-      .where((f) => !_knownAffordanceGapTypes.contains(f.type))
-      .toList();
-  expect(
-    unexpected,
-    isEmpty,
-    reason: 'Unexpected new warning type(s): '
-        '${unexpected.map((f) => '${f.type} @ ${f.location}').toSet()}',
-  );
-  // report.passed requires zero errors; a tolerated unknown_card_surface_family
-  // finding still counts as a real error, so passed is only true when this
-  // legacy fixture happens to use exclusively canonical archetype names.
-  expect(report.passed, report.errors.isEmpty);
-}
-
-const _knownAffordanceGapTypes = {
-  'editable_fields_without_edit_guard',
-  'no_creation_path_for_editable_type',
-  'no_destructive_exit_for_managed_type',
-  'no_read_visibility_declared',
-  'no_render_binding_for_reachable_state',
-  'dead_role_binding',
-  // These legacy Phase 5 / reference fixtures predate the new semantic-bank
-  // rules (destructive_transition_ignores_availability_field,
-  // possible_fabricated_identifier) and genuinely match the shapes those
-  // rules target -- real, correctly-identified findings, not false
-  // positives. Fixing the underlying fixtures is explicitly out of scope for
-  // the ticket that added these rules; tracked as real follow-up work.
-  'destructive_transition_ignores_availability_field',
-  'possible_fabricated_identifier',
-};
 
 void main() {
   group('Validator — stuck states', () {
@@ -245,34 +51,38 @@ void main() {
       final report = WorkflowValidator().validate({'stuck-test': stuck});
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'stuck_state' && f.location.contains('stuck')),
+        report.errors.any(
+          (f) => f.type == 'stuck_state' && f.location.contains('stuck'),
+        ),
         isTrue,
         reason: 'Expected a stuck_state error naming "stuck"',
       );
     });
 
-    test('passes when every non-terminal state has at least one outgoing transition', () {
-      final machine = makeMachine(
-        workflowType: 'clean',
-        initialState: 'a',
-        states: {
-          'a': {'label': 'A', 'isTerminal': false},
-          'b': {'label': 'B', 'isTerminal': true},
-        },
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Go',
-            'from': ['a'],
-            'to': 'b',
+    test(
+      'passes when every non-terminal state has at least one outgoing transition',
+      () {
+        final machine = makeMachine(
+          workflowType: 'clean',
+          initialState: 'a',
+          states: {
+            'a': {'label': 'A', 'isTerminal': false},
+            'b': {'label': 'B', 'isTerminal': true},
           },
-        ],
-      );
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Go',
+              'from': ['a'],
+              'to': 'b',
+            },
+          ],
+        );
 
-      final report = WorkflowValidator().validate({'clean': machine});
-      expect(report.errors.where((f) => f.type == 'stuck_state'), isEmpty);
-    });
+        final report = WorkflowValidator().validate({'clean': machine});
+        expect(report.errors.where((f) => f.type == 'stuck_state'), isEmpty);
+      },
+    );
 
     test('regression guard: marketplace "queued" state bug', () {
       final machine = makeMachine(
@@ -302,10 +112,12 @@ void main() {
       final report = WorkflowValidator().validate({'buggy': machine});
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'stuck_state' && f.location.contains('queued')),
+        report.errors.any(
+          (f) => f.type == 'stuck_state' && f.location.contains('queued'),
+        ),
         isTrue,
-        reason: 'Expected a stuck_state error naming "queued" — '
+        reason:
+            'Expected a stuck_state error naming "queued" — '
             'this is the regression guard for the original marketplace bug',
       );
     });
@@ -331,11 +143,14 @@ void main() {
         ],
       );
 
-      final report = WorkflowValidator().validate({'unreachable-test': machine});
+      final report = WorkflowValidator().validate({
+        'unreachable-test': machine,
+      });
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'unreachable_state' && f.location.contains('orphan')),
+        report.errors.any(
+          (f) => f.type == 'unreachable_state' && f.location.contains('orphan'),
+        ),
         isTrue,
         reason: 'Expected an unreachable_state error naming "orphan"',
       );
@@ -367,7 +182,10 @@ void main() {
       );
 
       final report = WorkflowValidator().validate({'connected': machine});
-      expect(report.errors.where((f) => f.type == 'unreachable_state'), isEmpty);
+      expect(
+        report.errors.where((f) => f.type == 'unreachable_state'),
+        isEmpty,
+      );
     });
   });
 
@@ -393,12 +211,16 @@ void main() {
         ],
       );
 
-      final report = WorkflowValidator().validate({'dangling-dep-test': machine});
+      final report = WorkflowValidator().validate({
+        'dangling-dep-test': machine,
+      });
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'dangling_requires_workflows_complete' &&
-            f.message.contains('non-existent-workflow')),
+        report.errors.any(
+          (f) =>
+              f.type == 'dangling_requires_workflows_complete' &&
+              f.message.contains('non-existent-workflow'),
+        ),
         isTrue,
       );
     });
@@ -422,10 +244,17 @@ void main() {
         ],
       );
 
-      final report = WorkflowValidator().validate({'dangling-link-test': machine});
-      expect(report.warnings.any((f) =>
-          f.type == 'dangling_linked_workflow_id' &&
-          f.message.contains('non-existent-link')), isTrue);
+      final report = WorkflowValidator().validate({
+        'dangling-link-test': machine,
+      });
+      expect(
+        report.warnings.any(
+          (f) =>
+              f.type == 'dangling_linked_workflow_id' &&
+              f.message.contains('non-existent-link'),
+        ),
+        isTrue,
+      );
     });
 
     test('validates allowedPersonaIds against the supplied persona registry', () {
@@ -442,7 +271,9 @@ void main() {
             'label': 'Go',
             'from': ['start'],
             'to': 'end',
-            'guard': {'allowedPersonaIds': ['known-user', 'typo-user']},
+            'guard': {
+              'allowedRoleIds': ['known-user', 'typo-user'],
+            },
           },
         ],
       );
@@ -461,7 +292,7 @@ void main() {
             'from': ['start'],
             'to': 'end',
             'guard': {
-              'allowedPersonaIds': ['known-user'],
+              'allowedRoleIds': ['known-user'],
             },
           },
         ],
@@ -481,7 +312,7 @@ void main() {
             'from': ['start'],
             'to': 'end',
             'guard': {
-              'allowedPersonaIds': ['typo-user'],
+              'allowedRoleIds': ['typo-user'],
             },
           },
         ],
@@ -489,11 +320,7 @@ void main() {
 
       final report = WorkflowValidator(
         knownPersonaIds: {'known-user'},
-      ).validate({
-        'persona-source': a,
-        'bad-persona': b,
-        'bad-persona-dup': c,
-      });
+      ).validate({'persona-source': a, 'bad-persona': b, 'bad-persona-dup': c});
 
       final warnings = report.warnings
           .where((f) => f.type == 'dangling_allowed_persona_id')
@@ -502,17 +329,21 @@ void main() {
       expect(
         warnings.length,
         equals(2),
-        reason: 'The same typo repeated in two workflows should produce two warnings',
+        reason:
+            'The same typo repeated in two workflows should produce two warnings',
       );
       expect(
         warnings.any((f) => f.message.contains('known-user')),
         isFalse,
-        reason: 'A valid persona ID in the supplied registry should not be flagged',
+        reason:
+            'A valid persona ID in the supplied registry should not be flagged',
       );
       expect(
-        report.warnings.any((f) =>
-            f.type == 'dangling_allowed_persona_id' &&
-            f.message.contains('typo-user')),
+        report.warnings.any(
+          (f) =>
+              f.type == 'dangling_allowed_persona_id' &&
+              f.message.contains('typo-user'),
+        ),
         isTrue,
         reason: 'Expected dangling_allowed_persona_id warnings for typo-user',
       );
@@ -533,21 +364,24 @@ void main() {
             'from': ['start'],
             'to': 'end',
             'guard': {
-              'allowedPersonaIds': ['unknown-user'],
+              'allowedRoleIds': ['unknown-user'],
             },
           },
         ],
       );
 
-      final report = WorkflowValidator(knownPersonaIds: {'known-user'}).validate({
-        'bad-allowed-persona': machine,
-      });
+      final report = WorkflowValidator(
+        knownPersonaIds: {'known-user'},
+      ).validate({'bad-allowed-persona': machine});
       expect(
-        report.warnings.any((f) =>
-            f.type == 'dangling_allowed_persona_id' &&
-            f.message.contains('unknown-user')),
+        report.warnings.any(
+          (f) =>
+              f.type == 'dangling_allowed_persona_id' &&
+              f.message.contains('unknown-user'),
+        ),
         isTrue,
-        reason: 'Expected a dangling_allowed_persona_id warning for unknown-user',
+        reason:
+            'Expected a dangling_allowed_persona_id warning for unknown-user',
       );
     });
 
@@ -578,9 +412,11 @@ void main() {
       final report = WorkflowValidator().validate({'bad-guard-key': machine});
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'dangling_instance_data_key' &&
-            f.message.contains('missingKey')),
+        report.errors.any(
+          (f) =>
+              f.type == 'dangling_instance_data_key' &&
+              f.message.contains('missingKey'),
+        ),
         isTrue,
       );
     });
@@ -612,9 +448,11 @@ void main() {
       final report = WorkflowValidator().validate({'bad-effect-key': machine});
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'dangling_instance_data_key' &&
-            f.message.contains('missingEffectKey')),
+        report.errors.any(
+          (f) =>
+              f.type == 'dangling_instance_data_key' &&
+              f.message.contains('missingEffectKey'),
+        ),
         isTrue,
       );
     });
@@ -809,8 +647,9 @@ void main() {
       final report = WorkflowValidator().validate({'no-label-test': machine});
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'missing_label' && f.message.contains('"go"')),
+        report.errors.any(
+          (f) => f.type == 'missing_label' && f.message.contains('"go"'),
+        ),
         isTrue,
       );
     });
@@ -844,7 +683,7 @@ void main() {
       for (var i = 0; i < 33; i++) {
         bindings.add({
           'states': ['a'],
-          'role': 'any',
+          'audience': 'any',
           'tabId': 'tab$i',
           'cardSurfaceFamily': 'family$i',
           'bindingKind': 'primary',
@@ -868,10 +707,13 @@ void main() {
         renderBindings: bindings,
       );
 
-      final report = WorkflowValidator().validate({'too-many-bindings': machine});
+      final report = WorkflowValidator().validate({
+        'too-many-bindings': machine,
+      });
       expect(
-        report.warnings.any((f) =>
-            f.type == 'binding_cap_exceeded' && f.message.contains('33')),
+        report.warnings.any(
+          (f) => f.type == 'binding_cap_exceeded' && f.message.contains('33'),
+        ),
         isTrue,
         reason: 'Expected a warning about 33 bindings exceeding the 32 cap',
       );
@@ -882,7 +724,7 @@ void main() {
       for (var i = 0; i < 17; i++) {
         bindings.add({
           'states': ['a'],
-          'role': 'role$i',
+          'audience': 'role$i',
           'tabId': 'tab$i',
           'cardSurfaceFamily': 'family$i',
           'bindingKind': 'primary',
@@ -908,10 +750,12 @@ void main() {
 
       final report = WorkflowValidator().validate({'too-many-roles': machine});
       expect(
-        report.warnings.any((f) =>
-            f.type == 'binding_cap_exceeded' && f.message.contains('17')),
+        report.warnings.any(
+          (f) => f.type == 'binding_cap_exceeded' && f.message.contains('17'),
+        ),
         isTrue,
-        reason: 'Expected a warning about 17 distinct roles exceeding the 16 cap',
+        reason:
+            'Expected a warning about 17 distinct roles exceeding the 16 cap',
       );
     });
   });
@@ -942,12 +786,16 @@ void main() {
         },
       );
 
-      final report = WorkflowValidator().validate({'effect-in-editable': machine});
+      final report = WorkflowValidator().validate({
+        'effect-in-editable': machine,
+      });
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'effect_field_in_editable_fields' &&
-            f.message.contains('effectOnly')),
+        report.errors.any(
+          (f) =>
+              f.type == 'effect_field_in_editable_fields' &&
+              f.message.contains('effectOnly'),
+        ),
         isTrue,
       );
     });
@@ -977,8 +825,10 @@ void main() {
       );
 
       final report = WorkflowValidator().validate({'clean-editable': machine});
-      expect(report.errors.where(
-          (f) => f.type == 'effect_field_in_editable_fields'), isEmpty);
+      expect(
+        report.errors.where((f) => f.type == 'effect_field_in_editable_fields'),
+        isEmpty,
+      );
     });
 
     test('flags editableFields referencing a missing schema key', () {
@@ -1003,60 +853,67 @@ void main() {
         instanceDataSchema: {},
       );
 
-      final report = WorkflowValidator().validate({'missing-editable-key': machine});
+      final report = WorkflowValidator().validate({
+        'missing-editable-key': machine,
+      });
       expect(report.passed, isFalse);
       expect(
-        report.errors.any((f) =>
-            f.type == 'dangling_instance_data_key' &&
-            f.message.contains('nonExistent')),
+        report.errors.any(
+          (f) =>
+              f.type == 'dangling_instance_data_key' &&
+              f.message.contains('nonExistent'),
+        ),
         isTrue,
       );
     });
   });
 
   group('Validator — action-button-row slot', () {
-    test('flags a primary binding whose template lacks WorkflowActionButtonRow', () {
-      final machine = makeMachine(
-        workflowType: 'missing-slot',
-        initialState: 'a',
-        states: {
-          'a': {'label': 'A'},
-          'b': {'label': 'B', 'isTerminal': true},
-        },
-        transitions: [
-          {
-            'id': 'go',
-            'label': 'Go',
-            'from': ['a'],
-            'to': 'b',
+    test(
+      'flags a primary binding whose template lacks WorkflowActionButtonRow',
+      () {
+        final machine = makeMachine(
+          workflowType: 'missing-slot',
+          initialState: 'a',
+          states: {
+            'a': {'label': 'A'},
+            'b': {'label': 'B', 'isTerminal': true},
           },
-        ],
-        renderBindings: [
-          {
-            'states': ['a'],
-            'role': 'any',
-            'tabId': 'tab1',
-            'cardSurfaceFamily': 'bad-template',
-            'bindingKind': 'primary',
+          transitions: [
+            {
+              'id': 'go',
+              'label': 'Go',
+              'from': ['a'],
+              'to': 'b',
+            },
+          ],
+          renderBindings: [
+            {
+              'states': ['a'],
+              'audience': 'any',
+              'tabId': 'tab1',
+              'cardSurfaceFamily': 'bad-template',
+              'bindingKind': 'primary',
+            },
+          ],
+        );
+
+        final templates = <String, Map<String, dynamic>>{
+          'bad-template': {
+            'slots': ['SomeOtherSlot'],
           },
-        ],
-      );
+        };
 
-      final templates = <String, Map<String, dynamic>>{
-        'bad-template': {
-          'slots': ['SomeOtherSlot'],
-        },
-      };
-
-      final validator = WorkflowValidator(templates: templates);
-      final report = validator.validate({'missing-slot': machine});
-      expect(report.passed, isFalse);
-      expect(
-        report.errors.any((f) => f.type == 'missing_action_button_row'),
-        isTrue,
-        reason: 'Expected a missing_action_button_row error',
-      );
-    });
+        final validator = WorkflowValidator(templates: templates);
+        final report = validator.validate({'missing-slot': machine});
+        expect(report.passed, isFalse);
+        expect(
+          report.errors.any((f) => f.type == 'missing_action_button_row'),
+          isTrue,
+          reason: 'Expected a missing_action_button_row error',
+        );
+      },
+    );
 
     test('passes when template includes WorkflowActionButtonRow', () {
       final machine = makeMachine(
@@ -1077,7 +934,7 @@ void main() {
         renderBindings: [
           {
             'states': ['a'],
-            'role': 'any',
+            'audience': 'any',
             'tabId': 'tab1',
             'cardSurfaceFamily': 'good-template',
             'bindingKind': 'primary',
@@ -1118,7 +975,7 @@ void main() {
         renderBindings: [
           {
             'states': ['a'],
-            'role': 'actor',
+            'audience': 'actor',
             'tabId': 'tab1',
             'cardSurfaceFamily': 'bad-template',
             'bindingKind': 'summary',
@@ -1181,7 +1038,8 @@ void main() {
       expect(report.passed, isFalse);
       expect(
         report.errors.any(
-            (f) => f.type == 'sortable_column_without_backing_field'),
+          (f) => f.type == 'sortable_column_without_backing_field',
+        ),
         isTrue,
       );
     });
@@ -1222,417 +1080,11 @@ void main() {
       final validator = WorkflowValidator(tableArchetypeConfigs: tableConfigs);
       final report = validator.validate({'sortable-ok': machine});
       expect(
-        report.errors
-            .where((f) => f.type == 'sortable_column_without_backing_field'),
-        isEmpty,
-      );
-    });
-  });
-
-  group('Validator — green path with real marketplace fixture', () {
-    test('the actual .jsonc fixture parses and passes with zero findings', () {
-      final fixturePath = _resolveMarketplaceFixturePath();
-      final fixture = _loadFixtureBundle(fixturePath);
-      expect(fixture.workflows.length, greaterThanOrEqualTo(2),
-          reason: 'Fixture should contain at least equipment-loan and '
-              'equipment-giveaway definitions');
-
-      final report = WorkflowValidator(
-        knownPersonaIds: fixture.personas,
-      ).validate(fixture.workflows);
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator — HOA documents fixture', () {
-    test('the HOA documentLibrary fixture parses and passes with zero findings', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Documents_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Documents_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personaIds'] as List).cast<String>();
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - HOA architectural request fixture', () {
-    test('the HOA request fixture parses and passes with zero findings', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Architectural_Request_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Architectural_Request_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personaIds'] as List).cast<String>();
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-      expect(
-        machines['cedar-commons-architectural-request']!
-            .renderBindings
-            .where((binding) => binding.role == 'receiver')
-            .length,
-        greaterThanOrEqualTo(2),
-        reason: 'Fixture must declare reviewer dashboard and timeline bindings.',
-      );
-    });
-  });
-
-  group('Validator - HOA dues payment fixture', () {
-    test('the HOA dues fixture reuses paymentCheckout and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Dues_Payment_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_HOA_Dues_Payment_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(
-        (templates['paymentCheckout']!['slots'] as List).cast<String>(),
-        equals(['WorkflowFactPillRow', 'WorkflowActionButtonRow']),
-        reason: 'HOA dues must reuse the Phase 3 paymentCheckout slot shape.',
-      );
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      expect(report.errors, isEmpty);
-      expect(
-        report.warnings.where(
-          (finding) =>
-              finding.type != 'no_read_visibility_declared' &&
-              finding.type != 'dead_role_binding' &&
-              // hoa-dues-payment's fields are all effect-writable with no
-              // create action/effect anywhere in this legacy fixture -- a
-              // real, correctly-identified gap now caught by the broadened
-              // no_creation_path_for_editable_type check (previously only
-              // fired for formEntry-writable types). Fixing the fixture is
-              // out of scope for the ticket that broadened this rule.
-              finding.type != 'no_creation_path_for_editable_type',
+        report.errors.where(
+          (f) => f.type == 'sortable_column_without_backing_field',
         ),
         isEmpty,
       );
-      expect(report.passed, isTrue);
     });
   });
-
-  group('Validator - Garden Club migration fixture', () {
-    test('the Garden Club Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('garden-event-rsvp'));
-      expect(machines.keys, contains('garden-tool-loan'));
-      expect(machines.keys, contains('plant-exchange-submission'));
-      expect(machines.keys, contains('garden-volunteer-shift'));
-      expect(machines.keys, contains('garden-export-custom-schemas'));
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - Camera Club migration fixture', () {
-    test('the Camera Club Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('photo-walk-rsvp'));
-      expect(machines.keys, contains('critique-submission'));
-      expect(machines.keys, contains('gear-loan-request'));
-      expect(machines.keys, contains('camera-validation-report'));
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - Book Club migration fixture', () {
-    test('the Book Club Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('book-nomination'));
-      expect(machines.keys, contains('book-vote'));
-      expect(machines.keys, contains('book-library-item'));
-      expect(machines.keys, contains('book-search-ai-digest'));
-      expect(templates.keys, contains('votePoll'));
-      expect(templates.keys, contains('searchAiAnswer'));
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - Chess Club migration fixture', () {
-    test('the Chess Club Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('chess-match-meetup'));
-      expect(machines.keys, contains('chess-match-result'));
-      expect(machines.keys, contains('chess-rankings-table'));
-      expect(templates['table']!['rankingMode'], isTrue);
-      expect(
-        machines['chess-match-result']!.transitions.any((transition) =>
-            transition.id == 'submit-result' &&
-            transition.effects.any((effect) => effect.key == 'rankingRows')),
-        isTrue,
-      );
-
-      final report = WorkflowValidator(
-        templates: templates,
-        tableArchetypeConfigs: {'chess-rankings-table': templates['table']!},
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - Youth Soccer migration fixture', () {
-    test('the Youth Soccer Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('soccer-guardian-join-approval'));
-      expect(machines.keys, contains('soccer-team-roster'));
-      expect(machines.keys, contains('soccer-minor-redaction'));
-      expect(templates.keys, contains('guidedProcess'));
-      expect(templates.keys, contains('protectedDetail'));
-      expect(
-        machines['soccer-team-roster']!
-            .instanceDataSchema['playerName']!
-            .sortable,
-        isTrue,
-      );
-
-      final report = WorkflowValidator(
-        templates: templates,
-        tableArchetypeConfigs: {'soccer-team-roster': templates['table']!},
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
-  group('Validator - Mosque migration fixture', () {
-    test('the Mosque Phase 5 fixture parses and passes cleanly', () {
-      final file = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
-      );
-      final fallbackFile = File(
-        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
-        'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
-      );
-      final fixtureFile = file.existsSync() ? file : fallbackFile;
-      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
-          as Map<String, dynamic>;
-      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
-      final machines = definitions.map(
-        (key, value) => MapEntry(
-          key,
-          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
-        ),
-      );
-      final templates = (json['templates'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, value as Map<String, dynamic>),
-      );
-      final personaIds = (json['personas'] as List).cast<String>();
-
-      expect(machines.keys, contains('mosque-event-rsvp'));
-      expect(machines.keys, contains('mosque-care-request'));
-      expect(machines.keys, contains('mosque-discussion-thread'));
-      expect(templates.keys, contains('protectedDetail'));
-      expect(templates.keys, contains('searchAiAnswer'));
-      expect(
-        machines['mosque-event-rsvp']!.renderBindings.any(
-          (binding) => binding.audienceMemberField == 'invitedPersonaIds',
-        ),
-        isTrue,
-      );
-
-      final report = WorkflowValidator(
-        templates: templates,
-        knownPersonaIds: personaIds.toSet(),
-      ).validate(machines);
-
-      _expectCleanExceptKnownAffordanceGaps(report);
-    });
-  });
-
 }

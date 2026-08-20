@@ -125,12 +125,12 @@ void _addFocusedTournamentFab(Map<String, dynamic> source) {
     'kind': 'create',
     'workflowType': 'tournament-ballot',
     'label': 'Create ballot from focused tournament',
-    'byPersonaIds': <String>['tabletop-organizer'],
+    'byRoleIds': <String>['tabletop-organizer'],
     'scope': 'instance',
     'presentation': 'fab',
     'prefill': <String, dynamic>{
       'eventId': '{context.id}',
-      'ownerPersonaId': '\$actor',
+      'ownerFanId': '\$actor',
     },
   });
   calendarBinding['actions'] = actions;
@@ -230,8 +230,11 @@ void main() {
             limit: 100,
           );
           return home.items
-              .where((item) => item.instanceData['eventId'] == 'event-summer-tournament')
-              .map((item) => item.instanceData['ownerPersonaId'])
+              .where(
+                (item) =>
+                    item.instanceData['eventId'] == 'event-summer-tournament',
+              )
+              .map((item) => item.instanceData['ownerFanId'])
               .toSet();
         });
         expect(actorIds, contains('tabletop-organizer'));

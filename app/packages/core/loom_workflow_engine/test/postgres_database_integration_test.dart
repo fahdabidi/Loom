@@ -19,7 +19,7 @@ const _definitionJson = '''
       "label": "Publish",
       "from": ["draft"],
       "to": "published",
-      "guard": {"allowedPersonaIds": ["member"]},
+      "guard": {"allowedRoleIds": ["member"]},
       "effects": [
         {"op": "set", "key": "status", "value": "published"}
       ]
@@ -28,7 +28,7 @@ const _definitionJson = '''
   "renderBindings": [
     {
       "states": ["draft", "published"],
-      "role": "any",
+      "audience": "any",
       "tabId": "postgres-test",
       "cardSurfaceFamily": "postgres-test-card",
       "bindingKind": "primary"

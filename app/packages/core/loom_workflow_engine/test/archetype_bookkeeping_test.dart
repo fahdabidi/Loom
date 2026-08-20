@@ -25,7 +25,7 @@ LoomWorkflowStateMachine _machine({
   'renderBindings': <Map<String, dynamic>>[
     <String, dynamic>{
       'states': <String>['open'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'home',
       'cardSurfaceFamily': family,
       'bindingKind': 'primary',
@@ -71,15 +71,15 @@ void main() {
             family: 'documentLibrary',
             action: 'open',
             instanceDataSchema: <String, dynamic>{
-              'openedPersonaIds': <String, dynamic>{
-                'type': 'personaId[]',
+              'openedFanIds': <String, dynamic>{
+                'type': 'fanId[]',
                 'writableBy': 'effect',
               },
             },
             effects: <Map<String, dynamic>>[
               <String, dynamic>{
                 'op': 'appendUnique',
-                'key': 'openedPersonaIds',
+                'key': 'openedFanIds',
                 'value': r'$actor',
               },
             ],
@@ -90,8 +90,8 @@ void main() {
       await _apply(api, 'documents', instanceId);
       final result = await _apply(api, 'documents', instanceId);
 
-      expect(result.newInstanceData['openedPersonaIds'], <String>['actor']);
-      expect(result.newInstanceData, isNot(contains('openedFanIds')));
+      expect(result.newInstanceData['openedFanIds'], <String>['actor']);
+      expect(result.newInstanceData, isNot(contains('openedPersonaIds')));
     },
   );
 
@@ -124,15 +124,15 @@ void main() {
           family: 'documentLibrary',
           action: 'open',
           instanceDataSchema: <String, dynamic>{
-            'communityAuditPersonaIds': <String, dynamic>{
-              'type': 'personaId[]',
+            'communityAuditFanIds': <String, dynamic>{
+              'type': 'fanId[]',
               'writableBy': 'effect',
             },
           },
           effects: <Map<String, dynamic>>[
             <String, dynamic>{
               'op': 'append',
-              'key': 'communityAuditPersonaIds',
+              'key': 'communityAuditFanIds',
               'value': r'$actor',
             },
           ],
@@ -144,7 +144,7 @@ void main() {
     final result = await _apply(api, 'documents', instanceId);
 
     expect(result.newInstanceData['openedFanIds'], <String>['actor']);
-    expect(result.newInstanceData['communityAuditPersonaIds'], <String>[
+    expect(result.newInstanceData['communityAuditFanIds'], <String>[
       'actor',
       'actor',
     ]);
@@ -205,15 +205,14 @@ void main() {
       for (var index = 0; index < cases.length; index++) {
         final (family, action, contractField, operation) = cases[index];
         final workflowType = 'workflow-$index';
-        final legacyField = contractField.replaceFirst('FanIds', 'PersonaIds');
         api.registerDefinition(
           _machine(
             workflowType: workflowType,
             family: family,
             action: action,
             instanceDataSchema: <String, dynamic>{
-              legacyField: <String, dynamic>{
-                'type': 'personaId[]',
+              contractField: <String, dynamic>{
+                'type': 'fanId[]',
                 'writableBy': 'effect',
               },
             },
@@ -223,7 +222,7 @@ void main() {
             ? <String>['other']
             : <String>['actor', 'other'];
         final instanceId = await _create(api, workflowType, <String, dynamic>{
-          legacyField: initial,
+          contractField: initial,
         });
 
         await _apply(api, workflowType, instanceId);
@@ -233,11 +232,10 @@ void main() {
             ? <String>['other', 'actor']
             : <String>['other'];
         expect(
-          result.newInstanceData[legacyField],
+          result.newInstanceData[contractField],
           expected,
-          reason: '$family.$action must maintain $legacyField',
+          reason: '$family.$action must maintain $contractField',
         );
-        expect(result.newInstanceData, isNot(contains(contractField)));
       }
     },
   );

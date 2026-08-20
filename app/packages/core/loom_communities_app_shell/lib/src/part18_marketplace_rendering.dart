@@ -28,7 +28,7 @@ class _WorkflowAudienceSelectorFieldState
   void initState() {
     super.initState();
     _scope = widget.initialInstanceData['audienceScope'] as String? ?? 'all';
-    final initialIds = widget.initialInstanceData['invitedPersonaIds'];
+    final initialIds = widget.initialInstanceData['invitedFanIds'];
     _selectedPersonaIds = initialIds is Iterable
         ? initialIds.map((id) => '$id').toSet()
         : <String>{};
@@ -64,7 +64,7 @@ class _WorkflowAudienceSelectorFieldState
   void _emit() {
     widget.onChanged({
       'audienceScope': _scope,
-      'invitedPersonaIds': _scope == 'all'
+      'invitedFanIds': _scope == 'all'
           ? <String>[]
           : _selectedPersonaIds.toList(growable: false),
     });
@@ -322,8 +322,8 @@ eventRsvpDefaultInstanceDataSchema = {
     hideWhenEmpty: true,
     displayContexts: ['detail'],
   ),
-  'waitlistedPersonaIds': WorkflowFactPillFieldSchema(
-    type: 'personaId[]',
+  'waitlistedFanIds': WorkflowFactPillFieldSchema(
+    type: 'fanId[]',
     displayIcon: 'hourglass_empty',
     labelTemplate: 'Waitlist: {value.length}',
     hideWhenEmpty: true,
@@ -370,15 +370,15 @@ equipmentLoanDefaultInstanceDataSchema = {
     labelTemplate: '{value}',
     displayContexts: ['tile', 'detail'],
   ),
-  'holderPersonaId': WorkflowFactPillFieldSchema(
-    type: 'personaId',
+  'holderFanId': WorkflowFactPillFieldSchema(
+    type: 'fanId',
     maxLines: 2,
     displayIcon: 'person_outline',
     labelTemplate: 'Holder: {value}',
     displayContexts: ['tile', 'detail'],
   ),
-  'queuedPersonaIds': WorkflowFactPillFieldSchema(
-    type: 'personaId[]',
+  'queuedFanIds': WorkflowFactPillFieldSchema(
+    type: 'fanId[]',
     displayIcon: 'groups_outlined',
     labelTemplate: 'Queue: {value.length}',
     hideWhenEmpty: true,
@@ -417,8 +417,8 @@ equipmentGiveawayDefaultInstanceDataSchema = {
     labelTemplate: '{value}',
     displayContexts: ['detail'],
   ),
-  'claimedByPersonaId': WorkflowFactPillFieldSchema(
-    type: 'personaId',
+  'claimedByFanId': WorkflowFactPillFieldSchema(
+    type: 'fanId',
     maxLines: 2,
     displayIcon: 'person_outline',
     labelTemplate: 'Claimed by: {value}',
@@ -570,11 +570,14 @@ class WorkflowFactPillRow extends StatelessWidget {
         accent: accent,
       );
     }
-    if (type == 'personaid' || type == 'personaid[]') {
+    if (type == 'personaid' ||
+        type == 'personaid[]' ||
+        type == 'fanid' ||
+        type == 'fanid[]') {
       return _WorkflowPersonaFact(
         key: ValueKey('workflow-fact-persona-$field'),
         label: label,
-        isCollection: type == 'personaid[]',
+        isCollection: type == 'personaid[]' || type == 'fanid[]',
         foreground: foreground,
         accent: accent,
         maxLines: schema.maxLines,
@@ -612,9 +615,7 @@ class WorkflowFactPillRow extends StatelessWidget {
         maxLines: schema.maxLines,
       );
     }
-    if (type == 'list' &&
-        schema.itemSchema != null &&
-        value is List) {
+    if (type == 'list' && schema.itemSchema != null && value is List) {
       final itemRows = <Widget>[];
       for (var index = 0; index < value.length; index++) {
         final item = value[index];
@@ -711,10 +712,7 @@ class WorkflowFactPillRow extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final item in itemRows) ...[
-              item,
-              const SizedBox(height: 8),
-            ],
+            for (final item in itemRows) ...[item, const SizedBox(height: 8)],
           ],
         );
       }
@@ -776,11 +774,8 @@ class WorkflowFactPillRow extends StatelessWidget {
           key: embeddedKey,
           onTap: url == null
               ? null
-              : () async => _openUrlInApp(
-                    context: context,
-                    url: url,
-                    title: title,
-                  ),
+              : () async =>
+                    _openUrlInApp(context: context, url: url, title: title),
           child: _SurfaceFactPill(
             icon: Icons.open_in_new,
             label: embeddedLabel,
@@ -806,7 +801,8 @@ class WorkflowFactPillRow extends StatelessWidget {
   }) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => _DocumentLibraryEmbeddedUrlViewer(url: url, title: title),
+        builder: (_) =>
+            _DocumentLibraryEmbeddedUrlViewer(url: url, title: title),
       ),
     );
   }
@@ -937,9 +933,9 @@ class _WorkflowFactParagraph extends StatelessWidget {
             Text(
               value?.toString() ?? '',
               softWrap: true,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: foreground,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: foreground),
             ),
           ],
         ),
@@ -1007,7 +1003,10 @@ class _WorkflowPersonaFact extends StatelessWidget {
 }
 
 String _humanizeFactField(String field) => field
-    .replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (match) => '${match[1]} ${match[2]}')
+    .replaceAllMapped(
+      RegExp(r'([a-z])([A-Z])'),
+      (match) => '${match[1]} ${match[2]}',
+    )
     .replaceAll('_', ' ')
     .replaceFirstMapped(RegExp(r'^.'), (match) => match[0]!.toUpperCase());
 

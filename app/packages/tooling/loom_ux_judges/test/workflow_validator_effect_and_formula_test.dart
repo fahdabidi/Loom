@@ -83,7 +83,7 @@ void main() {
       final report = _validate(
         {},
         guard: {
-          'actorEqualsField': {'key': 'recipientPersonaId'},
+          'actorEqualsField': {'key': 'recipientFanId'},
         },
       );
 
@@ -94,10 +94,10 @@ void main() {
     test('reports a list-typed actorEqualsField key', () {
       final report = _validate(
         {
-          'recipientPersonaIds': {'type': 'list'},
+          'recipientFanIds': {'type': 'list'},
         },
         guard: {
-          'actorEqualsField': {'key': 'recipientPersonaIds'},
+          'actorEqualsField': {'key': 'recipientFanIds'},
         },
       );
 
@@ -108,10 +108,10 @@ void main() {
     test('accepts a scalar actorEqualsField key', () {
       final report = _validate(
         {
-          'recipientPersonaId': {'type': 'personaId'},
+          'recipientFanId': {'type': 'fanId'},
         },
         guard: {
-          'actorEqualsField': {'key': 'recipientPersonaId'},
+          'actorEqualsField': {'key': 'recipientFanId'},
         },
       );
 
@@ -320,41 +320,41 @@ void main() {
         ],
         extraWorkflows: {'target': target},
       );
-      expect(
-        _has(badSortKey, 'dangling_transition_related_sort_key'),
-        isTrue,
-      );
+      expect(_has(badSortKey, 'dangling_transition_related_sort_key'), isTrue);
     });
 
-    test('validates transitionRelated onSuccessEffects against the target schema', () {
-      final target = _machine(
-        'target',
-        schema: {
-          'targetValue': {'type': 'text'},
-        },
-      );
-      final report = _validate(
-        {
-          'sourceValue': {'type': 'text'},
-        },
-        effects: [
-          {
-            'op': 'transitionRelated',
-            'relatedQuery': {
-              'workflowType': 'target',
-              'filter': <String, dynamic>{},
-            },
-            'transitionId': 'continue',
-            'onSuccessEffects': [
-              {'op': 'set', 'key': 'targetValue', 'value': 'updated'},
-            ],
+    test(
+      'validates transitionRelated onSuccessEffects against the target schema',
+      () {
+        final target = _machine(
+          'target',
+          schema: {
+            'targetValue': {'type': 'text'},
           },
-        ],
-        extraWorkflows: {'target': target},
-      );
+        );
+        final report = _validate(
+          {
+            'sourceValue': {'type': 'text'},
+          },
+          effects: [
+            {
+              'op': 'transitionRelated',
+              'relatedQuery': {
+                'workflowType': 'target',
+                'filter': <String, dynamic>{},
+              },
+              'transitionId': 'continue',
+              'onSuccessEffects': [
+                {'op': 'set', 'key': 'targetValue', 'value': 'updated'},
+              ],
+            },
+          ],
+          extraWorkflows: {'target': target},
+        );
 
-      expect(report.passed, isTrue, reason: report.findings.join('\n'));
-    });
+        expect(report.passed, isTrue, reason: report.findings.join('\n'));
+      },
+    );
 
     test('reports an undeclared field in target onSuccessEffects', () {
       final target = _machine(
@@ -445,16 +445,31 @@ void main() {
         'invalid_recurrence_freq': withRule({'freq': 'yearly', 'count': 1}),
         'missing_recurrence_count': withRule({'freq': 'weekly'}),
         'invalid_recurrence_count': withRule({'freq': 'weekly', 'count': 367}),
-        'invalid_recurrence_interval':
-            withRule({'freq': 'weekly', 'count': 1, 'interval': 0}),
-        'invalid_recurrence_weekday_code':
-            withRule({'freq': 'weekly', 'count': 1, 'byDayOfWeek': ['XX']}),
-        'invalid_recurrence_month_day':
-            withRule({'freq': 'monthly', 'count': 1, 'byMonthDay': 32}),
-        'invalid_recurrence_set_pos_value':
-            withRule({'freq': 'monthly', 'count': 1, 'bySetPos': 'fifth'}),
-        'recurrence_field_invalid_for_freq':
-            withRule({'freq': 'daily', 'count': 1, 'byDayOfWeek': ['MO']}),
+        'invalid_recurrence_interval': withRule({
+          'freq': 'weekly',
+          'count': 1,
+          'interval': 0,
+        }),
+        'invalid_recurrence_weekday_code': withRule({
+          'freq': 'weekly',
+          'count': 1,
+          'byDayOfWeek': ['XX'],
+        }),
+        'invalid_recurrence_month_day': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'byMonthDay': 32,
+        }),
+        'invalid_recurrence_set_pos_value': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'bySetPos': 'fifth',
+        }),
+        'recurrence_field_invalid_for_freq': withRule({
+          'freq': 'daily',
+          'count': 1,
+          'byDayOfWeek': ['MO'],
+        }),
         'recurrence_month_day_set_pos_conflict': withRule({
           'freq': 'monthly',
           'count': 1,
@@ -462,16 +477,22 @@ void main() {
           'bySetPos': 'first',
           'byDayOfWeek': ['MO'],
         }),
-        'dangling_recurrence_set_pos_without_weekday':
-            withRule({'freq': 'monthly', 'count': 1, 'bySetPos': 'first'}),
+        'dangling_recurrence_set_pos_without_weekday': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'bySetPos': 'first',
+        }),
         'invalid_recurrence_set_pos_weekday_count': withRule({
           'freq': 'monthly',
           'count': 1,
           'bySetPos': 'first',
           'byDayOfWeek': ['MO', 'TU'],
         }),
-        'recurrence_weekday_without_set_pos':
-            withRule({'freq': 'monthly', 'count': 1, 'byDayOfWeek': ['MO']}),
+        'recurrence_weekday_without_set_pos': withRule({
+          'freq': 'monthly',
+          'count': 1,
+          'byDayOfWeek': ['MO'],
+        }),
       };
 
       for (final entry in cases.entries) {

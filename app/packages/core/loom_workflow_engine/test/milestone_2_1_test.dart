@@ -23,11 +23,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
           ],
         ),
         effects: [
-          WorkflowEffect(
-            op: 'set',
-            key: 'rsvpByPersona.\$actor',
-            value: 'going',
-          ),
+          WorkflowEffect(op: 'set', key: 'rsvpByFan.\$actor', value: 'going'),
         ],
       ),
       LoomWorkflowTransition(
@@ -46,11 +42,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
           ],
         ),
         effects: [
-          WorkflowEffect(
-            op: 'set',
-            key: 'rsvpByPersona.\$actor',
-            value: 'maybe',
-          ),
+          WorkflowEffect(op: 'set', key: 'rsvpByFan.\$actor', value: 'maybe'),
         ],
       ),
       LoomWorkflowTransition(
@@ -71,7 +63,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
         effects: [
           WorkflowEffect(
             op: 'set',
-            key: 'rsvpByPersona.\$actor',
+            key: 'rsvpByFan.\$actor',
             value: 'not-going',
           ),
         ],
@@ -91,14 +83,14 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
         tabId: 'calendar',
         cardSurfaceFamily: 'event-invite',
         bindingKind: 'primary',
-        audienceMemberField: 'invitedPersonaIds',
+        audienceMemberField: 'invitedFanIds',
       ),
     ],
     instanceDataSchema: {
       'title': InstanceDataField(type: 'text', required: true),
       'audienceScope': InstanceDataField(type: 'audienceSelector'),
-      'invitedPersonaIds': InstanceDataField(type: 'personaId[]'),
-      'rsvpByPersona': InstanceDataField(type: 'personaResponseMap'),
+      'invitedFanIds': InstanceDataField(type: 'fanId[]'),
+      'rsvpByFan': InstanceDataField(type: 'personaResponseMap'),
     },
   );
 }
@@ -119,7 +111,7 @@ void main() {
         machine,
         'scheduled',
         ['receiver'],
-        instanceData: {'audienceScope': 'all', 'invitedPersonaIds': <String>[]},
+        instanceData: {'audienceScope': 'all', 'invitedFanIds': <String>[]},
         personaId: 'alice',
       );
       expect(allBindings.map((binding) => binding.role), contains('receiver'));
@@ -131,7 +123,7 @@ void main() {
           const [],
           instanceData: {
             'audienceScope': 'selected',
-            'invitedPersonaIds': ['alice', 'bob', 'cora'],
+            'invitedFanIds': ['alice', 'bob', 'cora'],
           },
           personaId: personaId,
         ).any((binding) => binding.role == 'receiver');
@@ -144,7 +136,7 @@ void main() {
         const [],
         instanceData: {
           'audienceScope': 'selected',
-          'invitedPersonaIds': ['alice', 'bob', 'cora'],
+          'invitedFanIds': ['alice', 'bob', 'cora'],
         },
         personaId: 'drew',
       );
@@ -160,7 +152,7 @@ void main() {
           const [],
           instanceData: {
             'audienceScope': 'individual',
-            'invitedPersonaIds': ['bob'],
+            'invitedFanIds': ['bob'],
           },
           personaId: personaId,
         ).any((binding) => binding.role == 'receiver');
@@ -175,7 +167,7 @@ void main() {
         const [],
         instanceData: {
           'audienceScope': 'selected',
-          'invitedPersonaIds': ['alice', 'bob'],
+          'invitedFanIds': ['alice', 'bob'],
         },
         personaId: 'cora',
       );
@@ -194,10 +186,10 @@ void main() {
             initialInstanceData: {
               'title': 'Invite $index',
               'audienceScope': 'selected',
-              'invitedPersonaIds': index == 1 || index == 3
+              'invitedFanIds': index == 1 || index == 3
                   ? ['alice', 'bob']
                   : ['bob', 'cora'],
-              'rsvpByPersona': <String, String>{},
+              'rsvpByFan': <String, String>{},
             },
           );
         }
@@ -205,7 +197,7 @@ void main() {
         final page = await api.queryInstances(
           tabId: 'calendar',
           personaId: 'alice',
-          query: const SurfaceQuery(audienceMemberField: 'invitedPersonaIds'),
+          query: const SurfaceQuery(audienceMemberField: 'invitedFanIds'),
         );
 
         expect(page.items, hasLength(2));
@@ -224,8 +216,8 @@ void main() {
         initialInstanceData: {
           'title': 'Game night',
           'audienceScope': 'selected',
-          'invitedPersonaIds': ['alice', 'bob'],
-          'rsvpByPersona': <String, String>{},
+          'invitedFanIds': ['alice', 'bob'],
+          'rsvpByFan': <String, String>{},
         },
       );
 
@@ -236,7 +228,7 @@ void main() {
           const [],
           instanceData: {
             'audienceScope': 'selected',
-            'invitedPersonaIds': ['alice', 'bob'],
+            'invitedFanIds': ['alice', 'bob'],
           },
           personaId: invitee,
         );
@@ -267,7 +259,7 @@ void main() {
         (item) => item.instanceId == instanceId,
       );
 
-      expect(instance.instanceData['rsvpByPersona'], {
+      expect(instance.instanceData['rsvpByFan'], {
         'alice': 'going',
         'bob': 'maybe',
       });

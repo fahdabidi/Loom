@@ -107,8 +107,6 @@ class WorkflowValidator {
     'time',
     'list',
     'map',
-    'personaId',
-    'personaId[]',
     'fanId',
     'fanId[]',
     'roleId',
@@ -122,8 +120,6 @@ class WorkflowValidator {
     'time?',
     'list?',
     'map?',
-    'personaId?',
-    'personaId[]?',
     'fanId?',
     'fanId[]?',
     'roleId?',
@@ -139,9 +135,9 @@ class WorkflowValidator {
   /// Used by the sortable-column check.
   final Map<String, Map<String, dynamic>>? tableArchetypeConfigs;
 
-  /// Declared persona IDs that may be used in `allowedPersonaIds`.
-  /// When provided, this drives dangling-persona checks.
-  /// When omitted, persona-id dangling checks are skipped.
+  /// Declared role IDs that may be used in JSON `allowedRoleIds` guards.
+  /// When provided, this drives dangling-role checks.
+  /// When omitted, role-id dangling checks are skipped.
   final Set<String>? knownPersonaIds;
   final Set<String>? declaredTabIds;
 
@@ -604,7 +600,7 @@ class WorkflowValidator {
       if (binding.tabId == 'calendar' &&
           binding.role != 'any' &&
           !(binding.role == 'receiver' &&
-            binding.audienceMemberField != null)) {
+              binding.audienceMemberField != null)) {
         findings.add(
           ValidationFinding(
             type: 'dead_role_binding',
@@ -626,7 +622,8 @@ class WorkflowValidator {
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      if (knownWorkflowArchetypeIds.contains(binding.cardSurfaceFamily)) continue;
+      if (knownWorkflowArchetypeIds.contains(binding.cardSurfaceFamily))
+        continue;
       findings.add(
         ValidationFinding(
           type: 'unknown_card_surface_family',
@@ -662,7 +659,7 @@ class WorkflowValidator {
           type: 'unknown_tab_id',
           message:
               'tabId "${binding.tabId}" is not a built-in tab ("home", '
-              '"messages") and is not declared in appShell.tabs/personaTabs.',
+              '"messages") and is not declared in appShell.tabs/roleTabs.',
           location:
               '${machine.workflowType}/renderBindings/${binding.states.join(",")}/tabId',
         ),
@@ -672,8 +669,8 @@ class WorkflowValidator {
 
   // ---------------------------------------------------------------------------
   // Dangling references (§7c):
-  //   - allowedPersonaIds: any persona ID referenced in a guard should exist
-  //     (heuristic: check against all persona IDs across all workflows)
+  //   - allowedRoleIds: any role ID referenced in a guard should exist
+  //     (heuristic: check against all role IDs across all workflows)
   //   - requiresWorkflowsComplete: target workflow type must exist in loaded set
   //   - linkedWorkflowId: target must exist (warning, may be external)
   //   - instanceDataSchema keys in guards/effects must exist in the schema
@@ -723,12 +720,12 @@ class WorkflowValidator {
         }
       }
 
-      // Check allowedPersonaIds against known persona IDs.
-      // This is a warning, not an error — without a global persona registry,
-      // a persona used by only one workflow in the loaded set may be
+      // Check allowedRoleIds against known role IDs.
+      // This is a warning, not an error — without a global role registry,
+      // a role used by only one workflow in the loaded set may be
       // intentionally scoped, not a typo.
       if (t.guard.allowedPersonaIds != null) {
-        // If a real persona registry is not available, skip this check rather
+        // If a real role registry is not available, skip this check rather
         // than failing valid fixture references due to reduced context.
         if (knownPersonaIds == null || knownPersonaIds!.isEmpty) {
           continue;
@@ -740,13 +737,13 @@ class WorkflowValidator {
               ValidationFinding(
                 type: 'dangling_allowed_persona_id',
                 message:
-                    'Transition "${t.id}"\'s guard.allowedPersonaIds references '
-                    '"$personaId", which does not appear in the known persona '
-                    'registry. This may indicate a typo or a persona ID that '
+                    'Transition "${t.id}"\'s guard.allowedRoleIds references '
+                    '"$personaId", which does not appear in the known role '
+                    'registry. This may indicate a typo or a role ID that '
                     'was not declared anywhere.',
                 location:
                     '${machine.workflowType}/transitions/${t.id}/guard/'
-                    'allowedPersonaIds',
+                    'allowedRoleIds',
                 isWarning: true,
               ),
             );
@@ -961,7 +958,9 @@ class WorkflowValidator {
         }
         final transitionId = effect.transitionId;
         if (transitionId == null ||
-            !target.transitions.any((candidate) => candidate.id == transitionId)) {
+            !target.transitions.any(
+              (candidate) => candidate.id == transitionId,
+            )) {
           findings.add(
             ValidationFinding(
               type: 'dangling_transition_related_transition_id',
@@ -972,7 +971,8 @@ class WorkflowValidator {
           );
         }
         final sortKey = relatedQuery!.sortKey;
-        if (sortKey != null && !target.instanceDataSchema.containsKey(sortKey)) {
+        if (sortKey != null &&
+            !target.instanceDataSchema.containsKey(sortKey)) {
           findings.add(
             ValidationFinding(
               type: 'dangling_transition_related_sort_key',
@@ -1061,8 +1061,9 @@ class WorkflowValidator {
             ),
           );
         } else if (!_isInputToken(anchorField)) {
-          if (!(effect.fields ?? const <String, dynamic>{})
-              .containsKey(anchorField)) {
+          if (!(effect.fields ?? const <String, dynamic>{}).containsKey(
+            anchorField,
+          )) {
             findings.add(
               ValidationFinding(
                 type: 'dangling_recurrence_anchor_field',
@@ -1099,7 +1100,8 @@ class WorkflowValidator {
 
         final freq = recurrenceRule['freq'];
         final hasStaticFreq = !_isInputToken(freq);
-        final validFreq = freq is String &&
+        final validFreq =
+            freq is String &&
             const {'daily', 'weekly', 'monthly'}.contains(freq);
         if (freq == null) {
           findings.add(
@@ -1113,8 +1115,7 @@ class WorkflowValidator {
           findings.add(
             ValidationFinding(
               type: 'invalid_recurrence_freq',
-              message:
-                  'recurrenceRule.freq must be daily, weekly, or monthly.',
+              message: 'recurrenceRule.freq must be daily, weekly, or monthly.',
               location: '$location/recurrenceRule/freq',
             ),
           );
@@ -1166,8 +1167,15 @@ class WorkflowValidator {
                 byDayOfWeek.any(
                   (value) =>
                       value is! String ||
-                      !const {'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'}
-                          .contains(value),
+                      !const {
+                        'MO',
+                        'TU',
+                        'WE',
+                        'TH',
+                        'FR',
+                        'SA',
+                        'SU',
+                      }.contains(value),
                 ) ||
                 byDayOfWeek.toSet().length != byDayOfWeek.length)) {
           findings.add(
@@ -1200,12 +1208,16 @@ class WorkflowValidator {
         }
 
         final bySetPos = recurrenceRule['bySetPos'];
-        final hasStaticBySetPos =
-            bySetPos != null && !_isInputToken(bySetPos);
+        final hasStaticBySetPos = bySetPos != null && !_isInputToken(bySetPos);
         if (hasStaticBySetPos &&
             (bySetPos is! String ||
-                !const {'first', 'second', 'third', 'fourth', 'last'}
-                    .contains(bySetPos))) {
+                !const {
+                  'first',
+                  'second',
+                  'third',
+                  'fourth',
+                  'last',
+                }.contains(bySetPos))) {
           findings.add(
             ValidationFinding(
               type: 'invalid_recurrence_set_pos_value',
@@ -1491,10 +1503,16 @@ class WorkflowValidator {
         .toList();
     if (availabilityFields.isEmpty) return;
 
-    String? matchingSiblingTransition(LoomWorkflowTransition target, String field) {
+    String? matchingSiblingTransition(
+      LoomWorkflowTransition target,
+      String field,
+    ) {
       for (final transition in machine.transitions) {
         if (transition.id == target.id) continue;
-        if (_isTransitionGuardCheckingAvailabilityField(transition.guard, field)) {
+        if (_isTransitionGuardCheckingAvailabilityField(
+          transition.guard,
+          field,
+        )) {
           return transition.id;
         }
       }
@@ -1576,8 +1594,9 @@ class WorkflowValidator {
               final value = effect.value as String;
               final trimmedValue = value.trim();
               final isTemplate =
-                  (trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) ||
-                      trimmedValue.contains('{');
+                  (trimmedValue.startsWith('{') &&
+                      trimmedValue.endsWith('}')) ||
+                  trimmedValue.contains('{');
               if (!isTemplate &&
                   trimmedValue != '\$actor' &&
                   trimmedValue != '\$timestamp') {
@@ -1800,7 +1819,7 @@ class WorkflowValidator {
               'absent editGuard means editing is not exposed at all for this '
               'state, for any persona -- the editableFields declaration has '
               'no effect. Add an editGuard (e.g. '
-              '{"allowedPersonaIds": [...]}) naming who may edit, or remove '
+              '{"allowedRoleIds": [...]}) naming who may edit, or remove '
               'editableFields if this state was never meant to be editable.',
           location: '${machine.workflowType}/states/$stateName/editGuard',
           isWarning: true,
@@ -2127,11 +2146,14 @@ class WorkflowValidator {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions) {
         if (action.kind == 'create' || action.kind == 'transition') continue;
-        findings.add(ValidationFinding(
-          type: 'unknown_action_kind',
-          message: 'actions[].kind "${action.kind}" is not "create" or "transition".',
-          location: _actionLocation(machine, binding, 'kind'),
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_action_kind',
+            message:
+                'actions[].kind "${action.kind}" is not "create" or "transition".',
+            location: _actionLocation(machine, binding, 'kind'),
+          ),
+        );
       }
     }
   }
@@ -2142,12 +2164,18 @@ class WorkflowValidator {
   ) {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions) {
-        if (action.scope == null || action.scope == 'tab' || action.scope == 'instance') continue;
-        findings.add(ValidationFinding(
-          type: 'unknown_action_scope',
-          message: 'actions[].scope "${action.scope}" is not "tab" or "instance".',
-          location: _actionLocation(machine, binding, 'scope'),
-        ));
+        if (action.scope == null ||
+            action.scope == 'tab' ||
+            action.scope == 'instance')
+          continue;
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_action_scope',
+            message:
+                'actions[].scope "${action.scope}" is not "tab" or "instance".',
+            location: _actionLocation(machine, binding, 'scope'),
+          ),
+        );
       }
     }
   }
@@ -2158,12 +2186,18 @@ class WorkflowValidator {
   ) {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions) {
-        if (action.presentation == null || action.presentation == 'fab' || action.presentation == 'button') continue;
-        findings.add(ValidationFinding(
-          type: 'unknown_action_presentation',
-          message: 'actions[].presentation "${action.presentation}" is not "fab" or "button".',
-          location: _actionLocation(machine, binding, 'presentation'),
-        ));
+        if (action.presentation == null ||
+            action.presentation == 'fab' ||
+            action.presentation == 'button')
+          continue;
+        findings.add(
+          ValidationFinding(
+            type: 'unknown_action_presentation',
+            message:
+                'actions[].presentation "${action.presentation}" is not "fab" or "button".',
+            location: _actionLocation(machine, binding, 'presentation'),
+          ),
+        );
       }
     }
   }
@@ -2174,13 +2208,16 @@ class WorkflowValidator {
   ) {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions) {
-        final scope = action.scope ?? (action.kind == 'transition' ? 'instance' : 'tab');
+        final scope =
+            action.scope ?? (action.kind == 'transition' ? 'instance' : 'tab');
         if (scope != 'tab' || action.presentation != 'button') continue;
-        findings.add(ValidationFinding(
-          type: 'tab_action_cannot_be_button',
-          message: 'A tab-scoped action cannot use presentation "button".',
-          location: _actionLocation(machine, binding, 'presentation'),
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'tab_action_cannot_be_button',
+            message: 'A tab-scoped action cannot use presentation "button".',
+            location: _actionLocation(machine, binding, 'presentation'),
+          ),
+        );
       }
     }
   }
@@ -2193,12 +2230,16 @@ class WorkflowValidator {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions.where((a) => a.kind == 'create')) {
         final workflowType = action.workflowType;
-        if (workflowType == null || allWorkflows.containsKey(workflowType)) continue;
-        findings.add(ValidationFinding(
-          type: 'dangling_action_workflow_type',
-          message: 'Create action workflowType "$workflowType" is not declared.',
-          location: _actionLocation(machine, binding, 'workflowType'),
-        ));
+        if (workflowType == null || allWorkflows.containsKey(workflowType))
+          continue;
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_action_workflow_type',
+            message:
+                'Create action workflowType "$workflowType" is not declared.',
+            location: _actionLocation(machine, binding, 'workflowType'),
+          ),
+        );
       }
     }
   }
@@ -2210,11 +2251,13 @@ class WorkflowValidator {
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions.where((a) => a.kind == 'create')) {
         if (action.inputs == null) continue;
-        findings.add(ValidationFinding(
-          type: 'create_action_cannot_set_inputs',
-          message: 'Create actions cannot set inputs; use prefill instead.',
-          location: _actionLocation(machine, binding, 'inputs'),
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'create_action_cannot_set_inputs',
+            message: 'Create actions cannot set inputs; use prefill instead.',
+            location: _actionLocation(machine, binding, 'inputs'),
+          ),
+        );
       }
     }
   }
@@ -2223,15 +2266,24 @@ class WorkflowValidator {
     LoomWorkflowStateMachine machine,
     List<ValidationFinding> findings,
   ) {
-    final transitionIds = machine.transitions.map((transition) => transition.id).toSet();
+    final transitionIds = machine.transitions
+        .map((transition) => transition.id)
+        .toSet();
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
-        if (action.transitionId != null && transitionIds.contains(action.transitionId)) continue;
-        findings.add(ValidationFinding(
-          type: 'dangling_action_transition_id',
-          message: 'Transition action transitionId "${action.transitionId}" is not declared on "${machine.workflowType}".',
-          location: _actionLocation(machine, binding, 'transitionId'),
-        ));
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
+        if (action.transitionId != null &&
+            transitionIds.contains(action.transitionId))
+          continue;
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_action_transition_id',
+            message:
+                'Transition action transitionId "${action.transitionId}" is not declared on "${machine.workflowType}".',
+            location: _actionLocation(machine, binding, 'transitionId'),
+          ),
+        );
       }
     }
   }
@@ -2241,13 +2293,17 @@ class WorkflowValidator {
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         if (action.scope != 'tab') continue;
-        findings.add(ValidationFinding(
-          type: 'transition_action_cannot_be_tab_scoped',
-          message: 'Transition actions must be instance-scoped.',
-          location: _actionLocation(machine, binding, 'scope'),
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'transition_action_cannot_be_tab_scoped',
+            message: 'Transition actions must be instance-scoped.',
+            location: _actionLocation(machine, binding, 'scope'),
+          ),
+        );
       }
     }
   }
@@ -2257,9 +2313,17 @@ class WorkflowValidator {
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         if (action.workflowType == null) continue;
-        findings.add(ValidationFinding(type: 'transition_action_cannot_set_workflow_type', message: 'Transition actions cannot set workflowType.', location: _actionLocation(machine, binding, 'workflowType')));
+        findings.add(
+          ValidationFinding(
+            type: 'transition_action_cannot_set_workflow_type',
+            message: 'Transition actions cannot set workflowType.',
+            location: _actionLocation(machine, binding, 'workflowType'),
+          ),
+        );
       }
     }
   }
@@ -2269,9 +2333,18 @@ class WorkflowValidator {
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         if (action.prefill == null) continue;
-        findings.add(ValidationFinding(type: 'transition_action_cannot_set_prefill', message: 'Transition actions cannot set prefill; use inputs instead.', location: _actionLocation(machine, binding, 'prefill')));
+        findings.add(
+          ValidationFinding(
+            type: 'transition_action_cannot_set_prefill',
+            message:
+                'Transition actions cannot set prefill; use inputs instead.',
+            location: _actionLocation(machine, binding, 'prefill'),
+          ),
+        );
       }
     }
   }
@@ -2281,9 +2354,18 @@ class WorkflowValidator {
     List<ValidationFinding> findings,
   ) {
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         if (action.byPersonaIds == null) continue;
-        findings.add(ValidationFinding(type: 'transition_action_cannot_set_by_persona_ids', message: 'Transition actions cannot set byPersonaIds; use the transition guard.', location: _actionLocation(machine, binding, 'byPersonaIds')));
+        findings.add(
+          ValidationFinding(
+            type: 'transition_action_cannot_set_by_persona_ids',
+            message:
+                'Transition actions cannot set byRoleIds; use the transition guard.',
+            location: _actionLocation(machine, binding, 'byRoleIds'),
+          ),
+        );
       }
     }
   }
@@ -2292,20 +2374,28 @@ class WorkflowValidator {
     LoomWorkflowStateMachine machine,
     List<ValidationFinding> findings,
   ) {
-    final transitions = {for (final transition in machine.transitions) transition.id: transition};
+    final transitions = {
+      for (final transition in machine.transitions) transition.id: transition,
+    };
     for (final binding in machine.renderBindings) {
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         final inputs = action.inputs;
         final transition = transitions[action.transitionId];
         if (inputs == null || transition == null) continue;
-        final declaredInputs = transition.inputs?.keys.toSet() ?? const <String>{};
+        final declaredInputs =
+            transition.inputs?.keys.toSet() ?? const <String>{};
         for (final key in inputs.keys) {
           if (declaredInputs.contains(key)) continue;
-          findings.add(ValidationFinding(
-            type: 'unknown_action_input_reference',
-            message: 'Transition action input "$key" is not declared by transition "${transition.id}".',
-            location: _actionLocation(machine, binding, 'inputs/$key'),
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'unknown_action_input_reference',
+              message:
+                  'Transition action input "$key" is not declared by transition "${transition.id}".',
+              location: _actionLocation(machine, binding, 'inputs/$key'),
+            ),
+          );
         }
       }
     }
@@ -2317,20 +2407,25 @@ class WorkflowValidator {
   ) {
     for (final binding in machine.renderBindings) {
       final seen = <String>{};
-      for (final action in binding.actions.where((a) => a.kind == 'transition')) {
+      for (final action in binding.actions.where(
+        (a) => a.kind == 'transition',
+      )) {
         final transitionId = action.transitionId;
         if (transitionId == null || seen.add(transitionId)) continue;
-        findings.add(ValidationFinding(
-          type: 'duplicate_action_transition_id',
-          message: 'More than one transition action names "$transitionId" on this binding.',
-          location: _actionLocation(machine, binding, 'transitionId'),
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'duplicate_action_transition_id',
+            message:
+                'More than one transition action names "$transitionId" on this binding.',
+            location: _actionLocation(machine, binding, 'transitionId'),
+          ),
+        );
       }
     }
   }
 
   // ---------------------------------------------------------------------------
-  // create-action byPersonaIds dangling-persona check
+  // create-action byRoleIds dangling-role check
   // ---------------------------------------------------------------------------
   void _checkCreatablePersonaIds(
     LoomWorkflowStateMachine machine,
@@ -2346,12 +2441,12 @@ class WorkflowValidator {
               ValidationFinding(
                 type: 'dangling_allowed_persona_id',
                 message:
-                    'creatable.byPersonaIds references "$personaId", which does '
-                    'not appear in the known persona registry. This may indicate '
-                    'a typo or a persona ID that was not declared anywhere.',
+                    'creatable.byRoleIds references "$personaId", which does '
+                    'not appear in the known role registry. This may indicate '
+                    'a typo or a role ID that was not declared anywhere.',
                 location:
                     '${machine.workflowType}/renderBindings/${binding.states.join(",")}/'
-                    'actions/byPersonaIds',
+                    'actions/byRoleIds',
                 isWarning: true,
               ),
             );

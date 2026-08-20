@@ -477,8 +477,9 @@ class _EquipmentLoanArchetypeCardState
     return null;
   }
 
-  bool get _isGiveaway =>
-      widget.resolved.machine.transitions.any((transition) => transition.id == 'claim');
+  bool get _isGiveaway => widget.resolved.machine.transitions.any(
+    (transition) => transition.id == 'claim',
+  );
 
   LoomWorkflowTransition? get _contextualBorrow =>
       _isGiveaway ? null : _action('borrow');
@@ -745,13 +746,13 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
 class _DocumentLibraryArchetypeCardState
     extends State<DocumentLibraryArchetypeCard> {
   static const _actionPersonaFields = <String, String>{
-    'record-resource-open': 'openedPersonaIds',
-    'acknowledge-resource': 'acknowledgedPersonaIds',
-    'mark-resource-unread': 'acknowledgedPersonaIds',
-    'request-resource-access': 'accessRequestedPersonaIds',
-    'save-resource': 'savedPersonaIds',
-    'record-resource-download': 'downloadedPersonaIds',
-    'request-resource-follow-up': 'followUpRequestedPersonaIds',
+    'record-resource-open': 'openedFanIds',
+    'acknowledge-resource': 'acknowledgedFanIds',
+    'mark-resource-unread': 'acknowledgedFanIds',
+    'request-resource-access': 'accessRequestedFanIds',
+    'save-resource': 'savedFanIds',
+    'record-resource-download': 'downloadedFanIds',
+    'request-resource-follow-up': 'followUpRequestedFanIds',
   };
 
   late WorkflowInstance _instance;
@@ -1182,9 +1183,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
               (itemKey, itemField) => MapEntry(
                 itemKey,
                 WorkflowFactPillFieldSchema(
-                  type: itemField.type == 'textarea'
-                      ? 'text'
-                      : itemField.type,
+                  type: itemField.type == 'textarea' ? 'text' : itemField.type,
                   maxLength: itemField.maxLength,
                   maxLines: 2,
                   displayIcon: itemField.displayIcon,
@@ -1270,7 +1269,8 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
   LoomWorkflowState? get _currentState =>
       widget.resolved.machine.states[_instance.currentState];
 
-  String get _currentStateLabel => _currentState?.label ?? _instance.currentState;
+  String get _currentStateLabel =>
+      _currentState?.label ?? _instance.currentState;
 
   String? _historyFieldKey() {
     final schema = widget.resolved.machine.instanceDataSchema;
@@ -1299,8 +1299,9 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
     if (entry is Map) {
       final status = entry['status']?.toString();
       final event = entry['event']?.toString();
-      final actor = entry['actorPersonaId']?.toString() ??
-          entry['byPersonaId']?.toString() ??
+      final actor =
+          entry['actorFanId']?.toString() ??
+          entry['byFanId']?.toString() ??
           entry['by']?.toString();
       final at = entry['at']?.toString();
       final note = entry['note']?.toString();
@@ -1317,8 +1318,8 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.modernTheme?.resolvedHeading ??
-        _foregroundFor(widget.accent);
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
     final facts = _supplementalFacts();
     final historyKey = _historyFieldKey();
     final historyEntries = _historyEntries();
@@ -1399,8 +1400,9 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                         Expanded(
                           child: Text(
                             _historyLabel(historyEntries[index]),
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(color: foreground),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.labelLarge?.copyWith(color: foreground),
                           ),
                         ),
                       ],
@@ -1411,7 +1413,9 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: LinearProgressIndicator(
-                    key: ValueKey('export-wizard-progress-${_instance.instanceId}'),
+                    key: ValueKey(
+                      'export-wizard-progress-${_instance.instanceId}',
+                    ),
                   ),
                 ),
               if (_error != null)
@@ -1544,7 +1548,8 @@ class _SearchAiAnswerArchetypeCardState
 
   static String _baseType(String raw) {
     final normalized = raw.toLowerCase();
-    if (normalized.endsWith('?')) return normalized.substring(0, normalized.length - 1);
+    if (normalized.endsWith('?'))
+      return normalized.substring(0, normalized.length - 1);
     return normalized;
   }
 
@@ -1603,7 +1608,8 @@ class _SearchAiAnswerArchetypeCardState
     return _queryText;
   }
 
-  ({String key, InstanceDataField schema, dynamic value})? get _resolvedAnswerField {
+  ({String key, InstanceDataField schema, dynamic value})?
+  get _resolvedAnswerField {
     final schema = widget.resolved.machine.instanceDataSchema;
     ({String key, InstanceDataField schema, dynamic value})? formulaField;
     ({String key, InstanceDataField schema, dynamic value})? fallback;
@@ -1615,8 +1621,7 @@ class _SearchAiAnswerArchetypeCardState
       if (!_isVisibleField(key, field)) continue;
 
       final value = _instance.instanceData[key];
-      if (field.formula != null &&
-          field.formula!.trim().isNotEmpty) {
+      if (field.formula != null && field.formula!.trim().isNotEmpty) {
         if (formulaField == null) {
           formulaField = (key: key, schema: field, value: value);
         }
@@ -1721,8 +1726,7 @@ class _SearchAiAnswerArchetypeCardState
   ];
 
   bool get _hasAnswer =>
-      _resolvedAnswerField != null &&
-      !_isEmpty(_resolvedAnswerField!.value);
+      _resolvedAnswerField != null && !_isEmpty(_resolvedAnswerField!.value);
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
@@ -1752,7 +1756,9 @@ class _SearchAiAnswerArchetypeCardState
       widget.onInstanceChanged(next);
       await _loadActions();
       if (!mounted) return;
-      if (transition.effects.any((effect) => effect.op == 'removeFromTileGrid') &&
+      if (transition.effects.any(
+            (effect) => effect.op == 'removeFromTileGrid',
+          ) &&
           widget.displayContext == 'detail') {
         Navigator.of(context).pop();
       }
@@ -1788,10 +1794,11 @@ class _SearchAiAnswerArchetypeCardState
                     children: [
                       Text(
                         'Query',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: foreground.withValues(alpha: 0.72),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: foreground.withValues(alpha: 0.72),
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1799,9 +1806,7 @@ class _SearchAiAnswerArchetypeCardState
                         key: ValueKey(
                           'search-ai-answer-query-${_instance.instanceId}-${widget.displayContext}',
                         ),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                     ],

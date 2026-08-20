@@ -56,7 +56,7 @@ const _editableDefinitionJson = '''
     "draft": {
       "label": "Draft",
       "editableFields": ["title"],
-      "editGuard": {"allowedPersonaIds": ["fan-editor"]}
+      "editGuard": {"allowedRoleIds": ["fan-editor"]}
     }
   },
   "transitions": [],

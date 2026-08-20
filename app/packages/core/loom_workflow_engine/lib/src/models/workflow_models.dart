@@ -64,7 +64,6 @@ class ActorEqualsFieldGuard {
 class WorkflowGuard {
   static const jsonKeys = <String>{
     'allowedRoleIds',
-    'allowedPersonaIds',
     'actorInList',
     'actorEqualsField',
     'instanceDataEquals',
@@ -106,11 +105,9 @@ class WorkflowGuard {
   factory WorkflowGuard.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const WorkflowGuard();
     return WorkflowGuard(
-      allowedPersonaIds:
-          ((json['allowedRoleIds'] ?? json['allowedPersonaIds'])
-                  as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList(),
+      allowedPersonaIds: (json['allowedRoleIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       actorInList: json['actorInList'] != null
           ? ListMembershipGuard.fromJson(
               json['actorInList'] as Map<String, dynamic>,
@@ -833,7 +830,6 @@ class WorkflowAction {
     'kind',
     'label',
     'byRoleIds',
-    'byPersonaIds',
     'workflowType',
     'transitionId',
     'scope',
@@ -870,10 +866,9 @@ class WorkflowAction {
   factory WorkflowAction.fromJson(Map<String, dynamic> json) => WorkflowAction(
     kind: json['kind'] as String,
     label: json['label'] as String?,
-    byPersonaIds:
-        ((json['byRoleIds'] ?? json['byPersonaIds']) as List<dynamic>?)
-            ?.map((e) => e as String)
-            .toList(),
+    byPersonaIds: (json['byRoleIds'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
     workflowType: json['workflowType'] as String?,
     transitionId: json['transitionId'] as String?,
     scope: json['scope'] as String?,
@@ -889,7 +884,6 @@ class RenderBinding {
   static const jsonKeys = <String>{
     'states',
     'audience',
-    'role',
     'tabId',
     'cardSurfaceFamily',
     'bindingKind',
@@ -938,7 +932,7 @@ class RenderBinding {
       states: (json['states'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      role: (json['audience'] ?? json['role']) as String,
+      role: json['audience'] as String,
       tabId: json['tabId'] as String,
       cardSurfaceFamily: json['cardSurfaceFamily'] as String,
       bindingKind: json['bindingKind'] as String,

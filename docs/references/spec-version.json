@@ -125,10 +125,19 @@
     "$comment": [
       "Surfaces not yet carrying `specVersion`. The docs-sync checker treats an",
       "entry here as a known exception and everything else as a failure, so this",
-      "list is the migration's own to-do -- it must reach empty."
+      "list is the migration's own to-do -- it must reach empty.",
+      "",
+      "communityFixtures and validator were emptied 2026-08-19 and both were",
+      "verified done: all 11 packages declare specVersion 4, and the legacy",
+      "supportedEnvelopeVersions/supportedExperienceVersions/supportedGrammarVersions",
+      "gates are gone from community_package_validator.dart.",
+      "",
+      "packageGenerators was emptied in the same pass and was NOT done. Restored",
+      "here after checking: all 11 tool/generate_*_package.dart still stamp",
+      "'schemaVersion': 1, none were modified, and they are live -- referenced by",
+      "the validator's package_builder.dart and by v3_milestone_calr2g_live_package_test.dart.",
+      "Emptying an entry is a claim that it is finished; this one was not."
     ],
-    "communityFixtures": "All 11 docs/references/communities/*.jsonc still declare the legacy triple. They are regenerated through the authoring Skill, never hand-edited, and are stamped specVersion 4 by that regeneration.",
-    "packageGenerators": "The 11 app/packages/core/loom_communities_app_shell/tool/generate_*_package.dart stamp the legacy fields.",
-    "validator": "supportedEnvelopeVersions / supportedExperienceVersions / supportedGrammarVersions in community_package_validator.dart gate on the legacy triple."
+    "packageGenerators": "The 11 app/packages/core/loom_communities_app_shell/tool/generate_*_package.dart stamp the legacy fields. Now that the app is specVersion 4 only, anything built through this path produces a package the app refuses to load -- so this is no longer merely stale, it is broken."
   }
 }

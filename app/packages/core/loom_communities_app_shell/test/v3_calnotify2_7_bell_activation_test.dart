@@ -138,7 +138,7 @@ void main() {
             workflowType: 'notification',
             personaId: 'notification-effect',
             initialInstanceData: const {
-              'recipientPersonaId': _personaId,
+              'recipientFanId': _personaId,
               'title': 'Tournament reminder',
               'body': 'The summer tournament ballot opens soon.',
               'createdAt': '2026-07-31T12:00:00Z',
@@ -153,7 +153,7 @@ void main() {
         );
 
         await _selectPersona(tester, _personaId);
-        await _pumpUntil(tester, _badgeLabel('1'));
+        await _pumpUntil(tester, _badgeLabel('2'));
 
         expect(
           find.byKey(const ValueKey('notification-bell-button')),

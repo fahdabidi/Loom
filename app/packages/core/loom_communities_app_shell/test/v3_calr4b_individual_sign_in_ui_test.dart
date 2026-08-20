@@ -121,36 +121,47 @@ LocalInstalledCommunity _apartmentEventsCommunity() =>
       cardImageAssetId: null,
       heroImageAssetId: null,
       accentColor: '#2f6f67',
+      specVersion: 4,
       experienceConfiguration: <String, Object?>{
-        'workflows': <Object?>[
+        'roles': <Object?>[
           <String, Object?>{
-            'workflowId': 'apartment-event-calendar',
-            'title': 'Apartment Events calendar',
-            'entryText': 'See upcoming apartment events.',
-            'actionText': 'Open the events calendar.',
-            'resultText': 'The apartment events calendar is open.',
-          },
-        ],
-        'personas': <Object?>[
-          <String, Object?>{
-            'personaId': 'apartment-event-manager',
+            'roleId': 'apartment-event-manager',
             'label': 'Event manager',
             'roleLabel': 'Manager',
             'description': 'Coordinates apartment events.',
           },
           <String, Object?>{
-            'personaId': 'apartment-resident',
+            'roleId': 'apartment-resident',
             'label': 'Resident',
             'roleLabel': 'Resident',
             'description': 'Attends apartment events.',
           },
           <String, Object?>{
-            'personaId': 'facility-privileged-resident',
+            'roleId': 'facility-privileged-resident',
             'label': 'Facility resident',
             'roleLabel': 'Privileged resident',
             'description': 'Uses privileged facility access.',
           },
         ],
+        'workflowDefinitions': <String, Object?>{
+          'apartment-event-calendar': <String, Object?>{
+            'initialState': 'open',
+            'states': <String, Object?>{
+              'open': <String, Object?>{'label': 'Apartment Events calendar'},
+            },
+            'transitions': <Object?>[],
+            'renderBindings': <Object?>[
+              <String, Object?>{
+                'states': <String>['open'],
+                'audience': 'any',
+                'tabId': 'calendar',
+                'cardSurfaceFamily': 'event-rsvp',
+                'bindingKind': 'summary',
+              },
+            ],
+            'instanceDataSchema': <String, Object?>{},
+          },
+        },
       },
     );
 
@@ -336,11 +347,7 @@ void main() {
         ),
       );
 
-      await _pumpUntil(
-        tester,
-        find.byKey(const ValueKey('persona-picker-button')),
-      );
-      await _openSpecificPersonSignIn(tester);
+      await _pumpUntil(tester, find.text('Create New Account'));
 
       final dropdown = tester.widget<DropdownButton<String>>(
         find.descendant(
@@ -385,7 +392,10 @@ void main() {
         );
         expect(priyaTile, findsOneWidget);
         expect(
-          find.descendant(of: priyaTile, matching: find.widgetWithText(Chip, 'Signed in')),
+          find.descendant(
+            of: priyaTile,
+            matching: find.widgetWithText(Chip, 'Signed in'),
+          ),
           findsOneWidget,
         );
 
@@ -410,7 +420,10 @@ void main() {
         // tapping a UI affordance that doesn't exist.
         Navigator.of(tester.element(find.byType(LoomAuthScreen))).pop();
         await tester.pumpAndSettle();
-        await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('persona-picker-button')),
+        );
 
         await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
         await _pumpUntil(

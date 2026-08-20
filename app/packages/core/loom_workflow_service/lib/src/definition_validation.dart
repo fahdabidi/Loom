@@ -1,6 +1,6 @@
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
-const supportedWorkflowSpecVersions = <int>{4};
+const supportedWorkflowSpecVersions = <int>{currentCommunitySpecVersion};
 
 class WorkflowDefinitionFinding {
   final String code;

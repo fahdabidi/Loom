@@ -6,82 +6,6 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('PersonaRoleTranslator', () {
-    late PersonaRoleTranslator translator;
-
-    setUp(() {
-      translator = PersonaRoleTranslator(const [
-        MigrationPersona(
-          personaId: 'moderator-dakota',
-          label: 'Dakota',
-          roleLabel: 'Moderator',
-        ),
-        MigrationPersona(
-          personaId: 'member-alex',
-          label: 'Alex',
-          roleLabel: 'Community Member',
-        ),
-        MigrationPersona(
-          personaId: 'member-bailey',
-          label: 'Bailey',
-          roleLabel: 'Community Member',
-        ),
-      ]);
-    });
-
-    test('full persona set for one role translates cleanly', () {
-      final audit = translator.translate(
-        ['member-alex', 'member-bailey'],
-        location: r'$.guard.allowedPersonaIds',
-        source: RoleTranslationSource.guard,
-      );
-
-      expect(audit.isClean, isTrue);
-      expect(audit.roleIds, ['community-member']);
-      expect(audit.finding, isNull);
-    });
-
-    test('strict subset of one role is flagged instead of widened', () {
-      final audit = translator.translate(
-        ['member-alex'],
-        location: r'$.guard.allowedPersonaIds',
-        source: RoleTranslationSource.guard,
-      );
-
-      expect(audit.isClean, isFalse);
-      expect(audit.roleIds, isNull);
-      expect(audit.finding?.code, 'partial_role_persona_set');
-      expect(audit.finding?.personaIds, ['member-alex']);
-      expect(audit.finding?.roleLabels, ['Community Member']);
-      expect(audit.finding?.message, contains('member-bailey'));
-    });
-
-    test('partial persona set from two roles is flagged as mixed', () {
-      final audit = translator.translate(
-        ['member-alex', 'moderator-dakota'],
-        location: r'$.guard.allowedPersonaIds',
-        source: RoleTranslationSource.guard,
-      );
-
-      expect(audit.isClean, isFalse);
-      expect(audit.roleIds, isNull);
-      expect(audit.finding?.code, 'mixed_role_labels');
-      expect(audit.finding?.roleLabels, ['Community Member', 'Moderator']);
-    });
-
-    test('full persona roster across roles translates to sorted role ids', () {
-      final audit = translator.translate(
-        ['member-alex', 'member-bailey', 'moderator-dakota'],
-        location: r'$.guard.allowedPersonaIds',
-        source: RoleTranslationSource.guard,
-      );
-
-      expect(audit.isClean, isTrue);
-      expect(audit.roleIds, ['community-member', 'moderator']);
-      expect(audit.finding, isNull);
-    });
-  });
-
   group('Member Social Space derivation', () {
     late File fixture;
     late ParsedCommunityPackage package;
@@ -106,7 +30,7 @@ void main() {
     });
 
     test('parses specVersion 4 roles using roleId', () {
-      expect(package.workflowGrammarVersion, 4);
+      expect(package.specVersion, 4);
       expect(
         package.personas
             .map(
@@ -121,6 +45,56 @@ void main() {
       );
     });
 
+    test('rejects a missing specVersion before parsing legacy shapes', () {
+      final root = jsonDecode(jsonEncode(package.root)) as Map<String, dynamic>;
+      root.remove('specVersion');
+      final experience = root['experience'] as Map<String, dynamic>;
+      experience.remove('roles');
+      experience['personas'] = const <dynamic>[];
+
+      expect(
+        () => ParsedCommunityPackage.parse(jsonEncode(root)),
+        throwsA(
+          isA<FormatException>()
+              .having(
+                (error) => error.message,
+                'message',
+                contains('specVersion: 4'),
+              )
+              .having(
+                (error) => error.message,
+                'guidance',
+                contains('docs/references/reference/identity-types.md'),
+              ),
+        ),
+      );
+    });
+
+    test('rejects pre-v4 specVersion before parsing its body', () {
+      final root = jsonDecode(jsonEncode(package.root)) as Map<String, dynamic>;
+      root['specVersion'] = 3;
+      final experience = root['experience'] as Map<String, dynamic>;
+      experience.remove('roles');
+      experience['personas'] = const <dynamic>[];
+
+      expect(
+        () => ParsedCommunityPackage.parse(jsonEncode(root)),
+        throwsA(
+          isA<FormatException>()
+              .having(
+                (error) => error.message,
+                'message',
+                contains('Unsupported specVersion "3"'),
+              )
+              .having(
+                (error) => error.message,
+                'guidance',
+                contains('docs/references/reference/identity-types.md'),
+              ),
+        ),
+      );
+    });
+
     test('uses specVersion 4 as the install payload grammarVersion', () {
       expect(
         plan.installCommunityPackagePayload,
@@ -128,12 +102,10 @@ void main() {
       );
     });
 
-    test('rejects a package with neither roles nor personas clearly', () {
+    test('rejects a package without roles clearly', () {
       final root = jsonDecode(jsonEncode(package.root)) as Map<String, dynamic>;
       final experience = root['experience'] as Map<String, dynamic>;
-      experience
-        ..remove('roles')
-        ..remove('personas');
+      experience.remove('roles');
 
       expect(
         () => ParsedCommunityPackage.parse(jsonEncode(root)),
@@ -141,7 +113,7 @@ void main() {
           isA<FormatException>().having(
             (error) => error.message,
             'message',
-            'experience.roles or experience.personas must not be empty.',
+            'experience.roles must not be empty.',
           ),
         ),
       );
@@ -164,7 +136,7 @@ void main() {
           'platform-sensitive-no-fill': ['moderator'],
         },
       );
-      expect(plan.cleanCreateActionCount, 6);
+      expect(plan.cleanCreateActionCount, 0);
       expect(plan.flaggedCreateActionCount, 0);
     });
 
@@ -263,7 +235,7 @@ void main() {
     );
   });
 
-  group('legacy package parsing', () {
+  group('another specVersion 4 package', () {
     late ParsedCommunityPackage package;
 
     setUpAll(() async {
@@ -274,12 +246,12 @@ void main() {
       );
     });
 
-    test('preserves persona and workflowGrammarVersion values', () {
+    test('preserves role and specVersion values', () {
       expect(package.communityId, 'community_garden_club');
       expect(package.communityHandle, 'garden-club');
       expect(package.displayName, 'Garden Club');
       expect(package.extensionId, 'ext_garden_club');
-      expect(package.workflowGrammarVersion, 1);
+      expect(package.specVersion, 4);
       expect(
         package.personas
             .map(

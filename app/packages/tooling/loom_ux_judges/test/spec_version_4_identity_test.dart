@@ -17,13 +17,13 @@ Map<String, Object?> _v4({
 }) => {
   'specVersion': 4,
   'experience': {
-    'roles': roles ?? [
-      {'roleId': 'member', 'label': 'Member'},
-      {'roleId': 'organizer', 'label': 'Organizer'},
-    ],
-    'workflowDefinitions': {
-      'thing': workflow ?? _workflow(),
-    },
+    'roles':
+        roles ??
+        [
+          {'roleId': 'member', 'label': 'Member'},
+          {'roleId': 'organizer', 'label': 'Organizer'},
+        ],
+    'workflowDefinitions': {'thing': workflow ?? _workflow()},
     if (extraExperience != null) ...extraExperience,
   },
   if (appShell != null) 'appShell': appShell,
@@ -38,26 +38,29 @@ Map<String, Object?> _workflow({
   'states': {
     'open': {'label': 'Open'},
   },
-  'transitions': transitions ?? [
-    {
-      'id': 'do-thing',
-      'label': 'Do',
-      'from': ['open'],
-      'to': null,
-      'guard': {
-        'allowedRoleIds': ['organizer'],
-      },
-    },
-  ],
+  'transitions':
+      transitions ??
+      [
+        {
+          'id': 'do-thing',
+          'label': 'Do',
+          'from': ['open'],
+          'to': null,
+          'guard': {
+            'allowedRoleIds': ['organizer'],
+          },
+        },
+      ],
   if (schema != null) 'instanceDataSchema': schema,
   'renderBindings': [
-    binding ?? {
-      'states': ['open'],
-      'audience': 'any',
-      'tabId': 'home',
-      'cardSurfaceFamily': 'formEntry',
-      'bindingKind': 'primary',
-    },
+    binding ??
+        {
+          'states': ['open'],
+          'audience': 'any',
+          'tabId': 'home',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+        },
   ],
 };
 
@@ -87,10 +90,7 @@ void main() {
       expect(_errors(package), contains('legacy_version_stamp'));
     });
 
-    test('legacy packages still validate under the old stamps', () {
-      // The 11 fixtures are still on the legacy triple, listed in
-      // spec-version.json -> pendingMigration. They must keep passing until
-      // regenerated.
+    test('legacy packages fail fast with v4 re-authoring guidance', () {
       final legacy = {
         'schemaVersion': 1,
         'experience': {
@@ -129,86 +129,156 @@ void main() {
           },
         },
       };
-      final types = _errors(legacy);
-      expect(types, isNot(contains('legacy_identity_key')));
-      expect(types, isNot(contains('unsupported_schema_version')));
+      final report = CommunityPackageValidator().validate(legacy);
+      expect(
+        report.errors.map((finding) => finding.type),
+        everyElement('legacy_version_stamp'),
+      );
+      expect(report.errors, hasLength(3));
+      expect(
+        report.errors.map((finding) => finding.message),
+        everyElement(
+          allOf(
+            contains('specVersion: 4'),
+            contains('docs/references/reference/identity-types.md'),
+          ),
+        ),
+      );
     });
   });
 
   group('renamed identity keys', () {
     test('allowedPersonaIds is rejected', () {
-      final types = _errors(_v4(
-        workflow: _workflow(transitions: [
-          {
-            'id': 'do-thing',
-            'label': 'Do',
-            'from': ['open'],
-            'to': null,
-            'guard': {
-              'allowedPersonaIds': ['organizer'],
-            },
-          },
-        ]),
-      ));
+      final types = _errors(
+        _v4(
+          workflow: _workflow(
+            transitions: [
+              {
+                'id': 'do-thing',
+                'label': 'Do',
+                'from': ['open'],
+                'to': null,
+                'guard': {
+                  'allowedPersonaIds': ['organizer'],
+                },
+              },
+            ],
+          ),
+        ),
+      );
       expect(types, contains('legacy_identity_key'));
     });
 
     test('renderBindings[].role is rejected in favour of audience', () {
-      final types = _errors(_v4(
-        workflow: _workflow(binding: {
-          'states': ['open'],
-          'role': 'any',
-          'tabId': 'home',
-          'cardSurfaceFamily': 'formEntry',
-          'bindingKind': 'primary',
-        }),
-      ));
+      final types = _errors(
+        _v4(
+          workflow: _workflow(
+            binding: {
+              'states': ['open'],
+              'role': 'any',
+              'tabId': 'home',
+              'cardSurfaceFamily': 'formEntry',
+              'bindingKind': 'primary',
+            },
+          ),
+        ),
+      );
       expect(types, contains('legacy_identity_key'));
     });
 
-    test('appShell visiblePersonaIds is rejected — it is outside experience', () {
-      // The key that made the three-number scheme fail: appShell is a root
-      // sibling of experience, governed by neither the experience nor the
-      // grammar stamp.
-      final types = _errors(_v4(appShell: {
-        'tabs': [
-          {
-            'tabId': 'home',
-            'label': 'Home',
-            'visiblePersonaIds': ['member'],
-          },
-        ],
-      }));
-      expect(types, contains('legacy_identity_key'));
+    test(
+      'person-shaped instance keys with a PersonaId suffix are rejected',
+      () {
+        final types = _errors(
+          _v4(
+            workflow: _workflow(
+              schema: {
+                'recipientPersonaId': {'type': 'fanId'},
+              },
+            ),
+          ),
+        );
+        expect(types, contains('legacy_identity_key'));
+      },
+    );
+
+    test('legacy personaId field types are rejected with v4 guidance', () {
+      final report = CommunityPackageValidator().validate(
+        _v4(
+          workflow: _workflow(
+            schema: {
+              'recipientFanId': {'type': 'personaId'},
+            },
+          ),
+        ),
+      );
+      final findings = report.errors
+          .where((finding) => finding.type == 'legacy_identity_type')
+          .toList();
+      expect(findings, hasLength(1));
+      expect(findings.single.message, contains('specVersion: 4'));
+      expect(
+        findings.single.message,
+        contains('docs/references/reference/identity-types.md'),
+      );
     });
+
+    test(
+      'appShell visiblePersonaIds is rejected — it is outside experience',
+      () {
+        // The key that made the three-number scheme fail: appShell is a root
+        // sibling of experience, governed by neither the experience nor the
+        // grammar stamp.
+        final types = _errors(
+          _v4(
+            appShell: {
+              'tabs': [
+                {
+                  'tabId': 'home',
+                  'label': 'Home',
+                  'visiblePersonaIds': ['member'],
+                },
+              ],
+            },
+          ),
+        );
+        expect(types, contains('legacy_identity_key'));
+      },
+    );
 
     test('a clean v4 package trips none of these', () {
-      final types = _errors(_v4(appShell: {
-        'tabs': [
-          {
-            'tabId': 'home',
-            'label': 'Home',
-            'visibleRoleIds': ['member'],
+      final types = _errors(
+        _v4(
+          appShell: {
+            'tabs': [
+              {
+                'tabId': 'home',
+                'label': 'Home',
+                'visibleRoleIds': ['member'],
+              },
+            ],
           },
-        ],
-      }));
+        ),
+      );
       expect(types, isNot(contains('legacy_identity_key')));
     });
   });
 
   group('comparing an identity to a role', () {
     Map<String, Object?> withFormula(String formula) => _v4(
-          workflow: _workflow(
-            schema: {
-              'payerFanId': {'type': 'fanId'},
-              'visible': {'type': 'bool', 'formula': formula},
-            },
-          ),
-        );
+      workflow: _workflow(
+        schema: {
+          'payerFanId': {'type': 'fanId'},
+          'visible': {'type': 'bool', 'formula': formula},
+        },
+      ),
+    );
 
     test('the real Masjid Nur shape is caught', () {
       expect(
-        _errors(withFormula(r"$viewer == payerFanId || $viewer == 'organizer'")),
+        _errors(
+          withFormula(r"$viewer == payerFanId || $viewer == 'organizer'"),
+        ),
         contains('identity_compared_to_role'),
       );
     });

@@ -20,7 +20,7 @@ Map<String, dynamic> _notificationDefinition() => {
   },
   'transitions': <Map<String, dynamic>>[],
   'instanceDataSchema': {
-    'recipientPersonaId': {'type': 'personaId', 'required': true},
+    'recipientFanId': {'type': 'fanId', 'required': true},
     'title': {'type': 'text', 'required': true},
     'body': {'type': 'text', 'required': true},
     'createdAt': {'type': 'text', 'required': true},
@@ -65,7 +65,7 @@ Map<String, dynamic> _promotionSourceDefinition() => {
               'op': 'createInstance',
               'workflowType': 'notification',
               'fields': {
-                'recipientPersonaId': '{personaId}',
+                'recipientFanId': '{fanId}',
                 'title': 'You are off the waitlist',
                 'body': 'A seat opened up for this event.',
                 'createdAt': '2026-07-31T12:00:00Z',
@@ -98,7 +98,7 @@ Map<String, dynamic> _responseDefinition() => {
   'instanceDataSchema': {
     'eventId': {'type': 'text', 'required': true},
     'rsvpedAt': {'type': 'text', 'required': true},
-    'personaId': {'type': 'personaId', 'required': true},
+    'fanId': {'type': 'fanId', 'required': true},
   },
 };
 
@@ -128,7 +128,7 @@ void main() {
         workflowType: 'notification',
         personaId: 'member',
         initialInstanceData: {
-          'recipientPersonaId': 'member',
+          'recipientFanId': 'member',
           'title': 'A seat opened',
           'body': 'You are now going to Friday game night.',
           'createdAt': '2026-07-31T12:00:00Z',
@@ -175,7 +175,7 @@ void main() {
         initialInstanceData: {
           'eventId': 'event-1',
           'rsvpedAt': '2026-07-01T10:00:00Z',
-          'personaId': 'promoted-member',
+          'fanId': 'promoted-member',
         },
       );
       final eventId = await api.createInstance(
@@ -202,7 +202,7 @@ void main() {
         'A seat opened up for this event.',
       );
       expect(
-        fake.deliveries.single.instanceData['recipientPersonaId'],
+        fake.deliveries.single.instanceData['recipientFanId'],
         'promoted-member',
       );
     },
@@ -217,7 +217,7 @@ void main() {
         workflowType: 'notification',
         personaId: 'member',
         initialInstanceData: {
-          'recipientPersonaId': 'member',
+          'recipientFanId': 'member',
           'title': 'Still persisted',
           'body': 'Delivery is optional.',
           'createdAt': '2026-07-31T12:00:00Z',

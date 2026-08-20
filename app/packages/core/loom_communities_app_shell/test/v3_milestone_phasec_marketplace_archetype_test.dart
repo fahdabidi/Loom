@@ -115,6 +115,35 @@ Future<_InstalledTabletop> _install(String extensionId) async {
       experienceConfiguration: community.experienceConfiguration,
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+      specVersion: community.specVersion,
+      experienceConfiguration: community.experienceConfiguration,
+    );
+    final accounts = await LocalAuthApi().listAccounts(
+      communityExtensionId: 'ext_verify_tabletop_club',
+    );
+    final shellAccounts = await activeAuthForCommunity(
+      community: community,
+      experience: experience,
+      personaTypeId: 'tabletop-member',
+    ).listAccounts(communityExtensionId: community.extensionId);
+    final authorizationAccounts = [...accounts, ...shellAccounts];
+    configureEngineAuthorizationForExtensionId(
+      extensionId: community.extensionId,
+      appShellConfiguration: community.appShellConfiguration,
+      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+        (account) =>
+            account.accountId == personaId &&
+            account.status == MembershipStatus.active,
+      ),
+    );
+    if (engine is LocalWorkflowEngineApi) {
+      for (final account in authorizationAccounts) {
+        engine.setPersonaType(account.accountId, account.personaTypeId);
+      }
+    }
     return _InstalledTabletop(community, engine, temp);
   } catch (_) {
     await temp.delete(recursive: true);
@@ -233,7 +262,7 @@ void main() {
         );
         expect(borrow.newState, 'published');
         expect(borrow.newInstanceData['availabilityState'], 'onLoan');
-        expect(borrow.newInstanceData['holderPersonaId'], 'tabletop-member');
+        expect(borrow.newInstanceData['holderFanId'], 'tabletop-member');
 
         final marketplace = await installed.engine.queryInstances(
           tabId: 'marketplace',
@@ -245,7 +274,7 @@ void main() {
         );
         expect(catan.currentState, 'published');
         expect(catan.instanceData['availabilityState'], 'onLoan');
-        expect(catan.instanceData['holderPersonaId'], 'tabletop-member');
+        expect(catan.instanceData['holderFanId'], 'tabletop-member');
       } finally {
         await installed.dispose();
       }
@@ -264,7 +293,7 @@ void main() {
           personaId: memberId,
         );
         expect(catanBefore.instanceData['availabilityState'], 'available');
-        expect(catanBefore.instanceData['queuedPersonaIds'], isEmpty);
+        expect(catanBefore.instanceData['queuedFanIds'], isEmpty);
         expect(catanBefore.instanceData['queueLength'], 0);
 
         final joined = await installed.engine.applyTransition(
@@ -274,17 +303,14 @@ void main() {
           personaId: memberId,
         );
         expect(joined.newState, 'published');
-        expect(joined.newInstanceData['queuedPersonaIds'], contains(memberId));
+        expect(joined.newInstanceData['queuedFanIds'], contains(memberId));
 
         final catanAfterJoin = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-catan',
           personaId: memberId,
         );
-        expect(
-          catanAfterJoin.instanceData['queuedPersonaIds'],
-          contains(memberId),
-        );
+        expect(catanAfterJoin.instanceData['queuedFanIds'], contains(memberId));
         expect(catanAfterJoin.instanceData['queueLength'], 1);
         final afterJoinTransitions = await _availableMarketplaceTransitionIds(
           installed.engine,
@@ -301,14 +327,14 @@ void main() {
           personaId: memberId,
         );
         expect(left.newState, 'published');
-        expect(left.newInstanceData['queuedPersonaIds'], isEmpty);
+        expect(left.newInstanceData['queuedFanIds'], isEmpty);
 
         final catanAfterLeave = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-catan',
           personaId: memberId,
         );
-        expect(catanAfterLeave.instanceData['queuedPersonaIds'], isEmpty);
+        expect(catanAfterLeave.instanceData['queuedFanIds'], isEmpty);
         expect(catanAfterLeave.instanceData['queueLength'], 0);
         final afterLeaveTransitions = await _availableMarketplaceTransitionIds(
           installed.engine,
@@ -327,7 +353,7 @@ void main() {
           personaId: memberId,
         );
         expect(rootBefore.instanceData['availabilityState'], 'available');
-        expect(rootBefore.instanceData['queuedPersonaIds'], hasLength(2));
+        expect(rootBefore.instanceData['queuedFanIds'], hasLength(2));
         expect(rootBefore.instanceData['queueLength'], 2);
         final rootJoined = await installed.engine.applyTransition(
           workflowType: 'equipment-loan',
@@ -336,23 +362,19 @@ void main() {
           personaId: memberId,
         );
         expect(rootJoined.newState, 'published');
-        expect(
-          rootJoined.newInstanceData['queuedPersonaIds'],
-          contains(memberId),
-        );
+        expect(rootJoined.newInstanceData['queuedFanIds'], contains(memberId));
         final rootAfter = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-root',
           personaId: memberId,
         );
         expect(rootAfter.instanceData['availabilityState'], 'available');
-        expect(rootAfter.instanceData['queuedPersonaIds'], contains(memberId));
+        expect(rootAfter.instanceData['queuedFanIds'], contains(memberId));
         expect(rootAfter.instanceData['queueLength'], 3);
 
         // Wingspan is seeded on loan with a real due date. The equipment-loan
-        // return guard authorizes the generic member role and does not require
-        // the actor to match holderPersonaId.
-        const returnerId = 'tabletop-member';
+        // The v4 return guard authorizes the individual current holder.
+        const returnerId = 'tabletop-member-03';
         final wingspanBefore = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-wingspan',
@@ -360,7 +382,7 @@ void main() {
         );
         expect(wingspanBefore.instanceData['availabilityState'], 'onLoan');
         expect(
-          wingspanBefore.instanceData['holderPersonaId'],
+          wingspanBefore.instanceData['holderFanId'],
           'tabletop-member-03',
         );
         expect(wingspanBefore.instanceData['dueDate'], '2026-07-17');
@@ -379,7 +401,7 @@ void main() {
         );
         expect(returned.newState, 'published');
         expect(returned.newInstanceData['availabilityState'], 'available');
-        expect(returned.newInstanceData['holderPersonaId'], isNull);
+        expect(returned.newInstanceData['holderFanId'], isNull);
         expect(returned.newInstanceData['dueDate'], isNull);
 
         final wingspanAfter = await _readMarketplaceInstance(
@@ -389,7 +411,7 @@ void main() {
         );
         expect(wingspanAfter.currentState, 'published');
         expect(wingspanAfter.instanceData['availabilityState'], 'available');
-        expect(wingspanAfter.instanceData['holderPersonaId'], isNull);
+        expect(wingspanAfter.instanceData['holderFanId'], isNull);
         expect(wingspanAfter.instanceData['dueDate'], isNull);
       } finally {
         await installed.dispose();
@@ -407,7 +429,7 @@ void main() {
       );
       expect(before.workflowType, 'equipment-giveaway');
       expect(before.currentState, 'available');
-      expect(before.instanceData['claimedByPersonaId'], isNull);
+      expect(before.instanceData['claimedByFanId'], isNull);
 
       final claimed = await installed.engine.applyTransition(
         workflowType: 'equipment-giveaway',
@@ -416,7 +438,7 @@ void main() {
         personaId: 'tabletop-member',
       );
       expect(claimed.newState, 'claimed');
-      expect(claimed.newInstanceData['claimedByPersonaId'], 'tabletop-member');
+      expect(claimed.newInstanceData['claimedByFanId'], 'tabletop-member');
 
       // removeFromTileGrid is presentation-only. The persisted row remains
       // queryable, while its available-only render binding no longer
@@ -427,7 +449,7 @@ void main() {
         personaId: 'tabletop-member',
       );
       expect(after.currentState, 'claimed');
-      expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+      expect(after.instanceData['claimedByFanId'], 'tabletop-member');
     } finally {
       await installed.dispose();
     }
@@ -461,9 +483,9 @@ void main() {
         findsOneWidget,
       );
       await tester.tap(claim);
-      await _pumpUntilGone(tester, giveaway);
+      await _pumpUntilGone(tester, claim);
 
-      expect(giveaway, findsNothing);
+      expect(giveaway, findsOneWidget);
       expect(tester.takeException(), isNull);
       final after = await tester.runAsync(
         () => _readMarketplaceInstance(
@@ -473,7 +495,7 @@ void main() {
         ),
       );
       expect(after!.currentState, 'claimed');
-      expect(after.instanceData['claimedByPersonaId'], 'tabletop-member');
+      expect(after.instanceData['claimedByFanId'], 'tabletop-member');
     } finally {
       await tester.runAsync(installed.dispose);
     }

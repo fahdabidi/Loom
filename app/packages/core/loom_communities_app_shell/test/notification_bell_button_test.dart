@@ -19,13 +19,13 @@ Map<String, dynamic> _notificationDefinition() => {
       'from': ['unread'],
       'to': 'read',
       'guard': {
-        'actorEqualsField': {'key': 'recipientPersonaId'},
+        'actorEqualsField': {'key': 'recipientFanId'},
       },
     },
   ],
   'instanceDataSchema': {
-    'recipientPersonaId': {
-      'type': 'personaId',
+    'recipientFanId': {
+      'type': 'fanId',
       'required': true,
       'writableBy': 'effect',
       'storage': 'inline',
@@ -61,9 +61,9 @@ Map<String, dynamic> _notificationSeed({
   'instanceId': instanceId,
   'workflowType': NotificationInboxController.workflowType,
   'currentState': currentState,
-  'createdByPersonaId': 'notification-effect',
+  'createdByFanId': 'notification-effect',
   'instanceData': {
-    'recipientPersonaId': recipientPersonaId,
+    'recipientFanId': recipientPersonaId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',
@@ -76,9 +76,8 @@ Future<WorkflowEngineApi> _installEngine(
 ) async {
   experienceForExtensionId(
     extensionId,
+    specVersion: currentCommunitySpecVersion,
     experienceConfiguration: {
-      'experienceSchemaVersion': 2,
-      'workflowGrammarVersion': 1,
       'workflowDefinitions': {
         NotificationInboxController.workflowType: _notificationDefinition(),
       },

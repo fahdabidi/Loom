@@ -32,7 +32,7 @@ Map<String, dynamic> _eventDefinition({
   'renderBindings': <Map<String, dynamic>>[
     <String, dynamic>{
       'states': <String>['open'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'calendar',
       'cardSurfaceFamily': family,
       'bindingKind': 'primary',
@@ -52,7 +52,7 @@ Map<String, dynamic> _eventDefinition({
 
 Map<String, dynamic> _responseDefinition({
   String eventField = 'eventId',
-  String identityField = 'personaId',
+  String identityField = 'fanId',
 }) => <String, dynamic>{
   'initialState': 'pending',
   'states': <String, dynamic>{
@@ -123,7 +123,7 @@ void main() {
       expect(responses.map((row) => row.instanceData['eventId']).toSet(), {
         eventId,
       });
-      expect(responses.map((row) => row.instanceData['personaId']).toSet(), {
+      expect(responses.map((row) => row.instanceData['fanId']).toSet(), {
         'organizer',
         'member-a',
         'member-b',
@@ -141,50 +141,47 @@ void main() {
     },
   );
 
-  test(
-    'fan-out writes custom eventField and the declared D8 fanId spelling',
-    () async {
-      final api =
-          LocalWorkflowEngineApi(
-              db: WorkflowDatabase.memory(),
-              communityId: 'fan-id',
-            )
-            ..setPersonaType('member-a', 'member-role')
-            ..registerDefinition(
-              _machine(
-                'event',
-                _eventDefinition(
-                  responseWorkflowType: 'response',
-                  eventField: 'parentEventKey',
-                ),
+  test('fan-out writes custom eventField and the v4 fanId spelling', () async {
+    final api =
+        LocalWorkflowEngineApi(
+            db: WorkflowDatabase.memory(),
+            communityId: 'fan-id',
+          )
+          ..setPersonaType('member-a', 'member-role')
+          ..registerDefinition(
+            _machine(
+              'event',
+              _eventDefinition(
+                responseWorkflowType: 'response',
+                eventField: 'parentEventKey',
               ),
-            )
-            ..registerDefinition(
-              _machine(
-                'response',
-                _responseDefinition(
-                  eventField: 'parentEventKey',
-                  identityField: 'fanId',
-                ),
+            ),
+          )
+          ..registerDefinition(
+            _machine(
+              'response',
+              _responseDefinition(
+                eventField: 'parentEventKey',
+                identityField: 'fanId',
               ),
-            );
-      final eventId = await _createRawEvent(api, 'event');
+            ),
+          );
+    final eventId = await _createRawEvent(api, 'event');
 
-      await api.applyTransition(
-        workflowType: 'event',
-        instanceId: eventId,
-        transitionId: 'act',
-        personaId: 'member-a',
-      );
+    await api.applyTransition(
+      workflowType: 'event',
+      instanceId: eventId,
+      transitionId: 'act',
+      personaId: 'member-a',
+    );
 
-      final response = (await _instancesOf(api, 'response')).single;
-      expect(response.instanceData, <String, dynamic>{
-        'parentEventKey': eventId,
-        'fanId': 'member-a',
-      });
-      expect(response.instanceData, isNot(contains('personaId')));
-    },
-  );
+    final response = (await _instancesOf(api, 'response')).single;
+    expect(response.instanceData, <String, dynamic>{
+      'parentEventKey': eventId,
+      'fanId': 'member-a',
+    });
+    expect(response.instanceData, isNot(contains('personaId')));
+  });
 
   test('fan-out is exclusive to event-rsvp create actions', () async {
     final api =
@@ -238,7 +235,7 @@ void main() {
   });
 
   test(
-    'singular create API fans out legacy binding create actions immediately',
+    'singular create API fans out binding create actions immediately',
     () async {
       final definition = _eventDefinition(
         responseWorkflowType: 'response',
@@ -247,7 +244,7 @@ void main() {
       final api =
           LocalWorkflowEngineApi(
               db: WorkflowDatabase.memory(),
-              communityId: 'legacy-create',
+              communityId: 'binding-create',
             )
             ..setPersonaType('organizer', 'organizer-role')
             ..setPersonaType('member-a', 'member-role')

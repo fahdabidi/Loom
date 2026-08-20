@@ -66,7 +66,7 @@ Set<String> _declaredTabIdsFromShell(Object? value) {
   }
   final ids = <String>{};
   final appTabs = _readStringValuesFromList(value['tabs']);
-  final personaTabs = value['personaTabs'];
+  final personaTabs = value['roleTabs'];
   ids.addAll(appTabs);
   if (personaTabs is Map<String, Object?>) {
     for (final tabList in personaTabs.values) {
@@ -83,7 +83,8 @@ Set<String> _readStringValuesFromList(Object? value) {
   return {
     for (final item in value)
       if (item is Map<String, Object?>)
-        if (item['tabId'] is String && (item['tabId'] as String).trim().isNotEmpty)
+        if (item['tabId'] is String &&
+            (item['tabId'] as String).trim().isNotEmpty)
           (item['tabId'] as String).trim(),
   };
 }
@@ -112,14 +113,16 @@ File _fixtureFile(String relativePath) {
   throw StateError('Could not locate fixture file: $relativePath');
 }
 
-Future<_EngineNativeCommunityFixture> _installFixture(String extensionId) async {
+Future<_EngineNativeCommunityFixture> _installFixture(
+  String extensionId,
+) async {
   final sourcePath = _fixturesByExtension[extensionId];
   if (sourcePath == null) {
     throw StateError('No fixture mapping for extensionId "$extensionId"');
   }
-  final source = jsonDecode(
-    stripJsonComments(_fixtureFile(sourcePath).readAsStringSync()),
-  ) as Map<String, dynamic>;
+  final source =
+      jsonDecode(stripJsonComments(_fixtureFile(sourcePath).readAsStringSync()))
+          as Map<String, dynamic>;
   final experienceRaw = source['experience'] as Map<String, Object?>?;
   final declaredTabIds = {
     ..._declaredTabIdsFromShell(source['appShell']),
@@ -173,7 +176,10 @@ void main() {
         final fixture = await _installFixture(extensionId);
         final personas = _personasByExtension[extensionId]!;
         final obsolete = _obsoleteIdsByExtension[extensionId]!;
-        final allowedTabIds = {..._engineNativeTabIds, ...fixture.declaredTabIds};
+        final allowedTabIds = {
+          ..._engineNativeTabIds,
+          ...fixture.declaredTabIds,
+        };
         for (final personaId in personas) {
           final tabIds = [
             for (final tab in appShellTabsFor(
@@ -244,49 +250,55 @@ void main() {
     );
   });
 
-  test('seeded instances still render on canonical engine-native home/calendar tabs', () async {
-    final checks = <_SeededInstanceFixtureCheck>[
-      const _SeededInstanceFixtureCheck(
-        extensionId: 'ext_camera_club',
-        personaId: 'camera-club-member',
-        tabId: 'home',
-        instanceId: 'critique-lighthouse-portrait',
-      ),
-      const _SeededInstanceFixtureCheck(
-        extensionId: 'ext_book_club',
-        personaId: 'book-organizer',
-        tabId: 'home',
-        instanceId: 'vote-august',
-      ),
-      const _SeededInstanceFixtureCheck(
-        extensionId: 'ext_garden_club',
-        personaId: 'garden-coordinator',
-        tabId: 'home',
-        // Renamed by 154493e6 (Garden Club exportWizard integration,
-        // Milestone 1.5); this test was not updated with it. Same instance,
-        // same garden-volunteer-shift binding on `home` -- id only.
-        instanceId: 'mulch-delivery-shift',
-      ),
-    ];
-
-    for (final check in checks) {
-      final fixture = await _installFixture(check.extensionId);
-      expect(
-        await _tabRendersSeededInstance(
-          fixture: fixture,
-          tabId: check.tabId,
-          personaId: check.personaId,
-          instanceId: check.instanceId,
+  test(
+    'seeded instances still render on canonical engine-native home/calendar tabs',
+    () async {
+      final checks = <_SeededInstanceFixtureCheck>[
+        const _SeededInstanceFixtureCheck(
+          extensionId: 'ext_camera_club',
+          personaId: 'camera-club-member',
+          tabId: 'home',
+          instanceId: 'critique-lighthouse-portrait',
         ),
-        isTrue,
-        reason:
-            '${check.extensionId} does not render seeded instance ${check.instanceId} on tab ${check.tabId} for persona ${check.personaId}.',
-      );
-    }
-  });
+        const _SeededInstanceFixtureCheck(
+          extensionId: 'ext_book_club',
+          personaId: 'book-organizer',
+          tabId: 'home',
+          instanceId: 'vote-august',
+        ),
+        const _SeededInstanceFixtureCheck(
+          extensionId: 'ext_garden_club',
+          personaId: 'garden-coordinator',
+          tabId: 'home',
+          // Renamed by 154493e6 (Garden Club exportWizard integration,
+          // Milestone 1.5); this test was not updated with it. Same instance,
+          // same garden-volunteer-shift binding on `home` -- id only.
+          instanceId: 'mulch-delivery-shift',
+        ),
+      ];
+
+      for (final check in checks) {
+        final fixture = await _installFixture(check.extensionId);
+        expect(
+          await _tabRendersSeededInstance(
+            fixture: fixture,
+            tabId: check.tabId,
+            personaId: check.personaId,
+            instanceId: check.instanceId,
+          ),
+          isTrue,
+          reason:
+              '${check.extensionId} does not render seeded instance ${check.instanceId} on tab ${check.tabId} for persona ${check.personaId}.',
+        );
+      }
+    },
+  );
 
   test('legacy Cedar Commons HOA tab construction remains unchanged', () {
-    final experience = experienceForExtensionId('ext_hoa');
+    final experience = experienceForExtensionId(
+      'ext_hoa',
+      specVersion: currentCommunitySpecVersion,
+    );
 
     final boardTabs = [
       for (final tab in appShellTabsFor(
@@ -306,20 +318,16 @@ void main() {
     expect(boardTabs.map((tab) => tab.tabId), containsAll(['home', 'admin']));
     expect(homeownerTabs.map((tab) => tab.tabId), isNot(contains('admin')));
     expect(
-      boardTabs.singleWhere((tab) => tab.tabId == 'documents').rendererContractId,
+      boardTabs
+          .singleWhere((tab) => tab.tabId == 'documents')
+          .rendererContractId,
       'documents-library-detail',
     );
     expect(
       boardTabs.singleWhere((tab) => tab.tabId == 'admin').rendererContractId,
       'admin-review-compose-queue',
     );
-    expect(
-      boardTabs.map((tab) => tab.tabId),
-      contains('documents'),
-    );
-    expect(
-      homeownerTabs.map((tab) => tab.tabId),
-      contains('documents'),
-    );
+    expect(boardTabs.map((tab) => tab.tabId), contains('documents'));
+    expect(homeownerTabs.map((tab) => tab.tabId), contains('documents'));
   });
 }

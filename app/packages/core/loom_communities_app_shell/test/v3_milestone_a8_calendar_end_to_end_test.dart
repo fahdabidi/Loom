@@ -89,10 +89,28 @@ Future<_InstalledTabletop> _install(
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
     final registeredAccountIds = <String>{};
+    final accounts = await LocalAuthApi().listAccounts(
+      communityExtensionId: 'ext_verify_tabletop_club',
+    );
+    final shellAuth = activeAuthForCommunity(
+      community: community,
+      experience: experience,
+      personaTypeId: 'tabletop-organizer',
+    );
+    final shellAccounts = await shellAuth.listAccounts(
+      communityExtensionId: community.extensionId,
+    );
+    configureEngineAuthorizationForExtensionId(
+      extensionId: community.extensionId,
+      appShellConfiguration: community.appShellConfiguration,
+      activeMembershipLookup: (personaId) async =>
+          [...accounts, ...shellAccounts].any(
+            (account) =>
+                account.accountId == personaId &&
+                account.status == MembershipStatus.active,
+          ),
+    );
     if (engine is LocalWorkflowEngineApi) {
-      final accounts = await LocalAuthApi().listAccounts(
-        communityExtensionId: 'ext_verify_tabletop_club',
-      );
       for (final account in accounts) {
         if (accountIdsToRegister != null &&
             !accountIdsToRegister.contains(account.accountId)) {
@@ -174,8 +192,16 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
     lastMatchCount = finder.evaluate().length;
     if (lastMatchCount > 0) return;
   }
+  final renderedText = find
+      .byType(Text)
+      .evaluate()
+      .map((element) => (element.widget as Text).data)
+      .whereType<String>()
+      .take(20)
+      .toList();
   throw TestFailure(
-    'Timed out waiting for $finder; last observed matches=$lastMatchCount',
+    'Timed out waiting for $finder; last observed matches=$lastMatchCount; '
+    'rendered text=$renderedText',
   );
 }
 
@@ -364,7 +390,7 @@ Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
     (event.instanceData['responses'] as List)
         .whereType<Map<String, dynamic>>()
         .map((response) => Map<String, dynamic>.from(response))
-        .singleWhere((response) => response['personaId'] == personaId);
+        .singleWhere((response) => response['fanId'] == personaId);
 
 Future<void> _tapAction(
   WidgetTester tester,
@@ -483,7 +509,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
     'renderBindings': <dynamic>[
       <String, dynamic>{
         'states': <dynamic>['scheduled'],
-        'role': 'any',
+        'audience': 'any',
         'tabId': 'calendar',
         'cardSurfaceFamily': 'event-rsvp',
         'bindingKind': 'primary',
@@ -525,7 +551,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
     'renderBindings': <dynamic>[],
     'instanceDataSchema': <String, dynamic>{
       'gatheringKey': <String, dynamic>{'type': 'text', 'storage': 'inline'},
-      'personaId': <String, dynamic>{'type': 'text', 'storage': 'inline'},
+      'fanId': <String, dynamic>{'type': 'fanId', 'storage': 'inline'},
     },
   };
   final instances = experience['workflowInstances'] as List<dynamic>;
@@ -534,7 +560,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'instanceId': 'gathering-sunday',
       'workflowType': 'neighborhood-gathering',
       'currentState': 'scheduled',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'title': 'Sunday gathering',
         'eventDate': '2026-07-12',
@@ -548,7 +574,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'instanceId': 'gathering-tuesday',
       'workflowType': 'neighborhood-gathering',
       'currentState': 'scheduled',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'title': 'Tuesday gathering',
         'eventDate': '2026-07-14',
@@ -562,7 +588,7 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'instanceId': 'gathering-saturday',
       'workflowType': 'neighborhood-gathering',
       'currentState': 'scheduled',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'title': 'Saturday gathering',
         'eventDate': '2026-07-18',
@@ -576,20 +602,20 @@ void _addScopedCalendarFixture(Map<String, dynamic> source) {
       'instanceId': 'attendance-sunday-member',
       'workflowType': 'attendance-record',
       'currentState': 'addressed',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'gatheringKey': 'gathering-sunday',
-        'personaId': 'tabletop-member',
+        'fanId': 'tabletop-member',
       },
     },
     <String, dynamic>{
       'instanceId': 'attendance-saturday-member',
       'workflowType': 'attendance-record',
       'currentState': 'awaiting',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'gatheringKey': 'gathering-saturday',
-        'personaId': 'tabletop-member',
+        'fanId': 'tabletop-member',
       },
     },
   ]);
@@ -639,7 +665,7 @@ void _addContainerFixture(Map<String, dynamic> source) {
       'instanceId': event.$1,
       'workflowType': 'event-rsvp',
       'currentState': 'open',
-      'createdByPersonaId': 'tabletop-organizer',
+      'createdByFanId': 'tabletop-organizer',
       'instanceData': <String, dynamic>{
         'title': event.$3,
         'eventDate': event.$2,
@@ -1282,9 +1308,7 @@ void main() {
           }))!;
           expect(responses, hasLength(13));
           expect(
-            responses
-                .map((response) => response.instanceData['personaId'])
-                .toSet(),
+            responses.map((response) => response.instanceData['fanId']).toSet(),
             accountIds,
           );
         }
@@ -1423,7 +1447,7 @@ void main() {
             .map(
               (response) => (
                 eventId: response.instanceData['eventId'] as String,
-                personaId: response.instanceData['personaId'] as String,
+                personaId: response.instanceData['fanId'] as String,
               ),
             )
             .toList();
@@ -1670,6 +1694,8 @@ void main() {
         appShellTabsFor(
           experience: installed.experience,
           personaId: 'tabletop-member',
+          appShellConfiguration: installed.community.appShellConfiguration,
+          hasActiveMembership: true,
         ).map((tab) => tab.tabId),
         contains('calendar'),
       );
@@ -3360,7 +3386,7 @@ void main() {
           personaId: 'tabletop-member',
         );
         expect(
-          withdrawn.instanceData['goingPersonaIds'],
+          withdrawn.instanceData['goingFanIds'],
           isNot(contains('tabletop-member')),
         );
         expect(withdrawn.instanceData['accepted'], 7);
@@ -3397,7 +3423,7 @@ void main() {
           personaId: 'tabletop-member',
         );
         expect(
-          restored.instanceData['goingPersonaIds'],
+          restored.instanceData['goingFanIds'],
           contains('tabletop-member'),
         );
         expect(restored.instanceData['accepted'], 8);

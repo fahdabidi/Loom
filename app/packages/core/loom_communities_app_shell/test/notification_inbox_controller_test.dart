@@ -19,13 +19,13 @@ LoomWorkflowStateMachine _notificationMachine() =>
           'from': ['unread'],
           'to': 'read',
           'guard': {
-            'actorEqualsField': {'key': 'recipientPersonaId'},
+            'actorEqualsField': {'key': 'recipientFanId'},
           },
         },
       ],
       'instanceDataSchema': {
-        'recipientPersonaId': {
-          'type': 'personaId',
+        'recipientFanId': {
+          'type': 'fanId',
           'required': true,
           'writableBy': 'effect',
           'storage': 'inline',
@@ -65,7 +65,7 @@ Future<String> _createNotification(
   workflowType: NotificationInboxController.workflowType,
   personaId: 'notification-effect',
   initialInstanceData: {
-    'recipientPersonaId': recipientPersonaId,
+    'recipientFanId': recipientPersonaId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',

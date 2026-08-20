@@ -3,15 +3,12 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
-import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const _tabletopRelativePath =
     'docs/references/communities/'
     'Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
-const _legacyRelativePath =
-    'docs/Build Plan V2/Skill/examples/verify-tabletop-club/'
-    'loom.initialization.json';
 
 File _repositoryFile(String relativePath) {
   var directory = Directory.current;
@@ -27,7 +24,7 @@ File _repositoryFile(String relativePath) {
 
 typedef _PackageExperience = ({
   Map<String, Object?> experience,
-  int? specVersion,
+  int specVersion,
 });
 
 _PackageExperience _tabletopPackage() {
@@ -40,238 +37,49 @@ _PackageExperience _tabletopPackage() {
           as Map<String, dynamic>;
   return (
     experience: Map<String, Object?>.from(package['experience'] as Map),
-    specVersion: package['specVersion'] as int?,
+    specVersion: package['specVersion'] as int,
   );
 }
 
-_PackageExperience _legacyPackage() {
-  final package =
-      jsonDecode(_repositoryFile(_legacyRelativePath).readAsStringSync())
-          as Map<String, dynamic>;
-  return (
-    experience: Map<String, Object?>.from(package['experience'] as Map),
-    specVersion: package['specVersion'] as int?,
-  );
-}
-
-Map<String, Object?> _v2Experience({int grammarVersion = 1}) =>
+Map<String, Object?> _v4Experience() => <String, Object?>{
+  'roles': <Object?>[
     <String, Object?>{
-      'experienceSchemaVersion': 2,
-      'workflowGrammarVersion': grammarVersion,
-      'workflowDefinitions': <String, Object?>{
-        'valid': <String, Object?>{
-          'initialState': 'open',
-          'states': <String, Object?>{
-            'open': <String, Object?>{'label': 'Open'},
-            'done': <String, Object?>{'label': 'Done', 'isTerminal': true},
-          },
-          'transitions': <Object?>[
-            <String, Object?>{
-              'id': 'finish',
-              'label': 'Finish',
-              'from': <Object?>['open'],
-              'to': 'done',
-            },
-          ],
-        },
+      'roleId': 'community-member',
+      'label': 'Community Member',
+      'roleLabel': 'Member',
+      'description': 'Uses community workflows.',
+    },
+  ],
+  'workflowDefinitions': <String, Object?>{
+    'valid': <String, Object?>{
+      'initialState': 'open',
+      'states': <String, Object?>{
+        'open': <String, Object?>{'label': 'Open'},
+        'done': <String, Object?>{'label': 'Done', 'isTerminal': true},
       },
-      'workflowInstances': <Object?>[
+      'transitions': <Object?>[
         <String, Object?>{
-          'instanceId': 'valid-instance',
-          'workflowType': 'valid',
-          'currentState': 'open',
-          'instanceData': <String, Object?>{},
+          'id': 'finish',
+          'label': 'Finish',
+          'from': <Object?>['open'],
+          'to': 'done',
         },
       ],
-    };
-
-Map<String, Object?> _minimalPackageExperience({required bool v4}) {
-  final experience = _v2Experience();
-  final identity = <String, Object?>{
-    if (v4) 'roleId': 'community-member',
-    if (!v4) 'personaId': 'community-member',
-    'label': 'Community Member',
-    'roleLabel': 'Member',
-    'description': 'Uses community workflows.',
-  };
-  if (v4) {
-    experience
-      ..remove('experienceSchemaVersion')
-      ..remove('workflowGrammarVersion')
-      ..['roles'] = <Object?>[identity];
-  } else {
-    experience['personas'] = <Object?>[identity];
-  }
-  return experience;
-}
-
-_LocalPackagePair _writeLocalPackagePair({required int? specVersion}) {
-  final suffix = specVersion == null ? 'legacy' : 'v$specVersion';
-  final extensionId = 'a4-local-$suffix';
-  final directory = Directory.systemTemp.createTempSync('loom_a4_$suffix');
-  final extensionFile = File(
-    '${directory.path}/community.loom-extension.zip',
-  );
-  final initializationFile = File(
-    '${directory.path}/community.loom-init.zip',
-  );
-  extensionFile.writeAsStringSync(
-    jsonEncode(<String, Object?>{
-      if (specVersion == null) 'schemaVersion': 1,
-      if (specVersion != null) 'specVersion': specVersion,
-      'extensionId': extensionId,
-      'displayName': 'Minimal Community',
-      'version': '1.0.0',
-      'permissions': <Object?>[],
-      'assets': <Object?>[],
-    }),
-  );
-  initializationFile.writeAsStringSync(
-    jsonEncode(<String, Object?>{
-      if (specVersion == null) 'schemaVersion': 1,
-      if (specVersion != null) 'specVersion': specVersion,
-      'communityId': 'community-$suffix',
-      'displayName': 'Minimal Community',
-      'extensionId': extensionId,
-      'seedDataFiles': <Object?>[],
-      'experience': _minimalPackageExperience(v4: specVersion == 4),
-    }),
-  );
-  return _LocalPackagePair(
-    directory: directory,
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
-  );
-}
-
-class _LocalPackagePair {
-  const _LocalPackagePair({
-    required this.directory,
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final Directory directory;
-  final String extensionPath;
-  final String initializationPath;
-}
-
-List<Object?> _legacyProjection(LoomExperienceDefinition experience) =>
-    <Object?>[
-      experience.displayName,
-      experience.workflows
-          .map(
-            (workflow) => <Object?>[
-              workflow.workflowId,
-              workflow.title,
-              workflow.entryText,
-              workflow.actionText,
-              workflow.resultText,
-            ],
-          )
-          .toList(),
-      experience.personas?.map((persona) => persona.personaId).toList(),
-      experience.workflowDefinitions,
-      experience.workflowInstances,
-    ];
+    },
+  },
+  'workflowInstances': <Object?>[
+    <String, Object?>{
+      'instanceId': 'valid-instance',
+      'workflowType': 'valid',
+      'currentState': 'open',
+      'createdByFanId': 'fan-one',
+      'instanceData': <String, Object?>{},
+    },
+  ],
+};
 
 void main() {
-  test('legacy and v4 local package pairs load to the same representation', () {
-    final legacyFiles = _writeLocalPackagePair(specVersion: null);
-    final v4Files = _writeLocalPackagePair(specVersion: 4);
-    addTearDown(() {
-      legacyFiles.directory.deleteSync(recursive: true);
-      v4Files.directory.deleteSync(recursive: true);
-    });
-
-    final legacyBackend = LocalInAppBackend();
-    final v4Backend = LocalInAppBackend();
-    final legacyPlan = legacyBackend.parseLocalPackagePair(
-      extensionPackagePath: legacyFiles.extensionPath,
-      initializationPackagePath: legacyFiles.initializationPath,
-    );
-    final v4Plan = v4Backend.parseLocalPackagePair(
-      extensionPackagePath: v4Files.extensionPath,
-      initializationPackagePath: v4Files.initializationPath,
-    );
-    final legacyCommunity = legacyBackend
-        .installLocalPackagePairFromFiles(
-          extensionPackagePath: legacyFiles.extensionPath,
-          initializationPackagePath: legacyFiles.initializationPath,
-        )
-        .community;
-    final v4Community = v4Backend
-        .installLocalPackagePairFromFiles(
-          extensionPackagePath: v4Files.extensionPath,
-          initializationPackagePath: v4Files.initializationPath,
-        )
-        .community;
-    final legacy = experienceForExtensionId(
-      legacyCommunity.extensionId,
-      displayName: legacyCommunity.displayName,
-      specVersion: legacyCommunity.specVersion,
-      experienceConfiguration: legacyCommunity.experienceConfiguration,
-    );
-    final v4 = experienceForExtensionId(
-      v4Community.extensionId,
-      displayName: v4Community.displayName,
-      specVersion: v4Community.specVersion,
-      experienceConfiguration: v4Community.experienceConfiguration,
-    );
-
-    expect(legacyPlan.specVersion, isNull);
-    expect(legacyCommunity.specVersion, isNull);
-    expect(v4Plan.specVersion, 4);
-    expect(v4Community.specVersion, 4);
-    expect(legacy.workflowDefinitions!.keys, <String>['valid']);
-    expect(v4.workflowDefinitions!.keys, legacy.workflowDefinitions!.keys);
-    expect(legacy.workflowInstances, hasLength(1));
-    expect(v4.workflowInstances, hasLength(1));
-    expect(legacy.personas!.single.personaId, 'community-member');
-    expect(v4.personas!.single.personaId, legacy.personas!.single.personaId);
-    expect(v4.personas!.single.label, legacy.personas!.single.label);
-    expect(v4.personas!.single.roleLabel, legacy.personas!.single.roleLabel);
-  });
-
-  test('tab visibility accepts legacy and v4 role keys identically', () {
-    final experience = experienceForExtensionId('a4-tab-visibility-alias');
-    Map<String, Object?> shell(String visibilityKey) => <String, Object?>{
-      'tabs': <Object?>[
-        <String, Object?>{
-          'tabId': 'role-only',
-          'label': 'Role only',
-          visibilityKey: <Object?>['community-member'],
-        },
-      ],
-    };
-
-    List<String> tabIdsFor(
-      String personaId,
-      Map<String, Object?> configuration,
-    ) => appShellTabsFor(
-      experience: experience,
-      personaId: personaId,
-      appShellConfiguration: configuration,
-    ).map((tab) => tab.tabId).toList();
-
-    final legacyVisible = tabIdsFor(
-      'community-member',
-      shell('visiblePersonaIds'),
-    );
-    final v4Visible = tabIdsFor(
-      'community-member',
-      shell('visibleRoleIds'),
-    );
-    final legacyHidden = tabIdsFor('other-role', shell('visiblePersonaIds'));
-    final v4Hidden = tabIdsFor('other-role', shell('visibleRoleIds'));
-
-    expect(legacyVisible, contains('role-only'));
-    expect(v4Visible, legacyVisible);
-    expect(legacyHidden, isNot(contains('role-only')));
-    expect(v4Hidden, legacyHidden);
-  });
-
-  test('1 parses the real Tabletop engine-native package completely', () {
+  test('parses the real Tabletop engine-native package completely', () {
     final package = _tabletopPackage();
     final experience = experienceForExtensionId(
       'a4-tabletop-real-fixture',
@@ -303,7 +111,7 @@ void main() {
       ]),
     );
     expect(instances, isNotNull);
-    expect(instances, hasLength(33));
+    expect(instances, hasLength(34));
     expect(
       definitions['event-rsvp']!.states.keys,
       containsAll(<String>['open', 'cancelled']),
@@ -319,23 +127,19 @@ void main() {
     expect(experience.calendarDateRailEntries, hasLength(3));
     expect(
       experience.calendarDateRailEntries!
-          .map((entry) => <String?>[
-                entry.kind,
-                entry.token,
-                entry.formula,
-                entry.style,
-                entry.colorSource,
-              ])
+          .map(
+            (entry) => <String?>[
+              entry.kind,
+              entry.token,
+              entry.formula,
+              entry.style,
+              entry.colorSource,
+            ],
+          )
           .toList(),
       <List<String?>>[
         <String?>['dateToken', 'weekdayAbbrev', null, 'label', null],
-        <String?>[
-          'dateToken',
-          'dayOfMonth',
-          null,
-          'circleHighlight',
-          'accent',
-        ],
+        <String?>['dateToken', 'dayOfMonth', null, 'circleHighlight', 'accent'],
         <String?>[
           'formula',
           null,
@@ -350,7 +154,8 @@ void main() {
   test('engine-native notification presentation parses and defaults', () {
     final configured = experienceForExtensionId(
       'a4-notification-presentation-fab',
-      experienceConfiguration: _v2Experience()
+      specVersion: currentCommunitySpecVersion,
+      experienceConfiguration: _v4Experience()
         ..['notificationPresentation'] = <String, Object?>{'style': 'fab'},
     );
     expect(configured.notificationPresentation?.style, 'fab');
@@ -358,65 +163,64 @@ void main() {
 
     final absent = experienceForExtensionId(
       'a4-notification-presentation-absent',
-      experienceConfiguration: _v2Experience(),
+      specVersion: currentCommunitySpecVersion,
+      experienceConfiguration: _v4Experience(),
     );
     expect(absent.notificationPresentation, isNull);
     expect(absent.resolvedNotificationPresentationStyle, 'bell');
   });
 
-  test('persona accessMode parses all values and defaults to open', () {
-    final config = _v2Experience()
-      ..['personas'] = <Object?>[
+  test('role accessMode parses all values and defaults to open', () {
+    final config = _v4Experience()
+      ..['roles'] = <Object?>[
         <String, Object?>{
-          'personaId': 'open-persona',
+          'roleId': 'open-role',
           'label': 'Open',
           'roleLabel': 'Member',
           'description': 'Open access',
           'accessMode': 'open',
         },
         <String, Object?>{
-          'personaId': 'approval-persona',
+          'roleId': 'approval-role',
           'label': 'Approval',
           'roleLabel': 'Member',
           'description': 'Approval access',
           'accessMode': 'requiresApproval',
         },
         <String, Object?>{
-          'personaId': 'invite-persona',
+          'roleId': 'invite-role',
           'label': 'Invite',
           'roleLabel': 'Member',
           'description': 'Invite access',
           'accessMode': 'requiresInvite',
         },
         <String, Object?>{
-          'personaId': 'default-persona',
+          'roleId': 'default-role',
           'label': 'Default',
           'roleLabel': 'Member',
           'description': 'Default access',
         },
       ];
 
-    final personas = experienceForExtensionId(
-      'a4-persona-access-mode',
+    final roles = experienceForExtensionId(
+      'a4-role-access-mode',
+      specVersion: currentCommunitySpecVersion,
       experienceConfiguration: config,
     ).personas!;
 
-    expect(
-      personas.map((persona) => persona.accessMode),
-      <LoomPersonaAccessMode>[
-        LoomPersonaAccessMode.open,
-        LoomPersonaAccessMode.requiresApproval,
-        LoomPersonaAccessMode.requiresInvite,
-        LoomPersonaAccessMode.open,
-      ],
-    );
+    expect(roles.map((role) => role.accessMode), <LoomPersonaAccessMode>[
+      LoomPersonaAccessMode.open,
+      LoomPersonaAccessMode.requiresApproval,
+      LoomPersonaAccessMode.requiresInvite,
+      LoomPersonaAccessMode.open,
+    ]);
   });
 
-  test('invalid persona accessMode fails with a clear FormatException', () {
-    final config = _v2Experience()
-      ..['personas'] = <Object?>[
+  test('invalid role accessMode fails with a clear FormatException', () {
+    final config = _v4Experience()
+      ..['roles'] = <Object?>[
         <String, Object?>{
-          'personaId': 'invalid-persona',
+          'roleId': 'invalid-role',
           'label': 'Invalid',
           'roleLabel': 'Member',
           'description': 'Invalid access',
@@ -426,7 +230,8 @@ void main() {
 
     expect(
       () => experienceForExtensionId(
-        'a4-invalid-persona-access-mode',
+        'a4-invalid-role-access-mode',
+        specVersion: currentCommunitySpecVersion,
         experienceConfiguration: config,
       ),
       throwsA(
@@ -439,146 +244,47 @@ void main() {
     );
   });
 
-  test('legacy notification presentation parses for both schema paths', () {
-    final package = _legacyPackage();
+  test('malformed v4 definition is skipped while valid definition remains', () {
+    final config = _v4Experience();
+    final definitions = config['workflowDefinitions'] as Map<String, Object?>;
+    definitions['malformed'] = <String, Object?>{'states': <String, Object?>{}};
     final experience = experienceForExtensionId(
-      'a4-legacy-notification-presentation',
-      specVersion: package.specVersion,
-      experienceConfiguration: package.experience
-        ..['notificationPresentation'] = <String, Object?>{
-          'style': 'dedicatedTab',
-        },
+      'a4-malformed-definition',
+      specVersion: currentCommunitySpecVersion,
+      experienceConfiguration: config,
     );
-    expect(experience.notificationPresentation?.style, 'dedicatedTab');
+    expect(experience.workflowDefinitions!.keys, <String>['valid']);
   });
 
-  test('2 absent stamp preserves the legacy shallow projection', () {
-    final package = _legacyPackage();
+  test('v4 ignores absent shallow workflows and returns engine content', () {
+    final config = _v4Experience()..remove('workflows');
     final experience = experienceForExtensionId(
-      'a4-legacy-absent',
-      specVersion: package.specVersion,
-      experienceConfiguration: package.experience,
+      'a4-no-shallow-workflows',
+      specVersion: currentCommunitySpecVersion,
+      experienceConfiguration: config,
     );
-    expect(_legacyProjection(experience), <Object?>[
-      'Tabletop Club',
-      <Object?>[
-        <Object?>[
-          'tabletop-game-night-rsvp',
-          'RSVP to Friday game night',
-          'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
-          "Reserve a seat at Friday's game night.",
-          "You're on the roster for Friday's game night.",
-        ],
-        <Object?>[
-          'tabletop-tournament-rsvp',
-          'RSVP to the afternoon tournament',
-          'Summer tournament earlier the same day, 1-5pm. 8 of 16 brackets claimed.',
-          'Claim a bracket in the summer tournament.',
-          'Your bracket is reserved for the summer tournament.',
-        ],
-        <Object?>[
-          'tabletop-committee-decision',
-          'Decide on new game purchase',
-          'A member proposed buying a copy of Wingspan for the club library.',
-          'Decide on the Wingspan purchase proposal.',
-          'Decision recorded for the Wingspan proposal.',
-        ],
-        <Object?>[
-          'tabletop-game-loan',
-          'Borrow a game from the club library',
-          'Catan is available in the club game library.',
-          'Request to borrow Catan for two weeks.',
-          'Your loan request for Catan was sent to the organizer.',
-        ],
-        <Object?>[
-          'tabletop-club-dues-payment',
-          'Pay quarterly club dues',
-          'Quarterly dues of \$15 are due by the end of the month.',
-          'Pay \$15 in quarterly dues.',
-          'Dues payment recorded and receipt saved.',
-        ],
-        <Object?>[
-          'tabletop-meetup-announcement',
-          'Publish game night announcement',
-          "Draft: 'Friday game night moves to the larger room starting next week.'",
-          'Publish the game night announcement to all members.',
-          'Announcement published to all Tabletop Club members.',
-        ],
-      ],
-      <String>['tabletop-organizer', 'tabletop-member'],
-      null,
-      null,
-    ]);
+    expect(experience.workflowDefinitions, isNotNull);
+    expect(experience.workflowDefinitions!.keys, <String>['valid']);
+    expect(experience.workflowInstances, hasLength(1));
+    expect(experience.calendarDateRailEntries, isNull);
   });
 
-  test('3 explicit legacy version matches absent-stamp legacy parsing', () {
-    final absentPackage = _legacyPackage();
-    final absent = experienceForExtensionId(
-      'a4-legacy-absent-comparison',
-      specVersion: absentPackage.specVersion,
-      experienceConfiguration: absentPackage.experience,
-    );
-    final explicitPackage = _legacyPackage();
-    final explicit = experienceForExtensionId(
-      'a4-legacy-explicit',
-      specVersion: explicitPackage.specVersion,
-      experienceConfiguration: explicitPackage.experience
-        ..['experienceSchemaVersion'] = 1,
-    );
-    expect(_legacyProjection(explicit), _legacyProjection(absent));
-  });
-
-  test('4 unsupported experience version throws FormatException', () {
-    final package = _legacyPackage();
-    final config = package.experience..['experienceSchemaVersion'] = 99;
+  test('missing or unsupported specVersion is rejected', () {
     expect(
       () => experienceForExtensionId(
-        'a4-unsupported-experience',
-        specVersion: package.specVersion,
-        experienceConfiguration: config,
+        'a4-missing-version',
+        specVersion: null,
+        experienceConfiguration: _v4Experience(),
+      ),
+      throwsA(isA<FormatException>()),
+    );
+    expect(
+      () => experienceForExtensionId(
+        'a4-unsupported-version',
+        specVersion: currentCommunitySpecVersion - 1,
+        experienceConfiguration: _v4Experience(),
       ),
       throwsA(isA<FormatException>()),
     );
   });
-
-  test('5 unsupported v2 grammar version throws FormatException', () {
-    expect(
-      () => experienceForExtensionId(
-        'a4-unsupported-grammar',
-        experienceConfiguration: _v2Experience(grammarVersion: 99),
-      ),
-      throwsA(isA<FormatException>()),
-    );
-  });
-
-  test(
-    '6 malformed v2 definition is skipped while valid definition remains',
-    () {
-      final config = _v2Experience();
-      final definitions = config['workflowDefinitions'] as Map<String, Object?>;
-      definitions['malformed'] = <String, Object?>{
-        'states': <String, Object?>{},
-      };
-      final experience = experienceForExtensionId(
-        'a4-malformed-definition',
-        experienceConfiguration: config,
-      );
-      expect(experience.workflowDefinitions!.keys, <String>['valid']);
-    },
-  );
-
-  test(
-    '7 v2 ignores absent legacy workflows and returns engine-native content',
-    () {
-      final config = _v2Experience()..remove('workflows');
-      final experience = experienceForExtensionId(
-        'a4-no-legacy-workflows',
-        experienceConfiguration: config,
-      );
-      expect(experience.workflowDefinitions, isNotNull);
-      expect(experience.workflowDefinitions!.keys, <String>['valid']);
-      expect(experience.workflowInstances, hasLength(1));
-      expect(experience.calendarDateRailEntries, isNull);
-    },
-  );
 }

@@ -24,19 +24,18 @@ Map<String, dynamic> definitionWithBinding({
   String tabId = 'calendar',
   String cardSurfaceFamily = 'event-rsvp',
   Map<String, dynamic> schema = const {},
-}) =>
-    <String, dynamic>{
-      ...definition(schema: schema),
-      'renderBindings': <dynamic>[
-        {
-          'states': ['open', 'done'],
-          'role': 'any',
-          'tabId': tabId,
-          'cardSurfaceFamily': cardSurfaceFamily,
-          'bindingKind': 'summary',
-        },
-      ],
-    };
+}) => <String, dynamic>{
+  ...definition(schema: schema),
+  'renderBindings': <dynamic>[
+    {
+      'states': ['open', 'done'],
+      'audience': 'any',
+      'tabId': tabId,
+      'cardSurfaceFamily': cardSurfaceFamily,
+      'bindingKind': 'summary',
+    },
+  ],
+};
 Map<String, dynamic> seed({
   String id = 'one',
   String type = 'thing',
@@ -51,12 +50,13 @@ Map<String, dynamic> seed({
 };
 Map<String, dynamic> pkg({Map<String, dynamic>? experience}) =>
     <String, dynamic>{
-      'schemaVersion': 1,
+      'specVersion': 4,
       'experience':
           experience ??
           <String, dynamic>{
-            'experienceSchemaVersion': 2,
-            'workflowGrammarVersion': 1,
+            'roles': <Map<String, dynamic>>[
+              <String, dynamic>{'roleId': 'member', 'label': 'Member'},
+            ],
             'workflowDefinitions': <String, dynamic>{'thing': definition()},
             'workflowInstances': <dynamic>[seed()],
           },
@@ -67,16 +67,7 @@ List<String> findings(Map<String, dynamic> p) => CommunityPackageValidator()
     .map((f) => f.type)
     .toList();
 
-Map<String, dynamic> specV4Pkg() {
-  final package = pkg()
-    ..remove('schemaVersion')
-    ..['specVersion'] = 4;
-  final experience = package['experience'] as Map<String, dynamic>
-    ..remove('experienceSchemaVersion')
-    ..remove('workflowGrammarVersion');
-  package['experience'] = experience;
-  return package;
-}
+Map<String, dynamic> specV4Pkg() => pkg();
 
 List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
     CommunityPackageValidator()
@@ -88,14 +79,11 @@ List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
 void main() {
   group('CommunityPackageValidator Ticket B rules', () {
     test(
-      '1 minimal valid v2 package passes',
+      '1 minimal valid v4 package passes',
       () => expect(CommunityPackageValidator().validate(pkg()).passed, isTrue),
     );
     test('2 missing root version stamp', () {
-      // Points at specVersion, not the legacy schemaVersion it replaced:
-      // a package with no stamp at all should be told to add the field it
-      // ought to have, not the deprecated one.
-      final package = pkg()..remove('schemaVersion');
+      final package = pkg()..remove('specVersion');
       final report = CommunityPackageValidator().validate(package);
       final missingVersions = report.findings
           .where((finding) => finding.type == 'missing_schema_version')
@@ -103,38 +91,6 @@ void main() {
 
       expect(missingVersions, hasLength(1));
       expect(missingVersions.single.location, 'specVersion');
-    });
-    test(
-      '3 unsupported experience schema version',
-      () => expect(
-        findings(
-          pkg(experience: <String, dynamic>{'experienceSchemaVersion': 99}),
-        ),
-        contains('unsupported_schema_version'),
-      ),
-    );
-    test(
-      '4 missing experience schema version',
-      () => expect(
-        findings(pkg(experience: <String, dynamic>{})),
-        contains('missing_schema_version'),
-      ),
-    );
-    test('5 v1 short-circuits malformed deep content', () {
-      final r = CommunityPackageValidator().validate(
-        pkg(
-          experience: <String, dynamic>{
-            'experienceSchemaVersion': 1,
-            'workflowDefinitions': <String, dynamic>{
-              'bad': <String, dynamic>{},
-            },
-          },
-        ),
-      );
-      expect(r.errors, isEmpty);
-      expect(r.warnings.map((f) => f.type), <String>[
-        'legacy_experience_schema',
-      ]);
     });
     test('6 unknown instance workflow type', () {
       final p = pkg();
@@ -252,14 +208,14 @@ void main() {
       expect(findings(p), isNot(contains('unknown_tab_id')));
     });
 
-    test('17 fallback to appShellCustomization personaTabs is accepted', () {
+    test('17 fallback to appShellCustomization roleTabs is accepted', () {
       final p = pkg();
       final e = p['experience'] as Map<String, dynamic>;
       e['workflowDefinitions'] = <String, dynamic>{
         'thing': definitionWithBinding(tabId: 'owner-portal'),
       };
       p['appShellCustomization'] = <String, dynamic>{
-        'personaTabs': {
+        'roleTabs': {
           'owner': [
             {
               'tabId': 'owner-portal',
@@ -295,7 +251,7 @@ void main() {
     });
 
     test(
-      'seed with legacy createdByPersonaId has no missing-creator finding during straddle',
+      'seed with legacy createdByPersonaId reports the v4 creator error',
       () {
         final package = specV4Pkg();
         final instance =
@@ -307,7 +263,7 @@ void main() {
           ..remove('createdByFanId')
           ..['createdByPersonaId'] = 'fan-one';
 
-        expect(missingCreatorFindings(package), isEmpty);
+        expect(missingCreatorFindings(package), hasLength(1));
       },
     );
 
@@ -617,7 +573,7 @@ Map<String, dynamic> _ballotPackage(String eventId) {
   e['workflowDefinitions'] = <String, dynamic>{
     'event': definition(
       schema: <String, dynamic>{
-        'goingPersonaIds': <String, dynamic>{'type': 'list'},
+        'goingFanIds': <String, dynamic>{'type': 'list'},
         'selectedGame': <String, dynamic>{'type': 'string'},
       },
     ),
@@ -635,7 +591,7 @@ Map<String, dynamic> _ballotPackage(String eventId) {
           'to': 'done',
           'guard': <String, dynamic>{
             'relatedInstanceField': 'eventId',
-            'relatedListField': 'goingPersonaIds',
+            'relatedListField': 'goingFanIds',
           },
           'effects': <dynamic>[
             <String, dynamic>{

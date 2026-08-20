@@ -244,7 +244,7 @@ class _EngineNativeCommunityStore {
       final creator = seed.createdByPersonaId;
       if (creator == null) {
         throw StateError(
-          'Engine-native seed ${seed.instanceId} is missing createdByPersonaId',
+          'Engine-native seed ${seed.instanceId} is missing createdByFanId',
         );
       }
       seeds.add(

@@ -74,7 +74,7 @@ Map<String, dynamic> _eventDefinition({
   'renderBindings': <dynamic>[
     <String, dynamic>{
       'states': <String>['open'],
-      'role': 'any',
+      'audience': 'any',
       'tabId': 'calendar',
       'cardSurfaceFamily': 'event-rsvp',
       'bindingKind': 'summary',
@@ -126,12 +126,11 @@ Map<String, dynamic> _package({
   },
 };
 
-List<String> _types(Map<String, dynamic> package) =>
-    CommunityPackageValidator()
-        .validate(package)
-        .findings
-        .map((finding) => finding.type)
-        .toList();
+List<String> _types(Map<String, dynamic> package) => CommunityPackageValidator()
+    .validate(package)
+    .findings
+    .map((finding) => finding.type)
+    .toList();
 
 String _messageFor(Map<String, dynamic> package, String type) =>
     CommunityPackageValidator()
@@ -182,7 +181,8 @@ void main() {
       expect(
         report.warnings.any((f) => f.type == 'orphaned_response_rows'),
         isTrue,
-        reason: 'six shipped communities trip this; erroring makes the corpus '
+        reason:
+            'six shipped communities trip this; erroring makes the corpus '
             'undeliverable before Phase F regenerates it',
       );
       expect(
@@ -205,7 +205,8 @@ void main() {
         'action': 'withdraw_response',
         'from': <String>['going'],
         'to': target,
-        'guard': guard ??
+        'guard':
+            guard ??
             <String, dynamic>{
               'allowedRoleIds': <String>['member'],
             },
@@ -274,7 +275,9 @@ void main() {
       // provisioning is archetype-owned, so there is deliberately nothing in
       // JSON to find (CONTRACTS.md, event-rsvp §4).
       final package = _package(
-        event: _eventDefinition(sweptStates: const ['pending', 'going', 'declined']),
+        event: _eventDefinition(
+          sweptStates: const ['pending', 'going', 'declined'],
+        ),
       );
       expect(
         _types(package),
@@ -284,10 +287,13 @@ void main() {
 
     test('the exemption is scoped -- an unrelated type is still reported', () {
       final package = _package(
-        event: _eventDefinition(sweptStates: const ['pending', 'going', 'declined']),
+        event: _eventDefinition(
+          sweptStates: const ['pending', 'going', 'declined'],
+        ),
       );
       final experience = package['experience'] as Map<String, dynamic>;
-      final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
+      final definitions =
+          experience['workflowDefinitions'] as Map<String, dynamic>;
       definitions['unrelated'] = <String, dynamic>{
         'initialState': 'open',
         'states': <String, dynamic>{

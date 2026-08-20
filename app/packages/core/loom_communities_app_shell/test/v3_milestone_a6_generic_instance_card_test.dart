@@ -159,10 +159,7 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
     'enabled': {'type': 'bool'},
     'amount': {'type': 'number'},
     'allDay': {'type': 'bool'},
-    'eventTime': {
-      'type': 'time',
-      'visibleWhenEditing': '!(allDay == true)',
-    },
+    'eventTime': {'type': 'time', 'visibleWhenEditing': '!(allDay == true)'},
     'locationType': {'type': 'text'},
     'videoLink': {
       'type': 'text',
@@ -383,7 +380,9 @@ void main() {
           result = value;
         }),
       );
-      await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+      await tester.tap(
+        find.byKey(const ValueKey('open-transition-input-dialog')),
+      );
       await tester.pump();
       await tester.enterText(
         find.byKey(const ValueKey('generic-transition-input-freq')),
@@ -403,7 +402,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(result, {'freq': 'weekly', 'byDayOfWeek': ['MO', 'WE', 'FR']});
+      expect(result, {
+        'freq': 'weekly',
+        'byDayOfWeek': ['MO', 'WE', 'FR'],
+      });
       expect(result!.containsKey('byDayOfWeekWeekly'), isFalse);
     },
   );
@@ -417,7 +419,9 @@ void main() {
           result = value;
         }),
       );
-      await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+      await tester.tap(
+        find.byKey(const ValueKey('open-transition-input-dialog')),
+      );
       await tester.pump();
       await tester.enterText(
         find.byKey(const ValueKey('generic-transition-input-freq')),
@@ -451,7 +455,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(result, {'freq': 'monthly', 'byDayOfWeek': ['FR']});
+      expect(result, {
+        'freq': 'monthly',
+        'byDayOfWeek': ['FR'],
+      });
       expect(result!.containsKey('byDayOfWeekMonthly'), isFalse);
     },
   );
@@ -465,7 +472,9 @@ void main() {
         result = value;
       }),
     );
-    await tester.tap(find.byKey(const ValueKey('open-transition-input-dialog')));
+    await tester.tap(
+      find.byKey(const ValueKey('open-transition-input-dialog')),
+    );
     await tester.pump();
     await tester.enterText(
       find.byKey(const ValueKey('generic-transition-input-freq')),
@@ -755,59 +764,58 @@ void main() {
     },
   );
 
-  testWidgets(
-    'generic card renders external url field as tappable url fact',
-    (tester) async {
-      final api = LocalWorkflowEngineApi(
-        db: WorkflowDatabase.memory(),
-        communityId: 'url-test',
-      );
-      final machine = LoomWorkflowStateMachine.fromJson({
-        'initialState': 'open',
-        'states': {
-          'open': {'label': 'Open'},
+  testWidgets('generic card renders external url field as tappable url fact', (
+    tester,
+  ) async {
+    final api = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'url-test',
+    );
+    final machine = LoomWorkflowStateMachine.fromJson({
+      'initialState': 'open',
+      'states': {
+        'open': {'label': 'Open'},
+      },
+      'transitions': <dynamic>[],
+      'instanceDataSchema': {
+        'docsUrl': {
+          'type': 'url',
+          'openMode': 'external',
+          'displayIcon': 'open_in_new',
+          'labelTemplate': 'Project docs',
+          'displayContexts': ['tile'],
         },
-        'transitions': <dynamic>[],
-        'instanceDataSchema': {
-          'docsUrl': {
-            'type': 'url',
-            'openMode': 'external',
-            'displayIcon': 'open_in_new',
-            'labelTemplate': 'Project docs',
-            'displayContexts': ['tile'],
-          },
-        },
-      }, 'url-link');
-      api.registerDefinition(machine);
-      final id = await api.createInstance(
-        workflowType: 'url-link',
-        personaId: 'person',
-        initialInstanceData: {'docsUrl': 'https://example.org/project'},
-      );
-      final instance = (await api.queryInstances(
-        tabId: 'any',
-        personaId: 'person',
-      )).items.singleWhere((row) => row.instanceId == id);
+      },
+    }, 'url-link');
+    api.registerDefinition(machine);
+    final id = await api.createInstance(
+      workflowType: 'url-link',
+      personaId: 'person',
+      initialInstanceData: {'docsUrl': 'https://example.org/project'},
+    );
+    final instance = (await api.queryInstances(
+      tabId: 'any',
+      personaId: 'person',
+    )).items.singleWhere((row) => row.instanceId == id);
 
-      await tester.pumpWidget(
-        _host(
-          GenericWorkflowInstanceCard(
-            instance: instance,
-            machine: machine,
-            engine: api,
-            personaId: 'person',
-            displayContext: 'tile',
-          ),
+    await tester.pumpWidget(
+      _host(
+        GenericWorkflowInstanceCard(
+          instance: instance,
+          machine: machine,
+          engine: api,
+          personaId: 'person',
+          displayContext: 'tile',
         ),
-      );
-      await tester.pump();
+      ),
+    );
+    await tester.pump();
 
-      final urlFact = find.byKey(const ValueKey('workflow-fact-url-docsUrl'));
-      expect(urlFact, findsOneWidget);
-      expect(tester.widget<InkWell>(urlFact).onTap, isNotNull);
-      expect(find.text('Project docs'), findsOneWidget);
-    },
-  );
+    final urlFact = find.byKey(const ValueKey('workflow-fact-url-docsUrl'));
+    expect(urlFact, findsOneWidget);
+    expect(tester.widget<InkWell>(urlFact).onTap, isNotNull);
+    expect(find.text('Project docs'), findsOneWidget);
+  });
 
   testWidgets(
     'generic card renders choice url field with embedded and external controls',
@@ -968,14 +976,8 @@ void main() {
         personaId: 'person',
         initialInstanceData: {
           'citations': [
-            {
-              'label': 'Doc A',
-              'source': 'https://example.org/a',
-            },
-            {
-              'label': 'Doc B',
-              'source': 'https://example.org/b',
-            },
+            {'label': 'Doc A', 'source': 'https://example.org/a'},
+            {'label': 'Doc B', 'source': 'https://example.org/b'},
           ],
         },
       );
@@ -1039,49 +1041,42 @@ void main() {
             'label': 'Open',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'acknowledge-resource',
             'label': 'Acknowledge',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'mark-resource-unread',
             'label': 'Mark unread',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'request-resource-access',
             'label': 'Request access',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'save-resource',
             'label': 'Save',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'record-resource-download',
             'label': 'Download',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
           {
             'id': 'request-resource-follow-up',
             'label': 'Request follow-up',
             'from': ['open'],
             'to': null,
-            'byPersonaIds': ['member'],
           },
         ],
         'instanceDataSchema': {
@@ -1096,18 +1091,18 @@ void main() {
             'labelTemplate': 'Resource',
             'displayContexts': ['tile', 'detail'],
           },
-          'allowedPersonaIds': {
-            'type': 'personaId[]',
+          'allowedFanIds': {
+            'type': 'fanId[]',
             'labelTemplate': 'Allowed',
             'displayContexts': ['tile', 'detail'],
           },
-          'readPersonaIds': {
-            'type': 'personaId[]',
+          'readFanIds': {
+            'type': 'fanId[]',
             'labelTemplate': 'Read',
             'displayContexts': ['tile', 'detail'],
           },
-          'downloadedPersonaIds': {
-            'type': 'personaId[]',
+          'downloadedFanIds': {
+            'type': 'fanId[]',
             'labelTemplate': 'Downloaded',
             'displayContexts': ['tile', 'detail'],
           },
@@ -1120,9 +1115,9 @@ void main() {
         initialInstanceData: {
           'title': 'Policy',
           'resourceUrl': 'https://example.org/policy',
-          'allowedPersonaIds': ['member'],
-          'readPersonaIds': ['member'],
-          'downloadedPersonaIds': ['member'],
+          'allowedFanIds': ['member'],
+          'readFanIds': ['member'],
+          'downloadedFanIds': ['member'],
         },
       );
       final instance = (await api.queryInstances(
@@ -1281,7 +1276,9 @@ void main() {
       final id = await api.createInstance(
         workflowType: 'generic-instance-editable-list',
         personaId: 'person',
-        initialInstanceData: {'selectedSchemaIds': ['a', 'b']},
+        initialInstanceData: {
+          'selectedSchemaIds': ['a', 'b'],
+        },
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
@@ -1292,7 +1289,9 @@ void main() {
       await tester.pump();
 
       final editor = find.byKey(
-        ValueKey('generic-instance-editor-${instance.instanceId}-selectedSchemaIds'),
+        ValueKey(
+          'generic-instance-editor-${instance.instanceId}-selectedSchemaIds',
+        ),
       );
       final editorText = tester.widget<TextField>(editor).controller!.text;
       expect(editorText, equals('a, b'));

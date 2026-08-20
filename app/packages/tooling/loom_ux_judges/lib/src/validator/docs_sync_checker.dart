@@ -50,7 +50,11 @@ class DocsSyncChecker {
     final refs = Directory('${repoRoot.path}/docs/references');
     if (!refs.existsSync()) {
       return const DocsSyncReport([
-        DocsSyncFinding('missing_tree', 'docs/references', 'Directory not found.'),
+        DocsSyncFinding(
+          'missing_tree',
+          'docs/references',
+          'Directory not found.',
+        ),
       ], 0);
     }
 
@@ -59,18 +63,22 @@ class DocsSyncChecker {
             as Map<String, Object?>;
     final current = specVersion['current'];
     if (current is! int) {
-      findings.add(const DocsSyncFinding(
-        'bad_spec_version',
-        'docs/references/spec-version.json',
-        '`current` must be a single integer. The three-number scheme was '
-            'collapsed into one `specVersion`; a map here means the collapse '
-            'was reverted or half-applied.',
-      ));
+      findings.add(
+        const DocsSyncFinding(
+          'bad_spec_version',
+          'docs/references/spec-version.json',
+          '`current` must be a single integer. The three-number scheme was '
+              'collapsed into one `specVersion`; a map here means the collapse '
+              'was reverted or half-applied.',
+        ),
+      );
       return DocsSyncReport(findings, 0);
     }
 
     final manifest =
-        jsonDecode(File('${refs.path}/_meta/doc-manifest.json').readAsStringSync())
+        jsonDecode(
+              File('${refs.path}/_meta/doc-manifest.json').readAsStringSync(),
+            )
             as Map<String, Object?>;
     final entries = (manifest['docs'] as List).cast<Map<String, Object?>>();
 
@@ -93,25 +101,29 @@ class DocsSyncChecker {
 
       final file = File('${refs.path}/$path');
       if (!file.existsSync()) {
-        findings.add(DocsSyncFinding(
-          'manifest_orphan',
-          'docs/references/$path',
-          'Listed in the manifest with status "$status" but the file does not '
-              'exist. Either it was deleted without updating the manifest, or '
-              'it should be marked "planned".',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'manifest_orphan',
+            'docs/references/$path',
+            'Listed in the manifest with status "$status" but the file does not '
+                'exist. Either it was deleted without updating the manifest, or '
+                'it should be marked "planned".',
+          ),
+        );
         continue;
       }
 
       final syncedTo = entry['syncedTo'];
       if (versioned && syncedTo != current) {
-        findings.add(DocsSyncFinding(
-          'manifest_stale',
-          'docs/references/$path',
-          'Manifest says syncedTo $syncedTo but the specification is at '
-              '$current. Re-verify the doc against the spec, then update '
-              'syncedTo.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'manifest_stale',
+            'docs/references/$path',
+            'Manifest says syncedTo $syncedTo but the specification is at '
+                '$current. Re-verify the doc against the spec, then update '
+                'syncedTo.',
+          ),
+        );
       }
 
       // `derivedFrom` names the source of truth. If it has moved, the doc is
@@ -120,12 +132,14 @@ class DocsSyncChecker {
       for (final source in (entry['derivedFrom'] as List? ?? const [])) {
         if (source is! String || source.isEmpty) continue;
         if (!File('${repoRoot.path}/$source').existsSync()) {
-          findings.add(DocsSyncFinding(
-            'derived_from_missing',
-            'docs/references/$path',
-            'derivedFrom names "$source", which no longer exists. This doc is '
-                'describing code that has moved or been deleted.',
-          ));
+          findings.add(
+            DocsSyncFinding(
+              'derived_from_missing',
+              'docs/references/$path',
+              'derivedFrom names "$source", which no longer exists. This doc is '
+                  'describing code that has moved or been deleted.',
+            ),
+          );
         }
       }
     }
@@ -140,46 +154,54 @@ class DocsSyncChecker {
     // Every markdown file must be in the manifest, and must declare the current
     // version. Without the first check a new doc is invisible to this gate.
     var docsChecked = 0;
-    for (final file in refs
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.md'))) {
-      final relative =
-          file.path.substring(refs.path.length + 1).replaceAll(r'\', '/');
+    for (final file
+        in refs
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.md'))) {
+      final relative = file.path
+          .substring(refs.path.length + 1)
+          .replaceAll(r'\', '/');
       docsChecked++;
 
       if (!manifestPaths.contains(relative)) {
-        findings.add(DocsSyncFinding(
-          'unmanifested_doc',
-          'docs/references/$relative',
-          'Exists but is absent from doc-manifest.json, so nothing tracks '
-              'whether it is current. Add it to the manifest.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'unmanifested_doc',
+            'docs/references/$relative',
+            'Exists but is absent from doc-manifest.json, so nothing tracks '
+                'whether it is current. Add it to the manifest.',
+          ),
+        );
       }
 
       if (unversioned.contains(relative)) continue;
 
       final match = _frontmatterSpec.firstMatch(file.readAsStringSync());
       if (match == null) {
-        findings.add(DocsSyncFinding(
-          'missing_frontmatter_spec',
-          'docs/references/$relative',
-          'No `spec:` line in the YAML frontmatter, so its version is unknown.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'missing_frontmatter_spec',
+            'docs/references/$relative',
+            'No `spec:` line in the YAML frontmatter, so its version is unknown.',
+          ),
+        );
         continue;
       }
       final declared = match.group(1)!.trim();
       if (declared != '$current') {
-        findings.add(DocsSyncFinding(
-          'doc_version_drift',
-          'docs/references/$relative',
-          'Declares `spec: $declared` but the specification is at $current.'
-              '${declared.startsWith('{') ? ' This is the legacy three-number form and must be collapsed to a single integer.' : ''}',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'doc_version_drift',
+            'docs/references/$relative',
+            'Declares `spec: $declared` but the specification is at $current.'
+                '${declared.startsWith('{') ? ' This is the legacy three-number form and must be collapsed to a single integer.' : ''}',
+          ),
+        );
       }
     }
 
-    findings.addAll(_checkFixtures(refs, current, specVersion));
+    findings.addAll(_checkFixtures(refs, current));
     findings.addAll(_checkArchetypeDocs(refs));
     return DocsSyncReport(findings, docsChecked);
   }
@@ -192,13 +214,14 @@ class DocsSyncChecker {
   /// someone asked. An archetype an author cannot read about is one they will
   /// guess at.
   List<DocsSyncFinding> _checkArchetypeDocs(Directory refs) {
-    final artifact =
-        File('${refs.path}/generated/permissions-vocabulary.json');
+    final artifact = File('${refs.path}/generated/permissions-vocabulary.json');
     final dir = Directory('${refs.path}/archetypes');
     if (!artifact.existsSync() || !dir.existsSync()) return const [];
 
-    final contracts = (jsonDecode(artifact.readAsStringSync())
-            as Map<String, Object?>)['archetypeContracts'] as Map<String, Object?>?;
+    final contracts =
+        (jsonDecode(artifact.readAsStringSync())
+                as Map<String, Object?>)['archetypeContracts']
+            as Map<String, Object?>?;
     if (contracts == null) return const [];
 
     final docNames = dir
@@ -212,65 +235,54 @@ class DocsSyncChecker {
     for (final family in contracts.keys.where((k) => !k.startsWith('_'))) {
       // documentLibrary -> document-library.md, event-rsvp -> event-rsvp.md
       final kebab = family
-          .replaceAllMapped(
-            RegExp('(?<=[a-z])(?=[A-Z])'),
-            (_) => '-',
-          )
+          .replaceAllMapped(RegExp('(?<=[a-z])(?=[A-Z])'), (_) => '-')
           .toLowerCase();
       if (!docNames.contains('$kebab.md')) {
-        findings.add(DocsSyncFinding(
-          'archetype_doc_missing',
-          'docs/references/archetypes/$kebab.md',
-          'The generated contract declares archetype "$family" but no doc '
-              'describes it. An author cannot read what it guarantees, so they '
-              'will guess.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'archetype_doc_missing',
+            'docs/references/archetypes/$kebab.md',
+            'The generated contract declares archetype "$family" but no doc '
+                'describes it. An author cannot read what it guarantees, so they '
+                'will guess.',
+          ),
+        );
       }
     }
     return findings;
   }
 
-  /// Community packages must declare the current `specVersion` — unless
-  /// `spec-version.json` lists the surface under `pendingMigration`, which makes
-  /// the remaining debt explicit and forces it to be removed rather than
-  /// forgotten.
-  List<DocsSyncFinding> _checkFixtures(
-    Directory refs,
-    int current,
-    Map<String, Object?> specVersion,
-  ) {
-    final pending = specVersion['pendingMigration'] as Map<String, Object?>?;
-    if (pending != null && pending.containsKey('communityFixtures')) {
-      return const [];
-    }
-
+  /// Community packages must declare the current `specVersion`.
+  List<DocsSyncFinding> _checkFixtures(Directory refs, int current) {
     final findings = <DocsSyncFinding>[];
     final dir = Directory('${refs.path}/communities');
     if (!dir.existsSync()) return findings;
 
-    for (final file in dir
-        .listSync()
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.jsonc'))) {
+    for (final file in dir.listSync().whereType<File>().where(
+      (f) => f.path.endsWith('.jsonc'),
+    )) {
       final name = file.uri.pathSegments.last;
       final text = file.readAsStringSync();
-      final match =
-          RegExp(r'"specVersion"\s*:\s*(\d+)').firstMatch(text);
+      final match = RegExp(r'"specVersion"\s*:\s*(\d+)').firstMatch(text);
       if (match == null) {
-        findings.add(DocsSyncFinding(
-          'fixture_missing_spec_version',
-          'docs/references/communities/$name',
-          'No `specVersion` at package root. The legacy schemaVersion / '
-              'experienceSchemaVersion / workflowGrammarVersion triple is '
-              'replaced by one field.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'fixture_missing_spec_version',
+            'docs/references/communities/$name',
+            'No `specVersion` at package root. The legacy schemaVersion / '
+                'experienceSchemaVersion / workflowGrammarVersion triple is '
+                'replaced by one field.',
+          ),
+        );
       } else if (match.group(1) != '$current') {
-        findings.add(DocsSyncFinding(
-          'fixture_version_drift',
-          'docs/references/communities/$name',
-          'Declares specVersion ${match.group(1)} but the specification is at '
-              '$current.',
-        ));
+        findings.add(
+          DocsSyncFinding(
+            'fixture_version_drift',
+            'docs/references/communities/$name',
+            'Declares specVersion ${match.group(1)} but the specification is at '
+                '$current.',
+          ),
+        );
       }
     }
     return findings;

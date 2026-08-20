@@ -68,7 +68,6 @@ class _GenericWorkflowCreationCardState
     () => TextEditingController(text: '${_values[key] ?? ''}'),
   );
 
-
   String _label(String key, InstanceDataField schema) {
     final template = (schema.labelTemplate ?? '')
         .replaceAll('{value.length}', '')
@@ -140,7 +139,7 @@ class _GenericWorkflowCreationCardState
       if (value is String) return num.tryParse(value.trim()) ?? value;
       return value;
     }
-    if (schema.type != 'list' && schema.type != 'personaId[]') return value;
+    if (schema.type != 'list' && schema.type != 'fanId[]') return value;
     if (value is Iterable) return value.toList(growable: false);
     if (value is String) {
       return value
@@ -163,10 +162,7 @@ class _GenericWorkflowCreationCardState
           if (_error != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                _error!,
-                key: ValueKey('${widget.keyPrefix}-error'),
-              ),
+              child: Text(_error!, key: ValueKey('${widget.keyPrefix}-error')),
             ),
         ],
       ),
@@ -187,7 +183,7 @@ class _GenericWorkflowCreationCardState
   Widget _editor(String key, InstanceDataField schema) {
     final label = _label(key, schema);
     final editorKey = ValueKey('${widget.keyPrefix}-editor-$key');
-    if (schema.type == 'personaId[]' && widget.audienceCandidates.isNotEmpty) {
+    if (schema.type == 'fanId[]' && widget.audienceCandidates.isNotEmpty) {
       final selected =
           (_values[key] is Iterable
                   ? (_values[key] as Iterable)

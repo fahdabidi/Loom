@@ -254,7 +254,7 @@ void main() {
         ))!;
         final postedMessages = posted.instanceData['messages'] as List;
         final lastPosted = postedMessages.last as Map;
-        expect(lastPosted['senderPersonaId'], 'tabletop-member');
+        expect(lastPosted['senderFanId'], 'tabletop-member');
         expect(lastPosted['body'], postedBody);
         expect(DateTime.tryParse('${lastPosted['timestamp']}'), isNotNull);
         expect(posted.instanceData['messageCount'], 3);
@@ -285,8 +285,8 @@ void main() {
           findsNothing,
         );
 
-        // Archive is terminal and therefore the open-state binding disappears
-        // from the live list after the generic action row invokes the engine.
+        // Archive is terminal. The v4 package keeps an archived summary
+        // binding, while removing the open-state action row.
         final archive = find.byKey(
           const ValueKey(
             'generic-instance-thread-game-suggestions-action-archive',
@@ -295,10 +295,8 @@ void main() {
         await _pumpUntil(tester, archive);
         await tester.ensureVisible(archive);
         await tester.tap(archive);
-        await _pumpUntilGone(
-          tester,
-          find.text('Game suggestions for next week'),
-        );
+        await _pumpUntilGone(tester, archive);
+        expect(find.text('Game suggestions for next week'), findsOneWidget);
         final archived = (await tester.runAsync(
           () => _threadById(installed.engine, 'thread-game-suggestions'),
         ))!;
@@ -321,7 +319,8 @@ void main() {
           const ValueKey('audience-picker-member-tabletop-member'),
         );
         await _pumpUntil(tester, memberChoice);
-        await tester.tap(memberChoice);
+        // The v4 prefill already includes the actor; the picker proves the
+        // candidate is present without toggling that required participant off.
         await tester.tap(
           find.byKey(const ValueKey('new-discussion-thread-submit')),
         );
@@ -342,9 +341,7 @@ void main() {
           );
         }))!;
         expect(created.currentState, 'open');
-        expect(created.instanceData['participantPersonaIds'], [
-          'tabletop-member',
-        ]);
+        expect(created.instanceData['participantFanIds'], ['tabletop-member']);
         await _pumpUntil(tester, find.text('New table setup ideas'));
         await _postMessage(
           tester,
@@ -356,7 +353,7 @@ void main() {
         ))!;
         final createdMessages = replied.instanceData['messages'] as List;
         final createdReply = createdMessages.single as Map;
-        expect(createdReply['senderPersonaId'], 'tabletop-member');
+        expect(createdReply['senderFanId'], 'tabletop-member');
         expect(createdReply['body'], 'I can bring the folding card tables.');
         expect(DateTime.tryParse('${createdReply['timestamp']}'), isNotNull);
       } finally {

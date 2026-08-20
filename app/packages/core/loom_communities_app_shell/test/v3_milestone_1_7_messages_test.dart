@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 
+import 'authz_p6_test_helpers.dart';
+
 const _memberId = 'tabletop-member';
 
 LocalInstalledCommunity _community({
@@ -16,45 +18,123 @@ LocalInstalledCommunity _community({
   cardImageAssetId: null,
   heroImageAssetId: null,
   accentColor: '#4a3b2a',
+  specVersion: 4,
   experienceConfiguration: {
-    'workflows': [
-      {
-        'workflowId': 'tabletop-discussion',
-        'title': 'Tabletop discussion',
-        'entryText': 'Discussion is available.',
-        'actionText': 'Open discussion.',
-        'resultText': 'Discussion opened.',
+    'workflowDefinitions': {
+      'tabletop-discussion': {
+        'initialState': 'open',
+        'states': {
+          'open': {'label': 'Open'},
+          'archived': {'label': 'Archived', 'isTerminal': true},
+        },
+        'transitions': [
+          {
+            'id': 'post-message',
+            'label': 'Post message',
+            'from': ['open'],
+            'to': null,
+            'guard': {
+              'allowedRoleIds': [_memberId],
+            },
+            'inputs': {
+              'body': {'type': 'text', 'required': true},
+            },
+            'effects': [
+              {
+                'op': 'append',
+                'key': 'messages',
+                'value': {
+                  'messageId': r'$timestamp-$actor',
+                  'senderFanId': r'$actor',
+                  'body': '{input.body}',
+                  'timestamp': r'$timestamp',
+                },
+              },
+            ],
+          },
+          {
+            'id': 'archive',
+            'label': 'Archive',
+            'tone': 'destructive',
+            'from': ['open'],
+            'to': 'archived',
+            'guard': {
+              'allowedRoleIds': [_memberId],
+            },
+          },
+        ],
+        'renderBindings': [
+          {
+            'states': ['open'],
+            'audience': 'any',
+            'tabId': 'messages',
+            'cardSurfaceFamily': 'discussionThread',
+            'bindingKind': 'primary',
+          },
+        ],
+        'instanceDataSchema': {
+          'threadId': {'type': 'text', 'required': true},
+          'subject': {
+            'type': 'text',
+            'required': true,
+            'searchable': true,
+            'sortable': true,
+            'labelTemplate': '{value}',
+          },
+          'participantFanIds': {'type': 'fanId[]', 'required': true},
+          'messages': {'type': 'list', 'writableBy': 'effect'},
+          'messageCount': {'type': 'number', 'formula': 'size(messages)'},
+        },
       },
+    },
+    'workflowInstances': [
+      for (final thread in threads)
+        {
+          'instanceId': thread['threadId'],
+          'workflowType': 'tabletop-discussion',
+          'currentState': 'open',
+          'createdByFanId': 'tabletop-organizer',
+          'instanceData': {
+            'threadId': thread['threadId'],
+            'subject': thread['subject'],
+            'participantFanIds': thread['participantFanIds'],
+            'messages': thread['messages'],
+          },
+        },
     ],
-    'personas': [
+    'roles': [
       {
-        'personaId': _memberId,
+        'roleId': _memberId,
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'Tabletop Club member',
       },
     ],
-    'threads': threads,
   },
 );
 
 Map<String, Object?> _thread(String id, String subject) => {
   'threadId': id,
   'subject': subject,
-  'participantPersonaIds': [_memberId],
+  'participantFanIds': [_memberId],
   'messages': [
     {
       'messageId': '$id-message',
-      'senderPersonaId': 'tabletop-organizer',
+      'senderFanId': 'tabletop-organizer',
       'body': 'Seeded message for $subject',
       'timestamp': '2026-07-10T18:00:00Z',
     },
   ],
 };
 
-Widget _host(LocalInstalledCommunity community) => MaterialApp(
-  home: LocalExtensionScreen(community: community, seedDataFiles: const []),
-);
+Widget _host(LocalInstalledCommunity community, LoomAuthApi authApi) =>
+    MaterialApp(
+      home: LocalExtensionScreen(
+        community: community,
+        seedDataFiles: const [],
+        authApi: authApi,
+      ),
+    );
 
 Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 30; attempt += 1) {
@@ -73,7 +153,10 @@ Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _openMessages(WidgetTester tester, Finder readyFinder) async {
-  await tester.tap(find.byKey(const ValueKey('community-tab-messages')));
+  final tab = find.byKey(const ValueKey('community-tab-messages'));
+  await _pumpUntilFound(tester, tab);
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
   await tester.pump();
   await _pumpUntilFound(tester, readyFinder);
   await tester.ensureVisible(readyFinder);
@@ -102,7 +185,12 @@ void main() {
         _thread('three', 'Thread three'),
       ],
     );
-    await tester.pumpWidget(_host(first));
+    final firstAuth = activeAuthForInstalledCommunity(
+      community: first,
+      personaTypeId: _memberId,
+    );
+    await tester.pumpWidget(_host(first, firstAuth));
+    await selectTestTabletopPersona(tester, _memberId);
     await _openMessages(tester, find.byKey(const ValueKey('repeater-item-0')));
     expect(find.byKey(const ValueKey('repeater-item-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('repeater-item-1')), findsOneWidget);
@@ -119,7 +207,12 @@ void main() {
         _thread('four', 'Thread four'),
       ],
     );
-    await tester.pumpWidget(_host(second));
+    final secondAuth = activeAuthForInstalledCommunity(
+      community: second,
+      personaTypeId: _memberId,
+    );
+    await tester.pumpWidget(_host(second, secondAuth));
+    await selectTestTabletopPersona(tester, _memberId);
     await _openMessages(tester, find.byKey(const ValueKey('repeater-item-0')));
     expect(find.byKey(const ValueKey('repeater-item-3')), findsOneWidget);
     expect(find.byKey(const ValueKey('repeater-item-4')), findsNothing);
@@ -132,7 +225,12 @@ void main() {
       extensionId: 'v3-messages-post-persistence',
       threads: [_thread('persist', 'Persistence thread')],
     );
-    await tester.pumpWidget(_host(community));
+    final auth = activeAuthForInstalledCommunity(
+      community: community,
+      personaTypeId: _memberId,
+    );
+    await tester.pumpWidget(_host(community, auth));
+    await selectTestTabletopPersona(tester, _memberId);
     final threadItem = find.text('Persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(tester, threadItem);
@@ -160,7 +258,8 @@ void main() {
     );
 
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpWidget(_host(community));
+    await tester.pumpWidget(_host(community, auth));
+    await selectTestTabletopPersona(tester, _memberId);
     await _openMessages(tester, threadItem);
     await _tapVisible(tester, threadItem);
     await tester.pump(const Duration(milliseconds: 300));
@@ -177,7 +276,12 @@ void main() {
       extensionId: 'v3-messages-archive-persistence',
       threads: [_thread('archive', 'Archive persistence thread')],
     );
-    await tester.pumpWidget(_host(community));
+    final auth = activeAuthForInstalledCommunity(
+      community: community,
+      personaTypeId: _memberId,
+    );
+    await tester.pumpWidget(_host(community, auth));
+    await selectTestTabletopPersona(tester, _memberId);
     final threadItem = find.text('Archive persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(tester, threadItem);
@@ -187,7 +291,8 @@ void main() {
     expect(find.text('Archive persistence thread'), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpWidget(_host(community));
+    await tester.pumpWidget(_host(community, auth));
+    await selectTestTabletopPersona(tester, _memberId);
     await _openMessages(tester, find.text('No messages yet'));
     expect(find.text('Archive persistence thread'), findsNothing);
   });

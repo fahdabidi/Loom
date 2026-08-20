@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_workflow_engine/src/evaluator/recurrence_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
@@ -8,92 +10,63 @@ import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 class CommunityPackageValidator {
   /// The current single-number specification version.
   ///
-  /// One number versions the whole package. The three legacy stamps below are
-  /// still accepted while `spec-version.json` → `pendingMigration` lists the
-  /// fixtures, and the legacy branch is deleted once that list is empty.
-  static const supportedSpecVersions = <int>{4};
-
-  static const supportedEnvelopeVersions = <int>{1};
-  static const supportedExperienceVersions = <int>{1, 2};
-  static const supportedGrammarVersions = <int>{1};
+  /// One number versions the whole package.
+  static const supportedSpecVersions = <int>{currentCommunitySpecVersion};
 
   ValidationReport validate(Map<String, dynamic> package) {
     final findings = <ValidationFinding>[];
 
-    // A package declares either the single `specVersion` or the legacy triple,
-    // never a mixture. Which one it uses selects the rule set: identity types
-    // and `audience` are only enforced from specVersion 4 onward, because a
-    // legacy package legitimately still says `personaId` and `role`.
     final specVersion = package['specVersion'];
-    final isSpecVersioned = specVersion != null;
-
-    if (isSpecVersioned) {
-      if (specVersion is! int) {
-        findings.add(
-          _finding(
-            'missing_schema_version',
-            'specVersion must be an int.',
-            'specVersion',
-          ),
-        );
-        return ValidationReport(findings);
-      }
-      if (!supportedSpecVersions.contains(specVersion)) {
-        findings.add(
-          _finding(
-            'unsupported_schema_version',
-            'Unsupported specVersion "$specVersion". A loader that meets a '
-                'version it does not implement must fail rather than '
-                'best-effort-parse: silently ignoring a construct is how a '
-                'community ships a guard that never fires.',
-            'specVersion',
-          ),
-        );
-        return ValidationReport(findings);
-      }
-      // The legacy stamps must be gone, not merely ignored. Leaving one behind
-      // is how a package ends up declaring two different versions of itself --
-      // which is precisely the drift that produced this collapse.
-      for (final legacy in const [
-        ['schemaVersion', 'schemaVersion'],
-        ['experience.experienceSchemaVersion', 'experienceSchemaVersion'],
-        ['experience.workflowGrammarVersion', 'workflowGrammarVersion'],
-      ]) {
-        final present = legacy[0].startsWith('experience.')
-            ? (package['experience'] is Map &&
-                  (package['experience'] as Map).containsKey(legacy[1]))
-            : package.containsKey(legacy[1]);
-        if (present) {
-          findings.add(
-            _finding(
-              'legacy_version_stamp',
-              'A package declaring specVersion must not also carry '
-                  '"${legacy[1]}". One number versions the whole package.',
-              legacy[0].replaceAll('.', '/'),
-            ),
-          );
-        }
-      }
-    } else {
-      final envelopeVersion = package['schemaVersion'];
-      if (envelopeVersion is! int) {
-        findings.add(
-          _finding(
-            'missing_schema_version',
-            'Package must declare specVersion (or, until the migration '
-                'completes, the legacy schemaVersion).',
-            'specVersion',
-          ),
-        );
-      } else if (!supportedEnvelopeVersions.contains(envelopeVersion)) {
-        findings.add(
-          _finding(
-            'unsupported_schema_version',
-            'Unsupported schemaVersion "$envelopeVersion".',
-            'schemaVersion',
-          ),
-        );
-      }
+    const legacyVersionStamps = [
+      ['schemaVersion', 'schemaVersion'],
+      ['experience.experienceSchemaVersion', 'experienceSchemaVersion'],
+      ['experience.workflowGrammarVersion', 'workflowGrammarVersion'],
+    ];
+    var hasLegacyVersionStamp = false;
+    for (final legacy in legacyVersionStamps) {
+      final present = legacy[0].startsWith('experience.')
+          ? (package['experience'] is Map &&
+                (package['experience'] as Map).containsKey(legacy[1]))
+          : package.containsKey(legacy[1]);
+      if (!present) continue;
+      hasLegacyVersionStamp = true;
+      findings.add(
+        _finding(
+          'legacy_version_stamp',
+          'Pre-specVersion-4 packages are unsupported. Remove '
+              '"${legacy[1]}" and re-author the package with '
+              'specVersion: $currentCommunitySpecVersion. See '
+              'docs/references/reference/identity-types.md.',
+          legacy[0].replaceAll('.', '/'),
+        ),
+      );
+    }
+    if (hasLegacyVersionStamp) {
+      return ValidationReport(findings);
+    }
+    if (specVersion is! int) {
+      findings.add(
+        _finding(
+          'missing_schema_version',
+          'Package must declare specVersion: '
+              '$currentCommunitySpecVersion. Pre-v4 packages are unsupported. '
+              'See docs/references/reference/identity-types.md.',
+          'specVersion',
+        ),
+      );
+      return ValidationReport(findings);
+    }
+    if (!supportedSpecVersions.contains(specVersion)) {
+      findings.add(
+        _finding(
+          'unsupported_schema_version',
+          'Unsupported specVersion "$specVersion". Only specVersion: '
+              '$currentCommunitySpecVersion is supported; re-author pre-v4 '
+              'packages using docs/references/reference/identity-types.md.',
+          'specVersion',
+        ),
+      );
+      return ValidationReport(findings);
     }
     final rawExperience = package['experience'];
     if (rawExperience is! Map) {
@@ -108,76 +81,8 @@ class CommunityPackageValidator {
     }
     final experience = Map<String, dynamic>.from(rawExperience);
 
-    // The legacy stamps only gate a legacy package. A specVersion package has
-    // already been version-checked once, by the single number that governs all
-    // of it.
-    if (!isSpecVersioned) {
-      final legacyGate = _validateLegacyStamps(experience);
-      if (legacyGate != null) {
-        findings.addAll(legacyGate);
-        return ValidationReport(findings);
-      }
-    }
-    findings.addAll(
-      _validateIdentityKeys(package, experience, isSpecVersioned),
-    );
+    findings.addAll(_validateIdentityKeys(package, experience));
     return _validateBody(package, experience, findings);
-  }
-
-  /// The three legacy version checks, unchanged. Returns the findings that must
-  /// terminate validation, or null to continue.
-  List<ValidationFinding>? _validateLegacyStamps(
-    Map<String, dynamic> experience,
-  ) {
-    final experienceVersion = experience['experienceSchemaVersion'];
-    if (experienceVersion is! int) {
-      return [
-        _finding(
-          'missing_schema_version',
-          'experience.experienceSchemaVersion must be stamped as an int.',
-          'experience/experienceSchemaVersion',
-        ),
-      ];
-    }
-    if (!supportedExperienceVersions.contains(experienceVersion)) {
-      return [
-        _finding(
-          'unsupported_schema_version',
-          'Unsupported experienceSchemaVersion "$experienceVersion".',
-          'experience/experienceSchemaVersion',
-        ),
-      ];
-    }
-    if (experienceVersion == 1) {
-      return [
-        _finding(
-          'legacy_experience_schema',
-          'Experience schema v1 is legacy and cannot express state machines; engine-native validation was skipped.',
-          'experience/experienceSchemaVersion',
-          warning: true,
-        ),
-      ];
-    }
-    final grammarVersion = experience['workflowGrammarVersion'];
-    if (grammarVersion is! int) {
-      return [
-        _finding(
-          'missing_schema_version',
-          'experience.workflowGrammarVersion must be stamped as an int.',
-          'experience/workflowGrammarVersion',
-        ),
-      ];
-    }
-    if (!supportedGrammarVersions.contains(grammarVersion)) {
-      return [
-        _finding(
-          'unsupported_schema_version',
-          'Unsupported workflowGrammarVersion "$grammarVersion".',
-          'experience/workflowGrammarVersion',
-        ),
-      ];
-    }
-    return null;
   }
 
   ValidationReport _validateBody(
@@ -197,7 +102,7 @@ class CommunityPackageValidator {
       return ValidationReport(findings);
     }
     findings.addAll(_validateUnknownWorkflowKeys(rawDefinitions));
-    final personas = _personaIds(experience['personas']);
+    final personas = _personaIds(experience['roles']);
     final declaredTabIds = _declaredTabIds(package);
     final workflows = <String, LoomWorkflowStateMachine>{};
     for (final entry in rawDefinitions.entries) {
@@ -260,25 +165,19 @@ class CommunityPackageValidator {
       } else {
         instances[id] = instance;
       }
-      final seedCreator = _seedCreatorDuringD8Straddle(instance);
+      final seedCreator = _seedCreator(instance);
       if (seedCreator == null) {
         final instanceLabel = instance.containsKey('instanceId')
             ? ' "${instance['instanceId']}"'
             : '';
-        final creatorKey = instance.containsKey('createdByFanId')
-            ? 'createdByFanId'
-            : instance.containsKey('createdByPersonaId')
-            ? 'createdByPersonaId'
-            : 'createdByFanId';
         findings.add(
           _finding(
             'seed_instance_missing_creator',
             'Seed instance$instanceLabel must declare a non-empty creator '
-                'using createdByFanId (or legacy createdByPersonaId during '
-                'the D8 straddle). Without that creator, the community fails '
+                'using createdByFanId. Without that creator, the community fails '
                 'to install. The field identifies a person (fanId), not a '
                 'role.',
-            '$path/$creatorKey',
+            '$path/createdByFanId',
           ),
         );
       }
@@ -307,17 +206,6 @@ class CommunityPackageValidator {
           ),
         );
       }
-      final creator = instance['createdByPersonaId'];
-      if (creator != null &&
-          (creator is! String || !personas.contains(creator)))
-        findings.add(
-          _finding(
-            'unknown_instance_persona',
-            'createdByPersonaId "$creator" is not a known persona.',
-            '$path/createdByPersonaId',
-            warning: true,
-          ),
-        );
       final data = instance['instanceData'] is Map
           ? Map<String, dynamic>.from(instance['instanceData'] as Map)
           : <String, dynamic>{};
@@ -505,18 +393,16 @@ class CommunityPackageValidator {
           (p) => p is String
               ? p
               : p is Map
-              ? p['personaId'] as String?
+              ? p['roleId'] as String?
               : null,
         )
         .whereType<String>()
         .toSet();
   }
 
-  String? _seedCreatorDuringD8Straddle(Map<String, dynamic> instance) {
-    for (final key in const ['createdByFanId', 'createdByPersonaId']) {
-      final value = instance[key];
-      if (value is String && value.trim().isNotEmpty) return value;
-    }
+  String? _seedCreator(Map<String, dynamic> instance) {
+    final value = instance['createdByFanId'];
+    if (value is String && value.trim().isNotEmpty) return value;
     return null;
   }
 
@@ -537,7 +423,7 @@ class CommunityPackageValidator {
       }
     }
 
-    final personaTabs = _objectMap(appShell['personaTabs']);
+    final personaTabs = _objectMap(appShell['roleTabs']);
     if (personaTabs == null) return declared;
 
     for (final rawPersonaTabs in personaTabs.values) {
@@ -1009,17 +895,12 @@ class CommunityPackageValidator {
   /// identity-types.md — the `roleId` / `fanId` split, enforced from
   /// specVersion 4.
   ///
-  /// A legacy package legitimately still says `personaId` and `role`, so none
-  /// of this applies to one. What makes the split worth having is the last
-  /// check: comparing `$viewer` to a declared role is a type error rather than
-  /// a silent false, and three formulas in the corpus are broken by exactly
-  /// that today while producing no diagnostic at all.
+  /// Comparing `$viewer` to a declared role is a type error rather than a
+  /// silent false.
   List<ValidationFinding> _validateIdentityKeys(
     Map<String, dynamic> package,
     Map<String, dynamic> experience,
-    bool isSpecVersioned,
   ) {
-    if (!isSpecVersioned) return const [];
     final findings = <ValidationFinding>[];
 
     // Renamed keys. Their continued presence means a package was hand-edited
@@ -1030,18 +911,32 @@ class CommunityPackageValidator {
       'visiblePersonaIds': 'visibleRoleIds',
       'personaTabs': 'roleTabs',
       'personas': 'roles',
+      'createdByPersonaId': 'createdByFanId',
     };
+    String? replacementFor(String key) {
+      final accessControlReplacement = renamed[key];
+      if (accessControlReplacement != null) return accessControlReplacement;
+      if (key == 'personaId') return 'fanId';
+      if (key.endsWith('PersonaIds')) {
+        return '${key.substring(0, key.length - 'PersonaIds'.length)}FanIds';
+      }
+      if (key.endsWith('PersonaId')) {
+        return '${key.substring(0, key.length - 'PersonaId'.length)}FanId';
+      }
+      return null;
+    }
+
     void walk(Object? node, String path) {
       if (node is Map) {
         for (final entry in node.entries) {
           final key = entry.key.toString();
-          final replacement = renamed[key];
+          final replacement = replacementFor(key);
           if (replacement != null) {
             findings.add(
               _finding(
                 'legacy_identity_key',
                 'specVersion 4 renamed "$key" to "$replacement". '
-                    'See identity-types.md.',
+                    'See docs/references/reference/identity-types.md.',
                 '$path/$key',
               ),
             );
@@ -1055,6 +950,22 @@ class CommunityPackageValidator {
                     'actor/receiver/any, the viewer\'s relationship to an '
                     'instance.',
                 '$path/role',
+              ),
+            );
+          }
+          if (key == 'type' &&
+              entry.value is String &&
+              (entry.value == 'personaId' ||
+                  (entry.value as String).startsWith('personaId[') ||
+                  (entry.value as String).startsWith('personaId?'))) {
+            findings.add(
+              _finding(
+                'legacy_identity_type',
+                'Pre-specVersion-4 identity type "${entry.value}" is '
+                    'unsupported. Use the corresponding fanId type in a '
+                    'specVersion: $currentCommunitySpecVersion package. See '
+                    'docs/references/reference/identity-types.md.',
+                '$path/type',
               ),
             );
           }

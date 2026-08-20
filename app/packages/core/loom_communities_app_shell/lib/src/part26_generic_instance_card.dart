@@ -118,10 +118,7 @@ class _GenericWorkflowInstanceCardState
   dynamic _valueFor(String key) =>
       _edits.containsKey(key) ? _edits[key] : _instance.instanceData[key];
 
-  TextEditingController _controllerFor(
-    String key,
-    InstanceDataField schema,
-  ) =>
+  TextEditingController _controllerFor(String key, InstanceDataField schema) =>
       _controllers.putIfAbsent(
         key,
         () => TextEditingController(
@@ -136,7 +133,7 @@ class _GenericWorkflowInstanceCardState
       .toList(growable: false);
 
   String _editorSeedText(String type, Object? value) {
-    if (type != 'list' && type != 'personaId[]') return '${value ?? ''}';
+    if (type != 'list' && type != 'fanId[]') return '${value ?? ''}';
     if (value == null) return '';
     if (value is Iterable) {
       if (value.isEmpty) return '';
@@ -246,7 +243,7 @@ class _GenericWorkflowInstanceCardState
           return;
         }
         updates[key] = parsed;
-      } else if ((field.type == 'list' || field.type == 'personaId[]') &&
+      } else if ((field.type == 'list' || field.type == 'fanId[]') &&
           value is String) {
         updates[key] = _splitCommaValues(value);
       } else {
@@ -488,7 +485,7 @@ class _GenericWorkflowInstanceCardState
                     accent: resolvedAccent,
                   )
                 else if (_isVisibleField(entry.key, entry.value))
-                      KeyedSubtree(
+                  KeyedSubtree(
                     key: ValueKey(
                       'generic-instance-field-${_instance.instanceId}-${entry.key}',
                     ),
@@ -514,7 +511,8 @@ class _GenericWorkflowInstanceCardState
                                 displayIcon: itemFieldSchema.displayIcon,
                                 labelTemplate: itemFieldSchema.labelTemplate,
                                 hideWhenEmpty: itemFieldSchema.hideWhenEmpty,
-                                displayContexts: itemFieldSchema.displayContexts,
+                                displayContexts:
+                                    itemFieldSchema.displayContexts,
                                 openMode: itemFieldSchema.openMode,
                               ),
                             ),
@@ -610,11 +608,13 @@ class _GenericWorkflowInstanceCardState
                       key: ValueKey(
                         'instance-create-action-${_instance.instanceId}-${action.workflowType}',
                       ),
-                      onPressed: _mutating ||
-                              widget.onInstanceScopedCreate == null
+                      onPressed:
+                          _mutating || widget.onInstanceScopedCreate == null
                           ? null
                           : () => widget.onInstanceScopedCreate!(action),
-                      child: Text(action.label ?? 'Create ${action.workflowType}'),
+                      child: Text(
+                        action.label ?? 'Create ${action.workflowType}',
+                      ),
                     ),
                   ),
               ],
@@ -700,7 +700,7 @@ class _GenericWorkflowInstanceCardState
           },
         );
       case 'list':
-      case 'personaId[]':
+      case 'fanId[]':
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TextField(
@@ -710,9 +710,8 @@ class _GenericWorkflowInstanceCardState
             maxLines: 1,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(labelText: label),
-            onChanged: (value) => setState(
-              () => _edits[key] = _splitCommaValues(value),
-            ),
+            onChanged: (value) =>
+                setState(() => _edits[key] = _splitCommaValues(value)),
           ),
         );
       default:
@@ -845,11 +844,11 @@ class _GenericInstanceListField extends StatelessWidget {
         if (entry.key is String) '${entry.key}': entry.value,
     };
     final sender = _firstString(item, const [
-      'senderPersonaId',
+      'senderFanId',
       'sender',
-      'authorPersonaId',
+      'authorFanId',
       'author',
-      'personaId',
+      'fanId',
     ]);
     final body = _firstString(item, const [
       'body',
@@ -864,11 +863,11 @@ class _GenericInstanceListField extends StatelessWidget {
       'updatedAt',
     ]);
     final consumed = <String>{
-      'senderPersonaId',
+      'senderFanId',
       'sender',
-      'authorPersonaId',
+      'authorFanId',
       'author',
-      'personaId',
+      'fanId',
       'body',
       'message',
       'text',
@@ -1000,7 +999,8 @@ class _GenericTransitionInputDialogState
 
   bool _visible(TransitionInputSpec spec) {
     final formula = spec.visibleWhen;
-    return formula == null || evaluateFormula(formula, instanceData: _formulaValues) == true;
+    return formula == null ||
+        evaluateFormula(formula, instanceData: _formulaValues) == true;
   }
 
   String _label(String key) {
@@ -1014,7 +1014,8 @@ class _GenericTransitionInputDialogState
   Iterable<MapEntry<String, TransitionInputSpec>> get _entries =>
       widget.transition.inputs!.entries;
 
-  String? _modeFor(String group) => _modes[group] ??
+  String? _modeFor(String group) =>
+      _modes[group] ??
       _entries
           .where(
             (entry) =>
@@ -1044,7 +1045,9 @@ class _GenericTransitionInputDialogState
       if (spec.type == 'number' && value is String && value.trim().isNotEmpty) {
         value = num.tryParse(value.trim());
         if (value == null) {
-          setState(() => _validationMessage = '${_label(key)} must be a valid number.');
+          setState(
+            () => _validationMessage = '${_label(key)} must be a valid number.',
+          );
           return;
         }
       }
@@ -1055,7 +1058,8 @@ class _GenericTransitionInputDialogState
             .where((item) => item.isNotEmpty)
             .toList();
       }
-      final empty = value == null ||
+      final empty =
+          value == null ||
           (value is String && value.trim().isEmpty) ||
           (value is List && value.isEmpty);
       if (spec.required && empty) {
@@ -1089,7 +1093,9 @@ class _GenericTransitionInputDialogState
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   _validationMessage!,
-                  key: const ValueKey('generic-transition-input-validation-error'),
+                  key: const ValueKey(
+                    'generic-transition-input-validation-error',
+                  ),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -1133,7 +1139,9 @@ class _GenericTransitionInputDialogState
         children: [
           for (final option in options)
             RadioListTile<String>(
-              key: ValueKey('generic-transition-input-mode-$group-${option.value.modeValue}'),
+              key: ValueKey(
+                'generic-transition-input-mode-$group-${option.value.modeValue}',
+              ),
               value: option.value.modeValue!,
               title: Text(_label(option.key)),
             ),
