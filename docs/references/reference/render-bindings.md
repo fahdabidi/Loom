@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.8.0
+doc_version: 2.0.0
 status: current
-last_verified: 2026-08-09
+last_verified: 2026-08-20
 audience: llm-agent
 derived_from:
   - app/packages/core/loom_workflow_engine/lib/src/evaluator/binding_resolver.dart
@@ -478,11 +478,7 @@ and the community's tab declaration agree on the same string.
       "sectionTitles": [ /* ... */ ],     // optional
       "cardSurfaceFamilies": [ /* ... */ ],  // optional — restricts which archetypes this tab shows, if set
       "pinnedWorkflowIds": [ /* ... */ ], // optional
-      "visibleRoleIds": [ /* ... */ ], // optional — omit for visible-to-all
-      "requiredPermission": "community.surface.navigation.read"  // optional, defaults to `.read` --
-                                                                  // but see "declare it on every
-                                                                  // privileged tab" below
-    }
+      "visibleRoleIds": [ /* ... */ ], // optional — omit for visible-to-all    }
   ],
   "roleTabs": {
     "<roleId>": [ /* same per-tab shape, additional tabs only that persona sees */ ]
@@ -496,40 +492,47 @@ default for nearly every custom tab, since it already handles live queries, pagi
 instance to its own `cardSurfaceFamily`-declared archetype. Only specify a different `rendererContractId` if
 building a genuinely bespoke, non-generic tab surface.
 
-### `requiredPermission` — declare it on every privileged tab
+### Tab visibility is derived, never declared
 
-The permission a viewer must hold for the tab to appear at all. There are exactly two values:
+**A tab declares no permission.** `permissions.md` §1 governs: *"A community's JSON says which role
+performs which action. That statement, and nothing else, is what grants a permission... community
+JSON never contains a permission."* A tab is a surface, not a capability.
 
-| Value | Meaning | Use for |
-|---|---|---|
-| `community.surface.navigation.read` | ordinary navigation | the default — any tab a member may see |
-| `community.surface.navigation.configure` | administrative access | any tab that configures, moderates or administers the community |
+Visibility follows from the workflows bound to the tab:
 
-**It is optional and it defaults to `community.surface.navigation.read`. That default is a
-privilege decision, so declaring it is not optional in practice for an administrative tab.** A tab
-that manages the community and omits `requiredPermission` is readable by every member, silently.
+> **A tab is visible to a role if that role appears in `allowedRoleIds` — or `byRoleIds` on a create
+> action — of any transition on any workflow bound to that tab.**
 
-Declare `community.surface.navigation.configure` on any tab whose content configures or moderates
-the community — an `admin` tab is the obvious case, but so is anything exposing membership
-approval, role assignment, community settings, or moderation queues. Judge it by what the tab
-*does*, not by what it is named: a tab called `settings` or `moderation` needs it just as much as
-one called `admin`.
+which extends `permissions.md` §1's own derivation by one line:
 
-Do **not** put `configure` on an ordinary content tab. Over-declaring is its own defect — it hides
-a tab from the members it was built for.
+```
+guard.allowedRoleIds on T      ->  those roles may perform T
+T.action + workflow archetype  ->  the permission T requires
+                               ->  grant that permission to those roles
+tab renders T                  ->  the tab is visible to those roles
+```
 
-> **Why this is spelled out.** Until 2026-08-20 the app shell supplied
-> `community.surface.navigation.configure` for the `admin` tab from a hardcoded per-community table
-> in `part12_persona_and_tabs.dart`. When that table was deleted — correctly, so that a tab exists
-> because a community declares it rather than because the shell guessed — every Admin tab across
-> all ten communities that declare one fell back to `navigation.read`, because **none of the eleven
-> packages declared `requiredPermission` on any tab**. Nobody had ever needed to: the shell was
-> supplying the value invisibly. The grammar supported it the whole time. State it.
+So the Admin tab is visible to the organizer because the organizer is the only role that can act on
+anything bound to it. Nothing else is written, and nothing else needs to be.
 
-`home` and `messages` never need a declaration to exist, but a declaration for either is still honored for
-cosmetic overrides (custom label/icon/description) if a community wants to rename `messages` to
-"Connections", for example — the structural guarantee (the tab always exists, cannot be removed) is
-independent of what it's labeled.
+`home` and `messages` are exempt: they are platform tabs, always present, and their existence is not
+community-configurable.
+
+**`visibleRoleIds` is not an exception to this.** It names roles, not permissions, and it only ever
+*narrows* — it can hide a tab from a role that could otherwise act in it, never reveal one to a role
+that cannot.
+
+**Per-instance guards do not affect visibility.** `actorEqualsField` and `actorInList` decide which
+instances a person sees once the tab is open; they are filtering, not admission. A tab bound only to
+runtime-guarded workflows is visible, and filters to an empty state for someone who owns nothing —
+hiding it would hide it from precisely the people who own something in it.
+
+> **Historical note.** Until 2026-08-20 a tab could declare `requiredPermission`, and the app shell
+> supplied a value for it from a hardcoded per-community table. No community ever wrote one — 46 of
+> 46 tabs across eleven communities left it absent, because authors were correctly following
+> `permissions.md`. Deleting that table exposed the field, and what it exposed was that the field
+> contradicted the model. It was removed rather than reconciled. See
+> `docs/Build Plan V2/Tab Visibility Derivation Spec Proposal.md`.
 
 ## `audience` — complete list
 
@@ -612,6 +615,7 @@ is expressed by *omission*, not by a permission flag.
 | Rule | Severity |
 |---|---|
 | Every `states` entry must be a declared state | error |
+| A tab may not declare `requiredPermission` — visibility is derived from the bound workflows' role guards | error (`tab_declares_permission`) — `permissions.md` §1: community JSON never contains a permission |
 | `cardSurfaceFamily` must be a registered archetype | ⚠️ **NOT ENFORCED** as of 2026-08-09 — documented as `missing_template` (warning) but confirmed by direct test that the real validator emits nothing for an invalid value. Cross-check `archetypes/README.md`'s table by hand until this lands in `workflow_validator.dart`. |
 | A `primary` binding's surface must include an action-button row | error (`missing_action_button_row`) |
 | >32 bindings on one workflow | warning — a smell; likely two workflows |

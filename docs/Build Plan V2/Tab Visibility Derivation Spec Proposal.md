@@ -1,14 +1,14 @@
 ---
 spec: 4
 doc_version: 1.0.0
-status: proposed
+status: approved
 last_verified: 2026-08-20
 audience: llm-agent
 ---
 
 # Tab visibility should be derived, not declared
 
-**Status: proposed, not built.** Written 2026-08-20. Supersedes the `requiredPermission` direction
+**Status: APPROVED by the user 2026-08-20, not yet built.** Written 2026-08-20. Supersedes the `requiredPermission` direction
 taken earlier the same day, which was wrong for the reason in §2.
 
 ## 1. The proposal, in one line
@@ -168,7 +168,9 @@ under this proposal, because they never declared the field.
 - Runtime guards keep filtering instance contents.
 - The backend stays the authority for data and actions. This is the visibility layer only.
 
-## 8. Open question for the user
+## 8. Resolved: derive from any transition's roles
+
+**Decided with the approval, 2026-08-20**, by taking this section's own recommendation. If the stricter reading was intended, say so and it changes one predicate.
 
 Whether visibility should derive from **any** transition's roles (proposed above) or only from
 `view`-action bindings. "Any" is simpler and matches the intuition that a tab you can act in is a
