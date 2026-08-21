@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 Future<void> installEvidenceTarget(
   WidgetTester tester,
@@ -434,7 +436,7 @@ EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'packageId': 'init_${target.communityId}',
       'communityId': target.communityId,
       'communityHandle': target.handle,

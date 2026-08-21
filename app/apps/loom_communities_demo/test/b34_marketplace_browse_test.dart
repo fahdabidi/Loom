@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -639,16 +641,16 @@ _PackagePairFixture _writeFixture({
     'theme': {
       'accent': '#C4703F',
     },
-    'personas': [
+    'roles': [
       {
-        'personaId': 'tabletop-organizer',
+        'roleId': 'tabletop-organizer',
         'label': 'Organizer',
         'roleLabel': 'Organizer',
         'description':
             'Plans game nights, manages the game library, and collects dues.',
       },
       {
-        'personaId': 'tabletop-member',
+        'roleId': 'tabletop-member',
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'RSVPs to game nights, borrows games, and pays dues.',
@@ -692,7 +694,7 @@ _PackagePairFixture _writeFixture({
               'label': 'Request loan',
               'from': ['available'],
               'to': 'onLoan',
-              'allowedPersonaIds': ['tabletop-member'],
+              'allowedRoleIds': ['tabletop-member'],
               'linkedWorkflowId': 'tabletop-game-loan',
               'setsHolderToActor': true,
             },
@@ -700,7 +702,7 @@ _PackagePairFixture _writeFixture({
               'id': 'join-queue',
               'label': 'Join queue',
               'from': ['onLoan', 'queued'],
-              'allowedPersonaIds': ['tabletop-member'],
+              'allowedRoleIds': ['tabletop-member'],
               'addsActorToQueue': true,
               'requiresActorNotInQueue': true,
             },
@@ -708,7 +710,7 @@ _PackagePairFixture _writeFixture({
               'id': 'leave-queue',
               'label': 'Leave queue',
               'from': ['queued'],
-              'allowedPersonaIds': ['tabletop-member'],
+              'allowedRoleIds': ['tabletop-member'],
               'requiresActorInQueue': true,
               'removesActorFromQueue': true,
             },
@@ -717,7 +719,7 @@ _PackagePairFixture _writeFixture({
               'label': 'Return',
               'from': ['onLoan'],
               'to': 'available',
-              'allowedPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+              'allowedRoleIds': ['tabletop-member', 'tabletop-organizer'],
               'clearsHolder': true,
             },
           ],
@@ -779,7 +781,7 @@ _PackagePairFixture _writeFixture({
               'label': 'Claim giveaway',
               'from': ['available'],
               'to': 'claimed',
-              'allowedPersonaIds': ['tabletop-member'],
+              'allowedRoleIds': ['tabletop-member'],
               'linkedWorkflowId': 'tabletop-game-loan',
               'removesFromList': true,
             },
@@ -802,7 +804,7 @@ _PackagePairFixture _writeFixture({
 
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'communityId': 'community_verify_tabletop_club',
       'communityName': 'Tabletop Club',
       'extensionId': _extensionId,

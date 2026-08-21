@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -124,7 +126,7 @@ _PackagePairFixture _writeFixture() {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'communityId': 'community_verify_marketplace_dues_gate',
       'communityName': 'Tabletop Club',
       'extensionId': _extensionId,
@@ -134,15 +136,15 @@ _PackagePairFixture _writeFixture() {
         'displayName': 'Tabletop Club',
         'tagline': 'Board game library and member dues.',
         'accentColor': '#C4703F',
-        'personas': [
+        'roles': [
           {
-            'personaId': 'tabletop-member',
+            'roleId': 'tabletop-member',
             'label': 'Member',
             'roleLabel': 'Member',
             'description': 'Borrows games and pays dues.',
           },
           {
-            'personaId': 'tabletop-organizer',
+            'roleId': 'tabletop-organizer',
             'label': 'Organizer',
             'roleLabel': 'Organizer',
             'description': 'Runs the club.',
@@ -183,7 +185,7 @@ _PackagePairFixture _writeFixture() {
                   'label': 'Request loan',
                   'from': ['available'],
                   'to': 'onLoan',
-                  'allowedPersonaIds': ['tabletop-member'],
+                  'allowedRoleIds': ['tabletop-member'],
                   'requiresWorkflowsComplete': [
                     'tabletop-membership-dues-current',
                   ],

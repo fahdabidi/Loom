@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -251,7 +253,7 @@ _PackagePairFixture _writeFixture() {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'communityId': communityId,
       'communityName': 'Cedar Commons HOA',
       'extensionId': extensionId,
@@ -261,15 +263,15 @@ _PackagePairFixture _writeFixture() {
         'displayName': 'Cedar Commons HOA',
         'tagline': 'Run dues, documents, facilities, reviews, and exports.',
         'accentColor': '#3E6B8F',
-        'personas': [
+        'roles': [
           {
-            'personaId': 'hoa-homeowner',
+            'roleId': 'hoa-homeowner',
             'label': 'Avery Brooks',
             'roleLabel': 'Homeowner',
             'description': 'Submits architectural requests.',
           },
           {
-            'personaId': 'hoa-board',
+            'roleId': 'hoa-board',
             'label': 'HOA Board',
             'roleLabel': 'Board',
             'description': 'Reviews owner architectural requests.',

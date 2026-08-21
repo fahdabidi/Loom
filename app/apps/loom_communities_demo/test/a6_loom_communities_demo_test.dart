@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 void main() {
   testWidgets('vt_demo-app_add-community-button', (tester) async {
@@ -223,7 +225,7 @@ _PackagePairFixture _writeArbitraryPackagePair() {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'communityId': 'community_garden_club',
       'communityName': 'Garden Club',
       'extensionId': 'ext_garden_club',

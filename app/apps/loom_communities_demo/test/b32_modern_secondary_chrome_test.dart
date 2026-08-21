@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -211,7 +213,7 @@ _PackagePairFixture _writeChromeFixture() {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'communityId': 'community_verify_tabletop_chrome',
       'communityName': 'Tabletop Club',
       'extensionId': _extensionId,
@@ -222,15 +224,15 @@ _PackagePairFixture _writeChromeFixture() {
         'tagline': 'Board game nights and dues for local tabletop fans.',
         'accentColor': '#C4703F',
         'theme': {'accent': '#C4703F'},
-        'personas': [
+        'roles': [
           {
-            'personaId': 'tabletop-member',
+            'roleId': 'tabletop-member',
             'label': 'Member',
             'roleLabel': 'Member',
             'description': 'RSVPs to game nights.',
           },
           {
-            'personaId': 'tabletop-organizer',
+            'roleId': 'tabletop-organizer',
             'label': 'Organizer',
             'roleLabel': 'Organizer',
             'description': 'Plans game nights.',
