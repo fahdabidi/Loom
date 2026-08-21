@@ -44,7 +44,8 @@ const Map<String, String> supportedAppShellTabRendererContracts =
       'admin-review-compose-queue': 'AdminReviewComposeTabSurface',
     };
 
-/// The renderer contract used when a declared tab omits `rendererContractId`.
+/// Fallback when an absent `rendererContractId` cannot be derived from the
+/// tab's render bindings.
 const String defaultAppShellTabRendererContractId =
     'engine-native-generic-list';
 

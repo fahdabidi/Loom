@@ -201,6 +201,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
 }) {
   final generatedTabs = _generatedAppShellTabsFor();
   final tabs = _mergeDeclarativeTabSpecs(
+    experience: experience,
     personaId: personaId,
     generatedTabs: generatedTabs,
     appShellConfiguration: appShellConfiguration,
@@ -261,6 +262,7 @@ bool _hasEngineNativeBinding(
     false;
 
 List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
+  required LoomExperienceDefinition experience,
   required String personaId,
   required List<LoomAppShellTabSpec> generatedTabs,
   required Map<String, Object?> appShellConfiguration,
@@ -290,7 +292,12 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         visiblePersonaIds: generated.visiblePersonaIds,
       );
     } else {
-      mergedById[override.tabId] = override.toTabSpec();
+      mergedById[override.tabId] = override.toTabSpec(
+        derivedRendererContractId: _rendererContractIdForDeclarativeTab(
+          experience: experience,
+          tab: override,
+        ),
+      );
     }
   }
   // A LinkedHashSet, not a list: `mergedById` is keyed by tabId and so already
@@ -316,6 +323,46 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
     for (final tabId in orderedIds)
       if (mergedById[tabId] != null) mergedById[tabId]!,
   ];
+}
+
+String _rendererContractIdForDeclarativeTab({
+  required LoomExperienceDefinition experience,
+  required LoomDeclarativeTabSpec tab,
+}) {
+  final declaredRendererContractId = tab.rendererContractId;
+  if (declaredRendererContractId != null) {
+    return declaredRendererContractId;
+  }
+
+  final boundSurfaceFamilies = <String>{
+    for (final definition
+        in experience.workflowDefinitions?.values ??
+            const <LoomWorkflowStateMachine>[])
+      for (final binding in definition.renderBindings)
+        if (binding.tabId == tab.tabId) binding.cardSurfaceFamily,
+  };
+  if (boundSurfaceFamilies.isEmpty) {
+    return defaultAppShellTabRendererContractId;
+  }
+
+  final matchingContracts = <MapEntry<String, LoomTabRendererContract>>[
+    for (final entry in _tabRendererContractsById.entries)
+      if (entry.value.surfaceFamilies.isNotEmpty &&
+          boundSurfaceFamilies.every(entry.value.supportsSurfaceFamily))
+        entry,
+  ];
+  if (matchingContracts.length == 1) {
+    return matchingContracts.single.key;
+  }
+
+  final matchingTabContracts = matchingContracts
+      .where((entry) => entry.value.tabIds.contains(tab.tabId))
+      .toList(growable: false);
+  if (matchingTabContracts.length == 1) {
+    return matchingTabContracts.single.key;
+  }
+
+  return defaultAppShellTabRendererContractId;
 }
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
@@ -361,13 +408,11 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
   final tabId = _readShellString(value, const ['tabId', 'id']);
   final label = _readShellString(value, const ['label', 'title']);
   final iconKey = _readShellString(value, const ['iconKey', 'icon']) ?? 'home';
-  final rendererContractId =
-      _readShellString(value, const [
-        'rendererContractId',
-        'renderer',
-        'rendererId',
-      ]) ??
-      defaultAppShellTabRendererContractId;
+  final rendererContractId = _readShellString(value, const [
+    'rendererContractId',
+    'renderer',
+    'rendererId',
+  ]);
   if (tabId == null || label == null) {
     return null;
   }

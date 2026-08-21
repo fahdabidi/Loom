@@ -668,7 +668,7 @@ class LoomDeclarativeTabSpec {
     required this.label,
     required this.iconKey,
     required this.description,
-    required this.rendererContractId,
+    this.rendererContractId,
     this.pinningPolicy = 'none',
     this.pinningPolicyRationale =
         'This tab uses ordered content rather than a pinned surface.',
@@ -682,7 +682,7 @@ class LoomDeclarativeTabSpec {
   final String label;
   final String iconKey;
   final String description;
-  final String rendererContractId;
+  final String? rendererContractId;
   final String pinningPolicy;
   final String pinningPolicyRationale;
   final List<String> sectionTitles;
@@ -690,13 +690,16 @@ class LoomDeclarativeTabSpec {
   final List<String> pinnedWorkflowIds;
   final List<String> visiblePersonaIds;
 
-  LoomAppShellTabSpec toTabSpec() {
+  LoomAppShellTabSpec toTabSpec({String? derivedRendererContractId}) {
     return LoomAppShellTabSpec(
       tabId: tabId,
       label: label,
       icon: _tabIconForKey(iconKey),
       description: description,
-      rendererContractId: rendererContractId,
+      rendererContractId:
+          rendererContractId ??
+          derivedRendererContractId ??
+          defaultAppShellTabRendererContractId,
       pinningPolicy: pinningPolicy,
       pinningPolicyRationale: pinningPolicyRationale,
       sectionTitles: sectionTitles,
