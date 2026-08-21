@@ -283,7 +283,8 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         label: override.label,
         icon: _tabIconForKey(override.iconKey),
         description: override.description,
-        rendererContractId: generated.rendererContractId,
+        rendererContractId:
+            override.rendererContractId ?? generated.rendererContractId,
         pinningPolicy: generated.pinningPolicy,
         pinningPolicyRationale: generated.pinningPolicyRationale,
         sectionTitles: generated.sectionTitles,
@@ -334,6 +335,28 @@ String _rendererContractIdForDeclarativeTab({
     return declaredRendererContractId;
   }
 
+  // A contract that names the tab owns it even when its family vocabulary is
+  // stale or the tab has no bindings yet. Prefer the narrowest declaration so
+  // a single-tab contract wins over a broader multi-tab contract.
+  final tabContracts = <MapEntry<String, LoomTabRendererContract>>[
+    for (final entry in _tabRendererContractsById.entries)
+      if (entry.value.tabIds.contains(tab.tabId)) entry,
+  ];
+  if (tabContracts.isNotEmpty) {
+    final mostSpecificTabIdCount = tabContracts
+        .map((entry) => entry.value.tabIds.length)
+        .reduce((left, right) => left < right ? left : right);
+    final mostSpecificTabContracts = tabContracts
+        .where((entry) => entry.value.tabIds.length == mostSpecificTabIdCount)
+        .toList(growable: false);
+    if (mostSpecificTabContracts.length == 1) {
+      return mostSpecificTabContracts.single.key;
+    }
+    // An equal-specificity collision is not safe to resolve by registry order.
+    return defaultAppShellTabRendererContractId;
+  }
+
+  // Family coverage is only a fallback for tabs no contract names.
   final boundSurfaceFamilies = <String>{
     for (final definition
         in experience.workflowDefinitions?.values ??
@@ -353,13 +376,6 @@ String _rendererContractIdForDeclarativeTab({
   ];
   if (matchingContracts.length == 1) {
     return matchingContracts.single.key;
-  }
-
-  final matchingTabContracts = matchingContracts
-      .where((entry) => entry.value.tabIds.contains(tab.tabId))
-      .toList(growable: false);
-  if (matchingTabContracts.length == 1) {
-    return matchingTabContracts.single.key;
   }
 
   return defaultAppShellTabRendererContractId;
