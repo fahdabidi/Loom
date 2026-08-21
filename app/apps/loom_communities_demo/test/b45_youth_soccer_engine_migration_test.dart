@@ -14,7 +14,24 @@ void main() {
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await installEvidenceTarget(tester, target, useShippedPackage: true);
       await openEvidenceTarget(tester, target);
-      await _selectPersona(tester, 'soccer-guardian');
+      await seedEvidenceAccounts(tester, target, const [
+        LoomAccount(
+          accountId: 'soccer-guardian',
+          displayName: 'River guardian',
+          personaTypeId: 'soccer-guardian',
+        ),
+        LoomAccount(
+          accountId: 'soccer-guardian-peer',
+          displayName: 'Another soccer guardian',
+          personaTypeId: 'soccer-guardian',
+        ),
+        LoomAccount(
+          accountId: 'soccer-owner',
+          displayName: 'Seeded league owner',
+          personaTypeId: 'soccer-owner',
+        ),
+      ]);
+      await signInEvidenceAccount(tester, 'River guardian');
 
       expect(
         find.byKey(const ValueKey('community-tab-calendar')),
@@ -61,6 +78,7 @@ void main() {
           const ValueKey('generic-instance-card-soccer-payment-river'),
         ),
         findsOneWidget,
+        reason: 'The seeded payer must see their own registration payment.',
       );
 
       await _selectTab(tester, 'calendar');
@@ -109,15 +127,43 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Jordan R.'), findsWidgets);
+      final rosterRow = find.byKey(
+        const ValueKey(
+          'workflow-table-row-team-soccer-team-roster-'
+          'soccer-roster-jordan-0',
+        ),
+      );
+      expect(rosterRow, findsOneWidget);
+      await tester.ensureVisible(rosterRow);
+      await _pumpForUi(tester);
+      await tester.tap(rosterRow, warnIfMissed: false);
+      final rosterDialog = find.byKey(
+        const ValueKey('workflow-table-detail-dialog-soccer-roster-jordan'),
+      );
+      await _waitForFinder(tester, rosterDialog);
+      expect(rosterDialog, findsOneWidget);
       expect(
-        find.textContaining('guardian-approved-limited-share'),
-        findsWidgets,
+        find.text('Privacy: Guardian Approved Limited Share'),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey('workflow-table-detail-close-soccer-roster-jordan'),
+        ),
+      );
+      await _pumpForUi(tester);
+      await _waitForFinder(
+        tester,
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-redaction-jordan'),
+        ),
       );
       expect(
         find.byKey(
           const ValueKey('generic-instance-card-soccer-redaction-jordan'),
         ),
         findsOneWidget,
+        reason: 'The seeded guardian must see their own privacy record.',
       );
       expect(find.textContaining('Full birth date hidden'), findsWidgets);
       expect(find.textContaining('Medical notes hidden'), findsWidgets);
@@ -136,6 +182,7 @@ void main() {
           const ValueKey('generic-instance-card-soccer-payment-river'),
         ),
         findsOneWidget,
+        reason: 'The seeded payer must see their payment on the Giving tab.',
       );
       expect(find.textContaining(r'$185'), findsWidgets);
 
@@ -149,6 +196,80 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Saturday field update'), findsWidgets);
+
+      await signInEvidenceAccount(tester, 'Another soccer guardian');
+      await openEvidenceTarget(tester, target);
+      await _selectTab(tester, 'home');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'generic-instance-card-soccer-registration-case-river',
+          ),
+        ),
+        findsOneWidget,
+        reason:
+            'The same-role account still renders role-visible Home content.',
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-payment-river'),
+        ),
+        findsNothing,
+        reason:
+            'A different guardian account must not see the seeded payer\'s '
+            'registration payment.',
+      );
+
+      await _selectTab(tester, 'team');
+      await _waitForFinder(
+        tester,
+        find.byKey(
+          const ValueKey('workflow-table-grid-team-soccer-team-roster'),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('workflow-table-grid-team-soccer-team-roster'),
+        ),
+        findsOneWidget,
+        reason: 'The same-role account still renders the role-visible roster.',
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-redaction-jordan'),
+        ),
+        findsNothing,
+        reason:
+            'A different guardian account must not see the seeded guardian\'s '
+            'privacy record.',
+      );
+
+      await _selectTab(tester, 'giving');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-error-giving')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-payment-river'),
+        ),
+        findsNothing,
+        reason:
+            'A different guardian account must not see the seeded payer\'s '
+            'payment on the Giving tab.',
+      );
 
       await _selectPersona(tester, 'soccer-coach');
       expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
@@ -192,7 +313,8 @@ void main() {
         findsWidgets,
       );
 
-      await _selectPersona(tester, 'soccer-owner');
+      await signInEvidenceAccount(tester, 'Seeded league owner');
+      await openEvidenceTarget(tester, target);
       expect(find.byKey(const ValueKey('community-tab-team')), findsNothing);
       expect(
         find.byKey(const ValueKey('community-tab-documents')),
@@ -214,20 +336,26 @@ void main() {
           ),
         ),
         findsOneWidget,
+        reason: 'The seeded league owner must see their own export.',
       );
-      await _tapEngineAction(
-        tester,
+      expect(
+        _engineAction('soccer-export-fall-2026', 'start-export'),
+        findsOneWidget,
+      );
+      final engine = await workflowEngineForExtensionId(target.extensionId);
+      await engine.applyTransition(
+        workflowType: 'soccer-export-metadata',
         instanceId: 'soccer-export-fall-2026',
         transitionId: 'start-export',
+        personaId: 'soccer-owner',
+        inputs: const {'operationMode': 'export'},
       );
-      await tester.enterText(
-        find.byKey(const ValueKey('generic-transition-input-operationMode')),
-        'export',
+      await openEvidenceTarget(tester, target);
+      await _selectTab(tester, 'admin');
+      await _waitForFinder(
+        tester,
+        _engineAction('soccer-export-fall-2026', 'record-export-ready'),
       );
-      await tester.tap(
-        find.byKey(const ValueKey('generic-transition-input-confirm')),
-      );
-      await _pumpForUi(tester);
       expect(
         _engineAction('soccer-export-fall-2026', 'record-export-ready'),
         findsOneWidget,

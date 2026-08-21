@@ -305,6 +305,77 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
   );
 }
 
+Future<void> seedEvidenceAccounts(
+  WidgetTester tester,
+  LoomEvidenceTarget target,
+  List<LoomAccount> accounts,
+) async {
+  final route = _evidenceTargetRoute(target);
+  await _waitForEvidenceFinder(
+    tester,
+    route,
+    description: 'local extension route before seeding evidence accounts',
+  );
+  final screen = tester.widget<LocalExtensionScreen>(route);
+  final authApi = screen.authApi;
+  if (authApi is! LocalAuthApi) {
+    fail(
+      'Evidence accounts can only be seeded into the Demo App LocalAuthApi; '
+      '${authApi.runtimeType} was provided for ${target.extensionId}.',
+    );
+  }
+  authApi.seedAccounts(target.extensionId, accounts);
+
+  // The entry screen may already have loaded its account list. Reopen the
+  // community route so the real auth UI reads the newly seeded identities.
+  await openEvidenceTarget(tester, target);
+}
+
+Future<void> signInEvidenceAccount(
+  WidgetTester tester,
+  String displayName,
+) async {
+  await _waitForCommunityEntryResolution(tester);
+  if (find.byKey(const ValueKey('community-entry-gate')).evaluate().isEmpty) {
+    final pickerButton = find.byKey(const ValueKey('persona-picker-button'));
+    await _waitForEvidenceFinder(
+      tester,
+      pickerButton,
+      description: 'persona picker before signing in as $displayName',
+    );
+    await tester.tap(pickerButton);
+    await tester.pumpAndSettle();
+    final specificPerson = find.byKey(
+      const ValueKey('persona-sign-in-specific-person'),
+    );
+    await tester.ensureVisible(specificPerson);
+    await tester.tap(specificPerson);
+    await tester.pumpAndSettle();
+    await _waitForEvidenceFinder(
+      tester,
+      find.byKey(const ValueKey('open-signup-display-name')),
+      description: 'specific-person account chooser for $displayName',
+    );
+  }
+
+  final accountRow = find.ancestor(
+    of: find.text(displayName),
+    matching: find.byType(ListTile),
+  );
+  await _waitForEvidenceFinder(
+    tester,
+    accountRow,
+    description: 'seeded account $displayName',
+  );
+  await tester.ensureVisible(accountRow.first);
+  await tester.tap(accountRow.first, warnIfMissed: false);
+  await _waitForEvidenceFinder(
+    tester,
+    find.byKey(const ValueKey('persona-picker-button')),
+    description: 'community content after signing in as $displayName',
+  );
+}
+
 Future<void> _waitForCommunityEntryResolution(WidgetTester tester) async {
   for (var attempt = 0; attempt < 80; attempt += 1) {
     if (find

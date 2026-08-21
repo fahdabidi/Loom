@@ -14,8 +14,19 @@ void main() {
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await installEvidenceTarget(tester, target, useShippedPackage: true);
       await openEvidenceTarget(tester, target);
-
-      await _selectPersona(tester, 'community-member');
+      await seedEvidenceAccounts(tester, target, const [
+        LoomAccount(
+          accountId: 'community-member',
+          displayName: 'Seeded community member',
+          personaTypeId: 'community-member',
+        ),
+        LoomAccount(
+          accountId: 'community-member-peer',
+          displayName: 'Another community member',
+          personaTypeId: 'community-member',
+        ),
+      ]);
+      await signInEvidenceAccount(tester, 'Seeded community member');
       expect(
         find.byKey(const ValueKey('community-tab-calendar')),
         findsOneWidget,
@@ -38,7 +49,7 @@ void main() {
       await _selectTab(tester, 'home');
       await _waitForFinder(
         tester,
-        find.byKey(const ValueKey('engine-native-list-root-home')),
+        find.text('Friday service and community iftar'),
       );
       expect(
         find.byKey(const ValueKey('engine-native-list-root-home')),
@@ -50,12 +61,14 @@ void main() {
           const ValueKey('generic-instance-card-masjid-care-meal-support'),
         ),
         findsOneWidget,
+        reason: 'The seeded requester must see their own care request.',
       );
       expect(
         find.byKey(
           const ValueKey('generic-instance-card-masjid-donation-iftar-offline'),
         ),
         findsOneWidget,
+        reason: 'The seeded payer must see their own donation.',
       );
 
       await _selectTab(tester, 'calendar');
@@ -92,12 +105,14 @@ void main() {
       expect(
         find.textContaining('Cash donation recorded by the Masjid office'),
         findsWidgets,
+        reason: 'The seeded payer must see their donation receipt summary.',
       );
       expect(
         find.byKey(
           const ValueKey('generic-instance-card-masjid-donor-preference-iftar'),
         ),
         findsOneWidget,
+        reason: 'The seeded donor must see their own visibility preference.',
       );
       await _tapEngineAction(
         tester,
@@ -178,6 +193,79 @@ void main() {
       expect(
         _engineAction('masjid-search-iftar-time', 'save-search-answer'),
         findsOneWidget,
+      );
+
+      await signInEvidenceAccount(tester, 'Another community member');
+      await openEvidenceTarget(tester, target);
+      await _selectTab(tester, 'home');
+      await _waitForFinder(
+        tester,
+        find.text('Friday service and community iftar'),
+      );
+      expect(find.text('Friday service and community iftar'), findsWidgets);
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-masjid-care-meal-support'),
+        ),
+        findsNothing,
+        reason:
+            'A different community-member account must not see the seeded '
+            'requester\'s care request.',
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-masjid-donation-iftar-offline'),
+        ),
+        findsNothing,
+        reason:
+            'A different community-member account must not see the seeded '
+            'payer\'s donation.',
+      );
+
+      await _selectTab(tester, 'giving');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-error-giving')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-masjid-donation-iftar-offline'),
+        ),
+        findsNothing,
+        reason:
+            'A different community-member account must not see the seeded '
+            'payer\'s donation on the Giving tab.',
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-masjid-donor-preference-iftar'),
+        ),
+        findsNothing,
+        reason:
+            'A different community-member account must not see the seeded '
+            'donor\'s visibility preference.',
+      );
+
+      await _selectTab(tester, 'messages');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-messages')),
+      );
+      expect(find.text('Iftar logistics and food contributions'), findsWidgets);
+      expect(
+        find.text('Care request received'),
+        findsNothing,
+        reason:
+            'A different community-member account must not receive the seeded '
+            'member\'s private care notification.',
       );
 
       await _selectPersona(tester, 'masjid-admin');
