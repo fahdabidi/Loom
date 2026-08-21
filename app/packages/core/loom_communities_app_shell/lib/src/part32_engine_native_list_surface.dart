@@ -42,7 +42,16 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
   @override
   void didUpdateWidget(covariant EngineNativeListSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.experience.extensionId != widget.experience.extensionId ||
+    final oldDefinitions = oldWidget.experience.workflowDefinitions;
+    final definitions = widget.experience.workflowDefinitions;
+    final hadDefinitions = oldDefinitions != null && oldDefinitions.isNotEmpty;
+    final hasDefinitions = definitions != null && definitions.isNotEmpty;
+    if (!hasDefinitions) {
+      _engineFuture = null;
+      return;
+    }
+    if (!hadDefinitions ||
+        oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
         oldWidget.persona.personaId != widget.persona.personaId ||
         oldWidget.tabId != widget.tabId) {
@@ -51,6 +60,11 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
   }
 
   void _load() {
+    final definitions = widget.experience.workflowDefinitions;
+    if (definitions == null || definitions.isEmpty) {
+      _engineFuture = null;
+      return;
+    }
     final extensionId = widget.experience.extensionId;
     setState(() {
       _engineFuture = widget.engine == null
@@ -62,7 +76,11 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
   @override
   Widget build(BuildContext context) {
     final definitions = widget.experience.workflowDefinitions;
-    if (definitions == null) return const SizedBox();
+    if (definitions == null || definitions.isEmpty) {
+      return SizedBox(
+        key: ValueKey('engine-native-list-empty-${widget.tabId}'),
+      );
+    }
     return FutureBuilder<WorkflowEngineApi>(
       future: _engineFuture,
       builder: (context, snapshot) {

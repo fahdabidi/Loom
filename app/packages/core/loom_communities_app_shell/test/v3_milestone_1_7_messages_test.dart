@@ -115,6 +115,17 @@ LocalInstalledCommunity _community({
   },
 );
 
+const _communityWithoutWorkflowDefinitions = LocalInstalledCommunity(
+  communityId: 'v3-messages-no-workflows-community',
+  displayName: 'No-workflow Community',
+  extensionId: 'v3-messages-no-workflows',
+  logoAssetId: null,
+  cardImageAssetId: null,
+  heroImageAssetId: null,
+  accentColor: '#4a3b2a',
+  specVersion: currentCommunitySpecVersion,
+);
+
 Map<String, Object?> _thread(String id, String subject) => {
   'threadId': id,
   'subject': subject,
@@ -180,6 +191,39 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets(
+    'default Messages tab is stable when workflowDefinitions are absent',
+    (tester) async {
+      final auth = activeAuthForInstalledCommunity(
+        community: _communityWithoutWorkflowDefinitions,
+        personaTypeId: 'local-member',
+        accounts: const [
+          LoomAccount(
+            accountId: 'no-workflow-member',
+            displayName: 'No-workflow Member',
+            personaTypeId: 'local-member',
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        _host(_communityWithoutWorkflowDefinitions, auth),
+      );
+
+      final emptyState = find.byKey(
+        const ValueKey('engine-native-list-empty-messages'),
+      );
+      await _openMessages(tester, emptyState);
+      await tester.pump();
+
+      expect(emptyState, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('engine-native-list-error-messages')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('Messages repeater renders the live seeded thread cardinality', (
     tester,
   ) async {
