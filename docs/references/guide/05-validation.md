@@ -122,7 +122,6 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 |---|---|---|
 | `missing_schema_version` | The version stamp is absent or not an int | Add a single package-root `specVersion: 4`. **Not** the legacy triple — a package declaring `specVersion` must not also carry `schemaVersion` / `experienceSchemaVersion` / `workflowGrammarVersion`, and doing so is its own error. |
 | `unsupported_schema_version` | Version higher than the build supports | Author against the current spec ([`spec-version.json`](../spec-version.json)) |
-| `legacy_experience_schema` (warning) | The package uses the pre-4 version triple | Re-author at `specVersion: 4`. The triple's v1 could not express state machines at all; v4 folds all three into one package-root stamp. |
 
 ### States
 
@@ -167,7 +166,6 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `missing_required_field` | A `required: true` field is absent | Add it to `instanceData` |
 | `computed_field_seeded` | A `formula` field appears in `instanceData` | **Delete it from the seed.** It's derived. |
 | `dangling_instance_reference` | A cross-instance ref doesn't resolve | Point it at a real `instanceId` |
-| `unknown_instance_persona` (warning) | `createdByPersonaId` isn't declared | Declare the persona |
 
 ### Bindings
 
@@ -198,6 +196,14 @@ seriously rather than dismissing them as noise.
 | `dead_role_binding` (warning) | `role: "receiver"` used on a `tabId` other than `admin` without `audienceMemberField` (only `admin` ever grants the receiver role), or a non-`"any"` role used on `tabId: "calendar"` (which passes no role-resolution callback at all — only `"any"`, or `"receiver"` + a working `audienceMemberField`, can render there). | Use `role: "any"` instead, move the binding to `admin`, or add `audienceMemberField` for a dynamic-audience notification. See `render-bindings.md`'s per-tab resolution table. |
 
 ---
+
+
+> **Two codes were removed from this table on 2026-08-20** because the validator can no longer emit
+> them, and the conformance test caught that they still had entries here. `legacy_experience_schema`
+> warned that a package used the pre-4 version triple; the specVersion-4-only cut replaced that
+> warning with the `legacy_version_stamp` **error**, since a legacy package no longer loads at all.
+> `unknown_instance_persona` described an undeclared `createdByPersonaId`, and that spelling is
+> retired — the v4 equivalent is `seed_instance_missing_creator`.
 
 ## The remaining findings — what the validator reports
 
