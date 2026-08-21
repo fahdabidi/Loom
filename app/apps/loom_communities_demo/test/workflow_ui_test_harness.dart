@@ -1010,6 +1010,23 @@ class EngineNativeEventRsvpTestFixture {
   final List<Map<String, Object?>> workflowInstances;
 }
 
+/// One persisted per-person response row for an engine-native event fixture.
+class EngineNativeEventRsvpResponseSeed {
+  const EngineNativeEventRsvpResponseSeed({
+    required this.instanceId,
+    required this.fanId,
+    required this.currentState,
+    this.createdByFanId,
+    this.instanceData = const <String, Object?>{},
+  });
+
+  final String instanceId;
+  final String fanId;
+  final String currentState;
+  final String? createdByFanId;
+  final Map<String, Object?> instanceData;
+}
+
 EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
   required String eventWorkflowType,
   required String responseWorkflowType,
@@ -1021,26 +1038,85 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
   required String organizerRoleId,
   required String memberRoleId,
   int capacity = 20,
+  String? host,
+  bool includeWaitlist = false,
+  bool includeReminderAction = false,
+  List<EngineNativeEventRsvpResponseSeed> responseSeeds = const [],
+  Map<String, Object?> additionalEventInstanceData = const {},
+  Map<String, Object?> additionalEventSchema = const {},
   List<Map<String, Object?>> additionalEventBindings = const [],
 }) {
-  final responseStates = <String>['pending', 'going', 'maybe', 'declined'];
+  if (capacity <= 0) {
+    throw ArgumentError.value(capacity, 'capacity', 'must be positive');
+  }
+  final responseStates = <String>[
+    'pending',
+    'going',
+    'maybe',
+    'declined',
+    if (includeWaitlist) 'waitlisted',
+  ];
+  for (final seed in responseSeeds) {
+    if (!responseStates.contains(seed.currentState)) {
+      throw ArgumentError.value(
+        seed.currentState,
+        'responseSeeds.currentState',
+        'must name a declared response state',
+      );
+    }
+  }
+  if (responseSeeds.map((seed) => seed.instanceId).toSet().length !=
+      responseSeeds.length) {
+    throw ArgumentError.value(
+      responseSeeds,
+      'responseSeeds',
+      'must use unique instance ids',
+    );
+  }
+
+  Map<String, Object?> responseGuard({
+    Map<String, Object?>? relatedAggregate,
+    String? formula,
+  }) => <String, Object?>{
+    'allowedRoleIds': <String>[memberRoleId],
+    'actorEqualsField': <String, Object?>{'key': 'fanId'},
+    if (relatedAggregate != null) 'relatedAggregate': relatedAggregate,
+    if (formula != null) 'formula': formula,
+  };
+
+  Map<String, Object?> capacityGuard(String comparator) => <String, Object?>{
+    'workflowType': responseWorkflowType,
+    'filter': <String, Object?>{'eventId': '{eventId}', r'$state': 'going'},
+    'op': 'count',
+    'comparator': comparator,
+    'compareTo': <String, Object?>{
+      'relatedInstanceField': 'eventId',
+      'field': 'capacity',
+    },
+  };
+
   Map<String, Object?> responseTransition({
     required String id,
     required String label,
     required String to,
     required String tone,
     required String icon,
+    required String action,
+    Map<String, Object?>? relatedAggregate,
+    List<Map<String, Object?>> effects = const [],
   }) => <String, Object?>{
     'id': id,
+    'action': action,
     'label': label,
     'icon': icon,
     'tone': tone,
-    'from': responseStates,
+    'from': <String>[
+      for (final state in responseStates)
+        if (state != to) state,
+    ],
     'to': to,
-    'guard': <String, Object?>{
-      'allowedRoleIds': <String>[memberRoleId],
-      'actorEqualsField': <String, Object?>{'key': 'fanId'},
-    },
+    'guard': responseGuard(relatedAggregate: relatedAggregate),
+    if (effects.isNotEmpty) 'effects': effects,
   };
 
   return EngineNativeEventRsvpTestFixture(
@@ -1058,6 +1134,7 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
         transitions: <Map<String, Object?>>[
           <String, Object?>{
             'id': 'cancel-event',
+            'action': 'cancel',
             'label': 'Cancel event',
             'icon': 'cancel',
             'tone': 'destructive',
@@ -1085,36 +1162,99 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
           'title': <String, Object?>{
             'type': 'text',
             'required': true,
+            'writableBy': 'formEntry',
             'storage': 'inline',
+            'searchable': true,
+            'labelTemplate': '{value}',
             'displayContexts': <String>['tile', 'detail'],
           },
           'eventDate': <String, Object?>{
             'type': 'date',
             'required': true,
+            'writableBy': 'formEntry',
             'storage': 'inline',
+            'sortable': true,
+            'displayIcon': 'calendar_today',
+            'labelTemplate': '{value}',
+            'displayContexts': <String>['tile', 'detail'],
           },
           'eventTime': <String, Object?>{
             'type': 'time',
             'required': true,
+            'writableBy': 'formEntry',
             'storage': 'inline',
+            'displayIcon': 'schedule',
+            'labelTemplate': '{value}',
+            'displayContexts': <String>['tile', 'detail'],
           },
           'location': <String, Object?>{
             'type': 'text',
             'required': true,
+            'writableBy': 'formEntry',
             'storage': 'inline',
-            'labelTemplate': 'Location: {value}',
+            'displayIcon': 'location_on_outlined',
+            'labelTemplate': '{value}',
             'displayContexts': <String>['detail'],
           },
+          if (host != null)
+            'host': <String, Object?>{
+              'type': 'text',
+              'writableBy': 'formEntry',
+              'storage': 'inline',
+              'displayIcon': 'person_outline',
+              'labelTemplate': 'Host: {value}',
+              'displayContexts': <String>['detail'],
+            },
           'capacity': <String, Object?>{
             'type': 'number',
             'required': true,
+            'writableBy': 'formEntry',
             'storage': 'inline',
+            'sortable': true,
+            'displayIcon': 'groups_outlined',
+            'labelTemplate': '{value} seats',
           },
           'responses': <String, Object?>{
             'type': 'list',
             'source': 'query($responseWorkflowType where eventId == id)',
             'displayContexts': <String>[],
           },
+          'responseCounts': <String, Object?>{
+            'type': 'map',
+            'formula': r"groupCount(responses, '$state')",
+            'displayContexts': <String>[],
+          },
+          'goingCount': <String, Object?>{
+            'type': 'number',
+            'formula': "mapGet(responseCounts, 'going')",
+            'displayIcon': 'groups_outlined',
+            'labelTemplate': 'Going: {value}',
+            'displayContexts': <String>['tile', 'detail'],
+          },
+          'waitlistedCount': <String, Object?>{
+            'type': 'number',
+            'formula': "mapGet(responseCounts, 'waitlisted')",
+            'displayIcon': 'hourglass_empty',
+            'labelTemplate': 'Waitlist: {value}',
+            'hideWhenEmpty': true,
+            'displayContexts': <String>['tile', 'detail'],
+          },
+          'seatsRemaining': <String, Object?>{
+            'type': 'number',
+            'formula': 'capacity - goingCount',
+            'displayIcon': 'event_seat',
+            'labelTemplate': '{value} seats left',
+            'displayContexts': <String>['detail'],
+          },
+          'isFull': <String, Object?>{
+            'type': 'bool',
+            'formula': 'goingCount >= capacity',
+          },
+          'hasWaitlist': <String, Object?>{
+            'type': 'bool',
+            'formula': 'waitlistedCount > 0',
+          },
+          ...additionalEventSchema,
         },
       ),
       responseWorkflowType: engineNativeTestWorkflowDefinition(
@@ -1127,6 +1267,11 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
             'label': 'Can\'t go',
             'tone': 'negative',
           },
+          if (includeWaitlist)
+            'waitlisted': <String, Object?>{
+              'label': 'Waitlisted',
+              'tone': 'warning',
+            },
         },
         transitions: <Map<String, Object?>>[
           responseTransition(
@@ -1135,6 +1280,8 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
             to: 'going',
             tone: 'primary',
             icon: 'event_available',
+            action: 'respond',
+            relatedAggregate: capacityGuard('<'),
           ),
           responseTransition(
             id: 'respond-maybe',
@@ -1142,6 +1289,7 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
             to: 'maybe',
             tone: 'secondary',
             icon: 'help_outline',
+            action: 'respond',
           ),
           responseTransition(
             id: 'respond-declined',
@@ -1149,7 +1297,52 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
             to: 'declined',
             tone: 'destructive',
             icon: 'event_busy',
+            action: 'respond',
           ),
+          if (includeWaitlist)
+            responseTransition(
+              id: 'respond-waitlist',
+              label: 'Join waitlist',
+              to: 'waitlisted',
+              tone: 'secondary',
+              icon: 'groups',
+              action: 'join_waitlist',
+              relatedAggregate: capacityGuard('>='),
+              effects: <Map<String, Object?>>[
+                <String, Object?>{
+                  'op': 'set',
+                  'key': 'rsvpedAt',
+                  'value': r'$timestamp',
+                },
+              ],
+            ),
+          if (includeReminderAction)
+            <String, Object?>{
+              'id': 'set-reminder',
+              'action': 'set_reminder',
+              'label': 'Add reminder',
+              'icon': 'notifications_active',
+              'tone': 'secondary',
+              'from': <String>[
+                for (final state in responseStates)
+                  if (state != 'declined') state,
+              ],
+              'to': null,
+              'guard': responseGuard(formula: 'reminderOffsetHours == null'),
+              'inputs': <String, Object?>{
+                'offsetHours': <String, Object?>{
+                  'type': 'number',
+                  'required': true,
+                },
+              },
+              'effects': <Object?>[
+                <String, Object?>{
+                  'op': 'set',
+                  'key': 'reminderOffsetHours',
+                  'value': '{input.offsetHours}',
+                },
+              ],
+            },
         ],
         renderBindings: const <Map<String, Object?>>[],
         instanceDataSchema: <String, Object?>{
@@ -1163,6 +1356,18 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
             'required': true,
             'storage': 'inline',
           },
+          if (includeWaitlist)
+            'rsvpedAt': <String, Object?>{
+              'type': 'date?',
+              'writableBy': 'effect',
+              'storage': 'inline',
+            },
+          if (includeReminderAction)
+            'reminderOffsetHours': <String, Object?>{
+              'type': 'number',
+              'writableBy': 'effect',
+              'storage': 'inline',
+            },
         },
       ),
     },
@@ -1178,8 +1383,22 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
           'eventTime': eventTime,
           'location': location,
           'capacity': capacity,
+          if (host != null) 'host': host,
+          ...additionalEventInstanceData,
         },
       ),
+      for (final response in responseSeeds)
+        engineNativeTestWorkflowInstance(
+          instanceId: response.instanceId,
+          workflowType: responseWorkflowType,
+          currentState: response.currentState,
+          createdByFanId: response.createdByFanId ?? organizerRoleId,
+          instanceData: <String, Object?>{
+            'eventId': eventInstanceId,
+            'fanId': response.fanId,
+            ...response.instanceData,
+          },
+        ),
     ],
   );
 }

@@ -1,354 +1,296 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
 const _extensionId = 'ext_verify_tabletop_club';
+const _communityId = 'community_verify_tabletop_club';
+const _gameNightId = 'tabletop-game-night-rsvp';
+const _tournamentId = 'tabletop-tournament-rsvp';
 
 void main() {
   group('B29 complete Calendar tab (Phase 2)', () {
     testWidgets('wf_calendar-agenda-is-date-grouped', (tester) async {
-      final fixture = _writeTabletopClubPackagePair();
+      final fixture = _writeTabletopClubPackagePair(
+        'same-date',
+        sameDateEvents: true,
+      );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await _openCalendarTab(tester);
+      await tapCommunityTab(tester, 'calendar');
+      await _waitForEvent(tester, _tournamentId);
 
-      // Two events share 2026-07-10 → one date-group header
+      final dateGroup = find.byKey(
+        const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
+      );
+      expect(dateGroup, findsOneWidget);
       expect(
-        find.byKey(const ValueKey('calendar-agenda-date-group-2026-07-10')),
+        find.descendant(of: dateGroup, matching: _agendaEntry(_gameNightId)),
         findsOneWidget,
       );
-      // Both cards exist under the same group
       expect(
-        find.byKey(
-          const ValueKey('calendar-event-detail-tabletop-game-night-rsvp'),
-        ),
+        find.descendant(of: dateGroup, matching: _agendaEntry(_tournamentId)),
         findsOneWidget,
       );
-      // Tapping second card switches focus to it
-      final secondCard = find.byKey(
-        const ValueKey('calendar-agenda-date-tabletop-tournament-rsvp'),
-      );
-      await scrollFinderIntoViewport(tester, secondCard);
-      await tester.tap(secondCard);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(
-          const ValueKey('calendar-event-detail-tabletop-tournament-rsvp'),
-        ),
-        findsOneWidget,
-      );
+
+      await _openEvent(tester, _tournamentId);
+      expect(_eventCard(_tournamentId), findsOneWidget);
     });
 
     testWidgets('wf_calendar-agenda-has-two-dated-events-and-is-tappable', (
       tester,
     ) async {
-      final fixture = _writeTabletopClubPackagePair();
+      final fixture = _writeTabletopClubPackagePair('two-dates');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await _openCalendarTab(tester);
+      await tapCommunityTab(tester, 'calendar');
+      await _waitForEvent(tester, _gameNightId);
 
+      expect(_agendaEntry(_gameNightId), findsOneWidget);
+      expect(_agendaEntry(_tournamentId), findsOneWidget);
       expect(
         find.byKey(
-          const ValueKey('calendar-agenda-date-tabletop-game-night-rsvp'),
+          const ValueKey('engine-native-calendar-agenda-group-2026-07-10'),
         ),
         findsOneWidget,
       );
       expect(
         find.byKey(
-          const ValueKey('calendar-agenda-date-tabletop-tournament-rsvp'),
+          const ValueKey('engine-native-calendar-agenda-group-2026-07-11'),
         ),
         findsOneWidget,
       );
+      expect(_eventCard(_gameNightId), findsOneWidget);
 
-      // The first (earliest) event's detail is shown by default.
-      expect(
-        find.byKey(
-          const ValueKey(
-            'calendar-event-detail-tabletop-game-night-rsvp',
-          ),
-        ),
-        findsOneWidget,
-      );
-
-      // Tapping the second date chip switches the event detail shown.
-      final secondDateChip = find.byKey(
-        const ValueKey('calendar-agenda-date-tabletop-tournament-rsvp'),
-      );
-      await scrollFinderIntoViewport(tester, secondDateChip);
-      await tester.tap(secondDateChip);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(
-          const ValueKey(
-            'calendar-event-detail-tabletop-tournament-rsvp',
-          ),
-        ),
-        findsOneWidget,
-      );
-      // Appears twice by design: the capacity fact pill states it as a
-      // compact tag, and the workflow tile's body restates it in the full
-      // entryText sentence below.
-      expect(find.textContaining('20 of 20 seats filled'), findsNWidgets(2));
+      await _openEvent(tester, _tournamentId);
+      expect(_eventCard(_tournamentId), findsOneWidget);
+      expect(find.text('20 / 20 going'), findsOneWidget);
     });
 
-    testWidgets('wf_calendar-reminder-toggle-is-real', (tester) async {
-      final fixture = _writeTabletopClubPackagePair();
+    testWidgets('wf_calendar-reminder-action-is-engine-backed', (tester) async {
+      final fixture = _writeTabletopClubPackagePair('reminder');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await _openCalendarTab(tester);
+      await tapCommunityTab(tester, 'calendar');
+      await _waitForEvent(tester, _gameNightId);
 
-      final toggle = find.byKey(
-        const ValueKey(
-          'calendar-reminder-toggle-tabletop-game-night-rsvp',
-        ),
+      final reminder = _eventAction(_gameNightId, 'set-reminder');
+      expect(reminder, findsOneWidget);
+      await scrollFinderIntoViewport(tester, reminder);
+      await tester.tap(reminder);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('generic-transition-input-dialog')),
+        findsOneWidget,
       );
-      expect(toggle, findsOneWidget);
-      expect(find.text('Reminder set'), findsNothing);
-
-      await scrollFinderIntoViewport(tester, toggle);
-      await tester.tap(toggle);
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-offsetHours')),
+        '24',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
       await tester.pumpAndSettle();
-      expect(find.text('Reminder set'), findsOneWidget);
 
-      await scrollFinderIntoViewport(tester, toggle);
-      await tester.tap(toggle);
-      await tester.pumpAndSettle();
-      expect(find.text('Reminder set'), findsNothing);
+      // Re-selecting the event proves the effect was persisted on this
+      // member's response instance instead of held in detail-widget state.
+      await _openEvent(tester, _tournamentId);
+      await _openEvent(tester, _gameNightId);
+      expect(_eventCard(_gameNightId), findsOneWidget);
+      expect(reminder, findsNothing);
     });
 
-    testWidgets(
-      'wf_full-event-offers-waitlist-and-response-can-be-changed',
-      (tester) async {
-        final fixture = _writeTabletopClubPackagePair();
-        await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
-        await selectPersona(tester, 'tabletop-member');
+    testWidgets('wf_full-event-offers-waitlist-and-response-can-be-changed', (
+      tester,
+    ) async {
+      final fixture = _writeTabletopClubPackagePair('waitlist');
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await tapCommunityTab(tester, 'calendar');
+      await _waitForEvent(tester, _gameNightId);
+      await _openEvent(tester, _tournamentId);
 
-        const workflow = LoomWorkflowDefinition(
-          workflowId: 'tabletop-tournament-rsvp',
-          title: '',
-          entryText: '',
-          actionText: '',
-          resultText: '',
-        );
-        await scrollToWorkflowCard(tester, workflow);
-        final workflowButton = find.byKey(
-          ValueKey('workflow-button-${workflow.workflowId}'),
-        );
-        await scrollFinderIntoViewport(tester, workflowButton);
-        await tester.tap(workflowButton);
-        await tester.pumpAndSettle();
+      final eventCard = _eventCard(_tournamentId);
+      final going = _eventAction(_tournamentId, 'respond-going');
+      final waitlist = _eventAction(_tournamentId, 'respond-waitlist');
+      expect(eventCard, findsOneWidget);
+      expect(find.text('20 / 20 going'), findsOneWidget);
+      expect(waitlist, findsOneWidget);
+      expect(
+        going,
+        findsNothing,
+        reason: 'a full event must not expose the capacity-gated Going action',
+      );
 
-        expect(
-          find.byKey(const ValueKey('workflow-response-going')),
-          findsOneWidget,
-        );
-        final waitlistButton = find.byKey(
-          const ValueKey('workflow-response-waitlist'),
-        );
-        expect(waitlistButton, findsOneWidget);
+      await scrollFinderIntoViewport(tester, waitlist);
+      await tester.tap(waitlist);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(ValueKey('event-rsvp-waitlist-$_tournamentId')),
+        findsOneWidget,
+      );
+      expect(going, findsNothing);
 
-        await scrollFinderIntoViewport(tester, waitlistButton);
-        await tester.tap(waitlistButton);
-        await tester.pumpAndSettle();
+      final maybe = _eventAction(_tournamentId, 'respond-maybe');
+      expect(maybe, findsOneWidget);
+      await scrollFinderIntoViewport(tester, maybe);
+      await tester.tap(maybe);
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.byKey(const ValueKey('community-tab-home')));
-        await tester.pumpAndSettle();
-        await scrollToWorkflowCard(tester, workflow);
-        expect(find.textContaining('You responded: Join waitlist'), findsOneWidget);
-
-        // Change the response: re-open via the "Change response" button.
-        final changeButton = find.byKey(
-          const ValueKey('workflow-change-response'),
-        );
-        await scrollFinderIntoViewport(tester, changeButton);
-        await tester.tap(changeButton);
-        await tester.pumpAndSettle();
-
-        final goingButton = find.byKey(
-          const ValueKey('workflow-response-going'),
-        );
-        expect(goingButton, findsOneWidget);
-        await scrollFinderIntoViewport(tester, goingButton);
-        await tester.tap(goingButton);
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byKey(const ValueKey('community-tab-home')));
-        await tester.pumpAndSettle();
-        await scrollToWorkflowCard(tester, workflow);
-        expect(find.textContaining('You responded: Going'), findsOneWidget);
-      },
-    );
+      final selectedMaybe = tester.widget<InputChip>(
+        find.descendant(of: maybe, matching: find.byType(InputChip)),
+      );
+      expect(selectedMaybe.selected, isTrue);
+      expect(eventCard, findsOneWidget);
+      expect(
+        find.byKey(ValueKey('event-rsvp-waitlist-$_tournamentId')),
+        findsNothing,
+      );
+    });
   });
 }
 
+Finder _agendaEntry(String instanceId) =>
+    find.byKey(ValueKey('engine-native-calendar-agenda-$instanceId-0'));
+
+Finder _eventCard(String instanceId) =>
+    find.byKey(ValueKey('event-rsvp-card-$instanceId'));
+
+Finder _eventAction(String instanceId, String transitionId) =>
+    find.byKey(ValueKey('event-rsvp-$instanceId-action-$transitionId'));
+
+Future<void> _openEvent(WidgetTester tester, String instanceId) async {
+  final entry = _agendaEntry(instanceId);
+  await scrollFinderIntoViewport(tester, entry);
+  await tester.tap(entry, warnIfMissed: false);
+  await tester.pumpAndSettle();
+  await _waitForEvent(tester, instanceId);
+}
+
+Future<void> _waitForEvent(WidgetTester tester, String instanceId) =>
+    waitForEngineNativeWidget(
+      tester,
+      _eventCard(instanceId),
+      description: 'engine-native Calendar event $instanceId',
+    );
+
 Future<void> _installAndOpen(
   WidgetTester tester,
-  _PackagePairFixture fixture,
+  ({EvidencePackagePair package, String communityId}) fixture,
 ) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
   await tester.enterText(
     find.byKey(const ValueKey('extension-package-path-field')),
-    fixture.extensionPath,
+    fixture.package.extensionPath,
   );
   await tester.enterText(
     find.byKey(const ValueKey('initialization-package-path-field')),
-    fixture.initializationPath,
+    fixture.package.initializationPath,
   );
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
   await tester.tap(
-    find.byKey(
-      const ValueKey('community-card-community_verify_tabletop_club'),
-    ),
+    find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
+  await selectPersona(tester, 'tabletop-member');
 }
 
-Future<void> _openCalendarTab(WidgetTester tester) async {
-  final tabFinder = find.byKey(const ValueKey('community-tab-calendar'));
-  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (
-    var attempt = 0;
-    attempt < 8 && tabFinder.evaluate().isEmpty;
-    attempt += 1
-  ) {
-    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
-  await tester.tap(tabFinder, warnIfMissed: false);
-  await tester.pumpAndSettle();
-}
-
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
-}
-
-_PackagePairFixture _writeTabletopClubPackagePair() {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b29_tabletop_');
-  final extensionFile = File(
-    '${tempDir.path}/$_extensionId.loom-extension.zip',
+({EvidencePackagePair package, String communityId})
+_writeTabletopClubPackagePair(String suffix, {bool sameDateEvents = false}) {
+  final extensionId = '${_extensionId}_$suffix';
+  final communityId = '${_communityId}_$suffix';
+  final gameNight = engineNativeEventRsvpTestFixture(
+    eventWorkflowType: 'tabletop-event-rsvp',
+    responseWorkflowType: 'tabletop-event-rsvp-response',
+    eventInstanceId: _gameNightId,
+    title: 'Friday game night',
+    eventDate: '2026-07-10',
+    eventTime: '19:00',
+    location: 'Community room',
+    host: 'Mara, organizer',
+    organizerRoleId: 'tabletop-organizer',
+    memberRoleId: 'tabletop-member',
+    capacity: 20,
+    includeWaitlist: true,
+    includeReminderAction: true,
+    responseSeeds: _goingResponseSeeds(eventId: _gameNightId, count: 12),
   );
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
+  final tournament = engineNativeEventRsvpTestFixture(
+    eventWorkflowType: 'tabletop-event-rsvp',
+    responseWorkflowType: 'tabletop-event-rsvp-response',
+    eventInstanceId: _tournamentId,
+    title: 'Saturday tournament',
+    eventDate: sameDateEvents ? '2026-07-10' : '2026-07-11',
+    eventTime: '13:00',
+    location: 'Community hall',
+    host: 'Mara, organizer',
+    organizerRoleId: 'tabletop-organizer',
+    memberRoleId: 'tabletop-member',
+    capacity: 20,
+    includeWaitlist: true,
+    includeReminderAction: true,
+    responseSeeds: _goingResponseSeeds(eventId: _tournamentId, count: 20),
   );
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
+
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b29_tabletop_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Tabletop Club',
+    experience: <String, Object?>{
       'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
+      'tagline':
+          'Board game nights, tournaments, and dues for local tabletop fans.',
+      'accentColor': '#C4703F',
+      'theme': <String, Object?>{'accent': '#C4703F'},
+      'roles': _tabletopRoles,
+      'workflowDefinitions': gameNight.workflowDefinitions,
+      'workflowInstances': <Object?>[
+        ...gameNight.workflowInstances,
+        ...tournament.workflowInstances,
+      ],
+    },
+    appShell: _calendarAppShell,
   );
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json', 'seed/workflows.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': {
-        'displayName': 'Tabletop Club',
-        'tagline':
-            'Board game nights, tournaments, and dues for local tabletop fans.',
-        'accentColor': '#C4703F',
-        'roles': [
-          {
-            'roleId': 'tabletop-organizer',
-            'label': 'Organizer',
-            'roleLabel': 'Organizer',
-            'description': 'Plans game nights and tournaments.',
-          },
-          {
-            'roleId': 'tabletop-member',
-            'label': 'Member',
-            'roleLabel': 'Member',
-            'description': 'RSVPs to game nights and tournaments.',
-          },
-        ],
-        'workflows': [
-          {
-            'workflowId': 'tabletop-game-night-rsvp',
-            'title': 'RSVP to Friday game night',
-            'entryText':
-                'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
-            'actionText': "Reserve a seat at Friday's game night.",
-            'resultText': "You're on the roster for Friday's game night.",
-            'calendar': {
-              'date': '2026-07-10',
-              'time': '19:00',
-              'location': 'Community room',
-              'capacityLabel': '12 of 20 seats filled',
-            },
-            'responseChoices': [
-              {'responseId': 'going', 'label': 'Going'},
-              {'responseId': 'maybe', 'label': 'Maybe'},
-              {
-                'responseId': 'not-going',
-                'label': "Can't go",
-                'isDestructive': true,
-              },
-            ],
-          },
-          {
-            'workflowId': 'tabletop-tournament-rsvp',
-            'title': 'Sign up for the Saturday tournament',
-            'entryText':
-                'Saturday board game tournament at the community hall, 1-5pm. 20 of 20 seats filled.',
-            'actionText': 'Sign up for the Saturday tournament.',
-            'resultText': "You're signed up for the Saturday tournament.",
-            'calendar': {
-              'date': '2026-07-11',
-              'time': '13:00',
-              'location': 'Community hall',
-              'capacityLabel': '20 of 20 seats filled',
-            },
-            'responseChoices': [
-              {'responseId': 'going', 'label': 'Going'},
-              {'responseId': 'waitlist', 'label': 'Join waitlist'},
-            ],
-          },
-        ],
-        'personaPolicies': {
-          'tabletop-game-night-rsvp': {
-            'actorPersonaIds': ['tabletop-member'],
-            'receiverPersonaIds': ['tabletop-organizer'],
-            'receiverEntryText': "A member RSVP'd to Friday's game night.",
-            'receiverActionText': 'Acknowledge RSVP',
-            'receiverResultText':
-                'RSVP acknowledged and added to the roster.',
-          },
-          'tabletop-tournament-rsvp': {
-            'actorPersonaIds': ['tabletop-member'],
-            'receiverPersonaIds': ['tabletop-organizer'],
-            'receiverEntryText':
-                'A member signed up for the Saturday tournament.',
-            'receiverActionText': 'Acknowledge signup',
-            'receiverResultText': 'Signup acknowledged.',
-          },
-        },
-      },
-    }),
-  );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
-  );
+  return (package: package, communityId: communityId);
 }
+
+List<EngineNativeEventRsvpResponseSeed> _goingResponseSeeds({
+  required String eventId,
+  required int count,
+}) => <EngineNativeEventRsvpResponseSeed>[
+  for (var index = 1; index <= count; index++)
+    EngineNativeEventRsvpResponseSeed(
+      instanceId: '$eventId-response-$index',
+      fanId: '$eventId-attendee-$index',
+      currentState: 'going',
+    ),
+];
+
+const _tabletopRoles = <Object?>[
+  <String, Object?>{
+    'roleId': 'tabletop-organizer',
+    'label': 'Organizer',
+    'roleLabel': 'Organizer',
+    'description': 'Plans game nights and tournaments.',
+  },
+  <String, Object?>{
+    'roleId': 'tabletop-member',
+    'label': 'Member',
+    'roleLabel': 'Member',
+    'description': 'RSVPs to game nights and tournaments.',
+  },
+];
+
+const _calendarAppShell = <String, Object?>{
+  'tabs': <Object?>[
+    <String, Object?>{
+      'tabId': 'calendar',
+      'label': 'Calendar',
+      'iconKey': 'calendar_today',
+    },
+  ],
+};
