@@ -1,4 +1,5 @@
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
+import 'package:loom_ux_judges/src/validator/generated_capability_baseline.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
@@ -89,6 +90,32 @@ List<String> findings(Map<String, dynamic> p) => CommunityPackageValidator()
 
 Map<String, dynamic> specV4Pkg() => pkg();
 
+Map<String, dynamic> mapGetCapabilityPkg() {
+  final package = capabilityPkg();
+  final experience = package['experience'] as Map<String, dynamic>;
+  final thing =
+      (experience['workflowDefinitions'] as Map<String, dynamic>)['thing']
+          as Map<String, dynamic>;
+  thing['instanceDataSchema'] = <String, dynamic>{
+    'counts': <String, dynamic>{'type': 'map'},
+    'selectedCount': <String, dynamic>{
+      'type': 'number',
+      'formula': "mapGet(counts, 'selected')",
+    },
+  };
+  experience['workflowInstances'] = <dynamic>[
+    seed(
+      data: <String, dynamic>{
+        'counts': <String, int>{'selected': 1},
+      },
+    ),
+  ];
+  return package;
+}
+
+Set<String> baselineBefore(String capability) =>
+    <String>{...communityCapabilityBaseline}..remove(capability);
+
 List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
     CommunityPackageValidator()
         .validate(package)
@@ -125,8 +152,11 @@ void main() {
     test('declared but unused capability produces one unused error', () {
       final package = capabilityPkg()
         ..['requiresCapabilities'] = <String>['effect.transitionRelated'];
+      final validator = CommunityPackageValidator(
+        capabilityBaseline: baselineBefore('effect.transitionRelated'),
+      );
 
-      final report = CommunityPackageValidator().validate(package);
+      final report = validator.validate(package);
 
       expect(report.findings, hasLength(1));
       expect(report.findings.single.type, 'unused_capability');
@@ -137,29 +167,46 @@ void main() {
       );
     });
 
-    test('correctly declared and used capability produces no findings', () {
-      final package = capabilityPkg()
+    test('declared and used post-baseline capability produces no findings', () {
+      final package = mapGetCapabilityPkg()
         ..['requiresCapabilities'] = <String>['formula.mapGet'];
-      final experience = package['experience'] as Map<String, dynamic>;
-      final thing =
-          (experience['workflowDefinitions'] as Map<String, dynamic>)['thing']
-              as Map<String, dynamic>;
-      thing['instanceDataSchema'] = <String, dynamic>{
-        'counts': <String, dynamic>{'type': 'map'},
-        'selectedCount': <String, dynamic>{
-          'type': 'number',
-          'formula': "mapGet(counts, 'selected')",
-        },
-      };
-      experience['workflowInstances'] = <dynamic>[
-        seed(
-          data: <String, dynamic>{
-            'counts': <String, int>{'selected': 1},
-          },
-        ),
-      ];
+      final validator = CommunityPackageValidator(
+        capabilityBaseline: baselineBefore('formula.mapGet'),
+      );
 
+      expect(validator.validate(package).findings, isEmpty);
+    });
+
+    test('used but undeclared post-baseline capability produces an error', () {
+      final report = CommunityPackageValidator(
+        capabilityBaseline: baselineBefore('formula.mapGet'),
+      ).validate(mapGetCapabilityPkg());
+
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'undeclared_capability');
+      expect(report.findings.single.isWarning, isFalse);
+      expect(report.findings.single.message, contains('formula.mapGet'));
+      expect(report.findings.single.location, 'requiresCapabilities');
+    });
+
+    test('used baseline capability needs no declaration', () {
+      final package = mapGetCapabilityPkg();
+
+      expect(package, isNot(contains('requiresCapabilities')));
       expect(CommunityPackageValidator().validate(package).findings, isEmpty);
+    });
+
+    test('declared baseline capability is rejected as unused', () {
+      final package = mapGetCapabilityPkg()
+        ..['requiresCapabilities'] = <String>['formula.mapGet'];
+      final report = CommunityPackageValidator().validate(package);
+
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'unused_capability');
+      expect(
+        report.findings.single.message,
+        contains('implied by specVersion'),
+      );
     });
 
     test('absent requiresCapabilities produces no findings', () {

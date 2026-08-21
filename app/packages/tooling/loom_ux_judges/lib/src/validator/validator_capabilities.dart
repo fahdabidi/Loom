@@ -118,6 +118,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'unknown_tab_id',
   'unknown_transition_action',
   'unreachable_state',
+  'undeclared_capability',
   'unsupported_capability',
   'unsupported_schema_version',
   'unused_capability',

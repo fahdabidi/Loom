@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:loom_ux_judges/src/validator/generated_capability_baseline.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show
@@ -12,10 +13,17 @@ import 'package:loom_workflow_engine/src/evaluator/recurrence_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 class CommunityPackageValidator {
+  CommunityPackageValidator({Set<String>? capabilityBaseline})
+    : _capabilityBaseline = Set<String>.unmodifiable(
+        capabilityBaseline ?? communityCapabilityBaseline,
+      );
+
   /// The current single-number specification version.
   ///
   /// One number versions the whole package.
   static const supportedSpecVersions = <int>{currentCommunitySpecVersion};
+
+  final Set<String> _capabilityBaseline;
 
   ValidationReport validate(Map<String, dynamic> package) {
     final findings = <ValidationFinding>[];
@@ -131,7 +139,9 @@ class CommunityPackageValidator {
         );
       }
     }
-    findings.addAll(_validateUnusedCapabilities(package, workflows));
+    final usedCapabilities = _usedCapabilities(package, workflows);
+    findings.addAll(_validateUnusedCapabilities(package, usedCapabilities));
+    findings.addAll(_validateUndeclaredCapabilities(package, usedCapabilities));
     findings.addAll(
       WorkflowValidator(
         knownPersonaIds: personas,
@@ -1639,24 +1649,58 @@ class CommunityPackageValidator {
 
   List<ValidationFinding> _validateUnusedCapabilities(
     Map<String, dynamic> package,
-    Map<String, LoomWorkflowStateMachine> workflows,
+    Set<String> used,
   ) {
     final declarations = package['requiresCapabilities'];
     if (declarations is! List) return const [];
-    final used = _usedCapabilities(package, workflows);
     final findings = <ValidationFinding>[];
     for (var i = 0; i < declarations.length; i++) {
       final declaration = declarations[i];
-      if (declaration is! String || used.contains(declaration)) continue;
+      if (declaration is! String) continue;
+      final isBaseline = _capabilityBaseline.contains(declaration);
+      if (!isBaseline && used.contains(declaration)) continue;
       findings.add(
         _finding(
           'unused_capability',
-          'Package declares capability "$declaration" but never uses it.',
+          isBaseline
+              ? 'Capability "$declaration" is implied by specVersion: '
+                    '$currentCommunitySpecVersion and must not be declared.'
+              : 'Package declares capability "$declaration" but never uses it.',
           'requiresCapabilities[$i]',
         ),
       );
     }
     return findings;
+  }
+
+  List<ValidationFinding> _validateUndeclaredCapabilities(
+    Map<String, dynamic> package,
+    Set<String> used,
+  ) {
+    final declarations = package['requiresCapabilities'];
+    final declared = declarations is List
+        ? declarations.whereType<String>().toSet()
+        : const <String>{};
+    final undeclared =
+        used
+            .where(supportsCommunityCapability)
+            .where(
+              (capability) =>
+                  !_capabilityBaseline.contains(capability) &&
+                  !declared.contains(capability),
+            )
+            .toList()
+          ..sort();
+
+    return <ValidationFinding>[
+      for (final capability in undeclared)
+        _finding(
+          'undeclared_capability',
+          'Package uses post-baseline capability "$capability" but does not '
+              'declare it in requiresCapabilities.',
+          'requiresCapabilities',
+        ),
+    ];
   }
 
   Set<String> _usedCapabilities(
@@ -1717,10 +1761,10 @@ class CommunityPackageValidator {
   }
 
   void _collectFieldCapabilities(InstanceDataField field, Set<String> used) {
-    used.add('field.${field.type}');
-    if (field.type.endsWith('?')) {
-      used.add('field.${field.type.substring(0, field.type.length - 1)}');
-    }
+    final type = field.type.endsWith('?')
+        ? field.type.substring(0, field.type.length - 1)
+        : field.type;
+    used.add('field.$type');
     _collectFormulaCapabilities(field.formula, used);
     _collectFormulaCapabilities(field.visibleWhenEditing, used);
     final itemSchema = field.itemSchema;

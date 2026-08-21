@@ -65,6 +65,14 @@ Set<String> _documentedFindingCodes() {
       ).allMatches(firstCell).map((match) => match.group(1)!),
     );
   }
+  final versioningPolicy = _readRepositoryFile(
+    'docs/references/_meta/versioning-policy.md',
+  );
+  codes.addAll(
+    RegExp(
+      r'`([a-z][a-z0-9_]*_capability)`',
+    ).allMatches(versioningPolicy).map((match) => match.group(1)!),
+  );
   return codes;
 }
 
