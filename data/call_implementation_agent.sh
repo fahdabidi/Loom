@@ -284,6 +284,25 @@ echo "$$" > .codex-logs/.last_dispatch.pid
 PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
 FLUTTER_CONFIG_DIR="$HOME/.config/flutter"
 
+# The Flutter SDK itself must be writable too:  runs
+# update_engine_version.sh, which writes bin/cache/engine.stamp before any test
+# starts. Without this the run dies with "engine.stamp: Read-only file system".
+FLUTTER_BIN="$(command -v flutter || true)"
+if [ -n "$FLUTTER_BIN" ]; then
+  FLUTTER_SDK_DIR="$(dirname "$(dirname "$(readlink -f "$FLUTTER_BIN")")")"
+else
+  FLUTTER_SDK_DIR="$HOME/flutter"
+fi
+
+# flutter_tester binds a localhost control socket per test file. Under a
+# default workspace-write sandbox that bind returns EPERM, so EVERY Flutter
+# widget suite fails to start -- not a test failure, a harness failure, and one
+# that reads like 54 real regressions in the log. Verified 2026-08-21: with this
+# enabled plus FLUTTER_SDK_DIR granted, a real widget suite runs to
+# "All tests passed!" in-sandbox. Before this, agents could not verify their own
+# widget-test work at all and had to predict results, which they got wrong.
+CODEX_SANDBOX_NETWORK_CONFIG="sandbox_workspace_write.network_access=true"
+
 # Captured to a side file (via `tee`) so a transcript survives for post-
 # mortems without losing the live streaming to stdout that callers tail for
 # progress. `${PIPESTATUS[0]}` (not `$?`, which would be tee's exit status)
@@ -301,6 +320,8 @@ if [ "$MODE" = "--fresh" ]; then
     --add-dir "$REPO_ROOT/.git" \
     --add-dir "$PUB_CACHE_DIR" \
     --add-dir "$FLUTTER_CONFIG_DIR" \
+    --add-dir "$FLUTTER_SDK_DIR" \
+    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
     "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 else
   npx --yes @openai/codex exec \
@@ -309,6 +330,8 @@ else
     --add-dir "$REPO_ROOT/.git" \
     --add-dir "$PUB_CACHE_DIR" \
     --add-dir "$FLUTTER_CONFIG_DIR" \
+    --add-dir "$FLUTTER_SDK_DIR" \
+    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
     resume --last "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 fi
 STATUS="${PIPESTATUS[0]}"
