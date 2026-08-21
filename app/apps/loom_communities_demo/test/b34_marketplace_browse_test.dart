@@ -1,15 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
 const _extensionId = 'ext_verify_tabletop_club';
+var _fixtureSequence = 0;
 
 void main() {
   // ── Mode-agnostic engine tests (Gap 5): sale / trade / giveaway ──
@@ -19,8 +15,14 @@ void main() {
       final machine = LoomListingStateMachine(
         initialState: 'available',
         states: {
-          'available': const LoomListingState(label: 'Available', tone: 'positive'),
-          'purchased': const LoomListingState(label: 'Purchased', tone: 'positive'),
+          'available': const LoomListingState(
+            label: 'Available',
+            tone: 'positive',
+          ),
+          'purchased': const LoomListingState(
+            label: 'Purchased',
+            tone: 'positive',
+          ),
         },
         transitions: [
           const LoomListingTransition(
@@ -42,7 +44,10 @@ void main() {
       expect(actions.single.removesFromList, isTrue);
 
       // Persona gating: non-member sees nothing
-      expect(machine.availableActions('available', 'tabletop-organizer'), isEmpty);
+      expect(
+        machine.availableActions('available', 'tabletop-organizer'),
+        isEmpty,
+      );
     });
 
     test('trade machine: offered → pending → traded (multi-step)', () {
@@ -89,7 +94,10 @@ void main() {
       final machine = LoomListingStateMachine(
         initialState: 'available',
         states: {
-          'available': const LoomListingState(label: 'Available', tone: 'positive'),
+          'available': const LoomListingState(
+            label: 'Available',
+            tone: 'positive',
+          ),
           'claimed': const LoomListingState(label: 'Claimed', tone: 'positive'),
         },
         transitions: [
@@ -119,8 +127,15 @@ void main() {
         final machine = LoomListingStateMachine(
           initialState: 'available',
           states: {
-            'available': const LoomListingState(label: 'Available', tone: 'positive'),
-            'queued': const LoomListingState(label: 'Queue open', tone: 'info', showsQueue: true),
+            'available': const LoomListingState(
+              label: 'Available',
+              tone: 'positive',
+            ),
+            'queued': const LoomListingState(
+              label: 'Queue open',
+              tone: 'info',
+              showsQueue: true,
+            ),
           },
           transitions: [
             const LoomListingTransition(
@@ -194,6 +209,10 @@ void main() {
 
       // (a) positive: grid renders listing cards
       expect(
+        find.byKey(const ValueKey('engine-native-marketplace-root')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(const ValueKey('marketplace-listing-listing-catan')),
         findsOneWidget,
       );
@@ -206,23 +225,27 @@ void main() {
         findsOneWidget,
       );
       // Placeholder must NOT be visible
-      expect(
-        find.textContaining('is coming to'),
-        findsNothing,
-      );
+      expect(find.textContaining('is coming to'), findsNothing);
     });
 
-    testWidgets('wf_marketplace-placeholder-when-no-listings', (tester) async {
+    testWidgets('wf_marketplace-empty-surface-when-no-listings', (
+      tester,
+    ) async {
       final fixture = _writeFixture(includeListings: false);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
 
       await tester.pumpAndSettle(const Duration(seconds: 3));
 
-      await _tapTab(tester, 'marketplace');
+      await _tapTab(tester, 'marketplace', marketplaceEmpty: true);
 
-      // (b) negative: placeholder shows
-      expect(find.textContaining('is coming to'), findsOneWidget);
+      // (b) the native Marketplace owns a real empty state, not a shallow
+      // data-declaration placeholder.
+      expect(
+        find.byKey(const ValueKey('engine-native-marketplace-empty')),
+        findsOneWidget,
+      );
+      expect(find.text('No shared items are listed yet.'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('marketplace-listing-listing-catan')),
         findsNothing,
@@ -253,7 +276,9 @@ void main() {
       );
 
       // Type "Wingspan" — only Wingspan should remain
-      final searchField = find.byKey(const ValueKey('marketplace-search-field'));
+      final searchField = find.byKey(
+        const ValueKey('marketplace-search-field'),
+      );
       expect(searchField, findsOneWidget);
       await tester.enterText(searchField, 'Wingspan');
       await tester.pumpAndSettle();
@@ -282,7 +307,9 @@ void main() {
       await _tapTab(tester, 'marketplace');
 
       // Tap "Strategy Games" chip — only Root (queued) should remain
-      final chip = find.byKey(const ValueKey('marketplace-filter-Strategy Games'));
+      final chip = find.byKey(
+        const ValueKey('marketplace-filter-Strategy Games'),
+      );
       expect(chip, findsOneWidget);
       await tester.ensureVisible(chip);
       await tester.pumpAndSettle();
@@ -331,14 +358,35 @@ void main() {
       await _openListingDetail(tester, 'listing-wingspan');
 
       // (e) detail anatomy — content visible regardless of persona
+      final detail = find.byKey(
+        const ValueKey('marketplace-detail-dialog-listing-wingspan'),
+      );
       expect(
-        find.byKey(const ValueKey('marketplace-listing-detail-listing-wingspan')),
+        detail,
         findsOneWidget,
       );
-      expect(find.textContaining('Excellent'), findsOneWidget);
-      expect(find.textContaining('On loan'), findsOneWidget);
-      expect(find.textContaining('Board Games'), findsOneWidget);
-      expect(find.textContaining('Jamie (Member)'), findsOneWidget);
+      expect(
+        find.descendant(of: detail, matching: find.text('Excellent')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: detail,
+          matching: find.text('On Loan'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: detail, matching: find.text('Board Games')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: detail,
+          matching: find.textContaining('Jamie (Member)'),
+        ),
+        findsOneWidget,
+      );
     });
 
     // ── (f) persona-gated actions: organizer sees only shared ─────
@@ -359,7 +407,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         findsNothing,
       );
       expect(
@@ -373,12 +421,8 @@ void main() {
     testWidgets('wf_marketplace-actions-member', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      // Select member persona BEFORE navigating
-      await selectPersona(tester, 'tabletop-member');
-      await tester.pumpAndSettle();
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
@@ -401,7 +445,7 @@ void main() {
 
       // Wingspan is onLoan, so borrow (from available) should NOT appear
       expect(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         findsNothing,
       );
     });
@@ -411,12 +455,8 @@ void main() {
     testWidgets('wf_marketplace-join-then-leave-queue', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      // Select member persona BEFORE navigating
-      await selectPersona(tester, 'tabletop-member');
-      await tester.pumpAndSettle();
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
@@ -470,42 +510,52 @@ void main() {
     testWidgets('wf_marketplace-borrow-action-functions', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await selectPersona(tester, 'tabletop-member');
-      await tester.pumpAndSettle();
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
       await _openListingDetail(tester, 'listing-catan');
       expect(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         findsOneWidget,
       );
 
       await tester.tap(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         warnIfMissed: false,
       );
       await tester.pumpAndSettle();
 
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('marketplace-action-return')),
+        description: 'return action after borrowing Catan',
+      );
       expect(
-        find.byKey(
-          const ValueKey('workflow-action-surface-tabletop-game-loan'),
+        find.byKey(const ValueKey('marketplace-detail-dialog-listing-catan')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey('marketplace-detail-dialog-listing-catan'),
+          ),
+          matching: find.text('On Loan'),
         ),
         findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
+        findsNothing,
       );
     });
 
     testWidgets('wf_marketplace-return-action-functions', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await selectPersona(tester, 'tabletop-member');
-      await tester.pumpAndSettle();
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
@@ -516,10 +566,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
+        description: 'borrow action after returning Wingspan',
+      );
       expect(find.text('Available'), findsAtLeastNWidgets(1));
       expect(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-action-return')),
+        findsNothing,
       );
     });
 
@@ -531,12 +590,8 @@ void main() {
         includeGiveaway: true,
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      // Select member persona first
-      await selectPersona(tester, 'tabletop-member');
-      await tester.pumpAndSettle();
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
@@ -555,7 +610,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('marketplace-action-borrow')),
+        find.byKey(const ValueKey('marketplace-transition-fab-borrow')),
         findsNothing,
       );
 
@@ -566,8 +621,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey('marketplace-listing-detail-listing-old-catan')),
+        find.byKey(
+          const ValueKey('marketplace-detail-dialog-listing-old-catan'),
+        ),
         findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-marketplace-root')),
+        findsOneWidget,
       );
     });
 
@@ -576,7 +637,7 @@ void main() {
     ) async {
       final fixture = _writeFixture(
         includeListings: true,
-        extraListingCount: 14,
+        extraListingCount: 27,
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
@@ -586,23 +647,20 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
       expect(
-        find.byKey(const ValueKey('marketplace-listing-listing-extra-13')),
-        findsNothing,
-      );
-      expect(find.byKey(const ValueKey('marketplace-load-more')), findsOneWidget);
-
-      await tester.ensureVisible(find.byKey(const ValueKey('marketplace-load-more')));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('marketplace-load-more')),
-        warnIfMissed: false,
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byKey(const ValueKey('marketplace-listing-listing-extra-13')),
+        find.byKey(const ValueKey('engine-native-marketplace-root')),
         findsOneWidget,
       );
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('marketplace-listing-listing-extra-26')),
+        description: 'Marketplace listing from the second queryInstances page',
+      );
+
+      expect(
+        find.byKey(const ValueKey('marketplace-listing-listing-extra-26')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('marketplace-load-more')), findsNothing);
     });
   });
 }
@@ -611,276 +669,164 @@ void main() {
 // Helpers
 // ══════════════════════════════════════════════════════════════════
 
-_PackagePairFixture _writeFixture({
+({EvidencePackagePair package, String communityId}) _writeFixture({
   required bool includeListings,
   bool includeGiveaway = false,
   int extraListingCount = 0,
 }) {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b34_');
-  final extensionFile = File('${tempDir.path}/$_extensionId.loom-extension.zip');
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
+  final sequence = _fixtureSequence++;
+  final extensionId = '${_extensionId}_b34_$sequence';
+  final communityId = 'community_verify_tabletop_club_b34_$sequence';
+  final marketplace = engineNativeMarketplaceTestFixture(
+    loanWorkflowType: 'tabletop-game-loan',
+    memberRoleId: 'tabletop-member',
+    organizerRoleId: 'tabletop-organizer',
+    loanSeeds: <EngineNativeMarketplaceLoanSeed>[
+      if (includeListings) ...<EngineNativeMarketplaceLoanSeed>[
+        const EngineNativeMarketplaceLoanSeed(
+          instanceId: 'listing-catan',
+          title: 'Catan',
+          category: 'Board Games',
+          condition: 'Like new',
+          description:
+              'Classic resource-trading strategy game. Includes expansion.',
+        ),
+        const EngineNativeMarketplaceLoanSeed(
+          instanceId: 'listing-wingspan',
+          title: 'Wingspan',
+          category: 'Board Games',
+          condition: 'Excellent',
+          description: 'Award-winning engine-building bird game.',
+          availabilityState: 'onLoan',
+          holderFanId: 'Jamie (Member)',
+          dueDate: '2026-07-17',
+        ),
+        const EngineNativeMarketplaceLoanSeed(
+          instanceId: 'listing-root',
+          title: 'Root',
+          category: 'Strategy Games',
+          condition: 'Good',
+          description: 'Asymmetric woodland strategy game.',
+          availabilityState: 'onLoan',
+          queuedFanIds: <String>['queued-member-1', 'queued-member-2'],
+        ),
+        for (var index = 0; index < extraListingCount; index += 1)
+          EngineNativeMarketplaceLoanSeed(
+            instanceId: 'listing-extra-${index.toString().padLeft(2, '0')}',
+            title: 'Extra game ${index.toString().padLeft(2, '0')}',
+            category: 'Board Games',
+            condition: 'Good',
+            description: 'Extra paginated fixture game $index.',
+          ),
+      ] else
+        const EngineNativeMarketplaceLoanSeed(
+          instanceId: 'listing-delisted-history',
+          title: 'Retired listing history',
+          category: 'Board Games',
+          condition: 'Retired',
+          description: 'A terminal row keeps the fixture engine-native.',
+          currentState: 'delisted',
+        ),
+    ],
+    giveawaySeeds: includeGiveaway
+        ? const <EngineNativeMarketplaceGiveawaySeed>[
+            EngineNativeMarketplaceGiveawaySeed(
+              instanceId: 'listing-old-catan',
+              title: 'Catan (retired club copy)',
+              category: 'Board Games',
+              condition: 'Fair',
+              description: 'Free to a member — retired club copy.',
+            ),
+          ]
+        : const <EngineNativeMarketplaceGiveawaySeed>[],
   );
 
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b34_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Tabletop Club',
+    experience: <String, Object?>{
       'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
-  );
-
-  final experience = <String, dynamic>{
-    'displayName': 'Tabletop Club',
-    'tagline':
-        'Board game nights, loaner games, and dues for local tabletop fans.',
-    'accentColor': '#C4703F',
-    'theme': {
-      'accent': '#C4703F',
-    },
-    'roles': [
-      {
-        'roleId': 'tabletop-organizer',
-        'label': 'Organizer',
-        'roleLabel': 'Organizer',
-        'description':
-            'Plans game nights, manages the game library, and collects dues.',
-      },
-      {
-        'roleId': 'tabletop-member',
-        'label': 'Member',
-        'roleLabel': 'Member',
-        'description': 'RSVPs to game nights, borrows games, and pays dues.',
-      },
-    ],
-    'workflows': [
-      {
-        'workflowId': 'tabletop-game-loan',
-        'title': 'Borrow a game',
-        'entryText': 'A game is available.',
-        'actionText': 'Request to borrow',
-        'resultText': 'Loan request submitted.',
-      },
-    ],
-    'personaPolicies': {
-      'tabletop-game-loan': {
-        'actorPersonaIds': ['tabletop-member'],
-        'receiverPersonaIds': ['tabletop-organizer'],
-        'receiverEntryText': 'A member requested to borrow a game.',
-        'receiverActionText': 'Approve loan',
-        'receiverResultText': 'Loan approved.',
-      },
-    },
-    'marketplace': {
-      'templates': {
-        'loan': {
-          'initialState': 'available',
-          'states': {
-            'available': {'label': 'Available', 'tone': 'positive'},
-            'onLoan': {
-              'label': 'On loan',
-              'tone': 'warning',
-              'showsHolder': true,
-              'showsDue': true,
-            },
-            'queued': {'label': 'Queue open', 'tone': 'info', 'showsQueue': true},
-          },
-          'transitions': [
-            {
-              'id': 'borrow',
-              'label': 'Request loan',
-              'from': ['available'],
-              'to': 'onLoan',
-              'allowedRoleIds': ['tabletop-member'],
-              'linkedWorkflowId': 'tabletop-game-loan',
-              'setsHolderToActor': true,
-            },
-            {
-              'id': 'join-queue',
-              'label': 'Join queue',
-              'from': ['onLoan', 'queued'],
-              'allowedRoleIds': ['tabletop-member'],
-              'addsActorToQueue': true,
-              'requiresActorNotInQueue': true,
-            },
-            {
-              'id': 'leave-queue',
-              'label': 'Leave queue',
-              'from': ['queued'],
-              'allowedRoleIds': ['tabletop-member'],
-              'requiresActorInQueue': true,
-              'removesActorFromQueue': true,
-            },
-            {
-              'id': 'return',
-              'label': 'Return',
-              'from': ['onLoan'],
-              'to': 'available',
-              'allowedRoleIds': ['tabletop-member', 'tabletop-organizer'],
-              'clearsHolder': true,
-            },
-          ],
+      'tagline':
+          'Board game nights, loaner games, and dues for local tabletop fans.',
+      'accentColor': '#C4703F',
+      'theme': <String, Object?>{'accent': '#C4703F'},
+      'roles': const <Object?>[
+        <String, Object?>{
+          'roleId': 'tabletop-organizer',
+          'label': 'Organizer',
+          'roleLabel': 'Organizer',
+          'description':
+              'Plans game nights, manages the game library, and collects dues.',
         },
-      },
+        <String, Object?>{
+          'roleId': 'tabletop-member',
+          'label': 'Member',
+          'roleLabel': 'Member',
+          'description': 'RSVPs to game nights, borrows games, and pays dues.',
+        },
+      ],
+      'workflowDefinitions': marketplace.workflowDefinitions,
+      'workflowInstances': marketplace.workflowInstances,
     },
-  };
-
-  if (includeListings) {
-    experience['marketplaceListings'] = [
-      {
-        'listingId': 'listing-catan',
-        'title': 'Catan',
-        'category': 'Board Games',
-        'condition': 'Like new',
-        'availability': 'available',
-        'queueLength': 0,
-        'description':
-            'Classic resource-trading strategy game. Includes expansion.',
-        'linkedWorkflowId': 'tabletop-game-loan',
-      },
-      {
-        'listingId': 'listing-wingspan',
-        'title': 'Wingspan',
-        'category': 'Board Games',
-        'condition': 'Excellent',
-        'availability': 'onLoan',
-        'currentHolderLabel': 'Jamie (Member)',
-        'dueLabel': 'Due back Jul 17',
-        'description': 'Award-winning engine-building bird game.',
-        'linkedWorkflowId': 'tabletop-game-loan',
-      },
-      {
-        'listingId': 'listing-root',
-        'title': 'Root',
-        'category': 'Strategy Games',
-        'condition': 'Good',
-        'availability': 'queued',
-        'queueLength': 2,
-        'description': 'Asymmetric woodland strategy game.',
-        'linkedWorkflowId': 'tabletop-game-loan',
-      },
-      {
-        'listingId': 'listing-old-catan',
-        'title': 'Catan (retired club copy)',
-        'category': 'Board Games',
-        'condition': 'Fair',
-        'availability': 'giveaway',
-        'description': 'Free to a member — retired club copy.',
-        'stateMachine': {
-          'initialState': 'available',
-          'states': {
-            'available': {'label': 'Available', 'tone': 'positive'},
-            'claimed': {'label': 'Claimed', 'tone': 'positive'},
-          },
-          'transitions': [
-            {
-              'id': 'claim',
-              'label': 'Claim giveaway',
-              'from': ['available'],
-              'to': 'claimed',
-              'allowedRoleIds': ['tabletop-member'],
-              'linkedWorkflowId': 'tabletop-game-loan',
-              'removesFromList': true,
-            },
-          ],
-        },
-      },
-      for (var index = 0; index < extraListingCount; index += 1)
-        {
-          'listingId': 'listing-extra-${index.toString().padLeft(2, '0')}',
-          'title': 'Extra game ${index.toString().padLeft(2, '0')}',
-          'category': 'Board Games',
-          'condition': 'Good',
-          'availability': 'available',
-          'queueLength': 0,
-          'description': 'Extra paginated fixture game $index.',
-          'linkedWorkflowId': 'tabletop-game-loan',
-        },
-    ];
-  }
-
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json', 'seed/workflows.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': experience,
-    }),
+    appShell: <String, Object?>{
+      'tabs': <Object?>[engineNativeMarketplaceTestTab()],
+    },
   );
-
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
-  );
+  return (package: package, communityId: communityId);
 }
 
 Future<void> _installAndOpen(
   WidgetTester tester,
-  _PackagePairFixture fixture,
-) async {
+  ({EvidencePackagePair package, String communityId}) fixture, {
+  String personaId = 'tabletop-organizer',
+}) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
   await tester.enterText(
     find.byKey(const ValueKey('extension-package-path-field')),
-    fixture.extensionPath,
+    fixture.package.extensionPath,
   );
   await tester.enterText(
     find.byKey(const ValueKey('initialization-package-path-field')),
-    fixture.initializationPath,
+    fixture.package.initializationPath,
   );
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
   await tester.tap(
-    find.byKey(const ValueKey('community-card-community_verify_tabletop_club')),
+    find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _openListingDetail(WidgetTester tester, String listingId) async {
   final card = find.byKey(ValueKey('marketplace-listing-$listingId'));
+  await waitForEngineNativeWidget(
+    tester,
+    card,
+    description: 'Marketplace listing $listingId',
+  );
   expect(card, findsOneWidget, reason: 'card $listingId must exist');
-  // Drag the parent scrollable downward to bring grid cards into view
-  // (grid uses NeverScrollableScrollPhysics; ensureVisible on its own
-  // does not scroll the parent SingleChildScrollView)
-  final scrollable = find.byType(SingleChildScrollView);
-  await tester.drag(scrollable, const Offset(0, -300));
+  final tapTarget = find.byKey(ValueKey('marketplace-listing-tap-$listingId'));
+  await tester.ensureVisible(tapTarget);
   await tester.pumpAndSettle();
-  await tester.ensureVisible(card);
+  final tapRect = tester.getRect(tapTarget);
+  await tester.tapAt(Offset(tapRect.center.dx, tapRect.top + 20));
   await tester.pumpAndSettle();
-  await tester.tap(card, warnIfMissed: false);
-  await tester.pumpAndSettle();
+  await waitForEngineNativeWidget(
+    tester,
+    find.byKey(ValueKey('marketplace-detail-dialog-$listingId')),
+    description: 'Marketplace detail for $listingId',
+  );
 }
 
-Future<void> _tapTab(WidgetTester tester, String tabId) async {
-  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
-  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (
-    var attempt = 0;
-    attempt < 8 && tabFinder.evaluate().isEmpty;
-    attempt += 1
-  ) {
-    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
-  expect(tabFinder, findsOneWidget, reason: tabId);
-  await tester.ensureVisible(tabFinder);
-  await tester.pumpAndSettle();
-  await tester.tap(tabFinder, warnIfMissed: false);
-  await tester.pumpAndSettle();
-}
-
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
+Future<void> _tapTab(
+  WidgetTester tester,
+  String tabId, {
+  bool marketplaceEmpty = false,
+}) async {
+  await tapCommunityTab(tester, tabId);
+  await waitForEngineNativeMarketplaceSurface(tester, empty: marketplaceEmpty);
 }

@@ -995,6 +995,457 @@ Map<String, Object?> engineNativeTestWorkflowInstance({
   'instanceData': instanceData,
 };
 
+/// One persisted loan listing for an engine-native Marketplace fixture.
+class EngineNativeMarketplaceLoanSeed {
+  const EngineNativeMarketplaceLoanSeed({
+    required this.instanceId,
+    required this.title,
+    required this.category,
+    required this.condition,
+    required this.description,
+    this.currentState = 'published',
+    this.availabilityState = 'available',
+    this.holderFanId,
+    this.queuedFanIds = const <String>[],
+    this.dueDate,
+    this.createdByFanId,
+  });
+
+  final String instanceId;
+  final String title;
+  final String category;
+  final String condition;
+  final String description;
+  final String currentState;
+  final String availabilityState;
+  final String? holderFanId;
+  final List<String> queuedFanIds;
+  final String? dueDate;
+  final String? createdByFanId;
+}
+
+/// One persisted giveaway listing for an engine-native Marketplace fixture.
+class EngineNativeMarketplaceGiveawaySeed {
+  const EngineNativeMarketplaceGiveawaySeed({
+    required this.instanceId,
+    required this.title,
+    required this.category,
+    required this.condition,
+    required this.description,
+    this.currentState = 'available',
+    this.claimedByFanId,
+    this.createdByFanId,
+  });
+
+  final String instanceId;
+  final String title;
+  final String category;
+  final String condition;
+  final String description;
+  final String currentState;
+  final String? claimedByFanId;
+  final String? createdByFanId;
+}
+
+/// Reusable Marketplace definitions and persisted rows for demo widget tests.
+class EngineNativeMarketplaceTestFixture {
+  const EngineNativeMarketplaceTestFixture({
+    required this.workflowDefinitions,
+    required this.workflowInstances,
+  });
+
+  final Map<String, Object?> workflowDefinitions;
+  final List<Map<String, Object?>> workflowInstances;
+}
+
+/// Builds real v4 loan and optional giveaway state machines for Marketplace.
+///
+/// Availability and queue membership remain orthogonal instance data on the
+/// published loan listing. Every action is an engine transition; optional dues
+/// or other prerequisites are attached to the borrow transition's guard.
+EngineNativeMarketplaceTestFixture engineNativeMarketplaceTestFixture({
+  required String loanWorkflowType,
+  required String memberRoleId,
+  required String organizerRoleId,
+  required List<EngineNativeMarketplaceLoanSeed> loanSeeds,
+  List<EngineNativeMarketplaceGiveawaySeed> giveawaySeeds =
+      const <EngineNativeMarketplaceGiveawaySeed>[],
+  String giveawayWorkflowType = 'equipment-giveaway',
+  String tabId = 'marketplace',
+  List<String> borrowRequiresWorkflowsComplete = const <String>[],
+}) {
+  if (loanSeeds.isEmpty && giveawaySeeds.isEmpty) {
+    throw ArgumentError(
+      'Marketplace fixtures need at least one persisted listing row.',
+    );
+  }
+  final instanceIds = <String>{};
+  for (final seed in loanSeeds) {
+    if (!const <String>{'published', 'delisted'}.contains(seed.currentState)) {
+      throw ArgumentError.value(
+        seed.currentState,
+        'loanSeeds.currentState',
+        'must be published or delisted',
+      );
+    }
+    if (!instanceIds.add(seed.instanceId)) {
+      throw ArgumentError.value(
+        seed.instanceId,
+        'loanSeeds.instanceId',
+        'must be unique',
+      );
+    }
+  }
+  for (final seed in giveawaySeeds) {
+    if (!const <String>{
+      'available',
+      'claimed',
+      'withdrawn',
+    }.contains(seed.currentState)) {
+      throw ArgumentError.value(
+        seed.currentState,
+        'giveawaySeeds.currentState',
+        'must be available, claimed, or withdrawn',
+      );
+    }
+    if (!instanceIds.add(seed.instanceId)) {
+      throw ArgumentError.value(
+        seed.instanceId,
+        'giveawaySeeds.instanceId',
+        'must be unique across Marketplace rows',
+      );
+    }
+  }
+
+  final loanDefinition = engineNativeTestWorkflowDefinition(
+    initialState: 'published',
+    states: <String, Object?>{
+      'published': <String, Object?>{'label': 'In library'},
+      'delisted': <String, Object?>{'label': 'Delisted', 'isTerminal': true},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'borrow',
+        'label': 'Request loan',
+        'icon': 'arrow_forward',
+        'tone': 'primary',
+        'from': <String>['published'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>[memberRoleId],
+          'instanceDataEquals': <String, Object?>{
+            'key': 'availabilityState',
+            'value': 'available',
+          },
+          if (borrowRequiresWorkflowsComplete.isNotEmpty)
+            'requiresWorkflowsComplete': borrowRequiresWorkflowsComplete,
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'set',
+            'key': 'availabilityState',
+            'value': 'onLoan',
+          },
+          <String, Object?>{
+            'op': 'set',
+            'key': 'holderFanId',
+            'value': r'$actor',
+          },
+        ],
+      },
+      <String, Object?>{
+        'id': 'join-queue',
+        'label': 'Join queue',
+        'icon': 'add_circle_outline',
+        'tone': 'secondary',
+        'from': <String>['published'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>[memberRoleId],
+          'actorInList': <String, Object?>{
+            'key': 'queuedFanIds',
+            'present': false,
+          },
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'appendUnique',
+            'key': 'queuedFanIds',
+            'value': r'$actor',
+          },
+        ],
+      },
+      <String, Object?>{
+        'id': 'leave-queue',
+        'label': 'Leave queue',
+        'icon': 'remove_circle_outline',
+        'tone': 'secondary',
+        'from': <String>['published'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>[memberRoleId],
+          'actorInList': <String, Object?>{
+            'key': 'queuedFanIds',
+            'present': true,
+          },
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'removeValue',
+            'key': 'queuedFanIds',
+            'value': r'$actor',
+          },
+        ],
+      },
+      <String, Object?>{
+        'id': 'return',
+        'label': 'Return',
+        'icon': 'keyboard_return',
+        'tone': 'primary',
+        'from': <String>['published'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>[memberRoleId, organizerRoleId],
+          'instanceDataEquals': <String, Object?>{
+            'key': 'availabilityState',
+            'value': 'onLoan',
+          },
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'set',
+            'key': 'availabilityState',
+            'value': 'available',
+          },
+          <String, Object?>{'op': 'set', 'key': 'holderFanId', 'value': null},
+          <String, Object?>{'op': 'set', 'key': 'dueDate', 'value': null},
+        ],
+      },
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>['published'],
+        tabId: tabId,
+        cardSurfaceFamily: 'equipment-loan',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'title': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'storage': 'inline',
+        'searchable': true,
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'category': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'storage': 'inline',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'condition': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'storage': 'inline',
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['detail'],
+      },
+      'description': <String, Object?>{
+        'type': 'textarea',
+        'storage': 'inline',
+        'searchable': true,
+        'displayContexts': <String>['detail'],
+      },
+      'availabilityState': <String, Object?>{
+        'type': 'text',
+        'storage': 'inline',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'holderFanId': <String, Object?>{
+        'type': 'fanId?',
+        'storage': 'inline',
+        'labelTemplate': 'Holder: {value}',
+        'hideWhenEmpty': true,
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'queuedFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'storage': 'inline',
+        'labelTemplate': 'Queue: {value.length}',
+        'hideWhenEmpty': true,
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'dueDate': <String, Object?>{
+        'type': 'date?',
+        'storage': 'inline',
+        'labelTemplate': 'Due back {value}',
+        'hideWhenEmpty': true,
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'queueLength': <String, Object?>{
+        'type': 'number',
+        'formula': 'size(queuedFanIds)',
+      },
+    },
+  );
+
+  final definitions = <String, Object?>{loanWorkflowType: loanDefinition};
+  if (giveawaySeeds.isNotEmpty) {
+    definitions[giveawayWorkflowType] = engineNativeTestWorkflowDefinition(
+      initialState: 'available',
+      states: <String, Object?>{
+        'available': <String, Object?>{'label': 'Free to a good home'},
+        'claimed': <String, Object?>{'label': 'Claimed', 'isTerminal': true},
+        'withdrawn': <String, Object?>{
+          'label': 'Withdrawn',
+          'isTerminal': true,
+        },
+      },
+      transitions: <Map<String, Object?>>[
+        <String, Object?>{
+          'id': 'claim',
+          'label': 'Claim giveaway',
+          'icon': 'check_circle',
+          'tone': 'primary',
+          'from': <String>['available'],
+          'to': 'claimed',
+          'guard': <String, Object?>{
+            'allowedRoleIds': <String>[memberRoleId],
+          },
+          'effects': <Object?>[
+            <String, Object?>{
+              'op': 'set',
+              'key': 'claimedByFanId',
+              'value': r'$actor',
+            },
+            <String, Object?>{'op': 'removeFromTileGrid'},
+          ],
+        },
+        <String, Object?>{
+          'id': 'withdraw-giveaway',
+          'label': 'Withdraw giveaway',
+          'icon': 'delete_outline',
+          'tone': 'destructive',
+          'from': <String>['available'],
+          'to': 'withdrawn',
+          'guard': <String, Object?>{
+            'allowedRoleIds': <String>[organizerRoleId],
+          },
+        },
+      ],
+      renderBindings: <Map<String, Object?>>[
+        engineNativeTestRenderBinding(
+          states: <String>['available'],
+          tabId: tabId,
+          cardSurfaceFamily: 'equipment-loan',
+        ),
+      ],
+      instanceDataSchema: <String, Object?>{
+        'title': <String, Object?>{
+          'type': 'text',
+          'required': true,
+          'storage': 'inline',
+          'searchable': true,
+          'labelTemplate': '{value}',
+          'displayContexts': <String>['tile', 'detail'],
+        },
+        'category': <String, Object?>{
+          'type': 'text',
+          'required': true,
+          'storage': 'inline',
+          'displayContexts': <String>['tile', 'detail'],
+        },
+        'condition': <String, Object?>{
+          'type': 'text',
+          'storage': 'inline',
+          'labelTemplate': '{value}',
+          'displayContexts': <String>['detail'],
+        },
+        'description': <String, Object?>{
+          'type': 'textarea',
+          'storage': 'inline',
+          'searchable': true,
+          'displayContexts': <String>['detail'],
+        },
+        'claimedByFanId': <String, Object?>{
+          'type': 'fanId?',
+          'storage': 'inline',
+          'labelTemplate': 'Claimed by: {value}',
+          'hideWhenEmpty': true,
+          'displayContexts': <String>['tile', 'detail'],
+        },
+      },
+    );
+  }
+
+  return EngineNativeMarketplaceTestFixture(
+    workflowDefinitions: definitions,
+    workflowInstances: <Map<String, Object?>>[
+      for (final seed in loanSeeds)
+        engineNativeTestWorkflowInstance(
+          instanceId: seed.instanceId,
+          workflowType: loanWorkflowType,
+          currentState: seed.currentState,
+          createdByFanId: seed.createdByFanId ?? organizerRoleId,
+          instanceData: <String, Object?>{
+            'title': seed.title,
+            'category': seed.category,
+            'condition': seed.condition,
+            'description': seed.description,
+            'availabilityState': seed.availabilityState,
+            'holderFanId': seed.holderFanId,
+            'queuedFanIds': seed.queuedFanIds,
+            'dueDate': seed.dueDate,
+          },
+        ),
+      for (final seed in giveawaySeeds)
+        engineNativeTestWorkflowInstance(
+          instanceId: seed.instanceId,
+          workflowType: giveawayWorkflowType,
+          currentState: seed.currentState,
+          createdByFanId: seed.createdByFanId ?? organizerRoleId,
+          instanceData: <String, Object?>{
+            'title': seed.title,
+            'category': seed.category,
+            'condition': seed.condition,
+            'description': seed.description,
+            'claimedByFanId': seed.claimedByFanId,
+          },
+        ),
+    ],
+  );
+}
+
+/// Declares a Marketplace tab without forcing a renderer contract.
+///
+/// An exclusive `equipment-loan` render binding must remain the source of the
+/// derived `MarketplaceTabSurface` selection in engine-native tests.
+Map<String, Object?> engineNativeMarketplaceTestTab({
+  String tabId = 'marketplace',
+  String label = 'Marketplace',
+  String iconKey = 'marketplace',
+}) => <String, Object?>{'tabId': tabId, 'label': label, 'iconKey': iconKey};
+
+/// Waits for the engine-native Marketplace product surface or its real empty
+/// state after the dispatcher finishes all `queryInstances` cursor pages.
+Future<void> waitForEngineNativeMarketplaceSurface(
+  WidgetTester tester, {
+  bool empty = false,
+}) => waitForEngineNativeWidget(
+  tester,
+  find.byKey(
+    ValueKey(
+      empty
+          ? 'engine-native-marketplace-empty'
+          : 'engine-native-marketplace-root',
+    ),
+  ),
+  description: empty
+      ? 'engine-native Marketplace empty surface'
+      : 'engine-native Marketplace browse surface',
+);
+
 /// A reusable real event plus its per-individual RSVP response state machine.
 ///
 /// RSVP choices intentionally live on response instances rather than on the
