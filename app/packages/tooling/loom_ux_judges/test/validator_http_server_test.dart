@@ -296,7 +296,8 @@ void main() {
               as Map<String, dynamic>;
       expect(manifest['extensionId'], 'ext_hiking_club');
       expect(manifest['displayName'], 'Hiking Club');
-      expect(manifest['schemaVersion'], 1);
+      expect(manifest['specVersion'], 4);
+      expect(manifest, isNot(contains('schemaVersion')));
       expect(manifest['version'], isA<String>());
 
       final initFile = archive.findFile('hiking-club.loom-init.zip')!;
@@ -366,7 +367,8 @@ void main() {
       final manifest = json['extensionManifest'] as Map<String, dynamic>;
       expect(manifest['extensionId'], 'ext_hiking_club');
       expect(manifest['displayName'], 'Hiking Club');
-      expect(manifest['schemaVersion'], 1);
+      expect(manifest['specVersion'], 4);
+      expect(manifest, isNot(contains('schemaVersion')));
 
       final initPackage = json['initializationPackage'] as Map<String, dynamic>;
       expect(initPackage['extensionId'], 'ext_hiking_club');

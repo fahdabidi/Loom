@@ -132,12 +132,10 @@
       "supportedEnvelopeVersions/supportedExperienceVersions/supportedGrammarVersions",
       "gates are gone from community_package_validator.dart.",
       "",
-      "packageGenerators was emptied in the same pass and was NOT done. Restored",
-      "here after checking: all 11 tool/generate_*_package.dart still stamp",
-      "'schemaVersion': 1, none were modified, and they are live -- referenced by",
-      "the validator's package_builder.dart and by v3_milestone_calr2g_live_package_test.dart.",
-      "Emptying an entry is a claim that it is finished; this one was not."
-    ],
-    "packageGenerators": "The 11 app/packages/core/loom_communities_app_shell/tool/generate_*_package.dart stamp the legacy fields. Now that the app is specVersion 4 only, anything built through this path produces a package the app refuses to load -- so this is no longer merely stale, it is broken."
+      "packageGenerators was emptied 2026-08-20 after all 11 generators were",
+      "migrated and run. Generated extension manifests declare specVersion 4",
+      "with no legacy stamps; generated initialization packages declare",
+      "specVersion 4 with no legacy identity keys."
+    ]
   }
 }

@@ -96,7 +96,7 @@ ExtensionPackagePlan buildExtensionPackagePlan(
   );
 
   final extensionManifest = <String, dynamic>{
-    'schemaVersion': 1,
+    'specVersion': 4,
     'extensionId': extensionId,
     'displayName': displayName,
     'version': '1.0.0',

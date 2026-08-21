@@ -39,7 +39,7 @@ Future<void> main() async {
   await initialization.writeAsString(jsonEncode(source));
   await extension.writeAsString(
     jsonEncode(<String, Object?>{
-      'schemaVersion': 1,
+      'specVersion': 4,
       'extensionId': _extensionId,
       'displayName': source['displayName'],
       'version': '1.0.0',

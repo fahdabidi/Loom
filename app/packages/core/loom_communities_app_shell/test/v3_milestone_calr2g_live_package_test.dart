@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 import '../tool/generate_tabletop_club_package.dart';
@@ -21,6 +23,27 @@ void main() {
         final generated = await generateTabletopClubPackagePair(
           outputDirectory: packageDirectory,
           repositoryRoot: root,
+        );
+        final extensionPackage =
+            jsonDecode(await generated.extensionPackage.readAsString())
+                as Map<String, dynamic>;
+        final initializationPackage =
+            jsonDecode(await generated.initializationPackage.readAsString())
+                as Map<String, dynamic>;
+        expect(extensionPackage['specVersion'], currentCommunitySpecVersion);
+        expect(extensionPackage, isNot(contains('schemaVersion')));
+        expect(
+          initializationPackage['specVersion'],
+          currentCommunitySpecVersion,
+        );
+        expect(initializationPackage, isNot(contains('schemaVersion')));
+        final validation = CommunityPackageValidator().validate(
+          initializationPackage,
+        );
+        expect(
+          validation.errors,
+          isEmpty,
+          reason: validation.errors.join('\n'),
         );
         final backend = LocalInAppBackend();
         final result = backend.installLocalPackagePairFromFiles(
