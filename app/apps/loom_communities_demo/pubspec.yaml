@@ -1,5 +1,5 @@
 name: loom_communities_demo
-description: Phase 0 scaffold for the Loom Communities demo app with a local backend.
+description: Current Loom Communities demo app for workflow UX validation, screenshot capture, APK builds, and emulator launches.
 publish_to: none
 version: 0.1.0+1
 resolution: workspace

@@ -11,6 +11,18 @@ import 'workflow_ui_test_harness.dart';
 
 const _extensionId = 'ext_verify_tabletop_calendar_engine';
 
+File _repositoryFile(String relativePath) {
+  var directory = Directory.current;
+  for (var i = 0; i < 8; i++) {
+    final file = File('${directory.path}/$relativePath');
+    if (file.existsSync()) return file;
+    final parent = directory.parent;
+    if (parent.path == directory.path) break;
+    directory = parent;
+  }
+  throw StateError('Fixture not found: $relativePath');
+}
+
 void main() {
   group('M2.3 Calendar engine RSVP path', () {
     testWidgets('date strip dedupes same-date events and navigates agenda', (
@@ -174,8 +186,8 @@ void main() {
     testWidgets('calendar fixture declares RSVP response model fields', (
       tester,
     ) async {
-      final fixture = File(
-        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+      final fixture = _repositoryFile(
+        'docs/Build Plan V2/Loom Communities Workflow Engine V2/'
         'Loom_Communities_Workflow_Engine_Calendar_RSVP_Example.jsonc',
       );
       expect(fixture.existsSync(), isTrue);
