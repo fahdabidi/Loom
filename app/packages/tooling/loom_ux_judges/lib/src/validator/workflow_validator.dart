@@ -62,20 +62,6 @@ class ValidationReport {
 /// action-button-row and sortable-column checks respectively.
 /// When not provided, those checks are skipped.
 class WorkflowValidator {
-  static const _knownEffectOps = <String>{
-    'set',
-    'append',
-    'appendUnique',
-    'removeValue',
-    'increment',
-    'decrement',
-    'branch',
-    'createInstance',
-    'removeFromTileGrid',
-    'transitionRelated',
-    'generateRecurringInstances',
-  };
-
   static final RegExp _availabilityLikeFieldPattern = RegExp(
     r'^(availabilityState|availability|.*Status)$',
     caseSensitive: false,
@@ -856,8 +842,8 @@ class WorkflowValidator {
       final location =
           '${machine.workflowType}/transitions/${transition.id}/$path[$i]';
 
-      if (!_knownEffectOps.contains(effect.op)) {
-        final knownOps = _knownEffectOps.toList()..sort();
+      if (!supportedWorkflowEffectOperations.contains(effect.op)) {
+        final knownOps = supportedWorkflowEffectOperations.toList()..sort();
         findings.add(
           ValidationFinding(
             type: 'unknown_effect_op',

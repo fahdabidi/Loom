@@ -2,7 +2,11 @@ import 'dart:convert';
 
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
+    show
+        FormulaEvaluationException,
+        analyzeFormula,
+        currentCommunitySpecVersion,
+        supportsCommunityCapability;
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_workflow_engine/src/evaluator/recurrence_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
@@ -68,6 +72,10 @@ class CommunityPackageValidator {
       );
       return ValidationReport(findings);
     }
+    final unsupportedCapabilities = _validateSupportedCapabilities(package);
+    if (unsupportedCapabilities.isNotEmpty) {
+      return ValidationReport(unsupportedCapabilities);
+    }
     final rawExperience = package['experience'];
     if (rawExperience is! Map) {
       findings.add(
@@ -123,6 +131,7 @@ class CommunityPackageValidator {
         );
       }
     }
+    findings.addAll(_validateUnusedCapabilities(package, workflows));
     findings.addAll(
       WorkflowValidator(
         knownPersonaIds: personas,
@@ -1612,4 +1621,179 @@ class CommunityPackageValidator {
     location: location,
     isWarning: warning,
   );
+
+  List<ValidationFinding> _validateSupportedCapabilities(
+    Map<String, dynamic> package,
+  ) {
+    if (!package.containsKey('requiresCapabilities')) return const [];
+    final declarations = package['requiresCapabilities'];
+    if (declarations is! List) {
+      return [
+        _finding(
+          'unsupported_capability',
+          'requiresCapabilities must be an array of implemented, '
+              'namespaced capability names; found "$declarations".',
+          'requiresCapabilities',
+        ),
+      ];
+    }
+
+    final findings = <ValidationFinding>[];
+    for (var i = 0; i < declarations.length; i++) {
+      final declaration = declarations[i];
+      if (declaration is String && supportsCommunityCapability(declaration)) {
+        continue;
+      }
+      findings.add(
+        _finding(
+          'unsupported_capability',
+          'This build does not implement or recognise capability '
+              '"$declaration".',
+          'requiresCapabilities[$i]',
+        ),
+      );
+    }
+    return findings;
+  }
+
+  List<ValidationFinding> _validateUnusedCapabilities(
+    Map<String, dynamic> package,
+    Map<String, LoomWorkflowStateMachine> workflows,
+  ) {
+    final declarations = package['requiresCapabilities'];
+    if (declarations is! List) return const [];
+    final used = _usedCapabilities(package, workflows);
+    final findings = <ValidationFinding>[];
+    for (var i = 0; i < declarations.length; i++) {
+      final declaration = declarations[i];
+      if (declaration is! String || used.contains(declaration)) continue;
+      findings.add(
+        _finding(
+          'unused_capability',
+          'Package declares capability "$declaration" but never uses it.',
+          'requiresCapabilities[$i]',
+        ),
+      );
+    }
+    return findings;
+  }
+
+  Set<String> _usedCapabilities(
+    Map<String, dynamic> package,
+    Map<String, LoomWorkflowStateMachine> workflows,
+  ) {
+    final used = <String>{};
+    _collectRawFormulaCapabilities(package, used);
+    for (final machine in workflows.values) {
+      for (final binding in machine.renderBindings) {
+        used.add('archetype.${binding.cardSurfaceFamily}');
+      }
+      for (final field in machine.instanceDataSchema.values) {
+        _collectFieldCapabilities(field, used);
+      }
+      _collectGuardCapabilities(machine.visibility.readGuard, used);
+      for (final state in machine.states.values) {
+        _collectGuardCapabilities(state.editGuard, used);
+        _collectGuardCapabilities(state.creationGuard, used);
+        _collectGuardCapabilities(state.readGuard, used);
+      }
+      for (final transition in machine.transitions) {
+        _collectGuardCapabilities(transition.guard, used);
+        final inputs = transition.inputs;
+        if (inputs != null) {
+          for (final input in inputs.values) {
+            _collectFormulaCapabilities(input.visibleWhen, used);
+          }
+        }
+        for (final effect in transition.effects) {
+          _collectEffectCapabilities(effect, used);
+        }
+      }
+    }
+    return used;
+  }
+
+  void _collectRawFormulaCapabilities(Object? node, Set<String> used) {
+    if (node is List) {
+      for (final value in node) {
+        _collectRawFormulaCapabilities(value, used);
+      }
+      return;
+    }
+    if (node is! Map) return;
+    for (final entry in node.entries) {
+      if (const <String>{
+            'formula',
+            'visibleWhen',
+            'visibleWhenEditing',
+            'if',
+          }.contains(entry.key) &&
+          entry.value is String) {
+        _collectFormulaCapabilities(entry.value as String, used);
+      }
+      _collectRawFormulaCapabilities(entry.value, used);
+    }
+  }
+
+  void _collectFieldCapabilities(InstanceDataField field, Set<String> used) {
+    used.add('field.${field.type}');
+    if (field.type.endsWith('?')) {
+      used.add('field.${field.type.substring(0, field.type.length - 1)}');
+    }
+    _collectFormulaCapabilities(field.formula, used);
+    _collectFormulaCapabilities(field.visibleWhenEditing, used);
+    final itemSchema = field.itemSchema;
+    if (itemSchema != null) {
+      for (final nested in itemSchema.values) {
+        _collectFieldCapabilities(nested, used);
+      }
+    }
+  }
+
+  void _collectGuardCapabilities(WorkflowGuard? guard, Set<String> used) {
+    if (guard == null) return;
+    if (guard.allowedPersonaIds != null) used.add('guard.allowedRoleIds');
+    if (guard.actorInList != null) used.add('guard.actorInList');
+    if (guard.instanceDataEquals != null) {
+      used.add('guard.instanceDataEquals');
+    }
+    if (guard.formula != null) used.add('guard.formula');
+    if (guard.relatedListMembership != null) {
+      used.add('guard.relatedListMembership');
+    }
+    if (guard.relatedAggregate != null) used.add('guard.relatedAggregate');
+    if (guard.requiresWorkflowsComplete != null) {
+      used.add('guard.requiresWorkflowsComplete');
+    }
+    if (guard.cancellationDeadline != null) {
+      used.add('guard.cancellationDeadline');
+    }
+    if (guard.locationOverlap != null) used.add('guard.locationOverlap');
+    if (guard.actorEqualsField != null) used.add('guard.actorEqualsField');
+    _collectFormulaCapabilities(guard.formula, used);
+  }
+
+  void _collectEffectCapabilities(WorkflowEffect effect, Set<String> used) {
+    used.add('effect.${effect.op}');
+    _collectFormulaCapabilities(effect.condition, used);
+    for (final nested in <WorkflowEffect>[
+      ...effect.thenEffects,
+      ...effect.elseEffects,
+      ...?effect.onSuccessEffects,
+    ]) {
+      _collectEffectCapabilities(nested, used);
+    }
+  }
+
+  void _collectFormulaCapabilities(String? formula, Set<String> used) {
+    if (formula == null) return;
+    try {
+      for (final function in analyzeFormula(formula).functionNames) {
+        used.add('formula.$function');
+      }
+    } on FormulaEvaluationException {
+      // Formula syntax has its own validator finding. An invalid expression
+      // cannot establish that a declared capability is actually used.
+    }
+  }
 }

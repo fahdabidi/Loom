@@ -61,6 +61,24 @@ Map<String, dynamic> pkg({Map<String, dynamic>? experience}) =>
             'workflowInstances': <dynamic>[seed()],
           },
     };
+
+Map<String, dynamic> capabilityPkg() => pkg(
+  experience: <String, dynamic>{
+    'roles': <Map<String, dynamic>>[
+      <String, dynamic>{'roleId': 'member', 'label': 'Member'},
+    ],
+    'workflowDefinitions': <String, dynamic>{
+      'thing': <String, dynamic>{
+        ...definitionWithBinding(
+          tabId: 'home',
+          cardSurfaceFamily: 'statusTimeline',
+        ),
+        'visibility': <String, dynamic>{'default': 'public'},
+      },
+    },
+    'workflowInstances': <dynamic>[seed()],
+  },
+);
 List<String> findings(Map<String, dynamic> p) => CommunityPackageValidator()
     .validate(p)
     .findings
@@ -77,6 +95,79 @@ List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
         .toList();
 
 void main() {
+  group('requiresCapabilities', () {
+    test('unimplemented capability produces one unsupported error', () {
+      final package = capabilityPkg()
+        ..['requiresCapabilities'] = <String>['effect.teleport'];
+
+      final report = CommunityPackageValidator().validate(package);
+
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'unsupported_capability');
+      expect(report.findings.single.isWarning, isFalse);
+      expect(report.findings.single.message, contains('effect.teleport'));
+    });
+
+    test('unknown namespace produces one unsupported error', () {
+      final package = capabilityPkg()
+        ..['requiresCapabilities'] = <String>['widget.teleport'];
+
+      final report = CommunityPackageValidator().validate(package);
+
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'unsupported_capability');
+      expect(report.findings.single.isWarning, isFalse);
+      expect(report.findings.single.message, contains('widget.teleport'));
+    });
+
+    test('declared but unused capability produces one unused error', () {
+      final package = capabilityPkg()
+        ..['requiresCapabilities'] = <String>['effect.transitionRelated'];
+
+      final report = CommunityPackageValidator().validate(package);
+
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, 'unused_capability');
+      expect(report.findings.single.isWarning, isFalse);
+      expect(
+        report.findings.single.message,
+        contains('effect.transitionRelated'),
+      );
+    });
+
+    test('correctly declared and used capability produces no findings', () {
+      final package = capabilityPkg()
+        ..['requiresCapabilities'] = <String>['formula.mapGet'];
+      final experience = package['experience'] as Map<String, dynamic>;
+      final thing =
+          (experience['workflowDefinitions'] as Map<String, dynamic>)['thing']
+              as Map<String, dynamic>;
+      thing['instanceDataSchema'] = <String, dynamic>{
+        'counts': <String, dynamic>{'type': 'map'},
+        'selectedCount': <String, dynamic>{
+          'type': 'number',
+          'formula': "mapGet(counts, 'selected')",
+        },
+      };
+      experience['workflowInstances'] = <dynamic>[
+        seed(
+          data: <String, dynamic>{
+            'counts': <String, int>{'selected': 1},
+          },
+        ),
+      ];
+
+      expect(CommunityPackageValidator().validate(package).findings, isEmpty);
+    });
+
+    test('absent requiresCapabilities produces no findings', () {
+      final package = capabilityPkg();
+
+      expect(package, isNot(contains('requiresCapabilities')));
+      expect(CommunityPackageValidator().validate(package).findings, isEmpty);
+    });
+  });
+
   group('CommunityPackageValidator Ticket B rules', () {
     test(
       '1 minimal valid v4 package passes',

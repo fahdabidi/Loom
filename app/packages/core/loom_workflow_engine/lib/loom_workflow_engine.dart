@@ -14,3 +14,4 @@ export 'src/models/workflow_archetypes.dart';
 export 'src/models/workflow_models.dart';
 export 'src/spec_version.dart';
 export 'src/store/database.dart';
+export 'src/workflow_capabilities.dart';
