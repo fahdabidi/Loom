@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 2.1.0
+doc_version: 2.2.0
 status: current
-last_verified: 2026-08-19
+last_verified: 2026-08-20
 ---
 
 # Versioning policy
@@ -140,6 +140,42 @@ Entries are namespaced by what they name:
 - **A loader refuses on any entry it does not recognise at all.** An unknown namespace or an
   unknown name is a package written against something newer, which is precisely the case that
   must fail loudly.
+
+
+### Defining the baseline
+
+The rules above lean on "the baseline for this `specVersion`", and until 2026-08-20 this document
+never said what that was. That omission made `undeclared_capability` unimplementable — a rule that
+fires when a package uses a post-baseline capability cannot run without knowing where the baseline
+sits — so the rule was deliberately left unbuilt rather than guessed at.
+
+**The baseline is a snapshot, not a reconstruction.** It is the set of capabilities the engine,
+validator and app shell implemented at the moment `specVersion: 4` was declared baselined, recorded
+explicitly. It is not derived from the `NEW <date>` strings scattered through `spec-version.json`:
+those are per-feature prose, written inconsistently, and reading them as a machine-readable history
+would be inventing precision that was never there.
+
+Concretely:
+
+- `spec-version.json` gains a `capabilityBaseline` object: the version it belongs to, the date it
+  was snapshotted, and the capability names in the same namespaced form `requiresCapabilities` uses
+  (`archetype.*`, `effect.*`, `guard.*`, `formula.*`, `field.*`).
+- It is generated from the capability manifests, never hand-maintained — the same rule those
+  manifests already follow, and for the same reason: a hand-kept list rots away from what the code
+  does.
+- A capability **in** the baseline is implied by `specVersion: 4` and must not be declared.
+- A capability **added after** the snapshot is post-baseline: a package using it must declare it,
+  and `undeclared_capability` fires when it does not.
+
+**Snapshotting now is the honest option, and it has a cost worth stating.** Everything implemented
+today lands in the baseline, including capabilities added well after specVersion 4 was first
+released. So `undeclared_capability` will catch nothing until the next capability ships. The
+alternative — reconstructing which features predate the release — would require archaeology across
+inconsistent prose, and a wrong reconstruction is worse than a late start: it would demand
+declarations for capabilities that are actually implied, and every author would learn to add
+whatever the validator asked for without meaning it.
+
+The rule earns its keep from the next capability onward. That is late, not useless.
 
 ### The validator keeps the declaration honest
 
