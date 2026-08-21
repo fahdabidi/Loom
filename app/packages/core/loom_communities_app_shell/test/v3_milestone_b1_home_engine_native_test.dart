@@ -34,11 +34,25 @@ class _InstalledTabletop {
   Future<void> dispose() => temp.delete(recursive: true);
 }
 
-Future<_InstalledTabletop> _install(String extensionId) async {
+Future<_InstalledTabletop> _install(
+  String extensionId, {
+  bool declareHome = true,
+}) async {
   final source =
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
+  if (!declareHome) {
+    final appShell = source['appShell'] as Map<String, dynamic>;
+    final tabs = appShell['tabs'] as List<dynamic>;
+    appShell['tabs'] = tabs
+        .where(
+          (tab) =>
+              tab is! Map<String, dynamic> ||
+              tab['tabId']?.toString() != 'home',
+        )
+        .toList(growable: false);
+  }
   final temp = await Directory.systemTemp.createTemp('loom-b1-$extensionId-');
   try {
     final init = File('${temp.path}/tabletop.loom-init.zip');
@@ -93,6 +107,69 @@ Future<void> _selectPersona(WidgetTester tester, String personaId) async {
 }
 
 void main() {
+  testWidgets(
+    'undeclared Home with mixed archetypes derives the generic contract and '
+    'renders its package content',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install('generated-home-mixed', declareHome: false),
+      ))!;
+      try {
+        final declaredTabIds =
+            (installed.community.appShellConfiguration['tabs'] as List<Object?>)
+                .whereType<Map<String, Object?>>()
+                .map((tab) => tab['tabId']);
+        expect(declaredTabIds, isNot(contains('home')));
+
+        final experience = experienceForExtensionId(
+          installed.community.extensionId,
+          displayName: installed.community.displayName,
+          specVersion: installed.community.specVersion,
+          experienceConfiguration: installed.community.experienceConfiguration,
+        );
+        final home = appShellTabsFor(
+          experience: experience,
+          personaId: 'tabletop-organizer',
+          appShellConfiguration: installed.community.appShellConfiguration,
+        ).singleWhere((tab) => tab.tabId == 'home');
+        expect(home.rendererContractId, 'engine-native-generic-list');
+        expect(
+          home.rendererContract.rendererId,
+          'EngineNativeGenericListSurface',
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: LocalExtensionScreen(
+              community: installed.community,
+              seedDataFiles: const [],
+              authApi: activeAuthForInstalledCommunity(
+                community: installed.community,
+                personaTypeId: 'tabletop-organizer',
+              ),
+            ),
+          ),
+        );
+        await _selectPersona(tester, 'tabletop-organizer');
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-list-root-home')),
+        );
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-list-item-home-ballot-summer-tournament-0',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Summer tournament'), findsWidgets);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets(
     'Home renders only its JSON-declared bindings through the generic '
     'engine-native pipeline, not the legacy blanket workflow dump',

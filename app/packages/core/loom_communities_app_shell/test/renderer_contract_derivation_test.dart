@@ -148,6 +148,41 @@ void main() {
     }
   });
 
+  test(
+    'generated shell tabs derive bindings and keep their unbound contracts',
+    () {
+      final experience = _experienceWithBindings(
+        'renderer-derivation-generated-unbound',
+        <Map<String, Object?>>[],
+      );
+
+      final tabs = appShellTabsFor(
+        experience: experience,
+        personaId: 'local-member',
+      );
+      final home = tabs.singleWhere((tab) => tab.tabId == 'home');
+      final messages = tabs.singleWhere((tab) => tab.tabId == 'messages');
+
+      expect(home.rendererContractId, 'home-surface-stack');
+      expect(home.rendererContract.rendererId, 'HomeTabSurfaceStack');
+      expect(messages.rendererContractId, 'messages-inbox-thread-composer');
+      expect(messages.rendererContract.rendererId, 'MessagesTabSurface');
+
+      final boundMessages = appShellTabsFor(
+        experience: _experienceWithBindings(
+          'renderer-derivation-generated-messages',
+          <Map<String, Object?>>[_binding('messages', 'discussionThread')],
+        ),
+        personaId: 'local-member',
+      ).singleWhere((tab) => tab.tabId == 'messages');
+      expect(boundMessages.rendererContractId, 'engine-native-generic-list');
+      expect(
+        boundMessages.rendererContract.rendererId,
+        'EngineNativeGenericListSurface',
+      );
+    },
+  );
+
   test('card-only archetypes use the generic tab list', () {
     final experience = _experienceWithBindings(
       'renderer-derivation-card-only',

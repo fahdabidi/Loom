@@ -199,7 +199,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   Map<String, Object?> appShellConfiguration = const {},
   bool? hasActiveMembership,
 }) {
-  final generatedTabs = _generatedAppShellTabsFor();
+  final generatedTabs = _generatedAppShellTabsFor(experience: experience);
   final tabs = _mergeDeclarativeTabSpecs(
     experience: experience,
     personaId: personaId,
@@ -218,24 +218,34 @@ List<LoomAppShellTabSpec> appShellTabsFor({
   ];
 }
 
-List<LoomAppShellTabSpec> _generatedAppShellTabsFor() {
-  return const [
-    const LoomAppShellTabSpec(
+List<LoomAppShellTabSpec> _generatedAppShellTabsFor({
+  required LoomExperienceDefinition experience,
+}) {
+  return [
+    LoomAppShellTabSpec(
       tabId: 'home',
       label: 'Home',
       icon: Icons.home_outlined,
       description: 'Pinned and unassigned community surfaces.',
-      rendererContractId: 'home-surface-stack',
+      rendererContractId: _derivedRendererContractIdForTab(
+        experience: experience,
+        tabId: 'home',
+        unboundRendererContractId: 'home-surface-stack',
+      ),
       pinningPolicy: 'none-declared-for-home',
       pinningPolicyRationale:
           'Home intentionally keeps the first visible surface in focus instead of pinning one workflow across every community.',
     ),
-    const LoomAppShellTabSpec(
+    LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',
       icon: Icons.forum_outlined,
       description: 'Messages and connections with other members.',
-      rendererContractId: 'messages-inbox-thread-composer',
+      rendererContractId: _derivedRendererContractIdForTab(
+        experience: experience,
+        tabId: 'messages',
+        unboundRendererContractId: 'messages-inbox-thread-composer',
+      ),
       pinningPolicy: 'none-declared-for-messages',
       pinningPolicyRationale:
           'Messages uses a conversation surface rather than a pinned workflow card, so no pinned card surface is appropriate.',
@@ -320,6 +330,17 @@ String _rendererContractIdForDeclarativeTab({
     return declaredRendererContractId;
   }
 
+  return _derivedRendererContractIdForTab(
+    experience: experience,
+    tabId: tab.tabId,
+  );
+}
+
+String _derivedRendererContractIdForTab({
+  required LoomExperienceDefinition experience,
+  required String tabId,
+  String unboundRendererContractId = defaultAppShellTabRendererContractId,
+}) {
   // A tab id is only the join key between a tab and its bindings. The bound
   // archetype decides whether the tab needs one of the two dedicated surfaces.
   final boundSurfaceFamilies = <String>{
@@ -327,8 +348,11 @@ String _rendererContractIdForDeclarativeTab({
         in experience.workflowDefinitions?.values ??
             const <LoomWorkflowStateMachine>[])
       for (final binding in definition.renderBindings)
-        if (binding.tabId == tab.tabId) binding.cardSurfaceFamily,
+        if (binding.tabId == tabId) binding.cardSurfaceFamily,
   };
+  if (boundSurfaceFamilies.isEmpty) {
+    return unboundRendererContractId;
+  }
   if (boundSurfaceFamilies.length != 1) {
     return defaultAppShellTabRendererContractId;
   }

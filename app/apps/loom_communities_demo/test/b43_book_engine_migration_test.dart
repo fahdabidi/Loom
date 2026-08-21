@@ -40,15 +40,23 @@ void main() {
     expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
 
     await _selectTab(tester, 'home');
-    await _waitForFinder(tester, find.text('Nothing is pinned yet'));
-    expect(find.text('Nothing is pinned yet'), findsOneWidget);
-    expect(
-      find.text(
-        'Neighborhood Book Club does not have Home surfaces assigned yet.',
-      ),
-      findsOneWidget,
-      reason: 'The shipped package does not declare an explicit Home tab.',
+    await _waitForFinder(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-root-home')),
     );
+    _expectDerivedHomeGenericListContract(tester, personaId: 'book-member');
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-home')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-selected-1')),
+      findsOneWidget,
+      reason:
+          'The generated Home tab must render the shipped selected nomination '
+          'through its statusTimeline archetype binding.',
+    );
+    expect(find.text('The Song of Achilles'), findsWidgets);
 
     await _selectTab(tester, 'books');
     await _waitForFinder(
@@ -202,8 +210,40 @@ void main() {
     await _selectPersona(tester, 'book-member');
     expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
     await _selectTab(tester, 'home');
-    expect(find.text('Nothing is pinned yet'), findsOneWidget);
+    await _waitForFinder(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-root-home')),
+    );
+    _expectDerivedHomeGenericListContract(tester, personaId: 'book-member');
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-selected-1')),
+      findsOneWidget,
+    );
   });
+}
+
+void _expectDerivedHomeGenericListContract(
+  WidgetTester tester, {
+  required String personaId,
+}) {
+  final screen = tester.widget<LocalExtensionScreen>(
+    find.byType(LocalExtensionScreen),
+  );
+  final community = screen.community;
+  final experience = experienceForExtensionId(
+    community.extensionId,
+    displayName: community.displayName,
+    specVersion: community.specVersion,
+    experienceConfiguration: community.experienceConfiguration,
+  );
+  final home = appShellTabsFor(
+    experience: experience,
+    personaId: personaId,
+    appShellConfiguration: community.appShellConfiguration,
+  ).singleWhere((tab) => tab.tabId == 'home');
+
+  expect(home.rendererContractId, 'engine-native-generic-list');
+  expect(home.rendererContract.rendererId, 'EngineNativeGenericListSurface');
 }
 
 Future<void> _selectTab(WidgetTester tester, String tabId) async {
