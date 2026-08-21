@@ -24,6 +24,11 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
   heroImageAssetId: null,
   accentColor: '#246B62',
   specVersion: currentCommunitySpecVersion,
+  appShellConfiguration: <String, Object?>{
+    'tabs': <Object?>[
+      <String, Object?>{'tabId': 'admin', 'label': 'Admin', 'iconKey': 'admin'},
+    ],
+  },
   experienceConfiguration: <String, Object?>{
     'tagline': 'AuthZ.P8 second-account sync regression',
     'roles': <Object?>[
