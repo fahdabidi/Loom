@@ -1356,31 +1356,12 @@ class CommunityPackageValidator {
   ///
   /// Cancelling an event leaves its response rows in whatever state they were
   /// in, still accepting `respond` — the row's own state machine has no
-  /// visibility into its parent's. Measured across the corpus, **all six**
-  /// communities with response rows have this hole today, so this is a
-  /// pre-existing defect rather than one the row shape introduces. The array
-  /// shape hid it only because the arrays lived on the event, so cancelling
-  /// took them along.
+  /// visibility into its parent's.
   ///
-  /// (A hand-count of the fixtures found five and missed Cedar Commons HOA's
-  /// `hoa-meeting`, which lives in the calendar-slice file — the rule finding
-  /// the sixth is the argument for having the rule.)
-  ///
-  /// **Severity is a ratchet (D3, approved 2026-08-14): warning now, error
-  /// after Phase F.** Phase F regenerates all 11 fixtures through the Skill;
-  /// once the corpus is clean this becomes an error so it cannot regress. Do
-  /// not promote it before then — six shipped communities trip it today, and
-  /// the guide's own rule is that a community failing the validator is not a
-  /// deliverable. That the corpus *can* be made clean is demonstrated, not
-  /// hoped: a Codex dispatch emitted the full per-state cascade unprompted,
-  /// from these docs alone.
-  ///
-  /// A warning rather than an error, deliberately: six shipped communities
-  /// trip it, and making the corpus un-validatable trains people to ignore
-  /// warnings. It is satisfiable today — Cedar Commons HOA already cascades a
-  /// parent's state change to child rows with `transitionRelated`, one effect
-  /// per source state — which is the test a rule has to pass before it earns a
-  /// place. A rule nobody can act on is worse than no rule.
+  /// **Severity is a ratchet (D3, approved 2026-08-14): error after Phase F.**
+  /// Phase F regenerated all 11 fixtures through the Skill, and the corpus was
+  /// confirmed clean on 2026-08-20. Keeping this as an error prevents a
+  /// shipped community from reintroducing orphaned response rows.
   List<ValidationFinding> _validateResponseRowSweep(Map<Object?, Object?> raw) {
     final findings = <ValidationFinding>[];
     final definitions = <String, Object?>{
@@ -1468,7 +1449,7 @@ class CommunityPackageValidator {
                     '`transitionRelated` effect per source state.',
                 'experience/workflowDefinitions/${entry.key}/transitions/'
                     '${id ?? '?'}/effects',
-                warning: true,
+                warning: false,
               ),
             );
           } else if (missed.isNotEmpty) {
@@ -1484,7 +1465,7 @@ class CommunityPackageValidator {
                     'the cancellation still claiming a live answer.',
                 'experience/workflowDefinitions/${entry.key}/transitions/'
                     '${id ?? '?'}/effects',
-                warning: true,
+                warning: false,
               ),
             );
           }

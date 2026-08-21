@@ -175,22 +175,27 @@ void main() {
     });
   });
 
-  group('D3 - the sweep rule stays a warning until Phase F', () {
-    test('it is reported as a warning, not an error', () {
-      final report = CommunityPackageValidator().validate(
-        _package(event: _eventDefinition(sweptStates: const [])),
-      );
-      expect(
-        report.warnings.any((f) => f.type == 'orphaned_response_rows'),
-        isTrue,
-        reason:
-            'six shipped communities trip this; erroring makes the corpus '
-            'undeliverable before Phase F regenerates it',
-      );
-      expect(
-        report.errors.any((f) => f.type == 'orphaned_response_rows'),
-        isFalse,
-      );
+  group('D3 - the sweep rule is an error after Phase F', () {
+    test('both missing and partial sweeps are reported as errors', () {
+      for (final sweptStates in <List<String>>[
+        const [],
+        const ['going'],
+      ]) {
+        final report = CommunityPackageValidator().validate(
+          _package(event: _eventDefinition(sweptStates: sweptStates)),
+        );
+        expect(
+          report.errors.any((f) => f.type == 'orphaned_response_rows'),
+          isTrue,
+          reason:
+              'Phase F made all 11 shipped communities clean; the error '
+              'ratchet prevents orphaned response rows from regressing',
+        );
+        expect(
+          report.warnings.any((f) => f.type == 'orphaned_response_rows'),
+          isFalse,
+        );
+      }
     });
   });
 
