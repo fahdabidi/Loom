@@ -54,151 +54,194 @@ LoomAppShellTabSpec _declaredTab({
 }
 
 void main() {
-  test(
-    'absent renderer derives the tab-specific contract before bound families',
-    () {
-      final experience = _experienceWithBindings(
-        'renderer-derivation-marketplace',
-        <Map<String, Object?>>[
-          _binding('marketplace', 'equipment-loan'),
-          _binding('marketplace', 'unregistered-family'),
-          _binding('calendar', 'event-rsvp'),
-        ],
-      );
-
-      final marketplace = _declaredTab(
-        experience: experience,
-        tabId: 'marketplace',
-      );
-
-      expect(
-        marketplace.rendererContractId,
-        'marketplace-browse-listing-detail',
-      );
-    },
-  );
-
-  test('an explicitly declared renderer always wins', () {
+  test('a sole tab-native archetype derives its dedicated tab surface', () {
     final experience = _experienceWithBindings(
-      'renderer-derivation-explicit',
-      <Map<String, Object?>>[_binding('marketplace', 'equipment-loan')],
-    );
-
-    final marketplace = _declaredTab(
-      experience: experience,
-      tabId: 'marketplace',
-      rendererContractId: 'engine-native-generic-list',
-    );
-
-    expect(marketplace.rendererContractId, 'engine-native-generic-list');
-
-    final home = _declaredTab(
-      experience: experience,
-      tabId: 'home',
-      rendererContractId: 'engine-native-generic-list',
-    );
-
-    expect(home.rendererContractId, 'engine-native-generic-list');
-  });
-
-  test('an unbound absent renderer keeps the generic fallback', () {
-    final experience = _experienceWithBindings(
-      'renderer-derivation-fallback',
-      <Map<String, Object?>>[],
-    );
-
-    final customTab = _declaredTab(experience: experience, tabId: 'custom-tab');
-
-    expect(customTab.rendererContractId, 'engine-native-generic-list');
-  });
-
-  test('a named tab does not need a binding to derive its contract', () {
-    final experience = _experienceWithBindings(
-      'renderer-derivation-named-unbound',
-      <Map<String, Object?>>[],
-    );
-
-    final marketplace = _declaredTab(
-      experience: experience,
-      tabId: 'marketplace',
-    );
-
-    expect(marketplace.rendererContractId, 'marketplace-browse-listing-detail');
-  });
-
-  test('a single-tab contract is more specific than a multi-tab contract', () {
-    final experience = _experienceWithBindings(
-      'renderer-derivation-specificity',
+      'renderer-derivation-tab-native',
       <Map<String, Object?>>[
-        _binding('admin', 'statusTimeline'),
-        _binding('documents', 'statusTimeline'),
+        _binding('scheduling', 'event-rsvp'),
+        _binding('borrowing', 'equipment-loan'),
       ],
     );
 
     expect(
-      _declaredTab(experience: experience, tabId: 'admin').rendererContractId,
-      'admin-review-compose-queue',
+      _declaredTab(
+        experience: experience,
+        tabId: 'scheduling',
+      ).rendererContractId,
+      'calendar-agenda-event-detail',
     );
     expect(
       _declaredTab(
         experience: experience,
-        tabId: 'documents',
+        tabId: 'borrowing',
+      ).rendererContractId,
+      'marketplace-browse-listing-detail',
+    );
+  });
+
+  test('tab names do not affect the derived surface', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-open-tab-vocabulary',
+      <Map<String, Object?>>[
+        _binding('calendar', 'event-rsvp'),
+        _binding('events', 'event-rsvp'),
+      ],
+    );
+
+    for (final tabId in const <String>['calendar', 'events']) {
+      expect(
+        _declaredTab(experience: experience, tabId: tabId).rendererContractId,
+        'calendar-agenda-event-detail',
+        reason: tabId,
+      );
+    }
+  });
+
+  test('repeated bindings of one archetype still derive one tab surface', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-repeated-family',
+      <Map<String, Object?>>[
+        _binding('schedule', 'event-rsvp'),
+        _binding('schedule', 'event-rsvp'),
+      ],
+    );
+
+    expect(
+      _declaredTab(
+        experience: experience,
+        tabId: 'schedule',
+      ).rendererContractId,
+      'calendar-agenda-event-detail',
+    );
+  });
+
+  test('mixed archetypes always use the generic tab list', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-mixed',
+      <Map<String, Object?>>[
+        _binding('organize', 'event-rsvp'),
+        _binding('organize', 'equipment-loan'),
+      ],
+    );
+
+    expect(
+      _declaredTab(
+        experience: experience,
+        tabId: 'organize',
+      ).rendererContractId,
+      'engine-native-generic-list',
+    );
+  });
+
+  test('no bindings use the generic list regardless of the tab name', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-unbound',
+      <Map<String, Object?>>[],
+    );
+
+    for (final tabId in const <String>['custom-tab', 'marketplace']) {
+      expect(
+        _declaredTab(experience: experience, tabId: tabId).rendererContractId,
+        'engine-native-generic-list',
+        reason: tabId,
+      );
+    }
+  });
+
+  test('card-only archetypes use the generic tab list', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-card-only',
+      <Map<String, Object?>>[
+        _binding('care', 'formEntry'),
+        _binding('documents', 'exportWizard'),
+        _binding('messages', 'discussionThread'),
+        _binding('giving', 'paymentCheckout'),
+      ],
+    );
+
+    for (final tabId in const <String>[
+      'care',
+      'documents',
+      'messages',
+      'giving',
+    ]) {
+      expect(
+        _declaredTab(experience: experience, tabId: tabId).rendererContractId,
+        'engine-native-generic-list',
+        reason: tabId,
+      );
+    }
+  });
+
+  test('an unclaimed archetype uses the generic tab list', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-unclaimed',
+      <Map<String, Object?>>[_binding('answers', 'unregistered-family')],
+    );
+
+    expect(
+      _declaredTab(experience: experience, tabId: 'answers').rendererContractId,
+      'engine-native-generic-list',
+    );
+  });
+
+  test('the documented generic default behaves exactly like omission', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-default-equivalence',
+      <Map<String, Object?>>[
+        _binding('omitted', 'event-rsvp'),
+        _binding('declared-default', 'event-rsvp'),
+      ],
+    );
+
+    final omitted = _declaredTab(experience: experience, tabId: 'omitted');
+    final declaredDefault = _declaredTab(
+      experience: experience,
+      tabId: 'declared-default',
+      rendererContractId: 'engine-native-generic-list',
+    );
+
+    expect(declaredDefault.rendererContractId, omitted.rendererContractId);
+    expect(declaredDefault.rendererContractId, 'calendar-agenda-event-detail');
+  });
+
+  test('an explicitly declared non-default renderer always wins', () {
+    final experience = _experienceWithBindings(
+      'renderer-derivation-explicit',
+      <Map<String, Object?>>[_binding('schedule', 'event-rsvp')],
+    );
+
+    expect(
+      _declaredTab(
+        experience: experience,
+        tabId: 'schedule',
+        rendererContractId: 'documents-library-detail',
       ).rendererContractId,
       'documents-library-detail',
     );
   });
 
-  test('every current tabId overlap has one most-specific contract', () {
-    final contracts = allTabRendererContracts();
-    final claimedTabIds = <String>{
-      for (final contract in contracts) ...contract.tabIds,
-    };
-
-    for (final tabId in claimedTabIds) {
-      final claimants = contracts
-          .where((contract) => contract.tabIds.contains(tabId))
-          .toList(growable: false);
-      final mostSpecificTabIdCount = claimants
-          .map((contract) => contract.tabIds.length)
-          .reduce((left, right) => left < right ? left : right);
-
+  test('each tab-native archetype names exactly one dedicated contract', () {
+    expect(
+      appShellTabNativeRendererContractIdsByArchetype,
+      const <String, String>{
+        'event-rsvp': 'calendar-agenda-event-detail',
+        'equipment-loan': 'marketplace-browse-listing-detail',
+      },
+    );
+    expect(
+      appShellTabNativeRendererContractIdsByArchetype.values.toSet(),
+      hasLength(appShellTabNativeRendererContractIdsByArchetype.length),
+    );
+    for (final entry
+        in appShellTabNativeRendererContractIdsByArchetype.entries) {
       expect(
-        claimants.where(
-          (contract) => contract.tabIds.length == mostSpecificTabIdCount,
-        ),
-        hasLength(1),
-        reason: '$tabId must not resolve arbitrarily',
+        tabRendererContractFor(entry.value).supportsSurfaceFamily(entry.key),
+        isTrue,
+        reason: '${entry.key} must be hosted by ${entry.value}',
       );
     }
   });
-
-  test('an unnamed tab falls back to complete family coverage', () {
-    final experience = _experienceWithBindings(
-      'renderer-derivation-family-fallback',
-      <Map<String, Object?>>[_binding('answers', 'searchAiAnswer')],
-    );
-
-    final answers = _declaredTab(experience: experience, tabId: 'answers');
-
-    expect(answers.rendererContractId, 'ai-search');
-  });
-
-  test(
-    'a family fallback contract must cover every family bound to the tab',
-    () {
-      final experience = _experienceWithBindings(
-        'renderer-derivation-complete-coverage',
-        <Map<String, Object?>>[
-          _binding('answers', 'searchAiAnswer'),
-          _binding('answers', 'unregistered-family'),
-        ],
-      );
-
-      final answers = _declaredTab(experience: experience, tabId: 'answers');
-
-      expect(answers.rendererContractId, 'engine-native-generic-list');
-    },
-  );
 
   test('verified predecessor families use canonical archetype names', () {
     final claimedFamilies = <String>{

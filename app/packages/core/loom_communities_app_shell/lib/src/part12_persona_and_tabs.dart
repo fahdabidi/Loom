@@ -243,24 +243,6 @@ List<LoomAppShellTabSpec> _generatedAppShellTabsFor() {
   ];
 }
 
-bool _hasEngineNativeCalendarBinding(LoomExperienceDefinition experience) =>
-    experience.workflowDefinitions?.values.any(
-      (definition) => definition.renderBindings.any(
-        (binding) => binding.tabId == 'calendar',
-      ),
-    ) ??
-    false;
-
-bool _hasEngineNativeBinding(
-  LoomExperienceDefinition experience,
-  String tabId,
-) =>
-    experience.workflowDefinitions?.values.any(
-      (definition) =>
-          definition.renderBindings.any((binding) => binding.tabId == tabId),
-    ) ??
-    false;
-
 List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   required LoomExperienceDefinition experience,
   required String personaId,
@@ -283,8 +265,10 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         label: override.label,
         icon: _tabIconForKey(override.iconKey),
         description: override.description,
-        rendererContractId:
-            override.rendererContractId ?? generated.rendererContractId,
+        rendererContractId: _rendererContractIdForDeclarativeTab(
+          experience: experience,
+          tab: override,
+        ),
         pinningPolicy: generated.pinningPolicy,
         pinningPolicyRationale: generated.pinningPolicyRationale,
         sectionTitles: generated.sectionTitles,
@@ -331,32 +315,13 @@ String _rendererContractIdForDeclarativeTab({
   required LoomDeclarativeTabSpec tab,
 }) {
   final declaredRendererContractId = tab.rendererContractId;
-  if (declaredRendererContractId != null) {
+  if (declaredRendererContractId != null &&
+      declaredRendererContractId != defaultAppShellTabRendererContractId) {
     return declaredRendererContractId;
   }
 
-  // A contract that names the tab owns it even when its family vocabulary is
-  // stale or the tab has no bindings yet. Prefer the narrowest declaration so
-  // a single-tab contract wins over a broader multi-tab contract.
-  final tabContracts = <MapEntry<String, LoomTabRendererContract>>[
-    for (final entry in _tabRendererContractsById.entries)
-      if (entry.value.tabIds.contains(tab.tabId)) entry,
-  ];
-  if (tabContracts.isNotEmpty) {
-    final mostSpecificTabIdCount = tabContracts
-        .map((entry) => entry.value.tabIds.length)
-        .reduce((left, right) => left < right ? left : right);
-    final mostSpecificTabContracts = tabContracts
-        .where((entry) => entry.value.tabIds.length == mostSpecificTabIdCount)
-        .toList(growable: false);
-    if (mostSpecificTabContracts.length == 1) {
-      return mostSpecificTabContracts.single.key;
-    }
-    // An equal-specificity collision is not safe to resolve by registry order.
-    return defaultAppShellTabRendererContractId;
-  }
-
-  // Family coverage is only a fallback for tabs no contract names.
+  // A tab id is only the join key between a tab and its bindings. The bound
+  // archetype decides whether the tab needs one of the two dedicated surfaces.
   final boundSurfaceFamilies = <String>{
     for (final definition
         in experience.workflowDefinitions?.values ??
@@ -364,21 +329,13 @@ String _rendererContractIdForDeclarativeTab({
       for (final binding in definition.renderBindings)
         if (binding.tabId == tab.tabId) binding.cardSurfaceFamily,
   };
-  if (boundSurfaceFamilies.isEmpty) {
+  if (boundSurfaceFamilies.length != 1) {
     return defaultAppShellTabRendererContractId;
   }
 
-  final matchingContracts = <MapEntry<String, LoomTabRendererContract>>[
-    for (final entry in _tabRendererContractsById.entries)
-      if (entry.value.surfaceFamilies.isNotEmpty &&
-          boundSurfaceFamilies.every(entry.value.supportsSurfaceFamily))
-        entry,
-  ];
-  if (matchingContracts.length == 1) {
-    return matchingContracts.single.key;
-  }
-
-  return defaultAppShellTabRendererContractId;
+  return appShellTabNativeRendererContractIdsByArchetype[boundSurfaceFamilies
+          .single] ??
+      defaultAppShellTabRendererContractId;
 }
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({

@@ -554,7 +554,6 @@ class LoomTabRendererContract {
   const LoomTabRendererContract({
     required this.rendererId,
     required this.label,
-    required this.tabIds,
     required this.surfaceFamilies,
     required this.requiredAnatomy,
     required this.requiredInteractions,
@@ -565,7 +564,6 @@ class LoomTabRendererContract {
 
   final String rendererId;
   final String label;
-  final List<String> tabIds;
   final List<String> surfaceFamilies;
   final List<String> requiredAnatomy;
   final List<String> requiredInteractions;
@@ -697,8 +695,8 @@ class LoomDeclarativeTabSpec {
       icon: _tabIconForKey(iconKey),
       description: description,
       rendererContractId:
-          rendererContractId ??
           derivedRendererContractId ??
+          rendererContractId ??
           defaultAppShellTabRendererContractId,
       pinningPolicy: pinningPolicy,
       pinningPolicyRationale: pinningPolicyRationale,
@@ -815,7 +813,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'home-surface-stack': LoomTabRendererContract(
     rendererId: 'HomeTabSurfaceStack',
     label: 'Home surface stack',
-    tabIds: ['home'],
     surfaceFamilies: [
       'community-home',
       'announcement',
@@ -862,7 +859,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'engine-native-generic-list': LoomTabRendererContract(
     rendererId: 'EngineNativeGenericListSurface',
     label: 'Generic engine-native instance list',
-    tabIds: const [],
     surfaceFamilies: const [],
     requiredAnatomy: const [
       'No native tab-specific shape is required; content is fully driven by package-declared appShell metadata and render bindings.',
@@ -885,7 +881,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'calendar-agenda-event-detail': LoomTabRendererContract(
     rendererId: 'CalendarTabSurface',
     label: 'Calendar month/week/agenda and event detail',
-    tabIds: ['calendar'],
     surfaceFamilies: ['calendar', 'event-rsvp', 'member-meetup'],
     requiredAnatomy: [
       'month or week/date strip',
@@ -923,7 +918,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'messages-inbox-thread-composer': LoomTabRendererContract(
     rendererId: 'MessagesTabSurface',
     label: 'Messages inbox, thread, composer, and unread',
-    tabIds: ['messages'],
     surfaceFamilies: ['discussionThread', 'social', 'inbox'],
     requiredAnatomy: [
       'conversation or inbox list',
@@ -959,7 +953,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'notification-inbox': LoomTabRendererContract(
     rendererId: 'NotificationInboxTabSurface',
     label: 'Notification inbox with read state and dismissal',
-    tabIds: ['notifications'],
     surfaceFamilies: ['notificationInbox'],
     requiredAnatomy: [
       'notification list',
@@ -983,7 +976,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'notification-inbox-engine-native': LoomTabRendererContract(
     rendererId: 'NotificationDedicatedTabSurface',
     label: 'Engine-native notification inbox (dedicatedTab presentation style)',
-    tabIds: ['notification-inbox'],
     surfaceFamilies: ['notificationInbox'],
     requiredAnatomy: ['notification list', 'unread indicator', 'timestamps'],
     requiredInteractions: ['listNotifications', 'markNotificationRead'],
@@ -996,7 +988,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     rendererId: 'ExportWizardTabSurface',
     label:
         'Export wizard with gated preview, generation, transfer, and result steps',
-    tabIds: ['export'],
     surfaceFamilies: ['exportWizard'],
     requiredAnatomy: [
       'stepper',
@@ -1028,7 +1019,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'volunteer-roster': LoomTabRendererContract(
     rendererId: 'VolunteerRosterTabSurface',
     label: 'Volunteer roster with live shift capacity',
-    tabIds: ['roster'],
     surfaceFamilies: ['volunteerRoster'],
     requiredAnatomy: ['multiple shifts', 'capacity meter', 'sign-up action'],
     requiredInteractions: ['listVolunteerShifts', 'signUpForShift'],
@@ -1043,7 +1033,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'ai-search': LoomTabRendererContract(
     rendererId: 'AiSearchTabSurface',
     label: 'AI search with canned cited answers',
-    tabIds: ['search'],
     surfaceFamilies: ['searchAiAnswer'],
     requiredAnatomy: ['query input', 'answer', 'citations', 'not-found state'],
     requiredInteractions: ['submitSearchQuery'],
@@ -1058,7 +1047,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'audience-picker': LoomTabRendererContract(
     rendererId: 'AudiencePickerTabSurface',
     label: 'Audience picker with removable member chips',
-    tabIds: ['audience'],
     surfaceFamilies: ['audiencePicker'],
     requiredAnatomy: ['selected member chips', 'checkable member list'],
     requiredInteractions: ['selectAudienceMember', 'deselectAudienceMember'],
@@ -1070,7 +1058,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'single-item-preference': LoomTabRendererContract(
     rendererId: 'SingleItemPreferenceTabSurface',
     label: 'Single-item preference with visibly exclusive selection',
-    tabIds: ['preferences'],
     surfaceFamilies: ['singleItem'],
     requiredAnatomy: ['all preference options', 'selected option indicator'],
     requiredInteractions: ['setSinglePreference'],
@@ -1082,7 +1069,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'status-timeline': LoomTabRendererContract(
     rendererId: 'StatusTimelineTabSurface',
     label: 'Timestamped status timeline',
-    tabIds: ['timeline'],
     surfaceFamilies: ['statusTimeline'],
     requiredAnatomy: ['vertical progression line', 'timestamped nodes'],
     requiredInteractions: ['viewStatusHistory'],
@@ -1094,7 +1080,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'protected-detail': LoomTabRendererContract(
     rendererId: 'ProtectedDetailTabSurface',
     label: 'Protected detail with a distinct masked state',
-    tabIds: ['details'],
     surfaceFamilies: ['protectedDetail'],
     requiredAnatomy: [
       'full detail',
@@ -1113,7 +1098,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'form-entry-controls': LoomTabRendererContract(
     rendererId: 'FormEntryTabSurface',
     label: 'Form notification controls',
-    tabIds: ['form'],
     surfaceFamilies: ['formEntry'],
     requiredAnatomy: ['checkbox', 'relative-time picker'],
     requiredInteractions: ['setNotificationsEnabled', 'setReminderOffset'],
@@ -1124,7 +1108,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
-    tabIds: ['marketplace'],
     surfaceFamilies: ['equipment-loan', 'exchange'],
     requiredAnatomy: [
       'browse/search/filter header',
@@ -1168,7 +1151,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'documents-library-detail': LoomTabRendererContract(
     rendererId: 'DocumentsTabSurface',
     label: 'Documents library, detail, embedded, and external open',
-    tabIds: ['documents'],
     surfaceFamilies: [
       'documentLibrary',
       'external-document-link',
@@ -1215,7 +1197,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'workflow-status-timeline-actions': LoomTabRendererContract(
     rendererId: 'WorkflowStatusSurface',
     label: 'Workflow status timeline and actions',
-    tabIds: ['home', 'admin', 'documents'],
     surfaceFamilies: [
       'statusTimeline',
       'approvalQueueItem',
@@ -1262,7 +1243,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'payment-giving-ledger': LoomTabRendererContract(
     rendererId: 'PaymentGivingTabSurface',
     label: 'Giving, payment, receipt, and entitlement ledger',
-    tabIds: ['giving'],
     surfaceFamilies: [
       'paymentCheckout',
       'ad-off-entitlement',
@@ -1304,7 +1284,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'care-volunteer-request-queue': LoomTabRendererContract(
     rendererId: 'CareVolunteerTabSurface',
     label: 'Care requests, volunteer shifts, roster, and privacy',
-    tabIds: ['care'],
     surfaceFamilies: ['care-request', 'volunteer'],
     requiredAnatomy: [
       'request or shift queue',
@@ -1345,7 +1324,6 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
   'admin-review-compose-queue': LoomTabRendererContract(
     rendererId: 'AdminReviewComposeTabSurface',
     label: 'Admin compose, approval queue, sponsorship, and moderation',
-    tabIds: ['admin'],
     surfaceFamilies: [
       'announcement',
       'approvalQueueItem',

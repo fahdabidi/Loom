@@ -315,7 +315,11 @@ void main() {
       organizerAdmin.isVisibleFor('tabletop-organizer', experience: experience),
       isTrue,
     );
-    expect(organizerAdmin.rendererContractId, 'admin-review-compose-queue');
+    expect(
+      organizerAdmin.rendererContractId,
+      'engine-native-generic-list',
+      reason: 'The Admin tab mixes multiple card archetypes.',
+    );
     expect(organizerAdmin.visiblePersonaIds, ['tabletop-organizer']);
   });
 

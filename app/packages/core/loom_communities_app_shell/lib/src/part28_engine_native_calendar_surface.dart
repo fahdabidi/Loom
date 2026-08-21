@@ -91,6 +91,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
     super.key,
     required this.experience,
     required this.persona,
+    this.tabId = 'calendar',
     required this.accent,
     required this.modernTheme,
     this.engine,
@@ -101,6 +102,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
 
   final LoomExperienceDefinition experience;
   final LoomPersonaDefinition persona;
+  final String tabId;
   final Color accent;
   final LoomCardTheme? modernTheme;
 
@@ -136,7 +138,8 @@ class _EngineNativeCalendarSurfaceState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.personaId != widget.persona.personaId) {
+        oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.tabId != widget.tabId) {
       final hadSelection = _presentation.selectedInstance != null;
       _presentation.reset();
       if (hadSelection) _notifyFocusedInstanceChanged(null);
@@ -194,7 +197,7 @@ class _EngineNativeCalendarSurfaceState
         return EngineNativeBindingDispatcher(
           engine: snapshot.data!,
           definitions: definitions,
-          tabId: 'calendar',
+          tabId: widget.tabId,
           personaId: personaId,
           rolesForInstance: (instance, viewerPersonaId) {
             final machine = definitions[instance.workflowType];
@@ -215,6 +218,7 @@ class _EngineNativeCalendarSurfaceState
             communityExtensionId: widget.experience.extensionId,
             viewerPersonaId: widget.persona.personaId,
             personaId: personaId,
+            tabId: widget.tabId,
             accent: widget.accent,
             calendarDateRailEntries: widget.experience.calendarDateRailEntries,
             currentDate: widget.currentDate,
@@ -540,6 +544,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.communityExtensionId,
     required this.viewerPersonaId,
     required this.personaId,
+    required this.tabId,
     required this.accent,
     this.calendarDateRailEntries,
     required this.currentDate,
@@ -555,6 +560,7 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final String communityExtensionId;
   final String viewerPersonaId;
   final String personaId;
+  final String tabId;
   final Color accent;
   final List<CalendarDateRailEntry>? calendarDateRailEntries;
   final DateTime Function() currentDate;
@@ -876,7 +882,7 @@ class _EngineNativeCalendarContentState
     String? cursor;
     while (true) {
       final page = await widget.engine.queryInstances(
-        tabId: 'calendar',
+        tabId: widget.tabId,
         personaId: widget.personaId,
         limit: 100,
         cursor: cursor,
@@ -1986,7 +1992,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         // some later refresh.
         if (appliesToResponse) {
           final page = await engine.queryInstances(
-            tabId: 'calendar',
+            tabId: widget.binding.tabId,
             personaId: personaId,
             limit: 100,
           );
@@ -2074,7 +2080,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         String? cursor;
         while (true) {
           final page = await engine.queryInstances(
-            tabId: 'calendar',
+            tabId: widget.binding.tabId,
             personaId: personaId,
             limit: 100,
             cursor: cursor,
@@ -2209,7 +2215,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           String? cursor;
           while (true) {
             final page = await engine.queryInstances(
-              tabId: 'calendar',
+              tabId: widget.binding.tabId,
               personaId: personaId,
               limit: 100,
               cursor: cursor,

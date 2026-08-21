@@ -1090,27 +1090,18 @@ class _TabNativeRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     final rendererId = selectedTab.rendererContract.rendererId;
     final modernTheme = theme.usesModernCardTheme ? theme.tabCard : null;
-    // Messages and Home are the only present-by-default domain tabs.
-    // Marketplace and Giving are data-driven: real UI when data declared,
-    // placeholder otherwise. Other domain tabs stay placeholder-only.
+    // Renderer selection has already reconciled this tab's bindings. A
+    // renderer case never reinterprets the community-owned tab id.
     switch (rendererId) {
       case 'CalendarTabSurface':
-        if (_hasEngineNativeCalendarBinding(experience)) {
-          return EngineNativeCalendarSurface(
-            experience: experience,
-            persona: persona,
-            accent: accent,
-            modernTheme: modernTheme,
-            onInstanceScopedCreate: onInstanceScopedCreate,
-            onFocusedInstanceChanged: onFocusedInstanceChanged,
-          );
-        }
-        return _TabPlaceholderSurface(
-          tabLabel: selectedTab.label,
-          communityName: experience.displayName,
-          tabIcon: selectedTab.icon,
+        return EngineNativeCalendarSurface(
+          experience: experience,
+          persona: persona,
+          tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
+          onInstanceScopedCreate: onInstanceScopedCreate,
+          onFocusedInstanceChanged: onFocusedInstanceChanged,
         );
       case 'NotificationDedicatedTabSurface':
         return _NotificationDedicatedTabSurface(
@@ -1120,21 +1111,13 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'MessagesTabSurface':
-        if (_hasEngineNativeBinding(experience, 'messages')) {
-          return EngineNativeListSurface(
-            experience: experience,
-            persona: persona,
-            tabId: 'messages',
-            accent: accent,
-            modernTheme: modernTheme,
-            onInstanceScopedCreate: onInstanceScopedCreate,
-          );
-        }
-        return _MessagesTabSurface(
+        return EngineNativeListSurface(
           experience: experience,
           persona: persona,
+          tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
+          onInstanceScopedCreate: onInstanceScopedCreate,
         );
       case 'EngineNativeGenericListSurface':
         return EngineNativeListSurface(
@@ -1146,38 +1129,21 @@ class _TabNativeRenderer extends StatelessWidget {
           onInstanceScopedCreate: onInstanceScopedCreate,
         );
       case 'MarketplaceTabSurface':
-        if (_hasEngineNativeBinding(experience, 'marketplace')) {
-          return EngineNativeMarketplaceSurface(
-            experience: experience,
-            persona: persona,
-            accent: accent,
-            modernTheme: modernTheme,
-          );
-        }
-        return _TabPlaceholderSurface(
-          tabLabel: selectedTab.label,
-          communityName: experience.displayName,
-          tabIcon: selectedTab.icon,
+        return EngineNativeMarketplaceSurface(
+          experience: experience,
+          persona: persona,
+          tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
         );
       case 'PaymentGivingTabSurface':
-        if (_hasEngineNativeBinding(experience, 'giving')) {
-          return EngineNativeListSurface(
-            experience: experience,
-            persona: persona,
-            tabId: 'giving',
-            accent: accent,
-            modernTheme: modernTheme,
-            onInstanceScopedCreate: onInstanceScopedCreate,
-          );
-        }
-        return _TabPlaceholderSurface(
-          tabLabel: selectedTab.label,
-          communityName: experience.displayName,
-          tabIcon: selectedTab.icon,
+        return EngineNativeListSurface(
+          experience: experience,
+          persona: persona,
+          tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
+          onInstanceScopedCreate: onInstanceScopedCreate,
         );
       case 'DocumentsTabSurface':
         return _TabPlaceholderSurface(
@@ -1205,55 +1171,26 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'AdminReviewComposeTabSurface':
-        if (_hasEngineNativeBinding(experience, 'admin')) {
-          return EngineNativeListSurface(
-            experience: experience,
-            persona: persona,
-            tabId: 'admin',
-            accent: accent,
-            modernTheme: modernTheme,
-            onInstanceScopedCreate: onInstanceScopedCreate,
-            rolesForInstance: (instance, viewerPersonaId) {
-              final definitions = experience.workflowDefinitions;
-              if (definitions == null) return const <String>[];
-              final machine = definitions[instance.workflowType];
-              if (machine == null) return const <String>[];
-              return deriveInstanceRoles(
-                machine,
-                instance,
-                viewerPersonaId: viewerPersonaId,
-                viewerPersonaTypeId: persona.personaId,
-              );
-            },
-          );
-        }
-        // These domain tabs render via placeholder until their data is declared
-        return _TabPlaceholderSurface(
-          tabLabel: selectedTab.label,
-          communityName: experience.displayName,
-          tabIcon: selectedTab.icon,
+        return EngineNativeListSurface(
+          experience: experience,
+          persona: persona,
+          tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
+          onInstanceScopedCreate: onInstanceScopedCreate,
+          rolesForInstance: (instance, viewerPersonaId) {
+            final definitions = experience.workflowDefinitions;
+            if (definitions == null) return const <String>[];
+            final machine = definitions[instance.workflowType];
+            if (machine == null) return const <String>[];
+            return deriveInstanceRoles(
+              machine,
+              instance,
+              viewerPersonaId: viewerPersonaId,
+              viewerPersonaTypeId: persona.personaId,
+            );
+          },
         );
-    }
-    // Home falls through the switch above (no case matches
-    // 'HomeTabSurfaceStack') to this fallback. Engine-native communities
-    // (declared `workflowDefinitions` with a `home`-tabId renderBinding) get
-    // the same generic pipeline Calendar/Giving already use, so Home renders
-    // only what the JSON actually places there instead of every workflow via
-    // `_communitySectionsFor`'s blanket duplication. Checked first, ahead of
-    // the other example communities' bespoke engine chains below, since none
-    // of those parse `workflowDefinitions` and so never match this gate.
-    if (rendererId == 'HomeTabSurfaceStack' &&
-        _hasEngineNativeBinding(experience, 'home')) {
-      return EngineNativeListSurface(
-        experience: experience,
-        persona: persona,
-        tabId: 'home',
-        accent: accent,
-        modernTheme: modernTheme,
-        onInstanceScopedCreate: onInstanceScopedCreate,
-      );
     }
     return _HomeTabSurfaceStack(
       experience: experience,

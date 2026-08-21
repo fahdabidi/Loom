@@ -44,24 +44,21 @@ const Map<String, String> supportedAppShellTabRendererContracts =
       'admin-review-compose-queue': 'AdminReviewComposeTabSurface',
     };
 
-/// Fallback when an absent `rendererContractId` cannot be derived from the
-/// tab's render bindings.
+/// The archetypes with a dedicated whole-tab App Shell surface.
+///
+/// Every other archetype belongs in `EngineNativeListSurface`, which performs
+/// the live tab query and dispatches each instance to its card-level renderer.
+/// This map is deliberately keyed by archetype, never by the community-owned
+/// tab id.
+const Map<String, String> appShellTabNativeRendererContractIdsByArchetype =
+    <String, String>{
+      'event-rsvp': 'calendar-agenda-event-detail',
+      'equipment-loan': 'marketplace-browse-listing-detail',
+    };
+
+/// Default when a tab does not bind exactly one tab-native archetype.
 const String defaultAppShellTabRendererContractId =
     'engine-native-generic-list';
-
-/// Open-vocabulary tab ids whose semantics are special-cased by an implemented
-/// renderer contract. All other declared ids use the generic list pipeline.
-const Set<String> specialCasedAppShellTabIds = <String>{
-  'home',
-  'messages',
-  'calendar',
-  'notification-inbox',
-  'marketplace',
-  'giving',
-  'documents',
-  'care',
-  'admin',
-};
 
 /// Layout styles implemented when a tab contributes multiple create FABs.
 const String appShellFabStyleSpeedDial = 'speedDial';

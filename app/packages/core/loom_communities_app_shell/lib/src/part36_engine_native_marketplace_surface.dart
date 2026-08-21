@@ -12,6 +12,7 @@ class EngineNativeMarketplaceSurface extends StatefulWidget {
     super.key,
     required this.experience,
     required this.persona,
+    this.tabId = 'marketplace',
     required this.accent,
     this.modernTheme,
     this.engine,
@@ -19,6 +20,7 @@ class EngineNativeMarketplaceSurface extends StatefulWidget {
 
   final LoomExperienceDefinition experience;
   final LoomPersonaDefinition persona;
+  final String tabId;
   final Color accent;
   final LoomCardTheme? modernTheme;
   final WorkflowEngineApi? engine;
@@ -48,7 +50,8 @@ class _EngineNativeMarketplaceSurfaceState
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
         oldWidget.persona.personaId != widget.persona.personaId ||
-        oldWidget.persona.accountId != widget.persona.accountId) {
+        oldWidget.persona.accountId != widget.persona.accountId ||
+        oldWidget.tabId != widget.tabId) {
       _selectedCategory = null;
       _searchQuery = '';
       _load();
@@ -114,7 +117,7 @@ class _EngineNativeMarketplaceSurfaceState
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,
-          tabId: 'marketplace',
+          tabId: widget.tabId,
           personaId: personaId,
           rolesForInstance: _stableMarketplaceRolesForInstance,
           builder: (context, bindings, changed) =>

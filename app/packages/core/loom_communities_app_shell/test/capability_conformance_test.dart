@@ -71,15 +71,39 @@ Set<String> _perInstanceDispatcherCases() {
   };
 }
 
+int _matchingClosingBrace(String source, int openingBrace) {
+  var depth = 0;
+  for (var offset = openingBrace; offset < source.length; offset += 1) {
+    final character = source.codeUnitAt(offset);
+    if (character == 0x7b) {
+      depth += 1;
+    } else if (character == 0x7d) {
+      depth -= 1;
+      if (depth == 0) return offset;
+    }
+  }
+  throw StateError('Could not find the switch closing brace.');
+}
+
 Set<String> _tabRendererSwitchCases() {
   final source = _readRepositoryFile(
     'app/packages/core/loom_communities_app_shell/lib/src/'
     'part02_tab_shell.dart',
   );
-  final start = source.indexOf('switch (rendererId)');
-  final end = source.indexOf('\n    // Home falls through', start);
-  if (start < 0 || end < 0) {
+  final rendererClass = source.indexOf('class _TabNativeRenderer');
+  if (rendererClass < 0) {
     throw StateError('Could not find _TabNativeRenderer dispatch.');
+  }
+  final rendererClassBody = source.indexOf('{', rendererClass);
+  final rendererClassEnd = _matchingClosingBrace(source, rendererClassBody);
+  final start = source.indexOf('switch (rendererId) {', rendererClassBody);
+  if (start < 0 || start > rendererClassEnd) {
+    throw StateError('Could not find _TabNativeRenderer dispatch.');
+  }
+  final openingBrace = source.indexOf('{', start);
+  final end = _matchingClosingBrace(source, openingBrace);
+  if (!source.startsWith('\n    return _HomeTabSurfaceStack(', end + 1)) {
+    throw StateError('Could not find _TabNativeRenderer dispatch boundary.');
   }
   return {
     for (final match in RegExp(
@@ -89,8 +113,7 @@ Set<String> _tabRendererSwitchCases() {
   };
 }
 
-Map<String, ({String rendererId, Set<String> tabIds})>
-_tabRendererRegistryEntries() {
+Map<String, String> _tabRendererRegistryEntries() {
   final source = _readRepositoryFile(
     'app/packages/core/loom_communities_app_shell/lib/src/'
     'part11_shell_models.dart',
@@ -106,23 +129,14 @@ _tabRendererRegistryEntries() {
     throw StateError('Could not find the tab renderer contract registry.');
   }
 
-  final entries = <String, ({String rendererId, Set<String> tabIds})>{};
+  final entries = <String, String>{};
   final entryPattern = RegExp(
     r"^  '([^']+)': LoomTabRendererContract\(\n"
-    r"    rendererId: '([^']+)',[\s\S]*?"
-    r"^    tabIds: (?:const )?\[([^\]]*)\],",
+    r"    rendererId: '([^']+)',",
     multiLine: true,
   );
   for (final match in entryPattern.allMatches(source.substring(start, end))) {
-    entries[match.group(1)!] = (
-      rendererId: match.group(2)!,
-      tabIds: {
-        for (final tabIdMatch in RegExp(
-          r"'([^']+)'",
-        ).allMatches(match.group(3)!))
-          tabIdMatch.group(1)!,
-      },
-    );
+    entries[match.group(1)!] = match.group(2)!;
   }
   if (entries.isEmpty) {
     throw StateError('Could not parse the tab renderer contract registry.');
@@ -150,23 +164,6 @@ Iterable<Map<String, dynamic>> _declaredTabs(
       yield* tabsFrom(tabs);
     }
   }
-}
-
-Set<String> _bindingTabIds(Map<String, dynamic> package) {
-  final experience = package['experience'];
-  if (experience is! Map) return const {};
-  final definitions = experience['workflowDefinitions'];
-  if (definitions is! Map) return const {};
-  return {
-    for (final definition in definitions.values)
-      if (definition is Map)
-        for (final binding
-            in definition['renderBindings'] is List
-                ? definition['renderBindings'] as List
-                : const [])
-          if (binding is Map && binding['tabId'] is String)
-            binding['tabId'] as String,
-  };
 }
 
 void main() {
@@ -203,7 +200,7 @@ void main() {
     },
   );
 
-  test('every shipped tabId resolves to a real shell renderer', () {
+  test('every shipped declared contract resolves to a shell renderer', () {
     final actualRendererCases = _tabRendererSwitchCases();
     final declaredRendererCases = supportedAppShellTabRendererContracts.values
         .where((rendererId) => rendererId != 'HomeTabSurfaceStack')
@@ -211,25 +208,21 @@ void main() {
     expect(actualRendererCases, declaredRendererCases);
 
     final registry = _tabRendererRegistryEntries();
-    final specialTabIds = <String>{};
     for (final entry in supportedAppShellTabRendererContracts.entries) {
-      final contract = registry[entry.key];
+      final rendererId = registry[entry.key];
       expect(
-        contract,
+        rendererId,
         isNotNull,
         reason: '${entry.key} is absent from the renderer contract registry',
       );
-      expect(contract!.rendererId, entry.value);
-      specialTabIds.addAll(contract.tabIds);
+      expect(rendererId, entry.value);
     }
-    expect(specialTabIds, specialCasedAppShellTabIds);
 
     final discrepancies = <String>[];
     for (final path in _shippedCommunityPaths) {
       final package =
           jsonDecode(stripJsonComments(_readRepositoryFile(path)))
               as Map<String, dynamic>;
-      final bindingTabIds = _bindingTabIds(package);
       for (final tab in _declaredTabs(package)) {
         final tabId = tab['tabId'];
         if (tabId is! String || tabId.trim().isEmpty) {
@@ -247,13 +240,6 @@ void main() {
             '"$rendererContractId", which the shell does not dispatch',
           );
           continue;
-        }
-        if (rendererContractId == defaultAppShellTabRendererContractId &&
-            !bindingTabIds.contains(tabId)) {
-          discrepancies.add(
-            '$path tab "$tabId" uses the generic list renderer but no '
-            'renderBinding targets that tabId',
-          );
         }
       }
     }
