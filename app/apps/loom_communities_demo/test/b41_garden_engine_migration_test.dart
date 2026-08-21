@@ -5,115 +5,184 @@ import 'package:loom_communities_demo/main.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
-  testWidgets('garden engine tabs preserve app behavior parity', (tester) async {
+  testWidgets('garden engine tabs preserve app behavior parity', (
+    tester,
+  ) async {
     final target = loomEvidenceTargets.singleWhere(
       (target) => target.extensionId == 'ext_garden_club',
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
-    await _openGardenTarget(tester, target);
+    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await openEvidenceTarget(tester, target);
 
     await _selectPersona(tester, 'garden-member');
+
+    expect(
+      find.byKey(const ValueKey('community-tab-calendar')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('community-tab-marketplace')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('community-tab-care')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-tab-documents')),
+      findsNothing,
+      reason: 'The shipped package restricts Documents to the coordinator.',
+    );
 
     await _selectTab(tester, 'home');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('garden-engine-home')),
+      find.byKey(const ValueKey('engine-native-list-root-home')),
     );
-    expect(find.byKey(const ValueKey('garden-engine-home')), findsOneWidget);
-    expect(find.byKey(const ValueKey('garden-home-activity')), findsOneWidget);
-    expect(find.byKey(const ValueKey('garden-home-exchange')), findsOneWidget);
-    expect(find.byKey(const ValueKey('garden-home-records')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-home')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-tomato-seedling-offer')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-basil-start-request')),
+      findsNothing,
+      reason:
+          'Actor-only submissions owned by a different seeded individual '
+          'must not leak to a newly created member account.',
+    );
+    expect(
+      find.text('Spring Workshop: Pollinator-Friendly Planting'),
+      findsWidgets,
+    );
+    expect(find.text('Steel wheelbarrow'), findsWidgets);
+
+    expect(
+      _engineAction('basil-start-request', 'withdraw-submission'),
+      findsNothing,
+      reason: 'Another individual must not receive the owner-only action.',
+    );
 
     await _selectTab(tester, 'calendar');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('garden-engine-calendar')),
+      find.byKey(const ValueKey('engine-native-calendar-root')),
     );
-    expect(find.byKey(const ValueKey('garden-engine-calendar')), findsOneWidget);
-    await _tapGardenAction(tester, 'join-waitlist');
-    expect(find.text('State: Waitlisted'), findsOneWidget);
-    await _tapGardenAction(tester, 'rsvp-going');
-    expect(find.text('State: RSVPed'), findsOneWidget);
-    await _tapGardenAction(tester, 'cancel-rsvp');
-    expect(find.text('State: Open'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-root')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-date-strip')),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Spring Workshop: Pollinator-Friendly Planting'),
+      findsWidgets,
+    );
+
+    await _tapEngineAction(
+      tester,
+      instanceId: 'spring-workshop',
+      transitionId: 'respond-waitlist',
+    );
+    expect(_engineAction('spring-workshop', 'withdraw-rsvp'), findsOneWidget);
+    await _tapEngineAction(
+      tester,
+      instanceId: 'spring-workshop',
+      transitionId: 'withdraw-rsvp',
+    );
+    expect(
+      _engineAction('spring-workshop', 'respond-waitlist'),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'marketplace');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('garden-engine-marketplace')),
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
     );
     expect(
-      find.byKey(const ValueKey('garden-engine-marketplace')),
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
       findsOneWidget,
     );
-    await tester.enterText(
-      find.byKey(const ValueKey('garden-edit-plantType')),
-      'Thai basil starts',
+    expect(
+      find.byKey(const ValueKey('marketplace-search-field')),
+      findsOneWidget,
     );
+    expect(find.text('Steel wheelbarrow'), findsWidgets);
+    expect(find.text('Terracotta pots — assorted sizes'), findsWidgets);
+
     await tester.enterText(
-      find.byKey(const ValueKey('garden-edit-quantity')),
-      '8 starter pots',
-    );
-    await tester.ensureVisible(
-      find.byKey(
-        const ValueKey('garden-save-edit-plant-exchange-submission'),
-      ),
+      find.byKey(const ValueKey('marketplace-search-field')),
+      'wheelbarrow',
     );
     await _pumpForUi(tester);
-    await tester.tap(
-      find.byKey(
-        const ValueKey('garden-save-edit-plant-exchange-submission'),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await _tapGardenAction(tester, 'request-loan');
-    expect(find.text('State: Loaned'), findsOneWidget);
-    await _tapGardenAction(tester, 'join-queue');
-    expect(find.text('Queue: 1'), findsOneWidget);
-    await _tapGardenAction(tester, 'leave-queue');
-    expect(find.text('Queue: 1'), findsNothing);
-    await _tapGardenAction(tester, 'return-tool');
-    expect(find.text('State: Returned'), findsOneWidget);
-
-    await _tapGardenAction(tester, 'submit-listing');
-    expect(find.text('State: Submitted'), findsOneWidget);
-    expect(find.text('Thai basil starts'), findsOneWidget);
-    await _tapGardenAction(tester, 'claim');
-    expect(find.text('State: Claimed'), findsOneWidget);
-    await _tapGardenAction(tester, 'cancel-claim');
-    expect(find.text('State: Submitted'), findsOneWidget);
-    await _tapGardenAction(tester, 'withdraw');
-    expect(find.text('State: Withdrawn'), findsOneWidget);
+    expect(find.text('Steel wheelbarrow'), findsWidgets);
+    expect(find.text('Club hand-tool set'), findsNothing);
 
     await _selectTab(tester, 'care');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('garden-engine-care')),
+      find.byKey(const ValueKey('engine-native-list-root-care')),
     );
-    expect(find.byKey(const ValueKey('garden-engine-care')), findsOneWidget);
-    await _tapGardenAction(tester, 'sign-up');
-    expect(find.text('State: Signed up'), findsOneWidget);
-    await _tapGardenAction(tester, 'cancel-signup');
-    expect(find.text('State: Open'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-care')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-mulch-delivery-shift')),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'mulch-delivery-shift',
+      transitionId: 'sign-up',
+    );
+    expect(
+      _engineAction('mulch-delivery-shift', 'cancel-signup'),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'mulch-delivery-shift',
+      transitionId: 'cancel-signup',
+    );
+    expect(_engineAction('mulch-delivery-shift', 'sign-up'), findsOneWidget);
 
     await _selectPersona(tester, 'garden-coordinator');
+    expect(
+      find.byKey(const ValueKey('community-tab-documents')),
+      findsOneWidget,
+    );
     await _selectTab(tester, 'documents');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('garden-engine-documents')),
+      find.byKey(const ValueKey('engine-native-list-root-documents')),
     );
     expect(
-      find.byKey(const ValueKey('garden-engine-documents')),
+      find.byKey(const ValueKey('engine-native-list-root-documents')),
       findsOneWidget,
     );
-    expect(find.text('Review and confirm export scope'), findsOneWidget);
-    await _tapGardenAction(tester, 'generate-export');
-    expect(find.text('State: Generated'), findsOneWidget);
-    await _tapGardenAction(tester, 'rollback-export');
-    expect(find.text('State: Rolled back'), findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey('export-wizard-state-badge-fall-export-package-tile'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      _engineAction('fall-export-package', 'start-export'),
+      findsNothing,
+      reason:
+          'A newly created coordinator may read the seeded export summary '
+          'but must not run an export owned by another individual.',
+    );
+    expect(
+      find.byKey(const ValueKey('creatable-fab-garden-export-custom-schemas')),
+      findsOneWidget,
+    );
   });
 }
 
@@ -129,8 +198,24 @@ Future<void> _selectTab(WidgetTester tester, String tabId) async {
   await _pumpForUi(tester);
 }
 
-Future<void> _tapGardenAction(WidgetTester tester, String transitionId) async {
-  final action = find.byKey(ValueKey('garden-action-$transitionId'));
+Finder _engineAction(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+Future<void> _tapEngineAction(
+  WidgetTester tester, {
+  required String instanceId,
+  required String transitionId,
+}) async {
+  final action = _engineAction(instanceId, transitionId).first;
+  await _waitForFinder(tester, action);
+  expect(action, findsOneWidget);
   await tester.ensureVisible(action);
   await _pumpForUi(tester);
   await tester.tap(action, warnIfMissed: false);
@@ -138,24 +223,7 @@ Future<void> _tapGardenAction(WidgetTester tester, String transitionId) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpForUi(tester);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
-  await _pumpForUi(tester);
-}
-
-Future<void> _openGardenTarget(
-  WidgetTester tester,
-  LoomEvidenceTarget target,
-) async {
-  final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  expect(card, findsOneWidget);
-  await tester.tap(card, warnIfMissed: false);
-  await _pumpForUi(tester);
-  expect(
-    find.byKey(ValueKey('local-extension-${target.extensionId}')),
-    findsOneWidget,
-  );
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

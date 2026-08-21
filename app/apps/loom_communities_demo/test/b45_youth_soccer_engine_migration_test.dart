@@ -5,134 +5,235 @@ import 'package:loom_communities_demo/main.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
-  testWidgets('youth soccer engine tabs preserve guided, protected, and export parity', (tester) async {
-    final target = loomEvidenceTargets.singleWhere(
-      (target) => target.extensionId == 'ext_youth_soccer',
-    );
-    await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
-    await _openTarget(tester, target);
-    await _selectPersona(tester, 'guardian');
+  testWidgets(
+    'youth soccer engine tabs preserve guided, protected, and export parity',
+    (tester) async {
+      final target = loomEvidenceTargets.singleWhere(
+        (target) => target.extensionId == 'ext_youth_soccer',
+      );
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installEvidenceTarget(tester, target, useShippedPackage: true);
+      await openEvidenceTarget(tester, target);
+      await _selectPersona(tester, 'soccer-guardian');
 
-    await _selectTab(tester, 'home');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-home')));
-    expect(find.byKey(const ValueKey('soccer-home-schedule')), findsOneWidget);
-    expect(find.byKey(const ValueKey('soccer-home-privacy')), findsOneWidget);
-    expect(find.byKey(const ValueKey('soccer-home-receipt')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('community-tab-calendar')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('community-tab-giving')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('community-tab-team')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('community-tab-documents')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('community-tab-registration')),
+        findsNothing,
+        reason:
+            'Registration is declared as a Home workflow, not a package tab.',
+      );
 
-    await _selectTab(tester, 'registration');
-    await _waitForFinder(
-      tester,
-      find.byKey(const ValueKey('soccer-guided-registration')),
-    );
-    expect(find.text('Step 1 of 4: Join request'), findsOneWidget);
-    expect(find.byKey(const ValueKey('soccer-action-confirm-registration-payment')), findsNothing);
-    await _tapSoccerAction(tester, 'submit-join-request');
-    expect(find.text('Step 2 of 4: Waiver acknowledgement'), findsOneWidget);
-    expect(find.byKey(const ValueKey('soccer-action-confirm-registration-payment')), findsNothing);
-    await _tapSoccerAction(tester, 'sign-waiver');
-    expect(find.text('Step 3 of 4: Registration payment'), findsOneWidget);
-    expect(find.byKey(const ValueKey('soccer-action-confirm-registration-payment')), findsWidgets);
-    await _tapSoccerAction(tester, 'confirm-registration-payment');
-    expect(find.text('Step 4 of 4: Roster confirmation'), findsOneWidget);
+      await _selectTab(tester, 'home');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'generic-instance-card-soccer-registration-case-river',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text("River's fall registration"), findsWidgets);
+      expect(find.text('Riverside Rapids U12 practice'), findsWidgets);
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-payment-river'),
+        ),
+        findsOneWidget,
+      );
 
-    await _selectTab(tester, 'schedule');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-schedule')));
-    await _tapSoccerAction(tester, 'rsvp-going');
-    expect(find.text('RSVP: Going'), findsWidgets);
-    await _tapSoccerAction(tester, 'rsvp-maybe');
-    expect(find.text('RSVP: Maybe'), findsWidgets);
-    await _tapSoccerAction(tester, 'rsvp-not-going');
-    expect(find.text('RSVP: Not going'), findsWidgets);
+      await _selectTab(tester, 'calendar');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-root')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-calendar-date-strip')),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'soccer-practice-aug-18',
+        transitionId: 'respond-maybe',
+      );
+      expect(
+        _engineAction('soccer-practice-aug-18', 'cancel-rsvp'),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'soccer-practice-aug-18',
+        transitionId: 'cancel-rsvp',
+      );
+      expect(
+        _engineAction('soccer-practice-aug-18', 'respond-going'),
+        findsOneWidget,
+      );
 
-    await _selectTab(tester, 'team');
-    await _waitForFinder(
-      tester,
-      find.byKey(const ValueKey('soccer-guardian-roster-card')),
-    );
-    expect(find.textContaining('Sofia Rivera - U10'), findsWidgets);
-    expect(find.textContaining('Ari Rivera - U12'), findsWidgets);
-    expect(find.textContaining('Miles Chen - U10'), findsNothing);
-    expect(find.text('Guardian persona: guardian'), findsWidgets);
-    expect(find.text('Birth date: protected by consent scope'), findsNWidgets(2));
-    expect(find.textContaining('Birth date: 2016-08-03'), findsNothing);
-    await _tapSoccerAction(tester, 'request-access');
-    expect(find.text('State: Access requested'), findsOneWidget);
+      await _selectTab(tester, 'team');
+      await _waitForFinder(
+        tester,
+        find.byKey(
+          const ValueKey('workflow-table-grid-team-soccer-team-roster'),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('workflow-table-grid-team-soccer-team-roster'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Jordan R.'), findsWidgets);
+      expect(
+        find.textContaining('guardian-approved-limited-share'),
+        findsWidgets,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-redaction-jordan'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Full birth date hidden'), findsWidgets);
+      expect(find.textContaining('Medical notes hidden'), findsWidgets);
 
-    await _selectTab(tester, 'payments');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-payments')));
-    await _tapSoccerAction(tester, 'pay-registration');
-    expect(find.text('Status: Paid'), findsWidgets);
-    await _tapSoccerAction(tester, 'refund-payment');
-    expect(find.text('Status: Refunded'), findsWidgets);
-    await _tapSoccerAction(tester, 'manage-subscription');
-    expect(find.text('Managed in Loom payments'), findsWidgets);
+      await _selectTab(tester, 'giving');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-giving')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-giving')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-soccer-payment-river'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining(r'$185'), findsWidgets);
 
-    await _selectTab(tester, 'messages');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-messages')));
-    await _tapSoccerAction(tester, 'reply-thread');
-    expect(find.text('State: Replied'), findsOneWidget);
+      await _selectTab(tester, 'messages');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-messages')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-messages')),
+        findsOneWidget,
+      );
+      expect(find.text('Saturday field update'), findsWidgets);
 
-    await _selectPersona(tester, 'coach');
-    await _selectTab(tester, 'registration');
-    await _waitForFinder(tester, find.text('Registration reviewer timeline'));
-    await _tapSoccerAction(tester, 'approve-registration');
-    expect(find.text('State: Approved'), findsOneWidget);
+      await _selectPersona(tester, 'soccer-coach');
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
+      expect(find.byKey(const ValueKey('community-tab-giving')), findsNothing);
+      await _selectTab(tester, 'admin');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-admin')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-admin')),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'soccer-registration-case-river',
+        transitionId: 'approve-request',
+      );
+      expect(
+        _engineAction('soccer-registration-case-river', 'approve-request'),
+        findsNothing,
+      );
 
-    await _selectTab(tester, 'team');
-    await _waitForFinder(
-      tester,
-      find.byKey(const ValueKey('soccer-coach-roster-table')),
-    );
-    expect(find.byKey(const ValueKey('soccer-roster-sortable-columns')), findsOneWidget);
-    expect(find.textContaining('Miles Chen - U10'), findsWidgets);
-    await _tapSoccerAction(tester, 'edit-player');
-    expect(find.text('State: Editing'), findsWidgets);
-    await _tapSoccerAction(tester, 'request-update');
-    expect(find.text('State: Update requested'), findsWidgets);
-    await _tapSoccerAction(tester, 'redact-field');
-    expect(find.text('State: Redacted'), findsWidgets);
-    expect(find.text('Medical notes: redacted (medicalNotes)'), findsWidgets);
-    expect(find.text('Redacted fields: medicalNotes'), findsWidgets);
-    await _tapSoccerAction(tester, 'undo-redaction');
-    expect(find.text('State: Active roster'), findsWidgets);
+      await _selectTab(tester, 'documents');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-documents')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-documents')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('document-library-facts-soccer-waiver-river-tile'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('2026 Player Safety and Participation Waiver'),
+        findsWidgets,
+      );
 
-    await _selectTab(tester, 'schedule');
-    await _tapSoccerAction(tester, 'change-practice');
-    expect(find.text('Saturday 10:00 AM'), findsWidgets);
-    await _tapSoccerAction(tester, 'send-schedule-reminder');
-    expect(find.text('Reminder sent'), findsWidgets);
-
-    await _selectTab(tester, 'documents');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-documents')));
-    await _tapSoccerAction(tester, 'open-embedded-waiver');
-    expect(find.text('State: Embedded opened'), findsOneWidget);
-    await _tapSoccerAction(tester, 'open-external-waiver');
-    expect(find.text('State: External opened'), findsOneWidget);
-    await _tapSoccerAction(tester, 'acknowledge-waiver-document');
-    expect(find.text('State: Acknowledged'), findsOneWidget);
-
-    await _selectTab(tester, 'coach');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-coach-dashboard')));
-    await _tapSoccerAction(tester, 'schedule-reminder');
-    expect(find.text('State: Scheduled'), findsOneWidget);
-    await _tapSoccerAction(tester, 'publish-reminder');
-    expect(find.text('State: Published'), findsOneWidget);
-
-    await _selectPersona(tester, 'owner');
-    await _selectTab(tester, 'admin');
-    await _waitForFinder(tester, find.byKey(const ValueKey('soccer-engine-admin')));
-    await _tapSoccerAction(tester, 'preview-redaction');
-    expect(find.text('Minor birth dates and medical notes masked'), findsWidgets);
-    await _tapSoccerAction(tester, 'generate-export');
-    expect(find.text('sha256-rys-77a9'), findsWidgets);
-    await _tapSoccerAction(tester, 'transfer-export');
-    expect(find.text('State: Transferred'), findsOneWidget);
-    await _tapSoccerAction(tester, 'rollback-transfer');
-    expect(find.text('State: Rolled back'), findsOneWidget);
-    await _tapSoccerAction(tester, 'retry-transfer');
-    expect(find.text('State: Retried'), findsOneWidget);
-  });
+      await _selectPersona(tester, 'soccer-owner');
+      expect(find.byKey(const ValueKey('community-tab-team')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('community-tab-documents')),
+        findsNothing,
+      );
+      await _selectTab(tester, 'admin');
+      await _waitForFinder(
+        tester,
+        find.byKey(
+          const ValueKey(
+            'export-wizard-state-badge-soccer-export-fall-2026-tile',
+          ),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'export-wizard-state-badge-soccer-export-fall-2026-tile',
+          ),
+        ),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'soccer-export-fall-2026',
+        transitionId: 'start-export',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-operationMode')),
+        'export',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await _pumpForUi(tester);
+      expect(
+        _engineAction('soccer-export-fall-2026', 'record-export-ready'),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 Future<void> _selectTab(WidgetTester tester, String tabId) async {
@@ -151,8 +252,24 @@ Future<void> _selectTab(WidgetTester tester, String tabId) async {
   await _pumpForUi(tester);
 }
 
-Future<void> _tapSoccerAction(WidgetTester tester, String transitionId) async {
-  final action = find.byKey(ValueKey('soccer-action-$transitionId')).first;
+Finder _engineAction(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+Future<void> _tapEngineAction(
+  WidgetTester tester, {
+  required String instanceId,
+  required String transitionId,
+}) async {
+  final action = _engineAction(instanceId, transitionId).first;
+  await _waitForFinder(tester, action);
+  expect(action, findsOneWidget);
   await tester.ensureVisible(action);
   await _pumpForUi(tester);
   await tester.tap(action, warnIfMissed: false);
@@ -160,18 +277,7 @@ Future<void> _tapSoccerAction(WidgetTester tester, String transitionId) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpForUi(tester);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
-  await _pumpForUi(tester);
-}
-
-Future<void> _openTarget(WidgetTester tester, LoomEvidenceTarget target) async {
-  final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  expect(card, findsOneWidget);
-  await tester.tap(card, warnIfMissed: false);
-  await _pumpForUi(tester);
-  expect(find.byKey(ValueKey('local-extension-${target.extensionId}')), findsOneWidget);
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

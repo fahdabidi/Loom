@@ -34,6 +34,8 @@ dev_dependencies:
     path: ../../packages/core/loom_seed_data
   loom_skill_debug_harness:
     path: ../../packages/tooling/loom_skill_debug_harness
+  loom_ux_judges:
+    path: ../../packages/tooling/loom_ux_judges
 
 flutter:
   uses-material-design: true

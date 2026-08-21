@@ -5,106 +5,176 @@ import 'package:loom_communities_demo/main.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
-  testWidgets('camera engine tabs preserve app behavior parity', (tester) async {
+  testWidgets('camera engine tabs preserve app behavior parity', (
+    tester,
+  ) async {
     final target = loomEvidenceTargets.singleWhere(
       (target) => target.extensionId == 'ext_camera_club',
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
-    await _openCameraTarget(tester, target);
+    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await openEvidenceTarget(tester, target);
 
-    await _selectPersona(tester, 'camera-member');
+    await _selectPersona(tester, 'camera-club-member');
+
+    expect(
+      find.byKey(const ValueKey('community-tab-calendar')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('community-tab-critique')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('community-tab-marketplace')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
 
     await _selectTab(tester, 'home');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('camera-engine-home')),
+      find.byKey(const ValueKey('engine-native-list-root-home')),
     );
-    expect(find.byKey(const ValueKey('camera-home-walk')), findsOneWidget);
-    expect(find.byKey(const ValueKey('camera-home-critique')), findsOneWidget);
-    expect(find.byKey(const ValueKey('camera-home-gear')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-home')),
+      findsOneWidget,
+    );
+    expect(find.text('Golden Gate sunrise photo walk'), findsWidgets);
+    expect(find.text('Canon 70-200mm f/2.8 lens'), findsWidgets);
+    expect(
+      find.byKey(
+        const ValueKey('generic-instance-card-critique-lighthouse-portrait'),
+      ),
+      findsNothing,
+      reason:
+          'Actor-only critiques owned by a different seeded individual must '
+          'not leak to a newly created member account.',
+    );
+    expect(
+      find.byKey(
+        const ValueKey('generic-instance-card-camera-validation-report-1'),
+      ),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'calendar');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('camera-engine-calendar')),
+      find.byKey(const ValueKey('engine-native-calendar-root')),
     );
-    await _tapCameraAction(tester, 'rsvp-going');
-    expect(find.text('State: Going'), findsOneWidget);
-    await _tapCameraAction(tester, 'rsvp-maybe');
-    expect(find.text('State: Maybe'), findsOneWidget);
-    await _tapCameraAction(tester, 'rsvp-not-going');
-    expect(find.text('State: Not going'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-root')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-grouped-agenda')),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'walk-golden-gate-sunrise',
+      transitionId: 'respond-going',
+    );
+    expect(
+      _engineAction('walk-golden-gate-sunrise', 'respond-maybe'),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'walk-golden-gate-sunrise',
+      transitionId: 'respond-maybe',
+    );
+    expect(
+      _engineAction('walk-golden-gate-sunrise', 'withdraw-response'),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'critique');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('camera-engine-critique')),
+      find.byKey(const ValueKey('engine-native-list-empty-critique')),
     );
-    expect(find.byKey(const ValueKey('camera-critique-grid')), findsOneWidget);
-    expect(find.byKey(const ValueKey('camera-critique-thread')), findsOneWidget);
-    await tester.enterText(
-      find.byKey(const ValueKey('camera-edit-photoTitle')),
-      'Neon rain reflections',
+    expect(
+      find.byKey(const ValueKey('engine-native-list-empty-critique')),
+      findsOneWidget,
     );
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('camera-save-edit-critique-submission')),
+    expect(
+      find.byKey(
+        const ValueKey('generic-instance-card-critique-lighthouse-portrait'),
+      ),
+      findsNothing,
     );
-    await _pumpForUi(tester);
-    await tester.tap(
-      find.byKey(const ValueKey('camera-save-edit-critique-submission')),
-      warnIfMissed: false,
+    expect(
+      find.byKey(
+        const ValueKey(
+          'generic-instance-card-critique-night-market-reflections',
+        ),
+      ),
+      findsNothing,
     );
-    await _pumpForUi(tester);
-    await _tapCameraAction(tester, 'submit-critique');
-    expect(find.text('State: Submitted'), findsOneWidget);
-    expect(find.text('Neon rain reflections'), findsWidgets);
-
-    await _selectTab(tester, 'messages');
-    await _waitForFinder(
-      tester,
-      find.byKey(const ValueKey('camera-engine-messages')),
+    expect(
+      find.byKey(const ValueKey('creatable-fab-critique-submission')),
+      findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('camera-critique-thread')), findsOneWidget);
-
-    await _selectTab(tester, 'critique');
-    await _tapCameraAction(tester, 'edit-critique');
-    expect(find.text('State: Draft'), findsOneWidget);
-    await _tapCameraAction(tester, 'submit-critique');
-    await _tapCameraAction(tester, 'withdraw-critique');
-    expect(find.text('State: Withdrawn'), findsOneWidget);
+    expect(
+      _engineAction('critique-lighthouse-portrait', 'withdraw'),
+      findsNothing,
+      reason: 'Another individual must not receive the author-only action.',
+    );
 
     await _selectTab(tester, 'marketplace');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('camera-engine-marketplace')),
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
     );
-    await _tapCameraAction(tester, 'request-loan');
-    expect(find.text('State: Loaned'), findsOneWidget);
-    await _tapCameraAction(tester, 'join-queue');
-    expect(find.text('Queue: 1'), findsOneWidget);
-    await _tapCameraAction(tester, 'leave-queue');
-    expect(find.text('Queue: 1'), findsNothing);
-    await _tapCameraAction(tester, 'return-gear');
-    expect(find.text('State: Returned'), findsOneWidget);
-    await _tapCameraAction(tester, 'offer-giveaway');
-    expect(find.text('State: Giveaway'), findsOneWidget);
-    await _tapCameraAction(tester, 'claim-giveaway');
-    expect(find.text('State: Claimed'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('marketplace-search-field')),
+      findsOneWidget,
+    );
+    expect(find.text('Canon 70-200mm f/2.8 lens'), findsWidgets);
+    expect(find.text('Older speedlite flash — free'), findsWidgets);
+    await _tapEngineAction(
+      tester,
+      instanceId: 'gear-old-speedlite-giveaway',
+      transitionId: 'claim-giveaway',
+    );
+    expect(
+      _engineAction('gear-old-speedlite-giveaway', 'claim-giveaway'),
+      findsNothing,
+    );
 
-    await _selectPersona(tester, 'camera-organizer');
+    await _selectPersona(tester, 'camera-club-organizer');
+    expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
     await _selectTab(tester, 'admin');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('camera-engine-admin')),
+      find.byKey(const ValueKey('engine-native-list-root-admin')),
     );
     expect(
-      find.byKey(const ValueKey('camera-admin-validation-status')),
+      find.byKey(const ValueKey('engine-native-list-root-admin')),
       findsOneWidget,
     );
-    await _tapCameraAction(tester, 'mark-validated');
-    expect(find.text('State: Validated'), findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey('generic-instance-card-camera-validation-report-1'),
+      ),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'camera-validation-report-1',
+      transitionId: 'review-completion',
+    );
+    expect(
+      _engineAction('camera-validation-report-1', 'review-completion'),
+      findsNothing,
+    );
   });
 }
 
@@ -120,8 +190,24 @@ Future<void> _selectTab(WidgetTester tester, String tabId) async {
   await _pumpForUi(tester);
 }
 
-Future<void> _tapCameraAction(WidgetTester tester, String transitionId) async {
-  final action = find.byKey(ValueKey('camera-action-$transitionId')).first;
+Finder _engineAction(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+Future<void> _tapEngineAction(
+  WidgetTester tester, {
+  required String instanceId,
+  required String transitionId,
+}) async {
+  final action = _engineAction(instanceId, transitionId).first;
+  await _waitForFinder(tester, action);
+  expect(action, findsOneWidget);
   await tester.ensureVisible(action);
   await _pumpForUi(tester);
   await tester.tap(action, warnIfMissed: false);
@@ -129,24 +215,7 @@ Future<void> _tapCameraAction(WidgetTester tester, String transitionId) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpForUi(tester);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
-  await _pumpForUi(tester);
-}
-
-Future<void> _openCameraTarget(
-  WidgetTester tester,
-  LoomEvidenceTarget target,
-) async {
-  final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  expect(card, findsOneWidget);
-  await tester.tap(card, warnIfMissed: false);
-  await _pumpForUi(tester);
-  expect(
-    find.byKey(ValueKey('local-extension-${target.extensionId}')),
-    findsOneWidget,
-  );
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

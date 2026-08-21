@@ -5,94 +5,163 @@ import 'package:loom_communities_demo/main.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
-  testWidgets('chess engine tabs preserve behavior parity and rankings effect', (tester) async {
-    final target = loomEvidenceTargets.singleWhere((target) => target.extensionId == 'ext_chess_club');
-    await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
-    await _openChessTarget(tester, target);
-    await _selectPersona(tester, 'chess-player');
+  testWidgets(
+    'chess engine tabs preserve behavior and shipped rankings content',
+    (tester) async {
+      final target = loomEvidenceTargets.singleWhere(
+        (target) => target.extensionId == 'ext_chess_club',
+      );
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installEvidenceTarget(tester, target, useShippedPackage: true);
+      await openEvidenceTarget(tester, target);
+      await _selectPersona(tester, 'chess-member');
 
-    await _selectTab(tester, 'home');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-engine-home')));
-    expect(find.byKey(const ValueKey('chess-home-next-match')), findsOneWidget);
-    expect(find.byKey(const ValueKey('chess-home-pairing')), findsOneWidget);
-    expect(find.byKey(const ValueKey('chess-home-standings')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('community-tab-calendar')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('community-tab-messages')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('community-tab-matches')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('community-tab-rankings')),
+        findsNothing,
+      );
 
-    await _selectTab(tester, 'matches');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-engine-matches')));
-    await tester.enterText(find.byKey(const ValueKey('chess-edit-opponent')), 'Noah Kim updated');
-    await tester.ensureVisible(find.byKey(const ValueKey('chess-save-edit-chess-match-meetup')));
-    await _pumpForUi(tester);
-    await tester.tap(find.byKey(const ValueKey('chess-save-edit-chess-match-meetup')), warnIfMissed: false);
-    await _pumpForUi(tester);
-    await _tapChessAction(tester, 'propose-match');
-    expect(find.text('State: Proposed'), findsOneWidget);
-    await _tapChessAction(tester, 'decline-match');
-    expect(find.text('Decline recorded; challenge remains open'), findsOneWidget);
-    await _tapChessAction(tester, 'suggest-new-time');
-    expect(find.text('State: Rescheduled'), findsOneWidget);
-    await _tapChessAction(tester, 'cancel-match');
-    expect(find.text('Cancellation noted; organizer can rematch if needed'), findsOneWidget);
-    await _tapChessAction(tester, 'suggest-new-time');
-    await _tapChessAction(tester, 'accept-match');
-    expect(find.text('State: Accepted'), findsOneWidget);
-    await _tapChessAction(tester, 'confirm-match');
-    expect(find.text('State: Confirmed'), findsOneWidget);
+      await _selectTab(tester, 'home');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('workflow-table-grid-home-chess-rankings-table'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Maya Patel'), findsWidgets);
+      expect(find.text('Jordan Lee'), findsWidgets);
+      expect(
+        find.byKey(
+          const ValueKey('document-library-facts-chess-rules-rapid-tile'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Club rapid and ladder rules'), findsWidgets);
 
-    await _selectTab(tester, 'calendar');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-engine-calendar')));
-    expect(find.text('Confirmed match calendar'), findsOneWidget);
-    expect(find.text('Thursday Ladder Night'), findsWidgets);
+      await _selectTab(tester, 'calendar');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-calendar')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-calendar')),
+        findsOneWidget,
+        reason:
+            'Chess Calendar declares mixed archetypes and uses generic dispatch.',
+      );
+      expect(find.text('Friday rapid club night'), findsWidgets);
+      expect(find.text('August open Swiss tournament'), findsWidgets);
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-chess-meetup-maya-jordan'),
+        ),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'chess-night-august-14',
+        transitionId: 'withdraw-club-night-rsvp',
+      );
+      expect(
+        _engineAction('chess-night-august-14', 'rsvp-club-night'),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'chess-night-august-14',
+        transitionId: 'rsvp-club-night',
+      );
+      expect(
+        _engineAction('chess-night-august-14', 'withdraw-club-night-rsvp'),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'chess-meetup-maya-jordan',
+        transitionId: 'decline-match',
+      );
+      expect(
+        _engineAction('chess-meetup-maya-jordan', 'suggest-new-time'),
+        findsOneWidget,
+      );
 
-    await _selectTab(tester, 'rankings');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-rankings-table')));
-    expect(find.text('2. Maya Patel - 1480 (0)'), findsOneWidget);
+      await _selectTab(tester, 'messages');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-messages')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-messages')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-chess-thread-opening-prep'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Preparing against the Sicilian'), findsWidgets);
 
-    await _selectTab(tester, 'matches');
-    await tester.enterText(find.byKey(const ValueKey('chess-edit-whitePlayer')), 'Ari Stone');
-    await tester.enterText(find.byKey(const ValueKey('chess-edit-blackPlayer')), 'Lina Ortiz');
-    await tester.enterText(find.byKey(const ValueKey('chess-edit-score')), '0-1');
-    await tester.ensureVisible(find.byKey(const ValueKey('chess-save-edit-chess-match-result')));
-    await _pumpForUi(tester);
-    await tester.tap(find.byKey(const ValueKey('chess-save-edit-chess-match-result')), warnIfMissed: false);
-    await _pumpForUi(tester);
-    await _tapChessAction(tester, 'submit-result');
-    expect(find.text('State: Submitted'), findsOneWidget);
-    await _selectTab(tester, 'rankings');
-    await _waitForFinder(tester, find.text('3. Lina Ortiz - 1466 (+16)'));
-    expect(find.text('3. Lina Ortiz - 1466 (+16)'), findsOneWidget);
-    expect(find.text('4. Ari Stone - 1444 (-16)'), findsOneWidget);
-
-    await _selectTab(tester, 'matches');
-    await _tapChessAction(tester, 'correct-result');
-    expect(find.text('State: Corrected'), findsOneWidget);
-    await _selectTab(tester, 'rankings');
-    await _waitForFinder(tester, find.text('3. Lina Ortiz - 1478 (+12)'));
-    expect(find.text('3. Lina Ortiz - 1478 (+12)'), findsOneWidget);
-    expect(find.text('4. Ari Stone - 1432 (-12)'), findsOneWidget);
-    await _selectTab(tester, 'matches');
-    await _tapChessAction(tester, 'dispute-result');
-    expect(find.text('State: Disputed'), findsOneWidget);
-
-    await _selectPersona(tester, 'chess-organizer');
-    await _selectTab(tester, 'admin');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-engine-admin')));
-    await _tapChessAction(tester, 'assign-pairing');
-    expect(find.text('State: Assigned'), findsOneWidget);
-    await _tapChessAction(tester, 'resolve-dispute');
-    expect(find.text('State: Resolved'), findsOneWidget);
-    await _tapChessAction(tester, 'generate-export');
-    expect(find.text('State: Generated'), findsOneWidget);
-
-    await _selectTab(tester, 'documents');
-    await _waitForFinder(tester, find.byKey(const ValueKey('chess-engine-documents')));
-    await _tapChessAction(tester, 'open-embedded');
-    expect(find.text('State: Embedded opened'), findsOneWidget);
-    await _tapChessAction(tester, 'open-external');
-    expect(find.text('State: External opened'), findsOneWidget);
-    await _tapChessAction(tester, 'download-document');
-    expect(find.text('State: Downloaded'), findsOneWidget);
-  });
+      await _selectPersona(tester, 'chess-organizer');
+      await _selectTab(tester, 'admin');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-admin')),
+      );
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-admin')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-chess-pairing-friday-rapid'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('export-wizard-state-badge-chess-export-august-tile'),
+        ),
+        findsOneWidget,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'chess-pairing-friday-rapid',
+        transitionId: 'close-pairing-queue',
+      );
+      expect(
+        _engineAction('chess-pairing-friday-rapid', 'close-pairing-queue'),
+        findsNothing,
+      );
+      await _tapEngineAction(
+        tester,
+        instanceId: 'chess-export-august',
+        transitionId: 'generate-export',
+      );
+      expect(
+        _engineAction('chess-export-august', 'rollback-export'),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 Future<void> _selectTab(WidgetTester tester, String tabId) async {
@@ -107,8 +176,24 @@ Future<void> _selectTab(WidgetTester tester, String tabId) async {
   await _pumpForUi(tester);
 }
 
-Future<void> _tapChessAction(WidgetTester tester, String transitionId) async {
-  final action = find.byKey(ValueKey('chess-action-$transitionId')).first;
+Finder _engineAction(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+Future<void> _tapEngineAction(
+  WidgetTester tester, {
+  required String instanceId,
+  required String transitionId,
+}) async {
+  final action = _engineAction(instanceId, transitionId).first;
+  await _waitForFinder(tester, action);
+  expect(action, findsOneWidget);
   await tester.ensureVisible(action);
   await _pumpForUi(tester);
   await tester.tap(action, warnIfMissed: false);
@@ -116,18 +201,7 @@ Future<void> _tapChessAction(WidgetTester tester, String transitionId) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpForUi(tester);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
-  await _pumpForUi(tester);
-}
-
-Future<void> _openChessTarget(WidgetTester tester, LoomEvidenceTarget target) async {
-  final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  expect(card, findsOneWidget);
-  await tester.tap(card, warnIfMissed: false);
-  await _pumpForUi(tester);
-  expect(find.byKey(ValueKey('local-extension-${target.extensionId}')), findsOneWidget);
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

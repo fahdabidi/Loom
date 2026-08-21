@@ -4,12 +4,54 @@ import 'package:loom_communities_demo/main.dart';
 
 import 'workflow_ui_test_harness.dart';
 
+const _cameraAppShellConfiguration = <String, Object?>{
+  'tabs': <Object?>[
+    <String, Object?>{
+      'tabId': 'calendar',
+      'label': 'Walks',
+      'iconKey': 'calendar_today',
+      'description': 'Photo-walk dates, routes, capacity, and RSVP state.',
+    },
+    <String, Object?>{
+      'tabId': 'marketplace',
+      'label': 'Gear',
+      'iconKey': 'photo_camera',
+      'description': 'Camera gear listings, loans, queues, and returns.',
+    },
+  ],
+};
+
+const _mosqueAppShellConfiguration = <String, Object?>{
+  'tabs': <Object?>[
+    <String, Object?>{
+      'tabId': 'calendar',
+      'label': 'Calendar',
+      'iconKey': 'calendar',
+      'description': 'Services, community events, and RSVP state.',
+    },
+    <String, Object?>{
+      'tabId': 'giving',
+      'label': 'Giving',
+      'iconKey': 'giving',
+      'description': 'Donation preferences, payments, and receipts.',
+    },
+    <String, Object?>{
+      'tabId': 'admin',
+      'label': 'Admin',
+      'iconKey': 'admin',
+      'description': 'Publishing, care review, and volunteer coordination.',
+      'visibleRoleIds': <Object?>['masjid-admin'],
+    },
+  ],
+};
+
 void main() {
   test('app shell tabs declare tab-native renderer contracts', () {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
-      personaId: 'camera-organizer',
+      personaId: 'camera-club-organizer',
+      appShellConfiguration: _cameraAppShellConfiguration,
     );
 
     final contractsByTab = {
@@ -66,11 +108,13 @@ void main() {
 
     final adminTabs = appShellTabsFor(
       experience: experience,
-      personaId: 'mosque-admin',
+      personaId: 'masjid-admin',
+      appShellConfiguration: _mosqueAppShellConfiguration,
     );
     final memberTabs = appShellTabsFor(
       experience: experience,
-      personaId: 'mosque-member',
+      personaId: 'community-member',
+      appShellConfiguration: _mosqueAppShellConfiguration,
     );
 
     expect(adminTabs.map((tab) => tab.tabId), containsAll(['home', 'admin']));
@@ -95,7 +139,7 @@ void main() {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
-      personaId: 'camera-organizer',
+      personaId: 'camera-club-organizer',
       appShellConfiguration: {
         'tabs': [
           {
@@ -124,7 +168,7 @@ void main() {
           },
         ],
         'personaTabs': {
-          'camera-member': [
+          'camera-club-member': [
             {
               'tabId': 'messages',
               'label': 'Club chat',
@@ -156,8 +200,10 @@ void main() {
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
+    await installEvidenceTarget(tester, target, useShippedPackage: true);
     await openEvidenceTarget(tester, target);
+
+    await selectPersona(tester, 'masjid-admin');
 
     expect(find.byKey(const ValueKey('community-bottom-tabs')), findsOneWidget);
     expect(find.byKey(const ValueKey('community-tab-home')), findsOneWidget);
@@ -170,11 +216,13 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-tab-messages')));
     await tester.pumpAndSettle();
 
-    // Mosque now renders the engine-backed discussion/notification inbox.
-    expect(find.byKey(const ValueKey('mosque-engine-messages')), findsOneWidget);
-    expect(find.text('Community discussion'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-messages')),
+      findsOneWidget,
+    );
+    expect(find.text('Iftar logistics and food contributions'), findsWidgets);
 
-    await selectPersona(tester, 'mosque-member');
+    await selectPersona(tester, 'community-member');
 
     expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
     expect(find.byKey(const ValueKey('community-tab-home')), findsOneWidget);
@@ -192,31 +240,46 @@ void main() {
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
+    await installEvidenceTarget(tester, target, useShippedPackage: true);
     await openEvidenceTarget(tester, target);
+    await selectPersona(tester, 'camera-club-member');
 
     await _tapTab(tester, 'calendar');
-    expect(find.byKey(const ValueKey('camera-engine-calendar')), findsOneWidget);
-    expect(find.text('Warehouse District golden-hour walk'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-root')),
+      findsOneWidget,
+    );
+    expect(find.text('Golden Gate sunrise photo walk'), findsWidgets);
 
     await _tapTab(tester, 'marketplace');
     expect(
-      find.byKey(const ValueKey('camera-engine-marketplace')),
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
       findsOneWidget,
     );
-    expect(find.text('35mm prime lens'), findsWidgets);
+    expect(find.text('Canon 70-200mm f/2.8 lens'), findsWidgets);
     expect(
-      find.byKey(const ValueKey('marketplace-tab-surface')),
-      findsNothing,
+      find.byKey(const ValueKey('marketplace-search-field')),
+      findsOneWidget,
+    );
+
+    await _tapTab(tester, 'critique');
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-critique')),
+      findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('marketplace-browse-search')),
-      findsNothing,
+      find.byKey(
+        const ValueKey('generic-instance-card-critique-lighthouse-portrait'),
+      ),
+      findsOneWidget,
     );
 
     await _tapTab(tester, 'messages');
-    expect(find.byKey(const ValueKey('camera-engine-messages')), findsOneWidget);
-    expect(find.byKey(const ValueKey('camera-critique-thread')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-empty-messages')),
+      findsOneWidget,
+      reason: 'The shipped Camera package declares no Messages binding.',
+    );
   });
 }
 

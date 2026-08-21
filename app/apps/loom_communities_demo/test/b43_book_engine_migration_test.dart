@@ -4,153 +4,246 @@ import 'package:loom_communities_demo/main.dart';
 
 import 'workflow_ui_test_harness.dart';
 
+const _bookTarget = LoomEvidenceTarget(
+  phase: 'B14',
+  communityId: 'community_neighborhood_book_club',
+  communityName: 'Neighborhood Book Club',
+  handle: 'neighborhood-book-club',
+  extensionId: 'ext_neighborhood_book_club',
+  accentColor: '#5B3A29',
+  seedDataFiles: <String>[],
+);
+
 void main() {
   testWidgets('book engine tabs preserve app behavior parity', (tester) async {
-    final target = loomEvidenceTargets.singleWhere(
-      (target) => target.extensionId == 'ext_book_club',
-    );
+    const target = _bookTarget;
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
-    await _openBookTarget(tester, target);
+    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await openEvidenceTarget(tester, target);
 
     await _selectPersona(tester, 'book-member');
 
+    expect(find.byKey(const ValueKey('community-tab-books')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-tab-marketplace')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('community-tab-documents')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('community-tab-discussions')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+
     await _selectTab(tester, 'home');
-    await _waitForFinder(tester, find.byKey(const ValueKey('book-engine-home')));
-    expect(find.byKey(const ValueKey('book-home-selection')), findsOneWidget);
-    expect(find.byKey(const ValueKey('book-home-ballot')), findsOneWidget);
-    expect(find.byKey(const ValueKey('book-home-meeting')), findsOneWidget);
+    await _waitForFinder(tester, find.text('Nothing is pinned yet'));
+    expect(find.text('Nothing is pinned yet'), findsOneWidget);
+    expect(
+      find.text(
+        'Neighborhood Book Club does not have Home surfaces assigned yet.',
+      ),
+      findsOneWidget,
+      reason: 'The shipped package does not declare an explicit Home tab.',
+    );
 
     await _selectTab(tester, 'books');
-    await _waitForFinder(tester, find.byKey(const ValueKey('book-engine-books')));
-    await tester.enterText(
-      find.byKey(const ValueKey('book-edit-title')),
-      'Parable of the Sower updated',
+    await _waitForFinder(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-root-books')),
     );
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('book-save-edit-book-nomination')),
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-books')),
+      findsOneWidget,
     );
-    await _pumpForUi(tester);
-    await tester.tap(
-      find.byKey(const ValueKey('book-save-edit-book-nomination')),
-      warnIfMissed: false,
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-draft-1')),
+      findsNothing,
+      reason:
+          'Actor-only drafts owned by a different seeded individual must not '
+          'leak to a newly created member account.',
     );
-    await _pumpForUi(tester);
-    await _tapBookAction(tester, 'submit-nomination');
-    expect(find.text('State: Submitted'), findsOneWidget);
-    await _tapBookAction(tester, 'edit-nomination');
-    expect(find.text('State: Draft'), findsWidgets);
-    await _tapBookAction(tester, 'submit-nomination');
-    await _tapBookAction(tester, 'withdraw-nomination');
-    expect(find.text('State: Withdrawn'), findsOneWidget);
-
-    await _tapBookAction(tester, 'cast-vote');
-    expect(find.text('State: Vote cast'), findsOneWidget);
-    await _tapBookAction(tester, 'change-vote');
-    expect(find.text('Left Hand: 7'), findsOneWidget);
-    await _tapBookAction(tester, 'clear-vote');
-    expect(find.text('State: Open'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-submitted-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-selected-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('creatable-fab-book-nomination')),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'calendar');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('book-engine-calendar')),
+      find.byKey(const ValueKey('engine-native-calendar-root')),
     );
-    await _tapBookAction(tester, 'rsvp-going');
-    expect(find.text('State: Going'), findsOneWidget);
-    await _tapBookAction(tester, 'rsvp-maybe');
-    expect(find.text('State: Maybe'), findsOneWidget);
-    await _tapBookAction(tester, 'cancel-rsvp');
-    expect(find.text('State: Not going'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-calendar-root')),
+      findsOneWidget,
+    );
+    expect(find.text('September book discussion'), findsWidgets);
+    await _tapEngineAction(
+      tester,
+      instanceId: 'meeting-sept',
+      transitionId: 'respond-going',
+    );
+    expect(_engineAction('meeting-sept', 'respond-maybe'), findsOneWidget);
 
-    await _selectTab(tester, 'library');
+    await _selectTab(tester, 'marketplace');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('book-engine-library')),
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
     );
-    await _tapBookAction(tester, 'request-loan');
-    expect(find.text('State: Borrowed'), findsOneWidget);
-    await _tapBookAction(tester, 'join-waitlist');
-    expect(find.text('Queue: 1'), findsOneWidget);
-    await _tapBookAction(tester, 'leave-waitlist');
-    expect(find.text('Queue: 1'), findsNothing);
-    await _tapBookAction(tester, 'return-item');
-    expect(find.text('State: Returned'), findsOneWidget);
-    await _tapBookAction(tester, 'offer-giveaway');
-    expect(find.text('State: Giveaway'), findsOneWidget);
-    await _tapBookAction(tester, 'claim-giveaway');
-    expect(find.text('State: Given'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-marketplace-root')),
+      findsOneWidget,
+    );
+    expect(find.text('The Song of Achilles (paperback)'), findsWidgets);
+    expect(find.text('Trivial Pursuit: Book Lovers Edition'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('marketplace-search-field')),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'discussions');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('book-engine-discussions')),
+      find.byKey(const ValueKey('engine-native-list-root-discussions')),
     );
-    expect(find.byKey(const ValueKey('book-discussion-thread')), findsOneWidget);
-    await _tapBookAction(tester, 'reply');
-    expect(find.text('State: Replied'), findsOneWidget);
-    await _tapBookAction(tester, 'edit-reply');
-    expect(find.text('State: Open'), findsOneWidget);
-    await _tapBookAction(tester, 'reply');
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-discussions')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-thread-circe')),
+      findsOneWidget,
+    );
 
     await _selectTab(tester, 'documents');
     await _waitForFinder(
       tester,
-      find.byKey(const ValueKey('book-engine-documents')),
+      find.byKey(const ValueKey('engine-native-list-root-documents')),
     );
-    await _tapBookAction(tester, 'open-embedded');
-    expect(find.text('State: Embedded opened'), findsOneWidget);
-    await _tapBookAction(tester, 'open-external');
-    expect(find.text('State: External opened'), findsOneWidget);
-    await _tapBookAction(tester, 'download-material');
-    expect(find.text('State: Downloaded'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-documents')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('document-library-facts-material-public-tile')),
+      findsOneWidget,
+    );
+    expect(find.text('Circe Reading Guide'), findsWidgets);
 
-    await _selectTab(tester, 'search');
-    await _waitForFinder(tester, find.byKey(const ValueKey('book-engine-search')));
-    await _tapBookAction(tester, 'generate-answer');
-    expect(find.text('State: Answered'), findsOneWidget);
-    expect(find.text('Cited answer generated from discussion notes and reading guide.'), findsOneWidget);
+    await _selectTab(tester, 'books');
+    expect(
+      find.byKey(const ValueKey('search-ai-answer-waiting-digest-open-tile')),
+      findsOneWidget,
+      reason:
+          'Search is declared on Books, and the shipped package preserves the '
+          'known platform-service answer gap as an explicit waiting state.',
+    );
+    expect(
+      find.byKey(const ValueKey('search-ai-answer-sources-digest-open-tile')),
+      findsOneWidget,
+    );
 
     await _selectPersona(tester, 'book-organizer');
-    await _selectTab(tester, 'books');
-    await _tapBookAction(tester, 'close-winner');
-    expect(find.text('State: Winner selected'), findsOneWidget);
-    await _tapBookAction(tester, 'mark-tie');
-    expect(find.text('State: Tie'), findsOneWidget);
-    await _selectTab(tester, 'discussions');
-    await _tapBookAction(tester, 'moderate-thread');
-    expect(find.text('State: Moderated'), findsOneWidget);
+    expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
     await _selectTab(tester, 'admin');
-    await _waitForFinder(tester, find.byKey(const ValueKey('book-engine-admin')));
-    await _tapBookAction(tester, 'preview-selection');
-    await _tapBookAction(tester, 'schedule-selection');
-    await _tapBookAction(tester, 'publish-selection');
-    expect(find.text('State: Sent'), findsOneWidget);
-    await _tapBookAction(tester, 'generate-export');
-    expect(find.text('State: Generated'), findsOneWidget);
+    await _waitForFinder(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-root-admin')),
+    );
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-admin')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-submitted-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-pub-draft')),
+      findsNothing,
+      reason:
+          'The seeded announcement draft belongs to another organizer '
+          'account.',
+    );
+    expect(
+      find.byKey(const ValueKey('export-wizard-state-badge-export-draft-tile')),
+      findsNothing,
+      reason: 'The seeded draft export is actor-only.',
+    );
+    expect(
+      find.byKey(const ValueKey('creatable-fab-book-selection-publish')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('creatable-fab-book-export-metadata')),
+      findsOneWidget,
+    );
+    await _tapEngineAction(
+      tester,
+      instanceId: 'nom-submitted-1',
+      transitionId: 'select-for-ballot',
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-submitted-1')),
+      findsNothing,
+    );
 
     await _selectPersona(tester, 'book-member');
-    await _selectTab(tester, 'books');
-    await _tapBookAction(tester, 'read-selection');
-    expect(find.text('State: Read'), findsOneWidget);
+    expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+    await _selectTab(tester, 'home');
+    expect(find.text('Nothing is pinned yet'), findsOneWidget);
   });
 }
 
 Future<void> _selectTab(WidgetTester tester, String tabId) async {
   final tab = find.byKey(ValueKey('community-tab-$tabId'));
   final rail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (var attempt = 0; attempt < 16 && tab.evaluate().isEmpty; attempt += 1) {
-    await tester.drag(rail, const Offset(-240, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
+  for (final offset in const [Offset(240, 0), Offset(-240, 0)]) {
+    for (
+      var attempt = 0;
+      attempt < 16 && tab.evaluate().isEmpty;
+      attempt += 1
+    ) {
+      await tester.drag(rail, offset, warnIfMissed: false);
+      await tester.pumpAndSettle();
+    }
   }
   expect(tab, findsOneWidget);
+  await tester.ensureVisible(tab);
+  await tester.pumpAndSettle();
   await tester.tap(tab, warnIfMissed: false);
   await _pumpForUi(tester);
 }
 
-Future<void> _tapBookAction(WidgetTester tester, String transitionId) async {
-  final action = find.byKey(ValueKey('book-action-$transitionId')).first;
+Finder _engineAction(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+Future<void> _tapEngineAction(
+  WidgetTester tester, {
+  required String instanceId,
+  required String transitionId,
+}) async {
+  final action = _engineAction(instanceId, transitionId).first;
+  await _waitForFinder(tester, action);
+  expect(action, findsOneWidget);
   await tester.ensureVisible(action);
   await _pumpForUi(tester);
   await tester.tap(action, warnIfMissed: false);
@@ -158,24 +251,7 @@ Future<void> _tapBookAction(WidgetTester tester, String transitionId) async {
 }
 
 Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpForUi(tester);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
-  await _pumpForUi(tester);
-}
-
-Future<void> _openBookTarget(
-  WidgetTester tester,
-  LoomEvidenceTarget target,
-) async {
-  final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  expect(card, findsOneWidget);
-  await tester.tap(card, warnIfMissed: false);
-  await _pumpForUi(tester);
-  expect(
-    find.byKey(ValueKey('local-extension-${target.extensionId}')),
-    findsOneWidget,
-  );
+  await selectPersona(tester, personaId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

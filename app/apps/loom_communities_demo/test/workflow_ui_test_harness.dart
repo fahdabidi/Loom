@@ -4,15 +4,52 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
+
+const _shippedCommunityPackagePathsByExtensionId = <String, String>{
+  'ext_garden_club':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+  'ext_camera_club':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+  'ext_neighborhood_book_club':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc',
+  'ext_chess_club':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+  'ext_youth_soccer':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc',
+  'ext_mosque':
+      'docs/references/communities/'
+      'Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc',
+};
+
+File _repositoryFile(String relativePath) {
+  var directory = Directory.current;
+  for (var i = 0; i < 8; i++) {
+    final file = File('${directory.path}/$relativePath');
+    if (file.existsSync()) return file;
+    final parent = directory.parent;
+    if (parent.path == directory.path) break;
+    directory = parent;
+  }
+  throw StateError('Fixture not found: $relativePath');
+}
 
 Future<void> installEvidenceTarget(
   WidgetTester tester,
   LoomEvidenceTarget target, {
   ValueKey<String> openButtonKey = const ValueKey('add-community-button'),
+  bool useShippedPackage = false,
 }) async {
-  final fixture = writeEvidencePackagePair(target);
+  final fixture = useShippedPackage
+      ? writeEvidencePackagePair(target)
+      : _writeMetadataEvidencePackagePair(target);
   await tester.tap(find.byKey(openButtonKey));
   await tester.pumpAndSettle();
   await tester.enterText(
@@ -43,6 +80,10 @@ Future<void> openEvidenceTarget(
   }
   await _centerCardInList(tester, card);
   final detail = find.byKey(ValueKey('local-extension-${target.extensionId}'));
+  // Engine-native shipped packages first render their membership gate inside
+  // the target LocalExtensionScreen. The route proves the card tap worked even
+  // though the signed-in content marker is not available until entry succeeds.
+  final targetRoute = _evidenceTargetRoute(target);
   final identity = find.byKey(
     ValueKey('community-card-identity-${target.communityId}'),
   );
@@ -52,7 +93,7 @@ Future<void> openEvidenceTarget(
     }
     await tester.tap(tapTarget, warnIfMissed: false);
     await tester.pumpAndSettle();
-    if (detail.evaluate().isNotEmpty) {
+    if (detail.evaluate().isNotEmpty || targetRoute.evaluate().isNotEmpty) {
       return;
     }
     await _returnToCommunityList(tester);
@@ -63,12 +104,25 @@ Future<void> openEvidenceTarget(
   final cardRect = tester.getRect(card);
   await tester.tapAt(cardRect.center);
   await tester.pumpAndSettle();
-  if (detail.evaluate().isEmpty) {
+  if (detail.evaluate().isEmpty && targetRoute.evaluate().isEmpty) {
     fail(
       'Tapped evidence target ${target.communityName} '
-      '(${target.communityId}) but ${target.extensionId} did not open.',
+      '(${target.communityId}) but ${target.extensionId} did not open. '
+      '${_visibleScreenDescription()}',
     );
   }
+}
+
+Finder _evidenceTargetRoute(LoomEvidenceTarget target) {
+  return find.byWidgetPredicate(
+    (widget) =>
+        widget is LocalExtensionScreen &&
+        widget.community.communityId == target.communityId &&
+        widget.community.extensionId == target.extensionId,
+    description:
+        'LocalExtensionScreen for ${target.communityId} '
+        '(${target.extensionId})',
+  );
 }
 
 Future<void> _returnToCommunityList(WidgetTester tester) async {
@@ -80,10 +134,40 @@ Future<void> _returnToCommunityList(WidgetTester tester) async {
     final backButton = find.byTooltip('Back');
     if (backButton.evaluate().isNotEmpty) {
       await tester.tap(backButton.first, warnIfMissed: false);
-    } else {
-      await tester.pageBack();
+      await tester.pumpAndSettle();
+      continue;
     }
-    await tester.pumpAndSettle();
+
+    final entryGate = find.byKey(const ValueKey('community-entry-gate'));
+    final entryChecking = find.byKey(
+      const ValueKey('community-entry-checking'),
+    );
+    final entrySurface = entryGate.evaluate().isNotEmpty
+        ? entryGate
+        : entryChecking;
+    if (entrySurface.evaluate().isNotEmpty) {
+      // The engine-native entry Scaffold intentionally has no AppBar. Pop its
+      // known community route directly instead of asking pageBack() to find a
+      // back-button widget that cannot exist on this screen.
+      final didPop = await Navigator.of(
+        tester.element(entrySurface.first),
+      ).maybePop();
+      if (!didPop) {
+        fail(
+          'Could not return to the community list from the engine-native '
+          'community entry route because its Navigator could not pop. '
+          '${_visibleScreenDescription()}',
+        );
+      }
+      await tester.pumpAndSettle();
+      continue;
+    }
+
+    fail(
+      'Could not return to the community list: the list was not ready and '
+      'the current screen had neither a Back tooltip nor a known '
+      'engine-native entry route to pop. ${_visibleScreenDescription()}',
+    );
   }
   _expectCommunityListReady(tester);
 }
@@ -141,18 +225,208 @@ void _expectCommunityListReady(WidgetTester tester) {
       'Community list was not ready. '
       'addButton=${find.byKey(const ValueKey('add-community-button')).evaluate().length}, '
       'communityList=${find.byKey(const ValueKey('community-list')).evaluate().length}, '
-      'scrollables=${find.byType(Scrollable).evaluate().length}',
+      'scrollables=${find.byType(Scrollable).evaluate().length}. '
+      '${_visibleScreenDescription()}',
     );
   }
 }
 
 Future<void> selectPersona(WidgetTester tester, String personaId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await _waitForCommunityEntryResolution(tester);
+  // Shipped engine-native packages bind role policy to an active account, so
+  // enter through the real account form. Metadata fixtures remain on the
+  // legacy role-picker path below because they do not render this gate.
+  if (find
+      .byKey(const ValueKey('community-entry-gate'))
+      .evaluate()
+      .isNotEmpty) {
+    await _createEvidenceAccount(tester, personaId);
+    await _waitForEvidenceFinder(
+      tester,
+      find.byKey(const ValueKey('persona-picker-button')),
+      description: 'community content after signing up as $personaId',
+    );
+    return;
+  }
+
+  final pickerButton = find.byKey(const ValueKey('persona-picker-button'));
+  await _waitForEvidenceFinder(
+    tester,
+    pickerButton,
+    description: 'persona picker while selecting $personaId',
+  );
+  await tester.tap(pickerButton);
   await tester.pumpAndSettle();
   expect(find.byKey(const ValueKey('persona-picker-dialog')), findsOneWidget);
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
+
+  final personaOption = find.byKey(ValueKey('persona-option-$personaId'));
+  if (personaOption.evaluate().isEmpty) {
+    fail(
+      'Persona $personaId was not available in the persona picker. '
+      '${_visibleScreenDescription()}',
+    );
+  }
+  final selectedPersona = tester.widget<ListTile>(personaOption).selected;
+  final signedInAccount = find.textContaining('Signed in as ');
+  if (signedInAccount.evaluate().isEmpty || selectedPersona) {
+    await tester.tap(personaOption);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('persona-picker-dialog')), findsNothing);
+    return;
+  }
+
+  final specificPerson = find.byKey(
+    const ValueKey('persona-sign-in-specific-person'),
+  );
+  await tester.ensureVisible(specificPerson);
+  await tester.tap(specificPerson);
   await tester.pumpAndSettle();
-  expect(find.byKey(const ValueKey('persona-picker-dialog')), findsNothing);
+  await _waitForEvidenceFinder(
+    tester,
+    find.byKey(const ValueKey('open-signup-display-name')),
+    description: 'account chooser while selecting $personaId',
+  );
+
+  final accountName = _evidenceAccountName(personaId);
+  final existingAccount = find.ancestor(
+    of: find.text(accountName),
+    matching: find.byType(ListTile),
+  );
+  if (existingAccount.evaluate().isNotEmpty) {
+    await tester.ensureVisible(existingAccount.first);
+    await tester.tap(existingAccount.first, warnIfMissed: false);
+  } else {
+    await _createEvidenceAccount(tester, personaId);
+  }
+  await _waitForEvidenceFinder(
+    tester,
+    pickerButton,
+    description: 'community content after signing in as $personaId',
+  );
+}
+
+Future<void> _waitForCommunityEntryResolution(WidgetTester tester) async {
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (find
+        .byKey(const ValueKey('community-entry-checking'))
+        .evaluate()
+        .isEmpty) {
+      return;
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Community entry did not finish checking membership. '
+    '${_visibleScreenDescription()}',
+  );
+}
+
+Future<void> _createEvidenceAccount(
+  WidgetTester tester,
+  String personaId,
+) async {
+  final displayName = find.byKey(const ValueKey('open-signup-display-name'));
+  final personaDropdown = find.byKey(
+    const ValueKey('open-signup-persona-dropdown'),
+  );
+  final submit = find.byKey(const ValueKey('open-signup-submit'));
+  for (final finder in [displayName, personaDropdown, submit]) {
+    if (finder.evaluate().isEmpty) {
+      fail(
+        'The community entry account form was incomplete while selecting '
+        '$personaId. ${_visibleScreenDescription()}',
+      );
+    }
+  }
+
+  await tester.ensureVisible(personaDropdown);
+  await tester.tap(personaDropdown);
+  await tester.pumpAndSettle();
+  final personaChoice = find.byKey(ValueKey('open-signup-persona-$personaId'));
+  if (personaChoice.evaluate().isEmpty) {
+    fail(
+      'Persona $personaId was not offered by the community entry account '
+      'form. ${_visibleScreenDescription()}',
+    );
+  }
+  // DropdownMenuItem renders the selected value in the button and another
+  // copy in the open modal route. The overlay copy is last in paint order;
+  // target it explicitly so selecting the initial persona is unambiguous.
+  await tester.tap(personaChoice.last, warnIfMissed: false);
+  await tester.pumpAndSettle();
+
+  await tester.ensureVisible(displayName);
+  await tester.enterText(displayName, _evidenceAccountName(personaId));
+  await tester.ensureVisible(submit);
+  await tester.tap(submit, warnIfMissed: false);
+  await tester.pump();
+}
+
+String _evidenceAccountName(String personaId) => 'Evidence $personaId';
+
+Future<void> _waitForEvidenceFinder(
+  WidgetTester tester,
+  Finder finder, {
+  required String description,
+}) async {
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (finder.evaluate().isNotEmpty) {
+      return;
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail('Timed out waiting for $description. ${_visibleScreenDescription()}');
+}
+
+String _visibleScreenDescription() {
+  final markers = <String>[];
+  void addMarker(String label, Finder finder) {
+    final count = finder.evaluate().length;
+    if (count > 0) markers.add('$label=$count');
+  }
+
+  addMarker(
+    'communityEntryGate',
+    find.byKey(const ValueKey('community-entry-gate')),
+  );
+  addMarker(
+    'communityEntryChecking',
+    find.byKey(const ValueKey('community-entry-checking')),
+  );
+  addMarker(
+    'localPackageLoader',
+    find.byKey(const ValueKey('load-local-community-button')),
+  );
+  addMarker(
+    'personaPicker',
+    find.byKey(const ValueKey('persona-picker-dialog')),
+  );
+  addMarker('localExtensionScreen', find.byType(LocalExtensionScreen));
+  addMarker('alertDialog', find.byType(AlertDialog));
+  addMarker('scaffold', find.byType(Scaffold));
+  addMarker('scrollable', find.byType(Scrollable));
+
+  final extensionIds = find
+      .byType(LocalExtensionScreen)
+      .evaluate()
+      .map(
+        (element) =>
+            (element.widget as LocalExtensionScreen).community.extensionId,
+      )
+      .toSet()
+      .toList(growable: false);
+  final visibleTexts = <String>{};
+  for (final element in find.byType(Text).evaluate()) {
+    final widget = element.widget as Text;
+    final value = (widget.data ?? widget.textSpan?.toPlainText())?.trim();
+    if (value == null || value.isEmpty) continue;
+    visibleTexts.add(
+      value.length <= 100 ? value : '${value.substring(0, 97)}...',
+    );
+    if (visibleTexts.length == 16) break;
+  }
+  return 'Visible screen: markers=[${markers.join(', ')}], '
+      'extensionIds=$extensionIds, texts=${visibleTexts.toList()}';
 }
 
 Future<void> selectWorkflowTab(
@@ -389,6 +663,100 @@ Future<void> completeTargetWorkflows(
 }
 
 EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
+  final packagePath =
+      _shippedCommunityPackagePathsByExtensionId[target.extensionId];
+  if (packagePath == null) {
+    throw StateError(
+      'No shipped community package is registered for '
+      '${target.extensionId}.',
+    );
+  }
+  final decoded = jsonDecode(
+    stripJsonComments(_repositoryFile(packagePath).readAsStringSync()),
+  );
+  if (decoded is! Map<String, dynamic>) {
+    throw StateError('Shipped community package must contain a JSON object.');
+  }
+  final packageExtensionId = decoded['extensionId'];
+  if (packageExtensionId != target.extensionId) {
+    throw StateError(
+      'Shipped community package extensionId $packageExtensionId does not '
+      'match evidence target ${target.extensionId}.',
+    );
+  }
+  final experience = decoded['experience'];
+  final appShell = decoded['appShell'];
+  if (experience is! Map<String, dynamic> ||
+      appShell is! Map<String, dynamic>) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must declare both '
+      'experience and appShell.',
+    );
+  }
+  final workflowDefinitions = experience['workflowDefinitions'];
+  if (workflowDefinitions is! Map<String, dynamic>) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must declare '
+      'experience.workflowDefinitions.',
+    );
+  }
+
+  final tempDir = Directory.systemTemp.createTempSync(
+    'loom_${target.extensionId}_',
+  );
+  final extensionFile = File(
+    '${tempDir.path}/${target.handle}.loom-extension.zip',
+  );
+  final initializationFile = File(
+    '${tempDir.path}/${target.handle}.loom-init.zip',
+  );
+  final initialization = Map<String, dynamic>.from(decoded)
+    // Keep the package's genuine experience and appShell while hydrating the
+    // demo catalog entry. The shipped soccer corpus uses a different
+    // communityId; its existing package generator performs the same
+    // normalization for local sideloads.
+    ..['communityId'] = target.communityId;
+  extensionFile.writeAsStringSync(
+    jsonEncode({
+      'schemaVersion': 1,
+      'mode': 'local-demo',
+      'extensionId': target.extensionId,
+      'displayName': target.communityName,
+      'version': '1.0.0',
+      'permissions': [
+        'community.install',
+        'content.publish',
+        'events.write',
+        'forms.write',
+        'payments.write',
+        'export.read',
+      ],
+      'assets': {
+        'logo': 'assets/brand/${target.handle}-logo.png',
+        'cardImage': 'assets/brand/${target.handle}-card.png',
+        'heroImage': 'assets/brand/${target.handle}-hero.png',
+        'defaultCardImage': 'assets/brand/${target.handle}-default-card.png',
+      },
+      'routes': [
+        {
+          'routeId': 'home',
+          'title': target.communityName,
+          'surface': 'community-home',
+        },
+      ],
+      'workflows': workflowDefinitions.keys.toList(growable: false),
+    }),
+  );
+  initializationFile.writeAsStringSync(jsonEncode(initialization));
+  return EvidencePackagePair(
+    extensionPath: extensionFile.path,
+    initializationPath: initializationFile.path,
+  );
+}
+
+EvidencePackagePair _writeMetadataEvidencePackagePair(
+  LoomEvidenceTarget target,
+) {
   final tempDir = Directory.systemTemp.createTempSync(
     'loom_${target.extensionId}_',
   );
@@ -426,12 +794,7 @@ EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
           'surface': 'community-home',
         },
       ],
-      'workflows': [
-        for (final workflow in experienceForExtensionId(
-          target.extensionId,
-        ).workflows)
-          workflow.workflowId,
-      ],
+      'workflows': <String>[],
     }),
   );
   initializationFile.writeAsStringSync(
