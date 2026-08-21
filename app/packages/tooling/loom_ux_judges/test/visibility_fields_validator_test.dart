@@ -6,6 +6,8 @@ library;
 
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 const _visibilityFindingTypes = {
@@ -21,7 +23,7 @@ Map<String, Object?> _package(
   Map<String, Object?> workflow, {
   List<Map<String, Object?>> roles = const [],
 }) => {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'experience': {
     'roles': roles,
     'workflowDefinitions': {'subject': workflow},
@@ -67,22 +69,20 @@ Map<String, Object?> _workflow({
 List<ValidationFinding> _visibilityFindings(
   Map<String, Object?> workflow, {
   List<Map<String, Object?>> roles = const [],
-}) =>
-    CommunityPackageValidator()
-        .validate(_package(workflow, roles: roles))
-        .findings
-        .where((finding) => _visibilityFindingTypes.contains(finding.type))
-        .toList();
+}) => CommunityPackageValidator()
+    .validate(_package(workflow, roles: roles))
+    .findings
+    .where((finding) => _visibilityFindingTypes.contains(finding.type))
+    .toList();
 
 List<ValidationFinding> _ofType(
   Map<String, Object?> workflow,
   String type, {
   List<Map<String, Object?>> roles = const [],
-}) =>
-    _visibilityFindings(
-      workflow,
-      roles: roles,
-    ).where((finding) => finding.type == type).toList();
+}) => _visibilityFindings(
+  workflow,
+  roles: roles,
+).where((finding) => finding.type == type).toList();
 
 void main() {
   group('unknown_key in visibility.fields', () {
@@ -206,10 +206,7 @@ void main() {
 
     test('does not fire when visibility.fields is absent', () {
       expect(
-        _ofType(
-          _workflow(family: 'documentLibrary'),
-          'unknown_key',
-        ),
+        _ofType(_workflow(family: 'documentLibrary'), 'unknown_key'),
         isEmpty,
       );
     });

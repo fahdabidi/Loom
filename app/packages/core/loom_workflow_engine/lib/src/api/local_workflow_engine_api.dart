@@ -11,6 +11,7 @@ import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
 import '../store/database.dart';
+import '../workflow_capabilities.dart';
 import 'notification_delivery_service.dart';
 import 'workflow_engine_api.dart';
 
@@ -1699,7 +1700,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           viewerId: personaId,
           actorId: personaId,
         );
-        if (effect.op == 'branch') {
+        if (effect.op == workflowEffectBranch) {
           if (effect.condition == null) {
             throw StateError('branch effect requires an "if" formula');
           }
@@ -1715,7 +1716,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           await applyList(condition ? effect.thenEffects : effect.elseEffects);
           continue;
         }
-        if (effect.op == 'createInstance') {
+        if (effect.op == workflowEffectCreateInstance) {
           if (effect.workflowType == null || effect.fields == null) {
             throw StateError('createInstance requires workflowType and fields');
           }
@@ -1733,7 +1734,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           );
           continue;
         }
-        if (effect.op == 'set' && effect.relatedInstance != null) {
+        if (effect.op == workflowEffectSet && effect.relatedInstance != null) {
           final targetId = computed[effect.relatedInstance];
           if (targetId is! String || targetId.isEmpty) {
             throw StateError(
@@ -1762,7 +1763,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             instanceId: instanceId,
           );
           final updated = applyEffects(
-            [WorkflowEffect(op: 'set', key: effect.key, value: value)],
+            [
+              WorkflowEffect(
+                op: workflowEffectSet,
+                key: effect.key,
+                value: value,
+              ),
+            ],
             personaId,
             targetData,
             instanceId: instanceId,
@@ -1774,7 +1781,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           );
           continue;
         }
-        if (effect.op == 'transitionRelated') {
+        if (effect.op == workflowEffectTransitionRelated) {
           final relatedQuery = effect.relatedQuery;
           final transitionId = effect.transitionId;
           if (relatedQuery == null || transitionId == null) {
@@ -1847,7 +1854,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           }
           continue;
         }
-        if (effect.op == 'generateRecurringInstances') {
+        if (effect.op == workflowEffectGenerateRecurringInstances) {
           final workflowType = effect.workflowType;
           final anchorField = effect.anchorField;
           final fields = effect.fields;
@@ -1893,7 +1900,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           final occurrenceDates = computeRecurrenceOccurrences(anchor, rule);
 
           data = applyEffects(
-            [WorkflowEffect(op: 'set', key: 'seriesId', value: seriesId)],
+            [
+              WorkflowEffect(
+                op: workflowEffectSet,
+                key: 'seriesId',
+                value: seriesId,
+              ),
+            ],
             personaId,
             data,
             instanceId: instanceId,
@@ -1952,7 +1965,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   bool _containsTransitionRelated(List<WorkflowEffect> effects) => effects.any(
     (effect) =>
-        effect.op == 'transitionRelated' ||
+        effect.op == workflowEffectTransitionRelated ||
         _containsTransitionRelated(effect.thenEffects) ||
         _containsTransitionRelated(effect.elseEffects),
   );

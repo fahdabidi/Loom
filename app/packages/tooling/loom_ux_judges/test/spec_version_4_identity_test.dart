@@ -7,6 +7,8 @@
 library;
 
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 Map<String, Object?> _v4({
@@ -15,7 +17,7 @@ Map<String, Object?> _v4({
   Map<String, Object?>? appShell,
   Map<String, Object?>? extraExperience,
 }) => {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'experience': {
     'roles':
         roles ??
@@ -79,7 +81,9 @@ void main() {
     });
 
     test('an unsupported specVersion fails rather than best-effort-parses', () {
-      final types = _errors(_v4()..['specVersion'] = 99);
+      final types = _errors(
+        _v4()..['specVersion'] = currentCommunitySpecVersion + 1,
+      );
       expect(types, contains('unsupported_schema_version'));
     });
 
@@ -139,7 +143,7 @@ void main() {
         report.errors.map((finding) => finding.message),
         everyElement(
           allOf(
-            contains('specVersion: 4'),
+            contains('specVersion: $currentCommunitySpecVersion'),
             contains('docs/references/reference/identity-types.md'),
           ),
         ),
@@ -216,7 +220,10 @@ void main() {
           .where((finding) => finding.type == 'legacy_identity_type')
           .toList();
       expect(findings, hasLength(1));
-      expect(findings.single.message, contains('specVersion: 4'));
+      expect(
+        findings.single.message,
+        contains('specVersion: $currentCommunitySpecVersion'),
+      );
       expect(
         findings.single.message,
         contains('docs/references/reference/identity-types.md'),

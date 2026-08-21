@@ -1,3 +1,5 @@
+import '../workflow_capabilities.dart';
+
 /// Specification for a single input parameter on a transition.
 /// Each input is resolved from the caller-supplied values map
 /// and interpolated as {input.<name>} inside effect values.
@@ -63,17 +65,17 @@ class ActorEqualsFieldGuard {
 /// A guard condition on a transition. All non-null fields must pass (AND semantics).
 class WorkflowGuard {
   static const jsonKeys = <String>{
-    'allowedRoleIds',
-    'actorInList',
-    'actorEqualsField',
-    'instanceDataEquals',
-    'formula',
-    'relatedInstanceField',
-    'relatedListField',
-    'relatedAggregate',
-    'cancellationDeadline',
-    'locationOverlap',
-    'requiresWorkflowsComplete',
+    workflowGuardAllowedRoleIds,
+    workflowGuardActorInList,
+    workflowGuardActorEqualsField,
+    workflowGuardInstanceDataEquals,
+    workflowGuardFormula,
+    workflowGuardRelatedInstanceFieldKey,
+    workflowGuardRelatedListFieldKey,
+    workflowGuardRelatedAggregate,
+    workflowGuardCancellationDeadline,
+    workflowGuardLocationOverlap,
+    workflowGuardRequiresWorkflowsComplete,
   };
 
   final List<String>? allowedPersonaIds;
@@ -105,45 +107,45 @@ class WorkflowGuard {
   factory WorkflowGuard.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const WorkflowGuard();
     return WorkflowGuard(
-      allowedPersonaIds: (json['allowedRoleIds'] as List<dynamic>?)
+      allowedPersonaIds: (json[workflowGuardAllowedRoleIds] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      actorInList: json['actorInList'] != null
+      actorInList: json[workflowGuardActorInList] != null
           ? ListMembershipGuard.fromJson(
-              json['actorInList'] as Map<String, dynamic>,
+              json[workflowGuardActorInList] as Map<String, dynamic>,
             )
           : null,
-      actorEqualsField: json['actorEqualsField'] != null
+      actorEqualsField: json[workflowGuardActorEqualsField] != null
           ? ActorEqualsFieldGuard.fromJson(
-              json['actorEqualsField'] as Map<String, dynamic>,
+              json[workflowGuardActorEqualsField] as Map<String, dynamic>,
             )
           : null,
-      instanceDataEquals: json['instanceDataEquals'] != null
+      instanceDataEquals: json[workflowGuardInstanceDataEquals] != null
           ? KeyValueGuard.fromJson(
-              json['instanceDataEquals'] as Map<String, dynamic>,
+              json[workflowGuardInstanceDataEquals] as Map<String, dynamic>,
             )
           : null,
-      formula: json['formula'] as String?,
-      relatedListMembership: json['relatedInstanceField'] != null
+      formula: json[workflowGuardFormula] as String?,
+      relatedListMembership: json[workflowGuardRelatedInstanceFieldKey] != null
           ? RelatedListGuard.fromJson(json)
           : null,
-      relatedAggregate: json['relatedAggregate'] != null
+      relatedAggregate: json[workflowGuardRelatedAggregate] != null
           ? RelatedAggregateGuard.fromJson(
-              json['relatedAggregate'] as Map<String, dynamic>,
+              json[workflowGuardRelatedAggregate] as Map<String, dynamic>,
             )
           : null,
-      cancellationDeadline: json['cancellationDeadline'] != null
+      cancellationDeadline: json[workflowGuardCancellationDeadline] != null
           ? CancellationDeadlineGuard.fromJson(
-              json['cancellationDeadline'] as Map<String, dynamic>,
+              json[workflowGuardCancellationDeadline] as Map<String, dynamic>,
             )
           : null,
-      locationOverlap: json['locationOverlap'] != null
+      locationOverlap: json[workflowGuardLocationOverlap] != null
           ? LocationOverlapGuard.fromJson(
-              json['locationOverlap'] as Map<String, dynamic>,
+              json[workflowGuardLocationOverlap] as Map<String, dynamic>,
             )
           : null,
       requiresWorkflowsComplete:
-          (json['requiresWorkflowsComplete'] as List<dynamic>?)
+          (json[workflowGuardRequiresWorkflowsComplete] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList(),
     );
@@ -289,7 +291,10 @@ class RelatedTransitionQuery {
 }
 
 class RelatedListGuard {
-  static const jsonKeys = <String>{'relatedInstanceField', 'relatedListField'};
+  static const jsonKeys = <String>{
+    workflowGuardRelatedInstanceFieldKey,
+    workflowGuardRelatedListFieldKey,
+  };
 
   final String relatedInstanceField;
   final String relatedListField;
@@ -299,8 +304,9 @@ class RelatedListGuard {
   });
   factory RelatedListGuard.fromJson(Map<String, dynamic> json) =>
       RelatedListGuard(
-        relatedInstanceField: json['relatedInstanceField'] as String,
-        relatedListField: json['relatedListField'] as String,
+        relatedInstanceField:
+            json[workflowGuardRelatedInstanceFieldKey] as String,
+        relatedListField: json[workflowGuardRelatedListFieldKey] as String,
       );
 }
 

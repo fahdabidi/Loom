@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:loom_ux_judges/src/validator/validator_http_server.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 void main() {
@@ -229,10 +231,11 @@ void main() {
     });
 
     test('POST /validate strips // and /* */ JSONC comments', () async {
-      const jsoncBody = '''
+      const jsoncBody =
+          '''
       {
         // a line comment
-        "specVersion": 4,
+        "specVersion": $currentCommunitySpecVersion,
         "packageId": "init_x_1",
         "communityId": "community_x",
         "communityHandle": "x",
@@ -296,7 +299,7 @@ void main() {
               as Map<String, dynamic>;
       expect(manifest['extensionId'], 'ext_hiking_club');
       expect(manifest['displayName'], 'Hiking Club');
-      expect(manifest['specVersion'], 4);
+      expect(manifest['specVersion'], currentCommunitySpecVersion);
       expect(manifest, isNot(contains('schemaVersion')));
       expect(manifest['version'], isA<String>());
 
@@ -367,7 +370,7 @@ void main() {
       final manifest = json['extensionManifest'] as Map<String, dynamic>;
       expect(manifest['extensionId'], 'ext_hiking_club');
       expect(manifest['displayName'], 'Hiking Club');
-      expect(manifest['specVersion'], 4);
+      expect(manifest['specVersion'], currentCommunitySpecVersion);
       expect(manifest, isNot(contains('schemaVersion')));
 
       final initPackage = json['initializationPackage'] as Map<String, dynamic>;
@@ -478,7 +481,7 @@ void main() {
 }
 
 const _hikeClubPackage = {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'packageId': 'init_hiking_club_1',
   'communityId': 'community_hiking_club',
   'communityHandle': 'hiking-club',
@@ -614,7 +617,7 @@ const _hikeClubPackage = {
 };
 
 const _noEditGuardOrCreatePackage = {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'packageId': 'init_no_gaps_1',
   'communityId': 'community_no_gaps',
   'communityHandle': 'no-gaps',

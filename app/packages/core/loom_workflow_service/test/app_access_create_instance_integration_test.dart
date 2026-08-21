@@ -162,7 +162,7 @@ void main() {
             'workflow-definitions',
           ),
           body: {
-            'specVersion': 4,
+            'specVersion': currentCommunitySpecVersion,
             'definitions': {workflowType: definition},
           },
           fanId: 'fan-b3-installer-$unique',

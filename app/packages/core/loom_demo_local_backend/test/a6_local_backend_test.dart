@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_extension_package/loom_extension_package.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -68,7 +69,9 @@ void main() {
 
     test('specVersion 4 is preserved from plan through installation', () {
       final backend = LocalInAppBackend();
-      final fixture = _writeArbitraryPackagePair(specVersion: 4);
+      final fixture = _writeArbitraryPackagePair(
+        specVersion: currentCommunitySpecVersion,
+      );
 
       final plan = backend.parseLocalPackagePair(
         extensionPackagePath: fixture.extensionPath,
@@ -79,8 +82,8 @@ void main() {
         initializationPackagePath: fixture.initializationPath,
       );
 
-      expect(plan.specVersion, 4);
-      expect(report.community.specVersion, 4);
+      expect(plan.specVersion, currentCommunitySpecVersion);
+      expect(report.community.specVersion, currentCommunitySpecVersion);
     });
 
     test('vt_fake-backend_import-arbitrary-package-pair', () {

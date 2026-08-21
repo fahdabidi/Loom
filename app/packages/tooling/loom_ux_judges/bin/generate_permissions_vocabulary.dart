@@ -23,14 +23,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/spec_version.dart';
 
 /// Repo-relative output path.
 const outputPath = 'docs/references/generated/permissions-vocabulary.json';
 
 Map<String, Object?> buildVocabulary() {
   final bespoke = <String, Object?>{};
-  for (final family in (ArchetypeResolver.bespokeVocabularies.keys.toList()
-    ..sort())) {
+  for (final family
+      in (ArchetypeResolver.bespokeVocabularies.keys.toList()..sort())) {
     final actions = ArchetypeResolver.bespokeVocabularies[family]!.toList()
       ..sort();
     bespoke[family] = {
@@ -98,15 +99,15 @@ Map<String, Object?> buildVocabulary() {
       'installer (Java), so that the derivation rules defined in',
       'docs/references/reference/permissions.md exist in exactly one place.',
     ],
-    'specVersion': 4,
+    'specVersion': currentCommunitySpecVersion,
     'archetypeContracts': {
       '_comment':
           'What each archetype guarantees. `bookkeeping` is per-person state the '
-              'archetype maintains itself -- a community declares none of these '
-              'fields and writes no idempotence guard against them. '
-              '`enforcement: client_engine` means the rule is evaluated on the '
-              'device by LocalWorkflowEngineApi and is advisory, not a security '
-              'boundary: there is no workflow service yet.',
+          'archetype maintains itself -- a community declares none of these '
+          'fields and writes no idempotence guard against them. '
+          '`enforcement: client_engine` means the rule is evaluated on the '
+          'device by LocalWorkflowEngineApi and is advisory, not a security '
+          'boundary: there is no workflow service yet.',
       ...contracts,
     },
     'bespokeArchetypes': bespoke,
@@ -114,7 +115,7 @@ Map<String, Object?> buildVocabulary() {
     'genericDerivation': {
       '_comment':
           'permissions.md §5. Generic families declare no action; it is derived '
-              'from structure the transition already carries.',
+          'from structure the transition already carries.',
       'rules': [
         {'when': 'a create action on a renderBinding', 'action': 'create'},
         {
@@ -144,7 +145,9 @@ int main(List<String> args) {
     dir = parent;
   }
   if (root == null) {
-    stderr.writeln('Could not locate the repo root from ${Directory.current.path}.');
+    stderr.writeln(
+      'Could not locate the repo root from ${Directory.current.path}.',
+    );
     return 2;
   }
 

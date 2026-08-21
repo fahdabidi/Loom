@@ -658,7 +658,10 @@ Request _replaceRequest({
     'idempotency-key': idempotencyKey,
     HeaderWorkflowIdentityExtractor.defaultHeaderName: 'fan-installer',
   },
-  body: jsonEncode({'specVersion': 4, 'definitions': definitions}),
+  body: jsonEncode({
+    'specVersion': currentCommunitySpecVersion,
+    'definitions': definitions,
+  }),
 );
 
 Request _getRequest(String path, String fanId) => Request(

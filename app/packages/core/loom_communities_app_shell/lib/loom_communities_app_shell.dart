@@ -13,6 +13,10 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'src/app_shell_capabilities.dart';
+
+export 'src/app_shell_capabilities.dart';
+
 part 'src/part31_auth_screens.dart';
 part 'src/part29_auth_api.dart';
 part 'src/part30_local_auth_api.dart';

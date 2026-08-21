@@ -25,6 +25,8 @@
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 /// Required top-level fields on the init package, per
 /// `LocalInAppBackend.parseLocalPackagePair`'s own validation
@@ -96,7 +98,7 @@ ExtensionPackagePlan buildExtensionPackagePlan(
   );
 
   final extensionManifest = <String, dynamic>{
-    'specVersion': 4,
+    'specVersion': currentCommunitySpecVersion,
     'extensionId': extensionId,
     'displayName': displayName,
     'version': '1.0.0',

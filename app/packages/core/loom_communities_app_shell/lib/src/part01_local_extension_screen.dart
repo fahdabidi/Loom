@@ -387,15 +387,16 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     );
     if (!mounted) return;
     final created = switch (presentationStyle) {
-      'slideOutBottom' => await showModalBottomSheet<bool>(
+      appShellPresentationModeSlideOutBottom => await showModalBottomSheet<bool>(
         context: context,
         isScrollControlled: true,
         useSafeArea: true,
         builder: (context) => _CreatableActionBottomSheet(content: content),
       ),
-      'slideOutLeft' || 'slideOutRight' => await _showCreatableActionSidePanel(
+      appShellPresentationModeSlideOutLeft ||
+      appShellPresentationModeSlideOutRight => await _showCreatableActionSidePanel(
         content: content,
-        fromLeft: presentationStyle == 'slideOutLeft',
+        fromLeft: presentationStyle == appShellPresentationModeSlideOutLeft,
       ),
       // Popup is opened by OpenContainer around the FAB. This fallback keeps
       // direct callers functional without changing the creation content.
@@ -1304,13 +1305,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             .tabCreatableActionStyles[selectedTab.tabId]
             ?.multiActionStyle ??
         experience.creatableAction?.multiActionStyle ??
-        'speedDial';
+        appShellFabStyleSpeedDial;
     final presentationStyle =
         experience
             .tabCreatableActionStyles[selectedTab.tabId]
             ?.presentationStyle ??
         experience.creatableAction?.presentationStyle ??
-        'popup';
+        appShellPresentationModePopup;
     const _defaultBottomPadding = 48.0;
     const _creatableFabHeight = 56.0;
     const _creatableFabSmallHeight = 40.0;
@@ -1328,8 +1329,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final tabCreatableFabHeight = !hasTabCreatableFab
         ? 0.0
         : switch (multiActionStyle) {
-            'singleFirst' => _creatableFabHeight,
-            'stacked' => creatableActions.length == 1
+            appShellFabStyleSingleFirst => _creatableFabHeight,
+            appShellFabStyleStacked => creatableActions.length == 1
                 ? _creatableFabHeight
                 : _creatableFabHeight *
                         creatableActions.length.toDouble() +
@@ -1835,7 +1836,7 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
 
   Widget _presentationFab(_CreatableWorkflowAction action) {
     if (action.workflowType != 'event-rsvp' ||
-        widget.presentationStyle != 'popup') {
+        widget.presentationStyle != appShellPresentationModePopup) {
       return _actionFab(action);
     }
     return OpenContainer<bool>(
@@ -1856,10 +1857,10 @@ class _CreatableActionFabState extends State<_CreatableActionFab> {
   @override
   Widget build(BuildContext context) {
     if (widget.actions.length == 1 ||
-        widget.multiActionStyle == 'singleFirst') {
+        widget.multiActionStyle == appShellFabStyleSingleFirst) {
       return _presentationFab(widget.actions.first);
     }
-    if (widget.multiActionStyle == 'stacked') {
+    if (widget.multiActionStyle == appShellFabStyleStacked) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,

@@ -7,12 +7,13 @@ library;
 
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
+import 'package:loom_workflow_engine/src/spec_version.dart';
 import 'package:test/test.dart';
 
 /// Minimal package skeleton: enough envelope for the validator to reach the
 /// workflow definitions, nothing more.
 Map<String, Object?> _package(Map<String, Object?> workflowDefinitions) => {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'experience': {
     'roles': [
       {'roleId': 'member', 'label': 'Member'},

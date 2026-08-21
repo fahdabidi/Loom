@@ -228,20 +228,6 @@ void _validateEffectOps(
   Map<String, Map<String, dynamic>> definitions,
   List<WorkflowDefinitionFinding> findings,
 ) {
-  const knownOps = <String>{
-    'set',
-    'append',
-    'appendUnique',
-    'removeValue',
-    'increment',
-    'decrement',
-    'branch',
-    'createInstance',
-    'removeFromTileGrid',
-    'transitionRelated',
-    'generateRecurringInstances',
-  };
-
   for (final entry in definitions.entries) {
     final transitions = entry.value['transitions'];
     if (transitions is! List) continue;
@@ -256,7 +242,8 @@ void _validateEffectOps(
         for (final effect in effects) {
           if (effect is! Map) continue;
           final op = effect['op'];
-          if (op is! String || !knownOps.contains(op)) {
+          if (op is! String ||
+              !supportedWorkflowEffectOperations.contains(op)) {
             findings.add(
               WorkflowDefinitionFinding(
                 code: 'unknown_effect_op',

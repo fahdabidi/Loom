@@ -30,7 +30,7 @@ void main() {
     });
 
     test('parses specVersion 4 roles using roleId', () {
-      expect(package.specVersion, 4);
+      expect(package.specVersion, currentCommunitySpecVersion);
       expect(
         package.personas
             .map(
@@ -59,7 +59,7 @@ void main() {
               .having(
                 (error) => error.message,
                 'message',
-                contains('specVersion: 4'),
+                contains('specVersion: $currentCommunitySpecVersion'),
               )
               .having(
                 (error) => error.message,
@@ -72,7 +72,7 @@ void main() {
 
     test('rejects pre-v4 specVersion before parsing its body', () {
       final root = jsonDecode(jsonEncode(package.root)) as Map<String, dynamic>;
-      root['specVersion'] = 3;
+      root['specVersion'] = currentCommunitySpecVersion - 1;
       final experience = root['experience'] as Map<String, dynamic>;
       experience.remove('roles');
       experience['personas'] = const <dynamic>[];
@@ -84,7 +84,10 @@ void main() {
               .having(
                 (error) => error.message,
                 'message',
-                contains('Unsupported specVersion "3"'),
+                contains(
+                  'Unsupported specVersion '
+                  '"${currentCommunitySpecVersion - 1}"',
+                ),
               )
               .having(
                 (error) => error.message,
@@ -98,7 +101,7 @@ void main() {
     test('uses specVersion 4 as the install payload grammarVersion', () {
       expect(
         plan.installCommunityPackagePayload,
-        containsPair('grammarVersion', 4),
+        containsPair('grammarVersion', currentCommunitySpecVersion),
       );
     });
 
@@ -179,7 +182,10 @@ void main() {
     test(
       'passes definitions through under specVersion 4 with role guards intact',
       () {
-        expect(plan.replaceWorkflowDefinitionsPayload['specVersion'], 4);
+        expect(
+          plan.replaceWorkflowDefinitionsPayload['specVersion'],
+          currentCommunitySpecVersion,
+        );
         final definitions =
             plan.replaceWorkflowDefinitionsPayload['definitions'] as Map;
         final messageThread = definitions['platform-message-thread'] as Map;
@@ -251,7 +257,7 @@ void main() {
       expect(package.communityHandle, 'garden-club');
       expect(package.displayName, 'Garden Club');
       expect(package.extensionId, 'ext_garden_club');
-      expect(package.specVersion, 4);
+      expect(package.specVersion, currentCommunitySpecVersion);
       expect(
         package.personas
             .map(

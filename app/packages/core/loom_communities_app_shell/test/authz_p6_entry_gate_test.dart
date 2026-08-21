@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 const _entryWorkflowDefinitions = <String, Object?>{
   'entry-content': <String, Object?>{
@@ -59,7 +61,7 @@ LocalInstalledCommunity _engineCommunity({
     cardImageAssetId: null,
     heroImageAssetId: null,
     accentColor: '#246B62',
-    specVersion: 4,
+    specVersion: currentCommunitySpecVersion,
     experienceConfiguration: <String, Object?>{
       'tagline': 'AuthZ.P6 entry gate fixture',
       'roles': personas,

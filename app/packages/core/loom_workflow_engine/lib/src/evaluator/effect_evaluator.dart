@@ -1,4 +1,5 @@
 import '../models/workflow_models.dart';
+import '../workflow_capabilities.dart';
 
 /// Applies a list of [WorkflowEffect]s to a copy of [instanceData] and returns
 /// the new map. `$actor` in effect values is resolved to [personaId].
@@ -14,7 +15,10 @@ Map<String, dynamic> applyEffects(
   final result = Map<String, dynamic>.from(instanceData);
 
   for (final effect in effects) {
-    // Skip presentation-only ops (e.g. removeFromTileGrid) that have no key
+    // This op is implemented as an explicit engine no-op: it affects only the
+    // presentation layer and never mutates instance data.
+    if (effect.op == workflowEffectRemoveFromTileGrid) continue;
+    // Skip other keyless operations handled by LocalWorkflowEngineApi.
     if (effect.key == null) continue;
     final resolvedValue = resolveEffectValue(
       effect.value,
@@ -81,22 +85,39 @@ dynamic resolveEffectValue(
     }
     if (inputValues != null) {
       for (final entry in inputValues.entries) {
-        resolved = resolved.replaceAll('{input.${entry.key}}', '${entry.value}');
+        resolved = resolved.replaceAll(
+          '{input.${entry.key}}',
+          '${entry.value}',
+        );
       }
     }
     return resolved;
   }
   if (value is List) {
     return value
-        .map((item) => resolveEffectValue(item, personaId, instanceData,
-            inputValues: inputValues, instanceId: instanceId))
+        .map(
+          (item) => resolveEffectValue(
+            item,
+            personaId,
+            instanceData,
+            inputValues: inputValues,
+            instanceId: instanceId,
+          ),
+        )
         .toList();
   }
   if (value is Map) {
     return value.map(
-      (key, item) =>
-          MapEntry(key, resolveEffectValue(item, personaId, instanceData,
-              inputValues: inputValues, instanceId: instanceId)),
+      (key, item) => MapEntry(
+        key,
+        resolveEffectValue(
+          item,
+          personaId,
+          instanceData,
+          inputValues: inputValues,
+          instanceId: instanceId,
+        ),
+      ),
     );
   }
   return value;
@@ -129,7 +150,7 @@ void _applyOne(
   dynamic value,
 ) {
   switch (op) {
-    case 'set':
+    case workflowEffectSet:
       if (key.contains('.')) {
         _setNestedMapValue(data, key, value);
       } else {
@@ -137,12 +158,12 @@ void _applyOne(
       }
       break;
 
-    case 'appendUnique':
-    case 'append':
+    case workflowEffectAppendUnique:
+    case workflowEffectAppend:
       final existing = data[key];
       if (existing is List) {
         final list = List<dynamic>.from(existing);
-        if (op == 'append' || !list.contains(value)) {
+        if (op == workflowEffectAppend || !list.contains(value)) {
           list.add(value);
         }
         data[key] = list;
@@ -152,7 +173,7 @@ void _applyOne(
       }
       break;
 
-    case 'removeValue':
+    case workflowEffectRemoveValue:
       final existing = data[key];
       if (existing is List) {
         data[key] = List<dynamic>.from(existing)..remove(value);
@@ -160,7 +181,7 @@ void _applyOne(
       // If not a list, no-op (safe).
       break;
 
-    case 'increment':
+    case workflowEffectIncrement:
       final current = data[key];
       if (current is num) {
         data[key] = current + 1;
@@ -170,7 +191,7 @@ void _applyOne(
       }
       break;
 
-    case 'decrement':
+    case workflowEffectDecrement:
       final current = data[key];
       if (current is num) {
         final next = current - 1;

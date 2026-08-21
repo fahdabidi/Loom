@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 const _extensionId = 'ext_camera_club';
 const _fixtureRelativePath =
@@ -39,7 +41,7 @@ Future<void> main() async {
   await initialization.writeAsString(jsonEncode(source));
   await extension.writeAsString(
     jsonEncode(<String, Object?>{
-      'specVersion': 4,
+      'specVersion': currentCommunitySpecVersion,
       'extensionId': _extensionId,
       'displayName': source['displayName'],
       'version': '1.0.0',

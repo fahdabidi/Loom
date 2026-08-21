@@ -1,9 +1,11 @@
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 Map<String, dynamic> _package(Map<String, dynamic> workflow) => {
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'experience': {
     'roles': [
       {'roleId': 'board', 'label': 'Board', 'roleLabel': 'Board'},

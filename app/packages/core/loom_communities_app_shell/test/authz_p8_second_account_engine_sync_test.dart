@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 const _communityId = 'authz-p8-community';
 const _extensionId = 'authz-p8-extension';
@@ -21,7 +23,7 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
   cardImageAssetId: null,
   heroImageAssetId: null,
   accentColor: '#246B62',
-  specVersion: 4,
+  specVersion: currentCommunitySpecVersion,
   experienceConfiguration: <String, Object?>{
     'tagline': 'AuthZ.P8 second-account sync regression',
     'roles': <Object?>[

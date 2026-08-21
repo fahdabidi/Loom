@@ -1,5 +1,7 @@
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 Map<String, dynamic> definition({Map<String, dynamic> schema = const {}}) =>
@@ -50,7 +52,7 @@ Map<String, dynamic> seed({
 };
 Map<String, dynamic> pkg({Map<String, dynamic>? experience}) =>
     <String, dynamic>{
-      'specVersion': 4,
+      'specVersion': currentCommunitySpecVersion,
       'experience':
           experience ??
           <String, dynamic>{

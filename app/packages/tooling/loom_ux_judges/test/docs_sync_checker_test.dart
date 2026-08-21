@@ -155,7 +155,7 @@ void main() {
       final sandbox = _sandbox();
       addTearDown(() => sandbox.deleteSync(recursive: true));
 
-      // Every shipped fixture now carries specVersion: 4, so the historical
+      // Every shipped fixture now carries the current specVersion, so the historical
       // exemption is no longer what keeps this check clean.
       final findings = DocsSyncChecker(sandbox).check().findings;
       expect(

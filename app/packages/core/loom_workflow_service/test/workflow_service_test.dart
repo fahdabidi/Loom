@@ -491,7 +491,10 @@ void main() {
     'replaceWorkflowDefinitions distinguishes malformed input from 422 findings',
     () async {
       final malformed = await service.handler(
-        _replaceDefinitionsRequest(<String, dynamic>{}, specVersion: '4'),
+        _replaceDefinitionsRequest(
+          <String, dynamic>{},
+          specVersion: '$currentCommunitySpecVersion',
+        ),
       );
       expect(malformed.statusCode, 400);
       expect(
@@ -504,7 +507,7 @@ void main() {
           {
             'future-workflow': {'futureConstruct': true},
           },
-          specVersion: 99,
+          specVersion: currentCommunitySpecVersion + 1,
           idempotencyKey: 'replace-version',
         ),
       );
@@ -1456,7 +1459,7 @@ Map<String, dynamic> _definitionMap() =>
 
 Request _replaceDefinitionsRequest(
   Map<String, dynamic> definitions, {
-  Object specVersion = 4,
+  Object specVersion = currentCommunitySpecVersion,
   String idempotencyKey = 'replace-unit-key',
 }) => Request(
   'PUT',

@@ -12,6 +12,8 @@
 // D4  response tables are exempt from `no_creation_path_for_editable_type`
 
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 import 'package:test/test.dart';
 
 Map<String, dynamic> _responseDefinition() => <String, dynamic>{
@@ -116,7 +118,7 @@ Map<String, dynamic> _package({
   required Map<String, dynamic> event,
   Map<String, dynamic>? response,
 }) => <String, dynamic>{
-  'specVersion': 4,
+  'specVersion': currentCommunitySpecVersion,
   'experience': <String, dynamic>{
     'workflowDefinitions': <String, dynamic>{
       'event-rsvp': event,

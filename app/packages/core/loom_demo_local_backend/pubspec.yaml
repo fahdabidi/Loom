@@ -12,4 +12,6 @@ dependencies:
     path: ../loom_extension_package
 
 dev_dependencies:
+  loom_workflow_engine:
+    path: ../loom_workflow_engine
   test: ^1.26.3

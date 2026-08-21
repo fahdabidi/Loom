@@ -367,7 +367,7 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
         'renderer',
         'rendererId',
       ]) ??
-      'engine-native-generic-list';
+      defaultAppShellTabRendererContractId;
   if (tabId == null || label == null) {
     return null;
   }
