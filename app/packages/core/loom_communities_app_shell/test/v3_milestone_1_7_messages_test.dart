@@ -154,6 +154,12 @@ Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
   await tester.pump(const Duration(milliseconds: 50));
 }
 
+Finder _messageListItems() => find.byWidgetPredicate((widget) {
+  final key = widget.key;
+  return key is ValueKey<String> &&
+      key.value.startsWith('engine-native-list-item-messages-');
+});
+
 Future<void> _openMessages(WidgetTester tester, Finder readyFinder) async {
   final tab = find.byKey(const ValueKey('community-tab-messages'));
   await _pumpUntilFound(tester, tab);
@@ -164,8 +170,6 @@ Future<void> _openMessages(WidgetTester tester, Finder readyFinder) async {
   await tester.ensureVisible(readyFinder);
   await tester.pump();
   // The finder can exist before the tab fade's IgnorePointer is removed.
-  // Keep this bounded: RepeaterSurface.live has a periodic refresh timer, so
-  // pumpAndSettle would not terminate here.
   await tester.pump(const Duration(milliseconds: 300));
 }
 
@@ -193,11 +197,23 @@ void main() {
     );
     await tester.pumpWidget(_host(first, firstAuth));
     await selectTestTabletopPersona(tester, _memberId);
-    await _openMessages(tester, find.byKey(const ValueKey('repeater-item-0')));
-    expect(find.byKey(const ValueKey('repeater-item-0')), findsOneWidget);
-    expect(find.byKey(const ValueKey('repeater-item-1')), findsOneWidget);
-    expect(find.byKey(const ValueKey('repeater-item-2')), findsOneWidget);
-    expect(find.byKey(const ValueKey('repeater-item-3')), findsNothing);
+    await _openMessages(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-item-messages-one-0')),
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-one')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-two')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-three')),
+      findsOneWidget,
+    );
+    expect(_messageListItems(), findsNWidgets(3));
 
     await tester.pumpWidget(const SizedBox.shrink());
     final second = _community(
@@ -215,9 +231,15 @@ void main() {
     );
     await tester.pumpWidget(_host(second, secondAuth));
     await selectTestTabletopPersona(tester, _memberId);
-    await _openMessages(tester, find.byKey(const ValueKey('repeater-item-0')));
-    expect(find.byKey(const ValueKey('repeater-item-3')), findsOneWidget);
-    expect(find.byKey(const ValueKey('repeater-item-4')), findsNothing);
+    await _openMessages(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-item-messages-one-0')),
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-four')),
+      findsOneWidget,
+    );
+    expect(_messageListItems(), findsNWidgets(4));
   });
 
   testWidgets('posted message survives full Messages widget reconstruction', (
@@ -235,19 +257,23 @@ void main() {
     await selectTestTabletopPersona(tester, _memberId);
     final threadItem = find.text('Persistence thread');
     await _openMessages(tester, threadItem);
-    await _tapVisible(tester, threadItem);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('messages-composer-field')),
+    await _tapVisible(
+      tester,
+      find.byKey(
+        const ValueKey('generic-instance-persist-action-post-message'),
+      ),
     );
-    await tester.pump();
+    final messageInput = find.byKey(
+      const ValueKey('generic-transition-input-body'),
+    );
+    await _pumpUntilFound(tester, messageInput);
     await tester.enterText(
-      find.byKey(const ValueKey('messages-composer-field')),
+      messageInput,
       'This reply must survive reconstruction.',
     );
     await _tapVisible(
       tester,
-      find.byKey(const ValueKey('messages-send-button')),
+      find.byKey(const ValueKey('generic-transition-input-confirm')),
     );
     await _pumpUntilFound(
       tester,
@@ -263,8 +289,6 @@ void main() {
     await tester.pumpWidget(_host(community, auth));
     await selectTestTabletopPersona(tester, _memberId);
     await _openMessages(tester, threadItem);
-    await _tapVisible(tester, threadItem);
-    await tester.pump(const Duration(milliseconds: 300));
     expect(
       find.text('This reply must survive reconstruction.'),
       findsOneWidget,
@@ -286,16 +310,20 @@ void main() {
     await selectTestTabletopPersona(tester, _memberId);
     final threadItem = find.text('Archive persistence thread');
     await _openMessages(tester, threadItem);
-    await _tapVisible(tester, threadItem);
-    await tester.pump(const Duration(milliseconds: 300));
-    await _tapVisible(tester, find.byTooltip('Archive'));
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey('generic-instance-archive-action-archive')),
+    );
     await _pumpUntilAbsent(tester, find.text('Archive persistence thread'));
     expect(find.text('Archive persistence thread'), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(_host(community, auth));
     await selectTestTabletopPersona(tester, _memberId);
-    await _openMessages(tester, find.text('No messages yet'));
+    await _openMessages(
+      tester,
+      find.byKey(const ValueKey('engine-native-list-empty-messages')),
+    );
     expect(find.text('Archive persistence thread'), findsNothing);
   });
 }
