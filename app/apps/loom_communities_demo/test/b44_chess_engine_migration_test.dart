@@ -75,14 +75,15 @@ void main() {
         ),
         findsOneWidget,
       );
-      await _tapEngineAction(
-        tester,
-        instanceId: 'chess-night-august-14',
-        transitionId: 'withdraw-club-night-rsvp',
-      );
       expect(
         _engineAction('chess-night-august-14', 'rsvp-club-night'),
         findsOneWidget,
+        reason: 'A fresh member has not inherited a seeded member RSVP.',
+      );
+      expect(
+        _engineAction('chess-night-august-14', 'withdraw-club-night-rsvp'),
+        findsNothing,
+        reason: 'A fresh member cannot withdraw another identity\'s RSVP.',
       );
       await _tapEngineAction(
         tester,
@@ -95,12 +96,19 @@ void main() {
       );
       await _tapEngineAction(
         tester,
-        instanceId: 'chess-meetup-maya-jordan',
-        transitionId: 'decline-match',
+        instanceId: 'chess-night-august-14',
+        transitionId: 'withdraw-club-night-rsvp',
       );
       expect(
-        _engineAction('chess-meetup-maya-jordan', 'suggest-new-time'),
+        _engineAction('chess-night-august-14', 'rsvp-club-night'),
         findsOneWidget,
+      );
+      expect(
+        _engineAction('chess-meetup-maya-jordan', 'decline-match'),
+        findsNothing,
+        reason:
+            'The visible seeded match remains read-only for a fresh member '
+            'who is neither Maya nor Jordan.',
       );
 
       await _selectTab(tester, 'messages');
@@ -191,12 +199,12 @@ Future<void> _tapEngineAction(
   required String instanceId,
   required String transitionId,
 }) async {
-  final action = _engineAction(instanceId, transitionId).first;
+  final action = _engineAction(instanceId, transitionId);
   await _waitForFinder(tester, action);
   expect(action, findsOneWidget);
-  await tester.ensureVisible(action);
+  await tester.ensureVisible(action.first);
   await _pumpForUi(tester);
-  await tester.tap(action, warnIfMissed: false);
+  await tester.tap(action.first, warnIfMissed: false);
   await _pumpForUi(tester);
 }
 

@@ -46,7 +46,7 @@ const _mosqueAppShellConfiguration = <String, Object?>{
 };
 
 void main() {
-  test('app shell tabs declare tab-native renderer contracts', () {
+  test('app shell tabs derive renderer contracts from bound archetypes', () {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
@@ -59,17 +59,27 @@ void main() {
     };
 
     expect(contractsByTab['home']!.rendererId, 'HomeTabSurfaceStack');
-    expect(contractsByTab['calendar']!.rendererId, 'CalendarTabSurface');
-    expect(contractsByTab['marketplace']!.rendererId, 'MarketplaceTabSurface');
+    expect(
+      contractsByTab['calendar']!.rendererId,
+      'EngineNativeGenericListSurface',
+      reason:
+          'A calendar tab name does not select a renderer when the fixture '
+          'has no bound event-rsvp archetype.',
+    );
+    expect(
+      contractsByTab['marketplace']!.rendererId,
+      'EngineNativeGenericListSurface',
+      reason:
+          'A marketplace tab name does not select a renderer when the fixture '
+          'has no bound equipment-loan archetype.',
+    );
     expect(contractsByTab['messages']!.rendererId, 'MessagesTabSurface');
 
     expect(
       contractsByTab['calendar']!.requiredAnatomy,
-      contains('month or week/date strip'),
-    );
-    expect(
-      contractsByTab['marketplace']!.requiredAnatomy,
-      contains('browse/search/filter header'),
+      contains(
+        'No native tab-specific shape is required; content is fully driven by package-declared appShell metadata and render bindings.',
+      ),
     );
     expect(
       contractsByTab['messages']!.requiredAnatomy,
@@ -232,7 +242,7 @@ void main() {
     );
   });
 
-  testWidgets('tab-native renderer widgets render for community tabs', (
+  testWidgets('archetype-driven renderer widgets render for community tabs', (
     tester,
   ) async {
     final target = loomEvidenceTargets.firstWhere(
@@ -264,21 +274,31 @@ void main() {
 
     await _tapTab(tester, 'critique');
     expect(
-      find.byKey(const ValueKey('engine-native-list-root-critique')),
+      find.byKey(const ValueKey('engine-native-list-empty-critique')),
       findsOneWidget,
     );
     expect(
       find.byKey(
         const ValueKey('generic-instance-card-critique-lighthouse-portrait'),
       ),
+      findsNothing,
+      reason:
+          'A newly created member must not see another seeded individual\'s '
+          'critique submission.',
+    );
+    expect(
+      find.byKey(const ValueKey('creatable-fab-critique-submission')),
       findsOneWidget,
+      reason: 'The empty Critique surface still offers a member-native action.',
     );
 
     await _tapTab(tester, 'messages');
     expect(
       find.byKey(const ValueKey('engine-native-list-empty-messages')),
       findsOneWidget,
-      reason: 'The shipped Camera package declares no Messages binding.',
+      reason:
+          'The bound discussion-thread archetype uses the generic list, but '
+          'a fresh member has no visible seeded messages.',
     );
   });
 }
