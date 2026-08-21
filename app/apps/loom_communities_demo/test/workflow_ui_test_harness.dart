@@ -449,6 +449,23 @@ Future<void> _waitForEvidenceFinder(
   fail('Timed out waiting for $description. ${_visibleScreenDescription()}');
 }
 
+/// Waits for an engine-backed widget whose future may complete outside the
+/// fake-async clock used by widget tests (for example, a SQLite query).
+Future<void> waitForEngineNativeWidget(
+  WidgetTester tester,
+  Finder finder, {
+  required String description,
+}) async {
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (finder.evaluate().isNotEmpty) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail('Timed out waiting for $description. ${_visibleScreenDescription()}');
+}
+
 String _visibleScreenDescription() {
   final markers = <String>[];
   void addMarker(String label, Finder finder) {
@@ -900,4 +917,352 @@ class EvidencePackagePair {
 
   final String extensionPath;
   final String initializationPath;
+}
+
+/// Builds one engine-native render binding without admitting any of the
+/// removed shallow-workflow fields used by the pre-v4 demo fixtures.
+Map<String, Object?> engineNativeTestRenderBinding({
+  required List<String> states,
+  required String tabId,
+  required String cardSurfaceFamily,
+  String audience = 'any',
+  String bindingKind = 'primary',
+  Map<String, Object?>? responseTable,
+}) {
+  if (states.isEmpty) {
+    throw ArgumentError.value(states, 'states', 'must not be empty');
+  }
+  return <String, Object?>{
+    'states': states,
+    'audience': audience,
+    'tabId': tabId,
+    'cardSurfaceFamily': cardSurfaceFamily,
+    'bindingKind': bindingKind,
+    if (responseTable != null) 'responseTable': responseTable,
+  };
+}
+
+/// Builds a complete v4 state-machine definition for demo widget fixtures.
+Map<String, Object?> engineNativeTestWorkflowDefinition({
+  required String initialState,
+  required Map<String, Object?> states,
+  required List<Map<String, Object?>> transitions,
+  required List<Map<String, Object?>> renderBindings,
+  required Map<String, Object?> instanceDataSchema,
+}) {
+  if (!states.containsKey(initialState)) {
+    throw ArgumentError.value(
+      initialState,
+      'initialState',
+      'must name a declared state',
+    );
+  }
+  if (transitions.isEmpty) {
+    throw ArgumentError.value(
+      transitions,
+      'transitions',
+      'fixture workflows must exercise a real transition',
+    );
+  }
+  if (instanceDataSchema.isEmpty) {
+    throw ArgumentError.value(
+      instanceDataSchema,
+      'instanceDataSchema',
+      'must declare the seeded instance fields',
+    );
+  }
+  return <String, Object?>{
+    'initialState': initialState,
+    'states': states,
+    'transitions': transitions,
+    'renderBindings': renderBindings,
+    'instanceDataSchema': instanceDataSchema,
+  };
+}
+
+/// Builds one real persisted workflow record for an engine-native fixture.
+Map<String, Object?> engineNativeTestWorkflowInstance({
+  required String instanceId,
+  required String workflowType,
+  required String currentState,
+  required String createdByFanId,
+  required Map<String, Object?> instanceData,
+}) => <String, Object?>{
+  'instanceId': instanceId,
+  'workflowType': workflowType,
+  'currentState': currentState,
+  'createdByFanId': createdByFanId,
+  'instanceData': instanceData,
+};
+
+/// A reusable real event plus its per-individual RSVP response state machine.
+///
+/// RSVP choices intentionally live on response instances rather than on the
+/// shared event. This mirrors the shipped v4 Tabletop package and lets tests
+/// prove that one member's choice is persisted independently.
+class EngineNativeEventRsvpTestFixture {
+  const EngineNativeEventRsvpTestFixture({
+    required this.workflowDefinitions,
+    required this.workflowInstances,
+  });
+
+  final Map<String, Object?> workflowDefinitions;
+  final List<Map<String, Object?>> workflowInstances;
+}
+
+EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
+  required String eventWorkflowType,
+  required String responseWorkflowType,
+  required String eventInstanceId,
+  required String title,
+  required String eventDate,
+  required String eventTime,
+  required String location,
+  required String organizerRoleId,
+  required String memberRoleId,
+  int capacity = 20,
+  List<Map<String, Object?>> additionalEventBindings = const [],
+}) {
+  final responseStates = <String>['pending', 'going', 'maybe', 'declined'];
+  Map<String, Object?> responseTransition({
+    required String id,
+    required String label,
+    required String to,
+    required String tone,
+    required String icon,
+  }) => <String, Object?>{
+    'id': id,
+    'label': label,
+    'icon': icon,
+    'tone': tone,
+    'from': responseStates,
+    'to': to,
+    'guard': <String, Object?>{
+      'allowedRoleIds': <String>[memberRoleId],
+      'actorEqualsField': <String, Object?>{'key': 'fanId'},
+    },
+  };
+
+  return EngineNativeEventRsvpTestFixture(
+    workflowDefinitions: <String, Object?>{
+      eventWorkflowType: engineNativeTestWorkflowDefinition(
+        initialState: 'open',
+        states: <String, Object?>{
+          'open': <String, Object?>{'label': 'RSVP open', 'tone': 'positive'},
+          'cancelled': <String, Object?>{
+            'label': 'Cancelled',
+            'tone': 'negative',
+            'isTerminal': true,
+          },
+        },
+        transitions: <Map<String, Object?>>[
+          <String, Object?>{
+            'id': 'cancel-event',
+            'label': 'Cancel event',
+            'icon': 'cancel',
+            'tone': 'destructive',
+            'from': <String>['open'],
+            'to': 'cancelled',
+            'guard': <String, Object?>{
+              'allowedRoleIds': <String>[organizerRoleId],
+            },
+          },
+        ],
+        renderBindings: <Map<String, Object?>>[
+          engineNativeTestRenderBinding(
+            states: <String>['open'],
+            tabId: 'calendar',
+            cardSurfaceFamily: 'event-rsvp',
+            responseTable: <String, Object?>{
+              'workflowType': responseWorkflowType,
+              'eventField': 'eventId',
+              'pendingStates': <String>['pending'],
+            },
+          ),
+          ...additionalEventBindings,
+        ],
+        instanceDataSchema: <String, Object?>{
+          'title': <String, Object?>{
+            'type': 'text',
+            'required': true,
+            'storage': 'inline',
+            'displayContexts': <String>['tile', 'detail'],
+          },
+          'eventDate': <String, Object?>{
+            'type': 'date',
+            'required': true,
+            'storage': 'inline',
+          },
+          'eventTime': <String, Object?>{
+            'type': 'time',
+            'required': true,
+            'storage': 'inline',
+          },
+          'location': <String, Object?>{
+            'type': 'text',
+            'required': true,
+            'storage': 'inline',
+            'labelTemplate': 'Location: {value}',
+            'displayContexts': <String>['detail'],
+          },
+          'capacity': <String, Object?>{
+            'type': 'number',
+            'required': true,
+            'storage': 'inline',
+          },
+          'responses': <String, Object?>{
+            'type': 'list',
+            'source': 'query($responseWorkflowType where eventId == id)',
+            'displayContexts': <String>[],
+          },
+        },
+      ),
+      responseWorkflowType: engineNativeTestWorkflowDefinition(
+        initialState: 'pending',
+        states: <String, Object?>{
+          'pending': <String, Object?>{'label': 'Awaiting response'},
+          'going': <String, Object?>{'label': 'Going', 'tone': 'positive'},
+          'maybe': <String, Object?>{'label': 'Maybe', 'tone': 'warning'},
+          'declined': <String, Object?>{
+            'label': 'Can\'t go',
+            'tone': 'negative',
+          },
+        },
+        transitions: <Map<String, Object?>>[
+          responseTransition(
+            id: 'respond-going',
+            label: 'Going',
+            to: 'going',
+            tone: 'primary',
+            icon: 'event_available',
+          ),
+          responseTransition(
+            id: 'respond-maybe',
+            label: 'Maybe',
+            to: 'maybe',
+            tone: 'secondary',
+            icon: 'help_outline',
+          ),
+          responseTransition(
+            id: 'respond-declined',
+            label: 'Can\'t go',
+            to: 'declined',
+            tone: 'destructive',
+            icon: 'event_busy',
+          ),
+        ],
+        renderBindings: const <Map<String, Object?>>[],
+        instanceDataSchema: <String, Object?>{
+          'eventId': <String, Object?>{
+            'type': 'text',
+            'required': true,
+            'storage': 'inline',
+          },
+          'fanId': <String, Object?>{
+            'type': 'fanId',
+            'required': true,
+            'storage': 'inline',
+          },
+        },
+      ),
+    },
+    workflowInstances: <Map<String, Object?>>[
+      engineNativeTestWorkflowInstance(
+        instanceId: eventInstanceId,
+        workflowType: eventWorkflowType,
+        currentState: 'open',
+        createdByFanId: organizerRoleId,
+        instanceData: <String, Object?>{
+          'title': title,
+          'eventDate': eventDate,
+          'eventTime': eventTime,
+          'location': location,
+          'capacity': capacity,
+        },
+      ),
+    ],
+  );
+}
+
+/// Writes the common local extension/initialization pair used by engine-native
+/// demo tests. The guard against `experience.workflows` makes a version-only
+/// rename fail immediately instead of silently falling back at runtime.
+EvidencePackagePair writeEngineNativeTestPackagePair({
+  required String tempDirectoryPrefix,
+  required String extensionId,
+  required String communityId,
+  required String displayName,
+  required Map<String, Object?> experience,
+  Map<String, Object?> appShell = const <String, Object?>{},
+  List<String> permissions = const <String>[
+    'content.publish',
+    'events.write',
+    'forms.write',
+  ],
+}) {
+  if (experience.containsKey('workflows')) {
+    throw ArgumentError(
+      'Engine-native test experiences must not declare removed workflows.',
+    );
+  }
+  final definitions = experience['workflowDefinitions'];
+  final instances = experience['workflowInstances'];
+  if (definitions is! Map || definitions.isEmpty) {
+    throw ArgumentError(
+      'Engine-native test experiences need workflowDefinitions.',
+    );
+  }
+  if (instances is! List || instances.isEmpty) {
+    throw ArgumentError(
+      'Engine-native test experiences need workflowInstances.',
+    );
+  }
+
+  final tempDir = Directory.systemTemp.createTempSync(tempDirectoryPrefix);
+  final extensionFile = File('${tempDir.path}/$extensionId.loom-extension.zip');
+  final initializationFile = File('${tempDir.path}/$extensionId.loom-init.zip');
+  extensionFile.writeAsStringSync(
+    jsonEncode(<String, Object?>{
+      'schemaVersion': 1,
+      'mode': 'local-demo',
+      'extensionId': extensionId,
+      'displayName': displayName,
+      'version': '1.0.0',
+      'permissions': permissions,
+      'workflows': definitions.keys.toList(growable: false),
+    }),
+  );
+  initializationFile.writeAsStringSync(
+    jsonEncode(<String, Object?>{
+      'specVersion': currentCommunitySpecVersion,
+      'communityId': communityId,
+      'communityName': displayName,
+      'extensionId': extensionId,
+      'seedDataFiles': <String>['seed/community.json', 'seed/workflows.json'],
+      'experience': experience,
+      if (appShell.isNotEmpty) 'appShell': appShell,
+    }),
+  );
+  return EvidencePackagePair(
+    extensionPath: extensionFile.path,
+    initializationPath: initializationFile.path,
+  );
+}
+
+/// Selects a horizontally scrollable community tab and waits for its surface.
+Future<void> tapCommunityTab(WidgetTester tester, String tabId) async {
+  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
+  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
+  for (
+    var attempt = 0;
+    attempt < 12 && tabFinder.evaluate().isEmpty;
+    attempt += 1
+  ) {
+    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  expect(tabFinder, findsOneWidget, reason: 'community tab $tabId');
+  await tester.ensureVisible(tabFinder);
+  await tester.tap(tabFinder, warnIfMissed: false);
+  await tester.pumpAndSettle();
 }

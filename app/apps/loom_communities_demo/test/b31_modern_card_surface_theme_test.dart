@@ -1,11 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -19,80 +14,88 @@ Color _lightFillFor(Color accent) {
 }
 
 void main() {
-  group('B31 modern card surface theme applies everywhere, gated correctly', () {
-    testWidgets(
-      'wf_package-driven-community-gets-the-light-modern-treatment',
-      (tester) async {
-        final fixture = _writeTabletopClubPackagePair();
-        await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
+  group(
+    'B31 modern card surface theme applies everywhere, gated correctly',
+    () {
+      testWidgets(
+        'wf_package-driven-community-gets-the-light-modern-treatment',
+        (tester) async {
+          final fixture = _writeTabletopClubPackagePair();
+          await tester.pumpWidget(const LoomCommunitiesDemoApp());
+          await _installAndOpen(tester, fixture);
 
-        const accent = Color(0xffC4703F);
+          const accent = Color(0xffC4703F);
 
-        // Hero card identity avatar: accent-tinted (from the resolved
-        // border color), not the legacy plain-white-tint every unthemed
-        // community uses.
-        final avatar = tester.widget<CircleAvatar>(
-          find.byKey(
-            const ValueKey(
-              'opened-community-identity-community_verify_tabletop_club',
+          // Hero card identity avatar: accent-tinted (from the resolved
+          // border color), not the legacy plain-white-tint every unthemed
+          // community uses.
+          final avatar = tester.widget<CircleAvatar>(
+            find.byKey(
+              const ValueKey(
+                'opened-community-identity-community_verify_tabletop_club',
+              ),
             ),
-          ),
-        );
-        expect(avatar.backgroundColor, accent.withValues(alpha: 0.18));
+          );
+          expect(avatar.backgroundColor, accent.withValues(alpha: 0.18));
 
-        // The "Home" tab-label header renders with the light fill too.
-        final header = tester.widget<DecoratedBox>(
-          find.byKey(const ValueKey('selected-tab-home')),
-        );
-        expect(
-          (header.decoration as BoxDecoration).color,
-          _lightFillFor(accent),
-        );
+          // The "Home" tab-label header renders with the light fill too.
+          final header = tester.widget<DecoratedBox>(
+            find.byKey(const ValueKey('selected-tab-home')),
+          );
+          expect(
+            (header.decoration as BoxDecoration).color,
+            _lightFillFor(accent),
+          );
 
-        // The workflow tile itself (not just its chrome frame) is light too.
-        const workflow = LoomWorkflowDefinition(
-          workflowId: 'tabletop-game-night-rsvp',
-          title: '',
-          entryText: '',
-          actionText: '',
-          resultText: '',
-        );
-        await scrollToWorkflowCard(tester, workflow);
-        final tile = tester.widget<DecoratedBox>(
-          find.byKey(const ValueKey('workflow-tabletop-game-night-rsvp')),
-        );
-        expect(
-          (tile.decoration as BoxDecoration).color,
-          _lightFillFor(accent),
-        );
+          // The engine-native workflow card itself (not just its tab chrome) is
+          // light too.
+          const instanceId = 'tabletop-game-night-rsvp';
+          expect(
+            find.byKey(const ValueKey('engine-native-list-root-home')),
+            findsOneWidget,
+          );
+          final workflowCard = find.byKey(
+            const ValueKey('generic-instance-card-$instanceId'),
+          );
+          expect(workflowCard, findsOneWidget);
+          final tile = tester.widget<Card>(workflowCard);
+          expect(tile.color, _lightFillFor(accent));
 
-        // The pushed action surface (opened from the tile's actor button)
-        // also renders its hero panel with the light fill, not the dark
-        // neutral fill `_resolvedCardThemeFor` used to fall back to when it
-        // independently re-derived the community card theme outside of
-        // `build()` without the `lightSurface` flag.
-        await selectPersona(tester, 'tabletop-member');
-        await scrollToWorkflowCard(tester, workflow);
-        await tester.tap(
-          find.byKey(const ValueKey('workflow-button-tabletop-game-night-rsvp')),
-        );
-        await tester.pumpAndSettle();
-        final hero = tester.widget<DecoratedBox>(
-          find.descendant(
-            of: find.byKey(
-              const ValueKey('action-surface-hero-tabletop-game-night-rsvp'),
-            ),
-            matching: find.byType(DecoratedBox),
-          ).first,
-        );
-        expect((hero.decoration as BoxDecoration).color, _lightFillFor(accent));
-      },
-    );
+          // V4 has no pushed legacy action surface. Its engine transition lives
+          // on the card and must inherit the same modern theme before and after
+          // the persisted mutation.
+          await selectPersona(tester, 'tabletop-member');
+          final reserveButton = find.byKey(
+            const ValueKey('generic-instance-$instanceId-action-reserve-seat'),
+          );
+          await waitForEngineNativeWidget(
+            tester,
+            reserveButton,
+            description: 'member-gated reserve-seat transition',
+          );
+          expect(reserveButton, findsOneWidget);
+          final themedButton = tester.widget<FilledButton>(reserveButton);
+          expect(themedButton.style?.backgroundColor?.resolve({}), accent);
+          await scrollFinderIntoViewport(tester, reserveButton);
+          await tester.tap(reserveButton);
+          await tester.pumpAndSettle();
+          final reserved = find.textContaining('Reserved');
+          await waitForEngineNativeWidget(
+            tester,
+            reserved,
+            description: 'persisted Reserved workflow state',
+          );
+          expect(reserved, findsOneWidget);
+          final completedCard = tester.widget<Card>(
+            find.byKey(const ValueKey('generic-instance-card-$instanceId')),
+          );
+          expect(completedCard.color, _lightFillFor(accent));
+        },
+      );
 
-    testWidgets(
-      'wf_bespoke-catalog-community-is-pixel-unchanged',
-      (tester) async {
+      testWidgets('wf_bespoke-catalog-community-is-pixel-unchanged', (
+        tester,
+      ) async {
         final target = loomEvidenceTargets.firstWhere(
           (target) => target.extensionId == 'ext_garden_club',
         );
@@ -147,28 +150,30 @@ void main() {
           await tester.tap(actorButton);
           await tester.pumpAndSettle();
           final hero = tester.widget<DecoratedBox>(
-            find.descendant(
-              of: find.byKey(
-                const ValueKey(
-                  'action-surface-hero-garden-export-custom-schemas',
-                ),
-              ),
-              matching: find.byType(DecoratedBox),
-            ).first,
+            find
+                .descendant(
+                  of: find.byKey(
+                    const ValueKey(
+                      'action-surface-hero-garden-export-custom-schemas',
+                    ),
+                  ),
+                  matching: find.byType(DecoratedBox),
+                )
+                .first,
           );
           expect(
             (hero.decoration as BoxDecoration).color,
             const Color(0xff376f57),
           );
         }
-      },
-    );
-  });
+      });
+    },
+  );
 }
 
 Future<void> _installAndOpen(
   WidgetTester tester,
-  _PackagePairFixture fixture,
+  EvidencePackagePair fixture,
 ) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
@@ -183,99 +188,100 @@ Future<void> _installAndOpen(
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
   await tester.tap(
-    find.byKey(
-      const ValueKey('community-card-community_verify_tabletop_club'),
-    ),
+    find.byKey(const ValueKey('community-card-community_verify_tabletop_club')),
   );
   await tester.pumpAndSettle();
+  await selectPersona(tester, 'tabletop-organizer');
+  await waitForEngineNativeWidget(
+    tester,
+    find.byKey(const ValueKey('engine-native-list-root-home')),
+    description: 'Tabletop Club engine-native Home surface',
+  );
 }
 
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
-}
-
-_PackagePairFixture _writeTabletopClubPackagePair() {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b31_tabletop_');
-  final extensionFile = File(
-    '${tempDir.path}/$_extensionId.loom-extension.zip',
-  );
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
-  );
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
-      'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
-  );
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json', 'seed/workflows.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': {
-        'displayName': 'Tabletop Club',
-        'tagline':
-            'Board game nights, loaner games, and dues for local tabletop fans.',
-        'accentColor': '#C4703F',
-        'theme': {'accent': '#C4703F'},
-        'roles': [
-          {
-            'roleId': 'tabletop-organizer',
-            'label': 'Organizer',
-            'roleLabel': 'Organizer',
-            'description': 'Plans game nights and tournaments.',
-          },
-          {
-            'roleId': 'tabletop-member',
-            'label': 'Member',
-            'roleLabel': 'Member',
-            'description': 'RSVPs to game nights and tournaments.',
-          },
-        ],
-        'workflows': [
-          {
-            'workflowId': 'tabletop-game-night-rsvp',
-            'title': 'RSVP to Friday game night',
-            'entryText':
-                'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
-            'actionText': "Reserve a seat at Friday's game night.",
-            'resultText': "You're on the roster for Friday's game night.",
-            'calendar': {
-              'date': '2026-07-10',
-              'time': '19:00',
-              'location': 'Community room',
-              'capacityLabel': '12 of 20 seats filled',
-            },
-          },
-        ],
-        'personaPolicies': {
-          'tabletop-game-night-rsvp': {
-            'actorPersonaIds': ['tabletop-member'],
-            'receiverPersonaIds': ['tabletop-organizer'],
-            'receiverEntryText': "A member RSVP'd to Friday's game night.",
-            'receiverActionText': 'Acknowledge RSVP',
-            'receiverResultText': 'RSVP acknowledged and added to the roster.',
-          },
+EvidencePackagePair _writeTabletopClubPackagePair() {
+  final definition = engineNativeTestWorkflowDefinition(
+    initialState: 'open',
+    states: <String, Object?>{
+      'open': <String, Object?>{'label': 'RSVP open'},
+      'reserved': <String, Object?>{'label': 'Reserved', 'isTerminal': true},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'reserve-seat',
+        'label': 'Reserve seat',
+        'tone': 'primary',
+        'from': <String>['open'],
+        'to': 'reserved',
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['tabletop-member'],
         },
+        'effects': <Object?>[
+          <String, Object?>{'op': 'set', 'key': 'status', 'value': 'Reserved'},
+        ],
       },
-    }),
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>['open', 'reserved'],
+        tabId: 'home',
+        cardSurfaceFamily: 'statusTimeline',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'title': <String, Object?>{
+        'type': 'text',
+        'storage': 'inline',
+        'labelTemplate': '{value}',
+      },
+      'status': <String, Object?>{
+        'type': 'text',
+        'writableBy': 'effect',
+        'storage': 'inline',
+        'labelTemplate': 'Status: {value}',
+      },
+    },
   );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
+  return writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b31_tabletop_',
+    extensionId: _extensionId,
+    communityId: 'community_verify_tabletop_club',
+    displayName: 'Tabletop Club',
+    experience: <String, Object?>{
+      'displayName': 'Tabletop Club',
+      'tagline':
+          'Board game nights, loaner games, and dues for local tabletop fans.',
+      'accentColor': '#C4703F',
+      'theme': {'accent': '#C4703F'},
+      'roles': [
+        {
+          'roleId': 'tabletop-organizer',
+          'label': 'Organizer',
+          'roleLabel': 'Organizer',
+          'description': 'Plans game nights and tournaments.',
+        },
+        {
+          'roleId': 'tabletop-member',
+          'label': 'Member',
+          'roleLabel': 'Member',
+          'description': 'RSVPs to game nights and tournaments.',
+        },
+      ],
+      'workflowDefinitions': <String, Object?>{
+        'tabletop-game-night-rsvp': definition,
+      },
+      'workflowInstances': <Object?>[
+        engineNativeTestWorkflowInstance(
+          instanceId: 'tabletop-game-night-rsvp',
+          workflowType: 'tabletop-game-night-rsvp',
+          currentState: 'open',
+          createdByFanId: 'tabletop-organizer',
+          instanceData: <String, Object?>{
+            'title': 'RSVP to Friday game night',
+            'status': 'Open',
+          },
+        ),
+      ],
+    },
   );
 }

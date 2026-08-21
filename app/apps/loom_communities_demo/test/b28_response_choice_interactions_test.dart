@@ -1,11 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
@@ -16,161 +11,162 @@ void main() {
     testWidgets(
       'wf_event-workflow-offers-going-maybe-cant-go-and-records-choice',
       (tester) async {
-        final fixture = _writeTabletopClubPackagePair();
+        final fixture = _writeTabletopClubPackagePair('event');
         await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
-        await selectPersona(tester, 'tabletop-member');
+        await _installAndOpen(
+          tester,
+          fixture.package,
+          communityId: fixture.communityId,
+          personaId: 'tabletop-member',
+        );
+        await tapCommunityTab(tester, 'calendar');
 
-        const workflow = LoomWorkflowDefinition(
-          workflowId: 'tabletop-game-night-rsvp',
-          title: '',
-          entryText: '',
-          actionText: '',
-          resultText: '',
+        const instanceId = 'tabletop-game-night-rsvp';
+        expect(
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+          findsOneWidget,
         );
-        await scrollToWorkflowCard(tester, workflow);
-        final workflowButton = find.byKey(
-          ValueKey('workflow-button-${workflow.workflowId}'),
+        expect(
+          find.byKey(const ValueKey('event-rsvp-card-$instanceId')),
+          findsOneWidget,
         );
-        await scrollFinderIntoViewport(tester, workflowButton);
-        await tester.tap(workflowButton);
-        await tester.pumpAndSettle();
 
         expect(
-          find.byKey(const ValueKey('workflow-response-going')),
+          find.byKey(
+            const ValueKey('event-rsvp-$instanceId-action-respond-going'),
+          ),
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('workflow-response-maybe')),
+          find.byKey(
+            const ValueKey('event-rsvp-$instanceId-action-respond-maybe'),
+          ),
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('workflow-response-not-going')),
+          find.byKey(
+            const ValueKey('event-rsvp-$instanceId-action-respond-declined'),
+          ),
           findsOneWidget,
         );
-        // The old binary confirm/cancel bar must not also be present.
+        // The removed legacy action surface must not reappear beside the real
+        // event card and its engine-backed response transitions.
         expect(
-          find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
+          find.byKey(const ValueKey('workflow-response-choice-bar')),
           findsNothing,
         );
 
         final maybeButton = find.byKey(
-          const ValueKey('workflow-response-maybe'),
+          const ValueKey('event-rsvp-$instanceId-action-respond-maybe'),
         );
         await scrollFinderIntoViewport(tester, maybeButton);
         await tester.tap(maybeButton);
         await tester.pumpAndSettle();
 
-        // The action surface auto-focuses the Event's home tab (Calendar);
-        // return to Home, which always lists every workflow, before
-        // re-scrolling to the card.
-        await tester.tap(find.byKey(const ValueKey('community-tab-home')));
-        await tester.pumpAndSettle();
-        await scrollToWorkflowCard(tester, workflow);
-        expect(
-          find.byKey(ValueKey('workflow-complete-${workflow.workflowId}')),
-          findsOneWidget,
+        final selectedMaybe = tester.widget<InputChip>(
+          find.descendant(of: maybeButton, matching: find.byType(InputChip)),
         );
-        expect(find.textContaining('You responded: Maybe'), findsOneWidget);
+        expect(selectedMaybe.selected, isTrue);
+        expect(selectedMaybe.onPressed, isNull);
       },
     );
 
-    testWidgets(
-      'wf_approval-workflow-offers-approve-reject-request-changes',
-      (tester) async {
-        final fixture = _writeTabletopClubPackagePair();
-        await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
-        // Organizer is the default active persona and the actor for the
-        // committee-decision workflow.
+    testWidgets('wf_approval-workflow-offers-approve-reject-request-changes', (
+      tester,
+    ) async {
+      final fixture = _writeTabletopClubPackagePair('approval');
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(
+        tester,
+        fixture.package,
+        communityId: fixture.communityId,
+        personaId: 'tabletop-organizer',
+      );
+      await tapCommunityTab(tester, 'admin');
 
-        const workflow = LoomWorkflowDefinition(
-          workflowId: 'tabletop-committee-decision',
-          title: '',
-          entryText: '',
-          actionText: '',
-          resultText: '',
-        );
-        await scrollToWorkflowCard(tester, workflow);
-        final workflowButton = find.byKey(
-          ValueKey('workflow-button-${workflow.workflowId}'),
-        );
-        await scrollFinderIntoViewport(tester, workflowButton);
-        await tester.tap(workflowButton);
-        await tester.pumpAndSettle();
+      const instanceId = 'tabletop-committee-decision';
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-admin')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('generic-instance-card-$instanceId')),
+        findsOneWidget,
+      );
 
-        expect(
-          find.byKey(const ValueKey('workflow-response-approved')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey('workflow-response-changes-requested')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey('workflow-response-rejected')),
-          findsOneWidget,
-        );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-$instanceId-action-approve'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-$instanceId-action-request-changes'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-$instanceId-action-reject'),
+        ),
+        findsOneWidget,
+      );
 
-        final changesRequestedButton = find.byKey(
-          const ValueKey('workflow-response-changes-requested'),
-        );
-        await scrollFinderIntoViewport(tester, changesRequestedButton);
-        await tester.tap(changesRequestedButton);
-        await tester.pumpAndSettle();
+      final changesRequestedButton = find.byKey(
+        const ValueKey('generic-instance-$instanceId-action-request-changes'),
+      );
+      await scrollFinderIntoViewport(tester, changesRequestedButton);
+      await tester.tap(changesRequestedButton);
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.byKey(const ValueKey('community-tab-home')));
-        await tester.pumpAndSettle();
-        await scrollToWorkflowCard(tester, workflow);
-        expect(
-          find.textContaining('You responded: Request changes'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.textContaining('Request changes'), findsOneWidget);
+    });
 
-    testWidgets(
-      'wf_single-choice-workflow-keeps-plain-confirm-cancel',
-      (tester) async {
-        // Regression guard: a non-Event/Approval category (Publishing, via
-        // the announcement workflow) must keep today's plain one-button
-        // confirm surface, not a branching choice bar.
-        final fixture = _writeTabletopClubPackagePair();
-        await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
+    testWidgets('wf_single-choice-workflow-keeps-plain-confirm-cancel', (
+      tester,
+    ) async {
+      // Regression guard: a non-Event/Approval category (Publishing, via
+      // the announcement workflow) must keep today's plain one-button
+      // confirm surface, not a branching choice bar.
+      final fixture = _writeTabletopClubPackagePair('publishing');
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(
+        tester,
+        fixture.package,
+        communityId: fixture.communityId,
+        personaId: 'tabletop-organizer',
+      );
+      await tapCommunityTab(tester, 'admin');
 
-        const workflow = LoomWorkflowDefinition(
-          workflowId: 'tabletop-meetup-announcement',
-          title: '',
-          entryText: '',
-          actionText: '',
-          resultText: '',
-        );
-        await scrollToWorkflowCard(tester, workflow);
-        final workflowButton = find.byKey(
-          ValueKey('workflow-button-${workflow.workflowId}'),
-        );
-        await scrollFinderIntoViewport(tester, workflowButton);
-        await tester.tap(workflowButton);
-        await tester.pumpAndSettle();
+      const instanceId = 'tabletop-meetup-announcement';
+      expect(
+        find.byKey(const ValueKey('generic-instance-card-$instanceId')),
+        findsOneWidget,
+      );
 
-        expect(
-          find.byKey(const ValueKey('workflow-response-choice-bar')),
-          findsNothing,
-        );
-        expect(
-          find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(
+        find.byKey(const ValueKey('workflow-response-choice-bar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const ValueKey(
+            'generic-instance-$instanceId-action-publish-announcement',
+          ),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 }
 
 Future<void> _installAndOpen(
   WidgetTester tester,
-  _PackagePairFixture fixture,
-) async {
+  EvidencePackagePair fixture, {
+  required String communityId,
+  required String personaId,
+}) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
   await tester.enterText(
@@ -183,150 +179,217 @@ Future<void> _installAndOpen(
   );
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
-  await tester.tap(
-    find.byKey(
-      const ValueKey('community-card-community_verify_tabletop_club'),
-    ),
-  );
+  await tester.tap(find.byKey(ValueKey('community-card-$communityId')));
   await tester.pumpAndSettle();
+  await selectPersona(tester, personaId);
 }
 
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
-}
-
-_PackagePairFixture _writeTabletopClubPackagePair() {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b28_tabletop_');
-  final extensionFile = File(
-    '${tempDir.path}/$_extensionId.loom-extension.zip',
+({EvidencePackagePair package, String communityId})
+_writeTabletopClubPackagePair(String suffix) {
+  final extensionId = '${_extensionId}_$suffix';
+  final communityId = 'community_verify_tabletop_club_$suffix';
+  final event = engineNativeEventRsvpTestFixture(
+    eventWorkflowType: 'tabletop-game-night-rsvp',
+    responseWorkflowType: 'tabletop-game-night-rsvp-response',
+    eventInstanceId: 'tabletop-game-night-rsvp',
+    title: 'RSVP to Friday game night',
+    eventDate: '2026-07-10',
+    eventTime: '19:00',
+    location: 'Community room',
+    organizerRoleId: 'tabletop-organizer',
+    memberRoleId: 'tabletop-member',
   );
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
-  );
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
-      'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
-  );
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json', 'seed/workflows.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': {
-        'displayName': 'Tabletop Club',
-        'tagline':
-            'Board game nights, loaner games, and dues for local tabletop fans.',
-        'accentColor': '#C4703F',
-        'roles': [
-          {
-            'roleId': 'tabletop-organizer',
-            'label': 'Organizer',
-            'roleLabel': 'Organizer',
-            'description':
-                'Plans game nights, manages the game library, and decides committee items.',
-          },
-          {
-            'roleId': 'tabletop-member',
-            'label': 'Member',
-            'roleLabel': 'Member',
-            'description': 'RSVPs to game nights and pays dues.',
+  final committeeDecision = engineNativeTestWorkflowDefinition(
+    initialState: 'pending',
+    states: <String, Object?>{
+      'pending': <String, Object?>{'label': 'Awaiting decision'},
+      'approved': <String, Object?>{'label': 'Approved', 'isTerminal': true},
+      'changes-requested': <String, Object?>{
+        'label': 'Changes requested',
+        'isTerminal': true,
+      },
+      'rejected': <String, Object?>{'label': 'Rejected', 'isTerminal': true},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'approve',
+        'label': 'Approve',
+        'tone': 'primary',
+        'from': <String>['pending'],
+        'to': 'approved',
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['tabletop-organizer'],
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'set',
+            'key': 'decision',
+            'value': 'Approved',
           },
         ],
-        'workflows': [
-          {
-            'workflowId': 'tabletop-game-night-rsvp',
-            'title': 'RSVP to Friday game night',
-            'entryText':
-                'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
-            'actionText': "Reserve a seat at Friday's game night.",
-            'resultText': "You're on the roster for Friday's game night.",
-            'responseChoices': [
-              {'responseId': 'going', 'label': 'Going'},
-              {'responseId': 'maybe', 'label': 'Maybe'},
-              {
-                'responseId': 'not-going',
-                'label': "Can't go",
-                'isDestructive': true,
-              },
-            ],
-          },
-          {
-            'workflowId': 'tabletop-committee-decision',
-            'title': 'Decide on new game purchase',
-            'entryText':
-                'A member proposed buying a copy of Wingspan for the club library.',
-            'actionText': 'Decide on the Wingspan purchase proposal.',
-            'resultText': 'Decision recorded for the Wingspan proposal.',
-            'responseChoices': [
-              {'responseId': 'approved', 'label': 'Approve'},
-              {
-                'responseId': 'changes-requested',
-                'label': 'Request changes',
-              },
-              {
-                'responseId': 'rejected',
-                'label': 'Reject',
-                'isDestructive': true,
-              },
-            ],
-          },
-          {
-            'workflowId': 'tabletop-meetup-announcement',
-            'title': 'Publish game night announcement',
-            'entryText':
-                "Draft: 'Friday game night moves to the larger room starting next week.'",
-            'actionText':
-                'Publish the game night announcement to all members.',
-            'resultText':
-                'Announcement published to all Tabletop Club members.',
+      },
+      <String, Object?>{
+        'id': 'request-changes',
+        'label': 'Request changes',
+        'tone': 'secondary',
+        'from': <String>['pending'],
+        'to': 'changes-requested',
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['tabletop-organizer'],
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'set',
+            'key': 'decision',
+            'value': 'Request changes',
           },
         ],
-        'personaPolicies': {
-          'tabletop-game-night-rsvp': {
-            'actorPersonaIds': ['tabletop-member'],
-            'receiverPersonaIds': ['tabletop-organizer'],
-            'receiverEntryText': "A member RSVP'd to Friday's game night.",
-            'receiverActionText': 'Acknowledge RSVP',
-            'receiverResultText':
-                'RSVP acknowledged and added to the roster.',
+      },
+      <String, Object?>{
+        'id': 'reject',
+        'label': 'Reject',
+        'tone': 'destructive',
+        'from': <String>['pending'],
+        'to': 'rejected',
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['tabletop-organizer'],
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'set',
+            'key': 'decision',
+            'value': 'Rejected',
           },
-          'tabletop-committee-decision': {
-            'actorPersonaIds': ['tabletop-organizer'],
-            'receiverPersonaIds': ['tabletop-member'],
-            'receiverEntryText':
-                'The committee decided on the Wingspan purchase proposal.',
-            'receiverActionText': 'View decision',
-            'receiverResultText': 'Decision visible to members.',
-          },
-          'tabletop-meetup-announcement': {
-            'actorPersonaIds': ['tabletop-organizer'],
-            'receiverPersonaIds': ['tabletop-member'],
-            'receiverEntryText':
-                'The organizer published a new game night announcement.',
-            'receiverActionText': 'Mark as read',
-            'receiverResultText': 'Announcement marked as read.',
-          },
+        ],
+      },
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>[
+          'pending',
+          'approved',
+          'changes-requested',
+          'rejected',
+        ],
+        tabId: 'admin',
+        cardSurfaceFamily: 'approvalQueueItem',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'title': <String, Object?>{
+        'type': 'text',
+        'storage': 'inline',
+        'labelTemplate': '{value}',
+      },
+      'decision': <String, Object?>{
+        'type': 'text',
+        'writableBy': 'effect',
+        'storage': 'inline',
+        'labelTemplate': 'Decision: {value}',
+        'hideWhenEmpty': true,
+      },
+    },
+  );
+  final announcement = engineNativeTestWorkflowDefinition(
+    initialState: 'draft',
+    states: <String, Object?>{
+      'draft': <String, Object?>{'label': 'Draft'},
+      'published': <String, Object?>{'label': 'Published', 'isTerminal': true},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'publish-announcement',
+        'label': 'Publish announcement',
+        'tone': 'primary',
+        'from': <String>['draft'],
+        'to': 'published',
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['tabletop-organizer'],
         },
       },
-    }),
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>['draft', 'published'],
+        tabId: 'admin',
+        cardSurfaceFamily: 'notificationInbox',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'title': <String, Object?>{'type': 'text', 'storage': 'inline'},
+      'body': <String, Object?>{'type': 'textarea', 'storage': 'inline'},
+    },
   );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
+
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b28_tabletop_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Tabletop Club',
+    experience: <String, Object?>{
+      'displayName': 'Tabletop Club',
+      'tagline':
+          'Board game nights, loaner games, and dues for local tabletop fans.',
+      'accentColor': '#C4703F',
+      'roles': [
+        {
+          'roleId': 'tabletop-organizer',
+          'label': 'Organizer',
+          'roleLabel': 'Organizer',
+          'description':
+              'Plans game nights, manages the game library, and decides committee items.',
+        },
+        {
+          'roleId': 'tabletop-member',
+          'label': 'Member',
+          'roleLabel': 'Member',
+          'description': 'RSVPs to game nights and pays dues.',
+        },
+      ],
+      'workflowDefinitions': <String, Object?>{
+        ...event.workflowDefinitions,
+        'tabletop-committee-decision': committeeDecision,
+        'tabletop-meetup-announcement': announcement,
+      },
+      'workflowInstances': <Object?>[
+        ...event.workflowInstances,
+        engineNativeTestWorkflowInstance(
+          instanceId: 'tabletop-committee-decision',
+          workflowType: 'tabletop-committee-decision',
+          currentState: 'pending',
+          createdByFanId: 'tabletop-member',
+          instanceData: <String, Object?>{
+            'title': 'Decide on new game purchase',
+            'decision': '',
+          },
+        ),
+        engineNativeTestWorkflowInstance(
+          instanceId: 'tabletop-meetup-announcement',
+          workflowType: 'tabletop-meetup-announcement',
+          currentState: 'draft',
+          createdByFanId: 'tabletop-organizer',
+          instanceData: <String, Object?>{
+            'title': 'Friday game night room change',
+            'body': 'Friday game night moves to the larger room next week.',
+          },
+        ),
+      ],
+    },
+    appShell: <String, Object?>{
+      'tabs': <Object?>[
+        <String, Object?>{
+          'tabId': 'calendar',
+          'label': 'Calendar',
+          'iconKey': 'calendar',
+        },
+        <String, Object?>{
+          'tabId': 'admin',
+          'label': 'Admin',
+          'iconKey': 'admin',
+          'visibleRoleIds': <String>['tabletop-organizer'],
+        },
+      ],
+    },
   );
+  return (package: package, communityId: communityId);
 }
