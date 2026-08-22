@@ -2961,14 +2961,12 @@
       {
         "tabId": "home",
         "label": "Home",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "home",
         "description": "This week's event, exchange and care needs, and read-only export status."
       },
       {
         "tabId": "calendar",
         "label": "Calendar",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "calendar_today",
         "description": "Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders.",
         "pinnedWorkflowIds": ["garden-event-rsvp"]
@@ -2976,7 +2974,6 @@
       {
         "tabId": "marketplace",
         "label": "Marketplace",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "yard",
         "description": "Browse, list, borrow, queue for, return, or give away garden items.",
         "pinnedWorkflowIds": ["garden-tool-loan", "garden-tool-giveaway"]
@@ -2984,7 +2981,6 @@
       {
         "tabId": "care",
         "label": "Care",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "volunteer_activism",
         "description": "Member volunteer shifts with remaining spots and sign-up state.",
         "pinnedWorkflowIds": ["garden-volunteer-shift"],
@@ -2993,7 +2989,6 @@
       {
         "tabId": "documents",
         "label": "Documents",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "folder",
         "description": "Coordinator-owned export scope, redaction, integrity, history, and portability state.",
         "pinnedWorkflowIds": ["garden-export-custom-schemas"],
@@ -3002,7 +2997,6 @@
       {
         "tabId": "organize",
         "label": "Organize",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin_panel_settings",
         "description": "Coordinator review queues, approved handoffs, and volunteer roster management.",
         "pinnedWorkflowIds": ["plant-exchange-submission", "garden-volunteer-shift"],
