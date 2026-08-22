@@ -5,8 +5,8 @@ Loom policy. Extensions receive redacted views only after Loom authorizes access
 
 ## Extension Use
 
-- Declare the protected field, purpose, retention, and required permission.
-- Read with `requiredPermission`; treat `null` as a denied access decision.
+- Declare the protected field, purpose, and retention.
+- Treat a `null` protected-vault read as a denied access decision.
 - Do not duplicate sensitive values into extension-owned tables.
 
 ## Validation

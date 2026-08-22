@@ -4,7 +4,7 @@
 
 - Configure community tabs, assign card surfaces to tabs, pin important surfaces, and expose Home and
   Messages/Communication as default tabs.
-- Configure persona-specific tabs, labels, icons, order, visibility, pinned surfaces, and surface
+- Configure role-specific tabs, labels, icons, order, visibility, pinned surfaces, and surface
   assignment so a member, admin, coach, board member, guardian, donor, or reviewer can each see the
   navigation model that matches their jobs-to-be-done.
 - Support minimized, medium/in-focus, and expanded/maximized presentation states for card surfaces.
@@ -14,16 +14,16 @@
   variants while preserving App Shell accessibility and required controls.
 - Expose customization knobs for typography roles, card density, tab labels, tab icons, surface
   presentation defaults, pinned state, community-card treatment, and shell-safe color palettes.
-- Select and validate per-tab renderer contracts so dedicated tabs use domain-native renderers instead
-  of generic workflow cards. See [Per-Tab Renderer Contracts](./tab-renderer-contracts.md).
+- Let render bindings derive each tab renderer from its bound archetypes. See
+  [Per-Tab Renderer Contracts](./tab-renderer-contracts.md).
 
-## Personas and Permissions
+## Roles and Permissions
 
-| Persona | Permissions | Can do |
+| Role | Permissions | Can do |
 | --- | --- | --- |
-| Member | `community.surface.navigation.read` | Use persona-appropriate tabs, pinned surfaces, expansion, messages, and theme-rendered community UI. |
-| Owner/admin | `community.surface.navigation.configure` | Configure tab labels, tab order, icons, persona visibility, pinned surfaces, surface grouping, presentation defaults, and theme tokens. |
-| Shell/governance | `community.surface.navigation.admin` | Enforce Home/Messages defaults, accessibility, ad/nav invariants, permission-filtered visibility, and safe theme bounds. |
+| Member | `community.surface.navigation.read` | Use role-appropriate tabs, pinned surfaces, expansion, messages, and theme-rendered community UI. |
+| Owner/admin | `community.surface.navigation.configure` | Configure tab labels, tab order, icons, role visibility, pinned surfaces, surface grouping, presentation defaults, and theme tokens. |
+| Shell/governance | `community.surface.navigation.admin` | Enforce Home/Messages defaults, accessibility, ad/nav invariants, binding-derived visibility, and safe theme bounds. |
 
 ## Custom Experience Guidance
 
@@ -35,16 +35,16 @@ edit text, and dialogs — implemented today as the card theme cascade described
 default, optionally overridden per tab, optionally overridden per card surface (workflow), so no card
 surface has to hardcode its own colors independent of the community it belongs to.
 
-Tabs are resolved per persona. The same community may expose `Home`, `Calendar`, `Marketplace`, and
+Tabs are resolved per role. The same community may expose `Home`, `Calendar`, `Marketplace`, and
 `Messages` to a general member, while an admin sees `Home`, `Admin`, `Documents`, `Giving`, and
-`Messages`. Unauthorized persona tabs must be hidden or disabled with a reason; they must not leak
-restricted workflow content. A surface can appear in multiple persona tabs when the visible state is
+`Messages`. Unauthorized role tabs must be hidden or disabled with a reason; they must not leak
+restricted workflow content. A surface can appear in multiple role tabs when the visible state is
 different, such as a member seeing read-only request status while a board reviewer sees the decision
 queue.
 
 Customization knobs should be declared as a `CommunityAppShellCustomizationSpec`:
 
-- tab labels, tab icons, order, persona visibility, and pinned-surface defaults;
+- tab labels, tab icons, order, role visibility, and pinned-surface defaults;
 - community-card minimized and medium presentation, including logo, card image, title typography,
   detail typography, accent color, and badges;
 - in-community typography roles: community title, section title, card-surface title, body, label,
@@ -52,32 +52,19 @@ Customization knobs should be declared as a `CommunityAppShellCustomizationSpec`
 - surface presentation defaults: minimized, medium/in-focus, expanded, pinned, density, and spacing;
 - safe theme palette: primary/accent/background/surface/text/action colors with contrast validation.
 
-Each `LoomAppShellTabSpec` must also declare a `rendererContractId`. The contract determines the
-tab-native surface anatomy:
+Omit `rendererContractId`; the workflows bound to a tab determine its renderer. When every binding
+uses `event-rsvp`, the App Shell derives the calendar surface. When every binding uses
+`equipment-loan`, it derives the marketplace surface. Those are the only whole-tab archetype
+surfaces.
 
-### Default vs. data-driven tabs
+### Binding-derived tabs
 
-Messages and Home render by default. Calendar gate-checks its own `calendarItem` data per
-workflow. Every other domain tab (Marketplace, Documents, Giving, Care, Admin, Payment, Volunteer)
-renders its full tab-native UI **only when its data is declared** under `experience` (e.g.
-`threads`, `marketplaceListings`, `givingPayment` fields on workflows). When no data is declared
-for that tab, it shows an explicit themed placeholder — "‹Tab› is coming to ‹community›" — never
-a generic mock. This replaces the earlier implicit assumption that a matching tab always fills
-with a generic renderer. See the JSON contracts in
-[Per-Tab Renderer Contracts](./tab-renderer-contracts.md) for the exact shape per tab.
-
-The renderer contracts map to these shell-owned `rendererContractId` values:
-
-- `home-surface-stack` for Home summaries, pinned/in-focus surfaces, and minimized/medium/expanded
-  presentation;
-- `calendar-agenda-event-detail` for month/week/agenda and event detail/RSVP surfaces;
-- `messages-inbox-thread-composer` for inbox, thread, composer, unread, and connection-invite states;
-- `marketplace-browse-listing-detail` for browse/search/listing/detail/current-holder/queue/giveaway
-  surfaces;
-- `documents-library-detail` for document library/detail/embedded-open/external-open surfaces;
-- `workflow-status-timeline-actions` for arbitrary multi-step status/timeline/action workflows;
-- `payment-giving-ledger`, `care-volunteer-request-queue`, and `admin-review-compose-queue` for
-  dedicated Giving, Care, and Admin tab experiences.
+A tab with mixed archetypes, or any other archetype, gets the engine-native generic list. That is the
+correct renderer: it runs the live query and dispatches every instance to the widget for its own
+`cardSurfaceFamily`. Declaring `engine-native-generic-list` explicitly overrides derivation and can pin
+an otherwise eligible tab to the generic list, so omit the field and let the bindings decide. Home and
+Messages remain structural App Shell tabs. See
+[Per-Tab Renderer Contracts](./tab-renderer-contracts.md) for the exact derivation rules.
 
 ## Package / Initialization Contract
 
@@ -96,24 +83,21 @@ Minimal shape:
         "label": "Walks",
         "icon": "calendar",
         "description": "Photo walk schedule and RSVP detail.",
-        "rendererContractId": "calendar-agenda-event-detail",
         "sectionTitles": ["Upcoming events"],
-        "cardSurfaceFamilies": ["event-rsvp", "calendar"],
+        "cardSurfaceFamilies": ["event-rsvp"],
         "pinningPolicy": "pin-first-critical-surface",
         "pinningPolicyRationale": "The next dated event is the most time-sensitive item.",
         "pinnedWorkflowIds": ["photo-walk-rsvp"],
-        "visiblePersonaIds": ["camera-organizer", "camera-member"],
-        "requiredPermission": "community.surface.calendar.read"
+        "visibleRoleIds": ["camera-organizer", "camera-member"]
       }
     ],
-    "personaTabs": {
+    "roleTabs": {
       "camera-member": [
         {
           "tabId": "messages",
           "label": "Club chat",
           "icon": "messages",
           "description": "Member threads and invites.",
-          "rendererContractId": "messages-inbox-thread-composer",
           "pinningPolicy": "none",
           "pinningPolicyRationale": "Messages uses inbox/thread state rather than pinned cards."
         }
@@ -123,8 +107,8 @@ Minimal shape:
 }
 ```
 
-`tabs` declares community-level tab overrides. `personaTabs` adds or overrides tabs for a specific
-persona. Home and Messages remain required shell destinations; custom declarations may rename,
+`tabs` declares community-level tab overrides. `roleTabs` adds or overrides tabs for a specific
+role. Home and Messages remain required shell destinations; custom declarations may rename,
 reorder, or specialize them, but cannot remove the shell-owned navigation invariants.
 
 ### Seeding domain tab content
@@ -241,7 +225,7 @@ them all consistently to an accent tint rather than needing per-widget configura
 
 When the theme block is declared, every workflow's action surface body background switches from a
 hardcoded dark fill to the same light white+tint treatment, both for rich-spec workflows (e.g.
-event RSVP, payment, export) and for the generic fallback used by simpler workflows. Authors do
+event RSVP, payment, export) and for generic-list cards used by other workflows. Authors do
 not need to configure this per-workflow or per-action-surface — it follows the theme opt-in
 automatically.
 
@@ -323,5 +307,4 @@ Requires `CommunityAppShellNavigationApi`: `getTabConfiguration`, `updateTabConf
 `pinSurfaceForPersona`, `unpinSurfaceForPersona`, `getCustomizationKnobs`,
 `updateCustomizationKnobs`, `previewNavigationConfiguration`, `validatePersonaNavigation`,
 `getPersonaSurfacePresentationState`, `updatePersonaSurfacePresentationState`,
-`listTabRendererContracts`, `resolveTabRendererContract`, `validateTabRendererContract`,
-`previewTabRendererContract`, and `recordTabRendererEvidence`.
+`resolveTabRendererContract` and `recordTabRendererEvidence`.

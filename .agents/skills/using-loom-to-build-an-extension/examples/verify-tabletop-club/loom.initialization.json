@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "packageId": "init_verify_tabletop_club_2",
   "communityId": "community_verify_tabletop_club",
   "communityHandle": "tabletop-club",
@@ -15,8 +15,6 @@
   "seedDataFiles": [],
   "idempotencyKey": "init-verify-tabletop-club-v2",
   "experience": {
-    "experienceSchemaVersion": 2,
-    "workflowGrammarVersion": 1,
     "displayName": "Tabletop Club",
     "tagline": "Board game nights, tournaments, loaner games, and dues for local tabletop fans.",
     "accentColor": "#C4703F",
@@ -60,15 +58,15 @@
         "presentationStyle": "slideOutBottom"
       }
     },
-    "personas": [
+    "roles": [
       {
-        "personaId": "tabletop-organizer",
+        "roleId": "tabletop-organizer",
         "label": "Organizer",
         "roleLabel": "Organizer",
         "description": "Plans game nights and tournaments, manages the game library, decides purchase proposals, and collects dues."
       },
       {
-        "personaId": "tabletop-member",
+        "roleId": "tabletop-member",
         "label": "Member",
         "roleLabel": "Member",
         "description": "RSVPs to game nights and tournaments, borrows games, proposes purchases, votes on the tournament ballot, and pays dues."
@@ -90,7 +88,7 @@
               "capacity"
             ],
             "editGuard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             }
@@ -112,7 +110,7 @@
             ],
             "to": "cancelled",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             }
@@ -127,7 +125,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ],
               "formula": "seriesId == null"
@@ -186,7 +184,7 @@
             "states": [
               "open"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "primary",
@@ -194,7 +192,7 @@
               {
                 "kind": "create",
                 "label": "New event",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-organizer"
                 ],
                 "scope": "tab",
@@ -228,7 +226,7 @@
             "states": [
               "cancelled"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "summary"
@@ -414,7 +412,7 @@
             ],
             "to": "going",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
@@ -446,7 +444,7 @@
             ],
             "to": "maybe",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -480,7 +478,7 @@
             ],
             "to": "declined",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -513,7 +511,7 @@
             ],
             "to": "waitlisted",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
@@ -547,7 +545,7 @@
             "required": true,
             "storage": "inline"
           },
-          "personaId": {
+          "fanId": {
             "type": "text",
             "required": true,
             "storage": "inline"
@@ -574,7 +572,7 @@
               "minimumAttendance"
             ],
             "editGuard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             }
@@ -596,19 +594,19 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
               "actorInList": {
-                "key": "goingPersonaIds",
+                "key": "goingFanIds",
                 "present": false
               }
             },
             "effects": [
               {
                 "op": "appendUnique",
-                "key": "goingPersonaIds",
+                "key": "goingFanIds",
                 "value": "$actor"
               }
             ]
@@ -623,19 +621,19 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
               "actorInList": {
-                "key": "goingPersonaIds",
+                "key": "goingFanIds",
                 "present": true
               }
             },
             "effects": [
               {
                 "op": "removeValue",
-                "key": "goingPersonaIds",
+                "key": "goingFanIds",
                 "value": "$actor"
               }
             ]
@@ -650,7 +648,7 @@
             ],
             "to": "cancelled",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             }
@@ -661,7 +659,7 @@
             "states": [
               "open"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "calendar",
             "cardSurfaceFamily": "event-rsvp",
             "bindingKind": "primary",
@@ -669,7 +667,7 @@
               {
                 "kind": "create",
                 "label": "New tournament",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-organizer"
                 ],
                 "scope": "tab",
@@ -679,7 +677,7 @@
                 "kind": "create",
                 "workflowType": "tournament-ballot",
                 "label": "Create ballot for this tournament",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-organizer"
                 ],
                 "scope": "instance",
@@ -695,7 +693,7 @@
             "states": [
               "open"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "votePoll",
             "bindingKind": "summary"
@@ -769,8 +767,8 @@
               "detail"
             ]
           },
-          "goingPersonaIds": {
-            "type": "personaId[]",
+          "goingFanIds": {
+            "type": "fanId[]",
             "writableBy": "effect",
             "storage": "inline"
           },
@@ -787,7 +785,7 @@
           },
           "accepted": {
             "type": "number",
-            "formula": "size(goingPersonaIds)",
+            "formula": "size(goingFanIds)",
             "displayIcon": "groups_outlined",
             "labelTemplate": "Accepted: {value}",
             "displayContexts": [
@@ -797,7 +795,7 @@
           },
           "quorumMet": {
             "type": "bool",
-            "formula": "size(goingPersonaIds) >= minimumAttendance"
+            "formula": "size(goingFanIds) >= minimumAttendance"
           },
           "cardStyleId": {
             "type": "number",
@@ -842,12 +840,12 @@
               }
             },
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
               "relatedInstanceField": "eventId",
-              "relatedListField": "goingPersonaIds"
+              "relatedListField": "goingFanIds"
             },
             "effects": [
               {
@@ -871,7 +869,7 @@
             ],
             "to": "closed",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             },
@@ -920,7 +918,7 @@
             "states": [
               "open"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "votePoll",
             "bindingKind": "primary",
@@ -940,7 +938,7 @@
             "states": [
               "closed"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "votePoll",
             "bindingKind": "summary"
@@ -1050,7 +1048,7 @@
             "sortable": true
           },
           "voterId": {
-            "type": "personaId",
+            "type": "fanId",
             "required": true,
             "storage": "inline"
           },
@@ -1085,7 +1083,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member"
               ],
               "instanceDataEquals": {
@@ -1104,7 +1102,7 @@
               },
               {
                 "op": "set",
-                "key": "holderPersonaId",
+                "key": "holderFanId",
                 "value": "$actor"
               }
             ]
@@ -1119,18 +1117,18 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member"
               ],
               "actorInList": {
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "present": false
               }
             },
             "effects": [
               {
                 "op": "appendUnique",
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "value": "$actor"
               }
             ]
@@ -1145,18 +1143,18 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member"
               ],
               "actorInList": {
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "present": true
               }
             },
             "effects": [
               {
                 "op": "removeValue",
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "value": "$actor"
               }
             ]
@@ -1171,7 +1169,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
@@ -1188,7 +1186,7 @@
               },
               {
                 "op": "set",
-                "key": "holderPersonaId",
+                "key": "holderFanId",
                 "value": null
               },
               {
@@ -1208,7 +1206,7 @@
             ],
             "to": "delisted",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             }
@@ -1219,7 +1217,7 @@
             "states": [
               "published"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "primary",
@@ -1290,8 +1288,8 @@
               "detail"
             ]
           },
-          "holderPersonaId": {
-            "type": "personaId?",
+          "holderFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "person_outline",
@@ -1302,8 +1300,8 @@
               "detail"
             ]
           },
-          "queuedPersonaIds": {
-            "type": "personaId[]",
+          "queuedFanIds": {
+            "type": "fanId[]",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "groups_outlined",
@@ -1329,7 +1327,7 @@
           },
           "queueLength": {
             "type": "number",
-            "formula": "size(queuedPersonaIds)"
+            "formula": "size(queuedFanIds)"
           },
           "isAvailable": {
             "type": "bool",
@@ -1361,14 +1359,14 @@
             ],
             "to": "claimed",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member"
               ]
             },
             "effects": [
               {
                 "op": "set",
-                "key": "claimedByPersonaId",
+                "key": "claimedByFanId",
                 "value": "$actor"
               },
               {
@@ -1382,7 +1380,7 @@
             "states": [
               "available"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "primary"
@@ -1432,8 +1430,8 @@
               "detail"
             ]
           },
-          "claimedByPersonaId": {
-            "type": "personaId?",
+          "claimedByFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "person_outline",
@@ -1475,7 +1473,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
@@ -1486,12 +1484,12 @@
               "requiresWorkflowsComplete": [
                 "tabletop-club-dues-payment"
               ],
-              "formula": "if(ownerPersonaId == $actor, false, if(pendingRequestPersonaId == null, true, false))"
+              "formula": "if(ownerFanId == $actor, false, if(pendingRequestFanId == null, true, false))"
             },
             "effects": [
               {
                 "op": "set",
-                "key": "pendingRequestPersonaId",
+                "key": "pendingRequestFanId",
                 "value": "$actor"
               }
             ]
@@ -1506,13 +1504,13 @@
             ],
             "to": null,
             "guard": {
-              "formula": "ownerPersonaId == $actor"
+              "formula": "ownerFanId == $actor"
             },
             "effects": [
               {
                 "op": "set",
-                "key": "holderPersonaId",
-                "value": "{pendingRequestPersonaId}"
+                "key": "holderFanId",
+                "value": "{pendingRequestFanId}"
               },
               {
                 "op": "set",
@@ -1521,7 +1519,7 @@
               },
               {
                 "op": "set",
-                "key": "pendingRequestPersonaId",
+                "key": "pendingRequestFanId",
                 "value": null
               }
             ]
@@ -1536,12 +1534,12 @@
             ],
             "to": null,
             "guard": {
-              "formula": "ownerPersonaId == $actor"
+              "formula": "ownerFanId == $actor"
             },
             "effects": [
               {
                 "op": "set",
-                "key": "pendingRequestPersonaId",
+                "key": "pendingRequestFanId",
                 "value": null
               }
             ]
@@ -1556,20 +1554,20 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
               "actorInList": {
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "present": false
               },
-              "formula": "if(ownerPersonaId == $actor, false, true)"
+              "formula": "if(ownerFanId == $actor, false, true)"
             },
             "effects": [
               {
                 "op": "appendUnique",
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "value": "$actor"
               }
             ]
@@ -1584,19 +1582,19 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ],
               "actorInList": {
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "present": true
               }
             },
             "effects": [
               {
                 "op": "removeValue",
-                "key": "queuedPersonaIds",
+                "key": "queuedFanIds",
                 "value": "$actor"
               }
             ]
@@ -1615,7 +1613,7 @@
                 "key": "availabilityState",
                 "value": "loaned"
               },
-              "formula": "holderPersonaId == $actor"
+              "formula": "holderFanId == $actor"
             },
             "effects": [
               {
@@ -1625,7 +1623,7 @@
               },
               {
                 "op": "set",
-                "key": "holderPersonaId",
+                "key": "holderFanId",
                 "value": null
               },
               {
@@ -1645,7 +1643,7 @@
             ],
             "to": null,
             "guard": {
-              "formula": "if(holderPersonaId == $actor, size(queuedPersonaIds) == 0, false)"
+              "formula": "if(holderFanId == $actor, size(queuedFanIds) == 0, false)"
             },
             "effects": [
               {
@@ -1665,7 +1663,7 @@
             ],
             "to": null,
             "guard": {
-              "formula": "if(holderPersonaId == $actor, true, ownerPersonaId == $actor)"
+              "formula": "if(holderFanId == $actor, true, ownerFanId == $actor)"
             },
             "effects": [
               {
@@ -1690,7 +1688,7 @@
             ],
             "to": "delisted",
             "guard": {
-              "formula": "ownerPersonaId == $actor"
+              "formula": "ownerFanId == $actor"
             }
           }
         ],
@@ -1699,7 +1697,7 @@
             "states": [
               "published"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan",
             "bindingKind": "primary",
@@ -1707,7 +1705,7 @@
               {
                 "kind": "create",
                 "label": "Share a game",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-member",
                   "tabletop-organizer"
                 ],
@@ -1763,8 +1761,8 @@
               "detail"
             ]
           },
-          "ownerPersonaId": {
-            "type": "personaId",
+          "ownerFanId": {
+            "type": "fanId",
             "required": true,
             "writableBy": "effect",
             "storage": "inline",
@@ -1784,8 +1782,8 @@
               "detail"
             ]
           },
-          "holderPersonaId": {
-            "type": "personaId?",
+          "holderFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "person_outline",
@@ -1796,8 +1794,8 @@
               "detail"
             ]
           },
-          "pendingRequestPersonaId": {
-            "type": "personaId?",
+          "pendingRequestFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "pan_tool_alt",
@@ -1808,8 +1806,8 @@
               "detail"
             ]
           },
-          "queuedPersonaIds": {
-            "type": "personaId[]",
+          "queuedFanIds": {
+            "type": "fanId[]",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "groups_outlined",
@@ -1846,7 +1844,7 @@
           },
           "queueLength": {
             "type": "number",
-            "formula": "size(queuedPersonaIds)"
+            "formula": "size(queuedFanIds)"
           },
           "isAvailable": {
             "type": "bool",
@@ -1878,7 +1876,7 @@
             ],
             "to": "paid",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -1903,7 +1901,7 @@
               "unpaid",
               "paid"
             ],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "giving",
             "cardSurfaceFamily": "paymentCheckout",
             "bindingKind": "primary"
@@ -2024,14 +2022,14 @@
             ],
             "to": "pending",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member"
               ]
             },
             "effects": [
               {
                 "op": "set",
-                "key": "proposedByPersonaId",
+                "key": "proposedByFanId",
                 "value": "$actor"
               },
               {
@@ -2051,14 +2049,14 @@
             ],
             "to": "approved",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             },
             "effects": [
               {
                 "op": "set",
-                "key": "decidedByPersonaId",
+                "key": "decidedByFanId",
                 "value": "$actor"
               },
               {
@@ -2078,14 +2076,14 @@
             ],
             "to": "changes-requested",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             },
             "effects": [
               {
                 "op": "set",
-                "key": "decidedByPersonaId",
+                "key": "decidedByFanId",
                 "value": "$actor"
               }
             ]
@@ -2100,14 +2098,14 @@
             ],
             "to": "rejected",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             },
             "effects": [
               {
                 "op": "set",
-                "key": "decidedByPersonaId",
+                "key": "decidedByFanId",
                 "value": "$actor"
               },
               {
@@ -2124,7 +2122,7 @@
               "draft",
               "changes-requested"
             ],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "home",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary",
@@ -2132,7 +2130,7 @@
               {
                 "kind": "create",
                 "label": "Propose a game",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-member"
                 ],
                 "scope": "tab",
@@ -2146,7 +2144,7 @@
               "approved",
               "rejected"
             ],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "home",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
@@ -2155,7 +2153,7 @@
             "states": [
               "pending"
             ],
-            "role": "receiver",
+            "audience": "receiver",
             "tabId": "admin",
             "cardSurfaceFamily": "approvalQueueItem",
             "bindingKind": "primary"
@@ -2185,8 +2183,8 @@
               "detail"
             ]
           },
-          "proposedByPersonaId": {
-            "type": "personaId?",
+          "proposedByFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "person_outline",
@@ -2209,8 +2207,8 @@
               "detail"
             ]
           },
-          "decidedByPersonaId": {
-            "type": "personaId?",
+          "decidedByFanId": {
+            "type": "fanId?",
             "writableBy": "effect",
             "storage": "inline",
             "displayIcon": "gavel",
@@ -2255,7 +2253,7 @@
             ],
             "to": "published",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-organizer"
               ]
             },
@@ -2273,7 +2271,7 @@
             "states": [
               "draft"
             ],
-            "role": "actor",
+            "audience": "actor",
             "tabId": "admin",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary"
@@ -2282,7 +2280,7 @@
             "states": [
               "published"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "home",
             "cardSurfaceFamily": "notificationInbox",
             "bindingKind": "summary"
@@ -2331,7 +2329,7 @@
             "tone": "positive",
             "editableFields": [
               "subject",
-              "participantPersonaIds"
+              "participantFanIds"
             ]
           },
           "archived": {
@@ -2350,7 +2348,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -2366,7 +2364,7 @@
                 "op": "append",
                 "key": "messages",
                 "value": {
-                  "senderPersonaId": "$actor",
+                  "senderFanId": "$actor",
                   "body": "{input.body}",
                   "timestamp": "$timestamp"
                 }
@@ -2388,7 +2386,7 @@
             ],
             "to": null,
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -2411,7 +2409,7 @@
             ],
             "to": "archived",
             "guard": {
-              "allowedPersonaIds": [
+              "allowedRoleIds": [
                 "tabletop-member",
                 "tabletop-organizer"
               ]
@@ -2423,7 +2421,7 @@
             "states": [
               "open"
             ],
-            "role": "any",
+            "audience": "any",
             "tabId": "messages",
             "cardSurfaceFamily": "discussionThread",
             "bindingKind": "primary",
@@ -2431,7 +2429,7 @@
               {
                 "kind": "create",
                 "label": "New thread",
-                "byPersonaIds": [
+                "byRoleIds": [
                   "tabletop-member",
                   "tabletop-organizer"
                 ],
@@ -2454,8 +2452,8 @@
               "detail"
             ]
           },
-          "participantPersonaIds": {
-            "type": "personaId[]",
+          "participantFanIds": {
+            "type": "fanId[]",
             "writableBy": "formEntry",
             "storage": "inline",
             "displayIcon": "groups_outlined",
@@ -2494,7 +2492,7 @@
         "instanceId": "event-friday-game-night",
         "workflowType": "event-rsvp",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Friday game night",
           "eventDate": "2026-07-10",
@@ -2509,137 +2507,137 @@
         "instanceId": "resp-friday-organizer",
         "workflowType": "event-rsvp-response",
         "currentState": "maybe",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-organizer"
+          "fanId": "tabletop-organizer"
         }
       },
       {
         "instanceId": "resp-friday-member-03",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-03"
+          "fanId": "tabletop-member-03"
         }
       },
       {
         "instanceId": "resp-friday-member-04",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-04"
+          "fanId": "tabletop-member-04"
         }
       },
       {
         "instanceId": "resp-friday-member-05",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-05"
+          "fanId": "tabletop-member-05"
         }
       },
       {
         "instanceId": "resp-friday-member-06",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-06"
+          "fanId": "tabletop-member-06"
         }
       },
       {
         "instanceId": "resp-friday-member-07",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-07"
+          "fanId": "tabletop-member-07"
         }
       },
       {
         "instanceId": "resp-friday-member-08",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-08"
+          "fanId": "tabletop-member-08"
         }
       },
       {
         "instanceId": "resp-friday-member-09",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-09"
+          "fanId": "tabletop-member-09"
         }
       },
       {
         "instanceId": "resp-friday-member-10",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-10"
+          "fanId": "tabletop-member-10"
         }
       },
       {
         "instanceId": "resp-friday-member-11",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-11"
+          "fanId": "tabletop-member-11"
         }
       },
       {
         "instanceId": "resp-friday-member-12",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-12"
+          "fanId": "tabletop-member-12"
         }
       },
       {
         "instanceId": "resp-friday-member-13",
         "workflowType": "event-rsvp-response",
         "currentState": "going",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-13"
+          "fanId": "tabletop-member-13"
         }
       },
       {
         "instanceId": "resp-friday-member-14",
         "workflowType": "event-rsvp-response",
         "currentState": "pending",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-friday-game-night",
-          "personaId": "tabletop-member-14"
+          "fanId": "tabletop-member-14"
         }
       },
       {
         "instanceId": "event-summer-tournament",
         "workflowType": "tournament-event",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Summer tournament",
           "eventDate": "2026-07-10",
@@ -2647,7 +2645,7 @@
           "location": "Main hall",
           "host": "Priya Nair (Tournament Lead)",
           "minimumAttendance": 8,
-          "goingPersonaIds": [
+          "goingFanIds": [
             "tabletop-member",
             "tabletop-member-03",
             "tabletop-member-04",
@@ -2664,7 +2662,7 @@
         "instanceId": "ballot-summer-tournament",
         "workflowType": "tournament-ballot",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "eventId": "event-summer-tournament",
           "round": "initial",
@@ -2695,7 +2693,7 @@
         "instanceId": "vote-m03-catan",
         "workflowType": "tournament-vote",
         "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "ballotId": "ballot-summer-tournament",
           "voterId": "tabletop-member-03",
@@ -2706,7 +2704,7 @@
         "instanceId": "vote-m04-wingspan",
         "workflowType": "tournament-vote",
         "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "ballotId": "ballot-summer-tournament",
           "voterId": "tabletop-member-04",
@@ -2717,7 +2715,7 @@
         "instanceId": "vote-m05-catan",
         "workflowType": "tournament-vote",
         "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "ballotId": "ballot-summer-tournament",
           "voterId": "tabletop-member-05",
@@ -2728,7 +2726,7 @@
         "instanceId": "vote-m06-azul",
         "workflowType": "tournament-vote",
         "currentState": "cast",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "ballotId": "ballot-summer-tournament",
           "voterId": "tabletop-member-06",
@@ -2739,15 +2737,15 @@
         "instanceId": "listing-catan",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Catan",
           "category": "Board Games",
           "condition": "Like new",
           "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "queuedFanIds": [],
           "dueDate": null
         }
       },
@@ -2755,15 +2753,15 @@
         "instanceId": "listing-wingspan",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Wingspan",
           "category": "Board Games",
           "condition": "Excellent",
           "description": "Award-winning engine-building bird game. Includes European expansion.",
           "availabilityState": "onLoan",
-          "holderPersonaId": "tabletop-member-03",
-          "queuedPersonaIds": [
+          "holderFanId": "tabletop-member-03",
+          "queuedFanIds": [
             "tabletop-member"
           ],
           "dueDate": "2026-07-17"
@@ -2773,15 +2771,15 @@
         "instanceId": "listing-root",
         "workflowType": "equipment-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Root",
           "category": "Strategy Games",
           "condition": "Good",
           "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "queuedPersonaIds": [
+          "holderFanId": null,
+          "queuedFanIds": [
             "tabletop-member-04",
             "tabletop-member-05"
           ],
@@ -2792,30 +2790,30 @@
         "instanceId": "listing-old-catan",
         "workflowType": "equipment-giveaway",
         "currentState": "available",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Catan (retired club copy)",
           "category": "Board Games",
           "condition": "Fair",
           "description": "Free to a member \u2014 retired club copy, replaced by the newer set above.",
-          "claimedByPersonaId": null
+          "claimedByFanId": null
         }
       },
       {
         "instanceId": "share-ticket-to-ride",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Ticket to Ride",
           "category": "Family Games",
           "condition": "Excellent",
           "description": "My personal copy \u2014 cross-country train routes, plays great at 2-5.",
-          "ownerPersonaId": "tabletop-member",
+          "ownerFanId": "tabletop-member",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "pendingRequestPersonaId": null,
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "pendingRequestFanId": null,
+          "queuedFanIds": [],
           "dueDate": null,
           "issueReported": false
         }
@@ -2824,17 +2822,17 @@
         "instanceId": "share-gloomhaven",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Gloomhaven",
           "category": "Campaign Games",
           "condition": "Good",
           "description": "Big legacy dungeon-crawler. Heavy box \u2014 local pickup only, please.",
-          "ownerPersonaId": "tabletop-member-14",
+          "ownerFanId": "tabletop-member-14",
           "availabilityState": "loaned",
-          "holderPersonaId": "tabletop-member-03",
-          "pendingRequestPersonaId": null,
-          "queuedPersonaIds": [
+          "holderFanId": "tabletop-member-03",
+          "pendingRequestFanId": null,
+          "queuedFanIds": [
             "tabletop-member-07",
             "tabletop-member-09"
           ],
@@ -2846,17 +2844,17 @@
         "instanceId": "share-azul",
         "workflowType": "tabletop-game-loan",
         "currentState": "published",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "title": "Azul",
           "category": "Abstract Games",
           "condition": "Like new",
           "description": "Tile-drafting, quick to teach. Happy to lend it around the club.",
-          "ownerPersonaId": "tabletop-member-05",
+          "ownerFanId": "tabletop-member-05",
           "availabilityState": "available",
-          "holderPersonaId": null,
-          "pendingRequestPersonaId": "tabletop-member-11",
-          "queuedPersonaIds": [],
+          "holderFanId": null,
+          "pendingRequestFanId": "tabletop-member-11",
+          "queuedFanIds": [],
           "dueDate": null,
           "issueReported": false
         }
@@ -2865,7 +2863,7 @@
         "instanceId": "dues-2026-q3-member",
         "workflowType": "tabletop-club-dues-payment",
         "currentState": "unpaid",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "amountLabel": "$15.00",
           "purpose": "Quarterly club dues",
@@ -2880,13 +2878,13 @@
         "instanceId": "proposal-wingspan",
         "workflowType": "game-purchase-proposal",
         "currentState": "approved",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "gameName": "Wingspan",
           "reason": "Award-winning engine-building game about birds \u2014 would round out our strategy shelf and plays well at 2-5.",
-          "proposedByPersonaId": "tabletop-member",
+          "proposedByFanId": "tabletop-member",
           "submittedAt": "2026-07-02T14:00:00.000Z",
-          "decidedByPersonaId": "tabletop-organizer",
+          "decidedByFanId": "tabletop-organizer",
           "decidedAt": "2026-07-03T09:30:00.000Z"
         }
       },
@@ -2894,13 +2892,13 @@
         "instanceId": "proposal-brass",
         "workflowType": "game-purchase-proposal",
         "currentState": "pending",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "gameName": "Brass: Birmingham",
           "reason": "Heavier economic game \u2014 several members have asked for something meatier than our current shelf.",
-          "proposedByPersonaId": "tabletop-member",
+          "proposedByFanId": "tabletop-member",
           "submittedAt": "2026-07-08T19:15:00.000Z",
-          "decidedByPersonaId": null,
+          "decidedByFanId": null,
           "decidedAt": null
         }
       },
@@ -2908,7 +2906,7 @@
         "instanceId": "announcement-room-change",
         "workflowType": "tabletop-meetup-announcement",
         "currentState": "draft",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "title": "Game night moves to the larger room",
           "body": "Starting next week, Friday game night moves to the larger room to make space for the growing tournament bracket.",
@@ -2919,21 +2917,21 @@
         "instanceId": "thread-welcome",
         "workflowType": "discussion-thread",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-organizer",
+        "createdByFanId": "tabletop-organizer",
         "instanceData": {
           "subject": "Welcome new members!",
-          "participantPersonaIds": [
+          "participantFanIds": [
             "tabletop-organizer",
             "tabletop-member"
           ],
           "messages": [
             {
-              "senderPersonaId": "tabletop-organizer",
+              "senderFanId": "tabletop-organizer",
               "body": "Welcome to the Tabletop Club! Our first game night is Friday at 7pm in the community room.",
               "timestamp": "2026-07-01T10:00:00.000Z"
             },
             {
-              "senderPersonaId": "tabletop-member",
+              "senderFanId": "tabletop-member",
               "body": "Thanks! I'll bring snacks and my copy of Catan.",
               "timestamp": "2026-07-01T11:30:00.000Z"
             }
@@ -2945,21 +2943,21 @@
         "instanceId": "thread-game-suggestions",
         "workflowType": "discussion-thread",
         "currentState": "open",
-        "createdByPersonaId": "tabletop-member",
+        "createdByFanId": "tabletop-member",
         "instanceData": {
           "subject": "Game suggestions for next week",
-          "participantPersonaIds": [
+          "participantFanIds": [
             "tabletop-member",
             "tabletop-organizer"
           ],
           "messages": [
             {
-              "senderPersonaId": "tabletop-member",
+              "senderFanId": "tabletop-member",
               "body": "Can we try Wingspan this week? I've been wanting to play it.",
               "timestamp": "2026-07-02T14:00:00.000Z"
             },
             {
-              "senderPersonaId": "tabletop-organizer",
+              "senderFanId": "tabletop-organizer",
               "body": "Great idea \u2014 I'll reserve the main table and bring my copy.",
               "timestamp": "2026-07-02T14:45:00.000Z"
             }

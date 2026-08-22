@@ -89,14 +89,14 @@ states and transitions shared by multiple listings:
       },
       "transitions": [
         { "id": "borrow",     "label": "Request loan", "fromStates": ["available"], "to": "onLoan",
-          "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
+          "allowedRoleIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
           "setsHolderToActor": true },
         { "id": "join-queue", "label": "Join queue",   "fromStates": ["onLoan", "queued"],
-          "allowedPersonaIds": ["tabletop-member"], "addsActorToQueue": true, "requiresActorNotInQueue": true },
+          "allowedRoleIds": ["tabletop-member"], "addsActorToQueue": true, "requiresActorNotInQueue": true },
         { "id": "leave-queue", "label": "Leave queue",   "fromStates": ["queued"],
-          "allowedPersonaIds": ["tabletop-member"], "requiresActorInQueue": true, "removesActorFromQueue": true },
+          "allowedRoleIds": ["tabletop-member"], "requiresActorInQueue": true, "removesActorFromQueue": true },
         { "id": "return",     "label": "Return",       "fromStates": ["onLoan"],    "to": "available",
-          "allowedPersonaIds": ["tabletop-member","tabletop-organizer"], "clearsHolder": true }
+          "allowedRoleIds": ["tabletop-member","tabletop-organizer"], "clearsHolder": true }
       ]
     }
   }
@@ -134,7 +134,7 @@ via `marketplaceTemplateMap[templateName]`). A listing without any machine rende
 | `label` | String | Button label. |
 | `fromStates` | String[] | States this transition is valid from. |
 | `to` | String? | Target state after applying (null = self-transition). |
-| `allowedPersonaIds` | String[]? | Persona IDs permitted to invoke this transition (empty/null = all). |
+| `allowedRoleIds` | String[]? | Role IDs permitted to invoke this transition (empty/null = all). |
 | `linkedWorkflowId` | String? | Real workflow fired via `onConfirmWorkflow` (resolved from `experience.workflows`). |
 | `setsHolderToActor` | bool = false | On apply: sets `currentHolderLabel` to the actor's display name. |
 | `clearsHolder` | bool = false | On apply: clears `currentHolderLabel`. |
@@ -146,7 +146,7 @@ via `marketplaceTemplateMap[templateName]`). A listing without any machine rende
 
 `availableActions(stateId, personaId)` returns all transitions where:
 - `stateId ∈ fromStates`
-- `personaId ∈ allowedPersonaIds` (if `allowedPersonaIds` is `null`, all personas pass)
+- `roleFor(personaId) ∈ allowedRoleIds` (if `allowedRoleIds` is `null`, all personas pass)
 
 Example: a `borrow` transition gated to `["tabletop-member"]` is *hidden* from organizers when they
 view the same listing, even though they share the `return` transition.

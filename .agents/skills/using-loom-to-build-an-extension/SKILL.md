@@ -46,7 +46,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     Loom repo's canonical Product Docs V2.
 15. Select production card surfaces from the Skill component catalog before designing screens. Use
     [components/card-surfaces/README.md](./components/card-surfaces/README.md) to choose the surface
-    family, persona permissions, supported interactions, customization points, API contracts, and fake
+    family, role permissions, supported interactions, customization points, API contracts, and fake
     backend evidence required for each workflow. Map every selected interaction to the executable
     [Community Card Surfaces OpenAPI](../../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
     and the Product Docs V2
@@ -54,15 +54,14 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     When the community needs schedule, document, case/status, external resource, tab/navigation, or
     shared-item behavior, prefer the dedicated `calendar`, `documents`, `workflow-status`,
     `external-document-link`, `app-shell-navigation-theming`, and expanded `equipment-loan`
-    marketplace/loan/giveaway surfaces instead of folding those workflows into generic cards. Also
-    select a per-tab renderer contract from
+    marketplace/loan/giveaway surfaces instead of folding those workflows into generic cards. Omit
+    `rendererContractId` and use
     [components/card-surfaces/tab-renderer-contracts.md](./components/card-surfaces/tab-renderer-contracts.md)
-    for each tab: Calendar must render calendar/agenda/event detail, Messages must render
-    inbox/thread/composer, Marketplace must render browse/listing/detail/current-holder/queue,
-    Documents must render library/detail/embedded/external open, and arbitrary request flows must use
-    workflow-status timeline/action surfaces when their steps vary by community. The extension product
-    doc must also declare the persona-specific app-shell navigation model: required
-    Home and Messages/Communication tabs, custom tabs, tab labels/icons/order, persona visibility,
+    to verify binding-driven derivation: all-`event-rsvp` tabs earn Calendar, all-`equipment-loan` tabs
+    earn Marketplace, and mixed or other-archetype tabs use the correct engine-native generic list,
+    which runs the live query and dispatches each instance by `cardSurfaceFamily`. The extension product
+    doc must also declare the role-specific app-shell navigation model: required
+    Home and Messages/Communication tabs, custom tabs, tab labels/icons/order, role visibility,
     surface-to-tab assignments, per-tab pinning policy, minimized/medium/expanded defaults, and safe
     theme/customization knobs for community cards, tabs, typography, buttons, edit fields, badges,
     density, spacing, and colors. For any
@@ -262,9 +261,9 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     contradicted by screenshots, missing passing `semanticSurfaceProof` for any primary
     workflow/persona row, missing passing semantic interaction-model `workflowLifecycleScorecards`, or
     missing/failing `appShellCapabilityReview` proof for documented App Shell capabilities.
-    `appShellCapabilityReview` must include screenshot-backed `tabRendererResults[]` rows for
-    `CalendarTabSurface`, `MessagesTabSurface`, `MarketplaceTabSurface`, `DocumentsTabSurface`, and
-    `WorkflowStatusSurface`, plus `interactionTransitionResults[]` rows proving important controls
+    `appShellCapabilityReview` must include screenshot-backed `tabRendererResults[]` rows for every tab,
+    naming its bound archetypes and the calendar, marketplace, or generic-list renderer they derive,
+    plus `interactionTransitionResults[]` rows proving important controls
     changed visible state from before/action/after screenshots. A pass cannot be based only on absence
     of known defects or on prose that says a renderer/control exists.
 64. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
@@ -289,12 +288,12 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     gate. App Shell capability utilization is a hard B25 gate: the evidence must include a passing
     `appShellCapabilityReview` proving persona tabs, explicit and appropriate per-tab pinning policy,
     minimized/medium/expanded states,
-    tap-to-expand behavior, community-list card states, renderer selection, and theme/customization
+    tap-to-expand behavior, community-list card states, renderer derivation, and theme/customization
     tokens where the product doc or App Shell component guide requires them. A tab may declare
     `pinnedSurfaces: none` when the product doc gives a job-to-be-done rationale; screenshots are
     required only for surfaces declared as pinned. Full B25 capture must include
     `wf_app-shell-capability-evidence` screenshots for the main community list, workflow presentation
-    states, any declared pinned surface, and renderer-selection proof. The LLM Product Docs
+    states, any declared pinned surface, and renderer-derivation proof. The LLM Product Docs
     reconciliation artifact must turn that evidence into structured `tabRendererResults[]` and
     `interactionTransitionResults[]`; missing or weak rows must become remediation tickets.
 66. B25 must run a distinct LLM Product Docs to Evidence Workflow Reconciliation gate before the final
@@ -327,10 +326,11 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     workflows/interactions missing from product docs, missing required visible proof, persona/state
     drift, incomplete lifecycle actions, generic or wrong surface mappings, and missing App Shell
     capability utilization. It must specifically ask whether the selected card surface fits the
-    community job-to-be-done better than available alternatives, whether Calendar, Messages, Marketplace,
-    Documents, and Workflow Status tabs look and behave like their tab-native product surfaces rather
-    than generic workflow lists, whether community theme/typography/pinning/presentation states follow
-    the App Shell guide, and whether important controls prove before/action/after state changes.
+    community job-to-be-done better than available alternatives, whether all-`event-rsvp` and
+    all-`equipment-loan` tabs derive their whole-tab surfaces, whether mixed/other tabs use the live
+    generic list and dispatch each instance by archetype, whether community theme/typography/pinning/
+    presentation states follow the App Shell guide, and whether important controls prove before/action/
+    after state changes.
     Unresolved blocker/major findings, weak tab-renderer proof, weak interaction-transition proof, or a
     failing `appShellCapabilityReview` become remediation tickets and block B25.
 67. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
@@ -343,10 +343,9 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     vision judge must fail when workflow/persona coverage is generic, missing, or not
     screenshot-backed. It must also fail when `visualInspection` is missing or reports checklist-modal,
     repeated-card shell, thin-content, weak visual identity, default-scaffold, or missing-image signals.
-    It must fail when a Calendar tab does not look like calendar/agenda/event UI, a Messages tab does
-    not look like inbox/thread/chat/composer UI, a Marketplace tab does not look like browse/search/
-    listing/detail UI, a Documents tab does not look like document library/detail/open UI, or a
-    workflow/status surface does not look like a multi-step status/timeline/action UI.
+    It must fail when an all-`event-rsvp` tab does not look like calendar/agenda/event UI, an
+    all-`equipment-loan` tab does not look like browse/search/listing/detail UI, or a mixed/other tab
+    does not prove the generic list's live query and per-instance archetype dispatch.
     It must also perform positive semantic closure for every workflow/persona and every remediated
     ticket: compare the requested target product surface to the after screenshots and fail unless the
     visible UI proves the required domain content and affordances are present. For example, a Masjid
@@ -360,8 +359,9 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     include user-facing problem statement, root-cause hypothesis, target experience, UX principles,
     implementation guidance, content guidance, visual guidance, evidence to collect, non-goals, commit
     boundary, remediation mode, worker readiness, implementation blockers, evidence-repair work items,
-    UI-remediation work items, tab ID, renderer contract, target card-surface family,
-    missing tab-native evidence, interaction evidence required, required screenshots to recapture, UX
+    UI-remediation work items, tab ID, bound archetypes, derived renderer, target card-surface family,
+    missing renderer-derivation evidence, interaction evidence required, required screenshots to
+    recapture, UX
     reference patterns to copy, and reference research queries. The
     Independent UX Judge must search the internet or open-source projects for comparable patterns when
     network access is available, or use the built-in B25 reference catalog with refresh queries when
@@ -602,7 +602,7 @@ status for the current repo. The LLM must review the docs every run and record
 `reviewedComponentDocPaths`, `componentDocReview.docs[]`, semantic summaries, and semantic
 implications. `production_ux_judge.dart` validates those hashes/commit fields against the current
 files and fails stale or pass-shaped component-doc review. Route component-doc mismatches, missing
-component docs, weak tab-native renderer usage, or unsupported card-surface/customization choices into
+component docs, weak renderer-derivation proof, or unsupported card-surface/customization choices into
 blocker/major remediation tickets. Its blocker/major product-doc, implementation, evidence,
 component-contract, or mapping findings must be converted into remediation tickets.
 For visible manual review or dual-emulator B25 runs, launch emulators with the hardened launcher rather

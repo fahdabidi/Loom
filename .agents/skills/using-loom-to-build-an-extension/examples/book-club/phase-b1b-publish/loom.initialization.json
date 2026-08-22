@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "communityId": "community_book_club",
   "communityName": "Neighborhood Book Club",
   "extensionId": "ext_book_club",

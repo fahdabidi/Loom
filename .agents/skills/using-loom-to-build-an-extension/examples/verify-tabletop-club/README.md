@@ -2,7 +2,7 @@
 
 This example is the App Shell Phase 1 "package-driven experience" fixture. Its `extensionId`
 (`ext_verify_tabletop_club`) is deliberately absent from the App Shell's hardcoded demo catalog
-(`_experienceByExtensionId`), so any workflows, personas, or persona policies that render for it
+(`_experienceByExtensionId`), so any workflows, roles, or role guards that render for it
 must come from this package's `experience` block — proving the App Shell renders arbitrary
 sideloaded communities instead of only the ~11 built-in examples.
 
@@ -16,7 +16,7 @@ Tabletop Club workflows below.
 
 - `loom.extension.json`: local-demo extension manifest.
 - `loom.initialization.json`: initialization package with an inline `experience` block declaring
-  2 personas, 6 workflows across 5 card-surface categories, per-workflow persona policies, a real
+  2 roles, 6 workflows across 5 card-surface categories, per-workflow role guards, a real
   calendar item, and real multi-choice response surfaces.
 
 ## `experience` block contract
@@ -40,7 +40,7 @@ Tabletop Club workflows below.
     its owning tab's theme in turn — so the cascade is community -> tab -> workflow, each level
     optional and each only needing to declare the fields it wants to change (typically just
     `accent`, which re-derives the rest of that level's look automatically).
-- `personas`: list of `{ personaId, label, roleLabel, description }`.
+- `roles`: list of `{ roleId, label, roleLabel, description }`.
 - `workflows`: list of `{ workflowId, title, entryText, actionText, resultText, calendar?,
   responseChoices?, theme? }`. Category, card-surface family, and section/tab placement are derived
   automatically from `workflowId`/`title` keyword patterns by the same generic helpers the

@@ -12,10 +12,9 @@ support requirements.
 
 1. Identify the community job-to-be-done.
 2. Select the closest card surface family.
-3. Select the tab renderer contract from
-   [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) so the workflow renders inside a
-   domain-native Calendar, Messages, Marketplace, Documents, Workflow Status, Giving, Care, Admin, or
-   Home surface instead of a generic workflow list.
+3. Bind the workflow's `cardSurfaceFamily` and omit `rendererContractId`; use
+   [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) to verify the bindings derive Calendar for
+   `event-rsvp`, Marketplace for `equipment-loan`, or the correct generic list for mixed/other families.
 4. Configure domain copy, fields, actions, icons, imagery, and role/persona rules.
 5. Map every interaction to the API contracts in [../API/CardSurfaces/README.md](../API/CardSurfaces/README.md).
 6. Verify that selected interactions exist in the executable
@@ -31,7 +30,7 @@ support requirements.
 | --- | --- |
 | [Community Card and Home](./community-card-home.md) | Installed community identity, entry, pinned state, next action. |
 | [App Shell Navigation, Tabs, Pinning, and Theming](./app-shell-navigation-theming.md) | Persona-specific community tabs, pinned surfaces, card expansion states, theme tokens, and customization knobs. |
-| [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) | Calendar, Messages, Marketplace, Documents, Workflow Status, Giving, Care, Admin, and Home renderer contracts that prevent dedicated tabs from falling back to generic cards. |
+| [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) | Binding-driven Calendar and Marketplace whole-tab surfaces, plus correct generic-list dispatch for mixed or other archetypes. |
 | [Announcement and Publish](./announcement-publish.md) | Compose, preview, schedule, publish, read, and revise announcements. |
 | [Calendar](./calendar.md) | Agenda, schedule, recurring events, reminders, feeds, imports, exports, and conflicts. |
 | [Event RSVP](./event-rsvp.md) | Events, classes, practices, meetings, services, and capacity-based attendance. |
