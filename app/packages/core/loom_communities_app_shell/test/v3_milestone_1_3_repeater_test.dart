@@ -42,6 +42,31 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
   },
 }, 'repeatable');
 
+LoomWorkflowStateMachine _inputMachine() => LoomWorkflowStateMachine.fromJson({
+  'initialState': 'open',
+  'states': {
+    'open': {'label': 'Open'},
+  },
+  'transitions': [
+    {
+      'id': 'configure',
+      'label': 'Configure',
+      'from': ['open'],
+      'to': null,
+      'inputs': {
+        'selection': {'type': 'list', 'required': true},
+      },
+      'effects': [
+        {'op': 'set', 'key': 'selection', 'value': '{input.selection}'},
+      ],
+    },
+  ],
+  'instanceDataSchema': {
+    'title': {'type': 'string'},
+    'selection': {'type': 'list'},
+  },
+}, 'repeatable-input');
+
 Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 Future<LocalWorkflowEngineApi> _engineWith(int count) async {
@@ -170,4 +195,60 @@ void main() {
       );
     },
   );
+
+  testWidgets('live transition action collects declared inputs', (
+    tester,
+  ) async {
+    final api = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'repeater-input-test',
+    );
+    api.registerDefinition(_inputMachine());
+    final instanceId = await api.createInstance(
+      workflowType: 'repeatable-input',
+      fanId: 'member',
+      initialInstanceData: {
+        'title': 'Input item',
+        'selection': <String>['original'],
+      },
+    );
+    final repeater = RepeaterSurface.live(
+      refreshInterval: const Duration(milliseconds: 10),
+      querySource: RepeaterQuerySource(
+        engine: api,
+        workflowType: 'repeatable-input',
+        fanId: 'member',
+      ),
+      itemBuilder: (context, item) =>
+          Text((item as WorkflowInstance).instanceData['title'] as String),
+    );
+
+    await tester.pumpWidget(_host(repeater));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 20));
+    final action = find.byKey(
+      ValueKey('repeater-transition-$instanceId-configure'),
+    );
+    expect(action, findsOneWidget);
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('generic-transition-input-dialog')),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('generic-transition-input-selection')),
+      'alpha, beta',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('generic-transition-input-confirm')),
+    );
+    await tester.pump(const Duration(milliseconds: 20));
+
+    final updated = (await api.queryInstances(
+      tabId: 'verify',
+      fanId: 'member',
+    )).items.singleWhere((item) => item.instanceId == instanceId);
+    expect(updated.instanceData['selection'], <String>['alpha', 'beta']);
+  });
 }

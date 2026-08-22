@@ -592,6 +592,12 @@ class _EquipmentLoanArchetypeCardState
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted || _mutating) return;
     setState(() {
       _mutating = true;
       _error = null;
@@ -602,6 +608,7 @@ class _EquipmentLoanArchetypeCardState
         instanceId: _instance.instanceId,
         transitionId: transition.id,
         fanId: widget.fanId,
+        inputs: inputs,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
@@ -917,6 +924,12 @@ class _DocumentLibraryArchetypeCardState
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted || _mutating) return;
     setState(() {
       _mutating = true;
       _error = null;
@@ -927,6 +940,7 @@ class _DocumentLibraryArchetypeCardState
         instanceId: _instance.instanceId,
         transitionId: transition.id,
         fanId: widget.fanId,
+        inputs: inputs,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
@@ -1126,6 +1140,12 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted || _mutating) return;
     setState(() {
       _mutating = true;
       _error = null;
@@ -1136,6 +1156,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
         instanceId: _instance.instanceId,
         transitionId: transition.id,
         fanId: widget.fanId,
+        inputs: inputs,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
@@ -1738,6 +1759,12 @@ class _SearchAiAnswerArchetypeCardState
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted || _mutating) return;
     setState(() {
       _mutating = true;
       _error = null;
@@ -1748,6 +1775,7 @@ class _SearchAiAnswerArchetypeCardState
         instanceId: _instance.instanceId,
         transitionId: transition.id,
         fanId: widget.fanId,
+        inputs: inputs,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,

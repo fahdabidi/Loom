@@ -325,6 +325,96 @@ Future<void> _openTab(WidgetTester tester, String tabId) async {
 
 void main() {
   testWidgets(
+    'Chess change-export-scope collects its required input and cancel is clean',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _installFixture(
+          'ext_chess_exportwizard_transition_inputs',
+          _chessFixtureRelative,
+        ),
+      ))!;
+      addTearDown(() => tester.runAsync(installed.dispose));
+
+      final exportWorkflow = _exportWorkflow(installed.experience);
+      final exportSeed = _exportSeed(
+        installed.experience,
+        exportWorkflow.workflowType,
+      );
+      final instanceId = exportSeed.instanceId;
+      final initial = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: instanceId,
+          fanId: _chessPersona,
+          tabId: _adminTab,
+        ),
+      ))!;
+      final initialScope = List<String>.from(
+        initial.instanceData['exportScope'] as List,
+      );
+
+      await tester.pumpWidget(_host(installed, _chessPersona));
+      await _openTab(tester, _adminTab);
+      final action = find.byKey(
+        ValueKey('export-wizard-$instanceId-action-change-export-scope'),
+      );
+      await _pumpUntilNoThrow(tester, action);
+
+      await _tapVisible(tester, action);
+      expect(
+        find.byKey(const ValueKey('generic-transition-input-dialog')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-cancel')),
+      );
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('generic-transition-input-dialog')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ValueKey('export-wizard-error-$instanceId')),
+        findsNothing,
+      );
+      final afterCancel = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: instanceId,
+          fanId: _chessPersona,
+          tabId: _adminTab,
+        ),
+      ))!;
+      expect(afterCancel.instanceData['exportScope'], initialScope);
+
+      await _tapVisible(tester, action);
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-exportScope')),
+        'members, tournament results',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await _pumpUntilFound(tester, find.text('2 data groups'));
+
+      final updated = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: instanceId,
+          fanId: _chessPersona,
+          tabId: _adminTab,
+        ),
+      ))!;
+      expect(updated.currentState, 'ready');
+      expect(updated.instanceData['exportScope'], <String>[
+        'members',
+        'tournament results',
+      ]);
+      expect(updated.instanceData['statusMessage'], 'Ready to generate');
+    },
+  );
+
+  testWidgets(
     'Chess fixture exportWizard renders schema-divergent core fields without assumptions',
     (tester) async {
       final installed = (await tester.runAsync(

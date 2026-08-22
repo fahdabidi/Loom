@@ -207,11 +207,18 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
               'repeater-transition-${instance?.instanceId ?? index}-${transition.id}',
             ),
             onPressed: () async {
+              final inputs = await _collectTransitionInputs(
+                context: context,
+                transition: transition,
+                instanceData: instance!.instanceData,
+              );
+              if (inputs == null || !mounted) return;
               await widget.querySource!.engine.applyTransition(
-                workflowType: instance!.workflowType,
+                workflowType: instance.workflowType,
                 instanceId: instance.instanceId,
                 transitionId: transition.id,
                 fanId: widget.querySource!.fanId,
+                inputs: inputs,
               );
               await _refresh();
             },

@@ -1907,23 +1907,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         .where((candidate) => candidate.id == transitionId)
         .firstOrNull;
     if (transition == null) return;
-    final declaredInputs = transition.inputs;
-    final inputs = declaredInputs == null || declaredInputs.isEmpty
-        ? null
-        : await showDialog<Map<String, dynamic>>(
-            context: context,
-            builder: (context) => GenericTransitionInputDialog(
-              transition: transition,
-              instanceData: _instance.instanceData,
-            ),
-          );
-    if (declaredInputs != null && declaredInputs.isNotEmpty && inputs == null) {
-      return;
-    }
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted) return;
     // Keep recurrence inputs for mutation retries instead of reopening the
     // input dialog after a failed attempt.
     if (transitionId == 'make-recurring') {
-      return _applyMakeRecurring(inputs!);
+      return _applyMakeRecurring(inputs);
     }
     final generation = _generation;
     final instance = _instance;
@@ -2082,6 +2075,19 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     if (scope == _EditScope.thisEvent) {
       return _applyTransition('cancel-event');
     }
+    final cancelTransition = _actions
+        .where((candidate) => candidate.id == 'cancel-event')
+        .firstOrNull;
+    if (cancelTransition == null) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: cancelTransition,
+      instanceData: instance.instanceData,
+    );
+    if (inputs == null ||
+        !_isCurrent(generation, instance, machine, engine, fanId)) {
+      return;
+    }
     final anchorDate = instance.instanceData['eventDate']?.toString();
     return _runMutation(
       generation: generation,
@@ -2133,6 +2139,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             instanceId: member.instanceId,
             transitionId: 'cancel-event',
             fanId: fanId,
+            inputs: inputs,
           );
           if (member.instanceId == instance.instanceId) {
             updatedSelf = WorkflowInstance(

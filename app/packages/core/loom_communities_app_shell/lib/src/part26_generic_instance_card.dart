@@ -279,19 +279,13 @@ class _GenericWorkflowInstanceCardState
     final transition = widget.machine.transitions
         .where((candidate) => candidate.id == transitionId)
         .firstOrNull;
-    final declaredInputs = transition?.inputs;
-    final inputs = declaredInputs == null || declaredInputs.isEmpty
-        ? null
-        : await showDialog<Map<String, dynamic>>(
-            context: context,
-            builder: (context) => GenericTransitionInputDialog(
-              transition: transition!,
-              instanceData: _instance.instanceData,
-            ),
-          );
-    if (declaredInputs != null && declaredInputs.isNotEmpty && inputs == null) {
-      return;
-    }
+    if (transition == null) return;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: _instance.instanceData,
+    );
+    if (inputs == null || !mounted) return;
     final generation = _generation;
     final instance = _instance;
     final machine = widget.machine;
@@ -950,6 +944,41 @@ class _GenericInstanceListField extends StatelessWidget {
     }
     return null;
   }
+}
+
+/// Collects the inputs declared by a package transition.
+///
+/// A non-null result always means the caller may continue to
+/// [WorkflowEngineApi.applyTransition]. An empty map is the successful result
+/// for a transition with no declared inputs; null is reserved for user
+/// cancellation. [precollectedInputs] supports bespoke controls that are
+/// already the transition's input surface, such as selecting a poll candidate.
+Future<Map<String, dynamic>?> _collectTransitionInputs({
+  required BuildContext context,
+  required LoomWorkflowTransition transition,
+  required Map<String, dynamic> instanceData,
+  Map<String, dynamic>? precollectedInputs,
+}) {
+  final declaredInputs = transition.inputs;
+  if (declaredInputs == null || declaredInputs.isEmpty) {
+    return Future.value(precollectedInputs ?? const <String, dynamic>{});
+  }
+  final precollectedInputsAreComplete =
+      precollectedInputs != null &&
+      declaredInputs.entries.every(
+        (entry) =>
+            !entry.value.required || precollectedInputs.containsKey(entry.key),
+      );
+  if (precollectedInputsAreComplete) {
+    return Future.value(precollectedInputs);
+  }
+  return showDialog<Map<String, dynamic>>(
+    context: context,
+    builder: (context) => GenericTransitionInputDialog(
+      transition: transition,
+      instanceData: instanceData,
+    ),
+  );
 }
 
 /// Schema-driven collection of GAP-1 transition inputs.  Visibility is

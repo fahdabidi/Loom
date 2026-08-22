@@ -144,26 +144,48 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
   Future<void> _vote(Map<String, dynamic> candidate) async {
     final itemAction = _voteItemAction;
     if (itemAction == null) return;
+    final transition = _actions
+        .where((candidate) => candidate.id == itemAction.transitionId)
+        .firstOrNull;
+    if (transition == null) return;
     final instance = widget.resolved.instance;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: instance.instanceData,
+      precollectedInputs: _inputsForItem(candidate),
+    );
+    if (inputs == null || !mounted) return;
     await _runMutation(() async {
       await widget.engine.applyTransition(
         workflowType: instance.workflowType,
         instanceId: instance.instanceId,
         transitionId: itemAction.transitionId,
         fanId: widget.fanId,
-        inputs: _inputsForItem(candidate),
+        inputs: inputs,
       );
     });
   }
 
   Future<void> _closeVote() async {
+    final transition = _actions
+        .where((candidate) => candidate.id == 'close-vote')
+        .firstOrNull;
+    if (transition == null) return;
     final instance = widget.resolved.instance;
+    final inputs = await _collectTransitionInputs(
+      context: context,
+      transition: transition,
+      instanceData: instance.instanceData,
+    );
+    if (inputs == null || !mounted) return;
     await _runMutation(() async {
       await widget.engine.applyTransition(
         workflowType: instance.workflowType,
         instanceId: instance.instanceId,
         transitionId: 'close-vote',
         fanId: widget.fanId,
+        inputs: inputs,
       );
     });
   }
