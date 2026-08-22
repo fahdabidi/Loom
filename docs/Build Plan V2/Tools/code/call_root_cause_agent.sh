@@ -152,16 +152,39 @@ echo "$$" > .codex-logs/.last_dispatch.pid
 CODEX_OUTPUT_CAPTURE="$(mktemp)"
 set +e
 if [ "$MODE" = "--fresh" ]; then
+# flutter_tester binds a localhost control socket per test file; a default
+# workspace-write sandbox returns EPERM on that bind, so every Flutter widget
+# suite fails to start -- a harness failure that reads like real regressions.
+# The SDK must also be writable: flutter test writes bin/cache/engine.stamp
+# before any test runs. Verified 2026-08-22 after a root-cause pass could not
+# reproduce a widget-test failure it was asked to diagnose.
+FLUTTER_BIN="$(command -v flutter || true)"
+if [ -n "$FLUTTER_BIN" ]; then
+  FLUTTER_SDK_DIR="$(dirname "$(dirname "$(readlink -f "$FLUTTER_BIN")")")"
+else
+  FLUTTER_SDK_DIR="$HOME/flutter"
+fi
+PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
+FLUTTER_CONFIG_DIR="$HOME/.config/flutter"
+CODEX_SANDBOX_NETWORK_CONFIG="sandbox_workspace_write.network_access=true"
   npx --yes @openai/codex exec \
     "${PROFILE_ARGS[@]}" \
     --sandbox "$SANDBOX_MODE" \
     --add-dir "$REPO_ROOT/.git" \
+    --add-dir "$PUB_CACHE_DIR" \
+    --add-dir "$FLUTTER_CONFIG_DIR" \
+    --add-dir "$FLUTTER_SDK_DIR" \
+    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
     "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 else
   npx --yes @openai/codex exec \
     "${PROFILE_ARGS[@]}" \
     --sandbox "$SANDBOX_MODE" \
     --add-dir "$REPO_ROOT/.git" \
+    --add-dir "$PUB_CACHE_DIR" \
+    --add-dir "$FLUTTER_CONFIG_DIR" \
+    --add-dir "$FLUTTER_SDK_DIR" \
+    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
     resume --last "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 fi
 STATUS="${PIPESTATUS[0]}"
