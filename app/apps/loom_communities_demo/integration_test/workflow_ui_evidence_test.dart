@@ -6,6 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show
+        LoomWorkflowStateMachine,
+        LoomWorkflowTransition,
+        RenderBinding,
+        WorkflowInstance;
 
 import '../test/workflow_ui_test_harness.dart';
 
@@ -62,7 +68,11 @@ void main() {
     final entries = <Map<String, Object?>>[];
     binding.reportData!['workflowEvidence'] = entries;
     final installedExtensionIds = _preloadExampleCommunities
-        ? {for (final target in evidenceTargets) target.extensionId}
+        ? {
+            for (final target in evidenceTargets)
+              if (!hasShippedEvidencePackage(target.extensionId))
+                target.extensionId,
+          }
         : <String>{};
     final screenshotVisibleTextByName = <String, String>{};
     final screenshotCapture = _ScreenshotCaptureRecorder(
@@ -125,7 +135,11 @@ void main() {
       if (installedExtensionIds.contains(target.extensionId)) {
         return;
       }
-      await installEvidenceTarget(tester, target);
+      await installEvidenceTarget(
+        tester,
+        target,
+        useShippedPackage: hasShippedEvidencePackage(target.extensionId),
+      );
       installedExtensionIds.add(target.extensionId);
     }
 
@@ -217,120 +231,176 @@ void main() {
     )) {
       await ensureTargetInstalled(target);
       await openEvidenceTarget(tester, target);
-      final experience = experienceForExtensionId(
+      final catalogExperience = experienceForExtensionId(
         target.extensionId,
         displayName: target.communityName,
       );
-      expect(find.text(experience.tagline), findsOneWidget);
-      final completedSetupWorkflowIds = <String>{};
-
-      Future<void> ensurePrerequisiteChain(
-        LoomWorkflowDefinition workflow,
-      ) async {
-        final policy = personaPolicyForWorkflow(
-          target.extensionId,
-          workflow.workflowId,
-        );
-        final prerequisiteWorkflowId = policy.prerequisiteWorkflowId;
-        if (prerequisiteWorkflowId == null ||
-            completedSetupWorkflowIds.contains(prerequisiteWorkflowId)) {
-          return;
-        }
-        final prerequisite = experience.workflows.firstWhere(
-          (candidate) => candidate.workflowId == prerequisiteWorkflowId,
-        );
-        await ensurePrerequisiteChain(prerequisite);
-        final prerequisitePolicy = personaPolicyForWorkflow(
-          target.extensionId,
-          prerequisite.workflowId,
-        );
-        final prerequisiteRoleId = prerequisitePolicy.actorRoleIds.first;
-        await selectPersona(tester, prerequisiteRoleId);
-        await completeWorkflow(tester, prerequisite);
-        completedSetupWorkflowIds.add(prerequisiteWorkflowId);
+      final shippedPackage = hasShippedEvidencePackage(target.extensionId)
+          ? readShippedEvidencePackage(target)
+          : null;
+      if (shippedPackage == null) {
+        expect(find.text(catalogExperience.tagline), findsOneWidget);
       }
 
-      for (final workflow in experience.workflows) {
-        final workflowOrdinal = targetWorkflowOrdinal;
-        targetWorkflowOrdinal += 1;
-        if (!_includeWorkflowShard(workflowOrdinal)) {
-          continue;
+      if (shippedPackage != null) {
+        final shippedWalkthroughs = _shippedWorkflowWalkthroughs(
+          target: target,
+          package: shippedPackage,
+          evidenceContracts: catalogExperience.workflows,
+        );
+        for (final walkthrough in shippedWalkthroughs) {
+          final workflow = walkthrough.evidenceContract;
+          final workflowOrdinal = targetWorkflowOrdinal;
+          targetWorkflowOrdinal += 1;
+          if (!_includeWorkflowShard(workflowOrdinal)) {
+            continue;
+          }
+          emitProgress(
+            'workflow-start',
+            phase: target.phase,
+            workflowId: workflow.workflowId,
+            communityName: target.communityName,
+          );
+          final screenshotNames = await _runShippedWorkflowWalkthrough(
+            tester: tester,
+            target: target,
+            package: shippedPackage,
+            selector: walkthrough.selector,
+            evidenceContract: workflow,
+            capture: capture,
+          );
+          recordEvidenceEntry({
+            'phase': target.phase,
+            'appId': target.extensionId,
+            'communityId': target.communityId,
+            'communityName': target.communityName,
+            'workflowId': workflow.workflowId,
+            'expectedAssertions': [
+              workflow.entryText,
+              workflow.actionText,
+              workflow.resultText,
+            ],
+            'screenshotNames': screenshotNames,
+            'status': 'pass',
+          });
+          emitProgress(
+            'workflow-complete',
+            phase: target.phase,
+            workflowId: workflow.workflowId,
+            communityName: target.communityName,
+          );
         }
-        emitProgress(
-          'workflow-start',
-          phase: target.phase,
-          workflowId: workflow.workflowId,
-          communityName: target.communityName,
-        );
-        final policy = personaPolicyForWorkflow(
-          target.extensionId,
-          workflow.workflowId,
-        );
-        await ensurePrerequisiteChain(workflow);
-        final actorRoleId = policy.actorRoleIds.first;
-        await selectPersona(tester, actorRoleId);
-        final entry = <String, Object?>{
-          'phase': target.phase,
-          'appId': target.extensionId,
-          'communityId': target.communityId,
-          'communityName': target.communityName,
-          'workflowId': workflow.workflowId,
-          'expectedAssertions': [
-            workflow.entryText,
-            workflow.actionText,
-            workflow.resultText,
-          ],
-        };
-        final start = _screenshotName(target, workflow, 'start');
-        final action = _screenshotName(target, workflow, 'action');
-        final complete = _screenshotName(target, workflow, 'complete');
+      } else {
+        final completedSetupWorkflowIds = <String>{};
 
-        await scrollToWorkflowCard(tester, workflow);
-        await capture(start);
+        Future<void> ensurePrerequisiteChain(
+          LoomWorkflowDefinition workflow,
+        ) async {
+          final policy = personaPolicyForWorkflow(
+            target.extensionId,
+            workflow.workflowId,
+          );
+          final prerequisiteWorkflowId = policy.prerequisiteWorkflowId;
+          if (prerequisiteWorkflowId == null ||
+              completedSetupWorkflowIds.contains(prerequisiteWorkflowId)) {
+            return;
+          }
+          final prerequisite = catalogExperience.workflows.firstWhere(
+            (candidate) => candidate.workflowId == prerequisiteWorkflowId,
+          );
+          await ensurePrerequisiteChain(prerequisite);
+          final prerequisitePolicy = personaPolicyForWorkflow(
+            target.extensionId,
+            prerequisite.workflowId,
+          );
+          final prerequisiteRoleId = prerequisitePolicy.actorRoleIds.first;
+          await selectPersona(tester, prerequisiteRoleId);
+          await completeWorkflow(tester, prerequisite);
+          completedSetupWorkflowIds.add(prerequisiteWorkflowId);
+        }
 
-        final workflowButton = find.byKey(
-          ValueKey('workflow-button-${workflow.workflowId}'),
-        );
-        await scrollFinderIntoViewport(tester, workflowButton);
-        await tester.tap(workflowButton, warnIfMissed: false);
-        await tester.pumpAndSettle();
-        expect(
-          find.byKey(
-            ValueKey('workflow-action-surface-${workflow.workflowId}'),
-          ),
-          findsOneWidget,
-        );
-        await capture(action);
+        for (final workflow in catalogExperience.workflows) {
+          final workflowOrdinal = targetWorkflowOrdinal;
+          targetWorkflowOrdinal += 1;
+          if (!_includeWorkflowShard(workflowOrdinal)) {
+            continue;
+          }
+          emitProgress(
+            'workflow-start',
+            phase: target.phase,
+            workflowId: workflow.workflowId,
+            communityName: target.communityName,
+          );
+          final policy = personaPolicyForWorkflow(
+            target.extensionId,
+            workflow.workflowId,
+          );
+          await ensurePrerequisiteChain(workflow);
+          final actorRoleId = policy.actorRoleIds.first;
+          await selectPersona(tester, actorRoleId);
+          final entry = <String, Object?>{
+            'phase': target.phase,
+            'appId': target.extensionId,
+            'communityId': target.communityId,
+            'communityName': target.communityName,
+            'workflowId': workflow.workflowId,
+            'expectedAssertions': [
+              workflow.entryText,
+              workflow.actionText,
+              workflow.resultText,
+            ],
+          };
+          final start = _screenshotName(target, workflow, 'start');
+          final action = _screenshotName(target, workflow, 'action');
+          final complete = _screenshotName(target, workflow, 'complete');
 
-        final submitButton = find.byKey(
-          ValueKey('workflow-action-submit-${workflow.workflowId}'),
-        );
-        await scrollFinderIntoViewport(tester, submitButton);
-        await tester.tap(submitButton, warnIfMissed: false);
-        await tester.pumpAndSettle();
-        await scrollToWorkflowCard(tester, workflow);
-        expect(
-          find.byKey(ValueKey('workflow-complete-${workflow.workflowId}')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
-          findsOneWidget,
-        );
-        await capture(complete);
+          await scrollToWorkflowCard(tester, workflow);
+          await capture(start);
 
-        recordEvidenceEntry({
-          ...entry,
-          'screenshotNames': [start, action, complete],
-          'status': 'pass',
-        });
-        completedSetupWorkflowIds.add(workflow.workflowId);
-        emitProgress(
-          'workflow-complete',
-          phase: target.phase,
-          workflowId: workflow.workflowId,
-          communityName: target.communityName,
-        );
+          final workflowButton = find.byKey(
+            ValueKey('workflow-button-${workflow.workflowId}'),
+          );
+          await scrollFinderIntoViewport(tester, workflowButton);
+          await tester.tap(workflowButton, warnIfMissed: false);
+          await tester.pumpAndSettle();
+          expect(
+            find.byKey(
+              ValueKey('workflow-action-surface-${workflow.workflowId}'),
+            ),
+            findsOneWidget,
+          );
+          await capture(action);
+
+          final submitButton = find.byKey(
+            ValueKey('workflow-action-submit-${workflow.workflowId}'),
+          );
+          await scrollFinderIntoViewport(tester, submitButton);
+          await tester.tap(submitButton, warnIfMissed: false);
+          await tester.pumpAndSettle();
+          await scrollToWorkflowCard(tester, workflow);
+          expect(
+            find.byKey(ValueKey('workflow-complete-${workflow.workflowId}')),
+            findsOneWidget,
+          );
+          expect(
+            find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
+            findsOneWidget,
+          );
+          await capture(complete);
+
+          recordEvidenceEntry({
+            ...entry,
+            'screenshotNames': [start, action, complete],
+            'status': 'pass',
+          });
+          completedSetupWorkflowIds.add(workflow.workflowId);
+          emitProgress(
+            'workflow-complete',
+            phase: target.phase,
+            workflowId: workflow.workflowId,
+            communityName: target.communityName,
+          );
+        }
       }
 
       await tester.pageBack();
@@ -341,25 +411,40 @@ void main() {
     final mosqueTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_mosque',
     );
-    final mosqueExperience = experienceForExtensionId(
-      mosqueTarget.extensionId,
-      displayName: mosqueTarget.communityName,
+    final mosquePackage = readShippedEvidencePackage(mosqueTarget);
+    final mosqueAdminRoleId = _packageRoleId(
+      target: mosqueTarget,
+      package: mosquePackage,
+      label: 'Masjid Admin',
     );
-    final announcement = mosqueExperience.workflows.firstWhere(
-      (workflow) => workflow.workflowId == 'mosque-announcement',
+    final mosqueMemberRoleId = _packageRoleId(
+      target: mosqueTarget,
+      package: mosquePackage,
+      label: 'Community Member',
     );
-    final careRequest = mosqueExperience.workflows.firstWhere(
-      (workflow) => workflow.workflowId == 'mosque-care-request',
+    final announcement = _shippedWorkflowSelector(
+      target: mosqueTarget,
+      package: mosquePackage,
+      workflowType: 'mosque-announcement',
+    );
+    final careRequest = _shippedWorkflowSelector(
+      target: mosqueTarget,
+      package: mosquePackage,
+      workflowType: 'mosque-care-request',
     );
     final gardenTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_garden_club',
     );
-    final gardenExperience = experienceForExtensionId(
-      gardenTarget.extensionId,
-      displayName: gardenTarget.communityName,
+    final gardenPackage = readShippedEvidencePackage(gardenTarget);
+    final gardenMemberRoleId = _packageRoleId(
+      target: gardenTarget,
+      package: gardenPackage,
+      label: 'Member',
     );
-    final gardenRsvp = gardenExperience.workflows.firstWhere(
-      (workflow) => workflow.workflowId == 'garden-event-rsvp',
+    final gardenRsvp = _shippedWorkflowSelector(
+      target: gardenTarget,
+      package: gardenPackage,
+      workflowType: 'garden-event-rsvp',
     );
     final hoaTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_hoa',
@@ -367,12 +452,16 @@ void main() {
     final soccerTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_youth_soccer',
     );
-    final soccerExperience = experienceForExtensionId(
-      soccerTarget.extensionId,
-      displayName: soccerTarget.communityName,
+    final soccerPackage = readShippedEvidencePackage(soccerTarget);
+    final soccerCoachRoleId = _packageRoleId(
+      target: soccerTarget,
+      package: soccerPackage,
+      label: 'Coach',
     );
-    final soccerRoster = soccerExperience.workflows.firstWhere(
-      (workflow) => workflow.workflowId == 'soccer-team-roster',
+    final soccerRoster = _shippedWorkflowSelector(
+      target: soccerTarget,
+      package: soccerPackage,
+      workflowType: 'soccer-team-roster',
     );
 
     if (_includePhase('B17') &&
@@ -384,6 +473,7 @@ void main() {
         communityName: mosqueTarget.communityName,
       );
       await ensureTargetOpen(mosqueTarget);
+      await selectPersona(tester, mosqueAdminRoleId);
       await capture('B17_persona_inventory_active_admin');
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
       await tester.pumpAndSettle();
@@ -426,11 +516,15 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
       await tester.pumpAndSettle();
       await capture('B18_persona_picker_dialog');
-      await tester.tap(
-        find.byKey(const ValueKey('persona-option-mosque-member')),
-      );
+      await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      await _scrollToWorkflow(tester, announcement);
+      await _showShippedWorkflowInstance(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        selector: announcement,
+        roleId: mosqueMemberRoleId,
+      );
       await capture('B18_persona_picker_member_selected');
       recordEvidenceEntry({
         'phase': 'B18',
@@ -466,11 +560,30 @@ void main() {
         communityName: mosqueTarget.communityName,
       );
       await ensureTargetOpen(mosqueTarget);
-      await selectPersona(tester, 'mosque-member');
-      await _scrollToWorkflow(tester, careRequest);
+      await seedEvidenceAccounts(tester, mosqueTarget, [
+        LoomAccount(
+          accountId: mosqueMemberRoleId,
+          displayName: 'Walkthrough community member',
+          roleId: mosqueMemberRoleId,
+        ),
+      ]);
+      await signInEvidenceAccount(tester, 'Walkthrough community member');
+      await _showShippedWorkflowInstance(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        selector: careRequest,
+        roleId: mosqueMemberRoleId,
+        selectRole: false,
+      );
       await capture('B19_member_care_request_actor');
-      await selectPersona(tester, 'mosque-admin');
-      await _scrollToWorkflow(tester, announcement);
+      await _showShippedWorkflowInstance(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        selector: announcement,
+        roleId: mosqueAdminRoleId,
+      );
       await capture('B19_admin_announcement_actor');
       recordEvidenceEntry({
         'phase': 'B19',
@@ -506,60 +619,87 @@ void main() {
         communityName: mosqueTarget.communityName,
       );
       await ensureTargetOpen(mosqueTarget);
-      await selectPersona(tester, 'mosque-admin');
-      await _scrollToWorkflow(tester, announcement);
-      await capture('B20_announcement_admin_start');
-      final announcementActionButton = find.byKey(
-        ValueKey('workflow-button-${announcement.workflowId}'),
+      final publishedAnnouncementId =
+          await _createAndPublishShippedAnnouncement(
+            tester: tester,
+            target: mosqueTarget,
+            package: mosquePackage,
+            selector: announcement,
+            adminRoleId: mosqueAdminRoleId,
+            capture: capture,
+          );
+      await selectPersona(tester, mosqueMemberRoleId);
+      await _selectPackageTab(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        roleId: mosqueMemberRoleId,
+        tabId: 'home',
       );
-      await scrollFinderIntoViewport(tester, announcementActionButton);
-      await tester.tap(announcementActionButton, warnIfMissed: false);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(
-          ValueKey('workflow-action-surface-${announcement.workflowId}'),
-        ),
-        findsOneWidget,
+      final publishedAnnouncement = find.text(
+        'Walkthrough community announcement',
       );
-      await capture('B20_announcement_admin_action');
-      final announcementSubmitButton = find.byKey(
-        ValueKey('workflow-action-submit-${announcement.workflowId}'),
+      await waitForEngineNativeWidget(
+        tester,
+        publishedAnnouncement,
+        description: 'published walkthrough announcement for community member',
       );
-      await scrollFinderIntoViewport(tester, announcementSubmitButton);
-      await tester.tap(announcementSubmitButton);
-      await tester.pumpAndSettle();
-      await _scrollToWorkflow(tester, announcement);
-      await capture('B20_announcement_admin_complete');
-      await selectPersona(tester, 'mosque-member');
-      await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_member_ready');
-      final announcementReceiveButton = find.byKey(
-        ValueKey('workflow-receive-button-${announcement.workflowId}'),
+      final markRead = _packageTransitionByLabel(
+        target: mosqueTarget,
+        machine: announcement.machine,
+        label: 'Mark read',
       );
-      await scrollFinderIntoViewport(tester, announcementReceiveButton);
-      await tester.tap(announcementReceiveButton, warnIfMissed: false);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(
-          ValueKey('workflow-receive-surface-${announcement.workflowId}'),
-        ),
-        findsOneWidget,
+      final announcementReceiveButton = _engineActionFinder(
+        publishedAnnouncementId,
+        markRead.id,
       );
+      await waitForEngineNativeWidget(
+        tester,
+        announcementReceiveButton,
+        description: 'shipped member announcement receipt action',
+      );
+      await tester.ensureVisible(announcementReceiveButton.first);
       await capture('B20_announcement_member_action');
-      final announcementReceiveSubmitButton = find.byKey(
-        ValueKey('workflow-receive-submit-${announcement.workflowId}'),
+      await tester.tap(announcementReceiveButton.first, warnIfMissed: false);
+      for (var attempt = 0; attempt < 8; attempt += 1) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 5)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(
+        announcementReceiveButton,
+        findsNothing,
+        reason:
+            'The shipped member receipt action did not mark the published '
+            'announcement as read.',
       );
-      await scrollFinderIntoViewport(tester, announcementReceiveSubmitButton);
-      await tester.tap(announcementReceiveSubmitButton);
-      await tester.pumpAndSettle();
-      await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_member_received');
-      await _selectCommunityTab(tester, 'calendar');
+      await _selectPackageTab(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        roleId: mosqueMemberRoleId,
+        tabId: 'calendar',
+      );
       await capture('B20_member_calendar_tab_pinned_event');
-      await _selectCommunityTab(tester, 'messages');
+      await _selectPackageTab(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        roleId: mosqueMemberRoleId,
+        tabId: 'messages',
+      );
       await capture('B20_member_messages_tab');
-      await selectPersona(tester, 'mosque-admin');
-      await _selectCommunityTab(tester, 'admin');
+      await selectPersona(tester, mosqueAdminRoleId);
+      await _selectPackageTab(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        roleId: mosqueAdminRoleId,
+        tabId: 'admin',
+      );
       await capture('B20_admin_custom_tab_pinned_surface');
       recordEvidenceEntry({
         'phase': 'B20',
@@ -620,14 +760,32 @@ void main() {
 
       if (includeGardenCapability) {
         await ensureTargetOpen(gardenTarget);
-        await selectPersona(tester, 'garden-member');
-        await _selectCommunityTab(tester, 'home');
-        await _scrollToWorkflow(tester, gardenRsvp);
+        await selectPersona(tester, gardenMemberRoleId);
+        await _selectPackageTab(
+          tester: tester,
+          target: gardenTarget,
+          package: gardenPackage,
+          roleId: gardenMemberRoleId,
+          tabId: 'home',
+        );
+        final gardenRsvpInstance = _engineInstanceFinder(
+          gardenRsvp.instance.instanceId,
+        );
+        await waitForEngineNativeWidget(
+          tester,
+          gardenRsvpInstance,
+          description:
+              'shipped Garden RSVP summary on the package Home binding',
+        );
+        await tester.ensureVisible(gardenRsvpInstance.first);
         await capture('B20_app_shell_garden_home_medium_minimized_stack');
         capabilityScreenshots.add(
           'B20_app_shell_garden_home_medium_minimized_stack',
         );
-        await _expandCapabilityWorkflowSurface(tester, gardenRsvp);
+        await _expandShippedWorkflowSurface(
+          tester: tester,
+          selector: gardenRsvp,
+        );
         await capture('B20_app_shell_garden_home_expanded_surface');
         capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
       }
@@ -642,14 +800,21 @@ void main() {
 
       if (includeSoccerCapability) {
         await ensureTargetOpen(soccerTarget);
-        await selectPersona(tester, 'soccer-coach');
-        await _selectCommunityTab(tester, 'home');
-        await _scrollToWorkflow(tester, soccerRoster);
+        await _showShippedWorkflowInstance(
+          tester: tester,
+          target: soccerTarget,
+          package: soccerPackage,
+          selector: soccerRoster,
+          roleId: soccerCoachRoleId,
+        );
         await capture('B20_app_shell_soccer_roster_renderer_medium');
         capabilityScreenshots.add(
           'B20_app_shell_soccer_roster_renderer_medium',
         );
-        await _expandCapabilityWorkflowSurface(tester, soccerRoster);
+        await _expandShippedWorkflowSurface(
+          tester: tester,
+          selector: soccerRoster,
+        );
         await capture('B20_app_shell_soccer_roster_renderer_expanded');
         capabilityScreenshots.add(
           'B20_app_shell_soccer_roster_renderer_expanded',
@@ -983,63 +1148,1062 @@ bool _includeWorkflowShard(int workflowOrdinal) {
   return workflowOrdinal % _workflowShardCount == _workflowShardIndex;
 }
 
-Future<void> _scrollToWorkflow(
-  WidgetTester tester,
-  LoomWorkflowDefinition workflow,
-) async {
-  final workflowCard = find.byKey(ValueKey('workflow-${workflow.workflowId}'));
-  if (workflowCard.evaluate().isNotEmpty) {
-    await tester.ensureVisible(workflowCard);
-    await tester.pumpAndSettle();
-    return;
+Future<List<String>> _runShippedWorkflowWalkthrough({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowDefinition evidenceContract,
+  required Future<void> Function(String name) capture,
+}) async {
+  if (selector.accountId case final accountId?) {
+    final displayName = 'Shipped $accountId';
+    await seedEvidenceAccounts(tester, target, [
+      LoomAccount(
+        accountId: accountId,
+        displayName: displayName,
+        roleId: selector.roleId,
+      ),
+    ]);
+    await signInEvidenceAccount(tester, displayName);
+  } else {
+    await selectPersona(tester, selector.roleId);
   }
-  final scrollable = verticalScrollableFinder().last;
-  for (var index = 0; index < 40; index += 1) {
-    await tester.drag(scrollable, const Offset(0, -180), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    if (workflowCard.evaluate().isNotEmpty) {
-      await tester.ensureVisible(workflowCard);
-      await tester.pumpAndSettle();
-      return;
-    }
-  }
-  for (var index = 0; index < 40; index += 1) {
-    await tester.drag(scrollable, const Offset(0, 180), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    if (workflowCard.evaluate().isNotEmpty) {
-      await tester.ensureVisible(workflowCard);
-      await tester.pumpAndSettle();
-      return;
-    }
-  }
-  fail('Could not find workflow card ${workflow.workflowId}');
-}
+  expect(find.text(package.experience.tagline), findsOneWidget);
 
-Future<void> _expandCapabilityWorkflowSurface(
-  WidgetTester tester,
-  LoomWorkflowDefinition workflow,
-) async {
-  await _scrollToWorkflow(tester, workflow);
-  final expandButton = find.byKey(
-    ValueKey('workflow-expand-${workflow.workflowId}'),
+  final resolvedTabs = appShellTabsFor(
+    experience: package.experience,
+    roleId: selector.roleId,
+    appShellConfiguration: package.appShellConfiguration,
   );
-  if (expandButton.evaluate().isNotEmpty) {
-    await tester.tap(expandButton.first, warnIfMissed: false);
-    await tester.pumpAndSettle();
-    return;
-  }
-  final workflowCard = find.byKey(ValueKey('workflow-${workflow.workflowId}'));
-  if (workflowCard.evaluate().isEmpty) {
-    fail('Could not find workflow surface ${workflow.workflowId} to expand.');
-  }
-  await tester.tap(workflowCard.first, warnIfMissed: false);
+  expect(
+    resolvedTabs.map((tab) => tab.tabId),
+    contains(selector.binding.tabId),
+    reason:
+        'Shipped package ${target.extensionId} selected workflow '
+        '${selector.machine.workflowType} on tab ${selector.binding.tabId}, '
+        'but that same package did not expose the tab for '
+        '${selector.roleId}.',
+  );
+  await _selectCommunityTab(tester, selector.binding.tabId);
+
+  final instance = _engineInstanceFinder(selector.instance.instanceId);
+  await waitForEngineNativeWidget(
+    tester,
+    instance,
+    description:
+        'shipped ${selector.machine.workflowType} instance '
+        '${selector.instance.instanceId} on ${selector.binding.tabId}',
+  );
+  await tester.ensureVisible(instance.first);
   await tester.pumpAndSettle();
-  if (expandButton.evaluate().isEmpty) {
-    fail(
-      'Workflow surface ${workflow.workflowId} did not expose an expanded '
-      'surface affordance after tap.',
+
+  final start = _screenshotName(target, evidenceContract, 'start');
+  final action = _screenshotName(target, evidenceContract, 'action');
+  final complete = _screenshotName(target, evidenceContract, 'complete');
+  await capture(start);
+
+  final visibleAction = await _waitForShippedWorkflowAction(
+    tester: tester,
+    selector: selector,
+  );
+  final sourceInstance = identical(selector.actionMachine, selector.machine)
+      ? await _readShippedInstance(
+          tester: tester,
+          target: target,
+          package: package,
+          selector: selector,
+        )
+      : null;
+  await tester.ensureVisible(visibleAction.finder.first);
+  await tester.pumpAndSettle();
+  await capture(action);
+
+  await tester.tap(visibleAction.finder.first, warnIfMissed: false);
+  await tester.pump();
+  await _completeShippedTransitionInputs(
+    tester: tester,
+    transition: visibleAction.transition,
+    roleId: selector.roleId,
+  );
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 150));
+  }
+
+  if (identical(selector.actionMachine, selector.machine) &&
+      visibleAction.transition.to != null &&
+      !visibleAction.transition.from.contains(visibleAction.transition.to)) {
+    expect(
+      visibleAction.finder,
+      findsNothing,
+      reason:
+          'Shipped workflow ${selector.machine.workflowType} exposed '
+          '${visibleAction.transition.id} for ${selector.roleId}, but the '
+          'action did not leave its package-declared source state '
+          '${selector.actionSourceState}.',
     );
   }
+  final targetState = visibleAction.transition.to ?? selector.actionSourceState;
+  final targetStateLabel = selector.actionMachine.states[targetState]?.label;
+  if (identical(selector.actionMachine, selector.machine) &&
+      visibleAction.transition.to == null &&
+      sourceInstance != null) {
+    await _expectShippedInstanceDataChanged(
+      tester: tester,
+      target: target,
+      package: package,
+      selector: selector,
+      sourceInstance: sourceInstance,
+    );
+    await capture(complete);
+    return [start, action, complete];
+  }
+  if (identical(selector.actionMachine, selector.machine) &&
+      visibleAction.transition.to != null) {
+    await _expectShippedInstanceState(
+      tester: tester,
+      target: target,
+      package: package,
+      selector: selector,
+      targetState: targetState,
+    );
+    await capture(complete);
+    return [start, action, complete];
+  }
+
+  bool resultIsVisible() {
+    final sourceActionIsUnavailable = visibleAction.finder.evaluate().isEmpty;
+    final nextActionVisible = selector.actionMachine
+        .transitionsFrom(targetState)
+        .any(
+          (transition) =>
+              transition.id != visibleAction.transition.id &&
+              _engineActionFinder(
+                selector.instance.instanceId,
+                transition.id,
+              ).evaluate().isNotEmpty,
+        );
+    return sourceActionIsUnavailable ||
+        (targetStateLabel != null &&
+            find.text(targetStateLabel).evaluate().isNotEmpty) ||
+        nextActionVisible ||
+        instance.evaluate().isEmpty;
+  }
+
+  for (var attempt = 0; attempt < 80 && !resultIsVisible(); attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  expect(
+    resultIsVisible(),
+    isTrue,
+    reason:
+        'Shipped workflow ${selector.machine.workflowType} ran '
+        '${visibleAction.transition.id}, but the UI showed neither target '
+        'state "$targetStateLabel", a target-state action, nor removal from '
+        'the source-state surface.',
+  );
+  await capture(complete);
+  return [start, action, complete];
+}
+
+List<
+  ({LoomWorkflowDefinition evidenceContract, _ShippedWorkflowSelector selector})
+>
+_shippedWorkflowWalkthroughs({
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required List<LoomWorkflowDefinition> evidenceContracts,
+}) {
+  final unmatchedContracts = <String, LoomWorkflowDefinition>{
+    for (final contract in evidenceContracts) contract.workflowId: contract,
+  };
+  final walkthroughs =
+      <
+        ({
+          LoomWorkflowDefinition evidenceContract,
+          _ShippedWorkflowSelector selector,
+        })
+      >[];
+  for (final workflowType in package.experience.workflowDefinitions!.keys) {
+    final evidenceContract = unmatchedContracts.remove(workflowType);
+    if (evidenceContract == null) continue;
+    walkthroughs.add((
+      evidenceContract: evidenceContract,
+      selector: _shippedWorkflowSelector(
+        target: target,
+        package: package,
+        workflowType: workflowType,
+      ),
+    ));
+  }
+  if (unmatchedContracts.isNotEmpty) {
+    fail(
+      'Shipped package ${target.extensionId} did not contain the workflow '
+      'definitions required by the canonical evidence contract: '
+      '${unmatchedContracts.keys.toList()}.',
+    );
+  }
+  return walkthroughs;
+}
+
+Future<WorkflowInstance?> _readShippedInstance({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+}) async {
+  final screen = tester.widget<LocalExtensionScreen>(
+    find.byType(LocalExtensionScreen),
+  );
+  final fanId = screen.authApi?.currentSession?.account.accountId;
+  if (fanId == null) return null;
+  final engine = (await tester.runAsync(
+    () => workflowEngineForExtensionId(target.extensionId),
+  ))!;
+  final tabs = <String>{
+    for (final binding in selector.machine.renderBindings) binding.tabId,
+    ...appShellTabsFor(
+      experience: package.experience,
+      roleId: selector.roleId,
+      appShellConfiguration: package.appShellConfiguration,
+    ).map((tab) => tab.tabId),
+  };
+  for (final tabId in tabs) {
+    final page = (await tester.runAsync(
+      () => engine.queryInstances(tabId: tabId, fanId: fanId, limit: 100),
+    ))!;
+    for (final instance in page.items) {
+      if (instance.instanceId == selector.instance.instanceId) return instance;
+    }
+  }
+  return null;
+}
+
+Future<void> _expectShippedInstanceDataChanged({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required WorkflowInstance sourceInstance,
+}) async {
+  WorkflowInstance? persisted;
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    persisted = await _readShippedInstance(
+      tester: tester,
+      target: target,
+      package: package,
+      selector: selector,
+    );
+    if (persisted != null &&
+        jsonEncode(persisted.instanceData) !=
+            jsonEncode(sourceInstance.instanceData)) {
+      return;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} ran a visible '
+    'orthogonal package action for ${selector.instance.instanceId}, but the '
+    'shared engine instance data did not change.',
+  );
+}
+
+Future<void> _expectShippedInstanceState({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required String targetState,
+}) async {
+  final screen = tester.widget<LocalExtensionScreen>(
+    find.byType(LocalExtensionScreen),
+  );
+  final fanId = screen.authApi?.currentSession?.account.accountId;
+  if (fanId == null) {
+    fail(
+      'Could not resolve the signed-in shipped-package account while '
+      'verifying ${selector.instance.instanceId}.',
+    );
+  }
+  final engine = (await tester.runAsync(
+    () => workflowEngineForExtensionId(target.extensionId),
+  ))!;
+  final tabs = selector.machine.renderBindings
+      .where((binding) => binding.states.contains(targetState))
+      .map((binding) => binding.tabId)
+      .toSet();
+  if (tabs.isEmpty) {
+    tabs.addAll(
+      appShellTabsFor(
+        experience: package.experience,
+        roleId: selector.roleId,
+        appShellConfiguration: package.appShellConfiguration,
+      ).map((tab) => tab.tabId),
+    );
+  }
+
+  WorkflowInstance? persisted;
+  for (var attempt = 0; attempt < 80 && persisted == null; attempt += 1) {
+    for (final tabId in tabs) {
+      final page = (await tester.runAsync(
+        () => engine.queryInstances(tabId: tabId, fanId: fanId, limit: 100),
+      ))!;
+      for (final instance in page.items) {
+        if (instance.instanceId == selector.instance.instanceId) {
+          persisted = instance;
+          break;
+        }
+      }
+      if (persisted != null) break;
+    }
+    if (persisted == null) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+  }
+  expect(
+    persisted?.currentState,
+    targetState,
+    reason:
+        'Shipped workflow ${selector.machine.workflowType} ran a visible '
+        'package action for ${selector.instance.instanceId}, but the shared '
+        'engine did not persist package target state $targetState.',
+  );
+}
+
+_ShippedWorkflowSelector _shippedWorkflowSelector({
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required String workflowType,
+}) {
+  final machine = package.experience.workflowDefinitions?[workflowType];
+  if (machine == null) {
+    fail(
+      'Walkthrough workflow $workflowType is absent from the shipped '
+      '${target.extensionId} experience.workflowDefinitions.',
+    );
+  }
+  final instances = package.experience.workflowInstances!
+      .where((instance) => instance.workflowType == workflowType)
+      .toList(growable: false);
+  if (instances.isEmpty) {
+    fail(
+      'Walkthrough workflow $workflowType has no selector source in the '
+      'shipped ${target.extensionId} experience.workflowInstances.',
+    );
+  }
+  final packageRoleIds = {
+    for (final persona in package.experience.personas!) persona.roleId,
+  };
+
+  for (final instance in instances) {
+    final bindings =
+        machine.renderBindings
+            .where((binding) => binding.states.contains(instance.currentState))
+            .toList(growable: false)
+          ..sort((left, right) {
+            int score(RenderBinding binding) =>
+                (binding.responseTable == null ? 4 : 0) +
+                (binding.actions.isEmpty ? 1 : 0) +
+                (binding.bindingKind == 'primary' ? 0 : 2) +
+                (binding.role == 'any' ? 0 : 1);
+            return score(left).compareTo(score(right));
+          });
+    for (final binding in bindings) {
+      final responseWorkflowType = binding.responseTable?.workflowType;
+      final actionMachine = responseWorkflowType == null
+          ? machine
+          : package.experience.workflowDefinitions?[responseWorkflowType];
+      if (actionMachine == null) {
+        fail(
+          'Shipped workflow $workflowType binding on ${binding.tabId} names '
+          'missing response workflow $responseWorkflowType.',
+        );
+      }
+      final actionSourceState = responseWorkflowType == null
+          ? instance.currentState
+          : actionMachine.initialState;
+      final transitions = actionMachine.transitionsFrom(actionSourceState);
+      final roleIds = <String>{
+        for (final transition in transitions)
+          ...?transition.guard.allowedRoleIds,
+        ...?machine.visibility.readGuard?.allowedRoleIds,
+        for (final action in binding.actions) ...?action.byRoleIds,
+        ...packageRoleIds,
+      };
+      for (final roleId in roleIds.where(packageRoleIds.contains)) {
+        final bindingAccountId = _bindingAudienceAccountId(
+          machine: machine,
+          instance: instance,
+          binding: binding,
+          roleId: roleId,
+        );
+        if (binding.role == 'actor' && bindingAccountId == null) {
+          continue;
+        }
+        final tabs = appShellTabsFor(
+          experience: package.experience,
+          roleId: roleId,
+          appShellConfiguration: package.appShellConfiguration,
+        );
+        if (!tabs.any((tab) => tab.tabId == binding.tabId)) {
+          continue;
+        }
+        final actionableTransitions =
+            transitions
+                .where(
+                  (transition) => _transitionCanBeSelectedForRole(
+                    transition: transition,
+                    instance: instance,
+                    roleId: roleId,
+                    allowViewerResponse: responseWorkflowType != null,
+                  ),
+                )
+                .toList(growable: false)
+              ..sort((left, right) {
+                int score(LoomWorkflowTransition transition) =>
+                    (transition.to == null ? 0 : 2) +
+                    (transition.inputs == null ? 0 : 1) +
+                    (transition.tone == 'destructive' ? 1 : 0);
+                return score(left).compareTo(score(right));
+              });
+        if (actionableTransitions.isEmpty) {
+          continue;
+        }
+        final accountId =
+            bindingAccountId ??
+            _transitionAccountId(
+              transition: actionableTransitions.first,
+              instance: instance,
+              roleId: roleId,
+              allowViewerResponse: responseWorkflowType != null,
+            );
+        final accountTransitions = actionableTransitions
+            .where((transition) {
+              final transitionAccountId = _transitionAccountId(
+                transition: transition,
+                instance: instance,
+                roleId: roleId,
+                allowViewerResponse: responseWorkflowType != null,
+              );
+              return transitionAccountId == null ||
+                  transitionAccountId == accountId;
+            })
+            .toList(growable: false);
+        return _ShippedWorkflowSelector(
+          machine: machine,
+          actionMachine: actionMachine,
+          actionSourceState: actionSourceState,
+          instance: instance,
+          binding: binding,
+          roleId: roleId,
+          accountId: accountId,
+          transitions: accountTransitions,
+        );
+      }
+    }
+  }
+  fail(
+    'Walkthrough workflow $workflowType could not derive an actionable '
+    'instance, persona, and tab from the shipped ${target.extensionId} '
+    'experience and appShell.',
+  );
+}
+
+String? _bindingAudienceAccountId({
+  required LoomWorkflowStateMachine machine,
+  required LoomWorkflowSeedInstance instance,
+  required RenderBinding binding,
+  required String roleId,
+}) {
+  if (binding.role != 'actor') return null;
+  final fieldKeys = <String>{
+    if (machine.visibility.readGuard?.actorEqualsField case final actorField?)
+      actorField.key,
+    for (final transition in machine.transitions)
+      if (transition.guard.actorEqualsField case final actorField?)
+        actorField.key,
+  };
+  for (final fieldKey in fieldKeys) {
+    final fanId = instance.instanceData[fieldKey];
+    if (fanId is String && _fanIdMatchesRole(fanId, roleId)) return fanId;
+  }
+  final creator = instance.createdByFanId;
+  return creator != null && _fanIdMatchesRole(creator, roleId) ? creator : null;
+}
+
+bool _transitionCanBeSelectedForRole({
+  required LoomWorkflowTransition transition,
+  required LoomWorkflowSeedInstance instance,
+  required String roleId,
+  required bool allowViewerResponse,
+}) {
+  final guard = transition.guard;
+  final allowedRoleIds = guard.allowedRoleIds;
+  if (allowedRoleIds != null &&
+      allowedRoleIds.isNotEmpty &&
+      !allowedRoleIds.contains(roleId)) {
+    return false;
+  }
+
+  if (!allowViewerResponse &&
+      (guard.actorEqualsField != null || guard.actorInList?.present == true) &&
+      _transitionAccountId(
+            transition: transition,
+            instance: instance,
+            roleId: roleId,
+            allowViewerResponse: false,
+          ) ==
+          null) {
+    return false;
+  }
+  final dataEquals = guard.instanceDataEquals;
+  if (dataEquals != null &&
+      instance.instanceData[dataEquals.key] != dataEquals.value) {
+    return false;
+  }
+  return true;
+}
+
+String? _transitionAccountId({
+  required LoomWorkflowTransition transition,
+  required LoomWorkflowSeedInstance instance,
+  required String roleId,
+  required bool allowViewerResponse,
+}) {
+  if (allowViewerResponse) return null;
+  final guard = transition.guard;
+  final actorField = guard.actorEqualsField;
+  if (actorField != null) {
+    final fanId = instance.instanceData[actorField.key];
+    return fanId is String && _fanIdMatchesRole(fanId, roleId) ? fanId : null;
+  }
+  final actorList = guard.actorInList;
+  if (actorList?.present == true) {
+    final values = instance.instanceData[actorList!.key];
+    if (values is List) {
+      for (final fanId in values.whereType<String>()) {
+        if (_fanIdMatchesRole(fanId, roleId)) return fanId;
+      }
+    }
+  }
+  return null;
+}
+
+bool _fanIdMatchesRole(String fanId, String roleId) =>
+    fanId == roleId ||
+    fanId.startsWith('$roleId-') ||
+    fanId.startsWith('${roleId}_');
+
+Future<void> _completeShippedTransitionInputs({
+  required WidgetTester tester,
+  required LoomWorkflowTransition transition,
+  required String roleId,
+}) async {
+  final inputs = transition.inputs;
+  if (inputs == null || inputs.isEmpty) return;
+
+  final dialog = find.byKey(const ValueKey('generic-transition-input-dialog'));
+  await waitForEngineNativeWidget(
+    tester,
+    dialog,
+    description: 'input dialog for shipped action ${transition.id}',
+  );
+
+  for (final entry in inputs.entries.where((entry) => entry.value.required)) {
+    final input = find.byKey(ValueKey('generic-transition-input-${entry.key}'));
+    if (input.evaluate().isNotEmpty) {
+      await tester.ensureVisible(input);
+      await tester.enterText(
+        input,
+        _shippedTransitionInputValue(entry.key, entry.value.type, roleId),
+      );
+      continue;
+    }
+
+    final options = entry.value.options;
+    if (options != null && options.isNotEmpty) {
+      final option = find.byKey(
+        ValueKey('generic-transition-input-${entry.key}-${options.first}'),
+      );
+      if (option.evaluate().isNotEmpty) {
+        await tester.ensureVisible(option);
+        await tester.tap(option, warnIfMissed: false);
+        await tester.pump();
+      }
+    }
+  }
+
+  final confirm = find.byKey(
+    const ValueKey('generic-transition-input-confirm'),
+  );
+  await tester.ensureVisible(confirm);
+  await tester.tap(confirm, warnIfMissed: false);
+  await tester.pump();
+  expect(
+    find.byKey(const ValueKey('generic-transition-input-validation-error')),
+    findsNothing,
+    reason:
+        'Package-derived evidence inputs did not satisfy shipped action '
+        '${transition.id}.',
+  );
+}
+
+String _shippedTransitionInputValue(String key, String type, String roleId) {
+  if (type == 'number') return '1';
+  if (type == 'date' || key.toLowerCase().contains('date')) {
+    return '2026-08-22';
+  }
+  if (type == 'fanId' || key.toLowerCase().endsWith('fanid')) {
+    return roleId;
+  }
+  if (type == 'list') return 'evidence';
+  return 'Evidence $key';
+}
+
+Future<({LoomWorkflowTransition transition, Finder finder})>
+_waitForShippedWorkflowAction({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+}) async {
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    for (final transition in selector.transitions) {
+      final finder = _engineActionFinder(
+        selector.instance.instanceId,
+        transition.id,
+      );
+      if (finder.evaluate().isNotEmpty) {
+        return (transition: transition, finder: finder);
+      }
+    }
+    if (attempt == 20) {
+      final instance = _engineInstanceFinder(selector.instance.instanceId);
+      if (instance.evaluate().isNotEmpty) {
+        await tester.ensureVisible(instance.first);
+        await tester.tap(instance.first, warnIfMissed: false);
+        await tester.pumpAndSettle();
+      }
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} instance '
+    '${selector.instance.instanceId} exposed none of its package-declared '
+    'actions ${selector.transitions.map((transition) => transition.id).toList()} '
+    'for ${selector.roleId} on ${selector.binding.tabId}.',
+  );
+}
+
+Finder _engineInstanceFinder(String instanceId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> && key.value.contains(instanceId);
+  }, description: 'engine-native widget for $instanceId');
+}
+
+Finder _engineActionFinder(String instanceId, String transitionId) {
+  return find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.endsWith('-action-$transitionId') ||
+            key.value.endsWith('-$transitionId-$instanceId'));
+  }, description: '$instanceId action $transitionId');
+}
+
+class _ShippedWorkflowSelector {
+  const _ShippedWorkflowSelector({
+    required this.machine,
+    required this.actionMachine,
+    required this.actionSourceState,
+    required this.instance,
+    required this.binding,
+    required this.roleId,
+    required this.accountId,
+    required this.transitions,
+  });
+
+  final LoomWorkflowStateMachine machine;
+  final LoomWorkflowStateMachine actionMachine;
+  final String actionSourceState;
+  final LoomWorkflowSeedInstance instance;
+  final RenderBinding binding;
+  final String roleId;
+  final String? accountId;
+  final List<LoomWorkflowTransition> transitions;
+}
+
+String _packageRoleId({
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required String label,
+}) {
+  final matches = package.experience.personas!
+      .where((persona) => persona.label == label)
+      .toList(growable: false);
+  if (matches.length != 1) {
+    fail(
+      'Shipped package ${target.extensionId} must expose exactly one persona '
+      'labelled "$label"; found '
+      '${matches.map((persona) => persona.roleId).toList()}.',
+    );
+  }
+  return matches.single.roleId;
+}
+
+Future<void> _showShippedWorkflowInstance({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required String roleId,
+  bool selectRole = true,
+}) async {
+  if (selectRole) {
+    await selectPersona(tester, roleId);
+  }
+  final tabs = appShellTabsFor(
+    experience: package.experience,
+    roleId: roleId,
+    appShellConfiguration: package.appShellConfiguration,
+  );
+  final tabIds = tabs.map((tab) => tab.tabId).toSet();
+  final bindings =
+      selector.machine.renderBindings
+          .where(
+            (binding) =>
+                binding.states.contains(selector.instance.currentState) &&
+                tabIds.contains(binding.tabId),
+          )
+          .toList(growable: false)
+        ..sort((left, right) {
+          int score(RenderBinding binding) =>
+              (binding.bindingKind == 'primary' ? 0 : 2) +
+              (binding.role == 'any' ? 0 : 1);
+          return score(left).compareTo(score(right));
+        });
+  if (bindings.isEmpty) {
+    fail(
+      'Shipped workflow ${selector.machine.workflowType} instance '
+      '${selector.instance.instanceId} has no package-declared binding visible '
+      'to $roleId in ${target.extensionId}.',
+    );
+  }
+  final binding = bindings.first;
+  await _selectPackageTab(
+    tester: tester,
+    target: target,
+    package: package,
+    roleId: roleId,
+    tabId: binding.tabId,
+  );
+  final instance = _engineInstanceFinder(selector.instance.instanceId);
+  await waitForEngineNativeWidget(
+    tester,
+    instance,
+    description:
+        'shipped ${selector.machine.workflowType} instance '
+        '${selector.instance.instanceId} for $roleId',
+  );
+  await tester.ensureVisible(instance.first);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _selectPackageTab({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required String roleId,
+  required String tabId,
+}) async {
+  final packageTabIds = appShellTabsFor(
+    experience: package.experience,
+    roleId: roleId,
+    appShellConfiguration: package.appShellConfiguration,
+  ).map((tab) => tab.tabId).toSet();
+  expect(
+    packageTabIds,
+    contains(tabId),
+    reason:
+        'Shipped package ${target.extensionId} did not declare tab $tabId '
+        'for persona $roleId. Package tabs for that persona: $packageTabIds.',
+  );
+  await _selectCommunityTab(tester, tabId);
+}
+
+Future<String> _createAndPublishShippedAnnouncement({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required String adminRoleId,
+  required Future<void> Function(String name) capture,
+}) async {
+  await selectPersona(tester, adminRoleId);
+  final creationBindings = selector.machine.renderBindings.where(
+    (binding) =>
+        binding.states.contains(selector.machine.initialState) &&
+        binding.actions.any(
+          (action) =>
+              action.kind == 'create' &&
+              (action.byRoleIds == null ||
+                  action.byRoleIds!.contains(adminRoleId)),
+        ),
+  );
+  if (creationBindings.isEmpty) {
+    fail(
+      'Shipped workflow ${selector.machine.workflowType} did not declare a '
+      'create binding for $adminRoleId.',
+    );
+  }
+  final creationBinding = creationBindings.first;
+  await _selectPackageTab(
+    tester: tester,
+    target: target,
+    package: package,
+    roleId: adminRoleId,
+    tabId: creationBinding.tabId,
+  );
+
+  final workflowType = selector.machine.workflowType;
+  final createFab = find.byKey(ValueKey('creatable-fab-$workflowType'));
+  if (createFab.evaluate().isEmpty) {
+    final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+    await waitForEngineNativeWidget(
+      tester,
+      speedDial,
+      description: 'shipped $workflowType create speed dial for $adminRoleId',
+    );
+    await tester.tap(speedDial, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  await waitForEngineNativeWidget(
+    tester,
+    createFab,
+    description: 'shipped $workflowType create action for $adminRoleId',
+  );
+  await tester.ensureVisible(createFab.first);
+  await tester.pumpAndSettle();
+  expect(
+    createFab.hitTestable(),
+    findsOneWidget,
+    reason:
+        'Shipped $workflowType declared a create FAB for $adminRoleId, but '
+        'the package surface did not make it interactive.',
+  );
+  await capture('B20_announcement_admin_start');
+  await tester.tap(createFab.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+
+  final keyPrefix = 'new-$workflowType';
+  final titleEditor = find.byKey(ValueKey('$keyPrefix-editor-title'));
+  await waitForEngineNativeWidget(
+    tester,
+    titleEditor,
+    description: 'shipped $workflowType creation form',
+  );
+  await capture('B20_announcement_admin_action');
+
+  const values = <String, String>{
+    'title': 'Walkthrough community announcement',
+    'body':
+        'The walkthrough admin published this update from the shipped Masjid experience.',
+    'audience': 'All Masjid Nur members',
+    'channel': 'Home and Messages',
+  };
+  final editableFields =
+      selector.machine.states[selector.machine.initialState]?.editableFields ??
+      const <String>[];
+  for (final field in editableFields) {
+    final schema = selector.machine.instanceDataSchema[field];
+    if (schema == null || !schema.required) {
+      continue;
+    }
+    final value = values[field];
+    if (value == null) {
+      fail(
+        'Shipped $workflowType added required creation field "$field"; the '
+        'canonical walkthrough needs a package-driven value for it.',
+      );
+    }
+    final editor = find.byKey(ValueKey('$keyPrefix-editor-$field'));
+    expect(
+      editor,
+      findsOneWidget,
+      reason:
+          'Shipped $workflowType declared required editable field "$field" '
+          'but did not render its package-driven editor.',
+    );
+    await tester.enterText(editor, value);
+  }
+  final submit = find.byKey(ValueKey('$keyPrefix-submit'));
+  await tester.ensureVisible(submit);
+  await tester.tap(submit, warnIfMissed: false);
+
+  final createdTitle = find.text(values['title']!);
+  await waitForEngineNativeWidget(
+    tester,
+    createdTitle,
+    description: 'newly created shipped $workflowType instance',
+  );
+  final createdCard = find.ancestor(
+    of: createdTitle,
+    matching: find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> &&
+          key.value.startsWith('generic-instance-card-');
+    }),
+  );
+  expect(
+    createdCard,
+    findsOneWidget,
+    reason:
+        'The shipped $workflowType creation completed, but the created '
+        'instance did not expose its engine-native identity key.',
+  );
+  final cardKey = tester.widget(createdCard).key! as ValueKey<String>;
+  final instanceId = cardKey.value.substring('generic-instance-card-'.length);
+
+  final preview = _packageTransitionByLabel(
+    target: target,
+    machine: selector.machine,
+    label: 'Preview announcement',
+  );
+  final publish = _packageTransitionByLabel(
+    target: target,
+    machine: selector.machine,
+    label: 'Publish announcement',
+  );
+  final previewAction = _engineActionFinder(instanceId, preview.id);
+  await waitForEngineNativeWidget(
+    tester,
+    previewAction,
+    description: 'created announcement preview action',
+  );
+  await tester.ensureVisible(previewAction.first);
+  await tester.tap(previewAction.first, warnIfMissed: false);
+  final publishAction = _engineActionFinder(instanceId, publish.id);
+  await waitForEngineNativeWidget(
+    tester,
+    publishAction,
+    description: 'created announcement publish action',
+  );
+  await tester.ensureVisible(publishAction.first);
+  await tester.tap(publishAction.first, warnIfMissed: false);
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(
+    publishAction,
+    findsNothing,
+    reason: 'The shipped publish action did not leave the previewed state.',
+  );
+  await _selectPackageTab(
+    tester: tester,
+    target: target,
+    package: package,
+    roleId: adminRoleId,
+    tabId: 'home',
+  );
+  await waitForEngineNativeWidget(
+    tester,
+    createdTitle,
+    description: 'published announcement on shipped Home surface',
+  );
+  await capture('B20_announcement_admin_complete');
+  return instanceId;
+}
+
+LoomWorkflowTransition _packageTransitionByLabel({
+  required LoomEvidenceTarget target,
+  required LoomWorkflowStateMachine machine,
+  required String label,
+}) {
+  final matches = machine.transitions
+      .where((transition) => transition.label == label)
+      .toList(growable: false);
+  if (matches.length != 1) {
+    fail(
+      'Shipped ${target.extensionId} workflow ${machine.workflowType} must '
+      'declare exactly one transition labelled "$label"; found '
+      '${matches.map((transition) => transition.id).toList()}.',
+    );
+  }
+  return matches.single;
+}
+
+Future<void> _expandShippedWorkflowSurface({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+}) async {
+  final instanceId = selector.instance.instanceId;
+  final tableRow = find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.startsWith('workflow-table-row-') &&
+        key.value.contains(instanceId);
+  }, description: 'shipped table row for $instanceId');
+  if (tableRow.evaluate().isNotEmpty) {
+    await tester.ensureVisible(tableRow.first);
+    await tester.tap(tableRow.first, warnIfMissed: false);
+    final detail = find.byKey(
+      ValueKey('workflow-table-detail-dialog-$instanceId'),
+    );
+    await waitForEngineNativeWidget(
+      tester,
+      detail,
+      description: 'expanded shipped table detail for $instanceId',
+    );
+    expect(detail, findsOneWidget);
+    return;
+  }
+
+  final tile = find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.startsWith('engine-native-list-item-') ||
+            key.value.startsWith('event-rsvp-card-') ||
+            key.value.startsWith('generic-instance-card-'));
+  }, description: 'shipped workflow tile for $instanceId');
+  await waitForEngineNativeWidget(
+    tester,
+    tile,
+    description: 'expandable shipped workflow tile for $instanceId',
+  );
+  await tester.ensureVisible(tile.first);
+  await tester.tap(tile.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+  final detail = find.byWidgetPredicate((widget) {
+    final key = widget.key;
+    return key is ValueKey<String> &&
+        key.value.contains(instanceId) &&
+        (key.value.contains('detail') || key.value.contains('dialog'));
+  }, description: 'expanded shipped workflow detail for $instanceId');
+  expect(
+    detail,
+    findsWidgets,
+    reason:
+        'Shipped workflow ${selector.machine.workflowType} rendered its '
+        'medium surface, but tapping it exposed no expanded/detail surface.',
+  );
 }
 
 Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
@@ -1060,9 +2224,13 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
 
 int _personaMatrixRowCount(List<LoomEvidenceTarget> evidenceTargets) {
   return evidenceTargets
-      .map(
-        (target) =>
-            personaWorkflowMatrixForExtensionId(target.extensionId).length,
-      )
+      .map((target) {
+        if (!hasShippedEvidencePackage(target.extensionId)) {
+          return personaWorkflowMatrixForExtensionId(target.extensionId).length;
+        }
+        final package = readShippedEvidencePackage(target);
+        return package.experience.personas!.length *
+            package.experience.workflowDefinitions!.length;
+      })
       .fold(0, (total, count) => total + count);
 }

@@ -29,6 +29,9 @@ const _shippedCommunityPackagePathsByExtensionId = <String, String>{
       'Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc',
 };
 
+bool hasShippedEvidencePackage(String extensionId) =>
+    _shippedCommunityPackagePathsByExtensionId.containsKey(extensionId);
+
 File _repositoryFile(String relativePath) {
   var directory = Directory.current;
   for (var i = 0; i < 8; i++) {
@@ -748,43 +751,9 @@ Future<void> completeTargetWorkflows(
 }
 
 EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
-  final packagePath =
-      _shippedCommunityPackagePathsByExtensionId[target.extensionId];
-  if (packagePath == null) {
-    throw StateError(
-      'No shipped community package is registered for '
-      '${target.extensionId}.',
-    );
-  }
-  final decoded = jsonDecode(
-    stripJsonComments(_repositoryFile(packagePath).readAsStringSync()),
-  );
-  if (decoded is! Map<String, dynamic>) {
-    throw StateError('Shipped community package must contain a JSON object.');
-  }
-  final packageExtensionId = decoded['extensionId'];
-  if (packageExtensionId != target.extensionId) {
-    throw StateError(
-      'Shipped community package extensionId $packageExtensionId does not '
-      'match evidence target ${target.extensionId}.',
-    );
-  }
-  final experience = decoded['experience'];
-  final appShell = decoded['appShell'];
-  if (experience is! Map<String, dynamic> ||
-      appShell is! Map<String, dynamic>) {
-    throw StateError(
-      'Shipped community package ${target.extensionId} must declare both '
-      'experience and appShell.',
-    );
-  }
-  final workflowDefinitions = experience['workflowDefinitions'];
-  if (workflowDefinitions is! Map<String, dynamic>) {
-    throw StateError(
-      'Shipped community package ${target.extensionId} must declare '
-      'experience.workflowDefinitions.',
-    );
-  }
+  final shippedPackage = readShippedEvidencePackage(target);
+  final decoded = shippedPackage.source;
+  final workflowDefinitions = shippedPackage.experience.workflowDefinitions!;
 
   final tempDir = Directory.systemTemp.createTempSync(
     'loom_${target.extensionId}_',
@@ -837,6 +806,89 @@ EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
     extensionPath: extensionFile.path,
     initializationPath: initializationFile.path,
   );
+}
+
+ShippedEvidencePackage readShippedEvidencePackage(LoomEvidenceTarget target) {
+  final packagePath =
+      _shippedCommunityPackagePathsByExtensionId[target.extensionId];
+  if (packagePath == null) {
+    throw StateError(
+      'No shipped community package is registered for '
+      '${target.extensionId}.',
+    );
+  }
+  final decoded = jsonDecode(
+    stripJsonComments(_repositoryFile(packagePath).readAsStringSync()),
+  );
+  if (decoded is! Map<String, dynamic>) {
+    throw StateError('Shipped community package must contain a JSON object.');
+  }
+  final packageExtensionId = decoded['extensionId'];
+  if (packageExtensionId != target.extensionId) {
+    throw StateError(
+      'Shipped community package extensionId $packageExtensionId does not '
+      'match evidence target ${target.extensionId}.',
+    );
+  }
+  final experience = decoded['experience'];
+  final appShell = decoded['appShell'];
+  if (experience is! Map<String, dynamic> ||
+      appShell is! Map<String, dynamic>) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must declare both '
+      'experience and appShell.',
+    );
+  }
+  final workflowDefinitions = experience['workflowDefinitions'];
+  if (workflowDefinitions is! Map<String, dynamic>) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must declare '
+      'experience.workflowDefinitions.',
+    );
+  }
+  final packageSpecVersion = decoded['specVersion'];
+  if (packageSpecVersion is! int) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must declare an '
+      'integer specVersion.',
+    );
+  }
+  final parsedExperience = experienceForExtensionId(
+    target.extensionId,
+    displayName: target.communityName,
+    specVersion: packageSpecVersion,
+    experienceConfiguration: Map<String, Object?>.from(experience),
+  );
+  if (parsedExperience.workflowDefinitions == null ||
+      parsedExperience.workflowDefinitions!.isEmpty ||
+      parsedExperience.workflowInstances == null ||
+      parsedExperience.workflowInstances!.isEmpty ||
+      parsedExperience.personas == null ||
+      parsedExperience.personas!.isEmpty) {
+    throw StateError(
+      'Shipped community package ${target.extensionId} must parse genuine '
+      'roles, workflow definitions, and workflow instances.',
+    );
+  }
+  return ShippedEvidencePackage(
+    source: Map<String, dynamic>.unmodifiable(decoded),
+    experience: parsedExperience,
+    appShellConfiguration: Map<String, Object?>.unmodifiable(
+      Map<String, Object?>.from(appShell),
+    ),
+  );
+}
+
+class ShippedEvidencePackage {
+  const ShippedEvidencePackage({
+    required this.source,
+    required this.experience,
+    required this.appShellConfiguration,
+  });
+
+  final Map<String, dynamic> source;
+  final LoomExperienceDefinition experience;
+  final Map<String, Object?> appShellConfiguration;
 }
 
 EvidencePackagePair _writeMetadataEvidencePackagePair(

@@ -119,7 +119,6 @@ void main(List<String> args) async {
         '--target=integration_test/workflow_ui_evidence_test.dart',
         '-d',
         device,
-        '--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true',
         '--dart-define=LOOM_EVIDENCE_PHASE_FILTER=$phase',
         if (shardCount > 1) ...[
           '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=$shardCount',

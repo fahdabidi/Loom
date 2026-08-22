@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 
 import '../test_driver/workflow_ui_evidence_writer.dart';
+import 'workflow_ui_test_harness.dart';
 
 void main() {
   test('wf_example-workflow-ux-evidence-harness', () async {
@@ -27,6 +28,37 @@ void main() {
         ];
         expect(screenshotNames.toSet(), hasLength(3));
       }
+    }
+
+    const canonicalShippedRoles = <String, Set<String>>{
+      'ext_garden_club': {'garden-member', 'garden-coordinator'},
+      'ext_camera_club': {'camera-club-member', 'camera-club-organizer'},
+      'ext_chess_club': {'chess-member', 'chess-organizer'},
+      'ext_mosque': {'community-member', 'masjid-admin'},
+      'ext_youth_soccer': {'soccer-guardian', 'soccer-coach', 'soccer-owner'},
+    };
+    for (final entry in canonicalShippedRoles.entries) {
+      final target = loomEvidenceTargets.singleWhere(
+        (target) => target.extensionId == entry.key,
+      );
+      expect(hasShippedEvidencePackage(target.extensionId), isTrue);
+      final package = readShippedEvidencePackage(target);
+      expect(package.experience.workflows, isEmpty);
+      expect(package.experience.workflowDefinitions, isNotEmpty);
+      expect(package.experience.workflowInstances, isNotEmpty);
+      expect(
+        package.experience.personas!.map((persona) => persona.roleId).toSet(),
+        entry.value,
+      );
+      expect(package.appShellConfiguration['tabs'], isNotEmpty);
+
+      final pair = writeEvidencePackagePair(target);
+      final initialization =
+          jsonDecode(await File(pair.initializationPath).readAsString())
+              as Map<String, dynamic>;
+      expect(initialization['experience'], package.source['experience']);
+      expect(initialization['appShell'], package.source['appShell']);
+      await File(pair.extensionPath).parent.delete(recursive: true);
     }
 
     final temporaryRoot = await Directory.systemTemp.createTemp(
