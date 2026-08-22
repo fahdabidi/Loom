@@ -8,10 +8,23 @@ import 'package:integration_test/integration_test.dart';
 import 'package:loom_communities_demo/main.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show
+        ArchetypeResolver,
         LoomWorkflowStateMachine,
         LoomWorkflowTransition,
         RenderBinding,
-        WorkflowInstance;
+        WorkflowEffect,
+        WorkflowInstance,
+        applyEffects,
+        workflowEffectAppend,
+        workflowEffectAppendUnique,
+        workflowEffectBranch,
+        workflowEffectCreateInstance,
+        workflowEffectDecrement,
+        workflowEffectGenerateRecurringInstances,
+        workflowEffectIncrement,
+        workflowEffectRemoveValue,
+        workflowEffectSet,
+        workflowEffectTransitionRelated;
 
 import '../test/workflow_ui_test_harness.dart';
 
@@ -1223,7 +1236,7 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
   await tester.pump();
   await _completeShippedTransitionInputs(
     tester: tester,
-    transition: visibleAction.transition,
+    transition: visibleAction.candidate.transition,
     roleId: selector.roleId,
   );
   for (var attempt = 0; attempt < 8; attempt += 1) {
@@ -1233,23 +1246,34 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
     await tester.pump(const Duration(milliseconds: 150));
   }
 
+  final transition = visibleAction.candidate.transition;
+  final transitionCategory = identical(selector.actionMachine, selector.machine)
+      ? _classifyShippedTransition(
+          transition: transition,
+          sourceState: selector.actionSourceState,
+          archetypeFamily: selector.actionArchetypeFamily,
+          instanceData:
+              sourceInstance?.instanceData ?? selector.instance.instanceData,
+          actorId: selector.accountId ?? selector.roleId,
+          roleId: selector.roleId,
+        )
+      : visibleAction.candidate.category;
   if (identical(selector.actionMachine, selector.machine) &&
-      visibleAction.transition.to != null &&
-      !visibleAction.transition.from.contains(visibleAction.transition.to)) {
+      transitionCategory == _ShippedTransitionCategory.stateChanging) {
     expect(
       visibleAction.finder,
       findsNothing,
       reason:
           'Shipped workflow ${selector.machine.workflowType} exposed '
-          '${visibleAction.transition.id} for ${selector.roleId}, but the '
+          '${transition.id} for ${selector.roleId}, but the '
           'action did not leave its package-declared source state '
           '${selector.actionSourceState}.',
     );
   }
-  final targetState = visibleAction.transition.to ?? selector.actionSourceState;
+  final targetState = transition.to ?? selector.actionSourceState;
   final targetStateLabel = selector.actionMachine.states[targetState]?.label;
   if (identical(selector.actionMachine, selector.machine) &&
-      visibleAction.transition.to == null &&
+      transitionCategory.requiresSourceInstanceDataChange &&
       sourceInstance != null) {
     await _expectShippedInstanceDataChanged(
       tester: tester,
@@ -1262,7 +1286,7 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
     return [start, action, complete];
   }
   if (identical(selector.actionMachine, selector.machine) &&
-      visibleAction.transition.to != null) {
+      transitionCategory == _ShippedTransitionCategory.stateChanging) {
     await _expectShippedInstanceState(
       tester: tester,
       target: target,
@@ -1280,7 +1304,7 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
         .transitionsFrom(targetState)
         .any(
           (transition) =>
-              transition.id != visibleAction.transition.id &&
+              transition.id != visibleAction.candidate.transition.id &&
               _engineActionFinder(
                 selector.instance.instanceId,
                 transition.id,
@@ -1304,7 +1328,7 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
     isTrue,
     reason:
         'Shipped workflow ${selector.machine.workflowType} ran '
-        '${visibleAction.transition.id}, but the UI showed neither target '
+        '${visibleAction.candidate.transition.id}, but the UI showed neither target '
         'state "$targetStateLabel", a target-state action, nor removal from '
         'the source-state surface.',
   );
@@ -1506,6 +1530,13 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
   final packageRoleIds = {
     for (final persona in package.experience.personas!) persona.roleId,
   };
+  final rawExperience = package.source['experience'] as Map<String, dynamic>;
+  final rawWorkflowDefinitions = Map<String, Object?>.from(
+    rawExperience['workflowDefinitions'] as Map,
+  );
+  final resolvedArchetypes = const ArchetypeResolver().resolveAll(
+    rawWorkflowDefinitions,
+  );
 
   for (final instance in instances) {
     final bindings =
@@ -1534,6 +1565,8 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
       final actionSourceState = responseWorkflowType == null
           ? instance.currentState
           : actionMachine.initialState;
+      final actionArchetypeFamily =
+          resolvedArchetypes[actionMachine.workflowType]?.family;
       final transitions = actionMachine.transitionsFrom(actionSourceState);
       final roleIds = <String>{
         for (final transition in transitions)
@@ -1570,29 +1603,43 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
                     allowViewerResponse: responseWorkflowType != null,
                   ),
                 )
+                .map(
+                  (transition) => _ShippedTransitionCandidate(
+                    transition: transition,
+                    category: _classifyShippedTransition(
+                      transition: transition,
+                      sourceState: actionSourceState,
+                      archetypeFamily: actionArchetypeFamily,
+                      instanceData: instance.instanceData,
+                      actorId:
+                          _transitionAccountId(
+                            transition: transition,
+                            instance: instance,
+                            roleId: roleId,
+                            allowViewerResponse: responseWorkflowType != null,
+                          ) ??
+                          roleId,
+                      roleId: roleId,
+                    ),
+                  ),
+                )
                 .toList(growable: false)
-              ..sort((left, right) {
-                int score(LoomWorkflowTransition transition) =>
-                    (transition.to == null ? 0 : 2) +
-                    (transition.inputs == null ? 0 : 1) +
-                    (transition.tone == 'destructive' ? 1 : 0);
-                return score(left).compareTo(score(right));
-              });
+              ..sort(_compareShippedTransitionCandidates);
         if (actionableTransitions.isEmpty) {
           continue;
         }
         final accountId =
             bindingAccountId ??
             _transitionAccountId(
-              transition: actionableTransitions.first,
+              transition: actionableTransitions.first.transition,
               instance: instance,
               roleId: roleId,
               allowViewerResponse: responseWorkflowType != null,
             );
         final accountTransitions = actionableTransitions
-            .where((transition) {
+            .where((candidate) {
               final transitionAccountId = _transitionAccountId(
-                transition: transition,
+                transition: candidate.transition,
                 instance: instance,
                 roleId: roleId,
                 allowViewerResponse: responseWorkflowType != null,
@@ -1605,6 +1652,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
           machine: machine,
           actionMachine: actionMachine,
           actionSourceState: actionSourceState,
+          actionArchetypeFamily: actionArchetypeFamily,
           instance: instance,
           binding: binding,
           roleId: roleId,
@@ -1619,6 +1667,253 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     'instance, persona, and tab from the shipped ${target.extensionId} '
     'experience and appShell.',
   );
+}
+
+enum _ShippedTransitionCategory {
+  stateChanging,
+  sourceInstanceEffect,
+  eligibleArchetypeBookkeeping,
+  relatedOrNewInstanceOnly,
+  noOp,
+}
+
+extension on _ShippedTransitionCategory {
+  bool get requiresSourceInstanceDataChange =>
+      this == _ShippedTransitionCategory.sourceInstanceEffect ||
+      this == _ShippedTransitionCategory.eligibleArchetypeBookkeeping;
+
+  int get selectionPriority => switch (this) {
+    _ShippedTransitionCategory.sourceInstanceEffect => 0,
+    _ShippedTransitionCategory.eligibleArchetypeBookkeeping => 1,
+    _ShippedTransitionCategory.stateChanging => 2,
+    _ShippedTransitionCategory.relatedOrNewInstanceOnly => 3,
+    _ShippedTransitionCategory.noOp => 4,
+  };
+}
+
+class _ShippedTransitionCandidate {
+  const _ShippedTransitionCandidate({
+    required this.transition,
+    required this.category,
+  });
+
+  final LoomWorkflowTransition transition;
+  final _ShippedTransitionCategory category;
+}
+
+int _compareShippedTransitionCandidates(
+  _ShippedTransitionCandidate left,
+  _ShippedTransitionCandidate right,
+) {
+  final category = left.category.selectionPriority.compareTo(
+    right.category.selectionPriority,
+  );
+  if (category != 0) return category;
+
+  int inputScore(LoomWorkflowTransition transition) =>
+      transition.inputs == null || transition.inputs!.isEmpty ? 0 : 1;
+  final inputs = inputScore(
+    left.transition,
+  ).compareTo(inputScore(right.transition));
+  if (inputs != 0) return inputs;
+
+  int destructiveScore(LoomWorkflowTransition transition) =>
+      transition.tone == 'destructive' ? 1 : 0;
+  return destructiveScore(
+    left.transition,
+  ).compareTo(destructiveScore(right.transition));
+}
+
+const Map<String, Map<String, (String, bool)>>
+_shippedArchetypeBookkeepingByAction = {
+  'documentLibrary': {
+    'open': ('openedFanIds', true),
+    'acknowledge': ('acknowledgedFanIds', true),
+    'save': ('savedFanIds', true),
+    'unsave': ('savedFanIds', false),
+    'download': ('downloadedFanIds', true),
+    'request_access': ('accessRequestedFanIds', true),
+    'withdraw_access_request': ('accessRequestedFanIds', false),
+  },
+  'equipment-loan': {
+    'join_queue': ('queuedFanIds', true),
+    'leave_queue': ('queuedFanIds', false),
+  },
+  'event-rsvp': {'set_reminder': ('reminderFanIds', true)},
+};
+
+_ShippedTransitionCategory _classifyShippedTransition({
+  required LoomWorkflowTransition transition,
+  required String sourceState,
+  required String? archetypeFamily,
+  required Map<String, dynamic> instanceData,
+  required String actorId,
+  required String roleId,
+}) {
+  if (transition.to != null && transition.to != sourceState) {
+    return _ShippedTransitionCategory.stateChanging;
+  }
+
+  final sourceOutcomes = _shippedSourceEffectOutcomes(
+    transition: transition,
+    instanceData: instanceData,
+    actorId: actorId,
+    roleId: roleId,
+  );
+  final finalOutcomes = <Map<String, dynamic>>[];
+  var bookkeepingAlwaysChanges = sourceOutcomes.isNotEmpty;
+  for (final outcome in sourceOutcomes) {
+    final bookkept = _applyShippedArchetypeBookkeeping(
+      transition: transition,
+      archetypeFamily: archetypeFamily,
+      instanceData: outcome,
+      actorId: actorId,
+    );
+    finalOutcomes.add(bookkept);
+    bookkeepingAlwaysChanges =
+        bookkeepingAlwaysChanges && !_sameInstanceData(outcome, bookkept);
+  }
+
+  final sourceEffectsAlwaysChange =
+      sourceOutcomes.isNotEmpty &&
+      sourceOutcomes.every(
+        (outcome) => !_sameInstanceData(instanceData, outcome),
+      );
+  final finalDataAlwaysChanges =
+      finalOutcomes.isNotEmpty &&
+      finalOutcomes.every(
+        (outcome) => !_sameInstanceData(instanceData, outcome),
+      );
+  if (sourceEffectsAlwaysChange && finalDataAlwaysChanges) {
+    return _ShippedTransitionCategory.sourceInstanceEffect;
+  }
+  if (bookkeepingAlwaysChanges && finalDataAlwaysChanges) {
+    return _ShippedTransitionCategory.eligibleArchetypeBookkeeping;
+  }
+  if (_effectsMutateRelatedOrNewInstance(transition.effects)) {
+    return _ShippedTransitionCategory.relatedOrNewInstanceOnly;
+  }
+  return _ShippedTransitionCategory.noOp;
+}
+
+List<Map<String, dynamic>> _shippedSourceEffectOutcomes({
+  required LoomWorkflowTransition transition,
+  required Map<String, dynamic> instanceData,
+  required String actorId,
+  required String roleId,
+}) {
+  final inputValues = <String, dynamic>{
+    for (final entry in (transition.inputs ?? const {}).entries.where(
+      (entry) => entry.value.required,
+    ))
+      entry.key: entry.value.options != null && entry.value.options!.isNotEmpty
+          ? entry.value.options!.first
+          : _shippedTransitionInputValue(entry.key, entry.value.type, roleId),
+  };
+
+  List<Map<String, dynamic>> applyList(
+    List<WorkflowEffect> effects,
+    List<Map<String, dynamic>> sources,
+  ) {
+    var outcomes = sources;
+    for (final effect in effects) {
+      if (effect.op == workflowEffectBranch) {
+        outcomes = [
+          for (final outcome in outcomes) ...[
+            ...applyList(effect.thenEffects, [outcome]),
+            ...applyList(effect.elseEffects, [outcome]),
+          ],
+        ];
+        continue;
+      }
+      if (effect.op == workflowEffectGenerateRecurringInstances) {
+        outcomes = [
+          for (final outcome in outcomes)
+            Map<String, dynamic>.from(outcome)
+              ..['seriesId'] = _seriesIdDifferentFrom(outcome['seriesId']),
+        ];
+        continue;
+      }
+      if (!_effectDirectlyMutatesSourceInstance(effect)) continue;
+      outcomes = [
+        for (final outcome in outcomes)
+          applyEffects([effect], actorId, outcome, inputValues: inputValues),
+      ];
+    }
+    return outcomes;
+  }
+
+  return applyList(transition.effects, [instanceData]);
+}
+
+bool _effectDirectlyMutatesSourceInstance(WorkflowEffect effect) {
+  if (effect.key == null || effect.relatedInstance != null) return false;
+  return switch (effect.op) {
+    workflowEffectSet ||
+    workflowEffectAppend ||
+    workflowEffectAppendUnique ||
+    workflowEffectRemoveValue ||
+    workflowEffectIncrement ||
+    workflowEffectDecrement => true,
+    _ => false,
+  };
+}
+
+bool _effectsMutateRelatedOrNewInstance(List<WorkflowEffect> effects) {
+  for (final effect in effects) {
+    if (effect.op == workflowEffectCreateInstance ||
+        effect.op == workflowEffectTransitionRelated ||
+        effect.op == workflowEffectGenerateRecurringInstances ||
+        effect.relatedInstance != null ||
+        _effectsMutateRelatedOrNewInstance(effect.thenEffects) ||
+        _effectsMutateRelatedOrNewInstance(effect.elseEffects) ||
+        _effectsMutateRelatedOrNewInstance(
+          effect.onSuccessEffects ?? const [],
+        )) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Map<String, dynamic> _applyShippedArchetypeBookkeeping({
+  required LoomWorkflowTransition transition,
+  required String? archetypeFamily,
+  required Map<String, dynamic> instanceData,
+  required String actorId,
+}) {
+  final action = transition.action;
+  final rule = archetypeFamily == null || action == null
+      ? null
+      : _shippedArchetypeBookkeepingByAction[archetypeFamily]?[action];
+  if (rule == null) return instanceData;
+
+  final (field, addsActor) = rule;
+  final existing = instanceData[field];
+  final values = existing is List ? List<dynamic>.from(existing) : <dynamic>[];
+  final actorCount = values.where((value) => value == actorId).length;
+  if (addsActor) {
+    if (actorCount == 1) return instanceData;
+    return Map<String, dynamic>.from(instanceData)
+      ..[field] = <dynamic>[
+        ...values.where((value) => value != actorId),
+        actorId,
+      ];
+  }
+  if (actorCount == 0) return instanceData;
+  return Map<String, dynamic>.from(instanceData)
+    ..[field] = values
+        .where((value) => value != actorId)
+        .toList(growable: false);
+}
+
+bool _sameInstanceData(Map<String, dynamic> left, Map<String, dynamic> right) =>
+    jsonEncode(left) == jsonEncode(right);
+
+String _seriesIdDifferentFrom(dynamic current) {
+  const base = '__walkthrough-generated-series__';
+  if (current != base) return base;
+  return '${base}next';
 }
 
 String? _bindingAudienceAccountId({
@@ -1772,19 +2067,19 @@ String _shippedTransitionInputValue(String key, String type, String roleId) {
   return 'Evidence $key';
 }
 
-Future<({LoomWorkflowTransition transition, Finder finder})>
+Future<({_ShippedTransitionCandidate candidate, Finder finder})>
 _waitForShippedWorkflowAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
 }) async {
   for (var attempt = 0; attempt < 80; attempt += 1) {
-    for (final transition in selector.transitions) {
+    for (final candidate in selector.transitions) {
       final finder = _engineActionFinder(
         selector.instance.instanceId,
-        transition.id,
+        candidate.transition.id,
       );
       if (finder.evaluate().isNotEmpty) {
-        return (transition: transition, finder: finder);
+        return (candidate: candidate, finder: finder);
       }
     }
     if (attempt == 20) {
@@ -1803,7 +2098,7 @@ _waitForShippedWorkflowAction({
   fail(
     'Shipped workflow ${selector.machine.workflowType} instance '
     '${selector.instance.instanceId} exposed none of its package-declared '
-    'actions ${selector.transitions.map((transition) => transition.id).toList()} '
+    'actions ${selector.transitions.map((candidate) => candidate.transition.id).toList()} '
     'for ${selector.roleId} on ${selector.binding.tabId}.',
   );
 }
@@ -1830,6 +2125,7 @@ class _ShippedWorkflowSelector {
     required this.machine,
     required this.actionMachine,
     required this.actionSourceState,
+    required this.actionArchetypeFamily,
     required this.instance,
     required this.binding,
     required this.roleId,
@@ -1840,11 +2136,12 @@ class _ShippedWorkflowSelector {
   final LoomWorkflowStateMachine machine;
   final LoomWorkflowStateMachine actionMachine;
   final String actionSourceState;
+  final String? actionArchetypeFamily;
   final LoomWorkflowSeedInstance instance;
   final RenderBinding binding;
   final String roleId;
   final String? accountId;
-  final List<LoomWorkflowTransition> transitions;
+  final List<_ShippedTransitionCandidate> transitions;
 }
 
 String _packageRoleId({
