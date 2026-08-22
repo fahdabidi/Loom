@@ -46,7 +46,7 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     await init.writeAsString(jsonEncode(source));
     await extension.writeAsString(
       jsonEncode(<String, Object?>{
-        'schemaVersion': 1,
+        'specVersion': currentCommunitySpecVersion,
         'extensionId': extensionId,
         'displayName': source['displayName'],
         'version': '1.0.0',

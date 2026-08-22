@@ -214,7 +214,7 @@ _PackagePairFixture _writeArbitraryPackagePair() {
   final initializationFile = File('${tempDir.path}/garden-club.loom-init.zip');
   extensionFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'mode': 'local-demo',
       'extensionId': 'ext_garden_club',
       'displayName': 'Garden Club',

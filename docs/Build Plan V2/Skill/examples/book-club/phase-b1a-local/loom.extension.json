@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "extensionId": "ext_book_club",
   "displayName": "Book Club",
   "version": "1.0.0",

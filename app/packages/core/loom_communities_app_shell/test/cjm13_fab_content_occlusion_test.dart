@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart'
+    show currentCommunitySpecVersion;
 
 import 'authz_p6_test_helpers.dart';
 
@@ -42,7 +44,7 @@ Future<_InstalledFixture> _install(String extensionId) async {
   await init.writeAsString(jsonEncode(source));
   await extension.writeAsString(
     jsonEncode(<String, Object?>{
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'extensionId': extensionId,
       'displayName': source['displayName'],
       'version': '1.0.0',

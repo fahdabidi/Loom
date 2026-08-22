@@ -177,6 +177,15 @@ class LocalInAppBackend {
       packageLabel: 'initialization package',
       manifestFileName: LoomExtensionPackageFormat.initializationManifestFile,
     );
+    final actualSpecVersion = extension['specVersion'];
+    if (actualSpecVersion is! int ||
+        actualSpecVersion != LoomExtensionPackageFormat.specVersion) {
+      throw StateError(
+        'Extension manifest specVersion mismatch: expected '
+        '${LoomExtensionPackageFormat.specVersion}, actual '
+        '${jsonEncode(actualSpecVersion)}.',
+      );
+    }
     final extensionPackage = LoomExtensionPackageSummary(
       extensionId: _requiredString(extension, 'extensionId'),
       displayName: _requiredString(extension, 'displayName'),

@@ -125,7 +125,7 @@ Future<_EngineNativeCommunityFixture> _installFixture(
     final initialization = File('${temp.path}/$extensionId.loom-init.zip');
     await extension.writeAsString(
       jsonEncode(<String, Object?>{
-        'schemaVersion': 1,
+        'specVersion': currentCommunitySpecVersion,
         'extensionId': extensionId,
         'displayName': source['displayName'],
         'version': '1.0.0',

@@ -111,7 +111,7 @@ void main() {
     expect(supportedWorkflowFormulaFunctions, formulaFunctionNames);
   });
 
-  test('no component owns a numeric specVersion literal', () {
+  test('only the extension package contract owns a specVersion literal', () {
     final root = _repositoryRoot();
     final literalPattern = RegExp(
       r'''specVersion[^\n]{0,8}[:=,]\s*['"]?(\d+)''',
@@ -135,6 +135,19 @@ void main() {
       for (var index = 0; index < lines.length; index++) {
         final match = literalPattern.firstMatch(lines[index]);
         if (match == null) continue;
+        if (relativePath ==
+                'app/packages/core/loom_extension_package/lib/'
+                    'loom_extension_package.dart' &&
+            lines[index].contains('static const int specVersion')) {
+          expect(
+            int.parse(match.group(1)!),
+            currentCommunitySpecVersion,
+            reason:
+                'The extension package contract must match the canonical '
+                'community spec version.',
+          );
+          continue;
+        }
         discrepancies.add(
           '$relativePath:${index + 1} owns specVersion ${match.group(1)}',
         );

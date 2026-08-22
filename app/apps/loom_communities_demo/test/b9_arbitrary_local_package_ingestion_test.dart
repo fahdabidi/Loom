@@ -74,7 +74,7 @@ _PackagePairFixture _writePackagePair({
   final initializationFile = File('${tempDir.path}/$extensionId.loom-init.zip');
   extensionFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'mode': 'local-demo',
       'extensionId': extensionId,
       'displayName': extensionDisplayName,

@@ -1,5 +1,5 @@
 class LoomExtensionPackageFormat {
-  static const int schemaVersion = 1;
+  static const int specVersion = 4;
   static const String extensionManifestFile = 'loom.extension.json';
   static const String initializationManifestFile = 'loom.initialization.json';
   static const String assetManifestFile = 'assets/loom.assets.json';

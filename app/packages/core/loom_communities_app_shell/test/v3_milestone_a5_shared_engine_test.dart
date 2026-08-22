@@ -35,7 +35,7 @@ void main() {
       await initFile.writeAsString(jsonEncode(initialization));
       await extensionFile.writeAsString(
         jsonEncode(<String, Object?>{
-          'schemaVersion': 1,
+          'specVersion': currentCommunitySpecVersion,
           'extensionId': initialization['extensionId'],
           'displayName': initialization['displayName'],
           'version': '1.0.0',

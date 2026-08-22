@@ -67,10 +67,52 @@ void main() {
       expect(plan.appShellConfiguration['tabs'], isA<List<Object?>>());
     });
 
+    test('extension manifest without specVersion is rejected', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryPackagePair(
+        includeExtensionSpecVersion: false,
+      );
+
+      expect(
+        () => backend.parseLocalPackagePair(
+          extensionPackagePath: fixture.extensionPath,
+          initializationPackagePath: fixture.initializationPath,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.toString(),
+            'message',
+            contains('expected 4, actual null'),
+          ),
+        ),
+      );
+    });
+
+    test('unsupported extension manifest specVersion is rejected', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryPackagePair(
+        extensionSpecVersion: LoomExtensionPackageFormat.specVersion + 1,
+      );
+
+      expect(
+        () => backend.parseLocalPackagePair(
+          extensionPackagePath: fixture.extensionPath,
+          initializationPackagePath: fixture.initializationPath,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.toString(),
+            'message',
+            contains('expected 4, actual 5'),
+          ),
+        ),
+      );
+    });
+
     test('specVersion 4 is preserved from plan through installation', () {
       final backend = LocalInAppBackend();
       final fixture = _writeArbitraryPackagePair(
-        specVersion: currentCommunitySpecVersion,
+        initializationSpecVersion: currentCommunitySpecVersion,
       );
 
       final plan = backend.parseLocalPackagePair(
@@ -209,7 +251,7 @@ _PackagePairFixture _writeArbitraryZipPackagePair() {
     extensionFile,
     LoomExtensionPackageFormat.extensionManifestFile,
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': LoomExtensionPackageFormat.specVersion,
       'mode': 'local-demo',
       'extensionId': 'ext_camera_club',
       'displayName': 'Camera Club',
@@ -320,14 +362,17 @@ int _crc32(List<int> bytes) {
   return (crc ^ 0xffffffff) & 0xffffffff;
 }
 
-_PackagePairFixture _writeArbitraryPackagePair({int? specVersion}) {
+_PackagePairFixture _writeArbitraryPackagePair({
+  int extensionSpecVersion = LoomExtensionPackageFormat.specVersion,
+  bool includeExtensionSpecVersion = true,
+  int? initializationSpecVersion,
+}) {
   final tempDir = Directory.systemTemp.createTempSync('loom_arbitrary_');
   final extensionFile = File('${tempDir.path}/garden-club.loom-extension.zip');
   final initializationFile = File('${tempDir.path}/garden-club.loom-init.zip');
   extensionFile.writeAsStringSync(
     jsonEncode({
-      if (specVersion == null) 'schemaVersion': 1,
-      if (specVersion != null) 'specVersion': specVersion,
+      if (includeExtensionSpecVersion) 'specVersion': extensionSpecVersion,
       'mode': 'local-demo',
       'extensionId': 'ext_garden_club',
       'displayName': 'Garden Club',
@@ -349,8 +394,9 @@ _PackagePairFixture _writeArbitraryPackagePair({int? specVersion}) {
   );
   initializationFile.writeAsStringSync(
     jsonEncode({
-      if (specVersion == null) 'schemaVersion': 1,
-      if (specVersion != null) 'specVersion': specVersion,
+      if (initializationSpecVersion == null) 'schemaVersion': 1,
+      if (initializationSpecVersion != null)
+        'specVersion': initializationSpecVersion,
       'communityId': 'community_garden_club',
       'communityName': 'Garden Club',
       'extensionId': 'ext_garden_club',

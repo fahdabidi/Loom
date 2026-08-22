@@ -806,7 +806,7 @@ EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
     ..['communityId'] = target.communityId;
   extensionFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'mode': 'local-demo',
       'extensionId': target.extensionId,
       'displayName': target.communityName,
@@ -856,7 +856,7 @@ EvidencePackagePair _writeMetadataEvidencePackagePair(
   );
   extensionFile.writeAsStringSync(
     jsonEncode({
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'mode': 'local-demo',
       'extensionId': target.extensionId,
       'displayName': target.communityName,
@@ -1895,7 +1895,7 @@ EvidencePackagePair writeEngineNativeTestPackagePair({
   final initializationFile = File('${tempDir.path}/$extensionId.loom-init.zip');
   extensionFile.writeAsStringSync(
     jsonEncode(<String, Object?>{
-      'schemaVersion': 1,
+      'specVersion': currentCommunitySpecVersion,
       'mode': 'local-demo',
       'extensionId': extensionId,
       'displayName': displayName,

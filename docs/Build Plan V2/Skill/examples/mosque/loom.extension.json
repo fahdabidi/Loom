@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "mode": "local-demo",
   "extensionId": "ext_mosque",
   "displayName": "Mosque Community",

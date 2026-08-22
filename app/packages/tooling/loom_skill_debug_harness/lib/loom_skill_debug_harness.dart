@@ -286,7 +286,7 @@ class SkillExtensionManifest {
 
   Map<String, Object?> toJson() {
     return {
-      'schemaVersion': 1,
+      'specVersion': LoomExtensionPackageFormat.specVersion,
       'extensionId': extensionId,
       'displayName': displayName,
       'version': version,

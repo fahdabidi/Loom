@@ -126,7 +126,7 @@ Map<String, Object?> _extensionManifestFromSource(
   String extensionId,
 ) {
   return <String, Object?>{
-    'schemaVersion': 1,
+    'specVersion': currentCommunitySpecVersion,
     'mode': 'local-demo',
     'extensionId': extensionId,
     'displayName': _stringValue(source, 'displayName'),

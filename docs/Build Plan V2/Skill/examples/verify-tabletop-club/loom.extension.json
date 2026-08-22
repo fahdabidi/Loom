@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "specVersion": 4,
   "extensionId": "ext_verify_tabletop_club",
   "displayName": "Tabletop Club",
   "version": "1.0.0",
