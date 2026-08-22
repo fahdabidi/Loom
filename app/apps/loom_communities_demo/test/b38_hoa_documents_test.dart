@@ -1,33 +1,49 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
 import 'workflow_ui_test_harness.dart';
 
-const _extensionId = 'ext_verify_hoa_documents';
+const _workflowType = 'cedar-commons-document-library';
+const _ownerAccountId = 'hoa-homeowner-avery';
+const _peerAccountId = 'hoa-homeowner-casey';
+const _boardAccountId = 'hoa-board-reviewer';
+var _fixtureSequence = 0;
+
+const _accounts = <LoomAccount>[
+  LoomAccount(
+    accountId: _ownerAccountId,
+    displayName: 'Avery Brooks',
+    personaTypeId: 'hoa-homeowner',
+  ),
+  LoomAccount(
+    accountId: _peerAccountId,
+    displayName: 'Casey Homeowner',
+    personaTypeId: 'hoa-homeowner',
+  ),
+  LoomAccount(
+    accountId: _boardAccountId,
+    displayName: 'Board Reviewer',
+    personaTypeId: 'hoa-board',
+  ),
+];
 
 void main() {
   group('M4.1 HOA document library', () {
     testWidgets('category navigation opens the minutes folder', (tester) async {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _tapTab(tester, 'documents');
+      await _installAndSignIn(tester, fixture, 'Avery Brooks');
+      await _openDocuments(tester, expectDocuments: true);
 
-      await _tapVisible(
-        tester,
-        find.byKey(const ValueKey('documents-category-minutes')),
-      );
-
-      expect(find.byKey(const ValueKey('document-row-doc-board-minutes')), findsOneWidget);
-      expect(find.text('April Board Minutes'), findsWidgets);
-      expect(find.text('Community Rules'), findsNothing);
+      // v4 documentLibrary surfaces are instance lists rather than a shallow
+      // category-folder navigator. Preserve the category-browsing intent by
+      // proving that the typed Minutes row is present alongside the others.
+      expect(_documentCard('doc-board-minutes'), findsOneWidget);
+      expect(find.text('April Board Minutes'), findsOneWidget);
+      expect(find.text('Category: Minutes'), findsOneWidget);
+      expect(_documentCard('doc-community-rules'), findsOneWidget);
+      expect(find.text('Community Rules'), findsOneWidget);
     });
 
     testWidgets('document detail supports embedded and external open', (
@@ -35,42 +51,47 @@ void main() {
     ) async {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _tapTab(tester, 'documents');
+      await _installAndSignIn(tester, fixture, 'Avery Brooks');
+      await _openDocuments(tester, expectDocuments: true);
+
+      final embedded = _documentDescendant(
+        'doc-community-rules',
+        find.byKey(
+          const ValueKey('workflow-fact-url-documentUrl-open-embedded'),
+        ),
+      );
+      final external = _documentDescendant(
+        'doc-community-rules',
+        find.byKey(
+          const ValueKey('workflow-fact-url-documentUrl-open-external'),
+        ),
+      );
+      expect(embedded, findsOneWidget);
+      expect(external, findsOneWidget);
+      expect(tester.widget<InkWell>(external).onTap, isNotNull);
+
+      await _tapVisible(tester, embedded);
+      expect(
+        find.byKey(const ValueKey('document-library-embedded-viewer')),
+        findsOneWidget,
+      );
+      expect(find.text('Open document'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
 
       await _tapVisible(
         tester,
-        find.byKey(
-          const ValueKey('document-open-embedded-doc-community-rules'),
-        ),
+        _documentAction('doc-community-rules', 'record-resource-open'),
       );
-      await _tapVisible(
-        tester,
-        find.byKey(
-          const ValueKey('document-open-external-doc-community-rules'),
-        ),
+      final row = await _documentRow(
+        fixture.target.extensionId,
+        'doc-community-rules',
       );
-
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is Text &&
-              widget.data != null &&
-              widget.data!.startsWith('Avery Brooks at ') &&
-              widget.data!.contains(' opened Community Rules embedded'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is Text &&
-              widget.data != null &&
-              widget.data!.startsWith('Avery Brooks at ') &&
-              widget.data!.contains(' opened Community Rules external'),
-        ),
-        findsOneWidget,
+      expect(row.instanceData['openedFanIds'], contains(_ownerAccountId));
+      _expectAuditEntry(
+        row.instanceData['auditTrail'],
+        event: 'opened',
+        documentId: 'doc-community-rules',
       );
     });
 
@@ -79,12 +100,11 @@ void main() {
     ) async {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _tapTab(tester, 'documents');
+      await _installAndSignIn(tester, fixture, 'Avery Brooks');
+      await _openDocuments(tester, expectDocuments: true);
 
       expect(find.text('Version: v2026.3'), findsOneWidget);
-      expect(find.text('Access: available'), findsOneWidget);
+      expect(find.text('Access: Available'), findsWidgets);
       expect(find.text('Updated July 2026'), findsOneWidget);
     });
 
@@ -93,112 +113,147 @@ void main() {
     ) async {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _tapTab(tester, 'documents');
+      await _installAndSignIn(tester, fixture, 'Avery Brooks');
+      await _openDocuments(tester, expectDocuments: true);
 
-      await _tapVisible(
-        tester,
-        find.byKey(const ValueKey('documents-category-covenants')),
-      );
-      expect(find.text('Access: restricted'), findsOneWidget);
+      expect(_documentCard('doc-ccr-amendment'), findsOneWidget);
+      expect(find.text('CCR Amendment Packet'), findsOneWidget);
+      expect(find.text('Access: Restricted'), findsOneWidget);
       expect(
-        tester.widget<FilledButton>(
-          find.byKey(const ValueKey('document-open-embedded-doc-ccr-amendment')),
-        ).onPressed,
-        isNull,
+        _documentAction('doc-ccr-amendment', 'record-resource-open'),
+        findsNothing,
       );
-
-      await _tapVisible(
-        tester,
-        find.byKey(
-          const ValueKey('document-request-access-doc-ccr-amendment'),
-        ),
-      );
-
-      expect(find.text('Access: access-requested'), findsOneWidget);
       expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is Text &&
-              widget.data != null &&
-              widget.data!.startsWith('Avery Brooks at ') &&
-              widget.data!.contains(
-                ' requested access to CCR Amendment Packet',
-              ),
-        ),
+        _documentAction('doc-ccr-amendment', 'request-resource-access'),
         findsOneWidget,
+      );
+
+      await _tapVisible(
+        tester,
+        _documentAction('doc-ccr-amendment', 'request-resource-access'),
+      );
+      await _openDocuments(tester, expectDocuments: true);
+      await tester.ensureVisible(_documentCard('doc-ccr-amendment'));
+      await tester.pumpAndSettle();
+      expect(find.text('Access: Access Requested'), findsOneWidget);
+
+      final row = await _documentRow(
+        fixture.target.extensionId,
+        'doc-ccr-amendment',
+      );
+      expect(
+        row.instanceData['accessRequestedFanIds'],
+        contains(_ownerAccountId),
+      );
+      _expectAuditEntry(
+        row.instanceData['auditTrail'],
+        event: 'access-requested',
+        documentId: 'doc-ccr-amendment',
+      );
+
+      // Avery sees this board-owned document only because the owner shared it
+      // with Avery's individual account. Casey has the same role but is not in
+      // `sharedWithFanIds`, so the entire library is genuinely empty for them.
+      await signInEvidenceAccount(tester, 'Casey Homeowner');
+      await openEvidenceTarget(tester, fixture.target);
+      await _openDocuments(tester, expectDocuments: false);
+      expect(_documentCard('doc-ccr-amendment'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('engine-native-list-error-documents')),
+        findsNothing,
       );
     });
 
     testWidgets('acknowledge records exact audit trail entry', (tester) async {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _tapTab(tester, 'documents');
+      await _installAndSignIn(tester, fixture, 'Avery Brooks');
+      await _openDocuments(tester, expectDocuments: true);
 
       await _tapVisible(
         tester,
-        find.byKey(
-          const ValueKey('document-acknowledge-doc-community-rules'),
-        ),
+        _documentAction('doc-community-rules', 'acknowledge-resource'),
+      );
+      await _openDocuments(tester, expectDocuments: true);
+      await tester.ensureVisible(_documentCard('doc-community-rules'));
+      await tester.pumpAndSettle();
+      await waitForEngineNativeWidget(
+        tester,
+        find.text('Access: Acknowledged'),
+        description: 'acknowledged document state',
       );
 
-      expect(find.text('Access: acknowledged'), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is Text &&
-              widget.data != null &&
-              widget.data!.startsWith('Avery Brooks at ') &&
-              widget.data!.contains(' acknowledged Community Rules'),
-        ),
-        findsOneWidget,
+      final row = await _documentRow(
+        fixture.target.extensionId,
+        'doc-community-rules',
+      );
+      expect(row.instanceData['acknowledgedFanIds'], <String>[_ownerAccountId]);
+      _expectAuditEntry(
+        row.instanceData['auditTrail'],
+        event: 'acknowledged',
+        documentId: 'doc-community-rules',
       );
     });
   });
 }
 
-Future<void> _installAndOpen(
-  WidgetTester tester,
-  _PackagePairFixture fixture,
-) async {
-  await tester.tap(find.byKey(const ValueKey('add-community-button')));
-  await tester.pumpAndSettle();
-  await tester.enterText(
-    find.byKey(const ValueKey('extension-package-path-field')),
-    fixture.extensionPath,
+Finder _documentCard(String documentId) =>
+    find.byKey(ValueKey('engine-native-list-item-documents-$documentId-0'));
+
+Finder _documentDescendant(String documentId, Finder matching) =>
+    find.descendant(of: _documentCard(documentId), matching: matching);
+
+Finder _documentAction(String documentId, String transitionId) =>
+    find.byKey(ValueKey('document-library-$documentId-action-$transitionId'));
+
+Future<void> _openDocuments(
+  WidgetTester tester, {
+  required bool expectDocuments,
+}) async {
+  await tapCommunityTab(tester, 'documents');
+  await waitForEngineNativeWidget(
+    tester,
+    expectDocuments
+        ? _documentCard('doc-community-rules')
+        : find.byKey(const ValueKey('engine-native-list-empty-documents')),
+    description: expectDocuments
+        ? 'engine-native HOA document library'
+        : 'owner-and-shared filtered empty document library',
   );
-  await tester.enterText(
-    find.byKey(const ValueKey('initialization-package-path-field')),
-    fixture.initializationPath,
-  );
-  await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
-  await tester.pumpAndSettle();
-  await tester.tap(
-    find.byKey(const ValueKey('community-card-community_verify_hoa_documents')),
-  );
-  await tester.pumpAndSettle();
 }
 
-Future<void> _tapTab(WidgetTester tester, String tabId) async {
-  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
-  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (
-    var attempt = 0;
-    attempt < 8 && tabFinder.evaluate().isEmpty;
-    attempt += 1
-  ) {
-    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
-  expect(tabFinder, findsOneWidget, reason: tabId);
-  await tester.tap(tabFinder, warnIfMissed: false);
-  await tester.pumpAndSettle();
+Future<dynamic> _documentRow(String extensionId, String documentId) async {
+  final engine = await workflowEngineForExtensionId(extensionId);
+  final page = await engine.queryInstances(
+    tabId: 'documents',
+    personaId: _ownerAccountId,
+    limit: 20,
+  );
+  return page.items.singleWhere((item) => item.instanceId == documentId);
+}
+
+void _expectAuditEntry(
+  Object? value, {
+  required String event,
+  required String documentId,
+}) {
+  expect(value, isA<List<Object?>>());
+  final entries = value! as List<Object?>;
+  expect(entries, isNotEmpty);
+  final entry = entries.last! as Map<String, dynamic>;
+  expect(entry['actorFanId'], _ownerAccountId);
+  expect(entry['event'], event);
+  expect(entry['documentId'], documentId);
+  expect(entry['timestamp'], isA<String>());
+  expect(DateTime.tryParse(entry['timestamp']! as String), isNotNull);
 }
 
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await waitForEngineNativeWidget(
+    tester,
+    finder,
+    description: 'document-library control $finder',
+  );
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   expect(finder, findsOneWidget);
@@ -206,110 +261,335 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
-_PackagePairFixture _writeFixture() {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b38_hoa_docs_');
-  final extensionFile = File('${tempDir.path}/$_extensionId.loom-extension.zip');
-  final initializationFile = File('${tempDir.path}/$_extensionId.loom-init.zip');
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
-      'displayName': 'Cedar Commons HOA',
-      'version': '1.0.0',
-      'permissions': ['documents.read', 'documents.write'],
-    }),
+Future<void> _installAndSignIn(
+  WidgetTester tester,
+  ({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+  fixture,
+  String displayName,
+) async {
+  await tester.tap(find.byKey(const ValueKey('add-community-button')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+    find.byKey(const ValueKey('extension-package-path-field')),
+    fixture.package.extensionPath,
   );
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_hoa_documents',
-      'communityName': 'Cedar Commons HOA',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json'],
-      'branding': {'accentColor': '#3E6B8F'},
-      'experience': {
-        'displayName': 'Cedar Commons HOA',
-        'tagline': 'Run dues, documents, facilities, reviews, and exports.',
-        'accentColor': '#3E6B8F',
-        'roles': [
-          {
-            'roleId': 'hoa-homeowner',
-            'label': 'Avery Brooks',
-            'roleLabel': 'Homeowner',
-            'description': 'Pays dues and reads governing documents.',
-          },
-          {
-            'roleId': 'hoa-board',
-            'label': 'HOA Board',
-            'roleLabel': 'Board',
-            'description': 'Reviews documents and owner requests.',
-          },
-        ],
-        'workflows': [
-          {
-            'workflowId': 'cedar-commons-document-library',
-            'title': 'Governing docs library',
-            'entryText':
-                'Browse bylaws, covenants, and meeting minutes for Cedar Commons.',
-            'actionText': 'Open the selected governing document.',
-            'resultText': 'Document access and audit state are updated.',
-            'documentLibrary': {
-              'categories': ['bylaws', 'covenants', 'minutes'],
-              'documents': [
-                {
-                  'documentId': 'doc-community-rules',
-                  'title': 'Community Rules',
-                  'category': 'bylaws',
-                  'version': 'v2026.3',
-                  'updatedLabel': 'Updated July 2026',
-                  'accessState': 'available',
-                  'summary':
-                      'Member-visible rules, quiet hours, parking, and common-area policies.',
-                },
-                {
-                  'documentId': 'doc-ccr-amendment',
-                  'title': 'CCR Amendment Packet',
-                  'category': 'covenants',
-                  'version': 'v2026.1',
-                  'updatedLabel': 'Board draft',
-                  'accessState': 'restricted',
-                  'summary':
-                      'Board-reviewed covenant amendment packet requiring access approval.',
-                },
-                {
-                  'documentId': 'doc-board-minutes',
-                  'title': 'April Board Minutes',
-                  'category': 'minutes',
-                  'version': 'v2026.04',
-                  'updatedLabel': 'Posted May 2',
-                  'accessState': 'available',
-                  'summary': 'Approved meeting minutes from the April board session.',
-                },
-              ],
-            },
-          },
-        ],
-        'personaPolicies': {
-          'cedar-commons-document-library': {
-            'actorPersonaIds': ['hoa-homeowner', 'hoa-board'],
+  await tester.enterText(
+    find.byKey(const ValueKey('initialization-package-path-field')),
+    fixture.package.initializationPath,
+  );
+  await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
+  await tester.pumpAndSettle();
+  await tester.tap(
+    find.byKey(ValueKey('community-card-${fixture.communityId}')),
+  );
+  await tester.pumpAndSettle();
+  await seedEvidenceAccounts(tester, fixture.target, _accounts);
+  await signInEvidenceAccount(tester, displayName);
+}
+
+({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+_writeFixture() {
+  final sequence = _fixtureSequence++;
+  final extensionId = 'ext_verify_hoa_documents_$sequence';
+  final communityId = 'community_verify_hoa_documents_$sequence';
+  final definition = engineNativeTestWorkflowDefinition(
+    initialState: 'available',
+    visibility: <String, Object?>{
+      'default': 'guarded',
+      'readGuard': <String, Object?>{
+        'allowedRoleIds': <String>['hoa-board'],
+      },
+      'fields': <String, Object?>{'sharedWith': 'sharedWithFanIds'},
+    },
+    states: <String, Object?>{
+      'available': <String, Object?>{'label': 'Available'},
+      'restricted': <String, Object?>{'label': 'Restricted'},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'record-resource-open',
+        'action': 'open',
+        'label': 'Open document',
+        'from': <String>['available'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['hoa-homeowner', 'hoa-board'],
+          'actorInList': <String, Object?>{
+            'key': 'openedFanIds',
+            'present': false,
           },
         },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'appendUnique',
+            'key': 'openedFanIds',
+            'value': r'$actor',
+          },
+          _auditEffect('opened'),
+        ],
       },
-    }),
+      <String, Object?>{
+        'id': 'acknowledge-resource',
+        'action': 'acknowledge',
+        'label': 'Acknowledge',
+        'from': <String>['available'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['hoa-homeowner'],
+          'actorInList': <String, Object?>{
+            'key': 'acknowledgedFanIds',
+            'present': false,
+          },
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'appendUnique',
+            'key': 'acknowledgedFanIds',
+            'value': r'$actor',
+          },
+          <String, Object?>{
+            'op': 'set',
+            'key': 'accessState',
+            'value': 'acknowledged',
+          },
+          _auditEffect('acknowledged'),
+        ],
+      },
+      <String, Object?>{
+        'id': 'request-resource-access',
+        'action': 'request_access',
+        'label': 'Request access',
+        'from': <String>['restricted'],
+        'to': null,
+        'guard': <String, Object?>{
+          'allowedRoleIds': <String>['hoa-homeowner'],
+          'actorInList': <String, Object?>{
+            'key': 'accessRequestedFanIds',
+            'present': false,
+          },
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'appendUnique',
+            'key': 'accessRequestedFanIds',
+            'value': r'$actor',
+          },
+          <String, Object?>{
+            'op': 'set',
+            'key': 'accessState',
+            'value': 'access-requested',
+          },
+          _auditEffect('access-requested'),
+        ],
+      },
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>['available', 'restricted'],
+        tabId: 'documents',
+        cardSurfaceFamily: 'documentLibrary',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'title': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'category': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'labelTemplate': 'Category: {value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'version': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'labelTemplate': 'Version: {value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'updatedLabel': <String, Object?>{
+        'type': 'text',
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'accessState': <String, Object?>{
+        'type': 'text',
+        'writableBy': 'effect',
+        'labelTemplate': 'Access: {value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'summary': <String, Object?>{
+        'type': 'textarea',
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['detail'],
+      },
+      'documentUrl': <String, Object?>{
+        'type': 'url',
+        'openMode': 'choice',
+        'labelTemplate': 'Open document',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'sharedWithFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'displayContexts': <String>[],
+      },
+      // These are the documentLibrary archetype's declared bookkeeping
+      // fields. The engine transitions own every mutation and audit write.
+      'openedFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'writableBy': 'effect',
+        'displayContexts': <String>[],
+      },
+      'acknowledgedFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'writableBy': 'effect',
+        'displayContexts': <String>[],
+      },
+      'accessRequestedFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'writableBy': 'effect',
+        'displayContexts': <String>[],
+      },
+      'auditTrail': <String, Object?>{
+        'type': 'list',
+        'writableBy': 'effect',
+        'labelTemplate': 'Audit entries: {value.length}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+    },
   );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
+
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b38_hoa_docs_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Cedar Commons HOA',
+    permissions: const <String>['documents.read', 'documents.write'],
+    experience: <String, Object?>{
+      'displayName': 'Cedar Commons HOA',
+      'tagline': 'Private governing documents and acknowledgements.',
+      'accentColor': '#3E6B8F',
+      'theme': <String, Object?>{'accent': '#3E6B8F'},
+      'roles': const <Object?>[
+        <String, Object?>{
+          'roleId': 'hoa-homeowner',
+          'label': 'Homeowner',
+          'roleLabel': 'Homeowner',
+          'description': 'Reads documents shared with their account.',
+        },
+        <String, Object?>{
+          'roleId': 'hoa-board',
+          'label': 'HOA Board',
+          'roleLabel': 'Board',
+          'description': 'Owns governing documents.',
+        },
+      ],
+      'workflowDefinitions': <String, Object?>{_workflowType: definition},
+      'workflowInstances': <Object?>[
+        _documentInstance(
+          documentId: 'doc-community-rules',
+          createdByFanId: _ownerAccountId,
+          title: 'Community Rules',
+          category: 'bylaws',
+          version: 'v2026.3',
+          updatedLabel: 'Updated July 2026',
+          accessState: 'available',
+          summary:
+              'Member-visible rules, quiet hours, parking, and common-area policies.',
+        ),
+        _documentInstance(
+          documentId: 'doc-ccr-amendment',
+          createdByFanId: _boardAccountId,
+          title: 'CCR Amendment Packet',
+          category: 'covenants',
+          version: 'v2026.1',
+          updatedLabel: 'Board draft',
+          accessState: 'restricted',
+          sharedWithFanIds: const <String>[_ownerAccountId],
+          summary:
+              'Board-reviewed covenant amendment packet requiring access approval.',
+        ),
+        _documentInstance(
+          documentId: 'doc-board-minutes',
+          createdByFanId: _ownerAccountId,
+          title: 'April Board Minutes',
+          category: 'minutes',
+          version: 'v2026.04',
+          updatedLabel: 'Posted May 2',
+          accessState: 'available',
+          summary: 'Approved meeting minutes from the April board session.',
+        ),
+      ],
+    },
+    appShell: <String, Object?>{
+      'tabs': <Object?>[
+        <String, Object?>{
+          'tabId': 'documents',
+          'label': 'Documents',
+          'iconKey': 'documents',
+          'visibleRoleIds': <String>['hoa-homeowner', 'hoa-board'],
+        },
+      ],
+    },
+  );
+  return (
+    package: package,
+    communityId: communityId,
+    target: LoomEvidenceTarget(
+      phase: 'test',
+      communityId: communityId,
+      communityName: 'Cedar Commons HOA',
+      handle: 'hoa-documents-$sequence',
+      extensionId: extensionId,
+      accentColor: '#3E6B8F',
+      seedDataFiles: const <String>[
+        'seed/community.json',
+        'seed/workflows.json',
+      ],
+    ),
   );
 }
 
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
+Map<String, Object?> _auditEffect(String event) => <String, Object?>{
+  'op': 'append',
+  'key': 'auditTrail',
+  'value': <String, Object?>{
+    'actorFanId': r'$actor',
+    'event': event,
+    'documentId': r'{id}',
+    'timestamp': r'$timestamp',
+  },
+};
 
-  final String extensionPath;
-  final String initializationPath;
-}
+Map<String, Object?> _documentInstance({
+  required String documentId,
+  required String createdByFanId,
+  required String title,
+  required String category,
+  required String version,
+  required String updatedLabel,
+  required String accessState,
+  required String summary,
+  List<String> sharedWithFanIds = const <String>[],
+}) => engineNativeTestWorkflowInstance(
+  instanceId: documentId,
+  workflowType: _workflowType,
+  currentState: accessState == 'restricted' ? 'restricted' : 'available',
+  createdByFanId: createdByFanId,
+  instanceData: <String, Object?>{
+    'title': title,
+    'category': category,
+    'version': version,
+    'updatedLabel': updatedLabel,
+    'accessState': accessState,
+    'summary': summary,
+    'documentUrl': 'https://example.org/cedar-commons/$documentId',
+    'sharedWithFanIds': sharedWithFanIds,
+    'openedFanIds': <String>[],
+    'acknowledgedFanIds': <String>[],
+    'accessRequestedFanIds': <String>[],
+    'auditTrail': <Object?>[],
+  },
+);

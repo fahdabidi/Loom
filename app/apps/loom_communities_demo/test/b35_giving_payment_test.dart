@@ -1,200 +1,152 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
-const _extensionId = 'ext_verify_tabletop_club';
+import 'workflow_ui_test_harness.dart';
+
+const _extensionId = 'ext_verify_tabletop_giving';
+const _paymentId = 'tabletop-club-dues-payment';
+const _payerAccountId = 'tabletop-member-jules';
+const _peerAccountId = 'tabletop-member-sam';
+const _treasurerAccountId = 'tabletop-organizer-treasurer';
+var _fixtureSequence = 0;
+
+const _accounts = <LoomAccount>[
+  LoomAccount(
+    accountId: _payerAccountId,
+    displayName: 'Jules Member',
+    personaTypeId: 'tabletop-member',
+  ),
+  LoomAccount(
+    accountId: _peerAccountId,
+    displayName: 'Sam Member',
+    personaTypeId: 'tabletop-member',
+  ),
+  LoomAccount(
+    accountId: _treasurerAccountId,
+    displayName: 'Club Treasurer',
+    personaTypeId: 'tabletop-organizer',
+  ),
+];
 
 void main() {
   group('B35 Giving payment tab', () {
-    // (a) Rule 2 positive: fixture with givingPayment declared renders
-    // the real Giving UI and the placeholder text is absent.
-    testWidgets('wf_giving-renders-real-when-payment-declared', (
-      tester,
-    ) async {
+    testWidgets('wf_giving-renders-real-when-payment-declared', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Jules Member');
+      await _openGiving(tester, expectPayment: true);
 
-      await _tapTab(tester, 'giving');
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-giving')),
+        findsOneWidget,
+      );
+      expect(_paymentCard, findsOneWidget);
+      expect(find.text(r'$15'), findsWidgets);
+      expect(find.text('Quarterly club dues'), findsWidgets);
+      expect(find.text('Recipient: Tabletop Club treasury'), findsOneWidget);
+      expect(_paymentAction('pay-dues'), findsOneWidget);
+      expect(find.textContaining('is coming to Tabletop Club'), findsNothing);
 
-      // Real giving surface + amount summary render
-      expect(find.byKey(const ValueKey('giving-tab-surface')), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey('giving-amount-summary')),
-        findsOneWidget,
+      // `paymentCheckout` is party-scoped by account, not by role.
+      await signInEvidenceAccount(tester, 'Sam Member');
+      await openEvidenceTarget(tester, fixture.target);
+      await tapCommunityTab(tester, 'giving');
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
+        description: 'empty Giving tab for a non-party member account',
       );
-      // Exact match (not textContaining) so this doesn't also match the
-      // checkout button's "Pay $15" label.
-      expect(find.text('\$15'), findsWidgets);
+      expect(_paymentCard, findsNothing);
       expect(
-        find.textContaining('Quarterly club dues'),
-        findsWidgets,
-      );
-      expect(
-        find.textContaining('Recipient: Tabletop Club treasury'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('giving-action-pay')),
-        findsOneWidget,
-      );
-      // Checkout button exists
-      expect(
-        find.byKey(const ValueKey('giving-checkout-tabletop-club-dues-payment')),
-        findsOneWidget,
-      );
-      // Placeholder text must NOT appear (rule 2 positive)
-      expect(
-        find.textContaining('is coming to Tabletop Club'),
+        find.byKey(const ValueKey('engine-native-list-error-giving')),
         findsNothing,
       );
     });
 
-    // (b) Rule 2 negative: fixture without givingPayment still shows
-    // the placeholder and real Giving keys are absent.
-    testWidgets('wf_giving-shows-placeholder-without-payment', (
-      tester,
-    ) async {
-      final fixture = _writeTabletopClubPackagePair(includeGivingPayment: false);
+    testWidgets('wf_giving-shows-placeholder-without-payment', (tester) async {
+      final fixture = _writeTabletopClubPackagePair(
+        includeGivingPayment: false,
+      );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Jules Member');
+      await _openGiving(tester, expectPayment: false);
 
-      await _tapTab(tester, 'giving');
-
-      // Placeholder text renders
+      expect(_paymentCard, findsNothing);
       expect(
-        find.textContaining('is coming to Tabletop Club'),
+        find.byKey(const ValueKey('engine-native-list-empty-giving')),
         findsOneWidget,
       );
-      // Real Giving keys must NOT appear (rule 2 negative)
       expect(
-        find.byKey(const ValueKey('giving-tab-surface')),
-        findsNothing,
-      );
-      expect(
-        find.byKey(const ValueKey('giving-amount-summary')),
+        find.byKey(const ValueKey('engine-native-list-error-giving')),
         findsNothing,
       );
     });
 
-    // (c) Checkout → complete workflow → receipt state
     testWidgets('wf_giving-checkout-to-receipt', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Jules Member');
+      await _openGiving(tester, expectPayment: true);
 
-      await _tapTab(tester, 'giving');
+      expect(_paymentAction('pay-dues'), findsOneWidget);
+      expect(find.text('Status: Complete'), findsNothing);
 
-      // Verify unpaid state: checkout button exists, no receipt
-      expect(
-        find.byKey(const ValueKey('giving-checkout-tabletop-club-dues-payment')),
-        findsOneWidget,
+      await _tapVisible(tester, _paymentAction('pay-dues'));
+      await waitForEngineNativeWidget(
+        tester,
+        find.text('Status: Complete'),
+        description: 'completed dues receipt status',
       );
-      expect(
-        find.byKey(const ValueKey('giving-receipt-tabletop-club-dues-payment')),
-        findsNothing,
-      );
 
-      // Tap checkout → opens action surface (scroll into view first; the
-      // button can sit below the fold on the default test viewport)
-      final payButton = find.byKey(const ValueKey('giving-action-pay'));
-      await tester.ensureVisible(payButton);
-      await tester.tap(payButton);
-      await tester.pumpAndSettle();
-
-      // Confirm the workflow
-      final submitFinder = find.byKey(
-        const ValueKey('workflow-action-submit-tabletop-club-dues-payment'),
-      );
-      if (submitFinder.evaluate().isNotEmpty) {
-        await tester.tap(submitFinder);
-        await tester.pumpAndSettle();
-      }
-
-      // After confirming, re-navigate to giving tab (the app may have
-      // switched to Home after the workflow). Re-open community if needed.
-      await _navigateToTab(tester, 'giving');
-      await tester.pumpAndSettle();
-
-      // Receipt should now be visible
-      expect(
-        find.byKey(const ValueKey('giving-receipt-tabletop-club-dues-payment')),
-        findsOneWidget,
-      );
-      expect(find.textContaining('\$15 — complete'), findsOneWidget);
+      expect(_paymentCard, findsOneWidget);
+      expect(find.text('Status: Complete'), findsOneWidget);
+      expect(find.textContaining('Paid '), findsOneWidget);
+      expect(_paymentAction('pay-dues'), findsNothing);
     });
 
-    // (d) Failure/retry: dismiss checkout without completing → unpaid
-    // state persists, checkout is still tappable
     testWidgets('wf_giving-retry-after-dismiss', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Jules Member');
+      await _openGiving(tester, expectPayment: true);
 
-      await _tapTab(tester, 'giving');
-
-      // Tap checkout (scroll into view first; the button can sit below the
-      // fold on the default test viewport)
-      final checkoutButton = find.byKey(
-        const ValueKey('giving-checkout-tabletop-club-dues-payment'),
+      // The removed shallow checkout dialog had no engine failure state.
+      // Retarget the retry intent to the real failed -> due transition cycle.
+      await _tapVisible(tester, _paymentAction('record-payment-failure'));
+      await waitForEngineNativeWidget(
+        tester,
+        find.text('Status: Failed'),
+        description: 'failed payment state',
       );
-      await tester.ensureVisible(checkoutButton);
-      await tester.tap(checkoutButton);
-      await tester.pumpAndSettle();
+      expect(_paymentAction('retry-payment'), findsOneWidget);
 
-      // Dismiss without confirming — the action surface's leading button is
-      // a plain close (X) IconButton, not a tooltip'd/Cupertino back button.
-      await tester.tap(find.byIcon(Icons.close).first);
-      await tester.pumpAndSettle();
-
-      // Re-navigate to giving tab
-      await _navigateToTab(tester, 'giving');
-      await tester.pumpAndSettle();
-
-      // Checkout is still present, no receipt
-      expect(
-        find.byKey(const ValueKey('giving-checkout-tabletop-club-dues-payment')),
-        findsOneWidget,
+      await _tapVisible(tester, _paymentAction('retry-payment'));
+      await waitForEngineNativeWidget(
+        tester,
+        _paymentAction('pay-dues'),
+        description: 'pay action after retry',
       );
-      expect(
-        find.byKey(const ValueKey('giving-receipt-tabletop-club-dues-payment')),
-        findsNothing,
-      );
-      // Amount and purpose are still visible (exact match so this doesn't
-      // also match the checkout button's "Pay $15" label).
-      expect(find.text('\$15'), findsWidgets);
-      expect(
-        find.textContaining('Quarterly club dues'),
-        findsWidgets,
-      );
+      expect(find.text('Status: Due'), findsOneWidget);
+      expect(_paymentAction('pay-dues'), findsOneWidget);
+      expect(find.text(r'$15'), findsWidgets);
+      expect(find.text('Quarterly club dues'), findsWidgets);
     });
 
-    // (e) Cadence/entitlement conditional: render only when declared;
-    // absent otherwise (another rule-2 pair within one test)
     testWidgets('wf_giving-cadence-and-entitlement-conditional', (
       tester,
     ) async {
-      // Positive: cadence + entitlement declared → both render
       final fixtureWith = _writeTabletopClubPackagePair(
         includeCadence: true,
         includeEntitlement: true,
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixtureWith);
-      await _tapTab(tester, 'giving');
+      await _installAndSignIn(tester, fixtureWith, 'Jules Member');
+      await _openGiving(tester, expectPayment: true);
 
-      expect(find.textContaining('recurring'), findsOneWidget);
-      expect(
-        find.textContaining('Voting member badge'),
-        findsOneWidget,
-      );
+      expect(find.text('Cadence: Recurring'), findsOneWidget);
+      expect(find.text('Entitlement: Voting member badge'), findsOneWidget);
 
-      // Restart with a bare fixture (no cadence, no entitlement)
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
       await tester.pumpAndSettle();
 
@@ -203,200 +155,324 @@ void main() {
         includeEntitlement: false,
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixtureBare);
-      await _tapTab(tester, 'giving');
+      await _installAndSignIn(tester, fixtureBare, 'Jules Member');
+      await _openGiving(tester, expectPayment: true);
 
-      // Cadence + entitlement must NOT appear
-      expect(find.textContaining('recurring'), findsNothing);
-      expect(find.textContaining('Voting member badge'), findsNothing);
+      expect(find.textContaining('Cadence:'), findsNothing);
+      expect(find.textContaining('Entitlement:'), findsNothing);
+      expect(_paymentCard, findsOneWidget);
     });
   });
 }
 
-Future<void> _tapTab(WidgetTester tester, String tabId) async {
-  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
-  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (
-    var attempt = 0;
-    attempt < 8 && tabFinder.evaluate().isEmpty;
-    attempt += 1
-  ) {
-    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
-  expect(tabFinder, findsOneWidget, reason: tabId);
-  await tester.tap(tabFinder, warnIfMissed: false);
-  await tester.pumpAndSettle();
-}
+Finder get _paymentCard => find.byKey(
+  const ValueKey('generic-instance-card-tabletop-club-dues-payment'),
+);
 
-Future<void> _navigateToTab(WidgetTester tester, String tabId) async {
-  // Try tapping the tab directly; if the community isn't open, re-open it.
-  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
-  if (tabFinder.evaluate().isNotEmpty) {
-    await _tapTab(tester, tabId);
-    return;
-  }
-  // Re-open the community
-  final communityCard = find.byKey(
-    const ValueKey('community-card-community_verify_tabletop_club'),
+Finder _paymentAction(String transitionId) =>
+    find.byKey(ValueKey('generic-instance-$_paymentId-action-$transitionId'));
+
+Future<void> _openGiving(
+  WidgetTester tester, {
+  required bool expectPayment,
+}) async {
+  await tapCommunityTab(tester, 'giving');
+  await waitForEngineNativeWidget(
+    tester,
+    expectPayment
+        ? _paymentCard
+        : find.byKey(const ValueKey('engine-native-list-empty-giving')),
+    description: expectPayment
+        ? 'engine-native dues payment'
+        : 'empty engine-native Giving tab',
   );
-  if (communityCard.evaluate().isNotEmpty) {
-    await tester.tap(communityCard);
-    await tester.pumpAndSettle();
-  }
-  await _tapTab(tester, tabId);
 }
 
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
-}
-
-Future<void> _installAndOpen(
+Future<void> _installAndSignIn(
   WidgetTester tester,
-  _PackagePairFixture fixture,
+  ({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+  fixture,
+  String displayName,
 ) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
   await tester.enterText(
     find.byKey(const ValueKey('extension-package-path-field')),
-    fixture.extensionPath,
+    fixture.package.extensionPath,
   );
   await tester.enterText(
     find.byKey(const ValueKey('initialization-package-path-field')),
-    fixture.initializationPath,
+    fixture.package.initializationPath,
   );
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
   await tester.tap(
-    find.byKey(
-      const ValueKey('community-card-community_verify_tabletop_club'),
-    ),
+    find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
+  await tester.pumpAndSettle();
+  await seedEvidenceAccounts(tester, fixture.target, _accounts);
+  await signInEvidenceAccount(tester, displayName);
+}
+
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await waitForEngineNativeWidget(
+    tester,
+    finder,
+    description: 'payment control $finder',
+  );
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  expect(finder, findsOneWidget);
+  await tester.tap(finder, warnIfMissed: false);
   await tester.pumpAndSettle();
 }
 
-_PackagePairFixture _writeTabletopClubPackagePair({
+Map<String, Object?> _paymentDefinition() => engineNativeTestWorkflowDefinition(
+  initialState: 'due',
+  visibility: <String, Object?>{
+    'default': 'guarded',
+    'readGuard': <String, Object?>{
+      'actorEqualsField': <String, Object?>{'key': 'payerFanId'},
+    },
+    'fields': <String, Object?>{
+      'parties': <Object?>['payerFanId', 'treasurerFanId'],
+    },
+  },
+  states: <String, Object?>{
+    'due': <String, Object?>{'label': 'Payment due'},
+    'failed': <String, Object?>{'label': 'Payment failed'},
+    'paid': <String, Object?>{'label': 'Paid', 'isTerminal': true},
+  },
+  transitions: <Map<String, Object?>>[
+    <String, Object?>{
+      'id': 'pay-dues',
+      'label': r'Pay $15',
+      'tone': 'primary',
+      'from': <String>['due'],
+      'to': 'paid',
+      'guard': <String, Object?>{
+        'allowedRoleIds': <String>['tabletop-member'],
+        'actorEqualsField': <String, Object?>{'key': 'payerFanId'},
+      },
+      'effects': <Object?>[
+        <String, Object?>{
+          'op': 'set',
+          'key': 'receiptStatus',
+          'value': 'complete',
+        },
+        <String, Object?>{'op': 'set', 'key': 'paidAt', 'value': r'$timestamp'},
+      ],
+    },
+    <String, Object?>{
+      'id': 'record-payment-failure',
+      'label': 'Simulate failure',
+      'tone': 'destructive',
+      'from': <String>['due'],
+      'to': 'failed',
+      'guard': <String, Object?>{
+        'allowedRoleIds': <String>['tabletop-member'],
+        'actorEqualsField': <String, Object?>{'key': 'payerFanId'},
+      },
+      'effects': <Object?>[
+        <String, Object?>{
+          'op': 'set',
+          'key': 'receiptStatus',
+          'value': 'failed',
+        },
+      ],
+    },
+    <String, Object?>{
+      'id': 'retry-payment',
+      'label': 'Retry payment',
+      'tone': 'primary',
+      'from': <String>['failed'],
+      'to': 'due',
+      'guard': <String, Object?>{
+        'allowedRoleIds': <String>['tabletop-member'],
+        'actorEqualsField': <String, Object?>{'key': 'payerFanId'},
+      },
+      'effects': <Object?>[
+        <String, Object?>{'op': 'set', 'key': 'receiptStatus', 'value': 'due'},
+      ],
+    },
+  ],
+  renderBindings: <Map<String, Object?>>[
+    engineNativeTestRenderBinding(
+      states: <String>['due', 'failed', 'paid'],
+      tabId: 'giving',
+      cardSurfaceFamily: 'paymentCheckout',
+    ),
+  ],
+  instanceDataSchema: <String, Object?>{
+    'payerFanId': <String, Object?>{
+      'type': 'fanId',
+      'required': true,
+      'displayContexts': <String>['detail'],
+    },
+    'treasurerFanId': <String, Object?>{
+      'type': 'fanId',
+      'required': true,
+      'displayContexts': <String>[],
+    },
+    'amountLabel': <String, Object?>{
+      'type': 'text',
+      'required': true,
+      'labelTemplate': '{value}',
+    },
+    'purpose': <String, Object?>{
+      'type': 'text',
+      'required': true,
+      'labelTemplate': '{value}',
+    },
+    'recipient': <String, Object?>{
+      'type': 'text',
+      'labelTemplate': 'Recipient: {value}',
+    },
+    'cadence': <String, Object?>{
+      'type': 'text',
+      'labelTemplate': 'Cadence: {value}',
+      'hideWhenEmpty': true,
+    },
+    'entitlement': <String, Object?>{
+      'type': 'text',
+      'labelTemplate': 'Entitlement: {value}',
+      'hideWhenEmpty': true,
+    },
+    'receiptStatus': <String, Object?>{
+      'type': 'text',
+      'writableBy': 'effect',
+      'labelTemplate': 'Status: {value}',
+    },
+    'paidAt': <String, Object?>{
+      'type': 'date?',
+      'writableBy': 'effect',
+      'labelTemplate': 'Paid {value}',
+      'hideWhenEmpty': true,
+    },
+  },
+);
+
+Map<String, Object?> _sentinelDefinition() =>
+    engineNativeTestWorkflowDefinition(
+      initialState: 'active',
+      states: <String, Object?>{
+        'active': <String, Object?>{'label': 'Active'},
+      },
+      transitions: <Map<String, Object?>>[
+        <String, Object?>{
+          'id': 'retain-fixture',
+          'label': 'Retain fixture',
+          'from': <String>['active'],
+          'to': null,
+        },
+      ],
+      renderBindings: <Map<String, Object?>>[
+        engineNativeTestRenderBinding(
+          states: <String>['active'],
+          tabId: 'home',
+          cardSurfaceFamily: 'statusTimeline',
+        ),
+      ],
+      instanceDataSchema: <String, Object?>{
+        'title': <String, Object?>{'type': 'text'},
+      },
+    );
+
+({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+_writeTabletopClubPackagePair({
   bool includeGivingPayment = true,
   bool includeCadence = true,
   bool includeEntitlement = true,
 }) {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b35_tabletop_');
-  final extensionFile = File(
-    '${tempDir.path}/$_extensionId.loom-extension.zip',
-  );
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
-  );
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
-      'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
-  );
-  final workflows = <Map<String, dynamic>>[
-    {
-      'workflowId': 'tabletop-game-night-rsvp',
-      'title': 'RSVP to Friday game night',
-      'entryText':
-          'Friday game night at the community room, 7-10pm. 12 of 20 seats filled.',
-      'actionText': "Reserve a seat at Friday's game night.",
-      'resultText': "You're on the roster for Friday's game night.",
-      'calendar': {
-        'date': '2026-07-10',
-        'time': '19:00',
-        'location': 'Community room',
-        'capacityLabel': '12 of 20 seats filled',
-      },
-    },
+  final sequence = _fixtureSequence++;
+  final extensionId = '${_extensionId}_$sequence';
+  final communityId = 'community_verify_tabletop_giving_$sequence';
+  final workflowDefinitions = <String, Object?>{
+    if (includeGivingPayment) _paymentId: _paymentDefinition(),
+    if (!includeGivingPayment) 'fixture-sentinel': _sentinelDefinition(),
+  };
+  final workflowInstances = <Object?>[
+    if (includeGivingPayment)
+      engineNativeTestWorkflowInstance(
+        instanceId: _paymentId,
+        workflowType: _paymentId,
+        currentState: 'due',
+        createdByFanId: _payerAccountId,
+        instanceData: <String, Object?>{
+          'payerFanId': _payerAccountId,
+          'treasurerFanId': _treasurerAccountId,
+          'amountLabel': r'$15',
+          'purpose': 'Quarterly club dues',
+          'recipient': 'Tabletop Club treasury',
+          if (includeCadence) 'cadence': 'recurring',
+          if (includeEntitlement) 'entitlement': 'Voting member badge',
+          'receiptStatus': 'due',
+          'paidAt': null,
+        },
+      )
+    else
+      engineNativeTestWorkflowInstance(
+        instanceId: 'fixture-sentinel',
+        workflowType: 'fixture-sentinel',
+        currentState: 'active',
+        createdByFanId: _payerAccountId,
+        instanceData: <String, Object?>{'title': 'Fixture sentinel'},
+      ),
   ];
-  // The dues workflow itself is always declared (so the Giving tab still
-  // appears in the bar per the "empty tabs get a placeholder" guardrail —
-  // `_sectionTitleFor` maps this workflowId to the 'Giving' section
-  // regardless of `givingPayment`); only the `givingPayment` field is
-  // conditional, since that's what gates real UI vs. placeholder.
-  final duesWorkflow = <String, dynamic>{
-    'workflowId': 'tabletop-club-dues-payment',
-    'title': 'Quarterly club dues',
-    'entryText': 'Quarterly club dues are due. \$15 covering venue, snacks, and game purchases.',
-    'actionText': 'Pay quarterly club dues of \$15.',
-    'resultText': 'Thank you for paying your quarterly club dues! Your membership is current.',
-  };
-  if (includeGivingPayment) {
-    final givingPayment = <String, dynamic>{
-      'amountLabel': '\$15',
-      'purpose': 'Quarterly club dues',
-      'recipient': 'Tabletop Club treasury',
-    };
-    if (includeCadence) {
-      givingPayment['cadence'] = 'recurring';
-    }
-    if (includeEntitlement) {
-      givingPayment['entitlement'] = 'Voting member badge';
-    }
-    duesWorkflow['givingPayment'] = givingPayment;
-  }
-  workflows.add(duesWorkflow);
-  final personaPolicies = <String, dynamic>{
-    'tabletop-game-night-rsvp': {
-      'actorPersonaIds': ['tabletop-member'],
-      'receiverPersonaIds': ['tabletop-organizer'],
-      'receiverEntryText': "A member RSVP'd to Friday's game night.",
-      'receiverActionText': 'Acknowledge RSVP',
-      'receiverResultText': 'RSVP acknowledged and added to the roster.',
+
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b35_tabletop_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Tabletop Club',
+    permissions: const <String>['payments.write'],
+    experience: <String, Object?>{
+      'displayName': 'Tabletop Club',
+      'tagline': 'Board game nights and account-scoped member dues.',
+      'accentColor': '#C4703F',
+      'theme': <String, Object?>{'accent': '#C4703F'},
+      'roles': const <Object?>[
+        <String, Object?>{
+          'roleId': 'tabletop-member',
+          'label': 'Member',
+          'roleLabel': 'Member',
+          'description': 'Pays club dues.',
+        },
+        <String, Object?>{
+          'roleId': 'tabletop-organizer',
+          'label': 'Organizer',
+          'roleLabel': 'Organizer',
+          'description': 'Collects club dues.',
+        },
+      ],
+      'workflowDefinitions': workflowDefinitions,
+      'workflowInstances': workflowInstances,
     },
-    'tabletop-club-dues-payment': {
-      'actorPersonaIds': ['tabletop-member', 'tabletop-organizer'],
-      'receiverPersonaIds': ['tabletop-organizer'],
-      'receiverEntryText': 'A member has paid their quarterly dues.',
-      'receiverActionText': 'Confirm payment receipt',
-      'receiverResultText': 'Payment confirmed and membership updated.',
+    appShell: <String, Object?>{
+      'tabs': <Object?>[
+        <String, Object?>{
+          'tabId': 'giving',
+          'label': 'Giving',
+          'iconKey': 'payment',
+          'visibleRoleIds': <String>['tabletop-member', 'tabletop-organizer'],
+        },
+      ],
     },
-  };
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': {
-        'displayName': 'Tabletop Club',
-        'tagline':
-            'Board game nights, loaner games, and dues for local tabletop fans.',
-        'accentColor': '#C4703F',
-        'roles': [
-          {
-            'roleId': 'tabletop-member',
-            'label': 'Member',
-            'roleLabel': 'Member',
-            'description': 'RSVPs to game nights, borrows games, and pays dues.',
-          },
-          {
-            'roleId': 'tabletop-organizer',
-            'label': 'Organizer',
-            'roleLabel': 'Organizer',
-            'description':
-                'Plans game nights, manages the game library, and collects dues.',
-          },
-        ],
-        'workflows': workflows,
-        'personaPolicies': personaPolicies,
-      },
-    }),
   );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
+  return (
+    package: package,
+    communityId: communityId,
+    target: LoomEvidenceTarget(
+      phase: 'test',
+      communityId: communityId,
+      communityName: 'Tabletop Club',
+      handle: 'tabletop-giving-$sequence',
+      extensionId: extensionId,
+      accentColor: '#C4703F',
+      seedDataFiles: const <String>[
+        'seed/community.json',
+        'seed/workflows.json',
+      ],
+    ),
   );
 }

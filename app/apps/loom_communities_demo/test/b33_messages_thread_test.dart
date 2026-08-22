@@ -1,346 +1,458 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
-import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
 
-const _extensionId = 'ext_verify_tabletop_club';
+import 'workflow_ui_test_harness.dart';
+
+const _extensionId = 'ext_verify_tabletop_messages';
+const _ownerAccountId = 'tabletop-member-morgan';
+const _peerAccountId = 'tabletop-member-riley';
+const _organizerAccountId = 'tabletop-organizer-mara';
+var _fixtureSequence = 0;
+
+const _accounts = <LoomAccount>[
+  LoomAccount(
+    accountId: _ownerAccountId,
+    displayName: 'Morgan Member',
+    personaTypeId: 'tabletop-member',
+  ),
+  LoomAccount(
+    accountId: _peerAccountId,
+    displayName: 'Riley Member',
+    personaTypeId: 'tabletop-member',
+  ),
+  LoomAccount(
+    accountId: _organizerAccountId,
+    displayName: 'Mara Organizer',
+    personaTypeId: 'tabletop-organizer',
+  ),
+];
 
 void main() {
   group('B33 Messages thread test', () {
-    // (1) Inbox lists seeded threads by key; fixture without threads shows
-    //     empty state (rule-2 pair within one test: positive + negative).
     testWidgets('wf_messages-inbox-lists-seeded-threads', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Morgan Member');
+      await _openMessages(tester, expectedInstanceId: 'thread-welcome');
 
-      await _tapTab(tester, 'messages');
-
-      // Positive: seeded threads appear in the inbox
-      expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-game-suggestions')),
-        findsOneWidget,
-      );
-      // Inbox shows thread subjects and preview text (last message body),
-      // not individual message bodies
-      expect(find.text('Welcome to Tabletop Club'), findsOneWidget);
-      expect(find.text('Game suggestions for Friday'), findsOneWidget);
+      expect(_threadCard('thread-welcome'), findsOneWidget);
+      expect(_threadCard('thread-game-suggestions'), findsOneWidget);
+      expect(find.text('Welcome to Tabletop Club'), findsWidgets);
+      expect(find.text('Game suggestions for Friday'), findsWidgets);
       expect(find.text('Glad to be here.'), findsOneWidget);
       expect(find.text('Any requests?'), findsOneWidget);
 
-      // Negative: restart without threads → empty state
-      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
-      await tester.pumpAndSettle();
-
-      final bareFixture = _writeTabletopClubPackagePair(includeThreads: false);
-      await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, bareFixture);
-      await _tapTab(tester, 'messages');
-
-      expect(
-        find.text('No messages yet'),
-        findsOneWidget,
+      // `discussionThread` is participant-scoped by individual account id.
+      // A second account with the same role must not inherit Morgan's threads.
+      await signInEvidenceAccount(tester, 'Riley Member');
+      await openEvidenceTarget(tester, fixture.target);
+      await tapCommunityTab(tester, 'messages');
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-empty-messages')),
+        description: 'participant-private empty Messages state',
       );
+      expect(_threadCard('thread-welcome'), findsNothing);
       expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
+        find.byKey(const ValueKey('engine-native-list-error-messages')),
         findsNothing,
       );
+
+      // The data-absence direction remains distinct from privacy filtering.
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+      await tester.pumpAndSettle();
+      final bareFixture = _writeTabletopClubPackagePair(includeThreads: false);
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndSignIn(tester, bareFixture, 'Morgan Member');
+      await tapCommunityTab(tester, 'messages');
+      await waitForEngineNativeWidget(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-empty-messages')),
+        description: 'Messages empty state without open thread instances',
+      );
+      expect(_threadCard('thread-welcome'), findsNothing);
     });
 
-    // (2) Opening a thread marks it read; sending a reply appends a
-    //     new message bubble visible in the widget tree.
     testWidgets('wf_messages-open-thread-and-send-reply', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Morgan Member');
+      await _openMessages(tester, expectedInstanceId: 'thread-welcome');
 
-      await _tapTab(tester, 'messages');
-
-      // Scroll inbox items into view (content can be below viewport)
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-      );
-      await tester.pumpAndSettle();
-
-      // Open the welcome thread
-      await tester.tap(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-      );
-      await tester.pumpAndSettle();
-
-      // Thread detail renders with seeded messages
       expect(
-        find.byKey(const ValueKey('messages-thread-detail-thread-welcome')),
+        find.byKey(
+          const ValueKey('generic-instance-list-field-thread-welcome-messages'),
+        ),
         findsOneWidget,
       );
       expect(find.text('Welcome everyone!'), findsOneWidget);
       expect(find.text('Glad to be here.'), findsOneWidget);
 
-      // Type a reply and send it
-      await tester.enterText(
-        find.byKey(const ValueKey('messages-composer-field')),
-        'Test reply from member',
+      final post = _threadAction('thread-welcome', 'post-message');
+      await waitForEngineNativeWidget(
+        tester,
+        post,
+        description: 'Post message transition',
       );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('messages-send-button')),
-      );
-      await tester.pumpAndSettle();
-
-      // Third message bubble now appears in the thread detail
+      await _tapVisible(tester, post);
       expect(
-        find.text('Test reply from member'),
+        find.byKey(const ValueKey('generic-transition-input-dialog')),
         findsOneWidget,
       );
+      await tester.enterText(
+        find.byKey(const ValueKey('generic-transition-input-body')),
+        'Test reply from member',
+      );
+      await _tapVisible(
+        tester,
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await waitForEngineNativeWidget(
+        tester,
+        find.text('Test reply from member'),
+        description: 'new reply in the structured message list',
+      );
+      expect(find.text('Test reply from member'), findsOneWidget);
     });
 
-    // (3) Mute/archive toggles change the inbox list — muted stays,
-    //     archived is removed.
     testWidgets('wf_messages-mute-and-archive-toggle', (tester) async {
       final fixture = _writeTabletopClubPackagePair();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture);
+      await _installAndSignIn(tester, fixture, 'Morgan Member');
+      await _openMessages(tester, expectedInstanceId: 'thread-welcome');
 
-      await _tapTab(tester, 'messages');
+      expect(_threadCard('thread-welcome'), findsOneWidget);
+      expect(_threadCard('thread-game-suggestions'), findsOneWidget);
 
-      // Two inbox items visible before any toggle
-      expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-        findsOneWidget,
+      final mutedEditor = find.byKey(
+        const ValueKey('generic-instance-editor-thread-welcome-muted'),
+      );
+      await _tapVisible(tester, mutedEditor);
+      await _tapVisible(
+        tester,
+        find.byKey(const ValueKey('generic-instance-save-thread-welcome')),
+      );
+
+      final engine = await workflowEngineForExtensionId(
+        fixture.target.extensionId,
+      );
+      final afterMute = await engine.queryInstances(
+        tabId: 'messages',
+        personaId: _ownerAccountId,
+        limit: 10,
       );
       expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-game-suggestions')),
-        findsOneWidget,
+        afterMute.items
+            .singleWhere((item) => item.instanceId == 'thread-welcome')
+            .instanceData['muted'],
+        isTrue,
       );
+      expect(_threadCard('thread-welcome'), findsOneWidget);
 
-      // Scroll inbox items into view (content can be below viewport)
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
+      final archive = _threadAction(
+        'thread-game-suggestions',
+        'archive-thread',
       );
-      await tester.pumpAndSettle();
+      await waitForEngineNativeWidget(
+        tester,
+        archive,
+        description: 'Archive thread transition',
+      );
+      await _tapVisible(tester, archive);
+      await _waitForNothing(tester, _threadCard('thread-game-suggestions'));
 
-      // Open thread-welcome and mute it
-      await tester.tap(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-      );
-      await tester.pumpAndSettle();
-
-      // Find the mute toggle (tooltip "Mute") and tap it
-      final muteButton = find.byTooltip('Mute');
-      expect(muteButton, findsOneWidget);
-      await tester.tap(muteButton);
-      await tester.pumpAndSettle();
-
-      // Go back to inbox
-      await tester.tap(find.byTooltip('Back to inbox'));
-      await tester.pumpAndSettle();
-
-      // thread-welcome is still visible (muted, not archived)
-      expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-        findsOneWidget,
-      );
-
-      // Now open thread-game-suggestions and archive it
-      await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('messages-inbox-item-thread-game-suggestions')),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('messages-inbox-item-thread-game-suggestions')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(
-          const ValueKey('messages-inbox-item-thread-game-suggestions'),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final archiveButton = find.byTooltip('Archive');
-      expect(archiveButton, findsOneWidget);
-      await tester.tap(archiveButton);
-      await tester.pumpAndSettle();
-
-      // Archive auto-navigates back to inbox (_selectedThreadId = null);
-      // no manual Back tap needed. Only muted thread remains.
-      expect(
-        find.byKey(const ValueKey('messages-inbox-item-thread-welcome')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey('messages-inbox-item-thread-game-suggestions'),
-        ),
-        findsNothing,
-      );
+      expect(_threadCard('thread-welcome'), findsOneWidget);
+      expect(_threadCard('thread-game-suggestions'), findsNothing);
     });
   });
 }
 
-Future<void> _tapTab(WidgetTester tester, String tabId) async {
-  final tabFinder = find.byKey(ValueKey('community-tab-$tabId'));
-  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
-  for (
-    var attempt = 0;
-    attempt < 8 && tabFinder.evaluate().isEmpty;
-    attempt += 1
-  ) {
-    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
-  expect(tabFinder, findsOneWidget, reason: tabId);
-  await tester.tap(tabFinder, warnIfMissed: false);
-  await tester.pumpAndSettle();
+Finder _threadCard(String instanceId) =>
+    find.byKey(ValueKey('generic-instance-card-$instanceId'));
+
+Finder _threadAction(String instanceId, String transitionId) =>
+    find.byKey(ValueKey('generic-instance-$instanceId-action-$transitionId'));
+
+Future<void> _openMessages(
+  WidgetTester tester, {
+  required String expectedInstanceId,
+}) async {
+  await tapCommunityTab(tester, 'messages');
+  await waitForEngineNativeWidget(
+    tester,
+    _threadCard(expectedInstanceId),
+    description: 'discussion thread $expectedInstanceId',
+  );
 }
 
-class _PackagePairFixture {
-  const _PackagePairFixture({
-    required this.extensionPath,
-    required this.initializationPath,
-  });
-
-  final String extensionPath;
-  final String initializationPath;
-}
-
-Future<void> _installAndOpen(
+Future<void> _installAndSignIn(
   WidgetTester tester,
-  _PackagePairFixture fixture,
+  ({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+  fixture,
+  String displayName,
 ) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
   await tester.enterText(
     find.byKey(const ValueKey('extension-package-path-field')),
-    fixture.extensionPath,
+    fixture.package.extensionPath,
   );
   await tester.enterText(
     find.byKey(const ValueKey('initialization-package-path-field')),
-    fixture.initializationPath,
+    fixture.package.initializationPath,
   );
   await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
   await tester.pumpAndSettle();
   await tester.tap(
-    find.byKey(
-      const ValueKey('community-card-community_verify_tabletop_club'),
-    ),
+    find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
+  await tester.pumpAndSettle();
+  await seedEvidenceAccounts(tester, fixture.target, _accounts);
+  await signInEvidenceAccount(tester, displayName);
+}
+
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  expect(finder, findsOneWidget);
+  await tester.tap(finder, warnIfMissed: false);
   await tester.pumpAndSettle();
 }
 
-_PackagePairFixture _writeTabletopClubPackagePair({
-  bool includeThreads = true,
-}) {
-  final tempDir = Directory.systemTemp.createTempSync('loom_b33_tabletop_');
-  final extensionFile = File(
-    '${tempDir.path}/$_extensionId.loom-extension.zip',
-  );
-  final initializationFile = File(
-    '${tempDir.path}/$_extensionId.loom-init.zip',
-  );
-  extensionFile.writeAsStringSync(
-    jsonEncode({
-      'schemaVersion': 1,
-      'mode': 'local-demo',
-      'extensionId': _extensionId,
-      'displayName': 'Tabletop Club',
-      'version': '1.0.0',
-      'permissions': ['content.publish', 'events.write', 'forms.write'],
-    }),
-  );
-  final experienceMap = <String, dynamic>{
-    'displayName': 'Tabletop Club',
-    'tagline':
-        'Board game nights, loaner games, and dues for local tabletop fans.',
-    'accentColor': '#C4703F',
-    'roles': [
-      {
-        'roleId': 'tabletop-member',
-        'label': 'Member',
-        'roleLabel': 'Member',
-        'description': 'RSVPs to game nights, borrows games, and pays dues.',
+Future<void> _waitForNothing(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (finder.evaluate().isEmpty) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail('Timed out waiting for $finder to disappear.');
+}
+
+({EvidencePackagePair package, String communityId, LoomEvidenceTarget target})
+_writeTabletopClubPackagePair({bool includeThreads = true}) {
+  final sequence = _fixtureSequence++;
+  final extensionId = '${_extensionId}_$sequence';
+  final communityId = 'community_verify_tabletop_messages_$sequence';
+  final definition = engineNativeTestWorkflowDefinition(
+    initialState: 'open',
+    visibility: <String, Object?>{
+      'default': 'guarded',
+      'readGuard': <String, Object?>{
+        'actorInList': <String, Object?>{
+          'key': 'participantFanIds',
+          'present': true,
+        },
       },
-      {
-        'roleId': 'tabletop-organizer',
-        'label': 'Organizer',
-        'roleLabel': 'Organizer',
-        'description':
-            'Plans game nights, manages the game library, and collects dues.',
-      },
-    ],
-    'workflows': [
-      {
-        'workflowId': 'thread-open-placeholder',
-        'title': 'Open thread',
-        'entryText': 'Open the thread to read messages.',
-        'actionText': 'Open thread',
-        'resultText': 'Thread opened for reading.',
-      },
-    ],
-    'personaPolicies': {
-      'thread-open-placeholder': {
-        'actorPersonaIds': ['tabletop-member', 'tabletop-organizer'],
+      'fields': <String, Object?>{
+        'participants': <String>['participantFanIds'],
       },
     },
-  };
-  if (includeThreads) {
-    experienceMap['threads'] = [
-      {
-        'threadId': 'thread-welcome',
-        'subject': 'Welcome to Tabletop Club',
-        'participantPersonaIds': ['tabletop-member', 'tabletop-organizer'],
-        'messages': [
-          {
-            'messageId': 'msg-1',
-            'senderPersonaId': 'tabletop-organizer',
-            'body': 'Welcome everyone!',
-            'timestamp': '2026-07-03T10:00:00Z',
+    states: <String, Object?>{
+      'open': <String, Object?>{
+        'label': 'Open',
+        'editableFields': <String>['muted'],
+        'editGuard': <String, Object?>{
+          'actorInList': <String, Object?>{
+            'key': 'participantFanIds',
+            'present': true,
           },
-          {
-            'messageId': 'msg-2',
-            'senderPersonaId': 'tabletop-member',
-            'body': 'Glad to be here.',
-            'timestamp': '2026-07-03T10:05:00Z',
+        },
+      },
+      'archived': <String, Object?>{'label': 'Archived', 'isTerminal': true},
+    },
+    transitions: <Map<String, Object?>>[
+      <String, Object?>{
+        'id': 'post-message',
+        'label': 'Post message',
+        'tone': 'primary',
+        'from': <String>['open'],
+        'to': null,
+        'guard': <String, Object?>{
+          'actorInList': <String, Object?>{
+            'key': 'participantFanIds',
+            'present': true,
+          },
+        },
+        'inputs': <String, Object?>{
+          'body': <String, Object?>{'type': 'text', 'required': true},
+        },
+        'effects': <Object?>[
+          <String, Object?>{
+            'op': 'append',
+            'key': 'messages',
+            'value': <String, Object?>{
+              'senderFanId': r'$actor',
+              'body': '{input.body}',
+              'timestamp': r'$timestamp',
+            },
           },
         ],
       },
-      {
-        'threadId': 'thread-game-suggestions',
-        'subject': 'Game suggestions for Friday',
-        'participantPersonaIds': ['tabletop-member', 'tabletop-organizer'],
-        'messages': [
-          {
-            'messageId': 'msg-3',
-            'senderPersonaId': 'tabletop-organizer',
-            'body': 'Any requests?',
-            'timestamp': '2026-07-03T11:00:00Z',
+      <String, Object?>{
+        'id': 'archive-thread',
+        'label': 'Archive',
+        'tone': 'destructive',
+        'from': <String>['open'],
+        'to': 'archived',
+        'guard': <String, Object?>{
+          'actorInList': <String, Object?>{
+            'key': 'participantFanIds',
+            'present': true,
           },
-        ],
+        },
       },
-    ];
-  }
-  initializationFile.writeAsStringSync(
-    jsonEncode({
-      'specVersion': currentCommunitySpecVersion,
-      'communityId': 'community_verify_tabletop_club',
-      'communityName': 'Tabletop Club',
-      'extensionId': _extensionId,
-      'seedDataFiles': ['seed/community.json'],
-      'branding': {'accentColor': '#C4703F'},
-      'experience': experienceMap,
-    }),
+    ],
+    renderBindings: <Map<String, Object?>>[
+      engineNativeTestRenderBinding(
+        states: <String>['open'],
+        tabId: 'messages',
+        cardSurfaceFamily: 'discussionThread',
+      ),
+    ],
+    instanceDataSchema: <String, Object?>{
+      'subject': <String, Object?>{
+        'type': 'text',
+        'required': true,
+        'labelTemplate': '{value}',
+        'displayContexts': <String>['tile', 'detail'],
+      },
+      'threadOwnerFanId': <String, Object?>{
+        'type': 'fanId',
+        'required': true,
+        'displayContexts': <String>['detail'],
+      },
+      'participantFanIds': <String, Object?>{
+        'type': 'fanId[]',
+        'required': true,
+        'displayContexts': <String>['detail'],
+      },
+      'messages': <String, Object?>{
+        'type': 'list',
+        'writableBy': 'effect',
+        'displayContexts': <String>['detail'],
+      },
+      'muted': <String, Object?>{
+        'type': 'bool',
+        'writableBy': 'formEntry',
+        'labelTemplate': 'Muted: {value}',
+        'displayContexts': <String>['detail'],
+      },
+    },
   );
-  return _PackagePairFixture(
-    extensionPath: extensionFile.path,
-    initializationPath: initializationFile.path,
+
+  final instances = includeThreads
+      ? <Object?>[
+          engineNativeTestWorkflowInstance(
+            instanceId: 'thread-welcome',
+            workflowType: 'discussion-thread',
+            currentState: 'open',
+            createdByFanId: _organizerAccountId,
+            instanceData: <String, Object?>{
+              'subject': 'Welcome to Tabletop Club',
+              'threadOwnerFanId': _organizerAccountId,
+              'participantFanIds': <String>[
+                _ownerAccountId,
+                _organizerAccountId,
+              ],
+              'messages': <Object?>[
+                <String, Object?>{
+                  'senderFanId': _organizerAccountId,
+                  'body': 'Welcome everyone!',
+                  'timestamp': '2026-07-03T10:00:00Z',
+                },
+                <String, Object?>{
+                  'senderFanId': _ownerAccountId,
+                  'body': 'Glad to be here.',
+                  'timestamp': '2026-07-03T10:05:00Z',
+                },
+              ],
+              'muted': false,
+            },
+          ),
+          engineNativeTestWorkflowInstance(
+            instanceId: 'thread-game-suggestions',
+            workflowType: 'discussion-thread',
+            currentState: 'open',
+            createdByFanId: _ownerAccountId,
+            instanceData: <String, Object?>{
+              'subject': 'Game suggestions for Friday',
+              'threadOwnerFanId': _ownerAccountId,
+              'participantFanIds': <String>[
+                _ownerAccountId,
+                _organizerAccountId,
+              ],
+              'messages': <Object?>[
+                <String, Object?>{
+                  'senderFanId': _organizerAccountId,
+                  'body': 'Any requests?',
+                  'timestamp': '2026-07-03T11:00:00Z',
+                },
+              ],
+              'muted': false,
+            },
+          ),
+        ]
+      : <Object?>[
+          engineNativeTestWorkflowInstance(
+            instanceId: 'thread-empty-sentinel',
+            workflowType: 'discussion-thread',
+            currentState: 'archived',
+            createdByFanId: _ownerAccountId,
+            instanceData: <String, Object?>{
+              'subject': 'Archived sentinel',
+              'threadOwnerFanId': _ownerAccountId,
+              'participantFanIds': <String>[_ownerAccountId],
+              'messages': <Object?>[],
+              'muted': false,
+            },
+          ),
+        ];
+
+  final package = writeEngineNativeTestPackagePair(
+    tempDirectoryPrefix: 'loom_b33_tabletop_',
+    extensionId: extensionId,
+    communityId: communityId,
+    displayName: 'Tabletop Club',
+    experience: <String, Object?>{
+      'displayName': 'Tabletop Club',
+      'tagline': 'Board game nights and private member conversations.',
+      'accentColor': '#C4703F',
+      'theme': <String, Object?>{'accent': '#C4703F'},
+      'roles': const <Object?>[
+        <String, Object?>{
+          'roleId': 'tabletop-member',
+          'label': 'Member',
+          'roleLabel': 'Member',
+          'description': 'Participates in club conversations.',
+        },
+        <String, Object?>{
+          'roleId': 'tabletop-organizer',
+          'label': 'Organizer',
+          'roleLabel': 'Organizer',
+          'description': 'Organizes club conversations.',
+        },
+      ],
+      'workflowDefinitions': <String, Object?>{'discussion-thread': definition},
+      'workflowInstances': instances,
+    },
+  );
+  return (
+    package: package,
+    communityId: communityId,
+    target: LoomEvidenceTarget(
+      phase: 'test',
+      communityId: communityId,
+      communityName: 'Tabletop Club',
+      handle: 'tabletop-messages-$sequence',
+      extensionId: extensionId,
+      accentColor: '#C4703F',
+      seedDataFiles: const <String>[
+        'seed/community.json',
+        'seed/workflows.json',
+      ],
+    ),
   );
 }

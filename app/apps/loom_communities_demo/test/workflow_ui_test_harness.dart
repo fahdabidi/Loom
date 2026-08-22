@@ -949,6 +949,7 @@ Map<String, Object?> engineNativeTestWorkflowDefinition({
   required List<Map<String, Object?>> transitions,
   required List<Map<String, Object?>> renderBindings,
   required Map<String, Object?> instanceDataSchema,
+  Map<String, Object?>? visibility,
 }) {
   if (!states.containsKey(initialState)) {
     throw ArgumentError.value(
@@ -977,6 +978,7 @@ Map<String, Object?> engineNativeTestWorkflowDefinition({
     'transitions': transitions,
     'renderBindings': renderBindings,
     'instanceDataSchema': instanceDataSchema,
+    if (visibility != null) 'visibility': visibility,
   };
 }
 
