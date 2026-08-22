@@ -1179,11 +1179,11 @@ class CommunityPackageValidator {
       }
 
       if (fields == null) continue;
-      if (model == null) continue;
       final schema = workflow['instanceDataSchema'];
-      final declaredFields = schema is Map
-          ? schema.keys.map((key) => key.toString()).toSet()
-          : const <String>{};
+      final schemaFields = schema is Map ? schema : const <Object?, Object?>{};
+      final declaredFields = schemaFields.keys
+          .map((key) => key.toString())
+          .toSet();
 
       void checkField(Object? value, String location) {
         if (value is! String || declaredFields.contains(value)) return;
@@ -1197,14 +1197,59 @@ class CommunityPackageValidator {
         );
       }
 
+      void checkFieldType(
+        Object? value,
+        String visibilityKey,
+        Set<String> requiredTypes,
+        String requiredTypeDescription,
+        String location,
+      ) {
+        if (value is! String || !declaredFields.contains(value)) return;
+        final declaration = schemaFields[value];
+        final declaredType = declaration is Map ? declaration['type'] : null;
+        if (declaredType is String && requiredTypes.contains(declaredType)) {
+          return;
+        }
+        findings.add(
+          _finding(
+            'invalid_visibility_field_type',
+            '`visibility.fields.$visibilityKey` names field `$value`, whose '
+                'declared type is `${declaredType ?? '<missing>'}`; the '
+                'required type is $requiredTypeDescription.',
+            location,
+          ),
+        );
+      }
+
       checkField(fields['sharedWith'], '$path/sharedWith');
+      checkFieldType(
+        fields['sharedWith'],
+        'sharedWith',
+        const {'fanId[]'},
+        '`fanId[]`',
+        '$path/sharedWith',
+      );
       final participants = fields['participants'];
       if (participants is List) {
         for (var i = 0; i < participants.length; i++) {
           checkField(participants[i], '$path/participants[$i]');
+          checkFieldType(
+            participants[i],
+            'participants',
+            const {'fanId', 'fanId[]'},
+            '`fanId` or `fanId[]`',
+            '$path/participants[$i]',
+          );
         }
       }
       checkField(fields['recipient'], '$path/recipient');
+      checkFieldType(
+        fields['recipient'],
+        'recipient',
+        const {'fanId'},
+        '`fanId`',
+        '$path/recipient',
+      );
 
       final parties = fields['parties'];
       if (parties is List) {
@@ -1223,6 +1268,13 @@ class CommunityPackageValidator {
               );
             }
             checkField(principal, location);
+            checkFieldType(
+              principal,
+              'parties',
+              const {'fanId'},
+              '`fanId`',
+              location,
+            );
             continue;
           }
           if (principal is Map &&

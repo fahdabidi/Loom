@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.8.0
+doc_version: 1.8.1
 status: current
-last_verified: 2026-08-20
+last_verified: 2026-08-22
 audience: llm-agent
 derived_from:
   - app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart
@@ -190,6 +190,7 @@ seriously rather than dismissing them as noise.
 | `orphaned_response_rows` | A terminal/destructive transition ends a workflow that owns response rows, without sweeping them. A row cannot see its parent's state, so those rows stay live and keep accepting responses after the event is cancelled. **Promoted from warning to error on 2026-08-20 (the D3 ratchet).** It was a warning while six shipped communities tripped it; Phase F regeneration brought the corpus to zero, which was the exit condition its approval named, so the fix can no longer regress. Historically it was a pre-existing hole the array shape merely hid, since arrays lived on the event and were cancelled along with it. | Add one `transitionRelated` effect **per source state** to the ending transition (a filter matches one state at a time), targeting a transition on the response workflow: `{"op": "transitionRelated", "transitionId": "event-cancelled", "relatedQuery": {"workflowType": "<response-type>", "filter": {"eventId": "{id}", "$state": "going"}}}`. Worked example: [`archetypes/event-rsvp.md`](../archetypes/event-rsvp.md) §5. |
 | `missing_visibility_fields` | The workflow's archetype uses a visibility model that reads instance-data identities (`owner_and_shared`, `participants`, `parties`, `recipient`) but declares no `visibility.fields` mapping. The engine cannot guess which field is a party rather than an audit actor. | Declare the mapping — see [`workflow-grammar.md`](../reference/workflow-grammar.md)'s `visibility.fields`. For `notificationInbox` specifically, an omitted `recipient` is **legal** and means broadcast, so this does not fire for that case. |
 | `dangling_visibility_field` | A field named in `visibility.fields` is not declared in this workflow's `instanceDataSchema`. | Declare the field, or fix the name. A mapping pointing at a non-existent field silently admits nobody. |
+| `invalid_visibility_field_type` | A field named in `visibility.fields` has a declared type that the mapping cannot read: `sharedWith` requires `fanId[]`; each `participants` entry requires `fanId` or `fanId[]`; each field-backed `parties` entry and `recipient` require `fanId`. | Change the named field's schema type to the required identity shape, or point the mapping at the correctly typed identity field. |
 | `invalid_parties_arity` | `visibility.fields.parties` does not name exactly two fields. | `parties` means the two sides of a request. For more than two readers use `participants`; for one, use `recipient`. |
 | `no_read_visibility_declared` (warning) | A workflow type omits the workflow-level `visibility` block, so its read policy is implicit even though the compatibility default remains `public`. | Add `"visibility": {"default": "public"}` (or `"default": "membersOnly"` / `"default": "guarded"` with a sibling `"readGuard"`) to make the community's intended read policy explicit. |
 | `no_render_binding_for_reachable_state` (warning) | A state is reachable via a transition path but no `renderBinding`'s `states` list covers it, so an instance sitting there renders on no tab. | Add a `renderBinding` (often `"bindingKind": "summary"`) whose `"states"` includes it, or confirm the state is intentionally never surfaced. |
@@ -210,7 +211,7 @@ seriously rather than dismissing them as noise.
 The table above is the curated set: each row carries a diagnosis and a fix direction, because those
 are the findings that most need one.
 
-The validator can emit **114** finding codes. The table above documents 40 of them. The 74 below were
+The validator can emit **115** finding codes. The table above documents 41 of them. The 74 below were
 undocumented entirely until 2026-08-20, when the capability conformance test in
 `validator_capability_conformance_test.dart` counted them — an author who hit one had nothing to
 look up.
@@ -312,4 +313,3 @@ them meanwhile, and it is the part that generalises.
 
 So: run the validator, **and** run the [anti-pattern self-check](./04-antipatterns.md), **and** re-read
 the requirements against the emitted JSON.
-

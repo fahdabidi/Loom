@@ -15,6 +15,7 @@ const _visibilityFindingTypes = {
   'missing_visibility_fields',
   'dangling_visibility_field',
   'dangling_visibility_role',
+  'invalid_visibility_field_type',
   'invalid_visibility_principal',
   'invalid_parties_arity',
 };
@@ -423,6 +424,206 @@ void main() {
       );
 
       expect(findings, hasLength(1));
+    });
+  });
+
+  group('invalid_visibility_field_type', () {
+    final invalidCases =
+        <String, (String, Map<String, Object?>, Map<String, Object?>, String)>{
+          'sharedWith scalar': (
+            'documentLibrary',
+            {
+              'guardianFanId': {'type': 'fanId'},
+            },
+            {'sharedWith': 'guardianFanId'},
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'sharedWith',
+          ),
+          'sharedWith nullable list': (
+            'documentLibrary',
+            {
+              'guardianFanIds': {'type': 'fanId[]?'},
+            },
+            {'sharedWith': 'guardianFanIds'},
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'sharedWith',
+          ),
+          'participants non-identity field': (
+            'discussionThread',
+            {
+              'participantName': {'type': 'text'},
+            },
+            {
+              'participants': ['participantName'],
+            },
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'participants[0]',
+          ),
+          'participants nullable identity field': (
+            'discussionThread',
+            {
+              'participantFanId': {'type': 'fanId?'},
+            },
+            {
+              'participants': ['participantFanId'],
+            },
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'participants[0]',
+          ),
+          'parties list field': (
+            'paymentCheckout',
+            {
+              'requesterFanIds': {'type': 'fanId[]'},
+              'reviewerFanId': {'type': 'fanId'},
+            },
+            {
+              'parties': ['requesterFanIds', 'reviewerFanId'],
+            },
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'parties[0]',
+          ),
+          'parties nullable scalar field': (
+            'paymentCheckout',
+            {
+              'requesterFanId': {'type': 'fanId?'},
+              'reviewerFanId': {'type': 'fanId'},
+            },
+            {
+              'parties': ['requesterFanId', 'reviewerFanId'],
+            },
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'parties[0]',
+          ),
+          'recipient list field': (
+            'notificationInbox',
+            {
+              'recipientFanIds': {'type': 'fanId[]'},
+            },
+            {'recipient': 'recipientFanIds'},
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'recipient',
+          ),
+          'recipient nullable scalar field': (
+            'notificationInbox',
+            {
+              'recipientFanId': {'type': 'fanId?'},
+            },
+            {'recipient': 'recipientFanId'},
+            'experience/workflowDefinitions/subject/visibility/fields/'
+                'recipient',
+          ),
+        };
+
+    for (final entry in invalidCases.entries) {
+      test('fires for ${entry.key}', () {
+        final (family, schema, fields, location) = entry.value;
+        final findings = _ofType(
+          _workflow(family: family, schema: schema, fields: fields),
+          'invalid_visibility_field_type',
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.isWarning, isFalse);
+        expect(findings.single.location, location);
+      });
+    }
+
+    test(
+      'sharedWith message names field, declared type, and required type',
+      () {
+        final finding = _ofType(
+          _workflow(
+            family: 'documentLibrary',
+            schema: {
+              'guardianFanId': {'type': 'fanId'},
+            },
+            fields: {'sharedWith': 'guardianFanId'},
+          ),
+          'invalid_visibility_field_type',
+        ).single;
+
+        expect(
+          finding.message,
+          '`visibility.fields.sharedWith` names field `guardianFanId`, whose '
+          'declared type is `fanId`; the required type is `fanId[]`.',
+        );
+      },
+    );
+
+    test('participants allows both scalar and list fan identity fields', () {
+      expect(
+        _ofType(
+          _workflow(
+            family: 'discussionThread',
+            schema: {
+              'participantFanId': {'type': 'fanId'},
+              'participantFanIds': {'type': 'fanId[]'},
+            },
+            fields: {
+              'participants': ['participantFanId', 'participantFanIds'],
+            },
+          ),
+          'invalid_visibility_field_type',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('valid sharedWith, parties, and recipient identity types pass', () {
+      expect(
+        _ofType(
+          _workflow(
+            family: 'documentLibrary',
+            schema: {
+              'sharedFanIds': {'type': 'fanId[]'},
+              'requesterFanId': {'type': 'fanId'},
+              'reviewerFanId': {'type': 'fanId'},
+              'recipientFanId': {'type': 'fanId'},
+            },
+            fields: {
+              'sharedWith': 'sharedFanIds',
+              'parties': ['requesterFanId', 'reviewerFanId'],
+              'recipient': 'recipientFanId',
+            },
+          ),
+          'invalid_visibility_field_type',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('a parties role principal has no instance-data type to validate', () {
+      expect(
+        _ofType(
+          _workflow(
+            family: 'paymentCheckout',
+            schema: {
+              'payerFanId': {'type': 'fanId'},
+            },
+            fields: {
+              'parties': [
+                'payerFanId',
+                {'role': 'finance-admin'},
+              ],
+            },
+          ),
+          'invalid_visibility_field_type',
+          roles: const [
+            {'roleId': 'finance-admin', 'label': 'Finance admin'},
+          ],
+        ),
+        isEmpty,
+      );
+    });
+
+    test('a dangling field does not also emit a field-type finding', () {
+      final workflow = _workflow(
+        family: 'documentLibrary',
+        fields: {'sharedWith': 'missingFanIds'},
+      );
+
+      expect(_ofType(workflow, 'dangling_visibility_field'), hasLength(1));
+      expect(_ofType(workflow, 'invalid_visibility_field_type'), isEmpty);
     });
   });
 

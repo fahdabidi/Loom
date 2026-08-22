@@ -60,6 +60,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'invalid_recurrence_set_pos_weekday_count',
   'invalid_recurrence_weekday_code',
   'invalid_source_query_syntax',
+  'invalid_visibility_field_type',
   'invalid_visibility_principal',
   'invalid_workflow_definition',
   'legacy_identity_key',
