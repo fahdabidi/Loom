@@ -150,95 +150,86 @@ void main() {
     ]);
   });
 
-  test(
-    'contract action mappings maintain each actor set idempotently',
-    () async {
-      const cases = <(String, String, String, _ExpectedOperation)>[
-        ('documentLibrary', 'open', 'openedFanIds', _ExpectedOperation.add),
-        (
-          'documentLibrary',
-          'acknowledge',
-          'acknowledgedFanIds',
-          _ExpectedOperation.add,
-        ),
-        ('documentLibrary', 'save', 'savedFanIds', _ExpectedOperation.add),
-        ('documentLibrary', 'unsave', 'savedFanIds', _ExpectedOperation.remove),
-        (
-          'documentLibrary',
-          'download',
-          'downloadedFanIds',
-          _ExpectedOperation.add,
-        ),
-        (
-          'documentLibrary',
-          'request_access',
-          'accessRequestedFanIds',
-          _ExpectedOperation.add,
-        ),
-        (
-          'documentLibrary',
-          'withdraw_access_request',
-          'accessRequestedFanIds',
-          _ExpectedOperation.remove,
-        ),
-        (
-          'equipment-loan',
-          'join_queue',
-          'queuedFanIds',
-          _ExpectedOperation.add,
-        ),
-        (
-          'equipment-loan',
-          'leave_queue',
-          'queuedFanIds',
-          _ExpectedOperation.remove,
-        ),
-        (
-          'event-rsvp',
-          'set_reminder',
-          'reminderFanIds',
-          _ExpectedOperation.add,
-        ),
-      ];
-      final api = _api('all-mappings');
+  test('contract action mappings maintain each actor set', () async {
+    const cases = <(String, String, String, _ExpectedOperation)>[
+      ('documentLibrary', 'open', 'openedFanIds', _ExpectedOperation.add),
+      (
+        'documentLibrary',
+        'acknowledge',
+        'acknowledgedFanIds',
+        _ExpectedOperation.add,
+      ),
+      ('documentLibrary', 'save', 'savedFanIds', _ExpectedOperation.add),
+      ('documentLibrary', 'unsave', 'savedFanIds', _ExpectedOperation.remove),
+      (
+        'documentLibrary',
+        'download',
+        'downloadedFanIds',
+        _ExpectedOperation.add,
+      ),
+      (
+        'documentLibrary',
+        'request_access',
+        'accessRequestedFanIds',
+        _ExpectedOperation.add,
+      ),
+      (
+        'documentLibrary',
+        'withdraw_access_request',
+        'accessRequestedFanIds',
+        _ExpectedOperation.remove,
+      ),
+      ('equipment-loan', 'join_queue', 'queuedFanIds', _ExpectedOperation.add),
+      (
+        'equipment-loan',
+        'leave_queue',
+        'queuedFanIds',
+        _ExpectedOperation.remove,
+      ),
+      ('event-rsvp', 'set_reminder', 'reminderFanIds', _ExpectedOperation.add),
+    ];
+    final api = _api('all-mappings');
 
-      for (var index = 0; index < cases.length; index++) {
-        final (family, action, contractField, operation) = cases[index];
-        final workflowType = 'workflow-$index';
-        api.registerDefinition(
-          _machine(
-            workflowType: workflowType,
-            family: family,
-            action: action,
-            instanceDataSchema: <String, dynamic>{
-              contractField: <String, dynamic>{
-                'type': 'fanId[]',
-                'writableBy': 'effect',
-              },
+    for (var index = 0; index < cases.length; index++) {
+      final (family, action, contractField, operation) = cases[index];
+      final workflowType = 'workflow-$index';
+      api.registerDefinition(
+        _machine(
+          workflowType: workflowType,
+          family: family,
+          action: action,
+          instanceDataSchema: <String, dynamic>{
+            contractField: <String, dynamic>{
+              'type': 'fanId[]',
+              'writableBy': 'effect',
             },
-          ),
-        );
-        final initial = operation == _ExpectedOperation.add
-            ? <String>['other']
-            : <String>['actor', 'other'];
-        final instanceId = await _create(api, workflowType, <String, dynamic>{
-          contractField: initial,
-        });
+          },
+        ),
+      );
+      final initial = operation == _ExpectedOperation.add
+          ? <String>['other']
+          : <String>['actor', 'other'];
+      final instanceId = await _create(api, workflowType, <String, dynamic>{
+        contractField: initial,
+      });
 
-        await _apply(api, workflowType, instanceId);
-        final result = await _apply(api, workflowType, instanceId);
+      final firstResult = await _apply(api, workflowType, instanceId);
+      // Repeating join/leave is now rejected by action eligibility. Other
+      // bookkeeping actions retain their public idempotence coverage here.
+      final result = family == 'equipment-loan'
+          ? firstResult
+          : await _apply(api, workflowType, instanceId);
 
-        final expected = operation == _ExpectedOperation.add
-            ? <String>['other', 'actor']
-            : <String>['other'];
-        expect(
-          result.newInstanceData[contractField],
-          expected,
-          reason: '$family.$action must maintain $contractField',
-        );
-      }
-    },
-  );
+      final expected = operation == _ExpectedOperation.add
+          ? <String>['other', 'actor']
+          : <String>['other'];
+      expect(
+        result.newInstanceData[contractField],
+        expected,
+        reason: '$family.$action must maintain $contractField',
+      );
+    }
+  });
 }
 
 enum _ExpectedOperation { add, remove }

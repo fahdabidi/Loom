@@ -127,6 +127,19 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     },
   };
 
+  /// Actor-set membership required before an archetype action may run.
+  ///
+  /// Packages may omit guards which only make engine-owned bookkeeping
+  /// idempotent, so these checks must gate both rendered availability and
+  /// direct transition application.
+  static const Map<String, Map<String, (String, bool)>>
+  _archetypeMembershipEligibilityByAction = {
+    'equipment-loan': {
+      'join_queue': ('queuedFanIds', false),
+      'leave_queue': ('queuedFanIds', true),
+    },
+  };
+
   final WorkflowDatabase _db;
   final String _communityId;
   final DateTime Function() _clock;
@@ -831,6 +844,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
+      if (!_isArchetypeActionEligible(
+        machine: machine,
+        transition: transition,
+        instanceData: instanceData,
+        fanId: fanId,
+      )) {
+        continue;
+      }
       if (!await _passesRelatedListGuard(
         transition.guard,
         instanceData,
@@ -973,6 +994,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       }
     }
     if (transition == null) {
+      throw _TransitionGuardFailure(
+        'Transition $transitionId is not available for $fanId',
+      );
+    }
+    if (!_isArchetypeActionEligible(
+      machine: machine,
+      transition: transition,
+      instanceData: data,
+      fanId: fanId,
+    )) {
       throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $fanId',
       );
@@ -1504,6 +1535,28 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               .where((value) => value != fanId)
               .toList(growable: false);
     }
+  }
+
+  bool _isArchetypeActionEligible({
+    required LoomWorkflowStateMachine machine,
+    required LoomWorkflowTransition transition,
+    required Map<String, dynamic> instanceData,
+    required String fanId,
+  }) {
+    final family = _resolvedArchetypes[machine.workflowType]?.family;
+    final action = transition.action;
+    if (family == null || action == null) return true;
+
+    final rule = _archetypeMembershipEligibilityByAction[family]?[action];
+    if (rule == null) return true;
+    final (contractField, actorMustBePresent) = rule;
+    final actorIsPresent = _identityFieldMatches(
+      instanceData,
+      contractField,
+      fanId,
+      shape: _IdentityFieldShape.list,
+    );
+    return actorIsPresent == actorMustBePresent;
   }
 
   /// Checks a guard's database-backed conditions before its synchronous ones.
