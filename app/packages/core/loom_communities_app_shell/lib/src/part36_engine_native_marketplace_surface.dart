@@ -727,10 +727,8 @@ class _EquipmentLoanArchetypeCardState
 
 /// Bespoke rendering for the document-library card family.
 ///
-/// Like existing marketplace archetypes, this card uses real transition
-/// availability from the engine and only renders each action when both the
-/// transition and the expected persona-list field are declared for this
-/// workflow definition.
+/// Like existing marketplace archetypes, this card renders the transitions
+/// authorized by the workflow engine for the current instance and persona.
 class DocumentLibraryArchetypeCard extends StatefulWidget {
   const DocumentLibraryArchetypeCard({
     super.key,
@@ -760,16 +758,6 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
 
 class _DocumentLibraryArchetypeCardState
     extends State<DocumentLibraryArchetypeCard> {
-  static const _actionPersonaFields = <String, String>{
-    'record-resource-open': 'openedFanIds',
-    'acknowledge-resource': 'acknowledgedFanIds',
-    'mark-resource-unread': 'acknowledgedFanIds',
-    'request-resource-access': 'accessRequestedFanIds',
-    'save-resource': 'savedFanIds',
-    'record-resource-download': 'downloadedFanIds',
-    'request-resource-follow-up': 'followUpRequestedFanIds',
-  };
-
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
   bool _loadingActions = true;
@@ -837,30 +825,16 @@ class _DocumentLibraryArchetypeCardState
     }
   }
 
-  String? _requiredPersonaField(String transitionId) =>
-      _actionPersonaFields[transitionId];
-
-  bool _isActionDeclared(LoomWorkflowTransition action) {
-    final personaField = _requiredPersonaField(action.id);
-    return personaField != null &&
-        widget.resolved.machine.instanceDataSchema.containsKey(personaField);
-  }
-
-  List<WorkflowActionButtonTransition> get _buttonTransitions {
-    final transitions = <WorkflowActionButtonTransition>[];
-    for (final action in _actions) {
-      if (!_isActionDeclared(action)) continue;
-      transitions.add(
-        WorkflowActionButtonTransition(
+  List<WorkflowActionButtonTransition> get _buttonTransitions => _actions
+      .map(
+        (action) => WorkflowActionButtonTransition(
           id: action.id,
           label: action.label,
           iconName: action.icon,
           tone: _toneFor(action.tone),
         ),
-      );
-    }
-    return transitions;
-  }
+      )
+      .toList(growable: false);
 
   WorkflowActionTone _toneFor(String? tone) => switch (tone) {
     'secondary' => WorkflowActionTone.secondary,

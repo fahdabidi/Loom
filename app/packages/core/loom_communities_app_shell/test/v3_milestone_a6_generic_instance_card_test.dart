@@ -1024,7 +1024,7 @@ void main() {
   );
 
   testWidgets(
-    'documentLibrary card omits controls for missing optional persona-id fields',
+    'documentLibrary card renders engine-authorized community actions without bookkeeping fields',
     (tester) async {
       final api = LocalWorkflowEngineApi(
         db: WorkflowDatabase.memory(),
@@ -1037,44 +1037,14 @@ void main() {
         },
         'transitions': [
           {
-            'id': 'record-resource-open',
-            'label': 'Open',
+            'id': 'view-member-handbook',
+            'label': 'View handbook',
             'from': ['open'],
             'to': null,
           },
           {
-            'id': 'acknowledge-resource',
-            'label': 'Acknowledge',
-            'from': ['open'],
-            'to': null,
-          },
-          {
-            'id': 'mark-resource-unread',
-            'label': 'Mark unread',
-            'from': ['open'],
-            'to': null,
-          },
-          {
-            'id': 'request-resource-access',
-            'label': 'Request access',
-            'from': ['open'],
-            'to': null,
-          },
-          {
-            'id': 'save-resource',
-            'label': 'Save',
-            'from': ['open'],
-            'to': null,
-          },
-          {
-            'id': 'record-resource-download',
-            'label': 'Download',
-            'from': ['open'],
-            'to': null,
-          },
-          {
-            'id': 'request-resource-follow-up',
-            'label': 'Request follow-up',
+            'id': 'share-member-handbook',
+            'label': 'Share handbook',
             'from': ['open'],
             'to': null,
           },
@@ -1091,21 +1061,6 @@ void main() {
             'labelTemplate': 'Resource',
             'displayContexts': ['tile', 'detail'],
           },
-          'allowedFanIds': {
-            'type': 'fanId[]',
-            'labelTemplate': 'Allowed',
-            'displayContexts': ['tile', 'detail'],
-          },
-          'readFanIds': {
-            'type': 'fanId[]',
-            'labelTemplate': 'Read',
-            'displayContexts': ['tile', 'detail'],
-          },
-          'downloadedFanIds': {
-            'type': 'fanId[]',
-            'labelTemplate': 'Downloaded',
-            'displayContexts': ['tile', 'detail'],
-          },
         },
       }, 'document-library-shape');
       api.registerDefinition(machine);
@@ -1115,9 +1070,6 @@ void main() {
         initialInstanceData: {
           'title': 'Policy',
           'resourceUrl': 'https://example.org/policy',
-          'allowedFanIds': ['member'],
-          'readFanIds': ['member'],
-          'downloadedFanIds': ['member'],
         },
       );
       final instance = (await api.queryInstances(
@@ -1155,11 +1107,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Policy'), findsOneWidget);
-      expect(find.text('Download'), findsOneWidget);
       expect(
         find.byKey(
           ValueKey(
-            'document-library-${instance.instanceId}-action-record-resource-download',
+            'document-library-${instance.instanceId}-action-view-member-handbook',
           ),
         ),
         findsOneWidget,
@@ -1167,51 +1118,159 @@ void main() {
       expect(
         find.byKey(
           ValueKey(
-            'document-library-${instance.instanceId}-action-record-resource-open',
+            'document-library-${instance.instanceId}-action-share-member-handbook',
           ),
         ),
-        findsNothing,
+        findsOneWidget,
       );
-      expect(
-        find.byKey(
-          ValueKey(
-            'document-library-${instance.instanceId}-action-acknowledge-resource',
+    },
+  );
+
+  testWidgets(
+    'documentLibrary card renders all four Chess document transition IDs',
+    (tester) async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'chess-document-library-regression',
+      );
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'available',
+        'states': {
+          'available': {'label': 'Rules available'},
+          'embedded-opened': {'label': 'Opened embedded'},
+          'external-opened': {'label': 'Opened externally'},
+          'downloaded': {'label': 'Downloaded'},
+          'archived': {'label': 'Archived', 'isTerminal': true},
+        },
+        'transitions': [
+          {
+            'id': 'record-embedded-open',
+            'action': 'open',
+            'label': 'Open embedded',
+            'icon': 'open_in_browser',
+            'tone': 'primary',
+            'from': ['available', 'external-opened', 'downloaded'],
+            'to': 'embedded-opened',
+            'guard': {
+              'allowedRoleIds': ['chess-organizer', 'chess-member'],
+            },
+          },
+          {
+            'id': 'record-external-open',
+            'action': 'open',
+            'label': 'Open external',
+            'icon': 'open_in_new',
+            'tone': 'secondary',
+            'from': ['available', 'embedded-opened', 'downloaded'],
+            'to': 'external-opened',
+            'guard': {
+              'allowedRoleIds': ['chess-organizer', 'chess-member'],
+            },
+          },
+          {
+            'id': 'record-download',
+            'action': 'download',
+            'label': 'Download',
+            'icon': 'download',
+            'tone': 'primary',
+            'from': ['available', 'embedded-opened', 'external-opened'],
+            'to': 'downloaded',
+            'guard': {
+              'allowedRoleIds': ['chess-organizer', 'chess-member'],
+            },
+          },
+          {
+            'id': 'archive-document',
+            'action': 'archive',
+            'label': 'Archive document',
+            'icon': 'archive',
+            'tone': 'destructive',
+            'from': [
+              'available',
+              'embedded-opened',
+              'external-opened',
+              'downloaded',
+            ],
+            'to': 'archived',
+            'guard': {
+              'allowedRoleIds': ['chess-organizer'],
+            },
+          },
+        ],
+        'instanceDataSchema': {
+          'title': {
+            'type': 'text',
+            'labelTemplate': '{value}',
+            'displayContexts': ['tile', 'detail'],
+          },
+          'resourceUrl': {
+            'type': 'url',
+            'openMode': 'choice',
+            'labelTemplate': 'Resource',
+            'displayContexts': ['tile', 'detail'],
+          },
+        },
+      }, 'chess-rules-documents');
+      api.registerDefinition(machine);
+      api.setRoleForFan('chess-organizer', 'chess-organizer');
+      final id = await api.createInstance(
+        workflowType: 'chess-rules-documents',
+        fanId: 'chess-organizer',
+        initialInstanceData: {
+          'title': 'Chess Club Rules',
+          'resourceUrl': 'https://example.org/chess-rules',
+        },
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'any',
+        fanId: 'chess-organizer',
+      )).items.singleWhere((row) => row.instanceId == id);
+      final resolved = EngineNativeResolvedBinding(
+        instance: instance,
+        machine: machine,
+        binding: RenderBinding(
+          states: const ['available'],
+          role: 'chess-organizer',
+          tabId: 'documents',
+          cardSurfaceFamily: 'documentLibrary',
+          bindingKind: 'primary',
+        ),
+        definitionBindingIndex: 0,
+      );
+
+      await tester.pumpWidget(
+        _host(
+          EngineNativeArchetypeCard(
+            contentKey: ValueKey('document-library-${instance.instanceId}'),
+            resolved: resolved,
+            engine: api,
+            communityExtensionId: 'ext_chess_club',
+            fanId: 'chess-organizer',
+            roleId: 'chess-organizer',
+            accent: Colors.grey,
+            onInstanceChanged: (_) {},
           ),
         ),
-        findsNothing,
       );
-      expect(
-        find.byKey(
-          ValueKey(
-            'document-library-${instance.instanceId}-action-mark-resource-unread',
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      for (final transitionId in const [
+        'record-embedded-open',
+        'record-external-open',
+        'record-download',
+        'archive-document',
+      ]) {
+        expect(
+          find.byKey(
+            ValueKey(
+              'document-library-${instance.instanceId}-action-$transitionId',
+            ),
           ),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.byKey(
-          ValueKey(
-            'document-library-${instance.instanceId}-action-request-resource-access',
-          ),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.byKey(
-          ValueKey(
-            'document-library-${instance.instanceId}-action-save-resource',
-          ),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.byKey(
-          ValueKey(
-            'document-library-${instance.instanceId}-action-request-resource-follow-up',
-          ),
-        ),
-        findsNothing,
-      );
+          findsOneWidget,
+          reason: '$transitionId should render when authorized by the engine',
+        );
+      }
     },
   );
 
