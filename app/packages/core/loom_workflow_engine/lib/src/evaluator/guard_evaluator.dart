@@ -22,12 +22,14 @@ bool evaluateGuard(
   bool skipRelatedAggregate = false,
   DateTime Function()? clock,
 }) {
+  final fanId = personaId;
+  final roleId = personaTypeId;
   // allowedPersonaIds — if non-null and non-empty, the persona's *type*
   // (when available) or individual id must be in the list.
-  final typeForAllowedCheck = personaTypeId ?? personaId;
+  final identityIdForAllowedCheck = roleId ?? fanId;
   if (guard.allowedPersonaIds != null &&
       guard.allowedPersonaIds!.isNotEmpty &&
-      !guard.allowedPersonaIds!.contains(typeForAllowedCheck)) {
+      !guard.allowedPersonaIds!.contains(identityIdForAllowedCheck)) {
     return false;
   }
 
@@ -35,7 +37,7 @@ bool evaluateGuard(
   if (guard.actorInList != null) {
     final raw = instanceData[guard.actorInList!.key];
     final list = (raw is List) ? raw.cast<String>() : <String>[];
-    final isPresent = list.contains(personaId);
+    final isPresent = list.contains(fanId);
     if (isPresent != guard.actorInList!.present) {
       return false;
     }
@@ -44,7 +46,7 @@ bool evaluateGuard(
   // actorEqualsField — this guard names one specific persona, so it must use
   // the individual account id rather than the persona type/role id.
   if (guard.actorEqualsField != null) {
-    if (personaId != instanceData[guard.actorEqualsField!.key]) return false;
+    if (fanId != instanceData[guard.actorEqualsField!.key]) return false;
   }
 
   // instanceDataEquals — checks value equality on an arbitrary field.
@@ -59,8 +61,8 @@ bool evaluateGuard(
     final value = evaluateFormula(
       guard.formula!,
       instanceData: instanceData,
-      viewerId: personaId,
-      actorId: personaId,
+      viewerId: fanId,
+      actorId: fanId,
       clock: clock,
     );
     if (value is! bool || !value) return false;
@@ -115,7 +117,9 @@ DateTime? _cancellationDeadline(
   );
   if (start == null) return null;
   return start.subtract(
-    Duration(milliseconds: (guard.hoursBefore * Duration.millisecondsPerHour).round()),
+    Duration(
+      milliseconds: (guard.hoursBefore * Duration.millisecondsPerHour).round(),
+    ),
   );
 }
 

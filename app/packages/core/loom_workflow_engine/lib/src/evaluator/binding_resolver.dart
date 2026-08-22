@@ -14,6 +14,7 @@ List<RenderBinding> resolveBindings(
   Map<String, dynamic> instanceData = const {},
   String? personaId,
 }) {
+  final fanId = personaId;
   return machine.renderBindings.where((binding) {
     // Must cover the current state.
     if (!binding.states.contains(currentState)) return false;
@@ -27,7 +28,7 @@ List<RenderBinding> resolveBindings(
       return _isDynamicAudienceMember(
         instanceData: instanceData,
         audienceMemberField: binding.audienceMemberField!,
-        personaId: personaId,
+        fanId: fanId,
       );
     }
 
@@ -44,10 +45,10 @@ bool _usesDynamicAudience(Map<String, dynamic> instanceData) {
 bool _isDynamicAudienceMember({
   required Map<String, dynamic> instanceData,
   required String audienceMemberField,
-  required String? personaId,
+  required String? fanId,
 }) {
-  if (personaId == null || personaId.isEmpty) return false;
+  if (fanId == null || fanId.isEmpty) return false;
   final invited = instanceData[audienceMemberField];
-  if (invited is Iterable) return invited.contains(personaId);
+  if (invited is Iterable) return invited.contains(fanId);
   return false;
 }

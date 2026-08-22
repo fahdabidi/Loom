@@ -223,6 +223,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required Map<String, dynamic> initialInstanceData,
     required String personaId,
   }) async {
+    final fanId = personaId;
     final response = await _request(
       method: 'POST',
       pathSegments: _instanceCollectionSegments,
@@ -233,7 +234,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     return _decodeInstance(
       _decodeObject(response),
       response,
-      createdByPersonaId: personaId,
+      createdByPersonaId: fanId,
     ).instanceId;
   }
 
@@ -243,6 +244,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required List<Map<String, dynamic>> initialInstanceDataList,
     required String personaId,
   }) async {
+    final fanId = personaId;
     final response = await _request(
       method: 'POST',
       pathSegments: [..._instanceCollectionSegments, 'batch'],
@@ -259,7 +261,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
           (instance) => _decodeInstance(
             instance,
             response,
-            createdByPersonaId: personaId,
+            createdByPersonaId: fanId,
           ).instanceId,
         )
         .toList();

@@ -18,14 +18,16 @@ List<LoomWorkflowTransition> availableTransitions(
   bool skipRelatedAggregate = false,
   DateTime Function()? clock,
 }) {
+  final fanId = personaId;
+  final roleId = personaTypeId;
   return machine
       .transitionsFrom(currentState)
       .where(
         (t) => evaluateGuard(
           t.guard,
-          personaId,
+          fanId,
           instanceData,
-          personaTypeId: personaTypeId,
+          personaTypeId: roleId,
           completedWorkflowIds: completedWorkflowIds,
           skipRelatedAggregate: skipRelatedAggregate,
           clock: clock,

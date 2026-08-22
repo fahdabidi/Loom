@@ -17,20 +17,20 @@ Set<String> deriveInstanceRoles(
 }) {
   final Set<String> roles = <String>{};
 
-  String? actorPersonaId;
+  String? actorFanId;
   var foundActorEqualsField = false;
   for (final transition in machine.transitions) {
     final actorEqualsField = transition.guard.actorEqualsField;
     if (actorEqualsField != null) {
       foundActorEqualsField = true;
-      actorPersonaId = instance.instanceData[actorEqualsField.key] as String?;
+      actorFanId = instance.instanceData[actorEqualsField.key] as String?;
       break;
     }
   }
 
-  if (!foundActorEqualsField) actorPersonaId = instance.createdByPersonaId;
+  if (!foundActorEqualsField) actorFanId = instance.createdByPersonaId;
 
-  if (viewerPersonaId == actorPersonaId) {
+  if (viewerPersonaId == actorFanId) {
     roles.add('actor');
     return roles;
   }

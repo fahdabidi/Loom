@@ -423,6 +423,7 @@ class WorkflowDatabase {
     required String communityId,
     required String personaId,
   }) async {
+    final fanId = personaId;
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
       _dialect.isSqlite
@@ -432,7 +433,7 @@ class WorkflowDatabase {
           : r'SELECT * FROM workflow_instances '
                 r'WHERE community_id = $1 AND created_by_persona_id = $2 '
                 'ORDER BY workflow_type ASC, instance_id ASC',
-      [communityId, personaId],
+      [communityId, fanId],
     );
     return result.map((r) => WorkflowInstanceRow.fromRow(r)).toList();
   }

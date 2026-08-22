@@ -12,6 +12,7 @@ Map<String, dynamic> applyEffects(
   Map<String, dynamic>? inputValues,
   String? instanceId,
 }) {
+  final fanId = personaId;
   final result = Map<String, dynamic>.from(instanceData);
 
   for (final effect in effects) {
@@ -22,12 +23,12 @@ Map<String, dynamic> applyEffects(
     if (effect.key == null) continue;
     final resolvedValue = resolveEffectValue(
       effect.value,
-      personaId,
+      fanId,
       interpolationData ?? result,
       inputValues: inputValues,
       instanceId: instanceId,
     );
-    final resolvedKey = effect.key!.replaceAll('\$actor', personaId);
+    final resolvedKey = effect.key!.replaceAll('\$actor', fanId);
     _applyOne(result, effect.op, resolvedKey, resolvedValue);
   }
 
@@ -43,7 +44,8 @@ dynamic resolveEffectValue(
   Map<String, dynamic>? inputValues,
   String? instanceId,
 }) {
-  if (value == '\$actor') return personaId;
+  final fanId = personaId;
+  if (value == '\$actor') return fanId;
   if (value is String &&
       inputValues != null &&
       value.startsWith('{input.') &&
@@ -75,7 +77,7 @@ dynamic resolveEffectValue(
   }
   if (value is String) {
     var resolved = value
-        .replaceAll('\$actor', personaId)
+        .replaceAll('\$actor', fanId)
         .replaceAll('\$timestamp', DateTime.now().toUtc().toIso8601String());
     for (final entry in instanceData.entries) {
       resolved = resolved.replaceAll('{${entry.key}}', '${entry.value}');
@@ -98,7 +100,7 @@ dynamic resolveEffectValue(
         .map(
           (item) => resolveEffectValue(
             item,
-            personaId,
+            fanId,
             instanceData,
             inputValues: inputValues,
             instanceId: instanceId,
@@ -112,7 +114,7 @@ dynamic resolveEffectValue(
         key,
         resolveEffectValue(
           item,
-          personaId,
+          fanId,
           instanceData,
           inputValues: inputValues,
           instanceId: instanceId,
