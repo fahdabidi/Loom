@@ -31,6 +31,8 @@ Future<_ReminderHarness> _installReminderFixture({
   String responseState = 'pending',
   int eventCount = 1,
   bool failAfterNotification = false,
+  String reminderTransitionId = 'send-reminder',
+  bool includeSetReminder = false,
 }) async {
   final extensionId = 'cal-notify2-9-${_extensionSequence++}';
   final eventId = 'event-$extensionId';
@@ -46,6 +48,8 @@ Future<_ReminderHarness> _installReminderFixture({
       responseState: responseState,
       eventCount: eventCount,
       failAfterNotification: failAfterNotification,
+      reminderTransitionId: reminderTransitionId,
+      includeSetReminder: includeSetReminder,
     ),
   );
   final engine = await workflowEngineForExtensionId(extensionId);
@@ -66,6 +70,8 @@ Map<String, Object?> _configuration({
   required String responseState,
   int eventCount = 1,
   bool failAfterNotification = false,
+  String reminderTransitionId = 'send-reminder',
+  bool includeSetReminder = false,
 }) {
   final workflowInstances = <Map<String, Object?>>[];
   for (var index = 0; index < eventCount; index++) {
@@ -187,8 +193,9 @@ Map<String, Object?> _configuration({
             'to': 'declined',
           },
           {
-            'id': 'send-reminder',
+            'id': reminderTransitionId,
             'label': 'Send reminder',
+            'action': 'deliver_reminder',
             'from': ['pending', 'maybe', 'going', 'waitlisted'],
             'to': null,
             'guard': {
@@ -219,6 +226,15 @@ Map<String, Object?> _configuration({
               {'op': 'set', 'key': 'reminderSentAt', 'value': r'$timestamp'},
             ],
           },
+          if (includeSetReminder)
+            {
+              'id': 'add-reminder',
+              'label': 'Add reminder',
+              'action': 'set_reminder',
+              'from': ['pending', 'maybe', 'going', 'waitlisted'],
+              'to': null,
+              'effects': <Object?>[],
+            },
         ],
         'renderBindings': <Object?>[],
         'instanceDataSchema': {
@@ -552,11 +568,12 @@ _ReminderHarness _withEngine(
 
 void main() {
   testWidgets(
-    'creates exactly one due reminder and stamps the viewer response',
+    'resolves a nonliteral deliver_reminder and stamps the viewer response',
     (tester) async {
       final harness = await _installReminderFixture(
         eventDate: '2026-07-10',
         eventTime: '19:00',
+        reminderTransitionId: 'notify-attendee',
       );
       await tester.pumpWidget(
         _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
@@ -602,10 +619,13 @@ void main() {
     expect(await _notificationCount(harness), 1);
   });
 
-  testWidgets('does not remind before the computed reminderAt', (tester) async {
+  testWidgets('keeps set_reminder visible before the computed reminderAt', (
+    tester,
+  ) async {
     final harness = await _installReminderFixture(
       eventDate: '2026-07-10',
       eventTime: '19:00',
+      includeSetReminder: true,
     );
     await tester.pumpWidget(
       _calendar(harness, currentDate: DateTime(2026, 7, 9, 18, 59)),
@@ -614,6 +634,10 @@ void main() {
 
     expect(await _notificationCount(harness), 0);
     expect((await _response(harness)).instanceData['reminderSentAt'], isNull);
+    expect(
+      find.byKey(ValueKey('event-rsvp-${harness.eventId}-action-add-reminder')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('does not remind a declined response', (tester) async {
@@ -631,12 +655,13 @@ void main() {
     expect((await _response(harness)).instanceData['reminderSentAt'], isNull);
   });
 
-  testWidgets('hides send-reminder while retaining normal RSVP chips', (
+  testWidgets('hides deliver_reminder by action while retaining RSVP chips', (
     tester,
   ) async {
     final harness = await _installReminderFixture(
       eventDate: '2026-07-10',
       eventTime: '19:00',
+      reminderTransitionId: 'notify-attendee',
     );
     await tester.pumpWidget(
       _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
@@ -646,7 +671,7 @@ void main() {
 
     expect(
       find.byKey(
-        ValueKey('event-rsvp-${harness.eventId}-action-send-reminder'),
+        ValueKey('event-rsvp-${harness.eventId}-action-notify-attendee'),
       ),
       findsNothing,
     );

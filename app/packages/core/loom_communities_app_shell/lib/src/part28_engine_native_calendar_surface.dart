@@ -355,7 +355,8 @@ class _CalendarEntry {
   String get time => '${resolved.instance.instanceData['eventTime'] ?? ''}';
 }
 
-const Set<String> _hiddenAutomaticActionIds = {'send-reminder'};
+const String _deliverReminderAction = 'deliver_reminder';
+const Set<String> _hiddenAutomaticActions = {_deliverReminderAction};
 
 class _ViewerResponseLookup {
   const _ViewerResponseLookup.invalid() : isValid = false, response = null;
@@ -948,12 +949,21 @@ class _EngineNativeCalendarContentState
               !_isReminderDueFor(freshEntry, freshResponse)) {
             return false;
           }
+          final reminderTransition = freshEntry
+              .resolved
+              .responseMachine
+              ?.transitions
+              .where(
+                (transition) => transition.action == _deliverReminderAction,
+              )
+              .firstOrNull;
+          if (reminderTransition == null) return false;
           final eventTitle =
               freshEntry.resolved.instance.instanceData['title'] ?? 'Event';
           await widget.engine.applyTransition(
             workflowType: responseTable.workflowType,
             instanceId: responseId,
-            transitionId: 'send-reminder',
+            transitionId: reminderTransition.id,
             fanId: widget.fanId,
             inputs: {
               'notificationTitle': 'Reminder: $eventTitle',
@@ -2387,7 +2397,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
 
   List<LoomWorkflowTransition> get _displayActions {
     final visibleActions = _actions
-        .where((action) => !_hiddenAutomaticActionIds.contains(action.id))
+        .where((action) => !_hiddenAutomaticActions.contains(action.action))
         .toList(growable: false);
     final response = _viewerResponse;
     if (response == null) return visibleActions;
