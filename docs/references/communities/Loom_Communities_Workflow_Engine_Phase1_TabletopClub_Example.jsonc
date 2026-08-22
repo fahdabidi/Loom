@@ -555,7 +555,7 @@
             // "declined" is deliberately excluded from "from" -- a member who declined doesn't want a
             // reminder for an event they're not attending.
             "id": "send-reminder",
-            "action": "set_reminder",
+            "action": "deliver_reminder",
             "label": "Send reminder",
             "from": ["pending", "maybe", "going", "waitlisted"],
             "to": null,
