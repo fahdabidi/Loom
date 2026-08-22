@@ -1922,21 +1922,18 @@
       {
         "tabId": "calendar",
         "label": "Calendar",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "calendar_today",
         "description": "Prayer, classes, community events, RSVP capacity, reminders, and linked volunteer shifts."
       },
       {
         "tabId": "giving",
         "label": "Giving",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "volunteer_activism",
         "description": "Donation intents, manually recorded payment status, receipts, privacy, and donor preferences."
       },
       {
         "tabId": "admin",
         "label": "Admin",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin_panel_settings",
         "description": "Announcement composition, volunteer coordination, payment recording, and protected care review.",
         "visibleRoleIds": ["masjid-admin"]
@@ -1944,7 +1941,6 @@
       {
         "tabId": "resources",
         "label": "Resources",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "menu_book",
         "description": "Khutbah notes, forms, policies, external resources, questions, curated answers, and citations."
       }
