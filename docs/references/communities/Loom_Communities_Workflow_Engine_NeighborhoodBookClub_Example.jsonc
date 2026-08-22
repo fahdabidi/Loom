@@ -354,7 +354,7 @@
               "relatedAggregate": { "workflowType": "book-meeting-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" }, "op": "count", "comparator": ">=",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" } } } },
-          { "id": "send-reminder", "action": "set_reminder", "label": "Add reminder", "tone": "secondary",
+          { "id": "send-reminder", "action": "deliver_reminder", "label": "Add reminder", "tone": "secondary",
             "from": ["pending", "maybe", "going", "waitlisted"], "to": null,
             "guard": { "actorEqualsField": { "key": "fanId" } },
             "inputs": {
