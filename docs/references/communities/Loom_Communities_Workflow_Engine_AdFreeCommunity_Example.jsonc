@@ -2384,18 +2384,15 @@
       {
         "tabId": "giving",
         "label": "Giving",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "payment",
         "description": "Ad-off purchases, entitlement, receipts, and community funding."
       },
       {
         "tabId": "admin",
         "label": "Admin",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin",
         "description": "Settlement, allocation correction, and audit operations.",
-        "visibleRoleIds": ["ad-off-owner"],
-        "requiredPermission": "community.surface.navigation.configure"
+        "visibleRoleIds": ["ad-off-owner"]
       }
     ]
   }
