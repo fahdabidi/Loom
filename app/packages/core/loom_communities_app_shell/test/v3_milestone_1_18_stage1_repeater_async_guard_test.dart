@@ -43,13 +43,13 @@ LoomWorkflowStateMachine _voteMachine() => LoomWorkflowStateMachine.fromJson({
 
 Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-RepeaterSurface _live(LocalWorkflowEngineApi api, String personaId) =>
+RepeaterSurface _live(LocalWorkflowEngineApi api, String fanId) =>
     RepeaterSurface.live(
       refreshInterval: const Duration(milliseconds: 10),
       querySource: RepeaterQuerySource(
         engine: api,
         workflowType: 'vote',
-        personaId: personaId,
+        fanId: fanId,
       ),
       itemBuilder: (context, item) =>
           Text((item as WorkflowInstance).instanceData['candidate'] as String),
@@ -68,14 +68,14 @@ void main() {
       api.registerDefinition(_voteMachine());
       final event = await api.createInstance(
         workflowType: 'event',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {
           'goingFanIds': <String>['eligible-member'],
         },
       );
       final vote = await api.createInstance(
         workflowType: 'vote',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {'eventId': event, 'candidate': 'Chess'},
       );
 
@@ -100,7 +100,7 @@ void main() {
 
       final after = await api.queryInstances(
         tabId: 'verify',
-        personaId: 'eligible-member',
+        fanId: 'eligible-member',
         limit: 10,
       );
       expect(

@@ -18,12 +18,12 @@ void main() {
         LoomAccount(
           accountId: 'community-member',
           displayName: 'Seeded community member',
-          personaTypeId: 'community-member',
+          roleId: 'community-member',
         ),
         LoomAccount(
           accountId: 'community-member-peer',
           displayName: 'Another community member',
-          personaTypeId: 'community-member',
+          roleId: 'community-member',
         ),
       ]);
       await signInEvidenceAccount(tester, 'Seeded community member');
@@ -347,8 +347,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectPersona(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

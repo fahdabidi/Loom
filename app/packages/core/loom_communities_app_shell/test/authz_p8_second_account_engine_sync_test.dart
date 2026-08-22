@@ -7,10 +7,11 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 
 const _communityId = 'authz-p8-community';
 const _extensionId = 'authz-p8-extension';
-const _openPersonaId = 'open-member';
-const _boardPersonaId = 'hoa-board';
+const _openRoleId = 'open-member';
+const _boardRoleId = 'hoa-board';
 const _adminWorkflowInstanceId = 'authz-p8-admin-instance';
 const _openAccountId = 'open-member-01';
+const _seedCreatorFanId = 'hoa-board-00';
 const _openAccountDisplayName = 'Open User';
 const _freshBoardAccountDisplayName = 'Board Created In-Flow';
 const _existingBoardAccountDisplayName = 'Board Existing';
@@ -33,14 +34,14 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
     'tagline': 'AuthZ.P8 second-account sync regression',
     'roles': <Object?>[
       <String, Object?>{
-        'roleId': _openPersonaId,
+        'roleId': _openRoleId,
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'Open member.',
         'accessMode': 'open',
       },
       <String, Object?>{
-        'roleId': _boardPersonaId,
+        'roleId': _boardRoleId,
         'label': 'Board',
         'roleLabel': 'Board',
         'description': 'Board-level manager.',
@@ -61,7 +62,7 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
             'from': <String>['pending'],
             'to': 'approved',
             'guard': <String, Object?>{
-              'allowedRoleIds': <String>[_boardPersonaId],
+              'allowedRoleIds': <String>[_boardRoleId],
             },
           },
         ],
@@ -84,7 +85,7 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
         'instanceId': _adminWorkflowInstanceId,
         'workflowType': 'admin-review',
         'currentState': 'pending',
-        'createdByFanId': _boardPersonaId,
+        'createdByFanId': _seedCreatorFanId,
         'instanceData': <String, Object?>{'title': 'Board-only instance'},
       },
     ],
@@ -159,14 +160,14 @@ Future<void> _selectAccountFromSpecificPersonDialog(
   await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
 }
 
-Future<void> _setSignupPersona(WidgetTester tester, String personaId) async {
+Future<void> _setSignupPersona(WidgetTester tester, String fanId) async {
   final personaDropdown = find.byKey(
     const ValueKey('open-signup-persona-dropdown'),
   );
   await tester.ensureVisible(personaDropdown);
   await tester.tap(personaDropdown);
   await tester.pumpAndSettle();
-  final target = find.byKey(ValueKey('open-signup-persona-$personaId'));
+  final target = find.byKey(ValueKey('open-signup-persona-$fanId'));
   await _pumpUntil(tester, target);
   // DropdownMenuItem entries render inside a modal route overlay; the
   // strict hit-test check can flag a false negative here even though the
@@ -180,7 +181,7 @@ Future<String> _createBoardAccountFromPushedAuth(
   WidgetTester tester,
   LocalAuthApi authApi,
 ) async {
-  await _setSignupPersona(tester, _boardPersonaId);
+  await _setSignupPersona(tester, _boardRoleId);
   final displayNameField = find.byKey(
     const ValueKey('open-signup-display-name'),
   );
@@ -233,7 +234,7 @@ void main() {
         LoomAccount(
           accountId: _openAccountId,
           displayName: _openAccountDisplayName,
-          personaTypeId: _openPersonaId,
+          roleId: _openRoleId,
         ),
       ]);
 
@@ -264,7 +265,7 @@ void main() {
       final existingBoardResult = await authApi.signUp(
         communityExtensionId: _extensionId,
         displayName: _existingBoardAccountDisplayName,
-        personaTypeId: _boardPersonaId,
+        roleId: _boardRoleId,
       );
       final existingBoardAccountId = existingBoardResult.account.accountId;
 

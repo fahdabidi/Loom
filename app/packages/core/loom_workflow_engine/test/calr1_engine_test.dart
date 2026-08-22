@@ -26,7 +26,7 @@ void main() {
     await expectLater(
       api.createInstances(
         workflowType: 'row',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceDataList: [
           {'name': 'first'},
           <String, dynamic>{},
@@ -35,13 +35,13 @@ void main() {
       throwsA(isA<WorkflowValidationError>()),
     );
     expect(
-      (await api.queryInstances(tabId: 'x', personaId: 'member')).items,
+      (await api.queryInstances(tabId: 'x', fanId: 'member')).items,
       isEmpty,
     );
 
     final ids = await api.createInstances(
       workflowType: 'row',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceDataList: [
         {'name': 'first'},
         {'name': 'second'},
@@ -49,7 +49,7 @@ void main() {
     );
     final rows = (await api.queryInstances(
       tabId: 'x',
-      personaId: 'member',
+      fanId: 'member',
     )).items.where((row) => row.workflowType == 'row').toList();
     expect(ids, hasLength(2));
     expect(rows.map((row) => row.instanceId), containsAll(ids));
@@ -62,7 +62,7 @@ void main() {
         db: WorkflowDatabase.memory(),
         communityId: 'aggregate-guard',
       );
-      api.setPersonaType('member-1', 'member');
+      api.setRoleForFan('member-1', 'member');
       api.registerDefinition(
         _machine('event', {
           'initialState': 'open',
@@ -109,12 +109,12 @@ void main() {
       );
       final event = await api.createInstance(
         workflowType: 'event',
-        personaId: 'member-1',
+        fanId: 'member-1',
         initialInstanceData: {'capacity': 1},
       );
       final responses = await api.createInstances(
         workflowType: 'response',
-        personaId: 'member-1',
+        fanId: 'member-1',
         initialInstanceDataList: [
           {'eventId': event},
           {'eventId': event},
@@ -125,21 +125,21 @@ void main() {
         instanceId: responses[0],
         currentState: 'pending',
         instanceData: {'eventId': event},
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       expect(first.map((t) => t.id), contains('going'));
       await api.applyTransition(
         workflowType: 'response',
         instanceId: responses[0],
         transitionId: 'going',
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       final second = await api.availableTransitionsAsync(
         workflowType: 'response',
         instanceId: responses[1],
         currentState: 'pending',
         instanceData: {'eventId': event},
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       expect(second.map((t) => t.id), isNot(contains('going')));
     },
@@ -152,7 +152,7 @@ void main() {
         db: WorkflowDatabase.memory(),
         communityId: 'aggregate-field-guard',
       );
-      api.setPersonaType('member-1', 'member');
+      api.setRoleForFan('member-1', 'member');
       api.registerDefinition(
         _machine('event', {
           'initialState': 'open',
@@ -201,12 +201,12 @@ void main() {
       );
       final event = await api.createInstance(
         workflowType: 'event',
-        personaId: 'member-1',
+        fanId: 'member-1',
         initialInstanceData: {'capacity': 4},
       );
       final responses = await api.createInstances(
         workflowType: 'response',
-        personaId: 'member-1',
+        fanId: 'member-1',
         initialInstanceDataList: [
           {'eventId': event, 'partySize': 3},
           {'eventId': event, 'partySize': 1},
@@ -218,32 +218,35 @@ void main() {
         workflowType: 'response',
         instanceId: responses[0],
         transitionId: 'going',
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       final second = await api.availableTransitionsAsync(
         workflowType: 'response',
         instanceId: responses[1],
         currentState: 'pending',
         instanceData: {'eventId': event, 'partySize': 1},
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       expect(second.map((transition) => transition.id), contains('going'));
       await api.applyTransition(
         workflowType: 'response',
         instanceId: responses[1],
         transitionId: 'going',
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
       final third = await api.availableTransitionsAsync(
         workflowType: 'response',
         instanceId: responses[2],
         currentState: 'pending',
         instanceData: {'eventId': event, 'partySize': 1},
-        personaId: 'member-1',
+        fanId: 'member-1',
       );
 
       // Two rows are going, but their declared party sizes already sum to 4.
-      expect(third.map((transition) => transition.id), isNot(contains('going')));
+      expect(
+        third.map((transition) => transition.id),
+        isNot(contains('going')),
+      );
     },
   );
 
@@ -286,15 +289,15 @@ void main() {
     );
     final event = await api.createInstance(
       workflowType: 'event',
-      personaId: 'host',
+      fanId: 'host',
       initialInstanceData: {},
     );
     final response = await api.createInstance(
       workflowType: 'response',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'eventId': event},
     );
-    final page = await api.queryInstances(tabId: 'x', personaId: 'host');
+    final page = await api.queryInstances(tabId: 'x', fanId: 'host');
     final eventData = page.items
         .singleWhere((row) => row.instanceId == event)
         .instanceData;
@@ -340,7 +343,7 @@ void main() {
     );
     final response = await api.createInstance(
       workflowType: 'response',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'eventId': 'event-1'},
     );
 
@@ -349,7 +352,7 @@ void main() {
       instanceId: response,
       currentState: 'pending',
       instanceData: {'eventId': 'event-1'},
-      personaId: 'member',
+      fanId: 'member',
     );
 
     expect(

@@ -98,11 +98,7 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.people_alt_outlined,
-                        size: 56,
-                        color: accent,
-                      ),
+                      Icon(Icons.people_alt_outlined, size: 56, color: accent),
                       const SizedBox(height: 12),
                       Text(
                         'Welcome to Loom',
@@ -203,7 +199,7 @@ class _AccountList extends StatelessWidget {
   Widget build(BuildContext context) {
     final grouped = <String, List<LoomAccount>>{};
     for (final account in accounts) {
-      grouped.putIfAbsent(account.personaTypeId, () => []).add(account);
+      grouped.putIfAbsent(account.roleId, () => []).add(account);
     }
     final sortedGroups = grouped.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
@@ -266,7 +262,8 @@ class _AccountList extends StatelessWidget {
                       ),
                   ],
                 ),
-                trailing: signedInAccountId != null &&
+                trailing:
+                    signedInAccountId != null &&
                         account.accountId == signedInAccountId
                     ? Chip(
                         label: const Text('Signed in'),
@@ -279,11 +276,11 @@ class _AccountList extends StatelessWidget {
                         ),
                       )
                     : account.status == MembershipStatus.active
-                        ? const Icon(Icons.login)
-                        : Chip(
-                            label: Text(_membershipStatusLabel(account.status)),
-                            avatar: const Icon(Icons.hourglass_empty, size: 16),
-                          ),
+                    ? const Icon(Icons.login)
+                    : Chip(
+                        label: Text(_membershipStatusLabel(account.status)),
+                        avatar: const Icon(Icons.hourglass_empty, size: 16),
+                      ),
                 onTap: account.status == MembershipStatus.active
                     ? () => onSignIn(account.accountId)
                     : null,
@@ -298,7 +295,7 @@ class _AccountList extends StatelessWidget {
     final persona = personasForExtensionId(
       experience.extensionId,
       experience: experience,
-    ).where((candidate) => candidate.personaId == typeId).firstOrNull;
+    ).where((candidate) => candidate.roleId == typeId).firstOrNull;
     if (persona == null) return typeId;
     return '${persona.label} (${persona.roleLabel})';
   }
@@ -337,7 +334,7 @@ class _PendingAndInvitesSurface extends StatefulWidget {
 }
 
 class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
-  String? _selectedInvitePersonaId;
+  String? _selectedInviteRoleId;
   String? _issuedCode;
   String? _error;
   bool _issuing = false;
@@ -357,16 +354,13 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
     final account = widget.authApi.currentSession?.account;
     return account != null &&
         account.status == MembershipStatus.active &&
-        _personaCanAdministerAnyWorkflow(
-          widget.experience,
-          account.personaTypeId,
-        );
+        _personaCanAdministerAnyWorkflow(widget.experience, account.roleId);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedInvitePersonaId ??= _invitePersonas.firstOrNull?.personaId;
+    _selectedInviteRoleId ??= _invitePersonas.firstOrNull?.roleId;
   }
 
   Future<void> _approve(LoomAccount account) async {
@@ -382,9 +376,9 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
   }
 
   Future<void> _issueInvite() async {
-    final personaTypeId = _selectedInvitePersonaId;
+    final roleId = _selectedInviteRoleId;
     final issuer = widget.authApi.currentSession?.account.accountId;
-    if (personaTypeId == null || issuer == null) return;
+    if (roleId == null || issuer == null) return;
     setState(() {
       _issuing = true;
       _error = null;
@@ -392,7 +386,7 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
     });
     try {
       final invite = await widget.authApi.issueInvite(
-        personaTypeId: personaTypeId,
+        roleId: roleId,
         issuedByAccountId: issuer,
       );
       if (!mounted) return;
@@ -472,21 +466,21 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
             else ...[
               DropdownButtonFormField<String>(
                 key: const ValueKey('issue-invite-persona-dropdown'),
-                initialValue: _selectedInvitePersonaId,
+                initialValue: _selectedInviteRoleId,
                 decoration: const InputDecoration(
                   labelText: 'Persona type',
                   border: OutlineInputBorder(),
                 ),
                 items: invitePersonas.map((persona) {
                   return DropdownMenuItem(
-                    key: ValueKey('issue-invite-persona-${persona.personaId}'),
-                    value: persona.personaId,
+                    key: ValueKey('issue-invite-persona-${persona.roleId}'),
+                    value: persona.roleId,
                     child: Text(persona.label),
                   );
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
-                    setState(() => _selectedInvitePersonaId = value);
+                    setState(() => _selectedInviteRoleId = value);
                   }
                 },
               ),
@@ -593,12 +587,10 @@ class _SignUpFormState extends State<_SignUpForm> {
               persona.accessMode == LoomPersonaAccessMode.requiresInvite,
         )
         .toList();
-    _selectedType = _openPersonas.isEmpty
-        ? null
-        : _openPersonas.first.personaId;
+    _selectedType = _openPersonas.isEmpty ? null : _openPersonas.first.roleId;
     _selectedInviteType = _invitePersonas.isEmpty
         ? null
-        : _invitePersonas.first.personaId;
+        : _invitePersonas.first.roleId;
   }
 
   @override
@@ -618,7 +610,7 @@ class _SignUpFormState extends State<_SignUpForm> {
       final result = await widget.authApi.signUp(
         communityExtensionId: widget.communityExtensionId,
         displayName: _displayNameController.text.trim(),
-        personaTypeId: selectedType,
+        roleId: selectedType,
       );
       if (result is LoomPendingApprovalSignUpResult) {
         await widget.onAccountsChanged();
@@ -712,8 +704,8 @@ class _SignUpFormState extends State<_SignUpForm> {
                   ),
                   items: _openPersonas.map((persona) {
                     return DropdownMenuItem(
-                      key: ValueKey('open-signup-persona-${persona.personaId}'),
-                      value: persona.personaId,
+                      key: ValueKey('open-signup-persona-${persona.roleId}'),
+                      value: persona.roleId,
                       child: Text(persona.label),
                     );
                   }).toList(),
@@ -773,8 +765,8 @@ class _SignUpFormState extends State<_SignUpForm> {
             ),
             items: _invitePersonas.map((persona) {
               return DropdownMenuItem(
-                key: ValueKey('invite-redeem-persona-${persona.personaId}'),
-                value: persona.personaId,
+                key: ValueKey('invite-redeem-persona-${persona.roleId}'),
+                value: persona.roleId,
                 child: Text(persona.label),
               );
             }).toList(),

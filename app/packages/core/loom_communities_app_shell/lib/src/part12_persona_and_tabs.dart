@@ -43,8 +43,8 @@ LoomWorkflowPersonaPolicy personaPolicyForWorkflow(
       return _exportPolicy(workflowId);
   }
   return const LoomWorkflowPersonaPolicy(
-    actorPersonaIds: ['local-owner'],
-    receiverPersonaIds: ['local-member'],
+    actorRoleIds: ['local-owner'],
+    receiverRoleIds: ['local-member'],
     receiverEntryText: 'A local community update is available.',
     receiverActionText: 'Receive',
     receiverResultText: 'Local community update received.',
@@ -54,7 +54,7 @@ LoomWorkflowPersonaPolicy personaPolicyForWorkflow(
 LoomPersonaWorkflowState personaWorkflowStateFor({
   required String extensionId,
   required String workflowId,
-  required String personaId,
+  required String roleId,
   LoomExperienceDefinition? experience,
 }) {
   final policy = personaPolicyForWorkflow(
@@ -62,13 +62,13 @@ LoomPersonaWorkflowState personaWorkflowStateFor({
     workflowId,
     experience: experience,
   );
-  if (policy.actorPersonaIds.contains(personaId)) {
+  if (policy.actorRoleIds.contains(roleId)) {
     return LoomPersonaWorkflowState.actor;
   }
-  if (policy.receiverPersonaIds.contains(personaId)) {
+  if (policy.receiverRoleIds.contains(roleId)) {
     return LoomPersonaWorkflowState.receiver;
   }
-  if (policy.readOnlyPersonaIds.contains(personaId)) {
+  if (policy.readOnlyRoleIds.contains(roleId)) {
     return LoomPersonaWorkflowState.readOnly;
   }
   return LoomPersonaWorkflowState.disabled;
@@ -77,7 +77,7 @@ LoomPersonaWorkflowState personaWorkflowStateFor({
 LoomPersonaWorkflowView personaWorkflowViewFor({
   required String extensionId,
   required LoomWorkflowDefinition workflow,
-  required String personaId,
+  required String roleId,
   required Set<String> completedWorkflowIds,
   required Set<String> receivedWorkflowPersonaKeys,
   LoomExperienceDefinition? experience,
@@ -90,17 +90,14 @@ LoomPersonaWorkflowView personaWorkflowViewFor({
   final state = personaWorkflowStateFor(
     extensionId: extensionId,
     workflowId: workflow.workflowId,
-    personaId: personaId,
+    roleId: roleId,
     experience: experience,
   );
   final workflowCompleted = completedWorkflowIds.contains(workflow.workflowId);
   final completed =
       workflowCompleted && state == LoomPersonaWorkflowState.actor;
   final received = receivedWorkflowPersonaKeys.contains(
-    workflowPersonaReceiptKey(
-      workflowId: workflow.workflowId,
-      personaId: personaId,
-    ),
+    workflowPersonaReceiptKey(workflowId: workflow.workflowId, roleId: roleId),
   );
   final actorWaiting =
       state == LoomPersonaWorkflowState.actor &&
@@ -143,17 +140,17 @@ List<LoomPersonaWorkflowMatrixRow> personaWorkflowMatrixForExtensionId(
         LoomPersonaWorkflowMatrixRow(
           extensionId: extensionId,
           workflowId: workflow.workflowId,
-          personaId: persona.personaId,
+          roleId: persona.roleId,
           state: personaWorkflowStateFor(
             extensionId: extensionId,
             workflowId: workflow.workflowId,
-            personaId: persona.personaId,
+            roleId: persona.roleId,
           ),
           rationale: _rationaleForState(
             personaWorkflowStateFor(
               extensionId: extensionId,
               workflowId: workflow.workflowId,
-              personaId: persona.personaId,
+              roleId: persona.roleId,
             ),
             personaPolicyForWorkflow(extensionId, workflow.workflowId),
           ),
@@ -171,18 +168,18 @@ List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
   final experience = experienceForExtensionId(extensionId);
   return [
     for (final workflow in experience.workflows)
-      for (final receiverPersonaId in personaPolicyForWorkflow(
+      for (final receiverRoleId in personaPolicyForWorkflow(
         extensionId,
         workflow.workflowId,
-      ).receiverPersonaIds)
+      ).receiverRoleIds)
         LoomWorkflowDependency(
           extensionId: extensionId,
           workflowId: workflow.workflowId,
-          actorPersonaId: personaPolicyForWorkflow(
+          actorRoleId: personaPolicyForWorkflow(
             extensionId,
             workflow.workflowId,
-          ).actorPersonaIds.first,
-          receiverPersonaId: receiverPersonaId,
+          ).actorRoleIds.first,
+          receiverRoleId: receiverRoleId,
           prerequisiteWorkflowId:
               personaPolicyForWorkflow(
                 extensionId,
@@ -195,24 +192,23 @@ List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
 
 List<LoomAppShellTabSpec> appShellTabsFor({
   required LoomExperienceDefinition experience,
-  required String personaId,
+  required String roleId,
   Map<String, Object?> appShellConfiguration = const {},
   bool? hasActiveMembership,
 }) {
   final generatedTabs = _generatedAppShellTabsFor(experience: experience);
   final tabs = _mergeDeclarativeTabSpecs(
     experience: experience,
-    personaId: personaId,
+    roleId: roleId,
     generatedTabs: generatedTabs,
     appShellConfiguration: appShellConfiguration,
   );
   return [
     for (final tab in tabs)
       if (tab.isVisibleFor(
-        personaId,
+        roleId,
         experience: experience,
         hasActiveMembership: hasActiveMembership,
-        personaTypeId: personaId,
       ))
         tab,
   ];
@@ -255,12 +251,12 @@ List<LoomAppShellTabSpec> _generatedAppShellTabsFor({
 
 List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
   required LoomExperienceDefinition experience,
-  required String personaId,
+  required String roleId,
   required List<LoomAppShellTabSpec> generatedTabs,
   required Map<String, Object?> appShellConfiguration,
 }) {
   final overrides = _declarativeTabSpecsFor(
-    personaId: personaId,
+    roleId: roleId,
     appShellConfiguration: appShellConfiguration,
   );
   final mergedById = <String, LoomAppShellTabSpec>{
@@ -284,7 +280,7 @@ List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
         sectionTitles: generated.sectionTitles,
         cardSurfaceFamilies: generated.cardSurfaceFamilies,
         pinnedWorkflowIds: generated.pinnedWorkflowIds,
-        visiblePersonaIds: generated.visiblePersonaIds,
+        visibleRoleIds: generated.visibleRoleIds,
       );
     } else {
       mergedById[override.tabId] = override.toTabSpec(
@@ -363,7 +359,7 @@ String _derivedRendererContractIdForTab({
 }
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
-  required String personaId,
+  required String roleId,
   Map<String, Object?> appShellConfiguration = const {},
 }) {
   final packageGlobal = _declarativeTabSpecsFromConfiguration(
@@ -371,19 +367,19 @@ List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
   );
   final packagePersona = _declarativeTabSpecsFromPersonaConfiguration(
     appShellConfiguration['roleTabs'],
-    personaId: personaId,
+    roleId: roleId,
   );
   return [...packageGlobal, ...packagePersona];
 }
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFromPersonaConfiguration(
   Object? value, {
-  required String personaId,
+  required String roleId,
 }) {
   if (value is! Map<String, Object?>) {
     return const [];
   }
-  return _declarativeTabSpecsFromConfiguration(value[personaId]);
+  return _declarativeTabSpecsFromConfiguration(value[roleId]);
 }
 
 List<LoomDeclarativeTabSpec> _declarativeTabSpecsFromConfiguration(
@@ -439,7 +435,7 @@ LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
       'pinnedSurfaces',
       'pinnedWorkflowIds',
     ]),
-    visiblePersonaIds: _readShellStringList(value, const ['visibleRoleIds']),
+    visibleRoleIds: _readShellStringList(value, const ['visibleRoleIds']),
   );
 }
 
@@ -500,7 +496,7 @@ IconData _tabIconForKey(String iconKey) {
 
 bool _personaCanAdministerAnyWorkflow(
   LoomExperienceDefinition experience,
-  String personaId,
+  String roleId,
 ) {
   final engineDefinitions = experience.workflowDefinitions;
   if (engineDefinitions != null && engineDefinitions.isNotEmpty) {
@@ -522,8 +518,7 @@ bool _personaCanAdministerAnyWorkflow(
         return definition.transitions.any(
           (transition) =>
               transition.from.any((state) => adminStates.contains(state)) &&
-              (transition.guard.allowedPersonaIds?.contains(personaId) ??
-                  false),
+              (transition.guard.allowedRoleIds?.contains(roleId) ?? false),
         );
       });
     }
@@ -532,7 +527,7 @@ bool _personaCanAdministerAnyWorkflow(
     final state = personaWorkflowStateFor(
       extensionId: experience.extensionId,
       workflowId: workflow.workflowId,
-      personaId: personaId,
+      roleId: roleId,
       experience: experience,
     );
     if (state == LoomPersonaWorkflowState.receiver &&
@@ -563,17 +558,15 @@ bool _personaCanAdministerAnyWorkflow(
 /// filtering must produce the empty state. The derivation scans every
 /// transition and create action on every workflow bound to the requested tab,
 /// including response workflows reached through `responseTable`.
-bool personaHasPermission(
+bool roleHasPermission(
   LoomExperienceDefinition experience,
-  String personaId, {
+  String roleId, {
   String? tabId,
   String? workflowType,
-  String? personaTypeId,
 }) {
   if (tabId == 'home' || tabId == 'messages') {
     return true;
   }
-  final subjectPersonaId = personaTypeId ?? personaId;
   final definitions = _surfaceWorkflowDefinitions(
     experience,
     tabId: tabId,
@@ -589,16 +582,12 @@ bool personaHasPermission(
   var hasRoleGuard = false;
   for (final definition in definitions) {
     for (final transition in definition.transitions) {
-      final allowedRoleIds = transition.guard.allowedPersonaIds;
+      final allowedRoleIds = transition.guard.allowedRoleIds;
       if (allowedRoleIds == null || allowedRoleIds.isEmpty) {
         return true;
       }
       hasRoleGuard = true;
-      if (_personaMatchesAllowedIds(
-        allowedRoleIds,
-        experience,
-        subjectPersonaId,
-      )) {
+      if (_roleMatchesAllowedIds(allowedRoleIds, roleId)) {
         return true;
       }
     }
@@ -606,14 +595,10 @@ bool personaHasPermission(
     for (final binding in definition.renderBindings) {
       for (final action in binding.actions) {
         if (action.kind != 'create') continue;
-        final byRoleIds = action.byPersonaIds;
+        final byRoleIds = action.byRoleIds;
         if (byRoleIds == null || byRoleIds.isEmpty) continue;
         hasRoleGuard = true;
-        if (_personaMatchesAllowedIds(
-          byRoleIds,
-          experience,
-          subjectPersonaId,
-        )) {
+        if (_roleMatchesAllowedIds(byRoleIds, roleId)) {
           return true;
         }
       }
@@ -657,26 +642,14 @@ List<LoomWorkflowStateMachine> _surfaceWorkflowDefinitions(
   return definitions;
 }
 
-bool _personaMatchesAllowedIds(
-  Iterable<String> allowedPersonaIds,
-  LoomExperienceDefinition experience,
-  String personaId,
-) {
-  if (allowedPersonaIds.contains(personaId)) return true;
-  final persona = experience.personas?.where(
-    (candidate) => candidate.accountId == personaId,
-  );
-  return persona?.any(
-        (candidate) => allowedPersonaIds.contains(candidate.personaId),
-      ) ??
-      false;
-}
+bool _roleMatchesAllowedIds(Iterable<String> allowedRoleIds, String roleId) =>
+    allowedRoleIds.contains(roleId);
 
 String workflowPersonaReceiptKey({
   required String workflowId,
-  required String personaId,
+  required String roleId,
 }) {
-  return '$workflowId::$personaId';
+  return '$workflowId::$roleId';
 }
 
 List<LoomWorkflowCardSurfaceRegistryEntry> cardSurfaceRegistryForExtensionId(

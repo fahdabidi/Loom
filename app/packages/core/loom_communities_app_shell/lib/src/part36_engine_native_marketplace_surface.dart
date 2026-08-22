@@ -49,7 +49,7 @@ class _EngineNativeMarketplaceSurfaceState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.roleId != widget.persona.roleId ||
         oldWidget.persona.accountId != widget.persona.accountId ||
         oldWidget.tabId != widget.tabId) {
       _selectedCategory = null;
@@ -69,7 +69,7 @@ class _EngineNativeMarketplaceSurfaceState
 
   Iterable<String> _marketplaceRolesForInstance(
     WorkflowInstance instance,
-    String viewerPersonaId,
+    String viewerFanId,
   ) {
     final definitions = widget.experience.workflowDefinitions;
     if (definitions == null) return const <String>[];
@@ -78,8 +78,8 @@ class _EngineNativeMarketplaceSurfaceState
     return deriveInstanceRoles(
       machine,
       instance,
-      viewerPersonaId: viewerPersonaId,
-      viewerPersonaTypeId: widget.persona.personaId,
+      viewerFanId: viewerFanId,
+      viewerRoleId: widget.persona.roleId,
     );
   }
 
@@ -111,20 +111,21 @@ class _EngineNativeMarketplaceSurfaceState
         }
 
         final engine = snapshot.data!;
-        final personaId = ActiveIdentityScope.of(
+        final fanId = ActiveIdentityScope.of(
           context,
-        ).resolveEnginePersonaId(widget.persona.personaId);
+        ).resolveEngineFanId(widget.persona.fanId);
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,
           tabId: widget.tabId,
-          personaId: personaId,
+          fanId: fanId,
           rolesForInstance: _stableMarketplaceRolesForInstance,
           builder: (context, bindings, changed) =>
               _EngineNativeMarketplaceContent(
                 bindings: bindings,
                 engine: engine,
-                personaId: personaId,
+                fanId: fanId,
+                roleId: widget.persona.roleId,
                 communityExtensionId: widget.experience.extensionId,
                 accent: widget.accent,
                 modernTheme: widget.modernTheme,
@@ -146,7 +147,8 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
   const _EngineNativeMarketplaceContent({
     required this.bindings,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.communityExtensionId,
     required this.accent,
     required this.modernTheme,
@@ -159,7 +161,8 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
 
   final List<EngineNativeResolvedBinding> bindings;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final String communityExtensionId;
   final Color accent;
   final LoomCardTheme? modernTheme;
@@ -215,7 +218,8 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
               resolved: resolved,
               engine: engine,
               communityExtensionId: communityExtensionId,
-              personaId: personaId,
+              fanId: fanId,
+              roleId: roleId,
               accent: accent,
               modernTheme: modernTheme,
               displayContext: 'detail',
@@ -355,7 +359,8 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
                   resolved: resolved,
                   engine: engine,
                   communityExtensionId: communityExtensionId,
-                  personaId: personaId,
+                  fanId: fanId,
+                  roleId: roleId,
                   accent: accent,
                   modernTheme: modernTheme,
                   displayContext: 'tile',
@@ -382,7 +387,7 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
     super.key,
     required this.resolved,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -392,7 +397,7 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
 
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -428,7 +433,7 @@ class _EquipmentLoanArchetypeCardState
     if (oldInstance.instanceId != newInstance.instanceId ||
         oldInstance.currentState != newInstance.currentState ||
         oldInstance.instanceData != newInstance.instanceData ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
@@ -456,7 +461,7 @@ class _EquipmentLoanArchetypeCardState
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       if (!mounted || request != _actionRequest) return;
       setState(() {
@@ -550,7 +555,7 @@ class _EquipmentLoanArchetypeCardState
         maxLength: field.maxLength,
         // Any community's own field names may carry the same long-text/
         // owner-attribution role the hardcoded equipment-loan archetype
-        // names explicitly (title/holderPersonaId/claimedByPersonaId) --
+        // names explicitly (title/holderFanId/claimedByFanId) --
         // apply the same non-truncating default to every fact pill here
         // rather than keying off a fixed allowlist of field names (CJM.11).
         maxLines: 2,
@@ -596,14 +601,14 @@ class _EquipmentLoanArchetypeCardState
         workflowType: _instance.workflowType,
         instanceId: _instance.instanceId,
         transitionId: transition.id,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
         workflowType: _instance.workflowType,
         currentState: result.newState,
         instanceData: result.newInstanceData,
-        createdByPersonaId: _instance.createdByPersonaId,
+        createdByFanId: _instance.createdByFanId,
       );
       if (!mounted) return;
       setState(() {
@@ -724,7 +729,7 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
     super.key,
     required this.resolved,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -734,7 +739,7 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
 
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -780,7 +785,7 @@ class _DocumentLibraryArchetypeCardState
     if (oldInstance.instanceId != newInstance.instanceId ||
         oldInstance.currentState != newInstance.currentState ||
         oldInstance.instanceData != newInstance.instanceData ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
@@ -808,7 +813,7 @@ class _DocumentLibraryArchetypeCardState
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       if (!mounted || request != _actionRequest) return;
       setState(() {
@@ -921,14 +926,14 @@ class _DocumentLibraryArchetypeCardState
         workflowType: _instance.workflowType,
         instanceId: _instance.instanceId,
         transitionId: transition.id,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
         workflowType: _instance.workflowType,
         currentState: result.newState,
         instanceData: result.newInstanceData,
-        createdByPersonaId: _instance.createdByPersonaId,
+        createdByFanId: _instance.createdByFanId,
       );
       if (!mounted) return;
       setState(() {
@@ -1023,7 +1028,7 @@ class ExportWizardArchetypeCard extends StatefulWidget {
     super.key,
     required this.resolved,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -1033,7 +1038,7 @@ class ExportWizardArchetypeCard extends StatefulWidget {
 
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -1074,7 +1079,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
     if (oldInstance.instanceId != newInstance.instanceId ||
         oldInstance.currentState != newInstance.currentState ||
         oldInstance.instanceData != newInstance.instanceData ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
@@ -1102,7 +1107,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       if (!mounted || request != _actionRequest) return;
       setState(() {
@@ -1130,14 +1135,14 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
         workflowType: _instance.workflowType,
         instanceId: _instance.instanceId,
         transitionId: transition.id,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
         workflowType: _instance.workflowType,
         currentState: result.newState,
         instanceData: result.newInstanceData,
-        createdByPersonaId: _instance.createdByPersonaId,
+        createdByFanId: _instance.createdByFanId,
       );
       if (!mounted) return;
       setState(() {
@@ -1458,7 +1463,7 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
     super.key,
     required this.resolved,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -1468,7 +1473,7 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
 
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -1504,7 +1509,7 @@ class _SearchAiAnswerArchetypeCardState
     if (oldInstance.instanceId != newInstance.instanceId ||
         oldInstance.currentState != newInstance.currentState ||
         oldInstance.instanceData != newInstance.instanceData ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
@@ -1532,7 +1537,7 @@ class _SearchAiAnswerArchetypeCardState
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       if (!mounted || request != _actionRequest) return;
       setState(() {
@@ -1742,14 +1747,14 @@ class _SearchAiAnswerArchetypeCardState
         workflowType: _instance.workflowType,
         instanceId: _instance.instanceId,
         transitionId: transition.id,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       final next = WorkflowInstance(
         instanceId: _instance.instanceId,
         workflowType: _instance.workflowType,
         currentState: result.newState,
         instanceData: result.newInstanceData,
-        createdByPersonaId: _instance.createdByPersonaId,
+        createdByFanId: _instance.createdByFanId,
       );
       if (!mounted) return;
       setState(() {

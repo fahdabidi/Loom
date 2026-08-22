@@ -360,16 +360,17 @@ double? _shellDoubleOr(Object? value) {
 }
 
 LoomPersonaDefinition? _parsePersonaDefinition(Map<String, Object?> map) {
-  final personaId = map['roleId'];
+  final roleId = map['roleId'];
   final label = map['label'];
-  if (personaId is! String || personaId.isEmpty || label is! String) {
+  if (roleId is! String || roleId.isEmpty || label is! String) {
     return null;
   }
   final roleLabel = map['roleLabel'];
   final description = map['description'];
   final accessMode = LoomPersonaAccessMode.fromJson(map['accessMode']);
   return LoomPersonaDefinition(
-    personaId: personaId,
+    fanId: roleId,
+    roleId: roleId,
     label: label,
     roleLabel: roleLabel is String ? roleLabel : label,
     description: description is String ? description : '',
@@ -542,13 +543,15 @@ Map<String, List<String>> preloadedSeedFilesByCommunityId() {
 
 const List<LoomPersonaDefinition> _fallbackPersonas = [
   LoomPersonaDefinition(
-    personaId: 'local-owner',
+    fanId: 'local-owner',
+    roleId: 'local-owner',
     label: 'Local Owner',
     roleLabel: 'Owner',
     description: 'Manages local community setup and member actions.',
   ),
   LoomPersonaDefinition(
-    personaId: 'local-member',
+    fanId: 'local-member',
+    roleId: 'local-member',
     label: 'Local Member',
     roleLabel: 'Member',
     description: 'Uses local community member tools.',
@@ -558,13 +561,15 @@ const List<LoomPersonaDefinition> _fallbackPersonas = [
 const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   'ext_garden_club': [
     LoomPersonaDefinition(
-      personaId: 'garden-coordinator',
+      fanId: 'garden-coordinator',
+      roleId: 'garden-coordinator',
       label: 'Garden Coordinator',
       roleLabel: 'Coordinator',
       description: 'Coordinates events, exchanges, and garden exports.',
     ),
     LoomPersonaDefinition(
-      personaId: 'garden-member',
+      fanId: 'garden-member',
+      roleId: 'garden-member',
       label: 'Garden Member',
       roleLabel: 'Member',
       description: 'RSVPs to garden events and submits exchange offers.',
@@ -572,13 +577,15 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_book_club': [
     LoomPersonaDefinition(
-      personaId: 'book-organizer',
+      fanId: 'book-organizer',
+      roleId: 'book-organizer',
       label: 'Book Organizer',
       roleLabel: 'Organizer',
       description: 'Publishes selections and manages club records.',
     ),
     LoomPersonaDefinition(
-      personaId: 'book-member',
+      fanId: 'book-member',
+      roleId: 'book-member',
       label: 'Book Member',
       roleLabel: 'Member',
       description: 'Nominates, votes, attends, and discusses books.',
@@ -586,20 +593,23 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_youth_soccer': [
     LoomPersonaDefinition(
-      personaId: 'guardian',
+      fanId: 'guardian',
+      roleId: 'guardian',
       label: 'Guardian',
       roleLabel: 'Guardian',
       description: 'Handles player registration, payments, and reminders.',
     ),
     LoomPersonaDefinition(
-      personaId: 'coach',
+      fanId: 'coach',
+      roleId: 'coach',
       label: 'Coach',
       roleLabel: 'Team staff',
       description:
           'Approves guardians, manages rosters, and publishes team operations.',
     ),
     LoomPersonaDefinition(
-      personaId: 'owner',
+      fanId: 'owner',
+      roleId: 'owner',
       label: 'Owner',
       roleLabel: 'Owner',
       description: 'Runs protected exports with minor-data redaction.',
@@ -607,13 +617,15 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_hoa': [
     LoomPersonaDefinition(
-      personaId: 'hoa-board',
+      fanId: 'hoa-board',
+      roleId: 'hoa-board',
       label: 'HOA Board',
       roleLabel: 'Board',
       description: 'Manages requests, sends decisions, and exports records.',
     ),
     LoomPersonaDefinition(
-      personaId: 'hoa-homeowner',
+      fanId: 'hoa-homeowner',
+      roleId: 'hoa-homeowner',
       label: 'Homeowner',
       roleLabel: 'Member',
       description: 'Pays dues, reserves facilities, and submits requests.',
@@ -621,13 +633,15 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_mosque': [
     LoomPersonaDefinition(
-      personaId: 'mosque-admin',
+      fanId: 'mosque-admin',
+      roleId: 'mosque-admin',
       label: 'Masjid Admin',
       roleLabel: 'Admin',
       description: 'Publishes announcements and sends neutral notifications.',
     ),
     LoomPersonaDefinition(
-      personaId: 'mosque-member',
+      fanId: 'mosque-member',
+      roleId: 'mosque-member',
       label: 'Community Member',
       roleLabel: 'Member',
       description:
@@ -636,13 +650,15 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_chess_club': [
     LoomPersonaDefinition(
-      personaId: 'chess-organizer',
+      fanId: 'chess-organizer',
+      roleId: 'chess-organizer',
       label: 'Chess Organizer',
       roleLabel: 'Organizer',
       description: 'Runs community homes and match records.',
     ),
     LoomPersonaDefinition(
-      personaId: 'chess-player',
+      fanId: 'chess-player',
+      roleId: 'chess-player',
       label: 'Chess Player',
       roleLabel: 'Member',
       description: 'Opens club routes and records match results.',
@@ -650,13 +666,15 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_camera_club': [
     LoomPersonaDefinition(
-      personaId: 'camera-organizer',
+      fanId: 'camera-organizer',
+      roleId: 'camera-organizer',
       label: 'Camera Organizer',
       roleLabel: 'Organizer',
       description: 'Coordinates RSVPs, critiques, and gear-loan requests.',
     ),
     LoomPersonaDefinition(
-      personaId: 'camera-member',
+      fanId: 'camera-member',
+      roleId: 'camera-member',
       label: 'Camera Member',
       roleLabel: 'Member',
       description: 'RSVPs, submits critiques, and requests shared gear.',
@@ -664,19 +682,22 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_platform_social': [
     LoomPersonaDefinition(
-      personaId: 'platform-member',
+      fanId: 'platform-member',
+      roleId: 'platform-member',
       label: 'Platform Member',
       roleLabel: 'Member',
       description: 'Uses allowed messages, connections, and ad preferences.',
     ),
     LoomPersonaDefinition(
-      personaId: 'platform-moderator',
+      fanId: 'platform-moderator',
+      roleId: 'platform-moderator',
       label: 'Moderator',
       roleLabel: 'Moderator',
       description: 'Manages prevention and sensitive-page behavior.',
     ),
     LoomPersonaDefinition(
-      personaId: 'platform-blocked-member',
+      fanId: 'platform-blocked-member',
+      roleId: 'platform-blocked-member',
       label: 'Blocked Member',
       roleLabel: 'Restricted',
       description: 'Sees restricted social actions and account status.',
@@ -684,19 +705,22 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_ad_off': [
     LoomPersonaDefinition(
-      personaId: 'ad-off-member',
+      fanId: 'ad-off-member',
+      roleId: 'ad-off-member',
       label: 'Ad-Off Member',
       roleLabel: 'Member',
       description: 'Purchases and verifies member ad-off entitlement.',
     ),
     LoomPersonaDefinition(
-      personaId: 'ad-off-admin',
+      fanId: 'ad-off-admin',
+      roleId: 'ad-off-admin',
       label: 'Community Admin',
       roleLabel: 'Admin',
       description: 'Purchases community ad-off and audits settlement.',
     ),
     LoomPersonaDefinition(
-      personaId: 'ad-off-viewer',
+      fanId: 'ad-off-viewer',
+      roleId: 'ad-off-viewer',
       label: 'Ad-Free Viewer',
       roleLabel: 'Viewer',
       description: 'Receives entitlement effects without checkout ownership.',
@@ -704,19 +728,22 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_export_migration': [
     LoomPersonaDefinition(
-      personaId: 'export-owner',
+      fanId: 'export-owner',
+      roleId: 'export-owner',
       label: 'Data Owner',
       roleLabel: 'Owner',
       description: 'Runs import, export, redaction, and checksum actions.',
     ),
     LoomPersonaDefinition(
-      personaId: 'export-member',
+      fanId: 'export-member',
+      roleId: 'export-member',
       label: 'Export Member',
       roleLabel: 'Member',
       description: 'Inspects redacted data without accessing protected values.',
     ),
     LoomPersonaDefinition(
-      personaId: 'export-provider',
+      fanId: 'export-provider',
+      roleId: 'export-provider',
       label: 'Receiving Provider',
       roleLabel: 'Provider',
       description: 'Verifies transfer and rollback outcomes.',
@@ -731,8 +758,8 @@ LoomWorkflowPersonaPolicy _gardenPolicy(String workflowId) {
     case 'garden-tool-loan':
     case 'garden-volunteer-shift':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['garden-member'],
-        receiverPersonaIds: ['garden-coordinator'],
+        actorRoleIds: ['garden-member'],
+        receiverRoleIds: ['garden-coordinator'],
         receiverEntryText: 'A member garden submission is ready for action.',
         receiverActionText: 'Open',
         receiverResultText:
@@ -740,14 +767,12 @@ LoomWorkflowPersonaPolicy _gardenPolicy(String workflowId) {
       );
     case 'garden-export-custom-schemas':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['garden-coordinator'],
-        readOnlyPersonaIds: ['garden-member'],
+        actorRoleIds: ['garden-coordinator'],
+        readOnlyRoleIds: ['garden-member'],
         readOnlyText: 'Members can open that their garden records export.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(
-    actorPersonaIds: ['garden-coordinator'],
-  );
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['garden-coordinator']);
 }
 
 LoomWorkflowPersonaPolicy _bookPolicy(String workflowId) {
@@ -757,8 +782,8 @@ LoomWorkflowPersonaPolicy _bookPolicy(String workflowId) {
     case 'book-meeting-rsvp':
     case 'book-discussion-message':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['book-member'],
-        receiverPersonaIds: ['book-organizer'],
+        actorRoleIds: ['book-member'],
+        receiverRoleIds: ['book-organizer'],
         receiverEntryText:
             'A member book-club contribution is ready for organizer action.',
         receiverActionText: 'Open',
@@ -767,8 +792,8 @@ LoomWorkflowPersonaPolicy _bookPolicy(String workflowId) {
       );
     case 'book-selection-publish':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['book-organizer'],
-        receiverPersonaIds: ['book-member'],
+        actorRoleIds: ['book-organizer'],
+        receiverRoleIds: ['book-member'],
         receiverEntryText:
             'The published monthly selection is ready to receive.',
         receiverActionText: 'Receive selection',
@@ -776,56 +801,56 @@ LoomWorkflowPersonaPolicy _bookPolicy(String workflowId) {
       );
     case 'book-search-ai-digest':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['book-member', 'book-organizer'],
+        actorRoleIds: ['book-member', 'book-organizer'],
       );
     case 'book-export-metadata':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['book-organizer'],
-        readOnlyPersonaIds: ['book-member'],
+        actorRoleIds: ['book-organizer'],
+        readOnlyRoleIds: ['book-member'],
         readOnlyText: 'Members can open export metadata without creating it.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['book-organizer']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['book-organizer']);
 }
 
 LoomWorkflowPersonaPolicy _soccerPolicy(String workflowId) {
   switch (workflowId) {
     case 'soccer-guardian-join-approval':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['guardian'],
-        receiverPersonaIds: ['coach', 'owner'],
+        actorRoleIds: ['guardian'],
+        receiverRoleIds: ['coach', 'owner'],
         receiverEntryText: 'Guardian approval is ready to receive.',
         receiverActionText: 'Receive approval',
         receiverResultText: 'Guardian received active membership approval.',
       );
     case 'soccer-team-roster':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['coach', 'guardian'],
+        actorRoleIds: ['coach', 'guardian'],
       );
     case 'soccer-minor-redaction':
     case 'soccer-registration-payment':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['guardian'],
-        readOnlyPersonaIds: ['coach'],
+        actorRoleIds: ['guardian'],
+        readOnlyRoleIds: ['coach'],
         readOnlyText: 'Coach sees only permission-safe evidence.',
       );
     case 'soccer-practice-schedule':
     case 'soccer-reminder-notification':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['guardian'],
-        receiverPersonaIds: ['coach', 'owner'],
+        actorRoleIds: ['guardian'],
+        receiverRoleIds: ['coach', 'owner'],
         receiverEntryText: 'Team update is ready for guardian receipt.',
         receiverActionText: 'Receive update',
         receiverResultText: 'Guardian received the team update.',
       );
     case 'soccer-export-metadata':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['owner'],
-        readOnlyPersonaIds: ['guardian', 'coach'],
+        actorRoleIds: ['owner'],
+        readOnlyRoleIds: ['guardian', 'coach'],
         readOnlyText: 'Guardian can open protected export coverage.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['coach']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['coach']);
 }
 
 LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
@@ -835,16 +860,16 @@ LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
     case 'hoa-facility-reservation':
     case 'hoa-architectural-request':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['hoa-homeowner'],
-        receiverPersonaIds: ['hoa-board'],
+        actorRoleIds: ['hoa-homeowner'],
+        receiverRoleIds: ['hoa-board'],
         receiverEntryText: 'A homeowner action is ready for board action.',
         receiverActionText: 'Open',
         receiverResultText: 'Board received the homeowner request update.',
       );
     case 'hoa-committee-decision':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['hoa-board'],
-        receiverPersonaIds: ['hoa-homeowner'],
+        actorRoleIds: ['hoa-board'],
+        receiverRoleIds: ['hoa-homeowner'],
         prerequisiteWorkflowId: 'hoa-architectural-request',
         receiverEntryText: 'The committee decision is ready for the homeowner.',
         receiverActionText: 'Receive decision',
@@ -852,8 +877,8 @@ LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
       );
     case 'hoa-owner-notification':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['hoa-board'],
-        receiverPersonaIds: ['hoa-homeowner'],
+        actorRoleIds: ['hoa-board'],
+        receiverRoleIds: ['hoa-homeowner'],
         prerequisiteWorkflowId: 'hoa-committee-decision',
         receiverEntryText: 'The owner notification is ready to receive.',
         receiverActionText: 'Receive notice',
@@ -861,46 +886,46 @@ LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
       );
     case 'hoa-export-evidence':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['hoa-board'],
-        readOnlyPersonaIds: ['hoa-homeowner'],
+        actorRoleIds: ['hoa-board'],
+        readOnlyRoleIds: ['hoa-homeowner'],
         readOnlyText: 'Homeowners can open export evidence.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['hoa-board']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['hoa-board']);
 }
 
 LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
   switch (workflowId) {
     case 'mosque-announcement':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin'],
-        receiverPersonaIds: ['mosque-member'],
+        actorRoleIds: ['mosque-admin'],
+        receiverRoleIds: ['mosque-member'],
         receiverEntryText: 'A public announcement is ready to receive.',
         receiverActionText: 'Receive announcement',
         receiverResultText: 'Member received the public announcement.',
       );
     case 'mosque-event-rsvp':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['mosque-admin', 'mosque-member'],
       );
     case 'mosque-volunteer-signup':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['mosque-admin', 'mosque-member'],
       );
     case 'mosque-donor-visibility':
     case 'mosque-donation-payment':
     case 'mosque-care-request':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-member'],
-        receiverPersonaIds: ['mosque-admin'],
+        actorRoleIds: ['mosque-member'],
+        receiverRoleIds: ['mosque-admin'],
         receiverEntryText: 'A member submission is ready for admin action.',
         receiverActionText: 'Open',
         receiverResultText: 'Admin received the member submission.',
       );
     case 'mosque-neutral-notification':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin'],
-        receiverPersonaIds: ['mosque-member'],
+        actorRoleIds: ['mosque-admin'],
+        receiverRoleIds: ['mosque-member'],
         prerequisiteWorkflowId: 'mosque-care-request',
         receiverEntryText: 'A neutral care notification is ready to receive.',
         receiverActionText: 'Receive notice',
@@ -908,15 +933,15 @@ LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
       );
     case 'mosque-discussion-thread':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['mosque-admin', 'mosque-member'],
       );
     case 'mosque-search-ai-citation':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['mosque-admin', 'mosque-member'],
         prerequisiteWorkflowId: 'mosque-announcement',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['mosque-admin']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['mosque-admin']);
 }
 
 LoomWorkflowPersonaPolicy _chessPolicy(String workflowId) {
@@ -924,18 +949,18 @@ LoomWorkflowPersonaPolicy _chessPolicy(String workflowId) {
     case 'chess-local-install-open':
     case 'chess-route-home':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['chess-organizer', 'chess-player'],
+        actorRoleIds: ['chess-organizer', 'chess-player'],
       );
     case 'chess-match-result':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['chess-player'],
-        receiverPersonaIds: ['chess-organizer'],
+        actorRoleIds: ['chess-player'],
+        receiverRoleIds: ['chess-organizer'],
         receiverEntryText: 'A match result is ready for organizer action.',
         receiverActionText: 'Open result',
         receiverResultText: 'Organizer received the chess match result.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['chess-organizer']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['chess-organizer']);
 }
 
 LoomWorkflowPersonaPolicy _cameraPolicy(String workflowId) {
@@ -944,14 +969,14 @@ LoomWorkflowPersonaPolicy _cameraPolicy(String workflowId) {
     case 'critique-submission':
     case 'gear-loan-request':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['camera-member'],
-        receiverPersonaIds: ['camera-organizer'],
+        actorRoleIds: ['camera-member'],
+        receiverRoleIds: ['camera-organizer'],
         receiverEntryText: 'A member camera-club action is ready for action.',
         receiverActionText: 'Open',
         receiverResultText: 'Camera organizer received the member action.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['camera-organizer']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['camera-organizer']);
 }
 
 LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
@@ -963,15 +988,15 @@ LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
     case 'platform-top-banner-no-fill':
     case 'platform-sensitive-no-fill':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['platform-member', 'platform-moderator'],
-        readOnlyPersonaIds: ['platform-blocked-member'],
+        actorRoleIds: ['platform-member', 'platform-moderator'],
+        readOnlyRoleIds: ['platform-blocked-member'],
         readOnlyText:
             'Blocked persona can open shell state but cannot initiate social actions.',
       );
     case 'platform-connection-invite':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['platform-member'],
-        receiverPersonaIds: ['platform-moderator'],
+        actorRoleIds: ['platform-member'],
+        receiverRoleIds: ['platform-moderator'],
         disabledReason:
             'Blocked or moderator roles do not send this member invite.',
         receiverEntryText:
@@ -982,8 +1007,8 @@ LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
       );
     case 'platform-blocked-target':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['platform-moderator'],
-        receiverPersonaIds: ['platform-member'],
+        actorRoleIds: ['platform-moderator'],
+        receiverRoleIds: ['platform-member'],
         disabledReason: 'Blocked persona remains unable to receive invites.',
         receiverEntryText: 'Blocked-target prevention result is ready.',
         receiverActionText: 'Receive prevention',
@@ -991,17 +1016,15 @@ LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
             'Member received blocked-target prevention evidence.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(
-    actorPersonaIds: ['platform-moderator'],
-  );
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['platform-moderator']);
 }
 
 LoomWorkflowPersonaPolicy _adOffPolicy(String workflowId) {
   switch (workflowId) {
     case 'ad-off-member-checkout':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['ad-off-member'],
-        receiverPersonaIds: ['ad-off-viewer'],
+        actorRoleIds: ['ad-off-member'],
+        receiverRoleIds: ['ad-off-viewer'],
         receiverEntryText: 'Member ad-off entitlement is ready to observe.',
         receiverActionText: 'Receive entitlement',
         receiverResultText:
@@ -1009,8 +1032,8 @@ LoomWorkflowPersonaPolicy _adOffPolicy(String workflowId) {
       );
     case 'ad-off-community-checkout':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['ad-off-admin'],
-        receiverPersonaIds: ['ad-off-member', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-admin'],
+        receiverRoleIds: ['ad-off-member', 'ad-off-viewer'],
         receiverEntryText: 'Community ad-off entitlement is ready to receive.',
         receiverActionText: 'Receive entitlement',
         receiverResultText:
@@ -1020,17 +1043,17 @@ LoomWorkflowPersonaPolicy _adOffPolicy(String workflowId) {
     case 'ad-off-receipt-evidence':
     case 'ad-off-ad-suppression':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['ad-off-member', 'ad-off-admin', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-member', 'ad-off-admin', 'ad-off-viewer'],
       );
     case 'ad-off-settlement-utility':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['ad-off-admin'],
-        readOnlyPersonaIds: ['ad-off-member', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-admin'],
+        readOnlyRoleIds: ['ad-off-member', 'ad-off-viewer'],
         readOnlyText:
             'Non-admin roles can open economics without recalculating settlement.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['ad-off-admin']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['ad-off-admin']);
 }
 
 LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
@@ -1042,15 +1065,15 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
     case 'export-redacted-bundle':
     case 'export-checksum-evidence':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['export-owner'],
-        readOnlyPersonaIds: ['export-member', 'export-provider'],
+        actorRoleIds: ['export-owner'],
+        readOnlyRoleIds: ['export-member', 'export-provider'],
         readOnlyText: 'Non-owner roles open redacted portability evidence.',
       );
     case 'export-full-bundle':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['export-owner'],
-        receiverPersonaIds: ['export-provider'],
-        readOnlyPersonaIds: ['export-member'],
+        actorRoleIds: ['export-owner'],
+        receiverRoleIds: ['export-provider'],
+        readOnlyRoleIds: ['export-member'],
         receiverEntryText:
             'Export bundle is ready for receiving-provider validation.',
         receiverActionText: 'Receive bundle',
@@ -1058,9 +1081,9 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
       );
     case 'export-transfer-verification':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['export-provider'],
-        receiverPersonaIds: ['export-owner'],
-        readOnlyPersonaIds: ['export-member'],
+        actorRoleIds: ['export-provider'],
+        receiverRoleIds: ['export-owner'],
+        readOnlyRoleIds: ['export-member'],
         prerequisiteWorkflowId: 'export-full-bundle',
         receiverEntryText: 'Provider verification is ready for the data owner.',
         receiverActionText: 'Receive verification',
@@ -1069,9 +1092,9 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
       );
     case 'export-transfer-rollback':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['export-provider'],
-        receiverPersonaIds: ['export-owner'],
-        readOnlyPersonaIds: ['export-member'],
+        actorRoleIds: ['export-provider'],
+        receiverRoleIds: ['export-owner'],
+        readOnlyRoleIds: ['export-member'],
         prerequisiteWorkflowId: 'export-checksum-evidence',
         receiverEntryText:
             'Provider rollback result is ready for the data owner.',
@@ -1079,5 +1102,5 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
         receiverResultText: 'Data owner received provider rollback result.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['export-owner']);
+  return const LoomWorkflowPersonaPolicy(actorRoleIds: ['export-owner']);
 }

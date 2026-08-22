@@ -29,7 +29,7 @@ Future<LocalWorkflowEngineApi> _engineWith(int count) async {
   for (var index = 0; index < count; index++) {
     await api.createInstance(
       workflowType: 'grid-repeatable',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'title': 'Item $index'},
     );
   }
@@ -41,7 +41,7 @@ RepeaterSurface _liveGrid(LocalWorkflowEngineApi api) => RepeaterSurface.live(
   querySource: RepeaterQuerySource(
     engine: api,
     workflowType: 'grid-repeatable',
-    personaId: 'member',
+    fanId: 'member',
   ),
   layout: RepeaterLayout.grid,
   gridCrossAxisCount: 2,
@@ -113,7 +113,7 @@ void main() {
 
     await api.createInstance(
       workflowType: 'grid-repeatable',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'title': 'External'},
     );
     await tester.pump(const Duration(milliseconds: 20));

@@ -58,11 +58,7 @@ LoomWorkflowStateMachine _eventMachine() => LoomWorkflowStateMachine.fromJson({
 }, 'event-rsvp');
 
 Future<List<WorkflowInstance>> _events(LocalWorkflowEngineApi api) async =>
-    (await api.queryInstances(
-      tabId: 'events',
-      personaId: 'organizer',
-      limit: 50,
-    ))
+    (await api.queryInstances(tabId: 'events', fanId: 'organizer', limit: 50))
         .items
         .where((instance) => instance.workflowType == 'event-rsvp')
         .toList();
@@ -76,7 +72,7 @@ void main() {
     api.registerDefinition(_eventMachine());
     final anchorId = await api.createInstance(
       workflowType: 'event-rsvp',
-      personaId: 'organizer',
+      fanId: 'organizer',
       initialInstanceData: {
         'title': 'Friday social',
         'eventDate': '2026-07-10',
@@ -90,7 +86,7 @@ void main() {
       workflowType: 'event-rsvp',
       instanceId: anchorId,
       transitionId: 'make-recurring',
-      personaId: 'organizer',
+      fanId: 'organizer',
       inputs: {'freq': 'weekly', 'count': 12},
     );
 
@@ -104,18 +100,20 @@ void main() {
       events.every((event) => event.instanceData['seriesId'] == seriesId),
       isTrue,
     );
-    final dates = events
-        .map((event) => event.instanceData['eventDate'] as String)
-        .toList()
-      ..sort();
+    final dates =
+        events
+            .map((event) => event.instanceData['eventDate'] as String)
+            .toList()
+          ..sort();
     expect(
       dates,
       List.generate(
         12,
-        (i) => DateTime(2026, 7, 10)
-            .add(Duration(days: i * 7))
-            .toIso8601String()
-            .substring(0, 10),
+        (i) => DateTime(
+          2026,
+          7,
+          10,
+        ).add(Duration(days: i * 7)).toIso8601String().substring(0, 10),
       ),
     );
   });
@@ -130,7 +128,7 @@ void main() {
       api.registerDefinition(_eventMachine());
       final anchorId = await api.createInstance(
         workflowType: 'event-rsvp',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'title': 'Friday social',
           'eventDate': '2026-07-10',
@@ -144,13 +142,17 @@ void main() {
         workflowType: 'event-rsvp',
         instanceId: anchorId,
         transitionId: 'make-recurring',
-        personaId: 'organizer',
-        inputs: {'freq': 'weekly', 'count': 3, 'byDayOfWeek': ['FR']},
+        fanId: 'organizer',
+        inputs: {
+          'freq': 'weekly',
+          'count': 3,
+          'byDayOfWeek': ['FR'],
+        },
       );
 
-      final siblings = (await _events(api))
-          .where((event) => event.instanceId != anchorId)
-          .toList();
+      final siblings = (await _events(
+        api,
+      )).where((event) => event.instanceId != anchorId).toList();
       expect(siblings, hasLength(2));
       for (final sibling in siblings) {
         expect(sibling.instanceData['capacity'], isA<num>());
@@ -170,7 +172,7 @@ void main() {
       api.registerDefinition(_eventMachine());
       final anchorId = await api.createInstance(
         workflowType: 'event-rsvp',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'title': 'Wednesday social',
           'eventDate': '2026-07-08',
@@ -184,7 +186,7 @@ void main() {
         workflowType: 'event-rsvp',
         instanceId: anchorId,
         transitionId: 'make-recurring',
-        personaId: 'organizer',
+        fanId: 'organizer',
         inputs: {
           'freq': 'weekly',
           'count': 5,
@@ -192,10 +194,11 @@ void main() {
         },
       );
 
-      final dates = (await _events(api))
-          .map((event) => event.instanceData['eventDate'] as String)
-          .toList()
-        ..sort();
+      final dates =
+          (await _events(api))
+              .map((event) => event.instanceData['eventDate'] as String)
+              .toList()
+            ..sort();
       expect(dates, [
         '2026-07-08',
         '2026-07-13',
@@ -206,38 +209,42 @@ void main() {
     },
   );
 
-  test('defaults daily interval when all optional inputs are omitted', () async {
-    final api = LocalWorkflowEngineApi(
-      db: WorkflowDatabase.memory(),
-      communityId: 'recurrence-optional-daily',
-    );
-    api.registerDefinition(_eventMachine());
-    final anchorId = await api.createInstance(
-      workflowType: 'event-rsvp',
-      personaId: 'organizer',
-      initialInstanceData: {
-        'title': 'Daily standup',
-        'eventDate': '2026-07-10',
-        'location': 'Clubhouse',
-        'capacity': 20,
-        'goingCount': 3,
-      },
-    );
+  test(
+    'defaults daily interval when all optional inputs are omitted',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'recurrence-optional-daily',
+      );
+      api.registerDefinition(_eventMachine());
+      final anchorId = await api.createInstance(
+        workflowType: 'event-rsvp',
+        fanId: 'organizer',
+        initialInstanceData: {
+          'title': 'Daily standup',
+          'eventDate': '2026-07-10',
+          'location': 'Clubhouse',
+          'capacity': 20,
+          'goingCount': 3,
+        },
+      );
 
-    await api.applyTransition(
-      workflowType: 'event-rsvp',
-      instanceId: anchorId,
-      transitionId: 'make-recurring',
-      personaId: 'organizer',
-      inputs: {'freq': 'daily', 'count': 3},
-    );
+      await api.applyTransition(
+        workflowType: 'event-rsvp',
+        instanceId: anchorId,
+        transitionId: 'make-recurring',
+        fanId: 'organizer',
+        inputs: {'freq': 'daily', 'count': 3},
+      );
 
-    final dates = (await _events(api))
-        .map((event) => event.instanceData['eventDate'] as String)
-        .toList()
-      ..sort();
-    expect(dates, ['2026-07-10', '2026-07-11', '2026-07-12']);
-  });
+      final dates =
+          (await _events(api))
+              .map((event) => event.instanceData['eventDate'] as String)
+              .toList()
+            ..sort();
+      expect(dates, ['2026-07-10', '2026-07-11', '2026-07-12']);
+    },
+  );
 
   test('rolls back the series when a runtime rule value is invalid', () async {
     final api = LocalWorkflowEngineApi(
@@ -247,7 +254,7 @@ void main() {
     api.registerDefinition(_eventMachine());
     final anchorId = await api.createInstance(
       workflowType: 'event-rsvp',
-      personaId: 'organizer',
+      fanId: 'organizer',
       initialInstanceData: {
         'title': 'Friday social',
         'eventDate': '2026-07-10',
@@ -262,7 +269,7 @@ void main() {
         workflowType: 'event-rsvp',
         instanceId: anchorId,
         transitionId: 'make-recurring',
-        personaId: 'organizer',
+        fanId: 'organizer',
         inputs: {'freq': 'weekly', 'count': 5000},
       ),
       throwsA(isA<StateError>()),
@@ -274,71 +281,70 @@ void main() {
     expect(events.single.instanceData['seriesId'], isNull);
   });
 
-  test('createInstance still interpolates embedded field tokens as strings',
-      () async {
-    final api = LocalWorkflowEngineApi(
-      db: WorkflowDatabase.memory(),
-      communityId: 'embedded-field-copy',
-    );
-    api.registerDefinition(
-      LoomWorkflowStateMachine.fromJson({
-        'initialState': 'open',
-        'states': {
-          'open': {'label': 'Open'},
-        },
-        'transitions': <Map<String, dynamic>>[],
-        'instanceDataSchema': {
-          'note': {'type': 'text'},
-        },
-      }, 'event-copy'),
-    );
-    api.registerDefinition(
-      LoomWorkflowStateMachine.fromJson({
-        'initialState': 'draft',
-        'states': {
-          'draft': {'label': 'Draft'},
-        },
-        'transitions': [
-          {
-            'id': 'copy',
-            'label': 'Copy',
-            'from': ['draft'],
-            'to': null,
-            'effects': [
-              {
-                'op': 'createInstance',
-                'workflowType': 'event-copy',
-                'fields': {'note': '{title} (copy)'},
-              },
-            ],
+  test(
+    'createInstance still interpolates embedded field tokens as strings',
+    () async {
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'embedded-field-copy',
+      );
+      api.registerDefinition(
+        LoomWorkflowStateMachine.fromJson({
+          'initialState': 'open',
+          'states': {
+            'open': {'label': 'Open'},
           },
-        ],
-        'instanceDataSchema': {
-          'title': {'type': 'text'},
-        },
-      }, 'event-source'),
-    );
-    final sourceId = await api.createInstance(
-      workflowType: 'event-source',
-      personaId: 'organizer',
-      initialInstanceData: {'title': 'Friday social'},
-    );
+          'transitions': <Map<String, dynamic>>[],
+          'instanceDataSchema': {
+            'note': {'type': 'text'},
+          },
+        }, 'event-copy'),
+      );
+      api.registerDefinition(
+        LoomWorkflowStateMachine.fromJson({
+          'initialState': 'draft',
+          'states': {
+            'draft': {'label': 'Draft'},
+          },
+          'transitions': [
+            {
+              'id': 'copy',
+              'label': 'Copy',
+              'from': ['draft'],
+              'to': null,
+              'effects': [
+                {
+                  'op': 'createInstance',
+                  'workflowType': 'event-copy',
+                  'fields': {'note': '{title} (copy)'},
+                },
+              ],
+            },
+          ],
+          'instanceDataSchema': {
+            'title': {'type': 'text'},
+          },
+        }, 'event-source'),
+      );
+      final sourceId = await api.createInstance(
+        workflowType: 'event-source',
+        fanId: 'organizer',
+        initialInstanceData: {'title': 'Friday social'},
+      );
 
-    await api.applyTransition(
-      workflowType: 'event-source',
-      instanceId: sourceId,
-      transitionId: 'copy',
-      personaId: 'organizer',
-    );
+      await api.applyTransition(
+        workflowType: 'event-source',
+        instanceId: sourceId,
+        transitionId: 'copy',
+        fanId: 'organizer',
+      );
 
-    final copies = (await api.queryInstances(
-      tabId: 'events',
-      personaId: 'organizer',
-    ))
-        .items
-        .where((instance) => instance.workflowType == 'event-copy')
-        .toList();
-    expect(copies, hasLength(1));
-    expect(copies.single.instanceData['note'], 'Friday social (copy)');
-  });
+      final copies =
+          (await api.queryInstances(tabId: 'events', fanId: 'organizer')).items
+              .where((instance) => instance.workflowType == 'event-copy')
+              .toList();
+      expect(copies, hasLength(1));
+      expect(copies.single.instanceData['note'], 'Friday social (copy)');
+    },
+  );
 }

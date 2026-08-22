@@ -102,8 +102,8 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 void main() {
@@ -129,7 +129,7 @@ void main() {
         );
         final home = appShellTabsFor(
           experience: experience,
-          personaId: 'tabletop-organizer',
+          roleId: 'tabletop-organizer',
           appShellConfiguration: installed.community.appShellConfiguration,
         ).singleWhere((tab) => tab.tabId == 'home');
         expect(home.rendererContractId, 'engine-native-generic-list');
@@ -145,7 +145,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-organizer',
+                roleId: 'tabletop-organizer',
               ),
             ),
           ),
@@ -183,7 +183,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-organizer',
+                roleId: 'tabletop-organizer',
               ),
             ),
           ),
@@ -278,7 +278,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-organizer',
+                roleId: 'tabletop-organizer',
               ),
             ),
           ),
@@ -295,7 +295,7 @@ void main() {
           () => installed.engine.createInstance(
             workflowType: 'tabletop-meetup-announcement',
             initialInstanceData: const {'title': title, 'body': body},
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
           ),
         ))!;
         expect(find.text(title), findsNothing);
@@ -306,7 +306,7 @@ void main() {
             workflowType: 'tabletop-meetup-announcement',
             instanceId: announcementId,
             transitionId: 'publish',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
           );
         });
 
@@ -316,7 +316,7 @@ void main() {
         final published = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'home',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             limit: 100,
           );
           return page.items.singleWhere(

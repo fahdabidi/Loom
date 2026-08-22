@@ -138,7 +138,7 @@ class _EngineNativeCalendarSurfaceState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.roleId != widget.persona.roleId ||
         oldWidget.tabId != widget.tabId) {
       final hadSelection = _presentation.selectedInstance != null;
       _presentation.reset();
@@ -191,33 +191,31 @@ class _EngineNativeCalendarSurfaceState
           );
         }
         final identity = ActiveIdentityScope.of(context);
-        final personaId = identity.resolveEnginePersonaId(
-          widget.persona.personaId,
-        );
+        final fanId = identity.resolveEngineFanId(widget.persona.fanId);
         return EngineNativeBindingDispatcher(
           engine: snapshot.data!,
           definitions: definitions,
           tabId: widget.tabId,
-          personaId: personaId,
-          rolesForInstance: (instance, viewerPersonaId) {
+          fanId: fanId,
+          rolesForInstance: (instance, viewerFanId) {
             final machine = definitions[instance.workflowType];
             if (machine == null) return const <String>{};
             return deriveInstanceRoles(
               machine,
               instance,
-              viewerPersonaId: viewerPersonaId,
-              viewerPersonaTypeId: widget.persona.personaId,
+              viewerFanId: viewerFanId,
+              viewerRoleId: widget.persona.roleId,
             );
           },
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
-              'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.personaId}',
+              'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.roleId}',
             ),
             bindings: bindings,
             engine: snapshot.data!,
             communityExtensionId: widget.experience.extensionId,
-            viewerPersonaId: widget.persona.personaId,
-            personaId: personaId,
+            roleId: widget.persona.roleId,
+            fanId: fanId,
             tabId: widget.tabId,
             accent: widget.accent,
             calendarDateRailEntries: widget.experience.calendarDateRailEntries,
@@ -542,8 +540,8 @@ class _EngineNativeCalendarContent extends StatefulWidget {
     required this.bindings,
     required this.engine,
     required this.communityExtensionId,
-    required this.viewerPersonaId,
-    required this.personaId,
+    required this.roleId,
+    required this.fanId,
     required this.tabId,
     required this.accent,
     this.calendarDateRailEntries,
@@ -558,8 +556,8 @@ class _EngineNativeCalendarContent extends StatefulWidget {
   final List<EngineNativeResolvedBinding> bindings;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
-  final String viewerPersonaId;
-  final String personaId;
+  final String roleId;
+  final String fanId;
   final String tabId;
   final Color accent;
   final List<CalendarDateRailEntry>? calendarDateRailEntries;
@@ -845,7 +843,7 @@ class _EngineNativeCalendarContentState
       return const _ViewerResponseLookup.invalid();
     }
     for (final response in (responses as List<dynamic>? ?? const <dynamic>[])) {
-      if (response is Map && response['fanId'] == widget.personaId) {
+      if (response is Map && response['fanId'] == widget.fanId) {
         return _ViewerResponseLookup.found(Map<String, dynamic>.from(response));
       }
     }
@@ -883,7 +881,7 @@ class _EngineNativeCalendarContentState
     while (true) {
       final page = await widget.engine.queryInstances(
         tabId: widget.tabId,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
         limit: 100,
         cursor: cursor,
       );
@@ -956,7 +954,7 @@ class _EngineNativeCalendarContentState
             workflowType: responseTable.workflowType,
             instanceId: responseId,
             transitionId: 'send-reminder',
-            personaId: widget.personaId,
+            fanId: widget.fanId,
             inputs: {
               'notificationTitle': 'Reminder: $eventTitle',
               'notificationBody': 'Starts soon — check Calendar for details.',
@@ -1355,7 +1353,8 @@ class _EngineNativeCalendarContentState
                                 engine: widget.engine,
                                 communityExtensionId:
                                     widget.communityExtensionId,
-                                personaId: widget.personaId,
+                                fanId: widget.fanId,
+                                roleId: widget.roleId,
                                 accent: widget.accent,
                                 onInstanceChanged: widget.onInstanceChanged,
                                 onInstanceScopedCreate:
@@ -1433,13 +1432,13 @@ class _EngineNativeCalendarContentState
 
 class _EventAttendeeEntry {
   const _EventAttendeeEntry({
-    required this.personaId,
+    required this.fanId,
     required this.name,
     this.dietaryNotes,
     this.comments,
   });
 
-  final String personaId;
+  final String fanId;
   final String name;
   final String? dietaryNotes;
   final String? comments;
@@ -1460,7 +1459,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
     required this.binding,
     required this.engine,
     required this.communityExtensionId,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.accent,
     required this.onInstanceChanged,
     this.responseMachine,
@@ -1477,7 +1477,8 @@ class _EventRsvpDetailCard extends StatefulWidget {
   final LoomWorkflowStateMachine? responseMachine;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final Color accent;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final List<WorkflowAction> instanceScopedCreateActions;
@@ -1552,7 +1553,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     // Available transitions depend on the response data held by the instance,
     // so reload after a dispatcher refresh as well as a context change.
     if (oldWidget.instance != widget.instance ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.machine != widget.machine ||
         oldWidget.engine != widget.engine ||
         oldWidget.binding != widget.binding) {
@@ -1614,7 +1615,12 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final guard = state?.editGuard;
     final canEdit =
         guard != null &&
-        evaluateGuard(guard, widget.personaId, _instance.instanceData);
+        evaluateGuard(
+          guard,
+          widget.fanId,
+          _instance.instanceData,
+          roleId: widget.roleId,
+        );
     return canEdit
         ? [
             for (final key in state?.editableFields ?? const <String>[])
@@ -1654,14 +1660,14 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     WorkflowInstance instance,
     LoomWorkflowStateMachine machine,
     WorkflowEngineApi engine,
-    String personaId,
+    String fanId,
   ) =>
       mounted &&
       generation == _generation &&
       identical(_instance, instance) &&
       identical(widget.machine, machine) &&
       identical(widget.engine, engine) &&
-      widget.personaId == personaId;
+      widget.fanId == fanId;
 
   /// `event-rsvp` stores a member's selection on that member's response row.
   /// Other workflow types can share this detail-card surface while retaining
@@ -1703,7 +1709,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final responses = _viewerResponseRows;
     if (responses is! List) return null;
     for (final response in responses) {
-      if (response is Map && response['fanId'] == widget.personaId) {
+      if (response is Map && response['fanId'] == widget.fanId) {
         return Map<String, dynamic>.from(response);
       }
     }
@@ -1739,8 +1745,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     }
   }
 
-  String _displayNameFor(String personaId) =>
-      _accountNames?[personaId] ?? personaId;
+  String _displayNameFor(String fanId) => _accountNames?[fanId] ?? fanId;
 
   List<_EventAttendeeGroup> get _attendeeGroups {
     final groups = <String, List<_EventAttendeeEntry>>{};
@@ -1749,13 +1754,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (responses is! List) return const [];
       for (final response in responses) {
         if (response is! Map) continue;
-        final personaId = response['fanId']?.toString();
-        if (personaId == null || personaId.isEmpty) continue;
+        final fanId = response['fanId']?.toString();
+        if (fanId == null || fanId.isEmpty) continue;
         final state = response['\$state']?.toString() ?? 'pending';
         (groups[_attendeeStateLabel(state)] ??= []).add(
           _EventAttendeeEntry(
-            personaId: personaId,
-            name: _displayNameFor(personaId),
+            fanId: fanId,
+            name: _displayNameFor(fanId),
             dietaryNotes: _nonEmptyValue(response['dietaryNotes']),
             comments: _nonEmptyValue(response['comments']),
           ),
@@ -1766,13 +1771,13 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         ('Going', 'goingFanIds'),
         ('Waitlisted', 'waitlistFanIds'),
       ]) {
-        final personaIds = _instance.instanceData[entry.$2];
-        if (personaIds is! List) continue;
-        for (final personaId in personaIds) {
-          final id = personaId?.toString();
+        final fanIds = _instance.instanceData[entry.$2];
+        if (fanIds is! List) continue;
+        for (final fanId in fanIds) {
+          final id = fanId?.toString();
           if (id == null || id.isEmpty) continue;
           (groups[entry.$1] ??= []).add(
-            _EventAttendeeEntry(personaId: id, name: _displayNameFor(id)),
+            _EventAttendeeEntry(fanId: id, name: _displayNameFor(id)),
           );
         }
       }
@@ -1803,11 +1808,11 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final responseTable = widget.binding.responseTable;
     final response = _viewerResponse;
     final request = ++_actionRequest;
-    if (_isCurrent(generation, instance, machine, engine, personaId)) {
+    if (_isCurrent(generation, instance, machine, engine, fanId)) {
       setState(() {
         _loadingActions = true;
         _actions = const [];
@@ -1823,7 +1828,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: personaId,
+        fanId: fanId,
       );
       // A member with no row still gets offered response actions, computed
       // against a synthetic row in the response workflow's declared
@@ -1836,7 +1841,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       final syntheticResponse = response == null && responseMachine != null
           ? <String, dynamic>{
               responseTable!.eventField: instance.instanceId,
-              'fanId': personaId,
+              'fanId': fanId,
             }
           : null;
       final responseActions = responseTable == null
@@ -1847,7 +1852,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               instanceId: response['\$id'] as String,
               currentState: response['\$state'] as String,
               instanceData: response,
-              personaId: personaId,
+              fanId: fanId,
             )
           : syntheticResponse == null
           ? const <LoomWorkflowTransition>[]
@@ -1859,9 +1864,9 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               instanceId: '',
               currentState: responseMachine!.initialState,
               instanceData: syntheticResponse,
-              personaId: personaId,
+              fanId: fanId,
             );
-      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+      if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
       }
@@ -1875,7 +1880,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         _loadingActions = false;
       });
     } catch (_) {
-      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+      if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
       }
@@ -1914,7 +1919,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final response = _viewerResponse;
     final responseTable = widget.binding.responseTable;
     final appliesToEvent = _eventActionIds.contains(transitionId);
@@ -1938,7 +1943,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       operation: () async {
         // Create-or-get (D7a). A member with no response row previously fell
         // through to `return Future.value()`: the tap did nothing, silently,
@@ -1962,14 +1967,14 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                   responseTable.eventField: instance.instanceId,
                   // All response tables in the specVersion 4 corpus declare
                   // the individual identity field as `fanId`.
-                  'fanId': personaId,
+                  'fanId': fanId,
                 },
               ],
-              personaId: personaId,
+              fanId: fanId,
             );
             if (created.isEmpty) {
               throw StateError(
-                'Creating a ${responseTable.workflowType} row for $personaId '
+                'Creating a ${responseTable.workflowType} row for $fanId '
                 'returned no instance id.',
               );
             }
@@ -1982,7 +1987,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           workflowType: targetWorkflowType,
           instanceId: targetInstanceId,
           transitionId: transitionId,
-          personaId: personaId,
+          fanId: fanId,
           inputs: inputs,
         );
         // Was gated on `response != null` back when a missing row aborted the
@@ -1993,7 +1998,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         if (appliesToResponse) {
           final page = await engine.queryInstances(
             tabId: widget.binding.tabId,
-            personaId: personaId,
+            fanId: fanId,
             limit: 100,
           );
           return page.items.singleWhere(
@@ -2005,7 +2010,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           workflowType: instance.workflowType,
           currentState: result.newState,
           instanceData: result.newInstanceData,
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       },
       retry: () => _applyTransition(transitionId),
@@ -2017,19 +2022,19 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     return _runMutation(
       generation: generation,
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       operation: () async {
         final result = await engine.applyTransition(
           workflowType: instance.workflowType,
           instanceId: instance.instanceId,
           transitionId: 'make-recurring',
-          personaId: personaId,
+          fanId: fanId,
           inputs: inputs,
         );
         return WorkflowInstance(
@@ -2037,7 +2042,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           workflowType: instance.workflowType,
           currentState: result.newState,
           instanceData: result.newInstanceData,
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       },
       retry: () => _applyMakeRecurring(inputs),
@@ -2049,7 +2054,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final seriesId = instance.instanceData['seriesId'];
     if (seriesId == null) return;
     final scope = await showDialog<_EditScope>(
@@ -2061,7 +2066,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       ),
     );
     if (scope == null ||
-        !_isCurrent(generation, instance, machine, engine, personaId)) {
+        !_isCurrent(generation, instance, machine, engine, fanId)) {
       return;
     }
     if (scope == _EditScope.thisEvent) {
@@ -2073,7 +2078,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       operation: () async {
         final members = <WorkflowInstance>[];
         final seenCursors = <String>{};
@@ -2081,7 +2086,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         while (true) {
           final page = await engine.queryInstances(
             tabId: widget.binding.tabId,
-            personaId: personaId,
+            fanId: fanId,
             limit: 100,
             cursor: cursor,
           );
@@ -2098,7 +2103,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               nextCursor.trim().isEmpty ||
               !seenCursors.add(nextCursor)) {
             throw StateError(
-              'Invalid pagination cursor while loading calendar for $personaId',
+              'Invalid pagination cursor while loading calendar for $fanId',
             );
           }
           cursor = nextCursor;
@@ -2117,7 +2122,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             workflowType: instance.workflowType,
             instanceId: member.instanceId,
             transitionId: 'cancel-event',
-            personaId: personaId,
+            fanId: fanId,
           );
           if (member.instanceId == instance.instanceId) {
             updatedSelf = WorkflowInstance(
@@ -2125,7 +2130,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               workflowType: instance.workflowType,
               currentState: result.newState,
               instanceData: result.newInstanceData,
-              createdByPersonaId: instance.createdByPersonaId,
+              createdByFanId: instance.createdByFanId,
             );
           }
         }
@@ -2135,7 +2140,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               workflowType: instance.workflowType,
               currentState: 'cancelled',
               instanceData: instance.instanceData,
-              createdByPersonaId: instance.createdByPersonaId,
+              createdByFanId: instance.createdByFanId,
             );
       },
       retry: _deleteSeries,
@@ -2148,7 +2153,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final updates = <String, dynamic>{};
     for (final key in _editableKeys) {
       if (!_edits.containsKey(key)) continue;
@@ -2157,8 +2162,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       if (field.type == 'number' && value is String) {
         final parsed = num.tryParse(value.trim());
         if (parsed == null) {
-          if (!_isCurrent(generation, instance, machine, engine, personaId))
-            return;
+          if (!_isCurrent(generation, instance, machine, engine, fanId)) return;
           setState(() {
             _error = 'Enter a valid number.';
             _retry = _save;
@@ -2183,7 +2187,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             ),
           );
     if (scope == null ||
-        !_isCurrent(generation, instance, machine, engine, personaId)) {
+        !_isCurrent(generation, instance, machine, engine, fanId)) {
       return;
     }
     final optimistic = WorkflowInstance(
@@ -2191,7 +2195,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       workflowType: instance.workflowType,
       currentState: instance.currentState,
       instanceData: {...instance.instanceData, ...updates},
-      createdByPersonaId: instance.createdByPersonaId,
+      createdByFanId: instance.createdByFanId,
     );
     String? partialFailureMessage;
     await _runMutation(
@@ -2199,7 +2203,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       optimistic: optimistic,
       operation: () async {
         if (scope == _EditScope.thisEvent) {
@@ -2207,7 +2211,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             workflowType: instance.workflowType,
             instanceId: instance.instanceId,
             fieldUpdates: updates,
-            personaId: personaId,
+            fanId: fanId,
           );
         } else {
           final members = <WorkflowInstance>[];
@@ -2216,7 +2220,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           while (true) {
             final page = await engine.queryInstances(
               tabId: widget.binding.tabId,
-              personaId: personaId,
+              fanId: fanId,
               limit: 100,
               cursor: cursor,
             );
@@ -2233,7 +2237,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 nextCursor.trim().isEmpty ||
                 !seenCursors.add(nextCursor)) {
               throw StateError(
-                'Invalid pagination cursor while loading calendar for $personaId',
+                'Invalid pagination cursor while loading calendar for $fanId',
               );
             }
             cursor = nextCursor;
@@ -2254,7 +2258,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 workflowType: member.workflowType,
                 instanceId: member.instanceId,
                 fieldUpdates: updates,
-                personaId: personaId,
+                fanId: fanId,
               );
               continue;
             }
@@ -2263,7 +2267,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                 workflowType: member.workflowType,
                 instanceId: member.instanceId,
                 fieldUpdates: updates,
-                personaId: personaId,
+                fanId: fanId,
               );
             } catch (_) {
               // A malformed sibling may not permit every field in [updates].
@@ -2282,7 +2286,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           workflowType: instance.workflowType,
           currentState: instance.currentState,
           instanceData: optimistic.instanceData,
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       },
       retry: _save,
@@ -2295,7 +2299,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     required WorkflowInstance instance,
     required LoomWorkflowStateMachine machine,
     required WorkflowEngineApi engine,
-    required String personaId,
+    required String fanId,
     WorkflowInstance? optimistic,
     required Future<WorkflowInstance> Function() operation,
     required Future<void> Function() retry,
@@ -2317,13 +2321,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       final activeInstance = optimistic ?? instance;
       try {
         final next = await operation();
-        if (!_isCurrent(
-          generation,
-          activeInstance,
-          machine,
-          engine,
-          personaId,
-        )) {
+        if (!_isCurrent(generation, activeInstance, machine, engine, fanId)) {
           return;
         }
         _instance = next;
@@ -2331,22 +2329,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         _edits.clear();
         _resyncControllers();
         widget.onInstanceChanged?.call(next);
-        if (!_isCurrent(generation, next, machine, engine, personaId)) return;
+        if (!_isCurrent(generation, next, machine, engine, fanId)) return;
         setState(() => _mutating = false);
         await _loadActions();
         final warning = successWarning?.call();
         if (warning != null &&
-            _isCurrent(generation, next, machine, engine, personaId)) {
+            _isCurrent(generation, next, machine, engine, fanId)) {
           setState(() => _error = warning);
         }
       } catch (_) {
-        if (!_isCurrent(
-          generation,
-          activeInstance,
-          machine,
-          engine,
-          personaId,
-        )) {
+        if (!_isCurrent(generation, activeInstance, machine, engine, fanId)) {
           return;
         }
         setState(() {
@@ -2378,7 +2370,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       };
     }
     final data = _instance.instanceData;
-    final pid = widget.personaId;
+    final pid = widget.fanId;
     switch (action.id) {
       case 'rsvp-going':
         return (data['goingFanIds'] as List?)?.contains(pid) ?? false;
@@ -2496,7 +2488,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             final instance = _instance;
             final machine = widget.machine;
             final engine = widget.engine;
-            final personaId = widget.personaId;
+            final fanId = widget.fanId;
             final initial =
                 DateTime.tryParse('${_valueFor(key) ?? ''}') ?? DateTime.now();
             final picked = await showDatePicker(
@@ -2506,7 +2498,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               lastDate: DateTime(2100),
             );
             if (picked != null &&
-                _isCurrent(generation, instance, machine, engine, personaId)) {
+                _isCurrent(generation, instance, machine, engine, fanId)) {
               setState(
                 () => _edits[key] =
                     '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}',
@@ -2525,7 +2517,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
             final instance = _instance;
             final machine = widget.machine;
             final engine = widget.engine;
-            final personaId = widget.personaId;
+            final fanId = widget.fanId;
             final parts = '${_valueFor(key) ?? ''}'.split(':');
             final picked = await showTimePicker(
               context: context,
@@ -2535,7 +2527,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               ),
             );
             if (picked != null &&
-                _isCurrent(generation, instance, machine, engine, personaId)) {
+                _isCurrent(generation, instance, machine, engine, fanId)) {
               setState(
                 () => _edits[key] =
                     '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}',
@@ -2600,7 +2592,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
     final waitlistIds =
         (data['waitlistFanIds'] as List?)?.cast<String>() ?? const <String>[];
     final onWaitlist = response == null
-        ? waitlistIds.contains(widget.personaId)
+        ? waitlistIds.contains(widget.fanId)
         : response['\$state'] == 'waitlisted';
 
     final hasCapacityInfo =
@@ -2751,7 +2743,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                                   child: Text(
                                     attendee.dietaryNotes!,
                                     key: ValueKey(
-                                      'event-rsvp-attendee-dietary-${attendee.personaId}',
+                                      'event-rsvp-attendee-dietary-${attendee.fanId}',
                                     ),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
@@ -2768,7 +2760,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                                   child: Text(
                                     attendee.comments!,
                                     key: ValueKey(
-                                      'event-rsvp-attendee-comments-${attendee.personaId}',
+                                      'event-rsvp-attendee-comments-${attendee.fanId}',
                                     ),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(

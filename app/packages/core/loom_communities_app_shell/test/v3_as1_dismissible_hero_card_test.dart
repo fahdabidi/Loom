@@ -64,7 +64,7 @@ Widget _host(ValueNotifier<LocalInstalledCommunity> currentCommunity) =>
               authApi: activeAuthForCommunity(
                 community: community,
                 experience: experience,
-                personaTypeId: '${community.communityId}-member',
+                roleId: '${community.communityId}-member',
               ),
             ),
           );

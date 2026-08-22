@@ -7,11 +7,11 @@ class NotificationBellButton extends StatefulWidget {
   const NotificationBellButton({
     super.key,
     required this.extensionId,
-    required this.personaId,
+    required this.fanId,
   });
 
   final String extensionId;
-  final String personaId;
+  final String fanId;
 
   @override
   State<NotificationBellButton> createState() => _NotificationBellButtonState();
@@ -39,7 +39,7 @@ class _NotificationBellButtonState extends State<NotificationBellButton> {
   void didUpdateWidget(covariant NotificationBellButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.extensionId == widget.extensionId &&
-        oldWidget.personaId == widget.personaId) {
+        oldWidget.fanId == widget.fanId) {
       return;
     }
     _controller = null;
@@ -55,7 +55,7 @@ class _NotificationBellButtonState extends State<NotificationBellButton> {
       if (!mounted || generation != _initializationGeneration) return;
       _controller = NotificationInboxController(
         engine: engine,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       await _refreshUnreadCount();
     } catch (_) {

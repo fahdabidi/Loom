@@ -71,7 +71,7 @@ Future<List<WorkflowInstance>> _instancesOf(
   String workflowType,
 ) async => (await api.queryInstances(
   tabId: 'calendar',
-  personaId: 'organizer',
+  fanId: 'organizer',
   limit: 1000,
 )).items.where((row) => row.workflowType == workflowType).toList();
 
@@ -83,7 +83,7 @@ Future<String> _createRawEvent(
   initialInstanceDataList: const <Map<String, dynamic>>[
     <String, dynamic>{'title': 'Event'},
   ],
-  personaId: 'organizer',
+  fanId: 'organizer',
 )).single;
 
 void main() {
@@ -94,12 +94,12 @@ void main() {
           LocalWorkflowEngineApi(
               db: WorkflowDatabase.memory(),
               communityId: 'fan-out',
-              activeMembershipLookup: (personaId) => personaId != 'inactive',
+              activeMembershipLookup: (fanId) => fanId != 'inactive',
             )
-            ..setPersonaType('organizer', 'organizer-role')
-            ..setPersonaType('member-a', 'member-role')
-            ..setPersonaType('member-b', 'member-role')
-            ..setPersonaType('inactive', 'member-role')
+            ..setRoleForFan('organizer', 'organizer-role')
+            ..setRoleForFan('member-a', 'member-role')
+            ..setRoleForFan('member-b', 'member-role')
+            ..setRoleForFan('inactive', 'member-role')
             ..registerDefinition(
               _machine(
                 'event',
@@ -114,7 +114,7 @@ void main() {
         workflowType: 'event',
         instanceId: eventId,
         transitionId: 'act',
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       final responses = await _instancesOf(api, 'response');
@@ -135,7 +135,7 @@ void main() {
         workflowType: 'event',
         instanceId: eventId,
         transitionId: 'act',
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
       expect(await _instancesOf(api, 'response'), hasLength(3));
     },
@@ -147,7 +147,7 @@ void main() {
             db: WorkflowDatabase.memory(),
             communityId: 'fan-id',
           )
-          ..setPersonaType('member-a', 'member-role')
+          ..setRoleForFan('member-a', 'member-role')
           ..registerDefinition(
             _machine(
               'event',
@@ -172,7 +172,7 @@ void main() {
       workflowType: 'event',
       instanceId: eventId,
       transitionId: 'act',
-      personaId: 'member-a',
+      fanId: 'member-a',
     );
 
     final response = (await _instancesOf(api, 'response')).single;
@@ -189,7 +189,7 @@ void main() {
             db: WorkflowDatabase.memory(),
             communityId: 'scope',
           )
-          ..setPersonaType('organizer', 'organizer-role')
+          ..setRoleForFan('organizer', 'organizer-role')
           ..registerDefinition(
             _machine(
               'document',
@@ -221,13 +221,13 @@ void main() {
       workflowType: 'document',
       instanceId: documentId,
       transitionId: 'act',
-      personaId: 'organizer',
+      fanId: 'organizer',
     );
     await api.applyTransition(
       workflowType: 'event',
       instanceId: eventId,
       transitionId: 'act',
-      personaId: 'organizer',
+      fanId: 'organizer',
     );
 
     expect(await _instancesOf(api, 'document-response'), isEmpty);
@@ -246,15 +246,15 @@ void main() {
               db: WorkflowDatabase.memory(),
               communityId: 'binding-create',
             )
-            ..setPersonaType('organizer', 'organizer-role')
-            ..setPersonaType('member-a', 'member-role')
+            ..setRoleForFan('organizer', 'organizer-role')
+            ..setRoleForFan('member-a', 'member-role')
             ..registerDefinition(_machine('event', definition))
             ..registerDefinition(_machine('response', _responseDefinition()));
 
       final eventId = await api.createInstance(
         workflowType: 'event',
         initialInstanceData: const <String, dynamic>{'title': 'Event'},
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       final responses = await _instancesOf(api, 'response');
@@ -289,8 +289,8 @@ void main() {
               db: WorkflowDatabase.memory(),
               communityId: 'recurrence',
             )
-            ..setPersonaType('organizer', 'organizer-role')
-            ..setPersonaType('member-a', 'member-role')
+            ..setRoleForFan('organizer', 'organizer-role')
+            ..setRoleForFan('member-a', 'member-role')
             ..registerDefinition(
               _machine(
                 'event',
@@ -315,14 +315,14 @@ void main() {
           'title': 'Weekly event',
           'eventDate': '2026-08-14',
         },
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       await api.applyTransition(
         workflowType: 'event',
         instanceId: anchorId,
         transitionId: 'act',
-        personaId: 'organizer',
+        fanId: 'organizer',
         inputs: const <String, dynamic>{'freq': 'weekly', 'count': 3},
       );
 

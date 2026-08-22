@@ -46,7 +46,7 @@ LoomAppShellTabSpec _declaredTab({
   }
   return appShellTabsFor(
     experience: experience,
-    personaId: 'local-member',
+    roleId: 'local-member',
     appShellConfiguration: <String, Object?>{
       'tabs': <Object?>[tab],
     },
@@ -158,7 +158,7 @@ void main() {
 
       final tabs = appShellTabsFor(
         experience: experience,
-        personaId: 'local-member',
+        roleId: 'local-member',
       );
       final home = tabs.singleWhere((tab) => tab.tabId == 'home');
       final messages = tabs.singleWhere((tab) => tab.tabId == 'messages');
@@ -173,7 +173,7 @@ void main() {
           'renderer-derivation-generated-messages',
           <Map<String, Object?>>[_binding('messages', 'discussionThread')],
         ),
-        personaId: 'local-member',
+        roleId: 'local-member',
       ).singleWhere((tab) => tab.tabId == 'messages');
       expect(boundMessages.rendererContractId, 'engine-native-generic-list');
       expect(

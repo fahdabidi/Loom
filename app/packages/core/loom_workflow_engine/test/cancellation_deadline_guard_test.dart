@@ -13,36 +13,30 @@ void main() {
   group('cancellationDeadline guard', () {
     test('passes well before the deadline', () {
       expect(
-        evaluateGuard(
-          _guard,
-          'member',
-          {'eventDate': '2026-07-10', 'eventTime': '19:00'},
-          clock: () => DateTime(2026, 7, 7),
-        ),
+        evaluateGuard(_guard, 'member', {
+          'eventDate': '2026-07-10',
+          'eventTime': '19:00',
+        }, clock: () => DateTime(2026, 7, 7)),
         isTrue,
       );
     });
 
     test('fails inside the hoursBefore window', () {
       expect(
-        evaluateGuard(
-          _guard,
-          'member',
-          {'eventDate': '2026-07-10', 'eventTime': '19:00'},
-          clock: () => DateTime(2026, 7, 10, 18),
-        ),
+        evaluateGuard(_guard, 'member', {
+          'eventDate': '2026-07-10',
+          'eventTime': '19:00',
+        }, clock: () => DateTime(2026, 7, 10, 18)),
         isFalse,
       );
     });
 
     test('fails after the event has passed', () {
       expect(
-        evaluateGuard(
-          _guard,
-          'member',
-          {'eventDate': '2026-07-10', 'eventTime': '19:00'},
-          clock: () => DateTime(2026, 7, 11),
-        ),
+        evaluateGuard(_guard, 'member', {
+          'eventDate': '2026-07-10',
+          'eventTime': '19:00',
+        }, clock: () => DateTime(2026, 7, 11)),
         isFalse,
       );
     });
@@ -56,21 +50,15 @@ void main() {
       );
 
       expect(
-        evaluateGuard(
-          allDayGuard,
-          'member',
-          {'eventDate': '2026-07-10'},
-          clock: () => DateTime(2026, 7, 8, 23, 59),
-        ),
+        evaluateGuard(allDayGuard, 'member', {
+          'eventDate': '2026-07-10',
+        }, clock: () => DateTime(2026, 7, 8, 23, 59)),
         isTrue,
       );
       expect(
-        evaluateGuard(
-          allDayGuard,
-          'member',
-          {'eventDate': '2026-07-10'},
-          clock: () => DateTime(2026, 7, 9, 0, 1),
-        ),
+        evaluateGuard(allDayGuard, 'member', {
+          'eventDate': '2026-07-10',
+        }, clock: () => DateTime(2026, 7, 9, 0, 1)),
         isFalse,
       );
     });
@@ -81,69 +69,73 @@ void main() {
         isFalse,
       );
       expect(
-        evaluateGuard(
-          _guard,
-          'member',
-          {'eventDate': 'not-a-date', 'eventTime': '19:00'},
-          clock: DateTime.now,
-        ),
+        evaluateGuard(_guard, 'member', {
+          'eventDate': 'not-a-date',
+          'eventTime': '19:00',
+        }, clock: DateTime.now),
         isFalse,
       );
       expect(
-        evaluateGuard(
-          _guard,
-          'member',
-          {'eventDate': '2026-07-10', 'eventTime': 'not-a-time'},
-          clock: DateTime.now,
-        ),
+        evaluateGuard(_guard, 'member', {
+          'eventDate': '2026-07-10',
+          'eventTime': 'not-a-time',
+        }, clock: DateTime.now),
         isFalse,
       );
     });
 
-    test('applyTransition blocks inside the window and succeeds outside it',
-        () async {
-      final outsideDb = WorkflowDatabase.memory();
-      final outsideApi = LocalWorkflowEngineApi(
-        db: outsideDb,
-        communityId: 'outside-deadline',
-        clock: () => DateTime(2026, 7, 8),
-      )..registerDefinition(_machine());
-      final outsideId = await outsideApi.createInstance(
-        workflowType: 'event',
-        initialInstanceData: {'eventDate': '2026-07-10', 'eventTime': '19:00'},
-        personaId: 'member',
-      );
-      final result = await outsideApi.applyTransition(
-        workflowType: 'event',
-        instanceId: outsideId,
-        transitionId: 'cancel',
-        personaId: 'member',
-      );
-      expect(result.newState, 'cancelled');
-      outsideDb.close();
-
-      final insideDb = WorkflowDatabase.memory();
-      final insideApi = LocalWorkflowEngineApi(
-        db: insideDb,
-        communityId: 'inside-deadline',
-        clock: () => DateTime(2026, 7, 10, 18),
-      )..registerDefinition(_machine());
-      final insideId = await insideApi.createInstance(
-        workflowType: 'event',
-        initialInstanceData: {'eventDate': '2026-07-10', 'eventTime': '19:00'},
-        personaId: 'member',
-      );
-      await expectLater(
-        insideApi.applyTransition(
+    test(
+      'applyTransition blocks inside the window and succeeds outside it',
+      () async {
+        final outsideDb = WorkflowDatabase.memory();
+        final outsideApi = LocalWorkflowEngineApi(
+          db: outsideDb,
+          communityId: 'outside-deadline',
+          clock: () => DateTime(2026, 7, 8),
+        )..registerDefinition(_machine());
+        final outsideId = await outsideApi.createInstance(
           workflowType: 'event',
-          instanceId: insideId,
+          initialInstanceData: {
+            'eventDate': '2026-07-10',
+            'eventTime': '19:00',
+          },
+          fanId: 'member',
+        );
+        final result = await outsideApi.applyTransition(
+          workflowType: 'event',
+          instanceId: outsideId,
           transitionId: 'cancel',
-          personaId: 'member',
-        ),
-        throwsStateError,
-      );
-      insideDb.close();
-    });
+          fanId: 'member',
+        );
+        expect(result.newState, 'cancelled');
+        outsideDb.close();
+
+        final insideDb = WorkflowDatabase.memory();
+        final insideApi = LocalWorkflowEngineApi(
+          db: insideDb,
+          communityId: 'inside-deadline',
+          clock: () => DateTime(2026, 7, 10, 18),
+        )..registerDefinition(_machine());
+        final insideId = await insideApi.createInstance(
+          workflowType: 'event',
+          initialInstanceData: {
+            'eventDate': '2026-07-10',
+            'eventTime': '19:00',
+          },
+          fanId: 'member',
+        );
+        await expectLater(
+          insideApi.applyTransition(
+            workflowType: 'event',
+            instanceId: insideId,
+            transitionId: 'cancel',
+            fanId: 'member',
+          ),
+          throwsStateError,
+        );
+        insideDb.close();
+      },
+    );
   });
 }
 

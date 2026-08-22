@@ -83,7 +83,7 @@ void main() {
         experience: experience,
       );
       expect(
-        personas.map((persona) => persona.personaId),
+        personas.map((persona) => persona.roleId),
         containsAll(<String>['tabletop-organizer', 'tabletop-member']),
       );
 
@@ -96,10 +96,10 @@ void main() {
       );
       expect(reserve.from, ['open']);
       expect(reserve.to, 'reserved');
-      expect(reserve.guard.allowedPersonaIds, ['tabletop-member']);
+      expect(reserve.guard.allowedRoleIds, ['tabletop-member']);
       expect(acknowledge.from, ['reserved']);
       expect(acknowledge.to, 'acknowledged');
-      expect(acknowledge.guard.allowedPersonaIds, ['tabletop-organizer']);
+      expect(acknowledge.guard.allowedRoleIds, ['tabletop-organizer']);
       expect(rsvp.renderBindings.single.tabId, 'calendar');
       expect(rsvp.renderBindings.single.cardSurfaceFamily, 'event-rsvp');
     });
@@ -124,7 +124,7 @@ void main() {
       // Member persona: the package's Admin declaration excludes this role.
       final memberTabs = appShellTabsFor(
         experience: experience,
-        personaId: 'tabletop-member',
+        roleId: 'tabletop-member',
         appShellConfiguration: community.appShellConfiguration,
       );
       final memberTabIds = memberTabs.map((tab) => tab.tabId).toSet();
@@ -143,7 +143,7 @@ void main() {
       // Organizer persona is explicitly admitted to the package's Admin tab.
       final organizerTabs = appShellTabsFor(
         experience: experience,
-        personaId: 'tabletop-organizer',
+        roleId: 'tabletop-organizer',
         appShellConfiguration: community.appShellConfiguration,
       );
       expect(organizerTabs.map((tab) => tab.tabId), contains('admin'));

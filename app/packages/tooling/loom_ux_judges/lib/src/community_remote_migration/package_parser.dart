@@ -119,7 +119,7 @@ class ParsedCommunityPackage {
       final persona = Map<String, dynamic>.from(raw);
       personas.add(
         MigrationPersona(
-          personaId: _requiredString(
+          roleId: _requiredString(
             persona,
             'roleId',
             prefix: '$personasPath[$index].',
@@ -156,12 +156,12 @@ class ParsedCommunityPackage {
 
 class MigrationPersona {
   const MigrationPersona({
-    required this.personaId,
+    required this.roleId,
     required this.label,
     required this.roleLabel,
   });
 
-  final String personaId;
+  final String roleId;
   final String label;
   final String roleLabel;
 }

@@ -83,21 +83,21 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     final shellAccounts = await activeAuthForCommunity(
       community: community,
       experience: experience,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ).listAccounts(communityExtensionId: community.extensionId);
     final authorizationAccounts = [...accounts, ...shellAccounts];
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+      activeMembershipLookup: (fanId) async => authorizationAccounts.any(
         (account) =>
-            account.accountId == personaId &&
+            account.accountId == fanId &&
             account.status == MembershipStatus.active,
       ),
     );
     if (engine is LocalWorkflowEngineApi) {
       for (final account in authorizationAccounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
     }
     return _InstalledTabletop(community, engine, temp);
@@ -118,17 +118,17 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 Future<List<WorkflowInstance>> _voteRows(
   _InstalledTabletop installed,
-  String personaId,
+  String fanId,
 ) async {
   final page = await installed.engine.queryInstances(
     tabId: 'home',
-    personaId: personaId,
+    fanId: fanId,
     limit: 200,
   );
   return page.items
@@ -142,12 +142,12 @@ Future<List<WorkflowInstance>> _voteRows(
 
 Future<List<WorkflowInstance>> _instancesOfType(
   _InstalledTabletop installed,
-  String personaId,
+  String fanId,
   String workflowType,
 ) async {
   final page = await installed.engine.queryInstances(
     tabId: 'home',
-    personaId: personaId,
+    fanId: fanId,
     limit: 200,
   );
   return page.items
@@ -157,12 +157,12 @@ Future<List<WorkflowInstance>> _instancesOfType(
 
 Future<WorkflowInstance> _instanceById(
   _InstalledTabletop installed,
-  String personaId,
+  String fanId,
   String instanceId,
 ) async {
   final page = await installed.engine.queryInstances(
     tabId: 'home',
-    personaId: personaId,
+    fanId: fanId,
     limit: 200,
   );
   return page.items.singleWhere(
@@ -173,13 +173,13 @@ Future<WorkflowInstance> _instanceById(
 Future<WorkflowInstance> _waitForState(
   WidgetTester tester,
   _InstalledTabletop installed,
-  String personaId,
+  String fanId,
   String instanceId,
   String state,
 ) async {
   for (var attempt = 0; attempt < 40; attempt++) {
     final instance = (await tester.runAsync(
-      () => _instanceById(installed, personaId, instanceId),
+      () => _instanceById(installed, fanId, instanceId),
     ))!;
     if (instance.currentState == state) return instance;
     await tester.runAsync(
@@ -208,7 +208,7 @@ Widget _app(_InstalledTabletop installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ),
   ),
 );
@@ -464,14 +464,14 @@ void main() {
             workflowType: 'tournament-ballot',
             instanceId: 'ballot-summer-tournament',
             transitionId: 'cast-vote',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             inputs: {'choice': 'wingspan'},
           );
           await installed.engine.applyTransition(
             workflowType: 'tournament-ballot',
             instanceId: 'ballot-summer-tournament',
             transitionId: 'cast-vote',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             inputs: {'choice': 'azul'},
           );
         });
@@ -554,7 +554,7 @@ void main() {
         expect(beforeRows, hasLength(4));
 
         // The organizer is allowed by cast-vote's persona list but is not in
-        // the related tournament-event goingPersonaIds list. The engine must
+        // the related tournament-event goingFanIds list. The engine must
         // reject the transition itself, not merely omit a UI button.
         Object? refusalError;
         await tester.runAsync(() async {
@@ -563,7 +563,7 @@ void main() {
               workflowType: 'tournament-ballot',
               instanceId: 'ballot-summer-tournament',
               transitionId: 'cast-vote',
-              personaId: 'tabletop-organizer',
+              fanId: 'tabletop-organizer',
               inputs: {'choice': 'catan'},
             );
           } catch (error) {
@@ -590,7 +590,7 @@ void main() {
             workflowType: 'tournament-ballot',
             instanceId: 'ballot-summer-tournament',
             transitionId: 'cast-vote',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             inputs: {'choice': 'catan'},
           ),
         );

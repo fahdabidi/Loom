@@ -49,7 +49,7 @@ class _NotificationDedicatedTabSurfaceState
   void didUpdateWidget(_NotificationDedicatedTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId == widget.experience.extensionId &&
-        oldWidget.persona.personaId == widget.persona.personaId) {
+        oldWidget.persona.roleId == widget.persona.roleId) {
       return;
     }
     _controller = null;
@@ -69,7 +69,7 @@ class _NotificationDedicatedTabSurfaceState
       if (!mounted || generation != _initializationGeneration) return;
       _controller = NotificationInboxController(
         engine: engine,
-        personaId: widget.persona.personaId,
+        fanId: widget.persona.fanId,
       );
       await _refresh();
     } catch (error) {

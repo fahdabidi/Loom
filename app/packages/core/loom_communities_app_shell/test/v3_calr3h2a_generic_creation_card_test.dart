@@ -13,7 +13,11 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
   },
   'transitions': const <Map<String, dynamic>>[],
   'instanceDataSchema': {
-    'title': {'type': 'text', 'required': true, 'labelTemplate': 'Title: {value}'},
+    'title': {
+      'type': 'text',
+      'required': true,
+      'labelTemplate': 'Title: {value}',
+    },
     'published': {'type': 'bool'},
     'eventDate': {'type': 'date'},
     'capacity': {'type': 'number', 'labelTemplate': 'Capacity'},
@@ -71,15 +75,21 @@ void main() {
           workflowType: 'test-creation',
           machine: _machine(),
           engine: engine,
-          personaId: 'member',
+          fanId: 'member',
           keyPrefix: 'new-item',
           onCreated: (instanceId) async => createdId = instanceId,
         ),
       ),
     );
 
-    expect(find.byKey(const ValueKey('new-item-editor-published')), findsOneWidget);
-    expect(find.byKey(const ValueKey('new-item-editor-eventDate')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('new-item-editor-published')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('new-item-editor-eventDate')),
+      findsOneWidget,
+    );
     await tester.enterText(
       find.byKey(const ValueKey('new-item-editor-title')),
       'Board meeting',
@@ -89,7 +99,7 @@ void main() {
 
     final instances = await engine.queryInstances(
       tabId: 'test',
-      personaId: 'member',
+      fanId: 'member',
     );
     expect(instances.items, hasLength(1));
     expect(instances.items.single.instanceData['title'], 'Board meeting');
@@ -99,7 +109,9 @@ void main() {
     expect(createdId, instances.items.single.instanceId);
   });
 
-  testWidgets('shows required-field validation without creating', (tester) async {
+  testWidgets('shows required-field validation without creating', (
+    tester,
+  ) async {
     final engine = await _engine();
     await tester.pumpWidget(
       _host(
@@ -107,7 +119,7 @@ void main() {
           workflowType: 'test-creation',
           machine: _machine(),
           engine: engine,
-          personaId: 'member',
+          fanId: 'member',
           keyPrefix: 'new-item',
         ),
       ),
@@ -120,12 +132,14 @@ void main() {
     expect(find.text('Title is required.'), findsOneWidget);
     final instances = await engine.queryInstances(
       tabId: 'test',
-      personaId: 'member',
+      fanId: 'member',
     );
     expect(instances.items, isEmpty);
   });
 
-  testWidgets('does not mangle plain labels without trailing punctuation', (tester) async {
+  testWidgets('does not mangle plain labels without trailing punctuation', (
+    tester,
+  ) async {
     final engine = await _engine();
     await tester.pumpWidget(
       _host(
@@ -133,7 +147,7 @@ void main() {
           workflowType: 'test-creation',
           machine: _machine(),
           engine: engine,
-          personaId: 'member',
+          fanId: 'member',
           keyPrefix: 'new-item',
         ),
       ),
@@ -159,7 +173,7 @@ void main() {
           workflowType: 'conditional-creation',
           machine: machine,
           engine: engine,
-          personaId: 'member',
+          fanId: 'member',
           keyPrefix: 'conditional',
         ),
       ),

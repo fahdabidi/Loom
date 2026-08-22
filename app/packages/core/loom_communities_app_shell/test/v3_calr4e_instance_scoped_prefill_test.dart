@@ -8,7 +8,7 @@ WorkflowInstance _instance(String id, Map<String, dynamic> data) =>
       workflowType: 'tournament-event',
       currentState: 'open',
       instanceData: data,
-      createdByPersonaId: 'tabletop-organizer',
+      createdByFanId: 'tabletop-organizer',
     );
 
 void main() {

@@ -17,7 +17,7 @@ void main() {
           tester,
           fixture.package,
           communityId: fixture.communityId,
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         );
         await tapCommunityTab(tester, 'calendar');
 
@@ -80,7 +80,7 @@ void main() {
         tester,
         fixture.package,
         communityId: fixture.communityId,
-        personaId: 'tabletop-organizer',
+        fanId: 'tabletop-organizer',
       );
       await tapCommunityTab(tester, 'admin');
 
@@ -135,7 +135,7 @@ void main() {
         tester,
         fixture.package,
         communityId: fixture.communityId,
-        personaId: 'tabletop-organizer',
+        fanId: 'tabletop-organizer',
       );
       await tapCommunityTab(tester, 'admin');
 
@@ -165,7 +165,7 @@ Future<void> _installAndOpen(
   WidgetTester tester,
   EvidencePackagePair fixture, {
   required String communityId,
-  required String personaId,
+  required String fanId,
 }) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
@@ -181,7 +181,7 @@ Future<void> _installAndOpen(
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(ValueKey('community-card-$communityId')));
   await tester.pumpAndSettle();
-  await selectPersona(tester, personaId);
+  await selectPersona(tester, fanId);
 }
 
 ({EvidencePackagePair package, String communityId})
@@ -197,6 +197,7 @@ _writeTabletopClubPackagePair(String suffix) {
     eventTime: '19:00',
     location: 'Community room',
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     memberRoleId: 'tabletop-member',
   );
   final committeeDecision = engineNativeTestWorkflowDefinition(

@@ -151,6 +151,7 @@ Future<void> _openListingDetail(WidgetTester tester, String listingId) async {
     loanWorkflowType: 'tabletop-game-loan',
     memberRoleId: 'tabletop-member',
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     borrowRequiresWorkflowsComplete: const <String>[
       'tabletop-club-dues-payment',
     ],

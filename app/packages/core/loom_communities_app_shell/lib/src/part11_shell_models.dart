@@ -148,7 +148,7 @@ class LoomListingTransition {
     required this.label,
     required this.fromStates,
     this.to,
-    this.allowedPersonaIds,
+    this.allowedRoleIds,
     this.requiresWorkflowsComplete = const [],
     this.linkedWorkflowId,
     this.setsHolderToActor = false,
@@ -166,7 +166,7 @@ class LoomListingTransition {
   final String label;
   final List<String> fromStates;
   final String? to;
-  final List<String>? allowedPersonaIds;
+  final List<String>? allowedRoleIds;
   final List<String> requiresWorkflowsComplete;
   final String? linkedWorkflowId;
   final bool setsHolderToActor;
@@ -196,24 +196,23 @@ class LoomListingStateMachine {
   }
 
   List<LoomListingTransition> availableActions(
-    String currentState,
-    String personaId, {
+    String currentState, {
+    required String fanId,
+    required String roleId,
     LoomMarketplaceListing? listing,
   }) {
     return transitionsFrom(currentState)
         .where(
           (t) =>
-              (t.allowedPersonaIds == null ||
-                  t.allowedPersonaIds!.isEmpty ||
-                  t.allowedPersonaIds!.contains(personaId)) &&
+              (t.allowedRoleIds == null ||
+                  t.allowedRoleIds!.isEmpty ||
+                  t.allowedRoleIds!.contains(roleId)) &&
               t.requiresWorkflowsComplete.isEmpty &&
               (t.requiresActorInQueue
-                  ? listing != null &&
-                        listing.queuedPersonaIds.contains(personaId)
+                  ? listing != null && listing.queuedFanIds.contains(fanId)
                   : true) &&
               (t.requiresActorNotInQueue
-                  ? listing != null &&
-                        !listing.queuedPersonaIds.contains(personaId)
+                  ? listing != null && !listing.queuedFanIds.contains(fanId)
                   : true),
         )
         .toList();
@@ -236,7 +235,7 @@ class LoomMarketplaceListing {
     this.template,
     this.stateMachine,
     this.state,
-    this.queuedPersonaIds = const [],
+    this.queuedFanIds = const [],
   });
 
   final String listingId;
@@ -253,7 +252,7 @@ class LoomMarketplaceListing {
   final String? template;
   final LoomListingStateMachine? stateMachine;
   final String? state;
-  final List<String> queuedPersonaIds;
+  final List<String> queuedFanIds;
 
   LoomMarketplaceListing copyWith({
     String? listingId,
@@ -270,7 +269,7 @@ class LoomMarketplaceListing {
     String? template,
     LoomListingStateMachine? stateMachine,
     String? state,
-    List<String>? queuedPersonaIds,
+    List<String>? queuedFanIds,
   }) {
     return LoomMarketplaceListing(
       listingId: listingId ?? this.listingId,
@@ -287,7 +286,7 @@ class LoomMarketplaceListing {
       template: template ?? this.template,
       stateMachine: stateMachine ?? this.stateMachine,
       state: state ?? this.state,
-      queuedPersonaIds: queuedPersonaIds ?? this.queuedPersonaIds,
+      queuedFanIds: queuedFanIds ?? this.queuedFanIds,
     );
   }
 }
@@ -296,7 +295,7 @@ class LoomMessageThread {
   const LoomMessageThread({
     required this.threadId,
     required this.subject,
-    required this.participantPersonaIds,
+    required this.participantFanIds,
     required this.messages,
     this.muted = false,
     this.archived = false,
@@ -304,7 +303,7 @@ class LoomMessageThread {
 
   final String threadId;
   final String subject;
-  final List<String> participantPersonaIds;
+  final List<String> participantFanIds;
   final List<LoomMessage> messages;
   final bool muted;
   final bool archived;
@@ -312,7 +311,7 @@ class LoomMessageThread {
   LoomMessageThread copyWith({
     String? threadId,
     String? subject,
-    List<String>? participantPersonaIds,
+    List<String>? participantFanIds,
     List<LoomMessage>? messages,
     bool? muted,
     bool? archived,
@@ -320,8 +319,7 @@ class LoomMessageThread {
     return LoomMessageThread(
       threadId: threadId ?? this.threadId,
       subject: subject ?? this.subject,
-      participantPersonaIds:
-          participantPersonaIds ?? this.participantPersonaIds,
+      participantFanIds: participantFanIds ?? this.participantFanIds,
       messages: messages ?? this.messages,
       muted: muted ?? this.muted,
       archived: archived ?? this.archived,
@@ -332,13 +330,13 @@ class LoomMessageThread {
 class LoomMessage {
   const LoomMessage({
     required this.messageId,
-    required this.senderPersonaId,
+    required this.senderFanId,
     required this.body,
     required this.timestamp,
   });
 
   final String messageId;
-  final String senderPersonaId;
+  final String senderFanId;
   final String body;
   final DateTime timestamp;
 }
@@ -350,7 +348,7 @@ class LoomNotificationItem {
     required this.body,
     required this.source,
     required this.timestamp,
-    required this.recipientPersonaIds,
+    required this.recipientFanIds,
     this.isUnread = true,
   });
 
@@ -359,7 +357,7 @@ class LoomNotificationItem {
   final String body;
   final String source;
   final DateTime timestamp;
-  final List<String> recipientPersonaIds;
+  final List<String> recipientFanIds;
   final bool isUnread;
 }
 
@@ -400,12 +398,12 @@ class LoomAudiencePickerSeed {
   const LoomAudiencePickerSeed({
     required this.audienceId,
     required this.title,
-    this.invitedPersonaIds = const [],
+    this.invitedFanIds = const [],
   });
 
   final String audienceId;
   final String title;
-  final List<String> invitedPersonaIds;
+  final List<String> invitedFanIds;
 }
 
 class LoomSingleItemPreferenceSeed {
@@ -446,13 +444,13 @@ class LoomProtectedDetailSeed {
   const LoomProtectedDetailSeed({
     required this.detailId,
     required this.title,
-    required this.ownerPersonaId,
+    required this.ownerFanId,
     required this.assignedTo,
     required this.fullDetail,
   });
   final String detailId;
   final String title;
-  final String ownerPersonaId;
+  final String ownerFanId;
   final List<String> assignedTo;
   final String fullDetail;
 }
@@ -589,7 +587,7 @@ class LoomAppShellTabSpec {
     this.sectionTitles = const [],
     this.cardSurfaceFamilies = const [],
     this.pinnedWorkflowIds = const [],
-    this.visiblePersonaIds = const [],
+    this.visibleRoleIds = const [],
   });
 
   final String tabId;
@@ -602,31 +600,24 @@ class LoomAppShellTabSpec {
   final List<String> sectionTitles;
   final List<String> cardSurfaceFamilies;
   final List<String> pinnedWorkflowIds;
-  final List<String> visiblePersonaIds;
+  final List<String> visibleRoleIds;
 
   bool isVisibleFor(
-    String personaId, {
+    String roleId, {
     LoomExperienceDefinition? experience,
     bool enforceRequiredPermission = true,
     bool? hasActiveMembership,
-    String? personaTypeId,
   }) {
     if (tabId == 'home' || tabId == 'messages') {
       return true;
     }
-    if (visiblePersonaIds.isNotEmpty &&
-        !visiblePersonaIds.contains(personaId)) {
+    if (visibleRoleIds.isNotEmpty && !visibleRoleIds.contains(roleId)) {
       return false;
     }
     if (!enforceRequiredPermission || experience == null) {
       return true;
     }
-    return personaHasPermission(
-      experience,
-      personaId,
-      tabId: tabId,
-      personaTypeId: personaTypeId,
-    );
+    return roleHasPermission(experience, roleId, tabId: tabId);
   }
 
   bool matchesWorkflow({
@@ -646,7 +637,7 @@ class LoomAppShellTabSpec {
   }
 
   String descriptionFor(LoomPersonaDefinition persona) {
-    if (visiblePersonaIds.isEmpty) return description;
+    if (visibleRoleIds.isEmpty) return description;
     return '$description Tuned for ${persona.label}.';
   }
 
@@ -673,7 +664,7 @@ class LoomDeclarativeTabSpec {
     this.sectionTitles = const [],
     this.cardSurfaceFamilies = const [],
     this.pinnedWorkflowIds = const [],
-    this.visiblePersonaIds = const [],
+    this.visibleRoleIds = const [],
   });
 
   final String tabId;
@@ -686,7 +677,7 @@ class LoomDeclarativeTabSpec {
   final List<String> sectionTitles;
   final List<String> cardSurfaceFamilies;
   final List<String> pinnedWorkflowIds;
-  final List<String> visiblePersonaIds;
+  final List<String> visibleRoleIds;
 
   LoomAppShellTabSpec toTabSpec({String? derivedRendererContractId}) {
     return LoomAppShellTabSpec(
@@ -703,7 +694,7 @@ class LoomDeclarativeTabSpec {
       sectionTitles: sectionTitles,
       cardSurfaceFamilies: cardSurfaceFamilies,
       pinnedWorkflowIds: pinnedWorkflowIds,
-      visiblePersonaIds: visiblePersonaIds,
+      visibleRoleIds: visibleRoleIds,
     );
   }
 }
@@ -757,7 +748,7 @@ class CommunityAppShellCustomizationSpec {
       tabs: List.unmodifiable(tabs),
       selectedTab: selectedTab,
       visibleWorkflowIds: List.unmodifiable(visibleWorkflowIds),
-      focusKey: '${persona.personaId}:${selectedTab.tabId}',
+      focusKey: '${persona.roleId}:${selectedTab.tabId}',
       focusedWorkflowId: focusedWorkflowId,
       presentationStatesByWorkflowId: Map.unmodifiable(states),
       theme: LoomSurfaceTheme(
@@ -1497,13 +1488,13 @@ class LoomWorkflowSeedInstance {
   final String workflowType;
   final String currentState;
   final Map<String, dynamic> instanceData;
-  final String? createdByPersonaId;
+  final String? createdByFanId;
   const LoomWorkflowSeedInstance({
     required this.instanceId,
     required this.workflowType,
     required this.currentState,
     required this.instanceData,
-    this.createdByPersonaId,
+    this.createdByFanId,
   });
   factory LoomWorkflowSeedInstance.fromJson(Map<String, dynamic> json) =>
       LoomWorkflowSeedInstance(
@@ -1513,7 +1504,7 @@ class LoomWorkflowSeedInstance {
         instanceData: json['instanceData'] is Map
             ? Map<String, dynamic>.from(json['instanceData'] as Map)
             : const {},
-        createdByPersonaId: _seedCreator(json),
+        createdByFanId: _seedCreator(json),
       );
 }
 
@@ -1564,7 +1555,8 @@ enum LoomPersonaAccessMode {
 
 class LoomPersonaDefinition {
   const LoomPersonaDefinition({
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.label,
     required this.roleLabel,
     required this.description,
@@ -1572,11 +1564,14 @@ class LoomPersonaDefinition {
     this.accessMode = LoomPersonaAccessMode.open,
   });
 
-  /// The persona TYPE id (e.g. `tabletop-member`) -- shared by every account
+  /// The individual account id represented by this selectable persona.
+  final String fanId;
+
+  /// The role id (e.g. `tabletop-member`) -- shared by every account
   /// playing that role. Use this for role/policy-scoped checks (tab
-  /// visibility, `actorPersonaIds`/`byPersonaIds` matching against
+  /// visibility, `actorRoleIds`/`byRoleIds` matching against
   /// community-declared role lists).
-  final String personaId;
+  final String roleId;
   final String label;
   final String roleLabel;
   final String description;
@@ -1584,11 +1579,8 @@ class LoomPersonaDefinition {
 
   /// The specific signed-in individual account's id (e.g.
   /// `tabletop-member-03`), when signed in as a specific person via "Sign in
-  /// as a specific person...". Null when only a persona TYPE is selected (no
-  /// specific individual signed in) -- callers needing an actor id for
-  /// per-individual engine scoping (queries/transitions/creation, anywhere
-  /// data is genuinely scoped per account rather than per role) should read
-  /// `accountId ?? personaId`, never `personaId` alone.
+  /// as a specific person...". Null when the selectable persona's [fanId]
+  /// itself is the active individual.
   final String? accountId;
 }
 
@@ -1596,9 +1588,9 @@ enum LoomPersonaWorkflowState { actor, receiver, readOnly, disabled }
 
 class LoomWorkflowPersonaPolicy {
   const LoomWorkflowPersonaPolicy({
-    required this.actorPersonaIds,
-    this.receiverPersonaIds = const [],
-    this.readOnlyPersonaIds = const [],
+    required this.actorRoleIds,
+    this.receiverRoleIds = const [],
+    this.readOnlyRoleIds = const [],
     this.prerequisiteWorkflowId,
     this.receiverEntryText,
     this.receiverActionText,
@@ -1607,9 +1599,9 @@ class LoomWorkflowPersonaPolicy {
     this.disabledReason = 'Not available for this persona',
   });
 
-  final List<String> actorPersonaIds;
-  final List<String> receiverPersonaIds;
-  final List<String> readOnlyPersonaIds;
+  final List<String> actorRoleIds;
+  final List<String> receiverRoleIds;
+  final List<String> readOnlyRoleIds;
   final String? prerequisiteWorkflowId;
   final String? receiverEntryText;
   final String? receiverActionText;
@@ -1646,7 +1638,7 @@ class LoomPersonaWorkflowMatrixRow {
   const LoomPersonaWorkflowMatrixRow({
     required this.extensionId,
     required this.workflowId,
-    required this.personaId,
+    required this.roleId,
     required this.state,
     required this.rationale,
     this.prerequisiteWorkflowId,
@@ -1654,7 +1646,7 @@ class LoomPersonaWorkflowMatrixRow {
 
   final String extensionId;
   final String workflowId;
-  final String personaId;
+  final String roleId;
   final LoomPersonaWorkflowState state;
   final String rationale;
   final String? prerequisiteWorkflowId;
@@ -1664,14 +1656,14 @@ class LoomWorkflowDependency {
   const LoomWorkflowDependency({
     required this.extensionId,
     required this.workflowId,
-    required this.actorPersonaId,
-    required this.receiverPersonaId,
+    required this.actorRoleId,
+    required this.receiverRoleId,
     required this.prerequisiteWorkflowId,
   });
 
   final String extensionId;
   final String workflowId;
-  final String actorPersonaId;
-  final String receiverPersonaId;
+  final String actorRoleId;
+  final String receiverRoleId;
   final String prerequisiteWorkflowId;
 }

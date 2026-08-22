@@ -4,16 +4,16 @@ import 'formula_evaluator.dart';
 /// Evaluates a [WorkflowGuard] against the given persona and instance data.
 /// All conditions must pass (AND semantics). Empty/null guards always pass.
 ///
-/// [personaId] is the individual account id (e.g. `"tabletop-member-05"`).
-/// [personaTypeId], when provided, is the declared persona type
+/// [fanId] is the individual account id (e.g. `"tabletop-member-05"`).
+/// [roleId], when provided, is the declared persona type
 /// (e.g. `"tabletop-member"`) and is used **only** to evaluate
-/// [allowedPersonaIds] guards.  When omitted, [personaId] is used for
-/// that check as well (backward compatibility).
+/// [allowedRoleIds] guards. A role-gated check fails closed when it is
+/// omitted; an individual fan id is never treated as a role id.
 bool evaluateGuard(
   WorkflowGuard guard,
-  String personaId,
+  String fanId,
   Map<String, dynamic> instanceData, {
-  String? personaTypeId,
+  String? roleId,
   // completedWorkflowIds is reserved for Phase 3 (cross-workflow deps).
   // Accepted but not yet enforced in Phase 1.
   Set<String>? completedWorkflowIds,
@@ -22,14 +22,11 @@ bool evaluateGuard(
   bool skipRelatedAggregate = false,
   DateTime Function()? clock,
 }) {
-  final fanId = personaId;
-  final roleId = personaTypeId;
-  // allowedPersonaIds — if non-null and non-empty, the persona's *type*
-  // (when available) or individual id must be in the list.
-  final identityIdForAllowedCheck = roleId ?? fanId;
-  if (guard.allowedPersonaIds != null &&
-      guard.allowedPersonaIds!.isNotEmpty &&
-      !guard.allowedPersonaIds!.contains(identityIdForAllowedCheck)) {
+  // allowedRoleIds — if non-null and non-empty, the fan's resolved role must
+  // be in the list. Never compare the individual fan id to a role value.
+  if (guard.allowedRoleIds != null &&
+      guard.allowedRoleIds!.isNotEmpty &&
+      (roleId == null || !guard.allowedRoleIds!.contains(roleId))) {
     return false;
   }
 

@@ -228,7 +228,7 @@ void main() {
 
       await api.createInstance(
         workflowType: 'synthetic-event',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'title': 'Evening game',
           'eventDate': '2026-07-20',
@@ -239,7 +239,7 @@ void main() {
 
       final page = await api.queryInstances(
         tabId: 'calendar',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       expect(
@@ -304,7 +304,7 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'vote',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'ballots': [
             {'choice': 'Catan'},
@@ -313,13 +313,13 @@ void main() {
           ],
         },
       );
-      final page = await api.queryInstances(tabId: 'home', personaId: 'viewer');
+      final page = await api.queryInstances(tabId: 'home', fanId: 'viewer');
       expect(page.items.single.instanceData['winner'], 'Catan');
       await expectLater(
         api.updateInstanceFields(
           workflowType: 'vote',
           instanceId: id,
-          personaId: 'organizer',
+          fanId: 'organizer',
           fieldUpdates: {'winner': 'Azul'},
         ),
         throwsA(isA<WorkflowAuthorizationError>()),

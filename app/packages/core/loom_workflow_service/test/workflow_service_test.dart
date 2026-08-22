@@ -102,7 +102,7 @@ void main() {
       expect(body['updatedAt'], isA<String>());
       final stored = await database.readInstance(body['instanceId'] as String);
       expect(stored, isNotNull);
-      expect(stored!.createdByPersonaId, 'fan-creator');
+      expect(stored!.createdByFanId, 'fan-creator');
 
       expect(appAccessClient.callCount, 1);
       expect(appAccessClient.fanId, 'fan-creator');
@@ -220,7 +220,7 @@ void main() {
       final page = await LocalWorkflowEngineApi(
         db: database,
         communityId: _communityId,
-      ).queryInstances(tabId: 'home', personaId: 'fan-denied');
+      ).queryInstances(tabId: 'home', fanId: 'fan-denied');
       expect(page.items, isEmpty);
     },
   );
@@ -287,7 +287,7 @@ void main() {
           item['instanceId'] as String,
         );
         expect(stored, isNotNull);
-        expect(stored!.createdByPersonaId, 'fan-batch-creator');
+        expect(stored!.createdByFanId, 'fan-batch-creator');
       }
 
       expect(appAccessClient.callCount, 1);
@@ -328,7 +328,7 @@ void main() {
       final page = await LocalWorkflowEngineApi(
         db: database,
         communityId: _communityId,
-      ).queryInstances(tabId: 'home', personaId: 'fan-batch-denied');
+      ).queryInstances(tabId: 'home', fanId: 'fan-batch-denied');
       expect(page.items, isEmpty);
     },
   );
@@ -373,7 +373,7 @@ void main() {
       final page = await LocalWorkflowEngineApi(
         db: database,
         communityId: _communityId,
-      ).queryInstances(tabId: 'calendar', personaId: 'fan-event-organizer');
+      ).queryInstances(tabId: 'calendar', fanId: 'fan-event-organizer');
       expect(page.items, isEmpty);
     },
   );
@@ -402,7 +402,7 @@ void main() {
       final page = await LocalWorkflowEngineApi(
         db: database,
         communityId: _communityId,
-      ).queryInstances(tabId: 'home', personaId: 'fan-batch-creator');
+      ).queryInstances(tabId: 'home', fanId: 'fan-batch-creator');
       expect(page.items, isEmpty);
     },
   );
@@ -434,7 +434,7 @@ void main() {
       final page = await LocalWorkflowEngineApi(
         db: database,
         communityId: _communityId,
-      ).queryInstances(tabId: 'home', personaId: 'fan-batch-creator');
+      ).queryInstances(tabId: 'home', fanId: 'fan-batch-creator');
       expect(page.items, isEmpty);
     },
   );
@@ -459,7 +459,7 @@ void main() {
         workflowType: 'retired',
         currentState: 'draft',
         instanceData: {'ownerFanId': 'fan-owner', 'title': 'Retired'},
-        createdByPersonaId: 'fan-owner',
+        createdByFanId: 'fan-owner',
       );
 
       final second = await service.handler(
@@ -571,7 +571,7 @@ void main() {
           'title': 'Visible',
           'secret': 'visible-secret',
         },
-        createdByPersonaId: 'fan-owner',
+        createdByFanId: 'fan-owner',
       );
       await database.insertInstance(
         instanceId: 'hidden-instance',
@@ -583,7 +583,7 @@ void main() {
           'title': 'Hidden',
           'secret': 'must-not-leak',
         },
-        createdByPersonaId: 'fan-other',
+        createdByFanId: 'fan-other',
       );
 
       final response = await service.handler(
@@ -622,7 +622,7 @@ void main() {
         workflowType: _workflowType,
         currentState: 'draft',
         instanceData: {'ownerFanId': 'fan-other', 'title': 'Board only'},
-        createdByPersonaId: 'fan-other',
+        createdByFanId: 'fan-other',
       );
 
       final response = await service.handler(
@@ -661,7 +661,7 @@ void main() {
           workflowType: type,
           currentState: 'draft',
           instanceData: {'ownerFanId': 'fan-owner', 'title': title},
-          createdByPersonaId: 'fan-owner',
+          createdByFanId: 'fan-owner',
         );
       }
 
@@ -1205,7 +1205,7 @@ Future<void> _seed(WorkflowDatabase database) async {
     workflowType: _workflowType,
     currentState: 'draft',
     instanceData: {'ownerFanId': 'fan-owner'},
-    createdByPersonaId: 'fan-owner',
+    createdByFanId: 'fan-owner',
   );
 }
 
@@ -1220,7 +1220,7 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
           'label': 'Draft',
           'editableFields': ['title', 'computedTitle', 'effectOnly'],
           'editGuard': {
-            'allowedRoleIds': ['fan-editor'],
+            'actorEqualsField': {'key': 'editorFanId'},
           },
         },
       },
@@ -1230,6 +1230,11 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
         'locked': {'type': 'text', 'writableBy': 'formEntry'},
         'computedTitle': {'type': 'text', 'formula': 'title'},
         'effectOnly': {'type': 'text', 'writableBy': 'effect'},
+        'editorFanId': {
+          'type': 'fanId',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
       },
     }),
     version: 4,
@@ -1239,8 +1244,12 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
     communityId: _communityId,
     workflowType: _editableWorkflowType,
     currentState: 'draft',
-    instanceData: {'title': 'Before', 'locked': 'Locked'},
-    createdByPersonaId: 'fan-editor',
+    instanceData: {
+      'title': 'Before',
+      'locked': 'Locked',
+      'editorFanId': 'fan-editor',
+    },
+    createdByFanId: 'fan-editor',
   );
 }
 
@@ -1285,7 +1294,7 @@ Future<void> _seedAggregateRows(
         'status': status,
         'amount': amount,
       },
-      createdByPersonaId: ownerFanId,
+      createdByFanId: ownerFanId,
     );
   }
 }

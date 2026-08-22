@@ -197,23 +197,23 @@ LoomWorkflowStateMachine _parseFixture(String workflowType) {
 
 void main() {
   group('Guard operators', () {
-    test('allowedPersonaIds: match', () {
-      final guard = const WorkflowGuard(allowedPersonaIds: ['admin', 'member']);
-      expect(evaluateGuard(guard, 'member', {}), isTrue);
+    test('allowedRoleIds: match', () {
+      final guard = const WorkflowGuard(allowedRoleIds: ['admin', 'member']);
+      expect(evaluateGuard(guard, 'member-01', {}, roleId: 'member'), isTrue);
     });
 
-    test('allowedPersonaIds: deny', () {
-      final guard = const WorkflowGuard(allowedPersonaIds: ['admin']);
-      expect(evaluateGuard(guard, 'member', {}), isFalse);
+    test('allowedRoleIds: deny', () {
+      final guard = const WorkflowGuard(allowedRoleIds: ['admin']);
+      expect(evaluateGuard(guard, 'member-01', {}, roleId: 'member'), isFalse);
     });
 
-    test('allowedPersonaIds: null list allows anyone', () {
-      final guard = const WorkflowGuard(allowedPersonaIds: null);
+    test('allowedRoleIds: null list allows anyone', () {
+      final guard = const WorkflowGuard(allowedRoleIds: null);
       expect(evaluateGuard(guard, 'anyone', {}), isTrue);
     });
 
-    test('allowedPersonaIds: empty list allows anyone', () {
-      final guard = const WorkflowGuard(allowedPersonaIds: []);
+    test('allowedRoleIds: empty list allows anyone', () {
+      final guard = const WorkflowGuard(allowedRoleIds: []);
       expect(evaluateGuard(guard, 'anyone', {}), isTrue);
     });
 
@@ -319,44 +319,48 @@ void main() {
     });
 
     test(
-      'compound guard: both conditions true → passes (allowedPersonaIds AND instanceDataEquals)',
+      'compound guard: both conditions true → passes (allowedRoleIds AND instanceDataEquals)',
       () {
         final guard = const WorkflowGuard(
-          allowedPersonaIds: ['member'],
+          allowedRoleIds: ['member'],
           instanceDataEquals: KeyValueGuard(
             key: 'availabilityState',
             value: 'available',
           ),
         );
         expect(
-          evaluateGuard(guard, 'member', {'availabilityState': 'available'}),
+          evaluateGuard(guard, 'member-01', {
+            'availabilityState': 'available',
+          }, roleId: 'member'),
           isTrue,
         );
       },
     );
 
     test(
-      'compound guard: allowedPersonaIds true, instanceDataEquals false → transition unavailable',
+      'compound guard: allowedRoleIds true, instanceDataEquals false → transition unavailable',
       () {
         final guard = const WorkflowGuard(
-          allowedPersonaIds: ['member'],
+          allowedRoleIds: ['member'],
           instanceDataEquals: KeyValueGuard(
             key: 'availabilityState',
             value: 'available',
           ),
         );
         expect(
-          evaluateGuard(guard, 'member', {'availabilityState': 'onLoan'}),
+          evaluateGuard(guard, 'member-01', {
+            'availabilityState': 'onLoan',
+          }, roleId: 'member'),
           isFalse,
         );
       },
     );
 
     test(
-      'compound guard: allowedPersonaIds false, instanceDataEquals true → transition unavailable',
+      'compound guard: allowedRoleIds false, instanceDataEquals true → transition unavailable',
       () {
         final guard = const WorkflowGuard(
-          allowedPersonaIds: ['admin'],
+          allowedRoleIds: ['admin'],
           instanceDataEquals: KeyValueGuard(
             key: 'availabilityState',
             value: 'available',
@@ -391,7 +395,7 @@ void main() {
       expect(result, {'availabilityState': 'onLoan'});
     });
 
-    test('set: resolves \$actor to personaId', () {
+    test('set: resolves \$actor to fanId', () {
       final effects = [
         const WorkflowEffect(op: 'set', key: 'holderFanId', value: r'$actor'),
       ];
@@ -649,6 +653,12 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('§2d orthogonal-lifecycle: equipment-loan full drive-through', () {
+    const memberFanId = 'tabletop-member-01';
+    const memberRoleId = 'tabletop-member';
+    const organizerFanId = 'tabletop-organizer-01';
+    const organizerRoleId = 'tabletop-organizer';
+    const ownerFanId = 'tabletop-owner-01';
+    const ownerRoleId = 'tabletop-member-owner';
     late LoomWorkflowStateMachine machine;
 
     setUp(() {
@@ -676,15 +686,16 @@ void main() {
       final actions = availableTransitions(
         machine,
         state,
-        'tabletop-member',
+        memberFanId,
         data,
+        roleId: memberRoleId,
       );
       final submit = actions.firstWhere((a) => a.id == 'submit-listing');
       expect(submit.label, 'Submit for review');
 
       // Apply to: pending-review.
       state = submit.to!;
-      data = applyEffects(submit.effects, 'tabletop-member', data);
+      data = applyEffects(submit.effects, memberFanId, data);
       expect(state, 'pending-review');
     });
 
@@ -700,8 +711,9 @@ void main() {
       var actions = availableTransitions(
         machine,
         state,
-        'tabletop-member',
+        memberFanId,
         data,
+        roleId: memberRoleId,
       );
       expect(
         actions.where((a) => a.id == 'approve-listing'),
@@ -712,15 +724,16 @@ void main() {
       actions = availableTransitions(
         machine,
         state,
-        'tabletop-organizer',
+        organizerFanId,
         data,
+        roleId: organizerRoleId,
       );
       final approve = actions.firstWhere((a) => a.id == 'approve-listing');
       expect(approve.label, 'Approve');
 
       // Apply to: published, data gets availabilityState: "available".
       state = approve.to!;
-      data = applyEffects(approve.effects, 'tabletop-organizer', data);
+      data = applyEffects(approve.effects, organizerFanId, data);
       expect(state, 'published');
       expect(data['availabilityState'], 'available');
     });
@@ -739,15 +752,16 @@ void main() {
         final actions = availableTransitions(
           machine,
           state,
-          'tabletop-member',
+          memberFanId,
           data,
+          roleId: memberRoleId,
         );
         final borrow = actions.firstWhere((a) => a.id == 'borrow');
         expect(borrow.to, isNull); // orthogonal: top-level state doesn't change
 
         // Apply effects.
         final newState = borrow.to ?? state; // null → stays published
-        final newData = applyEffects(borrow.effects, 'tabletop-member', data);
+        final newData = applyEffects(borrow.effects, memberFanId, data);
 
         expect(
           newState,
@@ -759,7 +773,7 @@ void main() {
           'onLoan',
           reason: 'availabilityState changed independently from currentState',
         );
-        expect(newData['holderFanId'], 'tabletop-member');
+        expect(newData['holderFanId'], memberFanId);
       },
     );
 
@@ -769,7 +783,7 @@ void main() {
         final state = 'published';
         final data = <String, dynamic>{
           'availabilityState': 'onLoan',
-          'holderFanId': 'tabletop-member',
+          'holderFanId': memberFanId,
           'queuedFanIds': <String>[],
           'dueDate': '2026-07-17',
         };
@@ -777,14 +791,15 @@ void main() {
         final actions = availableTransitions(
           machine,
           state,
-          'tabletop-member',
+          memberFanId,
           data,
+          roleId: memberRoleId,
         );
         final returnT = actions.firstWhere((a) => a.id == 'return');
         expect(returnT.label, 'Return');
 
         final newState = returnT.to ?? state;
-        final newData = applyEffects(returnT.effects, 'tabletop-member', data);
+        final newData = applyEffects(returnT.effects, memberFanId, data);
 
         expect(newState, 'published');
         expect(newData['availabilityState'], 'available');
@@ -805,16 +820,18 @@ void main() {
       var actions = availableTransitions(
         machine,
         state,
-        'tabletop-member',
+        memberFanId,
         data,
+        roleId: memberRoleId,
       );
       expect(actions.where((a) => a.id == 'delist'), isEmpty);
 
       actions = availableTransitions(
         machine,
         state,
-        'tabletop-member-owner',
+        ownerFanId,
         data,
+        roleId: ownerRoleId,
       );
       final delist = actions.firstWhere((a) => a.id == 'delist');
       expect(delist.label, 'Delist');
@@ -839,32 +856,40 @@ void main() {
         var actions = availableTransitions(
           machine,
           state,
-          'tabletop-member',
+          memberFanId,
           data,
+          roleId: memberRoleId,
         );
         var t = actions.firstWhere((a) => a.id == 'submit-listing');
         state = t.to!;
-        data = applyEffects(t.effects, 'tabletop-member', data);
+        data = applyEffects(t.effects, memberFanId, data);
         expect(state, 'pending-review');
 
         // Step 2: pending-review → published (approve-listing).
         actions = availableTransitions(
           machine,
           state,
-          'tabletop-organizer',
+          organizerFanId,
           data,
+          roleId: organizerRoleId,
         );
         t = actions.firstWhere((a) => a.id == 'approve-listing');
         state = t.to!;
-        data = applyEffects(t.effects, 'tabletop-organizer', data);
+        data = applyEffects(t.effects, organizerFanId, data);
         expect(state, 'published');
         expect(data['availabilityState'], 'available');
 
         // Step 3: published → borrow (orthogonal: state stays published).
-        actions = availableTransitions(machine, state, 'tabletop-member', data);
+        actions = availableTransitions(
+          machine,
+          state,
+          memberFanId,
+          data,
+          roleId: memberRoleId,
+        );
         t = actions.firstWhere((a) => a.id == 'borrow');
         state = t.to ?? state;
-        data = applyEffects(t.effects, 'tabletop-member', data);
+        data = applyEffects(t.effects, memberFanId, data);
         expect(
           state,
           'published',
@@ -877,10 +902,16 @@ void main() {
         );
 
         // Step 4: published → return (orthogonal again).
-        actions = availableTransitions(machine, state, 'tabletop-member', data);
+        actions = availableTransitions(
+          machine,
+          state,
+          memberFanId,
+          data,
+          roleId: memberRoleId,
+        );
         t = actions.firstWhere((a) => a.id == 'return');
         state = t.to ?? state;
-        data = applyEffects(t.effects, 'tabletop-member', data);
+        data = applyEffects(t.effects, memberFanId, data);
         expect(state, 'published');
         expect(data['availabilityState'], 'available');
 
@@ -888,12 +919,13 @@ void main() {
         actions = availableTransitions(
           machine,
           state,
-          'tabletop-member-owner',
+          ownerFanId,
           data,
+          roleId: ownerRoleId,
         );
         t = actions.firstWhere((a) => a.id == 'delist');
         state = t.to!;
-        data = applyEffects(t.effects, 'tabletop-member-owner', data);
+        data = applyEffects(t.effects, ownerFanId, data);
         expect(state, 'delisted');
 
         // Prove the two axes: at every borrow/return step, top-level state

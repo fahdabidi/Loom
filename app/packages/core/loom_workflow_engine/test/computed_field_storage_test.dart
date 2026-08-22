@@ -127,7 +127,7 @@ void main() {
 
       final instanceId = await api.createInstance(
         workflowType: 'event',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'title': 'Evening game',
           'eventDate': '2026-07-20',
@@ -140,7 +140,7 @@ void main() {
         workflowType: 'event',
         instanceId: instanceId,
         transitionId: 'close',
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       expect(result.newState, 'closed');
@@ -149,7 +149,7 @@ void main() {
 
       final page = await api.queryInstances(
         tabId: 'calendar',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       final instance = page.items.singleWhere(
@@ -180,7 +180,7 @@ void main() {
 
       final targetId = await api.createInstance(
         workflowType: 'response',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {
           'eventId': 'event-1',
           'eventDate': '2026-07-20',
@@ -191,7 +191,7 @@ void main() {
       );
       final sourceId = await api.createInstance(
         workflowType: 'event',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'eventId': 'event-1',
           'eventDate': '2026-07-21',
@@ -204,7 +204,7 @@ void main() {
         workflowType: 'event',
         instanceId: sourceId,
         transitionId: 'release-seat',
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       expect(result.newState, 'done');
@@ -216,7 +216,7 @@ void main() {
 
       final page = await api.queryInstances(
         tabId: 'calendar',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       final target = page.items.singleWhere(

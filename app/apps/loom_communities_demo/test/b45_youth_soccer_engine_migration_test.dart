@@ -18,12 +18,12 @@ void main() {
         LoomAccount(
           accountId: 'soccer-guardian',
           displayName: 'River guardian',
-          personaTypeId: 'soccer-guardian',
+          roleId: 'soccer-guardian',
         ),
         LoomAccount(
           accountId: 'soccer-guardian-peer',
           displayName: 'Another soccer guardian',
-          personaTypeId: 'soccer-guardian',
+          roleId: 'soccer-guardian',
         ),
       ]);
       await signInEvidenceAccount(tester, 'River guardian');
@@ -396,7 +396,7 @@ void main() {
         workflowType: 'soccer-export-metadata',
         instanceId: 'soccer-export-fall-2026',
         transitionId: 'start-export',
-        personaId: ownerAccountId,
+        fanId: ownerAccountId,
         inputs: const {'operationMode': 'export'},
       );
       await openEvidenceTarget(tester, target);
@@ -515,8 +515,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectPersona(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

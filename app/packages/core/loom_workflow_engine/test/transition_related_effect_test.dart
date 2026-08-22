@@ -83,7 +83,7 @@ Map<String, dynamic> _notificationDefinition() => {
 };
 
 Future<String> _stateFor(LocalWorkflowEngineApi api, String instanceId) async =>
-    (await api.queryInstances(tabId: 'test', personaId: 'member')).items
+    (await api.queryInstances(tabId: 'test', fanId: 'member')).items
         .singleWhere((instance) => instance.instanceId == instanceId)
         .currentState;
 
@@ -153,7 +153,7 @@ void main() {
     api.registerDefinition(_machine('event', _sourceDefinition()));
     final older = await api.createInstance(
       workflowType: 'response',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {
         'eventId': 'event-1',
         'rsvpedAt': '2026-07-01T10:00:00Z',
@@ -162,7 +162,7 @@ void main() {
     );
     final newer = await api.createInstance(
       workflowType: 'response',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {
         'eventId': 'event-1',
         'rsvpedAt': '2026-07-02T10:00:00Z',
@@ -171,7 +171,7 @@ void main() {
     );
     final source = await api.createInstance(
       workflowType: 'event',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'eventId': 'event-1'},
     );
 
@@ -179,7 +179,7 @@ void main() {
       workflowType: 'event',
       instanceId: source,
       transitionId: 'release-seat',
-      personaId: 'member',
+      fanId: 'member',
     );
 
     expect(await _stateFor(api, source), 'done');
@@ -198,7 +198,7 @@ void main() {
       api.registerDefinition(_machine('event', _sourceDefinition()));
       final target = await api.createInstance(
         workflowType: 'response',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {
           'eventId': 'event-1',
           'rsvpedAt': '2026-07-01T10:00:00Z',
@@ -207,7 +207,7 @@ void main() {
       );
       final source = await api.createInstance(
         workflowType: 'event',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {'eventId': 'event-1'},
       );
 
@@ -216,7 +216,7 @@ void main() {
           workflowType: 'event',
           instanceId: source,
           transitionId: 'release-seat',
-          personaId: 'member',
+          fanId: 'member',
         ),
         completes,
       );
@@ -235,7 +235,7 @@ void main() {
     api.registerDefinition(_machine('event', _sourceDefinition()));
     final source = await api.createInstance(
       workflowType: 'event',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'eventId': 'event-without-responses'},
     );
 
@@ -244,7 +244,7 @@ void main() {
         workflowType: 'event',
         instanceId: source,
         transitionId: 'release-seat',
-        personaId: 'member',
+        fanId: 'member',
       ),
       completes,
     );
@@ -285,7 +285,7 @@ void main() {
 
       final target = await api.createInstance(
         workflowType: 'response',
-        personaId: 'promoted-member',
+        fanId: 'promoted-member',
         initialInstanceData: {
           'eventId': 'event-1',
           'rsvpedAt': '2026-07-01T10:00:00Z',
@@ -295,7 +295,7 @@ void main() {
       );
       final source = await api.createInstance(
         workflowType: 'event',
-        personaId: 'source-actor',
+        fanId: 'source-actor',
         initialInstanceData: {'eventId': 'event-1', 'fanId': 'source-actor'},
       );
 
@@ -303,14 +303,12 @@ void main() {
         workflowType: 'event',
         instanceId: source,
         transitionId: 'release-seat',
-        personaId: 'source-actor',
+        fanId: 'source-actor',
       );
 
       final notifications =
-          (await api.queryInstances(
-                tabId: 'messages',
-                personaId: 'source-actor',
-              )).items
+          (await api.queryInstances(tabId: 'messages', fanId: 'source-actor'))
+              .items
               .where((instance) => instance.workflowType == 'notification')
               .toList();
       expect(notifications, hasLength(2));
@@ -356,7 +354,7 @@ void main() {
 
       final target = await api.createInstance(
         workflowType: 'response',
-        personaId: 'promoted-member',
+        fanId: 'promoted-member',
         initialInstanceData: {
           'eventId': 'event-1',
           'rsvpedAt': '2026-07-01T10:00:00Z',
@@ -366,7 +364,7 @@ void main() {
       );
       final source = await api.createInstance(
         workflowType: 'event',
-        personaId: 'source-actor',
+        fanId: 'source-actor',
         initialInstanceData: {'eventId': 'event-1', 'fanId': 'source-actor'},
       );
 
@@ -374,14 +372,12 @@ void main() {
         workflowType: 'event',
         instanceId: source,
         transitionId: 'release-seat',
-        personaId: 'source-actor',
+        fanId: 'source-actor',
       );
 
       final notifications =
-          (await api.queryInstances(
-                tabId: 'messages',
-                personaId: 'source-actor',
-              )).items
+          (await api.queryInstances(tabId: 'messages', fanId: 'source-actor'))
+              .items
               .where((instance) => instance.workflowType == 'notification')
               .toList();
       expect(notifications, isEmpty);

@@ -34,8 +34,7 @@ void main() {
       expect(
         package.personas
             .map(
-              (persona) =>
-                  (persona.personaId, persona.label, persona.roleLabel),
+              (persona) => (persona.roleId, persona.label, persona.roleLabel),
             )
             .toList(),
         [
@@ -122,7 +121,7 @@ void main() {
       );
     });
 
-    test('derives createRoleIds from create-action byPersonaIds', () {
+    test('derives createRoleIds from create-action byRoleIds', () {
       final workflows = _workflowsByType(plan);
 
       expect(
@@ -261,8 +260,7 @@ void main() {
       expect(
         package.personas
             .map(
-              (persona) =>
-                  (persona.personaId, persona.label, persona.roleLabel),
+              (persona) => (persona.roleId, persona.label, persona.roleLabel),
             )
             .toList(),
         [

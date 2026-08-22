@@ -8,7 +8,7 @@ import '../models/workflow_models.dart';
 /// The workflow engine deliberately does not depend on the app-shell auth
 /// implementation. Callers that use `membersOnly` visibility can inject the
 /// lookup from their account store instead.
-typedef ActiveMembershipLookup = FutureOr<bool> Function(String personaId);
+typedef ActiveMembershipLookup = FutureOr<bool> Function(String fanId);
 
 /// Resolves whether a caller may reach a workflow-backed surface.
 ///
@@ -18,8 +18,8 @@ typedef ActiveMembershipLookup = FutureOr<bool> Function(String personaId);
 /// query and mutation entrypoints to enforce the same policy as the UI.
 typedef WorkflowSurfacePermissionLookup =
     FutureOr<bool> Function({
-      required String personaId,
-      String? personaTypeId,
+      required String fanId,
+      String? roleId,
       String? tabId,
       String? workflowType,
     });
@@ -54,14 +54,14 @@ class WorkflowInstance {
   final String workflowType;
   final String currentState;
   final Map<String, dynamic> instanceData;
-  final String createdByPersonaId;
+  final String createdByFanId;
 
   const WorkflowInstance({
     required this.instanceId,
     required this.workflowType,
     required this.currentState,
     required this.instanceData,
-    required this.createdByPersonaId,
+    required this.createdByFanId,
   });
 }
 
@@ -106,7 +106,7 @@ abstract class WorkflowEngineApi {
   /// READ a collection of instances visible on a given tab for a given persona.
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
@@ -118,7 +118,7 @@ abstract class WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   });
 
   /// Async transition resolution, including cross-instance guard checks.
@@ -127,7 +127,7 @@ abstract class WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   });
 
   /// MUTATE one instance via a state-changing transition.
@@ -139,7 +139,7 @@ abstract class WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required String transitionId,
-    required String personaId,
+    required String fanId,
     Map<String, dynamic>? inputs,
   });
 
@@ -147,14 +147,14 @@ abstract class WorkflowEngineApi {
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
-    required String personaId,
+    required String fanId,
   });
 
   /// Atomically CREATE many new workflow instances in one operation.
   Future<List<String>> createInstances({
     required String workflowType,
     required List<Map<String, dynamic>> initialInstanceDataList,
-    required String personaId,
+    required String fanId,
   });
 
   /// EDIT fields on an existing instance without transitioning state.
@@ -162,12 +162,12 @@ abstract class WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required Map<String, dynamic> fieldUpdates,
-    required String personaId,
+    required String fanId,
   });
 
   /// Reads a scalar or grouped aggregate from persisted workflow instances.
   /// With [groupBy], returns rows containing [groupBy] and [op].
-  /// When [personaId] is supplied, workflow visibility and read guards are
+  /// When [fanId] is supplied, workflow visibility and read guards are
   /// applied before aggregation. Omitting it preserves the unscoped
   /// system-truth read used by internal guard math.
   Future<dynamic> aggregate({
@@ -176,7 +176,7 @@ abstract class WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
-    String? personaId,
+    String? fanId,
   });
 
   Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf});

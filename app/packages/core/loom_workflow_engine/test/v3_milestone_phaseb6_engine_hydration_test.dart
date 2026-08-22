@@ -1,6 +1,10 @@
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
+const _organizerFanId = 'tabletop-organizer-01';
+const _organizerRoleId = 'tabletop-organizer';
+const _memberFanId = 'tabletop-member-01';
+
 LoomWorkflowStateMachine _machine(String type, Map<String, dynamic> json) =>
     LoomWorkflowStateMachine.fromJson(json, type);
 
@@ -112,6 +116,8 @@ LocalWorkflowEngineApi _engine(WorkflowDatabase database) {
     communityId: 'phaseb6-engine-hydration',
   );
   engine
+    ..setRoleForFan(_organizerFanId, _organizerRoleId)
+    ..setRoleForFan(_memberFanId, 'tabletop-member')
     ..registerDefinition(_machine('tournament-event', _eventDefinition()))
     ..registerDefinition(_machine('tournament-vote', _voteDefinition()))
     ..registerDefinition(_machine('tournament-ballot', _ballotDefinition()));
@@ -124,12 +130,12 @@ Future<_SeededBallot> _seedBallot(
 ) async {
   final eventId = await engine.createInstance(
     workflowType: 'tournament-event',
-    personaId: 'tabletop-organizer',
+    fanId: _organizerFanId,
     initialInstanceData: {'selectedGame': 'TBD'},
   );
   final ballotId = await engine.createInstance(
     workflowType: 'tournament-ballot',
-    personaId: 'tabletop-organizer',
+    fanId: _organizerFanId,
     initialInstanceData: {
       'eventId': eventId,
       'candidates': [
@@ -147,7 +153,7 @@ Future<_SeededBallot> _seedBallot(
   for (var index = 0; index < choices.length; index++) {
     await engine.createInstance(
       workflowType: 'tournament-vote',
-      personaId: 'tabletop-member',
+      fanId: _memberFanId,
       initialInstanceData: {
         'ballotId': ballotId,
         'voterId': 'tabletop-member-${index + 1}',
@@ -164,7 +170,7 @@ Future<WorkflowInstance> _read(
 ) async {
   final page = await engine.queryInstances(
     tabId: 'home',
-    personaId: 'tabletop-organizer',
+    fanId: _organizerFanId,
     limit: 100,
   );
   return page.items.singleWhere(
@@ -178,7 +184,7 @@ Future<List<WorkflowInstance>> _readType(
 ) async {
   final page = await engine.queryInstances(
     tabId: 'home',
-    personaId: 'tabletop-organizer',
+    fanId: _organizerFanId,
     limit: 100,
   );
   return page.items
@@ -221,7 +227,7 @@ void main() {
       workflowType: 'tournament-ballot',
       instanceId: seeded.ballotId,
       transitionId: 'close-vote',
-      personaId: 'tabletop-organizer',
+      fanId: _organizerFanId,
     );
     expect(result.newState, 'closed');
 
@@ -256,7 +262,7 @@ void main() {
       workflowType: 'tournament-ballot',
       instanceId: seeded.ballotId,
       transitionId: 'close-vote',
-      personaId: 'tabletop-organizer',
+      fanId: _organizerFanId,
     );
     expect(result.newState, 'closed');
 

@@ -57,7 +57,7 @@ Map<String, dynamic> _notificationDefinition() => {
 
 Map<String, dynamic> _notificationSeed({
   required String instanceId,
-  required String recipientPersonaId,
+  required String recipientFanId,
   required String title,
   String currentState = 'unread',
 }) => {
@@ -66,7 +66,7 @@ Map<String, dynamic> _notificationSeed({
   'currentState': currentState,
   'createdByFanId': 'notification-effect',
   'instanceData': {
-    'recipientFanId': recipientPersonaId,
+    'recipientFanId': recipientFanId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',
@@ -134,7 +134,7 @@ Widget _host(LocalInstalledCommunity community) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: community,
-      personaTypeId: _personaA,
+      roleId: _personaA,
     ),
   ),
 );
@@ -163,7 +163,7 @@ Future<void> _pumpUntilRead(
   for (var attempt = 0; attempt < 40; attempt += 1) {
     final page = await engine.queryInstances(
       tabId: 'notification-inbox',
-      personaId: _personaA,
+      fanId: _personaA,
       limit: 1000,
     );
     final item = page.items.singleWhere(
@@ -193,23 +193,23 @@ void main() {
         seeds: [
           _notificationSeed(
             instanceId: 'a-unread-1',
-            recipientPersonaId: _personaA,
+            recipientFanId: _personaA,
             title: 'A unread one',
           ),
           _notificationSeed(
             instanceId: 'a-unread-2',
-            recipientPersonaId: _personaA,
+            recipientFanId: _personaA,
             title: 'A unread two',
           ),
           _notificationSeed(
             instanceId: 'a-read',
-            recipientPersonaId: _personaA,
+            recipientFanId: _personaA,
             title: 'A already read',
             currentState: 'read',
           ),
           _notificationSeed(
             instanceId: 'b-unread',
-            recipientPersonaId: _personaB,
+            recipientFanId: _personaB,
             title: 'B private notification',
           ),
         ],
@@ -264,7 +264,7 @@ void main() {
 
       final persisted = await engine.queryInstances(
         tabId: 'notification-inbox',
-        personaId: _personaA,
+        fanId: _personaA,
         limit: 1000,
       );
       expect(
@@ -303,7 +303,7 @@ void main() {
       seeds: [
         _notificationSeed(
           instanceId: 'absent-unread',
-          recipientPersonaId: _personaA,
+          recipientFanId: _personaA,
           title: 'Absent style notification',
         ),
       ],
@@ -364,7 +364,7 @@ void main() {
       seeds: [
         _notificationSeed(
           instanceId: 'bell-unread',
-          recipientPersonaId: _personaA,
+          recipientFanId: _personaA,
           title: 'Bell style notification',
         ),
       ],

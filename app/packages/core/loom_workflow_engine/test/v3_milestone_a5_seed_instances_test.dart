@@ -34,12 +34,12 @@ WorkflowInstance _seed(
   workflowType: type,
   currentState: state,
   instanceData: data,
-  createdByPersonaId: 'creator',
+  createdByFanId: 'creator',
 );
 Future<List<WorkflowInstance>> _all(LocalWorkflowEngineApi engine) async =>
     (await engine.queryInstances(
       tabId: 'x',
-      personaId: 'creator',
+      fanId: 'creator',
       limit: 50,
     )).items;
 
@@ -137,7 +137,7 @@ void main() {
       await reloaded.createInstance(
         workflowType: 'thing',
         initialInstanceData: const <String, dynamic>{},
-        personaId: 'creator',
+        fanId: 'creator',
       );
       expect(
         (await _all(reloaded)).single.instanceData,

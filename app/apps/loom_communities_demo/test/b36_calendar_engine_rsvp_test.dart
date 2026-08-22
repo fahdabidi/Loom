@@ -80,12 +80,12 @@ void main() {
         LoomAccount(
           accountId: 'tabletop-member-alex',
           displayName: 'Alex Member',
-          personaTypeId: 'tabletop-member',
+          roleId: 'tabletop-member',
         ),
         LoomAccount(
           accountId: 'tabletop-member-blair',
           displayName: 'Blair Member',
-          personaTypeId: 'tabletop-member',
+          roleId: 'tabletop-member',
         ),
       ]);
       await signInEvidenceAccount(tester, 'Alex Member');
@@ -350,6 +350,7 @@ _writeTabletopCalendarFixture(
     location: 'Community room',
     host: 'Mara, organizer',
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     memberRoleId: 'tabletop-member',
     capacity: 20,
     includeWaitlist: true,
@@ -365,6 +366,7 @@ _writeTabletopCalendarFixture(
     location: 'Community room',
     host: 'Mara, organizer',
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     memberRoleId: 'tabletop-member',
     capacity: 20,
     includeWaitlist: true,

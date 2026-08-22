@@ -179,7 +179,7 @@ Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seed() async {
   api.registerDefinition(_machine());
   final id = await api.createInstance(
     workflowType: 'generic-test',
-    personaId: 'person',
+    fanId: 'person',
     initialInstanceData: {
       'title': 'One card',
       'members': ['a', 'b'],
@@ -202,7 +202,7 @@ Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seed() async {
   );
   final row = (await api.queryInstances(
     tabId: 'any',
-    personaId: 'person',
+    fanId: 'person',
   )).items.singleWhere((item) => item.instanceId == id);
   return (api, row);
 }
@@ -223,7 +223,7 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) {
     if (failNextActions) {
       failNextActions = false;
@@ -241,7 +241,7 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required Map<String, dynamic> fieldUpdates,
-    required String personaId,
+    required String fanId,
   }) async {
     updateCalls++;
     final held = updateCompleter;
@@ -250,20 +250,20 @@ class _ControlledEngine implements WorkflowEngineApi {
       workflowType: workflowType,
       instanceId: instanceId,
       fieldUpdates: fieldUpdates,
-      personaId: personaId,
+      fanId: fanId,
     );
   }
 
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
   }) => delegate.queryInstances(
     tabId: tabId,
-    personaId: personaId,
+    fanId: fanId,
     query: query,
     limit: limit,
     cursor: cursor,
@@ -274,47 +274,47 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) => delegate.availableTransitions(
     workflowType: workflowType,
     instanceId: instanceId,
     currentState: currentState,
     instanceData: instanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
   @override
   Future<WorkflowTransitionResult> applyTransition({
     required String workflowType,
     required String instanceId,
     required String transitionId,
-    required String personaId,
+    required String fanId,
     Map<String, dynamic>? inputs,
   }) => delegate.applyTransition(
     workflowType: workflowType,
     instanceId: instanceId,
     transitionId: transitionId,
-    personaId: personaId,
+    fanId: fanId,
     inputs: inputs,
   );
   @override
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
-    required String personaId,
+    required String fanId,
   }) => delegate.createInstance(
     workflowType: workflowType,
     initialInstanceData: initialInstanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
   @override
   Future<List<String>> createInstances({
     required String workflowType,
     required List<Map<String, dynamic>> initialInstanceDataList,
-    required String personaId,
+    required String fanId,
   }) => delegate.createInstances(
     workflowType: workflowType,
     initialInstanceDataList: initialInstanceDataList,
-    personaId: personaId,
+    fanId: fanId,
   );
   @override
   Future<dynamic> aggregate({
@@ -323,14 +323,14 @@ class _ControlledEngine implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
-    String? personaId,
+    String? fanId,
   }) => delegate.aggregate(
     workflowType: workflowType,
     column: column,
     op: op,
     filter: filter,
     groupBy: groupBy,
-    personaId: personaId,
+    fanId: fanId,
   );
   @override
   Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf}) =>
@@ -366,7 +366,7 @@ GenericWorkflowInstanceCard _card(
   instance: instance,
   machine: machine ?? _machine(),
   engine: api,
-  personaId: persona,
+  fanId: persona,
   displayContext: context,
 );
 
@@ -732,7 +732,7 @@ void main() {
       await tester.pump();
       final after = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.single;
       expect(after.instanceData['text'], 'new text');
       expect(after.instanceData['notes'], 'new notes');
@@ -757,7 +757,7 @@ void main() {
       expect(
         (await api.queryInstances(
           tabId: 'any',
-          personaId: 'person',
+          fanId: 'person',
         )).items.single.instanceData['amount'],
         7.5,
       );
@@ -790,12 +790,12 @@ void main() {
     api.registerDefinition(machine);
     final id = await api.createInstance(
       workflowType: 'url-link',
-      personaId: 'person',
+      fanId: 'person',
       initialInstanceData: {'docsUrl': 'https://example.org/project'},
     );
     final instance = (await api.queryInstances(
       tabId: 'any',
-      personaId: 'person',
+      fanId: 'person',
     )).items.singleWhere((row) => row.instanceId == id);
 
     await tester.pumpWidget(
@@ -804,7 +804,7 @@ void main() {
           instance: instance,
           machine: machine,
           engine: api,
-          personaId: 'person',
+          fanId: 'person',
           displayContext: 'tile',
         ),
       ),
@@ -843,12 +843,12 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'url-choice-link',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: {'docsUrl': 'https://example.org/project'},
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == id);
 
       await tester.pumpWidget(
@@ -857,7 +857,7 @@ void main() {
             instance: instance,
             machine: machine,
             engine: api,
-            personaId: 'person',
+            fanId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -905,12 +905,12 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'url-choice-link-nav',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: {'docsUrl': 'https://example.org/project'},
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == id);
 
       await tester.pumpWidget(
@@ -919,7 +919,7 @@ void main() {
             instance: instance,
             machine: machine,
             engine: api,
-            personaId: 'person',
+            fanId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -973,7 +973,7 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'list-url-link',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: {
           'citations': [
             {'label': 'Doc A', 'source': 'https://example.org/a'},
@@ -983,7 +983,7 @@ void main() {
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == id);
 
       await tester.pumpWidget(
@@ -992,7 +992,7 @@ void main() {
             instance: instance,
             machine: machine,
             engine: api,
-            personaId: 'person',
+            fanId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -1111,7 +1111,7 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'document-library-shape',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {
           'title': 'Policy',
           'resourceUrl': 'https://example.org/policy',
@@ -1122,7 +1122,7 @@ void main() {
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'member',
+        fanId: 'member',
       )).items.singleWhere((row) => row.instanceId == id);
       final resolved = EngineNativeResolvedBinding(
         instance: instance,
@@ -1144,7 +1144,8 @@ void main() {
             resolved: resolved,
             engine: api,
             communityExtensionId: 'document-library',
-            personaId: 'member',
+            fanId: 'member',
+            roleId: 'member',
             accent: Colors.grey,
             onInstanceChanged: (_) {},
           ),
@@ -1236,7 +1237,7 @@ void main() {
       expect(
         (await api.queryInstances(
           tabId: 'any',
-          personaId: 'person',
+          fanId: 'person',
         )).items.single.instanceData['text'],
         'text only',
       );
@@ -1275,14 +1276,14 @@ void main() {
       api.registerDefinition(machine);
       final id = await api.createInstance(
         workflowType: 'generic-instance-editable-list',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: {
           'selectedSchemaIds': ['a', 'b'],
         },
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == id);
 
       await tester.pumpWidget(_host(_card(api, instance, machine: machine)));
@@ -1319,7 +1320,7 @@ void main() {
 
       final updated = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == id);
       expect(updated.instanceData['selectedSchemaIds'], ['a', 'b', 'c']);
     },
@@ -1373,19 +1374,19 @@ void main() {
         ..registerDefinition(vote);
       final eventId = await api.createInstance(
         workflowType: 'event',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {
           'allowed': ['allowed'],
         },
       );
       final voteId = await api.createInstance(
         workflowType: 'vote',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {'eventId': eventId},
       );
       final instance = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'allowed',
+        fanId: 'allowed',
       )).items.singleWhere((row) => row.instanceId == voteId);
       await tester.pumpWidget(
         _host(
@@ -1393,7 +1394,7 @@ void main() {
             instance: instance,
             machine: vote,
             engine: api,
-            personaId: 'denied',
+            fanId: 'denied',
           ),
         ),
       );
@@ -1405,7 +1406,7 @@ void main() {
             instance: instance,
             machine: vote,
             engine: api,
-            personaId: 'allowed',
+            fanId: 'allowed',
           ),
         ),
       );
@@ -1415,7 +1416,7 @@ void main() {
       await tester.pump();
       final after = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'allowed',
+        fanId: 'allowed',
       )).items.singleWhere((row) => row.instanceId == voteId);
       expect(after.currentState, 'cast');
       expect(after.instanceData['result'], 'cast');
@@ -1496,7 +1497,7 @@ void main() {
     expect(
       (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.single.instanceData['amount'],
       2,
     );
@@ -1508,7 +1509,7 @@ void main() {
       final (api, a) = await _seed();
       final bId = await api.createInstance(
         workflowType: 'generic-test',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: (Map.of(a.instanceData)
           ..remove('computed')
           ..remove('effectOnly')
@@ -1516,7 +1517,7 @@ void main() {
       );
       final b = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == bId);
       final controlledA = _ControlledEngine(api);
       final controlledB = _ControlledEngine(api);
@@ -1532,7 +1533,7 @@ void main() {
           instance: row,
           machine: machine,
           engine: engine,
-          personaId: persona,
+          fanId: persona,
         ),
       );
       await tester.pumpWidget(card(a, 'person', machineA, controlledA));
@@ -1570,7 +1571,7 @@ void main() {
       final (api, a) = await _seed();
       final bId = await api.createInstance(
         workflowType: 'generic-test',
-        personaId: 'person',
+        fanId: 'person',
         initialInstanceData: (Map.of(a.instanceData)
           ..remove('computed')
           ..remove('effectOnly')
@@ -1578,7 +1579,7 @@ void main() {
       );
       final b = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'person',
+        fanId: 'person',
       )).items.singleWhere((row) => row.instanceId == bId);
       final controlledA = _ControlledEngine(api)
         ..updateCompleter = Completer<void>();
@@ -1597,7 +1598,7 @@ void main() {
           instance: row,
           machine: machine,
           engine: engine,
-          personaId: persona,
+          fanId: persona,
           onInstanceChanged: callbacks.add,
         ),
       );
@@ -1640,7 +1641,7 @@ void main() {
       await tester.pumpAndSettle();
       final persistedB = (await api.queryInstances(
         tabId: 'any',
-        personaId: 'other',
+        fanId: 'other',
       )).items.singleWhere((row) => row.instanceId == b.instanceId);
       expect(persistedB.instanceData['text'], 'B edit');
       expect(callbacks.map((row) => row.instanceId), [b.instanceId]);
@@ -1686,7 +1687,7 @@ void main() {
             instance: instance,
             machine: machine,
             engine: controlled,
-            personaId: 'person',
+            fanId: 'person',
           ),
         ),
       );
@@ -1740,7 +1741,7 @@ void main() {
     final (api, a) = await _seed();
     final bId = await api.createInstance(
       workflowType: 'generic-test',
-      personaId: 'person',
+      fanId: 'person',
       initialInstanceData: (Map.of(a.instanceData)
         ..remove('computed')
         ..remove('effectOnly')
@@ -1748,7 +1749,7 @@ void main() {
     );
     final b = (await api.queryInstances(
       tabId: 'any',
-      personaId: 'person',
+      fanId: 'person',
     )).items.singleWhere((row) => row.instanceId == bId);
     final controlled = _ControlledEngine(api);
     final machine = _machine();
@@ -1757,7 +1758,7 @@ void main() {
         instance: row,
         machine: machine,
         engine: controlled,
-        personaId: persona,
+        fanId: persona,
       ),
     );
     await tester.pumpWidget(card(a, 'person'));

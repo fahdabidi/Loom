@@ -238,7 +238,7 @@ class _PersonaStatusStrip extends StatelessWidget {
                     ),
                   Text(
                     persona.label,
-                    key: ValueKey('active-persona-${persona.personaId}'),
+                    key: ValueKey('active-persona-${persona.roleId}'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: foreground,
                       fontWeight: FontWeight.w700,

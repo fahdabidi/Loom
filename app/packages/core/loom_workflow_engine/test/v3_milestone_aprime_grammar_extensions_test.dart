@@ -21,7 +21,7 @@ void main() {
       });
 
       expect(guarded.editGuard, isNotNull);
-      expect(guarded.editGuard!.allowedPersonaIds, ['tabletop-organizer']);
+      expect(guarded.editGuard!.allowedRoleIds, ['tabletop-organizer']);
       // An absent editGuard is closed by default, rather than becoming the
       // open WorkflowGuard() used for absent transition guards.
       expect(unguarded.editGuard, isNull);
@@ -36,7 +36,7 @@ void main() {
       });
 
       expect(state.readGuard, isNotNull);
-      expect(state.readGuard!.allowedPersonaIds, ['reviewer']);
+      expect(state.readGuard!.allowedRoleIds, ['reviewer']);
     });
 
     test('workflow visibility parses public, membersOnly, and guarded', () {
@@ -65,7 +65,7 @@ void main() {
         expect(machine.visibility.isDeclared, isTrue);
         expect(machine.visibility.defaultValue, entry.value);
         if (entry.key == 'guarded') {
-          expect(machine.visibility.readGuard!.allowedPersonaIds, ['reviewer']);
+          expect(machine.visibility.readGuard!.allowedRoleIds, ['reviewer']);
         } else {
           expect(machine.visibility.readGuard, isNull);
         }
@@ -375,7 +375,7 @@ void main() {
         ],
       });
       expect(b.actions, hasLength(1));
-      expect(b.actions.single.byPersonaIds, ['tabletop-member']);
+      expect(b.actions.single.byRoleIds, ['tabletop-member']);
       expect(b.actions.single.label, 'Propose a game');
       expect(b.actions.single.workflowType, 'game-purchase-proposal');
       expect(b.actions.single.scope, 'instance');
@@ -429,7 +429,7 @@ void main() {
         expect(action.kind, 'transition');
         expect(action.label, 'Request loan');
         expect(action.transitionId, 'borrow');
-        expect(action.byPersonaIds, ['tabletop-member']);
+        expect(action.byRoleIds, ['tabletop-member']);
         expect(action.workflowType, 'equipment-loan');
         expect(action.scope, 'instance');
         expect(action.presentation, 'fab');
@@ -447,7 +447,7 @@ void main() {
         db: WorkflowDatabase.memory(),
         communityId: 'gap1-test',
       );
-      api.setPersonaType('voter-1', 'member');
+      api.setRoleForFan('voter-1', 'member');
 
       // Register the vote-row type (the child created by the transition)
       api.registerDefinition(
@@ -505,7 +505,7 @@ void main() {
 
       final ballotId = await api.createInstance(
         workflowType: 'ballot',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
         initialInstanceData: <String, dynamic>{},
       );
 
@@ -514,7 +514,7 @@ void main() {
         workflowType: 'ballot',
         instanceId: ballotId,
         transitionId: 'cast-vote',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
         inputs: <String, dynamic>{'choice': 'Catan'},
       );
 
@@ -523,14 +523,14 @@ void main() {
         workflowType: 'ballot',
         instanceId: ballotId,
         transitionId: 'cast-vote',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
         inputs: <String, dynamic>{'choice': 'Azul'},
       );
 
       // Read back all vote rows
       final page = await api.queryInstances(
         tabId: 'x',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
         limit: 50,
       );
       final votes = page.items
@@ -551,7 +551,7 @@ void main() {
       db: WorkflowDatabase.memory(),
       communityId: 'gap1-req-test',
     );
-    api.setPersonaType('voter-1', 'member');
+    api.setRoleForFan('voter-1', 'member');
 
     api.registerDefinition(
       _machine('ballot', {
@@ -581,7 +581,7 @@ void main() {
 
     final ballotId = await api.createInstance(
       workflowType: 'ballot',
-      personaId: 'voter-1',
+      fanId: 'voter-1',
       initialInstanceData: <String, dynamic>{},
     );
 
@@ -591,7 +591,7 @@ void main() {
         workflowType: 'ballot',
         instanceId: ballotId,
         transitionId: 'cast-vote',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
       ),
       throwsStateError,
     );
@@ -602,7 +602,7 @@ void main() {
         workflowType: 'ballot',
         instanceId: ballotId,
         transitionId: 'cast-vote',
-        personaId: 'voter-1',
+        fanId: 'voter-1',
         inputs: <String, dynamic>{},
       ),
       throwsStateError,
@@ -618,11 +618,11 @@ void main() {
         db: WorkflowDatabase.memory(),
         communityId: 'gap4-test',
       );
-      api.setPersonaType('member-03', 'tabletop-member');
-      api.setPersonaType('member-04', 'tabletop-member');
-      api.setPersonaType('member-05', 'tabletop-member');
-      api.setPersonaType('member-06', 'tabletop-member');
-      api.setPersonaType('organizer', 'tabletop-organizer');
+      api.setRoleForFan('member-03', 'tabletop-member');
+      api.setRoleForFan('member-04', 'tabletop-member');
+      api.setRoleForFan('member-05', 'tabletop-member');
+      api.setRoleForFan('member-06', 'tabletop-member');
+      api.setRoleForFan('organizer', 'tabletop-organizer');
 
       // Event (needed for related-list guard on cast-vote)
       api.registerDefinition(
@@ -725,7 +725,7 @@ void main() {
           instanceData: <String, dynamic>{
             'goingFanIds': ['member-03', 'member-04', 'member-05', 'member-06'],
           },
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -735,7 +735,7 @@ void main() {
           workflowType: 'tournament-ballot',
           currentState: 'open',
           instanceData: <String, dynamic>{'eventId': 'event-summer'},
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -750,7 +750,7 @@ void main() {
             'voterId': 'member-03',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-03',
+          createdByFanId: 'member-03',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
@@ -761,7 +761,7 @@ void main() {
             'voterId': 'member-04',
             'choice': 'wingspan',
           },
-          createdByPersonaId: 'member-04',
+          createdByFanId: 'member-04',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m05-catan',
@@ -772,7 +772,7 @@ void main() {
             'voterId': 'member-05',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-05',
+          createdByFanId: 'member-05',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m06-azul',
@@ -783,13 +783,13 @@ void main() {
             'voterId': 'member-06',
             'choice': 'azul',
           },
-          createdByPersonaId: 'member-06',
+          createdByFanId: 'member-06',
         ),
       ]);
 
       final page = await api.queryInstances(
         tabId: 'home',
-        personaId: 'organizer',
+        fanId: 'organizer',
         limit: 50,
       );
       final ballot = page.items.firstWhere(
@@ -818,7 +818,7 @@ void main() {
           instanceData: <String, dynamic>{
             'goingFanIds': ['member-03', 'member-04', 'member-05', 'member-06'],
           },
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -828,7 +828,7 @@ void main() {
           workflowType: 'tournament-ballot',
           currentState: 'open',
           instanceData: <String, dynamic>{'eventId': 'event-summer'},
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m03-catan',
@@ -839,7 +839,7 @@ void main() {
             'voterId': 'member-03',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-03',
+          createdByFanId: 'member-03',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
@@ -850,7 +850,7 @@ void main() {
             'voterId': 'member-04',
             'choice': 'wingspan',
           },
-          createdByPersonaId: 'member-04',
+          createdByFanId: 'member-04',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m05-catan',
@@ -861,7 +861,7 @@ void main() {
             'voterId': 'member-05',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-05',
+          createdByFanId: 'member-05',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m06-azul',
@@ -872,13 +872,13 @@ void main() {
             'voterId': 'member-06',
             'choice': 'azul',
           },
-          createdByPersonaId: 'member-06',
+          createdByFanId: 'member-06',
         ),
       ]);
 
       final page = await api.queryInstances(
         tabId: 'home',
-        personaId: 'organizer',
+        fanId: 'organizer',
         limit: 50,
       );
       final ballot = page.items.firstWhere(
@@ -911,7 +911,7 @@ void main() {
           instanceData: <String, dynamic>{
             'goingFanIds': ['member-03'],
           },
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -921,7 +921,7 @@ void main() {
           workflowType: 'tournament-ballot',
           currentState: 'open',
           instanceData: <String, dynamic>{'eventId': 'event-summer'},
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m03-catan',
@@ -932,14 +932,14 @@ void main() {
             'voterId': 'member-03',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-03',
+          createdByFanId: 'member-03',
         ),
       ]);
 
       // Read instance first so we have computed data
       final page = await api.queryInstances(
         tabId: 'home',
-        personaId: 'organizer',
+        fanId: 'organizer',
         limit: 50,
       );
       final instance = page.items.firstWhere(
@@ -951,7 +951,7 @@ void main() {
         instanceId: 'ballot-summer',
         currentState: 'open',
         instanceData: instance.instanceData,
-        personaId: 'member-03',
+        fanId: 'member-03',
       );
       expect(transitions, isNotEmpty);
       expect(transitions.any((t) => t.id == 'cast-vote'), isTrue);
@@ -966,7 +966,7 @@ void main() {
           instanceData: <String, dynamic>{
             'goingFanIds': ['member-03'],
           },
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -976,7 +976,7 @@ void main() {
           workflowType: 'tournament-ballot',
           currentState: 'open',
           instanceData: <String, dynamic>{'eventId': 'event-summer'},
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -985,7 +985,7 @@ void main() {
         workflowType: 'tournament-ballot',
         instanceId: 'ballot-summer',
         transitionId: 'cast-vote',
-        personaId: 'member-03',
+        fanId: 'member-03',
         inputs: <String, dynamic>{'choice': 'catan'},
       );
 
@@ -1005,7 +1005,7 @@ void main() {
           instanceData: <String, dynamic>{
             'goingFanIds': ['member-03'],
           },
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
       ]);
 
@@ -1015,7 +1015,7 @@ void main() {
           workflowType: 'tournament-ballot',
           currentState: 'open',
           instanceData: <String, dynamic>{'eventId': 'event-summer'},
-          createdByPersonaId: 'organizer',
+          createdByFanId: 'organizer',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m03-catan',
@@ -1026,7 +1026,7 @@ void main() {
             'voterId': 'member-03',
             'choice': 'catan',
           },
-          createdByPersonaId: 'member-03',
+          createdByFanId: 'member-03',
         ),
         const WorkflowInstance(
           instanceId: 'vote-m04-wingspan',
@@ -1037,7 +1037,7 @@ void main() {
             'voterId': 'member-04',
             'choice': 'wingspan',
           },
-          createdByPersonaId: 'member-04',
+          createdByFanId: 'member-04',
         ),
       ]);
 

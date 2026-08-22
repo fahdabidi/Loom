@@ -231,7 +231,7 @@ void _expectCommunityListReady(WidgetTester tester) {
   }
 }
 
-Future<void> selectPersona(WidgetTester tester, String personaId) async {
+Future<void> selectPersona(WidgetTester tester, String fanId) async {
   await _waitForCommunityEntryResolution(tester);
   // Shipped engine-native packages bind role policy to an active account, so
   // enter through the real account form. Metadata fixtures remain on the
@@ -240,11 +240,11 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
       .byKey(const ValueKey('community-entry-gate'))
       .evaluate()
       .isNotEmpty) {
-    await _createEvidenceAccount(tester, personaId);
+    await _createEvidenceAccount(tester, fanId);
     await _waitForEvidenceFinder(
       tester,
       find.byKey(const ValueKey('persona-picker-button')),
-      description: 'community content after signing up as $personaId',
+      description: 'community content after signing up as $fanId',
     );
     return;
   }
@@ -253,16 +253,16 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
   await _waitForEvidenceFinder(
     tester,
     pickerButton,
-    description: 'persona picker while selecting $personaId',
+    description: 'persona picker while selecting $fanId',
   );
   await tester.tap(pickerButton);
   await tester.pumpAndSettle();
   expect(find.byKey(const ValueKey('persona-picker-dialog')), findsOneWidget);
 
-  final personaOption = find.byKey(ValueKey('persona-option-$personaId'));
+  final personaOption = find.byKey(ValueKey('persona-option-$fanId'));
   if (personaOption.evaluate().isEmpty) {
     fail(
-      'Persona $personaId was not available in the persona picker. '
+      'Persona $fanId was not available in the persona picker. '
       '${_visibleScreenDescription()}',
     );
   }
@@ -284,10 +284,10 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
   await _waitForEvidenceFinder(
     tester,
     find.byKey(const ValueKey('open-signup-display-name')),
-    description: 'account chooser while selecting $personaId',
+    description: 'account chooser while selecting $fanId',
   );
 
-  final accountName = _evidenceAccountName(personaId);
+  final accountName = _evidenceAccountName(fanId);
   final existingAccount = find.ancestor(
     of: find.text(accountName),
     matching: find.byType(ListTile),
@@ -296,12 +296,12 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
     await tester.ensureVisible(existingAccount.first);
     await tester.tap(existingAccount.first, warnIfMissed: false);
   } else {
-    await _createEvidenceAccount(tester, personaId);
+    await _createEvidenceAccount(tester, fanId);
   }
   await _waitForEvidenceFinder(
     tester,
     pickerButton,
-    description: 'community content after signing in as $personaId',
+    description: 'community content after signing in as $fanId',
   );
 }
 
@@ -392,10 +392,7 @@ Future<void> _waitForCommunityEntryResolution(WidgetTester tester) async {
   );
 }
 
-Future<void> _createEvidenceAccount(
-  WidgetTester tester,
-  String personaId,
-) async {
+Future<void> _createEvidenceAccount(WidgetTester tester, String fanId) async {
   final displayName = find.byKey(const ValueKey('open-signup-display-name'));
   final personaDropdown = find.byKey(
     const ValueKey('open-signup-persona-dropdown'),
@@ -405,7 +402,7 @@ Future<void> _createEvidenceAccount(
     if (finder.evaluate().isEmpty) {
       fail(
         'The community entry account form was incomplete while selecting '
-        '$personaId. ${_visibleScreenDescription()}',
+        '$fanId. ${_visibleScreenDescription()}',
       );
     }
   }
@@ -413,10 +410,10 @@ Future<void> _createEvidenceAccount(
   await tester.ensureVisible(personaDropdown);
   await tester.tap(personaDropdown);
   await tester.pumpAndSettle();
-  final personaChoice = find.byKey(ValueKey('open-signup-persona-$personaId'));
+  final personaChoice = find.byKey(ValueKey('open-signup-persona-$fanId'));
   if (personaChoice.evaluate().isEmpty) {
     fail(
-      'Persona $personaId was not offered by the community entry account '
+      'Persona $fanId was not offered by the community entry account '
       'form. ${_visibleScreenDescription()}',
     );
   }
@@ -427,13 +424,13 @@ Future<void> _createEvidenceAccount(
   await tester.pumpAndSettle();
 
   await tester.ensureVisible(displayName);
-  await tester.enterText(displayName, _evidenceAccountName(personaId));
+  await tester.enterText(displayName, _evidenceAccountName(fanId));
   await tester.ensureVisible(submit);
   await tester.tap(submit, warnIfMissed: false);
   await tester.pump();
 }
 
-String _evidenceAccountName(String personaId) => 'Evidence $personaId';
+String _evidenceAccountName(String fanId) => 'Evidence $fanId';
 
 Future<void> _waitForEvidenceFinder(
   WidgetTester tester,
@@ -520,10 +517,10 @@ String _visibleScreenDescription() {
 Future<void> selectWorkflowTab(
   WidgetTester tester, {
   required LoomExperienceDefinition experience,
-  required String personaId,
+  required String roleId,
   required LoomWorkflowDefinition workflow,
 }) async {
-  final tabs = appShellTabsFor(experience: experience, personaId: personaId);
+  final tabs = appShellTabsFor(experience: experience, roleId: roleId);
   final targetTab = tabs.firstWhere(
     (tab) =>
         tab.tabId != 'home' &&
@@ -693,7 +690,7 @@ Future<void> completeWorkflowAsActor(
   required LoomWorkflowDefinition workflow,
 }) async {
   final policy = personaPolicyForWorkflow(extensionId, workflow.workflowId);
-  await selectPersona(tester, policy.actorPersonaIds.first);
+  await selectPersona(tester, policy.actorRoleIds.first);
   await completeWorkflow(tester, workflow);
 }
 
@@ -1069,6 +1066,7 @@ EngineNativeMarketplaceTestFixture engineNativeMarketplaceTestFixture({
   required String loanWorkflowType,
   required String memberRoleId,
   required String organizerRoleId,
+  required String organizerFanId,
   required List<EngineNativeMarketplaceLoanSeed> loanSeeds,
   List<EngineNativeMarketplaceGiveawaySeed> giveawaySeeds =
       const <EngineNativeMarketplaceGiveawaySeed>[],
@@ -1389,7 +1387,7 @@ EngineNativeMarketplaceTestFixture engineNativeMarketplaceTestFixture({
           instanceId: seed.instanceId,
           workflowType: loanWorkflowType,
           currentState: seed.currentState,
-          createdByFanId: seed.createdByFanId ?? organizerRoleId,
+          createdByFanId: seed.createdByFanId ?? organizerFanId,
           instanceData: <String, Object?>{
             'title': seed.title,
             'category': seed.category,
@@ -1406,7 +1404,7 @@ EngineNativeMarketplaceTestFixture engineNativeMarketplaceTestFixture({
           instanceId: seed.instanceId,
           workflowType: giveawayWorkflowType,
           currentState: seed.currentState,
-          createdByFanId: seed.createdByFanId ?? organizerRoleId,
+          createdByFanId: seed.createdByFanId ?? organizerFanId,
           instanceData: <String, Object?>{
             'title': seed.title,
             'category': seed.category,
@@ -1489,6 +1487,7 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
   required String eventTime,
   required String location,
   required String organizerRoleId,
+  required String organizerFanId,
   required String memberRoleId,
   int capacity = 20,
   String? host,
@@ -1829,7 +1828,7 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
         instanceId: eventInstanceId,
         workflowType: eventWorkflowType,
         currentState: 'open',
-        createdByFanId: organizerRoleId,
+        createdByFanId: organizerFanId,
         instanceData: <String, Object?>{
           'title': title,
           'eventDate': eventDate,
@@ -1845,7 +1844,7 @@ EngineNativeEventRsvpTestFixture engineNativeEventRsvpTestFixture({
           instanceId: response.instanceId,
           workflowType: responseWorkflowType,
           currentState: response.currentState,
-          createdByFanId: response.createdByFanId ?? organizerRoleId,
+          createdByFanId: response.createdByFanId ?? organizerFanId,
           instanceData: <String, Object?>{
             'eventId': eventInstanceId,
             'fanId': response.fanId,

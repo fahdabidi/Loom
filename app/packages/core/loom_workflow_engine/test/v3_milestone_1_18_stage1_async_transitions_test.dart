@@ -52,22 +52,18 @@ void main() {
     );
     final event = await api.createInstance(
       workflowType: 'event',
-      personaId: 'host',
+      fanId: 'host',
       initialInstanceData: {
         'goingFanIds': <String>['eligible-member'],
       },
     );
     final vote = await api.createInstance(
       workflowType: 'vote',
-      personaId: 'host',
+      fanId: 'host',
       initialInstanceData: {'eventId': event},
     );
 
-    final page = await api.queryInstances(
-      tabId: 'x',
-      personaId: 'host',
-      limit: 10,
-    );
+    final page = await api.queryInstances(tabId: 'x', fanId: 'host', limit: 10);
     final voteInstance = page.items.singleWhere(
       (item) => item.instanceId == vote,
     );
@@ -79,7 +75,7 @@ void main() {
       instanceId: vote,
       currentState: voteInstance.currentState,
       instanceData: voteInstance.instanceData,
-      personaId: 'ineligible-member',
+      fanId: 'ineligible-member',
     );
     expect(syncForIneligible.map((t) => t.id), contains('cast'));
 
@@ -89,7 +85,7 @@ void main() {
       instanceId: vote,
       currentState: voteInstance.currentState,
       instanceData: voteInstance.instanceData,
-      personaId: 'ineligible-member',
+      fanId: 'ineligible-member',
     );
     expect(asyncForIneligible.map((t) => t.id), isNot(contains('cast')));
 
@@ -99,7 +95,7 @@ void main() {
       instanceId: vote,
       currentState: voteInstance.currentState,
       instanceData: voteInstance.instanceData,
-      personaId: 'eligible-member',
+      fanId: 'eligible-member',
     );
     expect(asyncForEligible.map((t) => t.id), contains('cast'));
   });

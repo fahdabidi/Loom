@@ -42,7 +42,7 @@ void main() {
 
         final page = await api.queryInstances(
           tabId: 'ignored-tab',
-          personaId: 'ignored-persona',
+          fanId: 'ignored-persona',
           workflowType: 'event',
           query: const SurfaceQuery(
             sort: SortSpec(key: 'startsAt', direction: SortDirection.desc),
@@ -72,7 +72,7 @@ void main() {
         expect(page.items.single.workflowType, 'event');
         expect(page.items.single.currentState, 'draft');
         expect(page.items.single.instanceData, {'title': 'Town hall'});
-        expect(page.items.single.createdByPersonaId, isEmpty);
+        expect(page.items.single.createdByFanId, isEmpty);
       },
     );
 
@@ -110,7 +110,7 @@ void main() {
           instanceId: 'instance / 1',
           currentState: 'stale-client-state',
           instanceData: const {'stale': true},
-          personaId: 'ignored-persona',
+          fanId: 'ignored-persona',
         );
 
         expect(sent.method, 'GET');
@@ -153,7 +153,7 @@ void main() {
         workflowType: 'event',
         instanceId: 'instance-1',
         transitionId: 'publish',
-        personaId: 'ignored-persona',
+        fanId: 'ignored-persona',
         inputs: const {'note': 'Ready'},
       );
 
@@ -190,7 +190,7 @@ void main() {
       final id = await api.createInstance(
         workflowType: 'event',
         initialInstanceData: const {'title': 'Town hall'},
-        personaId: 'fan-1',
+        fanId: 'fan-1',
       );
 
       expect(sent.method, 'POST');
@@ -234,7 +234,7 @@ void main() {
           {'title': 'First'},
           {'title': 'Second'},
         ],
-        personaId: 'fan-1',
+        fanId: 'fan-1',
       );
 
       expect(sent.method, 'POST');
@@ -273,7 +273,7 @@ void main() {
           workflowType: 'ignored-by-server',
           instanceId: 'instance-1',
           fieldUpdates: const {'title': 'Updated'},
-          personaId: 'ignored-persona',
+          fanId: 'ignored-persona',
         );
 
         expect(sent.method, 'PATCH');
@@ -310,7 +310,7 @@ void main() {
           op: 'sum',
           filter: const {'paid': true},
           groupBy: 'category',
-          personaId: 'ignored-persona',
+          fanId: 'ignored-persona',
         );
 
         expect(sent.method, 'POST');
@@ -356,12 +356,12 @@ void main() {
       await api.createInstance(
         workflowType: 'event',
         initialInstanceData: const {},
-        personaId: 'fan',
+        fanId: 'fan',
       );
       await api.createInstance(
         workflowType: 'event',
         initialInstanceData: const {},
-        personaId: 'fan',
+        fanId: 'fan',
       );
 
       expect(tokenCalls, 2);
@@ -416,7 +416,7 @@ void main() {
 
         Object? caught;
         try {
-          await api.queryInstances(tabId: 'tab', personaId: 'fan');
+          await api.queryInstances(tabId: 'tab', fanId: 'fan');
         } catch (error) {
           caught = error;
         }
@@ -451,7 +451,7 @@ void main() {
         instanceId: 'instance-1',
         currentState: 'draft',
         instanceData: const {},
-        personaId: 'fan',
+        fanId: 'fan',
       ),
       throwsA(
         isA<UnsupportedError>().having(

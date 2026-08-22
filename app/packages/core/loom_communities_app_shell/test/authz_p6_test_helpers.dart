@@ -45,12 +45,12 @@ class TestActiveAuthApi implements LoomAuthApi {
   Future<LoomSignUpResult> signUp({
     required String communityExtensionId,
     required String displayName,
-    required String personaTypeId,
+    required String roleId,
   }) async {
     final result = await _delegate.signUp(
       communityExtensionId: communityExtensionId,
       displayName: displayName,
-      personaTypeId: personaTypeId,
+      roleId: roleId,
     );
     if (result.session case final session?) {
       _session = session;
@@ -79,12 +79,12 @@ class TestActiveAuthApi implements LoomAuthApi {
 
   @override
   Future<LoomCommunityInvite> issueInvite({
-    required String personaTypeId,
+    required String roleId,
     required String issuedByAccountId,
   }) async {
     await _ensureDelegateSession();
     return _delegate.issueInvite(
-      personaTypeId: personaTypeId,
+      roleId: roleId,
       issuedByAccountId: issuedByAccountId,
     );
   }
@@ -106,7 +106,7 @@ const _tabletopAccounts = <LoomAccount>[
   LoomAccount(
     accountId: 'tabletop-organizer',
     displayName: 'Alex T.',
-    personaTypeId: 'tabletop-organizer',
+    roleId: 'tabletop-organizer',
   ),
   LoomAccount(
     // The frozen Tabletop fixture still contains role-level actor seeds for
@@ -116,35 +116,35 @@ const _tabletopAccounts = <LoomAccount>[
     // the dedicated sign-in tests, which use the production account list.
     accountId: 'tabletop-member',
     displayName: 'Jordan W.',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
   LoomAccount(
     accountId: 'tabletop-member-04',
     displayName: 'Sam K.',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
   LoomAccount(
     accountId: 'tabletop-member-05',
     displayName: 'Priya N.',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
   LoomAccount(
     accountId: 'tabletop-member-06',
     displayName: 'Casey M.',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
 ];
 
 TestActiveAuthApi activeAuthForCommunity({
   required LocalInstalledCommunity community,
   required LoomExperienceDefinition experience,
-  String? personaTypeId,
+  String? roleId,
   String? accountId,
   List<LoomAccount>? accounts,
 }) {
   final personas = experience.personas ?? const <LoomPersonaDefinition>[];
   final usesTabletopAccounts = personas.any(
-    (persona) => persona.personaId == 'tabletop-member',
+    (persona) => persona.roleId == 'tabletop-member',
   );
   final resolvedAccounts =
       accounts ??
@@ -153,17 +153,15 @@ TestActiveAuthApi activeAuthForCommunity({
           : [
               for (final persona in personas)
                 LoomAccount(
-                  accountId: persona.personaId,
+                  accountId: persona.roleId,
                   displayName: 'Test ${persona.label}',
-                  personaTypeId: persona.personaId,
+                  roleId: persona.roleId,
                 ),
             ]);
   final activeAccount = resolvedAccounts.firstWhere(
     (account) =>
         (accountId != null && account.accountId == accountId) ||
-        (accountId == null &&
-            personaTypeId != null &&
-            account.personaTypeId == personaTypeId),
+        (accountId == null && roleId != null && account.roleId == roleId),
     orElse: () => resolvedAccounts.first,
   );
   return TestActiveAuthApi(
@@ -177,7 +175,7 @@ TestActiveAuthApi activeAuthForCommunity({
 
 TestActiveAuthApi activeAuthForInstalledCommunity({
   required LocalInstalledCommunity community,
-  String? personaTypeId,
+  String? roleId,
   String? accountId,
   List<LoomAccount>? accounts,
 }) {
@@ -190,7 +188,7 @@ TestActiveAuthApi activeAuthForInstalledCommunity({
   return activeAuthForCommunity(
     community: community,
     experience: experience,
-    personaTypeId: personaTypeId,
+    roleId: roleId,
     accountId: accountId,
     accounts: accounts,
   );
@@ -198,12 +196,12 @@ TestActiveAuthApi activeAuthForInstalledCommunity({
 
 Future<void> selectTestTabletopPersona(
   WidgetTester tester,
-  String personaTypeId,
+  String roleId,
 ) async {
-  final displayName = switch (personaTypeId) {
+  final displayName = switch (roleId) {
     'tabletop-organizer' => 'Alex T.',
     'tabletop-member' => 'Jordan W.',
-    _ => throw ArgumentError('No test account for $personaTypeId'),
+    _ => throw ArgumentError('No test account for $roleId'),
   };
   final picker = find.byKey(const ValueKey('persona-picker-button'));
   for (var attempt = 0; attempt < 40; attempt++) {

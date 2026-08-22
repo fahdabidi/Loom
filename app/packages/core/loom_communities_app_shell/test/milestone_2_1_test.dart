@@ -13,7 +13,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: WorkflowAudienceSelectorField(
-              availablePersonaIds: const ['alice', 'bob', 'cora'],
+              availableFanIds: const ['alice', 'bob', 'cora'],
               onChanged: (data) => submitted = data,
             ),
           ),

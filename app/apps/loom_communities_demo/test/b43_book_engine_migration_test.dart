@@ -44,7 +44,7 @@ void main() {
       tester,
       find.byKey(const ValueKey('engine-native-list-root-home')),
     );
-    _expectDerivedHomeGenericListContract(tester, personaId: 'book-member');
+    _expectDerivedHomeGenericListContract(tester, roleId: 'book-member');
     expect(
       find.byKey(const ValueKey('engine-native-list-root-home')),
       findsOneWidget,
@@ -214,7 +214,7 @@ void main() {
       tester,
       find.byKey(const ValueKey('engine-native-list-root-home')),
     );
-    _expectDerivedHomeGenericListContract(tester, personaId: 'book-member');
+    _expectDerivedHomeGenericListContract(tester, roleId: 'book-member');
     expect(
       find.byKey(const ValueKey('generic-instance-card-nom-selected-1')),
       findsOneWidget,
@@ -224,7 +224,7 @@ void main() {
 
 void _expectDerivedHomeGenericListContract(
   WidgetTester tester, {
-  required String personaId,
+  required String roleId,
 }) {
   final screen = tester.widget<LocalExtensionScreen>(
     find.byType(LocalExtensionScreen),
@@ -238,7 +238,7 @@ void _expectDerivedHomeGenericListContract(
   );
   final home = appShellTabsFor(
     experience: experience,
-    personaId: personaId,
+    roleId: roleId,
     appShellConfiguration: community.appShellConfiguration,
   ).singleWhere((tab) => tab.tabId == 'home');
 
@@ -290,8 +290,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectPersona(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

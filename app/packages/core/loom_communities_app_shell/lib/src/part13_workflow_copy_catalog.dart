@@ -734,26 +734,26 @@ List<String> productionUxGenericCopyViolations() {
       ],
     _rationaleForState(
       LoomPersonaWorkflowState.actor,
-      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
     ),
     _rationaleForState(
       LoomPersonaWorkflowState.receiver,
-      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
     ),
     _rationaleForState(
       LoomPersonaWorkflowState.readOnly,
-      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
     ),
     _entryTextForState(
       state: LoomPersonaWorkflowState.readOnly,
       workflow: experienceForExtensionId('unknown').workflows.first,
-      policy: const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      policy: const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
       waiting: false,
     ),
     _entryTextForState(
       state: LoomPersonaWorkflowState.actor,
       workflow: experienceForExtensionId('unknown').workflows.first,
-      policy: const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      policy: const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
       waiting: true,
     ),
   ];

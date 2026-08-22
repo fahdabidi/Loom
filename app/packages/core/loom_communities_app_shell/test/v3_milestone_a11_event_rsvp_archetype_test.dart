@@ -30,17 +30,17 @@ const _gardenAccounts = <LoomAccount>[
   LoomAccount(
     accountId: _customGardenOrganizerId,
     displayName: 'Garden Coordinator',
-    personaTypeId: _customGardenOrganizerId,
+    roleId: _customGardenOrganizerId,
   ),
   LoomAccount(
     accountId: 'garden-member-rina',
     displayName: 'Rina',
-    personaTypeId: _customGardenMemberId,
+    roleId: _customGardenMemberId,
   ),
   LoomAccount(
     accountId: _customGardenMemberAccountId,
     displayName: 'Maya',
-    personaTypeId: _customGardenMemberId,
+    roleId: _customGardenMemberId,
   ),
 ];
 
@@ -125,22 +125,22 @@ Future<_InstalledTabletop> _install(
         ? await activeAuthForCommunity(
             community: community,
             experience: experience,
-            personaTypeId: 'tabletop-organizer',
+            roleId: 'tabletop-organizer',
           ).listAccounts(communityExtensionId: community.extensionId)
         : _gardenAccounts;
     final authorizationAccounts = [...accounts, ...shellAccounts];
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+      activeMembershipLookup: (fanId) async => authorizationAccounts.any(
         (account) =>
-            account.accountId == personaId &&
+            account.accountId == fanId &&
             account.status == MembershipStatus.active,
       ),
     );
     if (engine is LocalWorkflowEngineApi) {
       for (final account in authorizationAccounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
     }
     return _InstalledTabletop(community, experience, engine, temp);
@@ -152,7 +152,7 @@ Future<_InstalledTabletop> _install(
 
 LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
     installed.experience.personas!.firstWhere(
-      (persona) => persona.personaId == id,
+      (persona) => persona.roleId == id,
     );
 
 String _identityFieldName(
@@ -169,35 +169,49 @@ String _identityFieldName(
   throw StateError('$workflowType does not declare $fanIdField');
 }
 
+String _fixtureFanIdForRole(String roleId) => switch (roleId) {
+  'tabletop-organizer' => 'tabletop-organizer',
+  'tabletop-member' => 'tabletop-member',
+  _customGardenOrganizerId => _customGardenOrganizerId,
+  _customGardenMemberId => _customGardenMemberAccountId,
+  _ => throw ArgumentError('No fixture account is defined for role $roleId'),
+};
+
 Widget _calendar(
   _InstalledTabletop installed,
-  String personaId, {
+  String roleId, {
   int revision = 0,
   String? accountId,
   LoomAuthApi? authApi,
   DateTime? currentDate,
-}) => MaterialApp(
-  home: ActiveIdentityScope(
-    identity: ActiveIdentityContext(
-      accountId: accountId,
-      authApi: authApi ?? LocalAuthApi(),
-      personaId: personaId,
-    ),
-    child: Scaffold(
-      body: SingleChildScrollView(
-        child: EngineNativeCalendarSurface(
-          key: ValueKey('a11-calendar-$personaId-$revision'),
-          experience: installed.experience,
-          persona: _persona(installed, personaId),
-          accent: Colors.deepPurple,
-          modernTheme: null,
-          engine: installed.engine,
-          currentDate: currentDate == null ? DateTime.now : () => currentDate,
+}) {
+  final fanId = accountId ?? _fixtureFanIdForRole(roleId);
+  if (installed.engine case final LocalWorkflowEngineApi engine) {
+    engine.setRoleForFan(fanId, roleId);
+  }
+  return MaterialApp(
+    home: ActiveIdentityScope(
+      identity: ActiveIdentityContext(
+        accountId: fanId,
+        authApi: authApi ?? LocalAuthApi(),
+        roleId: roleId,
+      ),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: EngineNativeCalendarSurface(
+            key: ValueKey('a11-calendar-$roleId-$revision'),
+            experience: installed.experience,
+            persona: _persona(installed, roleId),
+            accent: Colors.deepPurple,
+            modernTheme: null,
+            engine: installed.engine,
+            currentDate: currentDate == null ? DateTime.now : () => currentDate,
+          ),
         ),
       ),
     ),
-  ),
-);
+  );
+}
 
 Widget _app(_InstalledTabletop installed, {LoomAuthApi? authApi}) =>
     MaterialApp(
@@ -215,7 +229,7 @@ Widget _app(_InstalledTabletop installed, {LoomAuthApi? authApi}) =>
                 experienceConfiguration:
                     installed.community.experienceConfiguration,
               ),
-              personaTypeId: 'tabletop-organizer',
+              roleId: 'tabletop-organizer',
             ),
       ),
     );
@@ -388,11 +402,11 @@ Future<WorkflowInstance> _instance(
   WidgetTester tester,
   _InstalledTabletop installed,
   String id, {
-  String personaId = 'tabletop-organizer',
+  String fanId = 'tabletop-organizer',
 }) async => (await tester.runAsync(() async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: personaId,
+    fanId: fanId,
     limit: 50,
   );
   return page.items.singleWhere((row) => row.instanceId == id);
@@ -401,7 +415,7 @@ Future<WorkflowInstance> _instance(
 Map<String, dynamic> _responseFor(
   _InstalledTabletop installed,
   WorkflowInstance event,
-  String personaId,
+  String fanId,
 ) {
   final identityField = _identityFieldName(
     installed,
@@ -411,7 +425,7 @@ Map<String, dynamic> _responseFor(
   return (event.instanceData['responses'] as List)
       .whereType<Map<String, dynamic>>()
       .map((response) => Map<String, dynamic>.from(response))
-      .singleWhere((response) => response[identityField] == personaId);
+      .singleWhere((response) => response[identityField] == fanId);
 }
 
 /// Taps an action chip keyed to the bespoke event-rsvp widget.
@@ -533,7 +547,7 @@ Future<LoomAuthApi> _useFixtureAccounts(_InstalledTabletop installed) async {
   final auth = LocalAuthApi();
   final seedFrom =
       installed.experience.personas?.any(
-            (persona) => persona.personaId == 'tabletop-member',
+            (persona) => persona.roleId == 'tabletop-member',
           ) ==
           true
       ? 'ext_verify_tabletop_club'
@@ -558,20 +572,20 @@ TestActiveAuthApi _gardenAuth(
   configureEngineAuthorizationForExtensionId(
     extensionId: installed.community.extensionId,
     appShellConfiguration: installed.community.appShellConfiguration,
-    activeMembershipLookup: (personaId) async {
+    activeMembershipLookup: (fanId) async {
       final accounts = await auth.listAccounts(
         communityExtensionId: installed.community.extensionId,
       );
       return accounts.any(
         (account) =>
-            account.accountId == personaId &&
+            account.accountId == fanId &&
             account.status == MembershipStatus.active,
       );
     },
   );
   if (installed.engine case final LocalWorkflowEngineApi engine) {
     for (final account in _gardenAccounts) {
-      engine.setPersonaType(account.accountId, account.personaTypeId);
+      engine.setRoleForFan(account.accountId, account.roleId);
     }
   }
   return auth;
@@ -582,12 +596,12 @@ Future<WorkflowInstance?> _customResponseFor(
   required String responseWorkflowType,
   required String eventField,
   required String eventId,
-  required String personaId,
+  required String fanId,
   String persona = _customGardenOrganizerId,
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: persona,
+    fanId: persona,
     limit: 250,
   );
   final identityField = _identityFieldName(
@@ -598,7 +612,7 @@ Future<WorkflowInstance?> _customResponseFor(
   for (final row in page.items) {
     if (row.workflowType != responseWorkflowType) continue;
     if (row.instanceData[eventField] != eventId) continue;
-    if (row.instanceData[identityField] != personaId) continue;
+    if (row.instanceData[identityField] != fanId) continue;
     return row;
   }
   return null;
@@ -613,7 +627,7 @@ Future<List<WorkflowInstance>> _customResponseRowsForEvent(
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: persona,
+    fanId: persona,
     limit: 500,
   );
   return page.items
@@ -629,11 +643,11 @@ Future<WorkflowInstance?> _customEventByTitle(
   _InstalledTabletop installed, {
   required String title,
   String workflowType = _customGardenEventWorkflow,
-  String personaId = _customGardenOrganizerId,
+  String fanId = _customGardenOrganizerId,
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: personaId,
+    fanId: fanId,
     limit: 500,
   );
   final matches = page.items.where(
@@ -968,23 +982,23 @@ void main() {
       // -- a real, typed member with no response row.
       //
       // Registering the persona type is the part that matters. Without it the
-      // account has no entry in `_personaTypeById`, so `allowedPersonaIds` on
+      // account has no entry in `_personaTypeById`, so `allowedRoleIds` on
       // `respond-going` refuses it and no actions resolve -- which looks
       // identical to the bug under test while having nothing to do with it.
       final engine = installed.engine;
       if (engine is LocalWorkflowEngineApi) {
-        engine.setPersonaType('tabletop-member-15', 'tabletop-member');
+        engine.setRoleForFan('tabletop-member-15', 'tabletop-member');
       }
       const lateJoinerAccounts = <LoomAccount>[
         LoomAccount(
           accountId: 'tabletop-organizer',
           displayName: 'Alex T.',
-          personaTypeId: 'tabletop-organizer',
+          roleId: 'tabletop-organizer',
         ),
         LoomAccount(
           accountId: 'tabletop-member-15',
           displayName: 'Late joiner',
-          personaTypeId: 'tabletop-member',
+          roleId: 'tabletop-member',
         ),
       ];
       final auth = activeAuthForCommunity(
@@ -996,9 +1010,9 @@ void main() {
       configureEngineAuthorizationForExtensionId(
         extensionId: installed.community.extensionId,
         appShellConfiguration: installed.community.appShellConfiguration,
-        activeMembershipLookup: (personaId) async => lateJoinerAccounts.any(
+        activeMembershipLookup: (fanId) async => lateJoinerAccounts.any(
           (account) =>
-              account.accountId == personaId &&
+              account.accountId == fanId &&
               account.status == MembershipStatus.active,
         ),
       );
@@ -1085,7 +1099,7 @@ void main() {
           tester,
           installed,
           'event-friday-game-night',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(
           _responseFor(installed, before, 'tabletop-member-14')['\$id'],
@@ -1107,7 +1121,7 @@ void main() {
           tester,
           installed,
           'event-friday-game-night',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(
           _responseFor(installed, after, 'tabletop-member-14')['\$state'],
@@ -1148,7 +1162,7 @@ void main() {
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
           fieldUpdates: const {'capacity': 11},
-          personaId: 'tabletop-organizer',
+          fanId: 'tabletop-organizer',
         );
       });
 
@@ -1209,7 +1223,7 @@ void main() {
         tester,
         installed,
         'event-friday-game-night',
-        personaId: 'tabletop-member-14',
+        fanId: 'tabletop-member-14',
       );
       expect(
         _responseFor(installed, waitlisted, 'tabletop-member-14')['\$state'],
@@ -1278,7 +1292,7 @@ void main() {
         findsOneWidget,
       );
 
-      // tabletop-member is in goingPersonaIds, so withdraw should be visible
+      // tabletop-member is in goingFanIds, so withdraw should be visible
       await _pumpUntil(
         tester,
         find.byKey(
@@ -1341,7 +1355,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           ),
         );
@@ -1422,7 +1436,7 @@ void main() {
                 'reminderOffsetHours': 24,
               },
             ],
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
           )).single;
           final responseId = (await installed.engine.createInstances(
             workflowType: _customGardenResponseWorkflow,
@@ -1432,7 +1446,7 @@ void main() {
                 responseIdentityField: _customGardenMemberAccountId,
               },
             ],
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
           )).single;
           return (eventId: eventId, responseId: responseId);
         }))!;
@@ -1469,7 +1483,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: seeded.eventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           ),
         );
@@ -1498,7 +1512,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: seeded.eventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           ),
         );
@@ -1523,7 +1537,7 @@ void main() {
         final literalResponses = await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             limit: 200,
           );
           return page.items
@@ -1568,7 +1582,7 @@ void main() {
                 'reminderOffsetHours': 24,
               },
             ],
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
           );
           return createdIds.first;
         }))!;
@@ -1579,7 +1593,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: customInstanceId,
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
           ),
         );
         expect(seededRow, isNull);
@@ -1639,7 +1653,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           ),
         );
@@ -1661,7 +1675,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           );
           return _PollObservation(
@@ -1676,7 +1690,7 @@ void main() {
             responseWorkflowType: _customGardenResponseWorkflow,
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             persona: _customGardenMemberAccountId,
           ),
         );
@@ -1690,7 +1704,7 @@ void main() {
           );
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenMemberAccountId,
+            fanId: _customGardenMemberAccountId,
             limit: 200,
           );
           return page.items
@@ -1724,7 +1738,7 @@ void main() {
       try {
         final auth = activeAuthForInstalledCommunity(
           community: installed.community,
-          personaTypeId: _customGardenOrganizerId,
+          roleId: _customGardenOrganizerId,
         );
         await tester.pumpWidget(_app(installed, authApi: auth));
         await _selectCalendar(tester);
@@ -1782,7 +1796,7 @@ void main() {
         await _pollUntilObservation(tester, () async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
             limit: 500,
           );
           return _PollObservation(
@@ -1798,7 +1812,7 @@ void main() {
         final created = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
             limit: 500,
           );
           return page.items.singleWhere(
@@ -1845,7 +1859,7 @@ void main() {
         await _pollUntilObservation(tester, () async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: _customGardenOrganizerId,
+            fanId: _customGardenOrganizerId,
             limit: 500,
           );
           final anchor = page.items
@@ -1910,37 +1924,37 @@ void main() {
           LoomAccount(
             accountId: 'calr3-organizer',
             displayName: 'Test Organizer',
-            personaTypeId: 'tabletop-organizer',
+            roleId: 'tabletop-organizer',
           ),
           LoomAccount(
             accountId: 'calr3-member-a',
             displayName: 'Test Member A',
-            personaTypeId: 'tabletop-member',
+            roleId: 'tabletop-member',
           ),
           LoomAccount(
             accountId: 'calr3-member-b',
             displayName: 'Test Member B',
-            personaTypeId: 'tabletop-member',
+            roleId: 'tabletop-member',
           ),
         ];
         final auth = activeAuthForCommunity(
           community: installed.community,
           experience: installed.experience,
-          personaTypeId: 'tabletop-organizer',
+          roleId: 'tabletop-organizer',
           accounts: testAccounts,
         );
         configureEngineAuthorizationForExtensionId(
           extensionId: installed.community.extensionId,
           appShellConfiguration: installed.community.appShellConfiguration,
-          activeMembershipLookup: (personaId) async => testAccounts.any(
+          activeMembershipLookup: (fanId) async => testAccounts.any(
             (account) =>
-                account.accountId == personaId &&
+                account.accountId == fanId &&
                 account.status == MembershipStatus.active,
           ),
         );
         if (installed.engine case final LocalWorkflowEngineApi engine) {
           for (final account in testAccounts) {
-            engine.setPersonaType(account.accountId, account.personaTypeId);
+            engine.setRoleForFan(account.accountId, account.roleId);
           }
         }
         await tester.pumpWidget(_app(installed, authApi: auth));
@@ -1987,7 +2001,7 @@ void main() {
         await _pollUntilObservation(tester, () async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'calr3-organizer',
+            fanId: 'calr3-organizer',
             limit: 100,
           );
           final events = page.items
@@ -2005,7 +2019,7 @@ void main() {
         await _pollUntilObservation(tester, () async {
           final eventPage = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'calr3-organizer',
+            fanId: 'calr3-organizer',
             limit: 100,
           );
           final event = eventPage.items.singleWhere(
@@ -2016,7 +2030,7 @@ void main() {
           final responsePage =
               await (installed.engine as LocalWorkflowEngineApi).queryInstances(
                 tabId: 'calendar',
-                personaId: 'calr3-organizer',
+                fanId: 'calr3-organizer',
                 workflowType: 'event-rsvp-response',
                 limit: 100,
               );
@@ -2032,7 +2046,7 @@ void main() {
         final result = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'calr3-organizer',
+            fanId: 'calr3-organizer',
             limit: 100,
           );
           final event = page.items.singleWhere(
@@ -2046,7 +2060,7 @@ void main() {
           final responses = await (installed.engine as LocalWorkflowEngineApi)
               .queryInstances(
                 tabId: 'calendar',
-                personaId: 'calr3-organizer',
+                fanId: 'calr3-organizer',
                 workflowType: 'event-rsvp-response',
                 limit: 100,
               );
@@ -2087,7 +2101,7 @@ void main() {
       await _selectCalendar(tester);
       // Switch to the tabletop-member persona so the creatable-action
       // FAB is hidden (the fixture only lists tabletop-organizer
-      // in creatable.byPersonaIds).
+      // in creatable.byRoleIds).
       await selectTestTabletopPersona(tester, 'tabletop-member');
       await _pollUntilObservation(tester, () async {
         final eventFabCount = find

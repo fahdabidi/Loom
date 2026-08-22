@@ -3,13 +3,13 @@ part of '../loom_communities_app_shell.dart';
 enum WorkflowTemplateSlotKind { workflowActionButtonRow, workflowFactPillRow }
 
 class WorkflowAudienceSelectorField extends StatefulWidget {
-  final List<String> availablePersonaIds;
+  final List<String> availableFanIds;
   final Map<String, dynamic> initialInstanceData;
   final ValueChanged<Map<String, dynamic>> onChanged;
 
   const WorkflowAudienceSelectorField({
     super.key,
-    required this.availablePersonaIds,
+    required this.availableFanIds,
     required this.onChanged,
     this.initialInstanceData = const {},
   });
@@ -22,14 +22,14 @@ class WorkflowAudienceSelectorField extends StatefulWidget {
 class _WorkflowAudienceSelectorFieldState
     extends State<WorkflowAudienceSelectorField> {
   late String _scope;
-  late Set<String> _selectedPersonaIds;
+  late Set<String> _selectedFanIds;
 
   @override
   void initState() {
     super.initState();
     _scope = widget.initialInstanceData['audienceScope'] as String? ?? 'all';
     final initialIds = widget.initialInstanceData['invitedFanIds'];
-    _selectedPersonaIds = initialIds is Iterable
+    _selectedFanIds = initialIds is Iterable
         ? initialIds.map((id) => '$id').toSet()
         : <String>{};
     WidgetsBinding.instance.addPostFrameCallback((_) => _emit());
@@ -39,23 +39,23 @@ class _WorkflowAudienceSelectorFieldState
     setState(() {
       _scope = scope;
       if (scope == 'all') {
-        _selectedPersonaIds.clear();
-      } else if (scope == 'individual' && _selectedPersonaIds.length > 1) {
-        final first = _selectedPersonaIds.first;
-        _selectedPersonaIds = {first};
+        _selectedFanIds.clear();
+      } else if (scope == 'individual' && _selectedFanIds.length > 1) {
+        final first = _selectedFanIds.first;
+        _selectedFanIds = {first};
       }
     });
     _emit();
   }
 
-  void _togglePersona(String personaId, bool selected) {
+  void _togglePersona(String fanId, bool selected) {
     setState(() {
       if (_scope == 'individual') {
-        _selectedPersonaIds = selected ? {personaId} : <String>{};
+        _selectedFanIds = selected ? {fanId} : <String>{};
       } else if (selected) {
-        _selectedPersonaIds.add(personaId);
+        _selectedFanIds.add(fanId);
       } else {
-        _selectedPersonaIds.remove(personaId);
+        _selectedFanIds.remove(fanId);
       }
     });
     _emit();
@@ -66,7 +66,7 @@ class _WorkflowAudienceSelectorFieldState
       'audienceScope': _scope,
       'invitedFanIds': _scope == 'all'
           ? <String>[]
-          : _selectedPersonaIds.toList(growable: false),
+          : _selectedFanIds.toList(growable: false),
     });
   }
 
@@ -94,14 +94,14 @@ class _WorkflowAudienceSelectorFieldState
         if (_scope == 'selected')
           Column(
             key: const ValueKey('audience-selector-selected-many'),
-            children: widget.availablePersonaIds
+            children: widget.availableFanIds
                 .map(
-                  (personaId) => CheckboxListTile(
-                    key: ValueKey('audience-selector-persona-$personaId'),
-                    title: Text(personaId),
-                    value: _selectedPersonaIds.contains(personaId),
+                  (fanId) => CheckboxListTile(
+                    key: ValueKey('audience-selector-persona-$fanId'),
+                    title: Text(fanId),
+                    value: _selectedFanIds.contains(fanId),
                     onChanged: (selected) =>
-                        _togglePersona(personaId, selected ?? false),
+                        _togglePersona(fanId, selected ?? false),
                   ),
                 )
                 .toList(growable: false),
@@ -109,16 +109,16 @@ class _WorkflowAudienceSelectorFieldState
         if (_scope == 'individual')
           Column(
             key: const ValueKey('audience-selector-individual'),
-            children: widget.availablePersonaIds
+            children: widget.availableFanIds
                 .map(
-                  (personaId) => ListTile(
-                    key: ValueKey('audience-selector-persona-$personaId'),
-                    title: Text(personaId),
-                    selected: _selectedPersonaIds.contains(personaId),
-                    trailing: _selectedPersonaIds.contains(personaId)
+                  (fanId) => ListTile(
+                    key: ValueKey('audience-selector-persona-$fanId'),
+                    title: Text(fanId),
+                    selected: _selectedFanIds.contains(fanId),
+                    trailing: _selectedFanIds.contains(fanId)
                         ? const Icon(Icons.check_circle)
                         : const Icon(Icons.radio_button_unchecked),
-                    onTap: () => _togglePersona(personaId, true),
+                    onTap: () => _togglePersona(fanId, true),
                   ),
                 )
                 .toList(growable: false),
@@ -176,7 +176,7 @@ class WorkflowFactPillFieldSchema {
   bool shouldDisplayInContext(String context) {
     // An empty list is an explicit author signal ("never render this field
     // anywhere" -- used throughout community JSON for internal/formula-only
-    // fields like memberPersonaId), distinct from an omitted/null list
+    // fields like memberFanId), distinct from an omitted/null list
     // ("no restriction, show everywhere"). Only null gets the default.
     if (displayContexts == null) return true;
     return displayContexts!.contains(context);

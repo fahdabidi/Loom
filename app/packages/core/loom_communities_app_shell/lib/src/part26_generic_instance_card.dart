@@ -11,7 +11,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     required this.instance,
     required this.machine,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     this.displayContext = 'tile',
     this.onInstanceChanged,
     this.accent,
@@ -26,7 +26,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   final WorkflowInstance instance;
   final LoomWorkflowStateMachine machine;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final String displayContext;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final Color? accent;
@@ -69,7 +69,7 @@ class _GenericWorkflowInstanceCardState
   void didUpdateWidget(covariant GenericWorkflowInstanceCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.instance != widget.instance ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.machine != widget.machine ||
         oldWidget.engine != widget.engine) {
       _actionRequest++;
@@ -150,14 +150,14 @@ class _GenericWorkflowInstanceCardState
     WorkflowInstance instance,
     LoomWorkflowStateMachine machine,
     WorkflowEngineApi engine,
-    String personaId,
+    String fanId,
   ) =>
       mounted &&
       generation == _generation &&
       identical(_instance, instance) &&
       identical(widget.machine, machine) &&
       identical(widget.engine, engine) &&
-      widget.personaId == personaId;
+      widget.fanId == fanId;
 
   void _resyncControllers() {
     for (final controller in _controllers.values) {
@@ -179,9 +179,9 @@ class _GenericWorkflowInstanceCardState
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final request = ++_actionRequest;
-    if (_isCurrent(generation, instance, machine, engine, personaId)) {
+    if (_isCurrent(generation, instance, machine, engine, fanId)) {
       setState(() {
         _loadingActions = true;
         _actions = const [];
@@ -195,9 +195,9 @@ class _GenericWorkflowInstanceCardState
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: personaId,
+        fanId: fanId,
       );
-      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+      if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
       }
@@ -206,7 +206,7 @@ class _GenericWorkflowInstanceCardState
         _loadingActions = false;
       });
     } catch (_) {
-      if (!_isCurrent(generation, instance, machine, engine, personaId) ||
+      if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
       }
@@ -224,7 +224,7 @@ class _GenericWorkflowInstanceCardState
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final updates = <String, dynamic>{};
     final editableKeys = _editableKeys;
     for (final key in editableKeys) {
@@ -234,8 +234,7 @@ class _GenericWorkflowInstanceCardState
       if (field.type == 'number' && value is String) {
         final parsed = num.tryParse(value.trim());
         if (parsed == null) {
-          if (!_isCurrent(generation, instance, machine, engine, personaId))
-            return;
+          if (!_isCurrent(generation, instance, machine, engine, fanId)) return;
           setState(() {
             _error = 'Enter a valid number.';
             _retry = _save;
@@ -256,20 +255,20 @@ class _GenericWorkflowInstanceCardState
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       operation: () async {
         await engine.updateInstanceFields(
           workflowType: instance.workflowType,
           instanceId: instance.instanceId,
           fieldUpdates: updates,
-          personaId: personaId,
+          fanId: fanId,
         );
         return WorkflowInstance(
           instanceId: instance.instanceId,
           workflowType: instance.workflowType,
           currentState: instance.currentState,
           instanceData: {...instance.instanceData, ...updates},
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       },
       retry: _save,
@@ -297,19 +296,19 @@ class _GenericWorkflowInstanceCardState
     final instance = _instance;
     final machine = widget.machine;
     final engine = widget.engine;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     return _runMutation(
       generation: generation,
       instance: instance,
       machine: machine,
       engine: engine,
-      personaId: personaId,
+      fanId: fanId,
       operation: () async {
         final result = await engine.applyTransition(
           workflowType: instance.workflowType,
           instanceId: instance.instanceId,
           transitionId: transitionId,
-          personaId: personaId,
+          fanId: fanId,
           inputs: inputs,
         );
         return WorkflowInstance(
@@ -317,7 +316,7 @@ class _GenericWorkflowInstanceCardState
           workflowType: instance.workflowType,
           currentState: result.newState,
           instanceData: result.newInstanceData,
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       },
       retry: () => _applyTransition(transitionId),
@@ -329,7 +328,7 @@ class _GenericWorkflowInstanceCardState
     required WorkflowInstance instance,
     required LoomWorkflowStateMachine machine,
     required WorkflowEngineApi engine,
-    required String personaId,
+    required String fanId,
     required Future<WorkflowInstance> Function() operation,
     required Future<void> Function() retry,
   }) async {
@@ -341,16 +340,16 @@ class _GenericWorkflowInstanceCardState
     });
     try {
       final next = await operation();
-      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      if (!_isCurrent(generation, instance, machine, engine, fanId)) return;
       _edits.clear();
       _instance = next;
       _resyncControllers();
       widget.onInstanceChanged?.call(next);
-      if (!_isCurrent(generation, next, machine, engine, personaId)) return;
+      if (!_isCurrent(generation, next, machine, engine, fanId)) return;
       setState(() => _mutating = false);
       await _loadActions();
     } catch (_) {
-      if (!_isCurrent(generation, instance, machine, engine, personaId)) return;
+      if (!_isCurrent(generation, instance, machine, engine, fanId)) return;
       setState(() {
         _mutating = false;
         _error = 'Could not save this change. Please try again.';
@@ -652,7 +651,7 @@ class _GenericWorkflowInstanceCardState
             final instance = _instance;
             final machine = widget.machine;
             final engine = widget.engine;
-            final personaId = widget.personaId;
+            final fanId = widget.fanId;
             final initial =
                 DateTime.tryParse('${_valueFor(key) ?? ''}') ?? DateTime.now();
             final picked = await showDatePicker(
@@ -662,7 +661,7 @@ class _GenericWorkflowInstanceCardState
               lastDate: DateTime(2100),
             );
             if (picked != null &&
-                _isCurrent(generation, instance, machine, engine, personaId)) {
+                _isCurrent(generation, instance, machine, engine, fanId)) {
               setState(
                 () => _edits[key] =
                     '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}',
@@ -681,7 +680,7 @@ class _GenericWorkflowInstanceCardState
             final instance = _instance;
             final machine = widget.machine;
             final engine = widget.engine;
-            final personaId = widget.personaId;
+            final fanId = widget.fanId;
             final parts = '${_valueFor(key) ?? ''}'.split(':');
             final picked = await showTimePicker(
               context: context,
@@ -691,7 +690,7 @@ class _GenericWorkflowInstanceCardState
               ),
             );
             if (picked != null &&
-                _isCurrent(generation, instance, machine, engine, personaId)) {
+                _isCurrent(generation, instance, machine, engine, fanId)) {
               setState(
                 () => _edits[key] =
                     '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}',

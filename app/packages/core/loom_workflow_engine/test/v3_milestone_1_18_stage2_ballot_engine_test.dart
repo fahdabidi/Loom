@@ -10,7 +10,7 @@ class _BallotStore {
 
   Future<WorkflowInstance> read(String id) async => (await api.queryInstances(
     tabId: 'x',
-    personaId: 'organizer',
+    fanId: 'organizer',
     limit: 100,
   )).items.singleWhere((i) => i.instanceId == id);
 
@@ -19,13 +19,13 @@ class _BallotStore {
       workflowType: 'ballot',
       instanceId: ballot,
       fieldUpdates: {'pendingChoice': choice},
-      personaId: persona,
+      fanId: persona,
     );
     await api.applyTransition(
       workflowType: 'ballot',
       instanceId: ballot,
       transitionId: 'cast-vote',
-      personaId: persona,
+      fanId: persona,
     );
   }
 
@@ -42,7 +42,7 @@ class _BallotStore {
           .toList();
       return api.createInstance(
         workflowType: 'ballot',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {
           'eventId': instance.instanceData['eventId'],
           'candidates': candidates,
@@ -55,7 +55,7 @@ class _BallotStore {
       workflowType: 'ballot',
       instanceId: ballot,
       transitionId: 'close',
-      personaId: 'organizer',
+      fanId: 'organizer',
     );
     return null;
   }
@@ -151,7 +151,7 @@ void main() {
     );
     event = await api.createInstance(
       workflowType: 'event',
-      personaId: 'organizer',
+      fanId: 'organizer',
       initialInstanceData: {
         'goingFanIds': ['a', 'b', 'c', 'd', 'e'],
         'selectedGame': 'TBD',
@@ -161,7 +161,7 @@ void main() {
   });
   Future<String> ballot() => api.createInstance(
     workflowType: 'ballot',
-    personaId: 'organizer',
+    fanId: 'organizer',
     initialInstanceData: {
       'eventId': event,
       'candidates': candidates,
@@ -198,14 +198,14 @@ void main() {
       workflowType: 'ballot',
       instanceId: id,
       fieldUpdates: {'pendingChoice': 'Catan'},
-      personaId: 'outsider',
+      fanId: 'outsider',
     );
     expect(
       () => api.applyTransition(
         workflowType: 'ballot',
         instanceId: id,
         transitionId: 'cast-vote',
-        personaId: 'outsider',
+        fanId: 'outsider',
       ),
       throwsStateError,
     );

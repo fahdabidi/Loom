@@ -101,8 +101,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 Future<void> _selectMessages(WidgetTester tester) async {
@@ -122,7 +122,7 @@ Future<WorkflowInstance> _threadById(
 ) async {
   final page = await engine.queryInstances(
     tabId: 'messages',
-    personaId: 'tabletop-member',
+    fanId: 'tabletop-member',
     limit: 100,
   );
   return page.items.firstWhere(
@@ -187,7 +187,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-member',
+                roleId: 'tabletop-member',
               ),
             ),
           ),
@@ -304,7 +304,7 @@ void main() {
 
         // F.4: the tab-scoped creation grammar scans the same JSON binding and
         // exposes the real New thread FAB. The generic form uses the existing
-        // audience-style picker for participantPersonaIds.
+        // audience-style picker for participantFanIds.
         final fab = find.byKey(
           const ValueKey('creatable-fab-discussion-thread'),
         );
@@ -332,7 +332,7 @@ void main() {
         final created = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'messages',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             limit: 100,
           );
           return page.items.firstWhere(

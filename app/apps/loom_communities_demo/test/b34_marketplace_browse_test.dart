@@ -30,7 +30,7 @@ void main() {
             label: 'Buy now',
             fromStates: ['available'],
             to: 'purchased',
-            allowedPersonaIds: ['tabletop-member'],
+            allowedRoleIds: ['tabletop-member'],
             linkedWorkflowId: 'sale-checkout',
             removesFromList: true,
           ),
@@ -38,14 +38,22 @@ void main() {
       );
 
       // Parse round-trip: transitionsFrom available returns buy
-      final actions = machine.availableActions('available', 'tabletop-member');
+      final actions = machine.availableActions(
+        'available',
+        fanId: 'tabletop-member-01',
+        roleId: 'tabletop-member',
+      );
       expect(actions, isNotEmpty);
       expect(actions.single.id, 'buy');
       expect(actions.single.removesFromList, isTrue);
 
       // Persona gating: non-member sees nothing
       expect(
-        machine.availableActions('available', 'tabletop-organizer'),
+        machine.availableActions(
+          'available',
+          fanId: 'tabletop-organizer-01',
+          roleId: 'tabletop-organizer',
+        ),
         isEmpty,
       );
     });
@@ -64,7 +72,7 @@ void main() {
             label: 'Propose trade',
             fromStates: ['offered'],
             to: 'pending',
-            allowedPersonaIds: ['tabletop-member'],
+            allowedRoleIds: ['tabletop-member'],
             linkedWorkflowId: 'trade-propose',
           ),
           const LoomListingTransition(
@@ -72,22 +80,43 @@ void main() {
             label: 'Accept trade',
             fromStates: ['pending'],
             to: 'traded',
-            allowedPersonaIds: ['tabletop-organizer'],
+            allowedRoleIds: ['tabletop-organizer'],
             linkedWorkflowId: 'trade-accept',
           ),
         ],
       );
 
       expect(
-        machine.availableActions('offered', 'tabletop-member').single.id,
+        machine
+            .availableActions(
+              'offered',
+              fanId: 'tabletop-member-01',
+              roleId: 'tabletop-member',
+            )
+            .single
+            .id,
         'propose',
       );
       expect(
-        machine.availableActions('pending', 'tabletop-organizer').single.id,
+        machine
+            .availableActions(
+              'pending',
+              fanId: 'tabletop-organizer-01',
+              roleId: 'tabletop-organizer',
+            )
+            .single
+            .id,
         'accept',
       );
       // pending state has no actions for member
-      expect(machine.availableActions('pending', 'tabletop-member'), isEmpty);
+      expect(
+        machine.availableActions(
+          'pending',
+          fanId: 'tabletop-member-01',
+          roleId: 'tabletop-member',
+        ),
+        isEmpty,
+      );
     });
 
     test('giveaway machine: available → claimed (removesFromList)', () {
@@ -106,19 +135,30 @@ void main() {
             label: 'Claim giveaway',
             fromStates: ['available'],
             to: 'claimed',
-            allowedPersonaIds: ['tabletop-member'],
+            allowedRoleIds: ['tabletop-member'],
             linkedWorkflowId: 'giveaway-claim',
             removesFromList: true,
           ),
         ],
       );
 
-      final actions = machine.availableActions('available', 'tabletop-member');
+      final actions = machine.availableActions(
+        'available',
+        fanId: 'tabletop-member-01',
+        roleId: 'tabletop-member',
+      );
       expect(actions.single.id, 'claim');
       expect(actions.single.removesFromList, isTrue);
 
       // Claimed state has NO actions (terminal)
-      expect(machine.availableActions('claimed', 'tabletop-member'), isEmpty);
+      expect(
+        machine.availableActions(
+          'claimed',
+          fanId: 'tabletop-member-01',
+          roleId: 'tabletop-member',
+        ),
+        isEmpty,
+      );
     });
 
     test(
@@ -142,7 +182,7 @@ void main() {
               id: 'join-queue',
               label: 'Join queue',
               fromStates: ['available', 'queued'],
-              allowedPersonaIds: ['tabletop-member'],
+              allowedRoleIds: ['tabletop-member'],
               addsActorToQueue: true,
               requiresActorNotInQueue: true,
             ),
@@ -150,7 +190,7 @@ void main() {
               id: 'leave-queue',
               label: 'Leave queue',
               fromStates: ['queued'],
-              allowedPersonaIds: ['tabletop-member'],
+              allowedRoleIds: ['tabletop-member'],
               requiresActorInQueue: true,
               removesActorFromQueue: true,
             ),
@@ -162,11 +202,12 @@ void main() {
           listingId: 'l',
           title: 'X',
           availability: 'available',
-          queuedPersonaIds: const [],
+          queuedFanIds: const [],
         );
         var actions = machine.availableActions(
           'available',
-          'tabletop-member',
+          fanId: 'tabletop-member-01',
+          roleId: 'tabletop-member',
           listing: notInQueue,
         );
         expect(actions.map((a) => a.id), contains('join-queue'));
@@ -177,11 +218,12 @@ void main() {
           listingId: 'l',
           title: 'X',
           availability: 'queued',
-          queuedPersonaIds: const ['tabletop-member'],
+          queuedFanIds: const ['tabletop-member-01'],
         );
         actions = machine.availableActions(
           'queued',
-          'tabletop-member',
+          fanId: 'tabletop-member-01',
+          roleId: 'tabletop-member',
           listing: inQueue,
         );
         expect(actions.map((a) => a.id), contains('leave-queue'));
@@ -361,19 +403,13 @@ void main() {
       final detail = find.byKey(
         const ValueKey('marketplace-detail-dialog-listing-wingspan'),
       );
-      expect(
-        detail,
-        findsOneWidget,
-      );
+      expect(detail, findsOneWidget);
       expect(
         find.descendant(of: detail, matching: find.text('Excellent')),
         findsOneWidget,
       );
       expect(
-        find.descendant(
-          of: detail,
-          matching: find.text('On Loan'),
-        ),
+        find.descendant(of: detail, matching: find.text('On Loan')),
         findsOneWidget,
       );
       expect(
@@ -421,7 +457,7 @@ void main() {
     testWidgets('wf_marketplace-actions-member', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
+      await _installAndOpen(tester, fixture, fanId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -455,7 +491,7 @@ void main() {
     testWidgets('wf_marketplace-join-then-leave-queue', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
+      await _installAndOpen(tester, fixture, fanId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -510,7 +546,7 @@ void main() {
     testWidgets('wf_marketplace-borrow-action-functions', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
+      await _installAndOpen(tester, fixture, fanId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -554,7 +590,7 @@ void main() {
     testWidgets('wf_marketplace-return-action-functions', (tester) async {
       final fixture = _writeFixture(includeListings: true);
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
+      await _installAndOpen(tester, fixture, fanId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -590,7 +626,7 @@ void main() {
         includeGiveaway: true,
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await _installAndOpen(tester, fixture, personaId: 'tabletop-member');
+      await _installAndOpen(tester, fixture, fanId: 'tabletop-member');
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await _tapTab(tester, 'marketplace');
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -681,6 +717,7 @@ void main() {
     loanWorkflowType: 'tabletop-game-loan',
     memberRoleId: 'tabletop-member',
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     loanSeeds: <EngineNativeMarketplaceLoanSeed>[
       if (includeListings) ...<EngineNativeMarketplaceLoanSeed>[
         const EngineNativeMarketplaceLoanSeed(
@@ -780,7 +817,7 @@ void main() {
 Future<void> _installAndOpen(
   WidgetTester tester,
   ({EvidencePackagePair package, String communityId}) fixture, {
-  String personaId = 'tabletop-organizer',
+  String fanId = 'tabletop-organizer',
 }) async {
   await tester.tap(find.byKey(const ValueKey('add-community-button')));
   await tester.pumpAndSettle();
@@ -798,7 +835,7 @@ Future<void> _installAndOpen(
     find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, personaId);
+  await selectPersona(tester, fanId);
 }
 
 Future<void> _openListingDetail(WidgetTester tester, String listingId) async {

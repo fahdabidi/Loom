@@ -119,7 +119,7 @@ class CommunityPackageValidator {
       return ValidationReport(findings);
     }
     findings.addAll(_validateUnknownWorkflowKeys(rawDefinitions));
-    final personas = _personaIds(experience['roles']);
+    final roleIds = _roleIds(experience['roles']);
     final declaredTabIds = _declaredTabIds(package);
     final workflows = <String, LoomWorkflowStateMachine>{};
     for (final entry in rawDefinitions.entries) {
@@ -144,7 +144,7 @@ class CommunityPackageValidator {
     findings.addAll(_validateUndeclaredCapabilities(package, usedCapabilities));
     findings.addAll(
       WorkflowValidator(
-        knownPersonaIds: personas,
+        knownRoleIds: roleIds,
         declaredTabIds: declaredTabIds,
       ).validate(workflows).findings,
     );
@@ -405,7 +405,7 @@ class CommunityPackageValidator {
     }
   }
 
-  Set<String> _personaIds(dynamic raw) {
+  Set<String> _roleIds(dynamic raw) {
     if (raw is! List) return {};
     return raw
         .whereType<Object>()
@@ -1777,7 +1777,7 @@ class CommunityPackageValidator {
 
   void _collectGuardCapabilities(WorkflowGuard? guard, Set<String> used) {
     if (guard == null) return;
-    if (guard.allowedPersonaIds != null) used.add('guard.allowedRoleIds');
+    if (guard.allowedRoleIds != null) used.add('guard.allowedRoleIds');
     if (guard.actorInList != null) used.add('guard.actorInList');
     if (guard.instanceDataEquals != null) {
       used.add('guard.instanceDataEquals');

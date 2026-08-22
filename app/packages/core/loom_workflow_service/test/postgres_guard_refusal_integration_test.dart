@@ -123,7 +123,7 @@ void main() {
           workflowType: _workflowType,
           instanceId: _instanceId,
           transitionId: 'approve',
-          personaId: 'fan-owner',
+          fanId: 'fan-owner',
         );
         expect(clientResult.newState, 'approved');
 
@@ -287,7 +287,7 @@ void main() {
           workflowType: _workflowType,
           currentState: 'draft',
           instanceData: {'ownerFanId': 'fan-owner', 'title': 'Action'},
-          createdByPersonaId: 'fan-owner',
+          createdByFanId: 'fan-owner',
         );
         await database.insertInstance(
           instanceId: 'postgres-visible',
@@ -295,7 +295,7 @@ void main() {
           workflowType: 'private-read',
           currentState: 'draft',
           instanceData: {'ownerFanId': 'fan-owner', 'title': 'Visible'},
-          createdByPersonaId: 'fan-owner',
+          createdByFanId: 'fan-owner',
         );
         await database.insertInstance(
           instanceId: 'postgres-hidden',
@@ -303,7 +303,7 @@ void main() {
           workflowType: 'private-read',
           currentState: 'draft',
           instanceData: {'ownerFanId': 'fan-other', 'title': 'Must not leak'},
-          createdByPersonaId: 'fan-other',
+          createdByFanId: 'fan-other',
         );
 
         final queryResponse = await service.handler(
@@ -408,7 +408,7 @@ void main() {
           workflowType: _editableWorkflowType,
           currentState: 'draft',
           instanceData: {'title': 'Before'},
-          createdByPersonaId: 'fan-editor',
+          createdByFanId: 'fan-editor',
         );
 
         final service = WorkflowService(
@@ -517,7 +517,7 @@ void main() {
               'status': status,
               'amount': amount,
             },
-            createdByPersonaId: 'fan-aggregate-reader',
+            createdByFanId: 'fan-aggregate-reader',
           );
         }
         expect(
@@ -580,7 +580,7 @@ Future<void> _seed(WorkflowDatabase database) async {
     workflowType: _workflowType,
     currentState: 'draft',
     instanceData: {'ownerFanId': 'fan-owner'},
-    createdByPersonaId: 'fan-owner',
+    createdByFanId: 'fan-owner',
   );
 }
 

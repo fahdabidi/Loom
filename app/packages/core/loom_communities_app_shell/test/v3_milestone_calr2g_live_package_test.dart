@@ -70,19 +70,19 @@ void main() {
         configureEngineAuthorizationForExtensionId(
           extensionId: community.extensionId,
           appShellConfiguration: community.appShellConfiguration,
-          activeMembershipLookup: (personaId) async => accounts.any(
+          activeMembershipLookup: (fanId) async => accounts.any(
             (account) =>
-                account.accountId == personaId &&
+                account.accountId == fanId &&
                 account.status == MembershipStatus.active,
           ),
         );
         for (final account in accounts) {
-          engine.setPersonaType(account.accountId, account.personaTypeId);
+          engine.setRoleForFan(account.accountId, account.roleId);
         }
 
         final instances = await engine.queryInstances(
           tabId: 'calendar',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
           limit: 100,
         );
         final event = instances.items.singleWhere(
@@ -106,7 +106,7 @@ void main() {
           instanceId: memberResponse.instanceId,
           currentState: memberResponse.currentState,
           instanceData: memberResponse.instanceData,
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(
           transitions.map((transition) => transition.id),

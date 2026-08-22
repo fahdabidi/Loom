@@ -1203,7 +1203,7 @@ JsonMap collectB25Evidence({
             fallback: _asString(workflow['appId']),
           ),
           'persona': persona,
-          'personaId': _personaIdForEvidence(
+          'fanId': _fanIdForEvidence(
             persona: persona,
             communityId: communityId,
           ),
@@ -1592,15 +1592,15 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
     );
     fallbackIndex += 1;
     final persona = _asString(row['persona'], fallback: 'persona-under-review');
-    final personaId = _asString(
-      row['personaId'],
-      fallback: _personaIdFromLabel(persona),
+    final fanId = _asString(
+      row['fanId'],
+      fallback: _fanIdFromPersonaLabel(persona),
     );
     row['rowId'] = rowId;
     row['screenRowId'] = rowId;
     row['persona'] = persona;
-    row['personaId'] = personaId;
-    row['coveragePersonaStatus'] = _isSpecificPersona(persona, personaId)
+    row['fanId'] = fanId;
+    row['coveragePersonaStatus'] = _isSpecificPersona(persona, fanId)
         ? 'specific-persona'
         : 'persona-missing-or-generic';
     enrichedRows.add(row);
@@ -1608,7 +1608,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
     final key = [
       _asString(row['communityId'], fallback: 'unknown-community'),
       _asString(row['workflowId'], fallback: 'unknown-workflow'),
-      personaId.isNotEmpty ? personaId : persona,
+      fanId.isNotEmpty ? fanId : persona,
     ].join('::');
     grouped.putIfAbsent(key, () => <JsonMap>[]).add(row);
   }
@@ -1630,7 +1630,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       first['persona'],
       fallback: 'persona-under-review',
     );
-    final personaId = _asString(first['personaId']);
+    final fanId = _asString(first['fanId']);
     final workflowId = _asString(first['workflowId']);
     final supportSingleStateEvidence =
         _workflowIsSupportSurface(workflowId) && groupRows.isNotEmpty;
@@ -1672,13 +1672,13 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
               name.toLowerCase().contains('actor'),
         );
     final missing = <String>[
-      if (!_isSpecificPersona(persona, personaId)) 'specific persona/personaId',
+      if (!_isSpecificPersona(persona, fanId)) 'specific persona/fanId',
       if (!hasEntry) 'entry/start screenshot',
       if (!hasAction) 'action/review screenshot',
       if (!hasResult) 'result/receiver screenshot',
     ];
     final coverageRowId =
-        'b25-wp-${coverageIndex.toString().padLeft(3, '0')}-${_slug(_asString(first['workflowId'], fallback: 'workflow'))}-${_slug(personaId.isNotEmpty ? personaId : persona)}';
+        'b25-wp-${coverageIndex.toString().padLeft(3, '0')}-${_slug(_asString(first['workflowId'], fallback: 'workflow'))}-${_slug(fanId.isNotEmpty ? fanId : persona)}';
     coverageIndex += 1;
     coverageRows.add(<String, Object?>{
       'coverageRowId': coverageRowId,
@@ -1687,7 +1687,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       'communityName': _asString(first['communityName']),
       'workflowId': _asString(first['workflowId']),
       'persona': persona,
-      'personaId': personaId,
+      'fanId': fanId,
       'screenRowIds': groupRows.map(_rowId).toList(),
       'screenshotPaths': groupRows
           .map((row) => _asString(row['screenshotPath']))
@@ -1697,7 +1697,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       'hasEntryScreenshot': hasEntry,
       'hasActionScreenshot': hasAction,
       'hasResultScreenshot': hasResult,
-      'hasSpecificPersona': _isSpecificPersona(persona, personaId),
+      'hasSpecificPersona': _isSpecificPersona(persona, fanId),
       'missingEvidence': missing,
       'requiredFix': missing.isEmpty
           ? 'None.'
@@ -1800,7 +1800,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
       _coverageKey(
         _asString(row['communityId']),
         _asString(row['workflowId']),
-        _asString(row['personaId'], fallback: _asString(row['persona'])),
+        _asString(row['fanId'], fallback: _asString(row['persona'])),
       ): row,
   };
   final screenRows = <JsonMap>[];
@@ -1809,7 +1809,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
         coverageByKey[_coverageKey(
           _asString(row['communityId']),
           _asString(row['workflowId']),
-          _asString(row['personaId'], fallback: _asString(row['persona'])),
+          _asString(row['fanId'], fallback: _asString(row['persona'])),
         )];
     screenRows.add(_independentScreenReviewRow(row, coverage));
   }
@@ -2603,7 +2603,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final visibleText = _asString(row['visibleTextExtract']);
   final source = _asString(row['visibleTextExtractionSource']);
   final persona = _asString(row['persona'], fallback: 'persona-under-review');
-  final personaId = _asString(row['personaId']);
+  final fanId = _asString(row['fanId']);
   final workflowId = _asString(row['workflowId']);
   final isSupportSurface = _workflowIsSupportSurface(workflowId);
   final coverageMissing = _asStringList(coverage?['missingEvidence']);
@@ -2617,7 +2617,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final findingIds = <String>{
     ...baseFindingIds,
     if (coverageMissing.isNotEmpty) 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
-    if (!_isSpecificPersona(persona, personaId)) 'B25-PERSONA-SCOPE-MISSING',
+    if (!_isSpecificPersona(persona, fanId)) 'B25-PERSONA-SCOPE-MISSING',
     if (visibleText.isEmpty) 'B25-VISIBLE-TEXT-MISSING',
     if (source != 'screenshot-visible-text' && source != 'ocr-visible-text')
       'B25-VISIBLE-TEXT-NOT-SCREEN-EXTRACTED',
@@ -2628,7 +2628,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   }.toList();
   final critique = StringBuffer()
     ..write('Screen `$rowId` for workflow `$workflowId` ');
-  if (_isSpecificPersona(persona, personaId)) {
+  if (_isSpecificPersona(persona, fanId)) {
     critique.write('and persona `$persona` ');
   } else {
     critique.write('does not identify a specific production persona; ');
@@ -3053,12 +3053,12 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   final coverageRowId = _asString(coverage['coverageRowId']);
   final workflowId = _asString(coverage['workflowId']);
   final persona = _asString(coverage['persona']);
-  final personaId = _asString(coverage['personaId']);
+  final fanId = _asString(coverage['fanId']);
   final isSupportSurface = _workflowIsSupportSurface(workflowId);
   final relatedRows = screenRows.where((row) {
     return _asString(row['workflowId']) == workflowId &&
         _asString(row['communityId']) == _asString(coverage['communityId']) &&
-        (_asString(row['personaId']) == personaId ||
+        (_asString(row['fanId']) == fanId ||
             _asString(row['persona']) == persona);
   }).toList();
   final missing = _asStringList(coverage['missingEvidence']);
@@ -3112,7 +3112,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
           : 'Missing coverage: ${missing.join(', ')}.',
       requiredFix: coveragePass
           ? 'None.'
-          : 'Capture the missing screenshot states and assign a specific persona/personaId.',
+          : 'Capture the missing screenshot states and assign a specific persona/fanId.',
     ),
     _directAnswer(
       questionId: '$coverageRowId-domain-surface',
@@ -3193,7 +3193,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     'communityName': _asString(coverage['communityName']),
     'workflowId': workflowId,
     'persona': persona,
-    'personaId': personaId,
+    'fanId': fanId,
     'status': blocks ? 'fail' : 'pass',
     'blocksPass': blocks,
     'screenRowIds': _asStringList(coverage['screenRowIds']),
@@ -3218,11 +3218,11 @@ JsonMap _workflowLifecycleScorecard(
   final coverageRowId = _asString(coverage['coverageRowId']);
   final workflowId = _asString(coverage['workflowId']);
   final persona = _asString(coverage['persona']);
-  final personaId = _asString(coverage['personaId']);
+  final fanId = _asString(coverage['fanId']);
   final relatedRows = screenRows.where((row) {
     return _asString(row['workflowId']) == workflowId &&
         _asString(row['communityId']) == _asString(coverage['communityId']) &&
-        (_asString(row['personaId']) == personaId ||
+        (_asString(row['fanId']) == fanId ||
             _asString(row['persona']) == persona);
   }).toList();
   final visibleTextEvidence = relatedRows
@@ -3268,7 +3268,7 @@ JsonMap _workflowLifecycleScorecard(
       'communityName': _asString(coverage['communityName']),
       'workflowId': workflowId,
       'persona': persona,
-      'personaId': personaId,
+      'fanId': fanId,
       'status': coveragePass ? 'pass' : 'fail',
       'blocksPass': !coveragePass,
       'screenRowIds': _asStringList(coverage['screenRowIds']),
@@ -3443,7 +3443,7 @@ JsonMap _workflowLifecycleScorecard(
     'communityName': _asString(coverage['communityName']),
     'workflowId': workflowId,
     'persona': persona,
-    'personaId': personaId,
+    'fanId': fanId,
     'status': blocks ? 'fail' : 'pass',
     'blocksPass': blocks,
     'screenRowIds': _asStringList(coverage['screenRowIds']),
@@ -5405,8 +5405,8 @@ List<JsonMap> _replaceGeneratedFindings(
       .toList();
 }
 
-String _coverageKey(String communityId, String workflowId, String personaId) {
-  return '$communityId::$workflowId::$personaId';
+String _coverageKey(String communityId, String workflowId, String fanId) {
+  return '$communityId::$workflowId::$fanId';
 }
 
 JsonMap _remediationBatch({
@@ -6111,7 +6111,10 @@ String _personaForEvidence({
   required String screenshotName,
 }) {
   final fromScreenshot = _personaFromScreenshotName(screenshotName);
-  if (_isSpecificPersona(fromScreenshot, _personaIdFromLabel(fromScreenshot))) {
+  if (_isSpecificPersona(
+    fromScreenshot,
+    _fanIdFromPersonaLabel(fromScreenshot),
+  )) {
     return fromScreenshot;
   }
   final lower = '${workflowId.toLowerCase()} ${communityId.toLowerCase()}';
@@ -6147,11 +6150,11 @@ String _personaForEvidence({
   return 'member';
 }
 
-String _personaIdForEvidence({
+String _fanIdForEvidence({
   required String persona,
   required String communityId,
 }) {
-  final personaSlug = _personaIdFromLabel(persona);
+  final personaSlug = _fanIdFromPersonaLabel(persona);
   if (personaSlug.isEmpty) {
     return '';
   }
@@ -6162,7 +6165,7 @@ String _personaIdForEvidence({
   return '$communitySlug-$personaSlug';
 }
 
-String _personaIdFromLabel(String persona) {
+String _fanIdFromPersonaLabel(String persona) {
   final slug = _slug(persona);
   if (slug.isEmpty ||
       slug == 'unknown' ||
@@ -6174,8 +6177,8 @@ String _personaIdFromLabel(String persona) {
   return slug;
 }
 
-bool _isSpecificPersona(String persona, String personaId) {
-  if (personaId.isEmpty) {
+bool _isSpecificPersona(String persona, String fanId) {
+  if (fanId.isEmpty) {
     return false;
   }
   final slug = _slug(persona);
@@ -8274,10 +8277,10 @@ JsonMap _b25TicketContext(
 Set<String> _workflowPersonaEvidenceKeys(JsonMap row) {
   final workflowId = _asString(row['workflowId']);
   final persona = _asString(row['persona']);
-  final personaId = _asString(row['personaId']);
+  final fanId = _asString(row['fanId']);
   return <String>{
     if (workflowId.isNotEmpty && persona.isNotEmpty) '$workflowId/$persona',
-    if (workflowId.isNotEmpty && personaId.isNotEmpty) '$workflowId/$personaId',
+    if (workflowId.isNotEmpty && fanId.isNotEmpty) '$workflowId/$fanId',
     _asString(row['scorecardId']),
     _asString(row['coverageRowId']),
   }..removeWhere((value) => value.isEmpty);
@@ -8325,7 +8328,7 @@ JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
       'workerReadiness':
           'not ready for UI implementation until evidence repair work items are completed and the independent judge reruns',
       'firstRequiredStep':
-          'Complete the evidenceRepairWorkItems: concrete persona/personaId, screenshot-derived visible text, screen-specific critique, coverage row proof, and workflow/persona scorecards.',
+          'Complete the evidenceRepairWorkItems: concrete persona/fanId, screenshot-derived visible text, screen-specific critique, coverage row proof, and workflow/persona scorecards.',
       'implementationBlockedBy': <String>[
         'Affected rows still use generic or missing persona data.',
         'Visible text is not proven from screenshot OCR/manual extraction.',
@@ -8526,26 +8529,26 @@ List<JsonMap> _b25WorkItems({
     required String communityName,
     required String workflowId,
     required String persona,
-    required String personaId,
+    required String fanId,
   }) {
     final key = [
       communityId,
       workflowId,
-      personaId.isNotEmpty ? personaId : persona,
+      fanId.isNotEmpty ? fanId : persona,
       stage,
     ].join('::');
     return itemsByKey.putIfAbsent(key, () {
       final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
       return <String, Object?>{
         'workItemId':
-            'b25-wi-${_slug(stage)}-${_slug(communityId.isNotEmpty ? communityId : communityName)}-${_slug(workflowId)}-${_slug(personaId.isNotEmpty ? personaId : persona)}',
+            'b25-wi-${_slug(stage)}-${_slug(communityId.isNotEmpty ? communityId : communityName)}-${_slug(workflowId)}-${_slug(fanId.isNotEmpty ? fanId : persona)}',
         'stage': stage,
         'criterionId': criterionId,
         'communityId': communityId,
         'communityName': communityName,
         'workflowId': workflowId,
         'persona': persona,
-        'personaId': personaId,
+        'fanId': fanId,
         'targetProductionSurface': targetSurface,
         'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
         'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
@@ -8571,7 +8574,7 @@ List<JsonMap> _b25WorkItems({
                 targetSurface,
               ),
         'blockedUntil': stage == 'ui-remediation'
-            ? 'Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/personaId, and a non-boilerplate critique.'
+            ? 'Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/fanId, and a non-boilerplate critique.'
             : '',
       };
     });
@@ -8596,7 +8599,7 @@ List<JsonMap> _b25WorkItems({
       communityName: _asString(row['communityName']),
       workflowId: workflowId,
       persona: _asString(row['persona']),
-      personaId: _asString(row['personaId']),
+      fanId: _asString(row['fanId']),
     );
     addUnique(item, 'affectedScreenRowIds', [_asString(row['screenRowId'])]);
     addUnique(item, 'screenshotPaths', [_asString(row['screenshotPath'])]);
@@ -8623,7 +8626,7 @@ List<JsonMap> _b25WorkItems({
       communityName: _asString(coverage['communityName']),
       workflowId: _asString(coverage['workflowId']),
       persona: _asString(coverage['persona']),
-      personaId: _asString(coverage['personaId']),
+      fanId: _asString(coverage['fanId']),
     );
     addUnique(item, 'affectedCoverageRowIds', [
       _asString(coverage['coverageRowId']),
@@ -8656,7 +8659,7 @@ List<JsonMap> _b25WorkItems({
       communityName: _asString(scorecard['communityName']),
       workflowId: _asString(scorecard['workflowId']),
       persona: _asString(scorecard['persona']),
-      personaId: _asString(scorecard['personaId']),
+      fanId: _asString(scorecard['fanId']),
     );
     addUnique(item, 'affectedScorecardIds', [
       _asString(scorecard['scorecardId']),
@@ -8695,14 +8698,14 @@ bool _isB25UiRemediationCriterion(String criterionId) {
 
 bool _screenDetailNeedsEvidenceRepair(JsonMap row) {
   final persona = _asString(row['persona']);
-  final personaId = _asString(row['personaId']);
+  final fanId = _asString(row['fanId']);
   final source = _asString(row['visibleTextSource']).toLowerCase();
   final surface = _asString(row['currentSurfaceClassification']).toLowerCase();
   final primarySurface = _asString(
     row['currentPrimarySurfaceType'],
   ).toLowerCase();
   final critique = _asString(row['currentCritique']).toLowerCase();
-  return !_isSpecificPersona(persona, personaId) ||
+  return !_isSpecificPersona(persona, fanId) ||
       !(source.contains('screenshot') ||
           source.contains('ocr') ||
           source.contains('manual')) ||
@@ -8758,7 +8761,7 @@ List<String> _evidenceRepairWorkerActions(
   String targetSurface,
 ) {
   return <String>[
-    'Replace generic persona `${persona.isEmpty ? 'persona-under-review' : persona}` with the concrete actor/receiver persona and personaId for `${workflowId}`.',
+    'Replace generic persona `${persona.isEmpty ? 'persona-under-review' : persona}` with the concrete actor/receiver persona and fanId for `${workflowId}`.',
     'Verify entry, action/review, and result/receiver screenshots exist for `${workflowId}` and are tied to the concrete persona.',
     'Extract visible text from the listed screenshots or manually transcribe exactly what is visible.',
     'Write a non-reusable critique that names the visible UI, visible text, persona, user task, current failure, and target surface: ${targetSurface}.',
@@ -8785,7 +8788,7 @@ List<String> _evidenceRepairAcceptanceCriteria(
   String persona,
 ) {
   return <String>[
-    '`${workflowId}` has concrete persona/personaId coverage, not `persona-under-review`.',
+    '`${workflowId}` has concrete persona/fanId coverage, not `persona-under-review`.',
     'Entry/action/result screenshot rows exist for `${workflowId}` and each row has screenshot path, hash, timestamp, device metadata, and app commit SHA.',
     'Visible text is screenshot-derived or manually transcribed from the screenshot for every affected row.',
     'Each affected row has a screen-specific critique that cannot be reused unchanged for another workflow.',
@@ -8874,7 +8877,7 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     'communityName': _asString(row['communityName']),
     'workflowId': workflowId,
     'persona': _asString(row['persona']),
-    'personaId': _asString(row['personaId']),
+    'fanId': _asString(row['fanId']),
     'screenState': _asString(row['screenOrState']),
     'screenType': _asString(row['screenType']),
     'screenshotPath': _asString(row['screenshotPath']),
@@ -8898,7 +8901,7 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     'uxReferenceChecklist': _uxReferenceChecklistForWorkflow(workflowId),
     'evidenceRepairNeeded': _screenDetailNeedsEvidenceRepair(<String, Object?>{
       'persona': _asString(row['persona']),
-      'personaId': _asString(row['personaId']),
+      'fanId': _asString(row['fanId']),
       'visibleTextSource': _asString(row['visibleTextExtractionSource']),
       'currentSurfaceClassification': _asString(row['uiPatternClassification']),
       'currentPrimarySurfaceType': _asString(row['primarySurfaceType']),
@@ -8928,7 +8931,7 @@ JsonMap _coverageTicketDetail(JsonMap row) {
     'communityName': _asString(row['communityName']),
     'workflowId': workflowId,
     'persona': _asString(row['persona']),
-    'personaId': _asString(row['personaId']),
+    'fanId': _asString(row['fanId']),
     'screenRowIds': _asStringList(row['screenRowIds']),
     'screenshotPaths': _asStringList(row['screenshotPaths']),
     'screenStates': _asStringList(row['screenStates']),
@@ -8940,7 +8943,7 @@ JsonMap _coverageTicketDetail(JsonMap row) {
       workflowId,
     ),
     'acceptanceCriteria': <String>[
-      'Coverage row has a specific persona and personaId.',
+      'Coverage row has a specific persona and fanId.',
       'Coverage row has entry, action/review, and result/receiver screenshots.',
       'Every listed screenshot path exists and has a fresh hash/timestamp/app commit SHA.',
       'The workflow/persona scorecard passes after rerun.',
@@ -8992,7 +8995,7 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'communityName': _asString(scorecard['communityName']),
     'workflowId': workflowId,
     'persona': _asString(scorecard['persona']),
-    'personaId': _asString(scorecard['personaId']),
+    'fanId': _asString(scorecard['fanId']),
     'screenRowIds': _asStringList(scorecard['screenRowIds']),
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
     'summary': _asString(scorecard['summary']),
@@ -9040,7 +9043,7 @@ JsonMap _lifecycleScorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'communityName': _asString(scorecard['communityName']),
     'workflowId': workflowId,
     'persona': _asString(scorecard['persona']),
-    'personaId': _asString(scorecard['personaId']),
+    'fanId': _asString(scorecard['fanId']),
     'screenRowIds': _asStringList(scorecard['screenRowIds']),
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
     'summary': _asString(scorecard['summary']),
@@ -9115,8 +9118,8 @@ String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
     }
   }
   final persona = _asString(row['persona']);
-  final personaId = _asString(row['personaId']);
-  if (!_isSpecificPersona(persona, personaId)) {
+  final fanId = _asString(row['fanId']);
+  if (!_isSpecificPersona(persona, fanId)) {
     failures.add(
       'Persona is generic or missing; the worker cannot know which role this screen serves.',
     );
@@ -9168,7 +9171,7 @@ List<String> _screenRowAcceptanceCriteria(JsonMap row, String criterionId) {
   final workflowId = _asString(row['workflowId']);
   final persona = _asString(row['persona'], fallback: 'target persona');
   return <String>[
-    'Screen row `${_rowId(row)}` has a specific persona/personaId, not `persona-under-review`.',
+    'Screen row `${_rowId(row)}` has a specific persona/fanId, not `persona-under-review`.',
     'Visible text for `${_rowId(row)}` is extracted from the screenshot or manually transcribed from the screenshot.',
     'Critique for `${_rowId(row)}` names visible UI elements, visible text, persona `${persona}`, workflow `${workflowId}`, and the exact product UX issue.',
     'Primary surface for `${workflowId}` is documented as `${_targetProductionSurfaceForWorkflow(workflowId)}` or another explicit domain-native surface.',
@@ -12890,7 +12893,7 @@ String _rowId(JsonMap row) {
         row['questionId'] ??
         row['findingId'] ??
         row['workflowId'] ??
-        row['personaId'] ??
+        row['fanId'] ??
         row['id'] ??
         'unknown-row',
   );

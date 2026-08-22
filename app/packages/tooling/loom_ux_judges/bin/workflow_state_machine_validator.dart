@@ -24,12 +24,12 @@ void main(List<String> args) {
 
   // Load workflow definitions
   final WorkflowDefinitionsBundle definitionBundle;
-  final Set<String> knownPersonaIds;
+  final Set<String> knownRoleIds;
   final Map<String, LoomWorkflowStateMachine> workflows;
   try {
     definitionBundle = _loadDefinitions(definitionsPath);
     workflows = definitionBundle.workflows;
-    knownPersonaIds = definitionBundle.knownPersonaIds;
+    knownRoleIds = definitionBundle.knownRoleIds;
   } catch (e) {
     stderr.writeln('Failed to load definitions: $e');
     exit(1);
@@ -72,7 +72,7 @@ void main(List<String> args) {
   final validator = WorkflowValidator(
     templates: templates,
     tableArchetypeConfigs: tableConfigs,
-    knownPersonaIds: knownPersonaIds,
+    knownRoleIds: knownRoleIds,
   );
   final report = validator.validate(workflows);
   final json = const JsonEncoder.withIndent('  ').convert(report.toJson());
@@ -111,11 +111,11 @@ void main(List<String> args) {
 
 class WorkflowDefinitionsBundle {
   final Map<String, LoomWorkflowStateMachine> workflows;
-  final Set<String> knownPersonaIds;
+  final Set<String> knownRoleIds;
 
   WorkflowDefinitionsBundle({
     required this.workflows,
-    this.knownPersonaIds = const <String>{},
+    this.knownRoleIds = const <String>{},
   });
 }
 
@@ -134,13 +134,13 @@ WorkflowDefinitionsBundle _loadDefinitions(String path) {
           (entity.path.endsWith('.json') || entity.path.endsWith('.jsonc'))) {
         final parsed = _parseDefinitionsFile(entity);
         result.addAll(parsed.workflows);
-        allPersonas.addAll(parsed.knownPersonaIds);
+        allPersonas.addAll(parsed.knownRoleIds);
       }
     }
 
     return WorkflowDefinitionsBundle(
       workflows: result,
-      knownPersonaIds: allPersonas,
+      knownRoleIds: allPersonas,
     );
   }
 
@@ -170,7 +170,7 @@ WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
 
   return WorkflowDefinitionsBundle(
     workflows: workflows,
-    knownPersonaIds: knownPersonas,
+    knownRoleIds: knownPersonas,
   );
 }
 

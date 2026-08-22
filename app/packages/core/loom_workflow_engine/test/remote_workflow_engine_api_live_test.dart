@@ -50,14 +50,14 @@ void main() {
         final instanceId = await api.createInstance(
           workflowType: environment['LOOM_WORKFLOW_SERVICE_WORKFLOW_TYPE']!,
           initialInstanceData: Map<String, dynamic>.from(initialData as Map),
-          personaId: 'identity-comes-from-the-live-jwt',
+          fanId: 'identity-comes-from-the-live-jwt',
         );
         WorkflowInstance? created;
         String? cursor;
         do {
           final page = await api.queryInstances(
             tabId: 'workflow-service',
-            personaId: 'identity-comes-from-the-live-jwt',
+            fanId: 'identity-comes-from-the-live-jwt',
             workflowType: environment['LOOM_WORKFLOW_SERVICE_WORKFLOW_TYPE'],
             limit: 100,
             cursor: cursor,

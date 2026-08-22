@@ -24,12 +24,12 @@ void main() {
     );
     final past = await api.createInstance(
       workflowType: 'notice',
-      personaId: 'p',
+      fanId: 'p',
       initialInstanceData: {'dueAt': '2026-01-01T00:00:00Z'},
     );
     await api.createInstance(
       workflowType: 'notice',
-      personaId: 'p',
+      fanId: 'p',
       initialInstanceData: {'dueAt': '2026-12-01T00:00:00Z'},
     );
     expect(
@@ -89,12 +89,12 @@ void main() {
       );
       final event = await api.createInstance(
         workflowType: 'event',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {'goingFanIds': <String>[]},
       );
       final vote = await api.createInstance(
         workflowType: 'vote',
-        personaId: 'host',
+        fanId: 'host',
         initialInstanceData: {'eventId': event},
       );
       await expectLater(
@@ -102,14 +102,14 @@ void main() {
           workflowType: 'vote',
           instanceId: vote,
           transitionId: 'cast',
-          personaId: 'member',
+          fanId: 'member',
         ),
         throwsStateError,
       );
       await api.updateInstanceFields(
         workflowType: 'event',
         instanceId: event,
-        personaId: 'host',
+        fanId: 'host',
         fieldUpdates: {
           'goingFanIds': ['member'],
         },
@@ -118,11 +118,11 @@ void main() {
         workflowType: 'vote',
         instanceId: vote,
         transitionId: 'cast',
-        personaId: 'member',
+        fanId: 'member',
       );
       final page = await api.queryInstances(
         tabId: 'x',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       expect(

@@ -54,7 +54,7 @@ Map<String, dynamic> _notificationDefinition() => {
 
 Map<String, dynamic> _notificationSeed({
   required String instanceId,
-  required String recipientPersonaId,
+  required String recipientFanId,
   required String title,
   String currentState = 'unread',
 }) => {
@@ -63,7 +63,7 @@ Map<String, dynamic> _notificationSeed({
   'currentState': currentState,
   'createdByFanId': 'notification-effect',
   'instanceData': {
-    'recipientFanId': recipientPersonaId,
+    'recipientFanId': recipientFanId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',
@@ -87,15 +87,12 @@ Future<WorkflowEngineApi> _installEngine(
   return workflowEngineForExtensionId(extensionId);
 }
 
-Widget _host({required String extensionId, required String personaId}) =>
+Widget _host({required String extensionId, required String fanId}) =>
     MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           actions: [
-            NotificationBellButton(
-              extensionId: extensionId,
-              personaId: personaId,
-            ),
+            NotificationBellButton(extensionId: extensionId, fanId: fanId),
           ],
         ),
       ),
@@ -122,7 +119,7 @@ Future<void> _pumpUntilRead(
   for (var attempt = 0; attempt < 40; attempt += 1) {
     final page = await engine.queryInstances(
       tabId: 'notification-inbox',
-      personaId: _personaA,
+      fanId: _personaA,
       limit: 1000,
     );
     final item = page.items.singleWhere(
@@ -142,29 +139,29 @@ void main() {
       final engine = await _installEngine(extensionId, [
         _notificationSeed(
           instanceId: 'a-unread-1',
-          recipientPersonaId: _personaA,
+          recipientFanId: _personaA,
           title: 'A unread one',
         ),
         _notificationSeed(
           instanceId: 'a-unread-2',
-          recipientPersonaId: _personaA,
+          recipientFanId: _personaA,
           title: 'A unread two',
         ),
         _notificationSeed(
           instanceId: 'a-read',
-          recipientPersonaId: _personaA,
+          recipientFanId: _personaA,
           title: 'A already read',
           currentState: 'read',
         ),
         _notificationSeed(
           instanceId: 'b-unread',
-          recipientPersonaId: _personaB,
+          recipientFanId: _personaB,
           title: 'B private notification',
         ),
       ]);
 
       await tester.pumpWidget(
-        _host(extensionId: extensionId, personaId: _personaA),
+        _host(extensionId: extensionId, fanId: _personaA),
       );
       await _pumpUntil(tester, _badgeLabel('2'));
 
@@ -201,7 +198,7 @@ void main() {
       await _pumpUntilRead(tester, engine, 'a-unread-1');
       final persisted = await engine.queryInstances(
         tabId: 'notification-inbox',
-        personaId: _personaA,
+        fanId: _personaA,
         limit: 1000,
       );
       expect(
@@ -223,9 +220,7 @@ void main() {
     const extensionId = 'notification-bell-button-empty-test';
     await _installEngine(extensionId, const []);
 
-    await tester.pumpWidget(
-      _host(extensionId: extensionId, personaId: _personaA),
-    );
+    await tester.pumpWidget(_host(extensionId: extensionId, fanId: _personaA));
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(

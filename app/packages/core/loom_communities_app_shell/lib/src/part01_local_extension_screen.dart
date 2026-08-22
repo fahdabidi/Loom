@@ -173,7 +173,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   final Set<String> _receivedWorkflowPersonaKeys = {};
   final Map<String, String> _selectedResponseByWorkflowId = {};
   final Set<String> _reminderEnabledWorkflowIds = {};
-  final Map<String, String> _selectedTabIdByPersonaId = {};
+  final Map<String, String> _selectedTabIdByRoleId = {};
   final Set<String> _heroDismissedForCommunity = {};
   final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
   final Map<String, GlobalKey> _workflowSurfaceKeysById = {};
@@ -182,7 +182,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   List<String> _visibleWorkflowIds = const [];
   String? _activeSurfaceFocusKey;
   String? _expandedWorkflowId;
-  String? _selectedPersonaId;
+  String? _selectedFanId;
+  String? _selectedRoleId;
   bool? _communityEntryAllowed;
   bool _entryGateHasPendingApproval = false;
   int _entryGateRevision = 0;
@@ -202,17 +203,17 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experienceResolver: (communityExtensionId) => _experienceForCommunity(),
       );
 
-  /// The individual account id when signed in, otherwise falls back to
-  /// [_selectedPersonaId] (the persona type) for backward compatibility.
-  String? get _activeAccountId {
+  /// The individual account id when signed in, otherwise the selected
+  /// persona's declared fan id.
+  String? get _activeFanId {
     final session = _authApi.currentSession;
-    return session?.account.accountId ?? _selectedPersonaId;
+    return session?.account.accountId ?? _selectedFanId;
   }
 
-  /// The persona type of the signed-in account, or [_selectedPersonaId].
-  String? get _activePersonaTypeId {
+  /// The persona type of the signed-in account, or [_selectedRoleId].
+  String? get _activeRoleId {
     final session = _authApi.currentSession;
-    return session?.account.personaTypeId ?? _selectedPersonaId;
+    return session?.account.roleId ?? _selectedRoleId;
   }
 
   bool? get _activeAccountHasActiveMembership {
@@ -356,9 +357,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       key: const ValueKey('community-entry-refresh-button'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: accent,
-                        side: BorderSide(
-                          color: accent.withValues(alpha: 0.4),
-                        ),
+                        side: BorderSide(color: accent.withValues(alpha: 0.4)),
                       ),
                       onPressed: () {
                         _refreshCommunityEntryGate(rebuildAuthScreen: true);
@@ -387,17 +386,19 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     );
     if (!mounted) return;
     final created = switch (presentationStyle) {
-      appShellPresentationModeSlideOutBottom => await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (context) => _CreatableActionBottomSheet(content: content),
-      ),
+      appShellPresentationModeSlideOutBottom =>
+        await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (context) => _CreatableActionBottomSheet(content: content),
+        ),
       appShellPresentationModeSlideOutLeft ||
-      appShellPresentationModeSlideOutRight => await _showCreatableActionSidePanel(
-        content: content,
-        fromLeft: presentationStyle == appShellPresentationModeSlideOutLeft,
-      ),
+      appShellPresentationModeSlideOutRight =>
+        await _showCreatableActionSidePanel(
+          content: content,
+          fromLeft: presentationStyle == appShellPresentationModeSlideOutLeft,
+        ),
       // Popup is opened by OpenContainer around the FAB. This fallback keeps
       // direct callers functional without changing the creation content.
       _ => await showDialog<bool>(context: context, builder: (_) => content),
@@ -417,7 +418,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     );
     final engine = await workflowEngineForExtensionId(community.extensionId);
     final usesEventRsvpCreation =
-        action.cardSurfaceFamily == 'event-rsvp' && action.responseTable != null;
+        action.cardSurfaceFamily == 'event-rsvp' &&
+        action.responseTable != null;
     final keyPrefix = usesEventRsvpCreation
         ? 'new-event'
         : 'new-${action.workflowType}';
@@ -426,7 +428,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       workflowType: action.workflowType,
       machine: action.machine,
       engine: engine,
-      personaId: activePersona.accountId ?? activePersona.personaId,
+      fanId: activePersona.fanId,
       keyPrefix: keyPrefix,
       title: action.label,
       resolvedInitialValues: action.resolvedInitialValues,
@@ -434,7 +436,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         for (final persona
             in experience.personas ?? const <LoomPersonaDefinition>[])
           AudienceMultiSelectCandidate(
-            personaId: persona.personaId,
+            roleId: persona.roleId,
             label: persona.label,
           ),
       ],
@@ -494,7 +496,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   /// Registers every seeded account's individual-id → persona-type mapping
-  /// with the engine so [allowedPersonaIds] guards can check the type.
+  /// with the engine so [allowedRoleIds] guards can check the type.
   ///
   /// No-op for legacy-schema communities (any community whose
   /// [LoomExperienceDefinition.workflowDefinitions] is null or empty —
@@ -514,13 +516,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async {
+      activeMembershipLookup: (fanId) async {
         final accounts = await _authApi.listAccounts(
           communityExtensionId: community.extensionId,
         );
         return accounts.any(
           (account) =>
-              account.accountId == personaId &&
+              account.accountId == fanId &&
               account.status == MembershipStatus.active,
         );
       },
@@ -531,7 +533,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final engine = await workflowEngineForExtensionId(community.extensionId);
     if (engine is LocalWorkflowEngineApi) {
       for (final account in accounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
     }
   }
@@ -637,16 +639,17 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.extensionId,
       experience: experience,
     );
-    final typeId = _activePersonaTypeId;
+    final typeId = _activeRoleId;
     final match = typeId == null
         ? null
-        : personas.where((persona) => persona.personaId == typeId).firstOrNull;
+        : personas.where((persona) => persona.roleId == typeId).firstOrNull;
     final resolved = match ?? personas.first;
     // Carry the specific signed-in account id (when signed in as one)
-    // alongside the resolved role, without changing what `.personaId` means
+    // alongside the resolved role, without changing what `.roleId` means
     // for role/policy-scoped callers -- see LoomPersonaDefinition.accountId.
     return LoomPersonaDefinition(
-      personaId: resolved.personaId,
+      fanId: _activeFanId ?? resolved.fanId,
+      roleId: resolved.roleId,
       label: resolved.label,
       roleLabel: resolved.roleLabel,
       description: resolved.description,
@@ -682,10 +685,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final activePersona = _activePersona(experience);
     ActiveIdentityScope.of(
       identityContext,
-    ).setCurrentActiveAccountId(_activeAccountId);
+    ).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      personaId: activePersona.personaId,
+      roleId: activePersona.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
@@ -816,7 +819,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       mutateState: () => _receivedWorkflowPersonaKeys.add(
         workflowPersonaReceiptKey(
           workflowId: workflow.workflowId,
-          personaId: persona.personaId,
+          roleId: persona.roleId,
         ),
       ),
     );
@@ -836,10 +839,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final activePersona = _activePersona(experience);
     ActiveIdentityScope.of(
       identityContext,
-    ).setCurrentActiveAccountId(_activeAccountId);
+    ).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      personaId: activePersona.personaId,
+      roleId: activePersona.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
@@ -852,10 +855,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           ),
       orElse: () => tabSpecs.first,
     );
-    final focusKey = '${activePersona.personaId}:${targetTab.tabId}';
+    final focusKey = '${activePersona.roleId}:${targetTab.tabId}';
     setState(() {
       mutateState();
-      _selectedTabIdByPersonaId[activePersona.personaId] = targetTab.tabId;
+      _selectedTabIdByRoleId[activePersona.roleId] = targetTab.tabId;
       _focusedWorkflowIdByPersonaTab[focusKey] = workflow.workflowId;
       _expandedWorkflowId = workflow.workflowId;
     });
@@ -893,8 +896,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final activeAccount = activeAccountId == null
         ? null
         : accounts
-            .where((account) => account.accountId == activeAccountId)
-            .firstOrNull;
+              .where((account) => account.accountId == activeAccountId)
+              .firstOrNull;
     final usesModernCardTheme = experience.themeOverride != null;
     final communityCard = usesModernCardTheme
         ? LoomCardTheme.merge(
@@ -966,11 +969,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   const SizedBox(height: 8),
                   for (final persona in personas)
                     ListTile(
-                      key: ValueKey('persona-option-${persona.personaId}'),
-                      selected: persona.personaId == activePersona.personaId,
+                      key: ValueKey('persona-option-${persona.roleId}'),
+                      selected: persona.roleId == activePersona.roleId,
                       selectedTileColor: dialogAccent?.withValues(alpha: 0.08),
                       leading: Icon(
-                        persona.personaId == activePersona.personaId
+                        persona.roleId == activePersona.roleId
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
                         color: dialogAccent,
@@ -987,7 +990,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                             ? TextStyle(color: communityCard.resolvedBody)
                             : null,
                       ),
-                      onTap: () => Navigator.of(context).pop(persona.personaId),
+                      onTap: () => Navigator.of(context).pop(persona.roleId),
                     ),
                   const Divider(),
                   if (productionAuthSession != null)
@@ -1065,22 +1068,24 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             experience: experience,
             signedInAccountId: signedInAccountId,
             onSignIn: () {
-              unawaited(
-                () async {
-                  await _refreshCommunityEntryGate(rebuildAuthScreen: true);
-                  if (!mounted || !context.mounted) return;
-                  Navigator.of(context).pop();
-                }(),
-              );
+              unawaited(() async {
+                await _refreshCommunityEntryGate(rebuildAuthScreen: true);
+                if (!mounted || !context.mounted) return;
+                Navigator.of(context).pop();
+              }());
             },
           ),
         ),
       );
       return;
     }
+    final selectedPersona = personas.firstWhere(
+      (persona) => persona.roleId == selected,
+    );
     setState(() {
-      _selectedPersonaId = selected;
-      _selectedTabIdByPersonaId.putIfAbsent(selected, () => 'home');
+      _selectedFanId = selectedPersona.fanId;
+      _selectedRoleId = selected;
+      _selectedTabIdByRoleId.putIfAbsent(selected, () => 'home');
     });
   }
 
@@ -1101,7 +1106,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final view = personaWorkflowViewFor(
       extensionId: experience.extensionId,
       workflow: workflow,
-      personaId: activePersona.personaId,
+      roleId: activePersona.roleId,
       completedWorkflowIds: _completedWorkflowIds,
       receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
       experience: experience,
@@ -1158,9 +1163,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   Widget build(BuildContext context) {
     return ActiveIdentityScope(
       identity: ActiveIdentityContext(
-        accountId: _activeAccountId,
+        accountId: _activeFanId,
         authApi: _authApi,
-        personaId: _activePersonaTypeId,
+        roleId: _activeRoleId,
       ),
       child: Builder(
         builder: (context) {
@@ -1194,17 +1199,17 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final activeSession = activeIdentity.authApi.currentSession?.account;
     final activeAccountDisplayName =
         activeSession?.accountId == activeIdentity.accountId
-            ? activeSession?.displayName
-            : null;
-    ActiveIdentityScope.of(context).setCurrentActiveAccountId(_activeAccountId);
+        ? activeSession?.displayName
+        : null;
+    ActiveIdentityScope.of(context).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      personaId: activePersona.personaId,
+      roleId: activePersona.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
     final selectedTabId = _selectedTabIdFor(
-      personaId: activePersona.personaId,
+      roleId: activePersona.roleId,
       tabs: tabSpecs,
     );
     final selectedTab = tabSpecs.firstWhere(
@@ -1225,7 +1230,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       selectedTab: selectedTab,
       visibleWorkflowIds: visibleWorkflowIds,
       focusedWorkflowId:
-          _focusedWorkflowIdByPersonaTab['${activePersona.personaId}:${selectedTab.tabId}'] ??
+          _focusedWorkflowIdByPersonaTab['${activePersona.roleId}:${selectedTab.tabId}'] ??
           (visibleWorkflowIds.isNotEmpty ? visibleWorkflowIds.first : null),
       expandedWorkflowId: _expandedWorkflowId,
     );
@@ -1250,8 +1255,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               if (binding.tabId == selectedTab.tabId &&
                   action.kind == 'create' &&
                   (action.scope == null || action.scope == 'tab') &&
-                  action.byPersonaIds?.contains(activePersona.personaId) ==
-                      true)
+                  action.byRoleIds?.contains(activePersona.roleId) == true)
                 _CreatableWorkflowAction(
                   workflowType: definition.key,
                   machine: definition.value,
@@ -1260,7 +1264,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   responseTable: binding.responseTable,
                   resolvedInitialValues: resolveTabScopedPrefill(
                     action.prefill,
-                    activePersona.personaId,
+                    activePersona.fanId,
                   ),
                 ),
     ];
@@ -1276,9 +1280,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     if (action.kind == 'create' &&
                         action.scope == 'instance' &&
                         action.presentation == 'fab' &&
-                        action.byPersonaIds?.contains(
-                              activePersona.personaId,
-                            ) ==
+                        action.byRoleIds?.contains(activePersona.roleId) ==
                             true)
                       if (experience.workflowDefinitions![action.workflowType ??
                               definition.key]
@@ -1296,7 +1298,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           resolvedInitialValues: resolveInstanceScopedPrefill(
                             action.prefill,
                             focusedInstance,
-                            actorId: activePersona.personaId,
+                            actorId: activePersona.fanId,
                           ),
                         ),
     ];
@@ -1323,43 +1325,47 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         hasNotificationFab ||
         hasTabCreatableFab ||
         instanceScopedFabActions.isNotEmpty;
-    final notificationFabHeight = hasNotificationFab ? _creatableFabSmallHeight : 0.0;
+    final notificationFabHeight = hasNotificationFab
+        ? _creatableFabSmallHeight
+        : 0.0;
     final instanceFabHeight =
         instanceScopedFabActions.length * _creatableFabHeight;
     final tabCreatableFabHeight = !hasTabCreatableFab
         ? 0.0
         : switch (multiActionStyle) {
             appShellFabStyleSingleFirst => _creatableFabHeight,
-            appShellFabStyleStacked => creatableActions.length == 1
-                ? _creatableFabHeight
-                : _creatableFabHeight *
-                        creatableActions.length.toDouble() +
-                    (_fabSpacing * (creatableActions.length - 1)),
-            _ => creatableActions.length == 1
-                ? _creatableFabHeight
-                : _creatableFabHeight *
-                        (creatableActions.length + 1).toDouble() +
-                    (_fabSpacing * creatableActions.length),
+            appShellFabStyleStacked =>
+              creatableActions.length == 1
+                  ? _creatableFabHeight
+                  : _creatableFabHeight * creatableActions.length.toDouble() +
+                        (_fabSpacing * (creatableActions.length - 1)),
+            _ =>
+              creatableActions.length == 1
+                  ? _creatableFabHeight
+                  : _creatableFabHeight *
+                            (creatableActions.length + 1).toDouble() +
+                        (_fabSpacing * creatableActions.length),
           };
     final notificationToFabSpacing =
         hasNotificationFab &&
-                (hasTabCreatableFab || instanceScopedFabActions.isNotEmpty)
-            ? _fabSpacing
-            : 0.0;
-    final tabToInstanceFabSpacing =
-        hasTabCreatableFab ? instanceScopedFabActions.length * _fabSpacing : 0.0;
+            (hasTabCreatableFab || instanceScopedFabActions.isNotEmpty)
+        ? _fabSpacing
+        : 0.0;
+    final tabToInstanceFabSpacing = hasTabCreatableFab
+        ? instanceScopedFabActions.length * _fabSpacing
+        : 0.0;
     final floatingActionButtonContentHeight =
         notificationFabHeight +
         instanceFabHeight +
         tabCreatableFabHeight +
         notificationToFabSpacing +
         tabToInstanceFabSpacing;
-    final floatingActionButtonBottomPadding =
-        hasFloatingActionButton
-            ? (kFloatingActionButtonMargin + floatingActionButtonContentHeight -
-                    _defaultBottomPadding)
-                .clamp(0.0, double.infinity)
-            : 0.0;
+    final floatingActionButtonBottomPadding = hasFloatingActionButton
+        ? (kFloatingActionButtonMargin +
+                  floatingActionButtonContentHeight -
+                  _defaultBottomPadding)
+              .clamp(0.0, double.infinity)
+        : 0.0;
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
@@ -1375,13 +1381,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           if (experience.resolvedNotificationPresentationStyle == 'bell')
             NotificationBellButton(
               extensionId: community.extensionId,
-              personaId: activePersona.accountId ?? activePersona.personaId,
+              fanId: activePersona.fanId,
             ),
           IconButton(
             key: const ValueKey('messages-button'),
             tooltip: 'Messages',
             onPressed: () => setState(() {
-              _selectedTabIdByPersonaId[activePersona.personaId] = 'messages';
+              _selectedTabIdByRoleId[activePersona.roleId] = 'messages';
             }),
             icon: const Icon(Icons.chat_bubble_outline),
           ),
@@ -1599,7 +1605,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 selectedTab.tabId == 'home')
               NotificationFixedCard(
                 extensionId: community.extensionId,
-                personaId: activePersona.accountId ?? activePersona.personaId,
+                fanId: activePersona.fanId,
               ),
             _TabNativeRenderer(
               experience: experience,
@@ -1654,7 +1660,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         resolvedInitialValues: resolveInstanceScopedPrefill(
                           action.prefill,
                           instance,
-                          actorId: activePersona.personaId,
+                          actorId: activePersona.fanId,
                         ),
                       ),
                       activePersona: activePersona,
@@ -1712,7 +1718,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         selectedTabId: selectedTabId,
         accent: accent,
         onSelected: (tabId) => setState(() {
-          _selectedTabIdByPersonaId[activePersona.personaId] = tabId;
+          _selectedTabIdByRoleId[activePersona.roleId] = tabId;
         }),
       ),
       floatingActionButton:
@@ -1727,8 +1733,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 if (experience.resolvedNotificationPresentationStyle == 'fab')
                   NotificationFab(
                     extensionId: community.extensionId,
-                    personaId:
-                        activePersona.accountId ?? activePersona.personaId,
+                    fanId: activePersona.fanId,
                   ),
                 if (experience.resolvedNotificationPresentationStyle == 'fab' &&
                     (creatableActions.isNotEmpty ||
@@ -1781,10 +1786,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   String _selectedTabIdFor({
-    required String personaId,
+    required String roleId,
     required List<LoomAppShellTabSpec> tabs,
   }) {
-    final selected = _selectedTabIdByPersonaId[personaId] ?? 'home';
+    final selected = _selectedTabIdByRoleId[roleId] ?? 'home';
     if (tabs.any((tab) => tab.tabId == selected)) {
       return selected;
     }

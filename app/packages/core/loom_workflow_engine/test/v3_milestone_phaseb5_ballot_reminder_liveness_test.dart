@@ -1,50 +1,44 @@
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
-LoomWorkflowStateMachine _tournamentBallotMachine() =>
-    LoomWorkflowStateMachine.fromJson(
-      {
-        'initialState': 'open',
-        'states': {
-          'open': {'label': 'Voting open'},
-          'closed': {'label': 'Closed', 'isTerminal': true},
-        },
-        'transitions': <Map<String, dynamic>>[],
-        'instanceDataSchema': {
-          'candidates': {
-            'type': 'list',
-            'required': true,
-            'writableBy': 'formEntry',
-            'storage': 'inline',
-          },
-          'deadline': {
-            'type': 'date',
-            'writableBy': 'formEntry',
-            'storage': 'inline',
-          },
-          'reminderOffset': {
-            'type': 'text',
-            'writableBy': 'formEntry',
-            'storage': 'inline',
-          },
-          'notificationsEnabled': {
-            'type': 'bool',
-            'writableBy': 'formEntry',
-            'storage': 'inline',
-          },
-          'dueAt': {
-            'type': 'date',
-            'formula':
-                "subtractHours(deadline, if(reminderOffset == 'one-week', 168, if(reminderOffset == 'one-day', 24, if(reminderOffset == 'one-hour', 1, 0))))",
-          },
-          'isExpiringSoon': {
-            'type': 'bool',
-            'formula': 'isPast(dueAt)',
-          },
-        },
-      },
-      'tournament-ballot',
-    );
+LoomWorkflowStateMachine
+_tournamentBallotMachine() => LoomWorkflowStateMachine.fromJson({
+  'initialState': 'open',
+  'states': {
+    'open': {'label': 'Voting open'},
+    'closed': {'label': 'Closed', 'isTerminal': true},
+  },
+  'transitions': <Map<String, dynamic>>[],
+  'instanceDataSchema': {
+    'candidates': {
+      'type': 'list',
+      'required': true,
+      'writableBy': 'formEntry',
+      'storage': 'inline',
+    },
+    'deadline': {
+      'type': 'date',
+      'writableBy': 'formEntry',
+      'storage': 'inline',
+    },
+    'reminderOffset': {
+      'type': 'text',
+      'writableBy': 'formEntry',
+      'storage': 'inline',
+    },
+    'notificationsEnabled': {
+      'type': 'bool',
+      'writableBy': 'formEntry',
+      'storage': 'inline',
+    },
+    'dueAt': {
+      'type': 'date',
+      'formula':
+          "subtractHours(deadline, if(reminderOffset == 'one-week', 168, if(reminderOffset == 'one-day', 24, if(reminderOffset == 'one-hour', 1, 0))))",
+    },
+    'isExpiringSoon': {'type': 'bool', 'formula': 'isPast(dueAt)'},
+  },
+}, 'tournament-ballot');
 
 void main() {
   test(
@@ -62,7 +56,7 @@ void main() {
 
       final ballotId = await engine.createInstance(
         workflowType: 'tournament-ballot',
-        personaId: 'tabletop-organizer',
+        fanId: 'tabletop-organizer',
         initialInstanceData: {
           'candidates': [
             {
@@ -80,17 +74,14 @@ void main() {
       Future<WorkflowInstance> readBallot() async {
         final page = await engine.queryInstances(
           tabId: 'home',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
           limit: 10,
         );
         return page.items.singleWhere((item) => item.instanceId == ballotId);
       }
 
       final beforeDueAt = await readBallot();
-      expect(
-        beforeDueAt.instanceData['dueAt'],
-        DateTime.utc(2026, 7, 19, 18),
-      );
+      expect(beforeDueAt.instanceData['dueAt'], DateTime.utc(2026, 7, 19, 18));
       expect(beforeDueAt.instanceData['isExpiringSoon'], isFalse);
 
       // isPast is deliberately strict, so advance just beyond the computed

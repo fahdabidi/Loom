@@ -196,12 +196,12 @@ void main() {
     (tester) async {
       final auth = activeAuthForInstalledCommunity(
         community: _communityWithoutWorkflowDefinitions,
-        personaTypeId: 'local-member',
+        roleId: 'local-member',
         accounts: const [
           LoomAccount(
             accountId: 'no-workflow-member',
             displayName: 'No-workflow Member',
-            personaTypeId: 'local-member',
+            roleId: 'local-member',
           ),
         ],
       );
@@ -237,7 +237,7 @@ void main() {
     );
     final firstAuth = activeAuthForInstalledCommunity(
       community: first,
-      personaTypeId: _memberId,
+      roleId: _memberId,
     );
     await tester.pumpWidget(_host(first, firstAuth));
     await selectTestTabletopPersona(tester, _memberId);
@@ -271,7 +271,7 @@ void main() {
     );
     final secondAuth = activeAuthForInstalledCommunity(
       community: second,
-      personaTypeId: _memberId,
+      roleId: _memberId,
     );
     await tester.pumpWidget(_host(second, secondAuth));
     await selectTestTabletopPersona(tester, _memberId);
@@ -295,7 +295,7 @@ void main() {
     );
     final auth = activeAuthForInstalledCommunity(
       community: community,
-      personaTypeId: _memberId,
+      roleId: _memberId,
     );
     await tester.pumpWidget(_host(community, auth));
     await selectTestTabletopPersona(tester, _memberId);
@@ -348,7 +348,7 @@ void main() {
     );
     final auth = activeAuthForInstalledCommunity(
       community: community,
-      personaTypeId: _memberId,
+      roleId: _memberId,
     );
     await tester.pumpWidget(_host(community, auth));
     await selectTestTabletopPersona(tester, _memberId);

@@ -76,7 +76,7 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ),
   ),
 );

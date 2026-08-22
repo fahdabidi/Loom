@@ -2,7 +2,7 @@ part of '../loom_communities_app_shell.dart';
 
 /// The identity values needed by engine-native surfaces for one app subtree.
 ///
-/// The persona id remains the declared persona type, while [accountId] carries
+/// The role id remains the declared role, while [accountId] carries
 /// the optional signed-in individual account. This keeps role/policy lookups
 /// and per-individual engine calls explicit without relying on process-global
 /// mutable state.
@@ -10,27 +10,25 @@ class ActiveIdentityContext {
   const ActiveIdentityContext({
     required this.accountId,
     required this.authApi,
-    required this.personaId,
+    required this.roleId,
   });
 
   final String? accountId;
   final LoomAuthApi authApi;
-  final String? personaId;
+  final String? roleId;
 
   /// Resolves the engine actor id, preferring the signed-in individual.
-  String resolveEnginePersonaId(String personaTypeId) =>
-      accountId ?? personaTypeId;
+  String resolveEngineFanId(String fallbackFanId) => accountId ?? fallbackFanId;
 
   @override
   bool operator ==(Object other) =>
       other is ActiveIdentityContext &&
       other.accountId == accountId &&
       identical(other.authApi, authApi) &&
-      other.personaId == personaId;
+      other.roleId == roleId;
 
   @override
-  int get hashCode =>
-      Object.hash(accountId, identityHashCode(authApi), personaId);
+  int get hashCode => Object.hash(accountId, identityHashCode(authApi), roleId);
 }
 
 /// Provides the active identity explicitly to the LocalExtensionScreen
@@ -79,11 +77,11 @@ class ActiveIdentityScopeState extends State<ActiveIdentityScope> {
   ActiveIdentityContext get identity => _identity.value;
   String? get accountId => identity.accountId;
   LoomAuthApi get authApi => identity.authApi;
-  String? get personaId => identity.personaId;
+  String? get roleId => identity.roleId;
 
   /// Resolves the effective actor id for an engine call in this scope.
-  String resolveEnginePersonaId(String personaTypeId) =>
-      identity.resolveEnginePersonaId(personaTypeId);
+  String resolveEngineFanId(String fallbackFanId) =>
+      identity.resolveEngineFanId(fallbackFanId);
 
   /// Updates this scope's active individual without affecting any other
   /// LocalExtensionScreen subtree.
@@ -92,7 +90,7 @@ class ActiveIdentityScopeState extends State<ActiveIdentityScope> {
     _identity.value = ActiveIdentityContext(
       accountId: accountId,
       authApi: identity.authApi,
-      personaId: identity.personaId,
+      roleId: identity.roleId,
     );
   }
 
@@ -241,7 +239,7 @@ class _EngineNativeCommunityStore {
     final seeds = <WorkflowInstance>[];
     for (final seed
         in experience.workflowInstances ?? const <LoomWorkflowSeedInstance>[]) {
-      final creator = seed.createdByPersonaId;
+      final creator = seed.createdByFanId;
       if (creator == null) {
         throw StateError(
           'Engine-native seed ${seed.instanceId} is missing createdByFanId',
@@ -253,7 +251,7 @@ class _EngineNativeCommunityStore {
           workflowType: seed.workflowType,
           currentState: seed.currentState,
           instanceData: seed.instanceData,
-          createdByPersonaId: creator,
+          createdByFanId: creator,
         ),
       );
     }
@@ -268,12 +266,12 @@ class _EngineNativeCommunityStore {
     if (local is! LocalWorkflowEngineApi) return;
     local.setActiveMembershipLookup(activeMembershipLookup);
     local.setSurfacePermissionLookup(({
-      required String personaId,
-      String? personaTypeId,
+      required String fanId,
+      String? roleId,
       String? tabId,
       String? workflowType,
     }) async {
-      final effectivePersonaTypeId = personaTypeId ?? personaId;
+      if (roleId == null) return false;
       if (tabId != null) {
         // Notification chrome is backed by the always-present Messages
         // platform surface but uses an internal query ID. Instance filtering
@@ -281,24 +279,14 @@ class _EngineNativeCommunityStore {
         if (tabId == 'notifications' || tabId == 'notification-inbox') {
           return true;
         }
-        return personaHasPermission(
-          experience,
-          personaId,
-          tabId: tabId,
-          personaTypeId: effectivePersonaTypeId,
-        );
+        return roleHasPermission(experience, roleId, tabId: tabId);
       }
 
       final machine = workflowType == null
           ? null
           : experience.workflowDefinitions?[workflowType];
       if (machine == null) return true;
-      return personaHasPermission(
-        experience,
-        personaId,
-        workflowType: workflowType,
-        personaTypeId: effectivePersonaTypeId,
-      );
+      return roleHasPermission(experience, roleId, workflowType: workflowType);
     });
   }
 }
@@ -331,7 +319,7 @@ Future<WorkflowEngineApi> workflowEngineForExtensionId(
 /// Engine-native stores are installed while package configuration is parsed,
 /// before the screen's auth API is constructed. This late-binding hook reuses
 /// the same [ActiveMembershipLookup] used by P4a and supplies the
-/// app-shell-owned [personaHasPermission] policy without creating a package
+/// app-shell-owned [roleHasPermission] policy without creating a package
 /// dependency cycle.
 void configureEngineAuthorizationForExtensionId({
   required String extensionId,

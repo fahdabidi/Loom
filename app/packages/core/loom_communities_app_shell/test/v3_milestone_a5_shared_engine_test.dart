@@ -63,26 +63,26 @@ void main() {
       final shellAccounts = await activeAuthForCommunity(
         community: community,
         experience: resolved,
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ).listAccounts(communityExtensionId: community.extensionId);
       final authorizationAccounts = [...accounts, ...shellAccounts];
       configureEngineAuthorizationForExtensionId(
         extensionId: community.extensionId,
         appShellConfiguration: community.appShellConfiguration,
-        activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+        activeMembershipLookup: (fanId) async => authorizationAccounts.any(
           (account) =>
-              account.accountId == personaId &&
+              account.accountId == fanId &&
               account.status == MembershipStatus.active,
         ),
       );
       if (engine is LocalWorkflowEngineApi) {
         for (final account in authorizationAccounts) {
-          engine.setPersonaType(account.accountId, account.personaTypeId);
+          engine.setRoleForFan(account.accountId, account.roleId);
         }
       }
       final rows = (await engine.queryInstances(
         tabId: 'home',
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
         limit: 50,
       )).items;
 
@@ -133,7 +133,7 @@ void main() {
         final seed = expectedSeeds[row.instanceId]!;
         expect(row.workflowType, seed.workflowType);
         expect(row.currentState, seed.currentState);
-        expect(row.createdByPersonaId, seed.createdByPersonaId);
+        expect(row.createdByFanId, seed.createdByFanId);
         for (final entry in seed.instanceData.entries) {
           expect(
             row.instanceData[entry.key],
@@ -178,7 +178,7 @@ void main() {
       expect(identical(engine, reloadedEngine), isTrue);
       final repeatedRows = (await reloadedEngine.queryInstances(
         tabId: 'home',
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
         limit: 50,
       )).items;
       expect(repeatedRows, hasLength(34));
@@ -194,7 +194,7 @@ void main() {
           'category': 'Board Games',
           'ownerFanId': 'tabletop-member',
         },
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
       );
       expect(resolved.workflowDefinitions, hasLength(13));
     } finally {

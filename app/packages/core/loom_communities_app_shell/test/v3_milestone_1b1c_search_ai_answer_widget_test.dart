@@ -27,7 +27,7 @@ _seedSearchAiAnswerFixture({
   api.registerDefinition(machine);
   final id = await api.createInstance(
     workflowType: 'searchAiAnswer',
-    personaId: 'member',
+    fanId: 'member',
     initialInstanceData: initialInstanceData,
   );
   final resolved = RenderBinding(
@@ -39,10 +39,8 @@ _seedSearchAiAnswerFixture({
   );
   final instance = (await api.queryInstances(
     tabId: 'search',
-    personaId: 'member',
-  ))
-      .items
-      .firstWhere((row) => row.instanceId == id);
+    fanId: 'member',
+  )).items.firstWhere((row) => row.instanceId == id);
 
   return (
     api,
@@ -60,11 +58,7 @@ void main() {
   testWidgets('searchAiAnswer chooses one answer field for formula-first case', (
     tester,
   ) async {
-    final (
-      api,
-      instance,
-      resolved,
-    ) = await _seedSearchAiAnswerFixture(
+    final (api, instance, resolved) = await _seedSearchAiAnswerFixture(
       instanceDataSchema: {
         'query': {
           'type': 'text',
@@ -125,7 +119,8 @@ void main() {
           resolved: resolved,
           engine: api,
           communityExtensionId: 'search-ai-answer',
-          personaId: 'member',
+          fanId: 'member',
+          roleId: 'member',
           accent: Colors.green,
           onInstanceChanged: (_) {},
           displayContext: 'tile',
@@ -136,11 +131,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byKey(ValueKey('search-ai-answer-query-${instance.instanceId}-tile')),
+      find.byKey(
+        ValueKey('search-ai-answer-query-${instance.instanceId}-tile'),
+      ),
       findsOneWidget,
     );
     expect(
-      find.byKey(ValueKey('search-ai-answer-answer-${instance.instanceId}-tile')),
+      find.byKey(
+        ValueKey('search-ai-answer-answer-${instance.instanceId}-tile'),
+      ),
       findsOneWidget,
     );
     // displayAnswer's formula (if(curatedAnswerBody == null, aiAnswerBody,
@@ -157,11 +156,7 @@ void main() {
   testWidgets(
     'searchAiAnswer prefers curatedSummary over empty platform answer field',
     (tester) async {
-      final (
-        api,
-        instance,
-        resolved,
-      ) = await _seedSearchAiAnswerFixture(
+      final (api, instance, resolved) = await _seedSearchAiAnswerFixture(
         instanceDataSchema: {
           'query': {
             'type': 'text',
@@ -205,11 +200,14 @@ void main() {
       await tester.pumpWidget(
         _host(
           EngineNativeArchetypeCard(
-            contentKey: ValueKey('search-ai-answer-book-${instance.instanceId}'),
+            contentKey: ValueKey(
+              'search-ai-answer-book-${instance.instanceId}',
+            ),
             resolved: resolved,
             engine: api,
             communityExtensionId: 'search-ai-answer',
-            personaId: 'member',
+            fanId: 'member',
+            roleId: 'member',
             accent: Colors.green,
             onInstanceChanged: (_) {},
             displayContext: 'tile',
@@ -227,16 +225,13 @@ void main() {
       );
       expect(find.text('answer:'), findsNothing);
       expect(find.text('Answer: Curated digest summary'), findsOneWidget);
-    });
+    },
+  );
 
   testWidgets('searchAiAnswer shows waiting state when answer field is unset', (
     tester,
   ) async {
-    final (
-      api,
-      instance,
-      resolved,
-    ) = await _seedSearchAiAnswerFixture(
+    final (api, instance, resolved) = await _seedSearchAiAnswerFixture(
       instanceDataSchema: {
         'query': {
           'type': 'text',
@@ -269,7 +264,8 @@ void main() {
           resolved: resolved,
           engine: api,
           communityExtensionId: 'search-ai-answer',
-          personaId: 'member',
+          fanId: 'member',
+          roleId: 'member',
           accent: Colors.green,
           onInstanceChanged: (_) {},
           displayContext: 'tile',

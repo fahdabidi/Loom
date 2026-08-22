@@ -53,7 +53,7 @@ Future<LocalWorkflowEngineApi> _engineWith(int count) async {
   for (var index = 0; index < count; index++) {
     await api.createInstance(
       workflowType: 'repeatable',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'title': 'Item $index'},
     );
   }
@@ -65,7 +65,7 @@ RepeaterSurface _live(LocalWorkflowEngineApi api) => RepeaterSurface.live(
   querySource: RepeaterQuerySource(
     engine: api,
     workflowType: 'repeatable',
-    personaId: 'member',
+    fanId: 'member',
   ),
   itemBuilder: (context, item) =>
       Text((item as WorkflowInstance).instanceData['title'] as String),
@@ -109,7 +109,7 @@ void main() {
 
     await api.createInstance(
       workflowType: 'repeatable',
-      personaId: 'member',
+      fanId: 'member',
       initialInstanceData: {'title': 'External'},
     );
     await tester.pump(const Duration(milliseconds: 20));
@@ -124,7 +124,7 @@ void main() {
       final api = await _engineWith(3);
       final seeded = await api.queryInstances(
         tabId: 'seed',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       final first = seeded.items[0];
@@ -133,13 +133,13 @@ void main() {
         workflowType: 'repeatable',
         instanceId: first.instanceId,
         transitionId: 'make-one',
-        personaId: 'member',
+        fanId: 'member',
       );
       await api.applyTransition(
         workflowType: 'repeatable',
         instanceId: second.instanceId,
         transitionId: 'make-two',
-        personaId: 'member',
+        fanId: 'member',
       );
 
       await tester.pumpWidget(_host(_live(api)));
@@ -153,7 +153,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 20));
       final after = await api.queryInstances(
         tabId: 'verify',
-        personaId: 'member',
+        fanId: 'member',
         limit: 10,
       );
       expect(

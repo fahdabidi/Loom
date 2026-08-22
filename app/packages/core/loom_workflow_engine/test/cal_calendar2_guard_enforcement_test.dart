@@ -4,10 +4,13 @@ import 'package:test/test.dart';
 LoomWorkflowStateMachine _machine(String type, Map<String, dynamic> json) =>
     LoomWorkflowStateMachine.fromJson(json, type);
 
-LocalWorkflowEngineApi _api() => LocalWorkflowEngineApi(
-  db: WorkflowDatabase.memory(),
-  communityId: 'calendar-guard-enforcement',
-);
+LocalWorkflowEngineApi _api() =>
+    LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'calendar-guard-enforcement',
+      )
+      ..setRoleForFan('organizer-01', 'organizer')
+      ..setRoleForFan('member-01', 'member');
 
 Map<String, dynamic> _editableDefinition({
   Map<String, dynamic>? editGuard,
@@ -39,7 +42,7 @@ void main() {
       });
       final unguarded = LoomWorkflowState.fromJson({'label': 'Open'});
 
-      expect(guarded.creationGuard!.allowedPersonaIds, ['organizer']);
+      expect(guarded.creationGuard!.allowedRoleIds, ['organizer']);
       expect(unguarded.creationGuard, isNull);
     });
 
@@ -60,7 +63,7 @@ void main() {
         final instanceId = await api.createInstance(
           workflowType: 'event',
           initialInstanceData: {'title': 'Game night'},
-          personaId: 'organizer',
+          fanId: 'organizer-01',
         );
 
         await expectLater(
@@ -68,7 +71,7 @@ void main() {
             workflowType: 'event',
             instanceId: instanceId,
             fieldUpdates: {'title': 'Updated game night'},
-            personaId: 'member',
+            fanId: 'member-01',
           ),
           throwsA(isA<WorkflowAuthorizationError>()),
         );
@@ -92,19 +95,19 @@ void main() {
         final instanceId = await api.createInstance(
           workflowType: 'event',
           initialInstanceData: {'title': 'Game night'},
-          personaId: 'organizer',
+          fanId: 'organizer-01',
         );
 
         await api.updateInstanceFields(
           workflowType: 'event',
           instanceId: instanceId,
           fieldUpdates: {'title': 'Updated game night'},
-          personaId: 'organizer',
+          fanId: 'organizer-01',
         );
 
         final rows = await api.queryInstances(
           tabId: 'calendar',
-          personaId: 'organizer',
+          fanId: 'organizer-01',
         );
         expect(rows.items.single.instanceData['title'], 'Updated game night');
       },
@@ -117,7 +120,7 @@ void main() {
       final instanceId = await api.createInstance(
         workflowType: 'event',
         initialInstanceData: {'title': 'Open creation'},
-        personaId: 'member',
+        fanId: 'member-01',
       );
 
       expect(instanceId, isNotEmpty);
@@ -141,7 +144,7 @@ void main() {
         final instanceId = await api.createInstance(
           workflowType: 'event',
           initialInstanceData: {'title': 'Organizer event'},
-          personaId: 'organizer',
+          fanId: 'organizer-01',
         );
         expect(instanceId, isNotEmpty);
 
@@ -149,7 +152,7 @@ void main() {
           api.createInstance(
             workflowType: 'event',
             initialInstanceData: {'title': 'Member event'},
-            personaId: 'member',
+            fanId: 'member-01',
           ),
           throwsA(isA<StateError>()),
         );

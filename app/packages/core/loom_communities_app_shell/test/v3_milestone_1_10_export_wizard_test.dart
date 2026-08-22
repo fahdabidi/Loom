@@ -93,13 +93,13 @@ Future<_InstalledFixture> _installFixture(
   return _InstalledFixture(community, experience, engine, temp);
 }
 
-Widget _host(_InstalledFixture installed, String personaId) => MaterialApp(
+Widget _host(_InstalledFixture installed, String roleId) => MaterialApp(
   home: LocalExtensionScreen(
     community: installed.community,
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: personaId,
+      roleId: roleId,
     ),
   ),
 );
@@ -136,12 +136,12 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
 Future<WorkflowInstance> _queryInstance({
   required WorkflowEngineApi engine,
   required String instanceId,
-  required String personaId,
+  required String fanId,
   required String tabId,
 }) async {
   final page = await engine.queryInstances(
     tabId: tabId,
-    personaId: personaId,
+    fanId: fanId,
     limit: 200,
   );
   return page.items.firstWhere((item) => item.instanceId == instanceId);
@@ -150,13 +150,13 @@ Future<WorkflowInstance> _queryInstance({
 Future<List<LoomWorkflowTransition>> _queryTransitions({
   required WorkflowEngineApi engine,
   required WorkflowInstance instance,
-  required String personaId,
+  required String fanId,
 }) => engine.availableTransitionsAsync(
   workflowType: instance.workflowType,
   instanceId: instance.instanceId,
   currentState: instance.currentState,
   instanceData: instance.instanceData,
-  personaId: personaId,
+  fanId: fanId,
 );
 
 LoomWorkflowStateMachine _exportWorkflow(LoomExperienceDefinition experience) {
@@ -345,7 +345,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: chessInstanceId,
-          personaId: _chessPersona,
+          fanId: _chessPersona,
           tabId: _adminTab,
         ),
       ))!;
@@ -396,7 +396,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          personaId: _chessPersona,
+          fanId: _chessPersona,
         ),
       ))!;
       expect(actions, isNotEmpty);
@@ -450,7 +450,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: chessInstanceId,
-          personaId: _chessPersona,
+          fanId: _chessPersona,
           tabId: _adminTab,
         ),
       ))!;
@@ -475,7 +475,8 @@ void main() {
     'Cedar fixture exportWizard renders divergent instance fields and handles rolled-back flow',
     (tester) async {
       final installed = (await tester.runAsync(
-        () => _installFixture('ext_hoa_exportwizard_hoa', _cedarFixtureRelative),
+        () =>
+            _installFixture('ext_hoa_exportwizard_hoa', _cedarFixtureRelative),
       ))!;
       addTearDown(() => tester.runAsync(installed.dispose));
 
@@ -490,7 +491,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
           tabId: _adminTab,
         ),
       ))!;
@@ -534,9 +535,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(
-          ValueKey('export-wizard-history-$cedarInstanceId-tile-0'),
-        ),
+        find.byKey(ValueKey('export-wizard-history-$cedarInstanceId-tile-0')),
         findsOneWidget,
       );
       expect(find.text('Transfer ID:'), findsNothing);
@@ -545,7 +544,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
         ),
       ))!;
       final beginTransfer = readyActions.firstWhere(
@@ -559,15 +558,12 @@ void main() {
       );
       await _pumpUntilNoThrow(tester, find.byKey(beginTransferKey));
       await _tapVisible(tester, find.byKey(beginTransferKey));
-      await _pumpUntilFound(
-        tester,
-        find.text('Transfer in progress'),
-      );
+      await _pumpUntilFound(tester, find.text('Transfer in progress'));
       instance = (await tester.runAsync(
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
           tabId: _adminTab,
         ),
       ))!;
@@ -575,28 +571,26 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
         ),
       ))!;
       final recordTransfer = transferringActions.firstWhere(
         (action) => action.to == 'transferred',
-        orElse: () => throw StateError('Could not locate transfer-complete transition'),
+        orElse: () =>
+            throw StateError('Could not locate transfer-complete transition'),
       );
       final recordTransferKey = ValueKey(
         'export-wizard-$cedarInstanceId-action-${recordTransfer.id}',
       );
       await _pumpUntilNoThrow(tester, find.byKey(recordTransferKey));
       await _tapVisible(tester, find.byKey(recordTransferKey));
-      await _pumpUntilFound(
-        tester,
-        find.text('Transferred'),
-      );
+      await _pumpUntilFound(tester, find.text('Transferred'));
 
       instance = (await tester.runAsync(
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
           tabId: _adminTab,
         ),
       ))!;
@@ -604,7 +598,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          personaId: _cedarPersona,
+          fanId: _cedarPersona,
         ),
       ))!;
       final rollback = transferredActions.firstWhere(
@@ -618,14 +612,10 @@ void main() {
       await _tapVisible(tester, find.byKey(rollbackKey));
       await _pumpUntilFound(
         tester,
-        find.byKey(
-          ValueKey('export-wizard-off-path-$cedarInstanceId-tile'),
-        ),
+        find.byKey(ValueKey('export-wizard-off-path-$cedarInstanceId-tile')),
       );
       expect(
-        find.byKey(
-          ValueKey('export-wizard-off-path-$cedarInstanceId-tile'),
-        ),
+        find.byKey(ValueKey('export-wizard-off-path-$cedarInstanceId-tile')),
         findsOneWidget,
       );
       expect(find.text('Rollback requested'), findsOneWidget);

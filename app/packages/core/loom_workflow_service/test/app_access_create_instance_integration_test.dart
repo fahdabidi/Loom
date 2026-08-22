@@ -199,7 +199,7 @@ void main() {
         final afterInvalidBatch = await LocalWorkflowEngineApi(
           db: database,
           communityId: communityId,
-        ).queryInstances(tabId: 'home', personaId: allowedFanId);
+        ).queryInstances(tabId: 'home', fanId: allowedFanId);
         expect(
           afterInvalidBatch.items,
           isEmpty,
@@ -258,7 +258,7 @@ void main() {
         final page = await LocalWorkflowEngineApi(
           db: database,
           communityId: communityId,
-        ).queryInstances(tabId: 'home', personaId: deniedFanId);
+        ).queryInstances(tabId: 'home', fanId: deniedFanId);
         expect(page.items, hasLength(1));
         expect(
           page.items.single.instanceData,

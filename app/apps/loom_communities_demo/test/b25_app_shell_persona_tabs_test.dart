@@ -50,7 +50,7 @@ void main() {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
-      personaId: 'camera-club-organizer',
+      roleId: 'camera-club-organizer',
       appShellConfiguration: _cameraAppShellConfiguration,
     );
 
@@ -118,12 +118,12 @@ void main() {
 
     final adminTabs = appShellTabsFor(
       experience: experience,
-      personaId: 'masjid-admin',
+      roleId: 'masjid-admin',
       appShellConfiguration: _mosqueAppShellConfiguration,
     );
     final memberTabs = appShellTabsFor(
       experience: experience,
-      personaId: 'community-member',
+      roleId: 'community-member',
       appShellConfiguration: _mosqueAppShellConfiguration,
     );
 
@@ -149,7 +149,7 @@ void main() {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
-      personaId: 'camera-club-organizer',
+      roleId: 'camera-club-organizer',
       appShellConfiguration: {
         'tabs': [
           {

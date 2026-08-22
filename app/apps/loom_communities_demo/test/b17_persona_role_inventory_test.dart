@@ -23,23 +23,23 @@ void main() {
           workflow.workflowId,
         );
         expect(
-          policy.actorPersonaIds,
+          policy.actorRoleIds,
           isNotEmpty,
           reason: '${target.extensionId}/${workflow.workflowId} has no actor',
         );
-        for (final actorPersonaId in policy.actorPersonaIds) {
+        for (final actorRoleId in policy.actorRoleIds) {
           expect(
-            personas.map((persona) => persona.personaId),
-            contains(actorPersonaId),
+            personas.map((persona) => persona.roleId),
+            contains(actorRoleId),
           );
         }
-        for (final receiverPersonaId in policy.receiverPersonaIds) {
+        for (final receiverRoleId in policy.receiverRoleIds) {
           expect(
             dependencies
                 .where(
                   (dependency) =>
                       dependency.workflowId == workflow.workflowId &&
-                      dependency.receiverPersonaId == receiverPersonaId,
+                      dependency.receiverRoleId == receiverRoleId,
                 )
                 .length,
             1,
@@ -50,7 +50,7 @@ void main() {
       for (final row in matrix) {
         expect(row.extensionId, target.extensionId);
         expect(row.workflowId, isNotEmpty);
-        expect(row.personaId, isNotEmpty);
+        expect(row.roleId, isNotEmpty);
         expect(row.rationale, isNotEmpty);
       }
     }
@@ -59,7 +59,7 @@ void main() {
       personaWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
-        personaId: 'mosque-admin',
+        roleId: 'mosque-admin',
       ),
       LoomPersonaWorkflowState.actor,
     );
@@ -67,7 +67,7 @@ void main() {
       personaWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
-        personaId: 'mosque-member',
+        roleId: 'mosque-member',
       ),
       LoomPersonaWorkflowState.receiver,
     );

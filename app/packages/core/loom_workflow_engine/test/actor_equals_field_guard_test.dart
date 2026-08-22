@@ -24,7 +24,7 @@ LoomWorkflowStateMachine _machine() => LoomWorkflowStateMachine.fromJson({
 }, 'notification');
 
 Future<String> _stateFor(LocalWorkflowEngineApi api, String instanceId) async =>
-    (await api.queryInstances(tabId: 'messages', personaId: 'viewer')).items
+    (await api.queryInstances(tabId: 'messages', fanId: 'viewer')).items
         .singleWhere((instance) => instance.instanceId == instanceId)
         .currentState;
 
@@ -36,25 +36,25 @@ void main() {
         db: WorkflowDatabase.memory(),
         communityId: 'actor-equals-field',
       )..registerDefinition(_machine());
-      api.setPersonaType('recipient-1', 'member');
-      api.setPersonaType('other-member', 'member');
+      api.setRoleForFan('recipient-1', 'member');
+      api.setRoleForFan('other-member', 'member');
 
       final matching = await api.createInstance(
         workflowType: 'notification',
-        personaId: 'creator',
+        fanId: 'creator',
         initialInstanceData: {'recipientFanId': 'recipient-1'},
       );
       await api.applyTransition(
         workflowType: 'notification',
         instanceId: matching,
         transitionId: 'mark-read',
-        personaId: 'recipient-1',
+        fanId: 'recipient-1',
       );
       expect(await _stateFor(api, matching), 'read');
 
       final mismatched = await api.createInstance(
         workflowType: 'notification',
-        personaId: 'creator',
+        fanId: 'creator',
         initialInstanceData: {'recipientFanId': 'recipient-1'},
       );
       await expectLater(
@@ -62,7 +62,7 @@ void main() {
           workflowType: 'notification',
           instanceId: mismatched,
           transitionId: 'mark-read',
-          personaId: 'other-member',
+          fanId: 'other-member',
         ),
         throwsA(isA<StateError>()),
       );

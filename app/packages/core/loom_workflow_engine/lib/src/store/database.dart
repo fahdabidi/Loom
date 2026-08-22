@@ -232,7 +232,7 @@ class WorkflowDatabase {
     required String workflowType,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String createdByPersonaId,
+    required String createdByFanId,
   }) async {
     await _ensureOpenAndMigrated();
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -254,7 +254,7 @@ class WorkflowDatabase {
         jsonEncode(instanceData),
         now,
         now,
-        createdByPersonaId,
+        createdByFanId,
       ],
     );
   }
@@ -419,11 +419,10 @@ class WorkflowDatabase {
     return result.first['c'] as int;
   }
 
-  Future<List<WorkflowInstanceRow>> queryInstancesForPersona({
+  Future<List<WorkflowInstanceRow>> queryInstancesForFan({
     required String communityId,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     await _ensureOpenAndMigrated();
     final result = await _db.runSelect(
       _dialect.isSqlite
@@ -540,7 +539,7 @@ class WorkflowInstanceRow {
   final String instanceData; // raw JSON string
   final int createdAt;
   final int updatedAt;
-  final String createdByPersonaId;
+  final String createdByFanId;
 
   const WorkflowInstanceRow({
     required this.instanceId,
@@ -550,7 +549,7 @@ class WorkflowInstanceRow {
     required this.instanceData,
     required this.createdAt,
     required this.updatedAt,
-    required this.createdByPersonaId,
+    required this.createdByFanId,
   });
 
   factory WorkflowInstanceRow.fromRow(Map<String, Object?> row) {
@@ -562,7 +561,7 @@ class WorkflowInstanceRow {
       instanceData: row['instance_data'] as String,
       createdAt: row['created_at'] as int,
       updatedAt: row['updated_at'] as int,
-      createdByPersonaId: row['created_by_persona_id'] as String,
+      createdByFanId: row['created_by_persona_id'] as String,
     );
   }
 }

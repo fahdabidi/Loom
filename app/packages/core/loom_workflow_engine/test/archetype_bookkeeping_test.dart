@@ -46,7 +46,7 @@ Future<String> _create(
 ]) => api.createInstance(
   workflowType: workflowType,
   initialInstanceData: data,
-  personaId: 'creator',
+  fanId: 'creator',
 );
 
 Future<WorkflowTransitionResult> _apply(
@@ -57,7 +57,7 @@ Future<WorkflowTransitionResult> _apply(
   workflowType: workflowType,
   instanceId: instanceId,
   transitionId: 'act',
-  personaId: 'actor',
+  fanId: 'actor',
 );
 
 void main() {

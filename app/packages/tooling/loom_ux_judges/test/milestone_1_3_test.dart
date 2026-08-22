@@ -257,7 +257,7 @@ void main() {
       );
     });
 
-    test('validates allowedPersonaIds against the supplied persona registry', () {
+    test('validates allowedRoleIds against the supplied persona registry', () {
       final a = makeMachine(
         workflowType: 'persona-source',
         initialState: 'start',
@@ -319,7 +319,7 @@ void main() {
       );
 
       final report = WorkflowValidator(
-        knownPersonaIds: {'known-user'},
+        knownRoleIds: {'known-user'},
       ).validate({'persona-source': a, 'bad-persona': b, 'bad-persona-dup': c});
 
       final warnings = report.warnings
@@ -349,7 +349,7 @@ void main() {
       );
     });
 
-    test('flags a missing allowedPersonaIds entry', () {
+    test('flags a missing allowedRoleIds entry', () {
       final machine = makeMachine(
         workflowType: 'bad-allowed-persona',
         initialState: 'start',
@@ -371,7 +371,7 @@ void main() {
       );
 
       final report = WorkflowValidator(
-        knownPersonaIds: {'known-user'},
+        knownRoleIds: {'known-user'},
       ).validate({'bad-allowed-persona': machine});
       expect(
         report.warnings.any(

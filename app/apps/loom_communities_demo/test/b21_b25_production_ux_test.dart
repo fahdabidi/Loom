@@ -38,7 +38,7 @@ void main() {
           final state = personaWorkflowStateFor(
             extensionId: target.extensionId,
             workflowId: workflow.workflowId,
-            personaId: persona.personaId,
+            roleId: persona.roleId,
           );
           expect(state, isA<LoomPersonaWorkflowState>());
           rowCount += 1;

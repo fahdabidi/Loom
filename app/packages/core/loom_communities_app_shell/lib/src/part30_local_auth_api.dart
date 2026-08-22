@@ -28,67 +28,67 @@ class LocalAuthApi implements LoomAuthApi {
       const LoomAccount(
         accountId: 'tabletop-organizer',
         displayName: 'Alex T.',
-        personaTypeId: 'tabletop-organizer',
+        roleId: 'tabletop-organizer',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-03',
         displayName: 'Jordan W.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-04',
         displayName: 'Sam K.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-05',
         displayName: 'Priya N.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-06',
         displayName: 'Casey M.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-07',
         displayName: 'Riley B.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-08',
         displayName: 'Taylor G.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-09',
         displayName: 'Morgan D.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-10',
         displayName: 'Drew P.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-11',
         displayName: 'Avery S.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-12',
         displayName: 'Quinn L.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-13',
         displayName: 'Blake R.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
       const LoomAccount(
         accountId: 'tabletop-member-14',
         displayName: 'Reese J.',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       ),
     ];
   }
@@ -139,11 +139,11 @@ class LocalAuthApi implements LoomAuthApi {
   Future<LoomSignUpResult> signUp({
     required String communityExtensionId,
     required String displayName,
-    required String personaTypeId,
+    required String roleId,
   }) async {
     final persona = personaResolver == null
         ? null
-        : _resolvePersona(communityExtensionId, personaTypeId);
+        : _resolvePersona(communityExtensionId, roleId);
     final accessMode = persona?.accessMode ?? LoomPersonaAccessMode.open;
     if (accessMode == LoomPersonaAccessMode.requiresInvite) {
       throw const LoomAuthException(
@@ -154,11 +154,11 @@ class LocalAuthApi implements LoomAuthApi {
     }
     final counter = _nextSignUpCounter++;
     final account = LoomAccount(
-      accountId: '$personaTypeId-$counter',
+      accountId: '$roleId-$counter',
       // Preserve the existing open-signup behavior exactly; the auth screen
       // performs presentation-level validation before calling this method.
       displayName: displayName,
-      personaTypeId: personaTypeId,
+      roleId: roleId,
       status: accessMode == LoomPersonaAccessMode.requiresApproval
           ? MembershipStatus.pendingApproval
           : MembershipStatus.active,
@@ -211,7 +211,7 @@ class LocalAuthApi implements LoomAuthApi {
 
     final persona = _personaForInvite(
       location.communityExtensionId,
-      location.invite.personaTypeId,
+      location.invite.roleId,
     );
     if (persona == null ||
         persona.accessMode != LoomPersonaAccessMode.requiresInvite) {
@@ -222,9 +222,9 @@ class LocalAuthApi implements LoomAuthApi {
     }
 
     final account = LoomAccount(
-      accountId: '${location.invite.personaTypeId}-${_nextSignUpCounter++}',
+      accountId: '${location.invite.roleId}-${_nextSignUpCounter++}',
       displayName: displayName.trim(),
-      personaTypeId: location.invite.personaTypeId,
+      roleId: location.invite.roleId,
       status: MembershipStatus.active,
     );
     _appendAccount(location.communityExtensionId, account);
@@ -234,7 +234,7 @@ class LocalAuthApi implements LoomAuthApi {
       LoomCommunityInvite(
         inviteId: location.invite.inviteId,
         communityExtensionId: location.invite.communityExtensionId,
-        personaTypeId: location.invite.personaTypeId,
+        roleId: location.invite.roleId,
         issuedByAccountId: location.invite.issuedByAccountId,
         code: location.invite.code,
         status: InviteStatus.claimed,
@@ -248,13 +248,13 @@ class LocalAuthApi implements LoomAuthApi {
 
   @override
   Future<LoomCommunityInvite> issueInvite({
-    required String personaTypeId,
+    required String roleId,
     required String issuedByAccountId,
   }) async {
     final issuer = _requireAdminAccount(issuedByAccountId);
     final persona = _personaForMembershipAction(
       issuer.communityExtensionId,
-      personaTypeId,
+      roleId,
     );
     if (persona.accessMode != LoomPersonaAccessMode.requiresInvite) {
       throw const LoomAuthException(
@@ -267,7 +267,7 @@ class LocalAuthApi implements LoomAuthApi {
     final invite = LoomCommunityInvite(
       inviteId: 'invite-$sequence',
       communityExtensionId: issuer.communityExtensionId,
-      personaTypeId: personaTypeId,
+      roleId: roleId,
       issuedByAccountId: issuer.account.accountId,
       code: _formatInviteCode(sequence),
       status: InviteStatus.pending,
@@ -313,7 +313,7 @@ class LocalAuthApi implements LoomAuthApi {
     final approved = LoomAccount(
       accountId: target.account.accountId,
       displayName: target.account.displayName,
-      personaTypeId: target.account.personaTypeId,
+      roleId: target.account.roleId,
       status: MembershipStatus.active,
     );
     _replaceAccount(target.communityExtensionId, approved);
@@ -363,50 +363,50 @@ class LocalAuthApi implements LoomAuthApi {
 
   LoomPersonaDefinition? _resolvePersona(
     String communityExtensionId,
-    String personaTypeId,
+    String roleId,
   ) {
     final personas = personaResolver!(communityExtensionId);
     for (final persona in personas) {
-      if (persona.personaId == personaTypeId) return persona;
+      if (persona.roleId == roleId) return persona;
     }
     throw ArgumentError(
-      'Persona type "$personaTypeId" is not declared by community '
+      'Persona type "$roleId" is not declared by community '
       '"$communityExtensionId".',
     );
   }
 
   LoomPersonaDefinition? _personaForInvite(
     String communityExtensionId,
-    String personaTypeId,
+    String roleId,
   ) {
     final resolver = personaResolver;
     if (resolver != null) {
       final personas = resolver(communityExtensionId);
       for (final persona in personas) {
-        if (persona.personaId == personaTypeId) return persona;
+        if (persona.roleId == roleId) return persona;
       }
       return null;
     }
     final personas = _experienceForCommunity(communityExtensionId).personas;
     if (personas == null) return null;
     for (final persona in personas) {
-      if (persona.personaId == personaTypeId) return persona;
+      if (persona.roleId == roleId) return persona;
     }
     return null;
   }
 
   LoomPersonaDefinition _personaForMembershipAction(
     String communityExtensionId,
-    String personaTypeId,
+    String roleId,
   ) {
     final resolver = personaResolver;
     if (resolver != null) {
-      return _resolvePersona(communityExtensionId, personaTypeId)!;
+      return _resolvePersona(communityExtensionId, roleId)!;
     }
-    final persona = _personaForInvite(communityExtensionId, personaTypeId);
+    final persona = _personaForInvite(communityExtensionId, roleId);
     if (persona == null) {
       throw ArgumentError(
-        'Persona type "$personaTypeId" is not declared by community '
+        'Persona type "$roleId" is not declared by community '
         '"$communityExtensionId".',
       );
     }
@@ -426,7 +426,7 @@ class LocalAuthApi implements LoomAuthApi {
         location.account.status != MembershipStatus.active ||
         !_personaCanAdministerAnyWorkflow(
           _experienceForCommunity(location.communityExtensionId),
-          location.account.personaTypeId,
+          location.account.roleId,
         )) {
       throw LoomAuthException(
         code: LoomAuthErrorCode.membershipManagementUnauthorized,

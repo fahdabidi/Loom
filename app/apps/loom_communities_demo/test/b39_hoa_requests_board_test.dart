@@ -14,17 +14,17 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _homeownerAccountId,
     displayName: 'Avery Brooks',
-    personaTypeId: 'hoa-homeowner',
+    roleId: 'hoa-homeowner',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Casey Homeowner',
-    personaTypeId: 'hoa-homeowner',
+    roleId: 'hoa-homeowner',
   ),
   LoomAccount(
     accountId: _boardAccountId,
     displayName: 'Board Reviewer',
-    personaTypeId: 'hoa-board',
+    roleId: 'hoa-board',
   ),
 ];
 

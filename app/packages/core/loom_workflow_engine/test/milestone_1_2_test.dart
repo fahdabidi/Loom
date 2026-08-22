@@ -88,6 +88,16 @@ LoomWorkflowStateMachine _loanMachine() {
 LocalWorkflowEngineApi _makeApi({String communityId = 'tabletop'}) {
   final db = WorkflowDatabase.memory();
   final api = LocalWorkflowEngineApi(db: db, communityId: communityId);
+  for (final fanId in const [
+    'member',
+    'member-1',
+    'member-2',
+    'alice',
+    'bob',
+  ]) {
+    api.setRoleForFan(fanId, 'member');
+  }
+  api.setRoleForFan('member-owner', 'member-owner');
   api.registerDefinition(_loanMachine());
   return api;
 }
@@ -131,7 +141,7 @@ void main() {
             'description': 'A classic game.',
             'queuedFanIds': <String>[],
           },
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
 
         expect(id, isNotEmpty);
@@ -140,7 +150,7 @@ void main() {
         // Resolvable via queryInstances.
         final page = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
         expect(page.items.any((i) => i.instanceId == id), isTrue);
       });
@@ -157,7 +167,7 @@ void main() {
                 'category': 'Board Games',
                 // title is required but missing
               },
-              personaId: 'member-1',
+              fanId: 'member-1',
             ),
             throwsA(
               isA<WorkflowValidationError>().having(
@@ -178,7 +188,7 @@ void main() {
         final id = await api.createInstance(
           workflowType: 'equipment-loan',
           initialInstanceData: {'title': 'Catan'},
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
 
         // Instance starts in "draft" where all formEntry fields are editable.
@@ -186,12 +196,12 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: id,
           fieldUpdates: {'title': 'Catan v2'},
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
 
         final page = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
         final inst = page.items.firstWhere((i) => i.instanceId == id);
         expect(inst.instanceData['title'], 'Catan v2');
@@ -202,7 +212,7 @@ void main() {
         final id = await api.createInstance(
           workflowType: 'equipment-loan',
           initialInstanceData: {'title': 'Catan'},
-          personaId: 'member-1',
+          fanId: 'member-1',
         );
 
         // holderFanId is writableBy: "effect" — not in editableFields.
@@ -211,7 +221,7 @@ void main() {
             workflowType: 'equipment-loan',
             instanceId: id,
             fieldUpdates: {'holderFanId': 'alice'},
-            personaId: 'member-1',
+            fanId: 'member-1',
           ),
           throwsA(isA<WorkflowAuthorizationError>()),
         );
@@ -224,7 +234,7 @@ void main() {
           final id = await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'Catan', 'category': 'Board Games'},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
 
           // Update category without touching title (which is required).
@@ -233,12 +243,12 @@ void main() {
             workflowType: 'equipment-loan',
             instanceId: id,
             fieldUpdates: {'category': 'Strategy Games', 'title': ''},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
 
           final page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           final inst = page.items.firstWhere((i) => i.instanceId == id);
           expect(inst.instanceData['title'], '');
@@ -258,14 +268,14 @@ void main() {
           final id = await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'Catan', 'queuedFanIds': <String>[]},
-            personaId: 'member',
+            fanId: 'member',
           );
           // First, submit it so it's published.
           final result = await api.applyTransition(
             workflowType: 'equipment-loan',
             instanceId: id,
             transitionId: 'submit-listing',
-            personaId: 'member',
+            fanId: 'member',
           );
           expect(result.newState, 'published');
 
@@ -277,7 +287,7 @@ void main() {
                   workflowType: 'equipment-loan',
                   instanceId: id,
                   transitionId: 'join-queue',
-                  personaId: 'member',
+                  fanId: 'member',
                 )
                 .then((_) => true)
                 .catchError((_) => false),
@@ -286,7 +296,7 @@ void main() {
                   workflowType: 'equipment-loan',
                   instanceId: id,
                   transitionId: 'join-queue',
-                  personaId: 'member',
+                  fanId: 'member',
                 )
                 .then((_) => true)
                 .catchError((_) => false),
@@ -306,7 +316,7 @@ void main() {
           // Read back — exactly one entry (the persona once).
           final page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-owner',
+            fanId: 'member-owner',
           );
           final inst = page.items.firstWhere((i) => i.instanceId == id);
           final queue = inst.instanceData['queuedFanIds'] as List;
@@ -328,20 +338,20 @@ void main() {
               'title': 'Item ${i.toString().padLeft(3, '0')}',
               'queuedFanIds': <String>[],
             },
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           await api.applyTransition(
             workflowType: 'equipment-loan',
             instanceId: id,
             transitionId: 'submit-listing',
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
         }
 
         // Page 1.
         var page = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
           limit: 25,
         );
         expect(page.items.length, 25);
@@ -353,7 +363,7 @@ void main() {
         // Page 2.
         page = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
           limit: 25,
           cursor: page.nextCursor,
         );
@@ -364,7 +374,7 @@ void main() {
         // Page 3 (final — should have 5 remaining).
         page = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
           limit: 25,
           cursor: page.nextCursor,
         );
@@ -385,7 +395,7 @@ void main() {
                 'title': 'Item ${i.toString().padLeft(3, '0')}',
                 'queuedFanIds': <String>[],
               },
-              personaId: 'member-1',
+              fanId: 'member-1',
             );
           }
 
@@ -395,7 +405,7 @@ void main() {
           while (true) {
             final page = await api.queryInstances(
               tabId: 'marketplace',
-              personaId: 'member-1',
+              fanId: 'member-1',
               limit: 10,
               cursor: cursor,
             );
@@ -421,18 +431,18 @@ void main() {
           final idA = await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'A', 'queuedFanIds': <String>[]},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           final idC = await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'C', 'queuedFanIds': <String>[]},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
 
           // Page 1: limit=1 → gets "A".
           var page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-1',
+            fanId: 'member-1',
             limit: 1,
             query: const SurfaceQuery(sort: SortSpec(key: 'title')),
           );
@@ -449,13 +459,13 @@ void main() {
               'title': '0-Aardvark',
               'queuedFanIds': <String>[],
             },
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
 
           // Page 2: cursor still from after "A" → should get "C".
           page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-1',
+            fanId: 'member-1',
             limit: 1,
             cursor: page.nextCursor,
             query: const SurfaceQuery(sort: SortSpec(key: 'title')),
@@ -488,14 +498,14 @@ void main() {
               'category': 'Alpha-${i.toString()}',
               'queuedFanIds': <String>[],
             },
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
         }
 
         // Page 1 sorted by title → gets first 3 (limit=3).
         final page1 = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
           limit: 3,
           query: const SurfaceQuery(sort: SortSpec(key: 'title')),
         );
@@ -512,7 +522,7 @@ void main() {
         // The engine must detect the sort-key mismatch and reset to page 1.
         final page2 = await api.queryInstances(
           tabId: 'marketplace',
-          personaId: 'member-1',
+          fanId: 'member-1',
           limit: 3,
           cursor: page1.nextCursor,
           query: const SurfaceQuery(sort: SortSpec(key: 'category')),
@@ -564,7 +574,7 @@ void main() {
           await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'Persistent Item'},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           db.close();
         }
@@ -577,7 +587,7 @@ void main() {
 
           final page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           expect(page.items.length, 1);
           expect(page.items.first.instanceData['title'], 'Persistent Item');
@@ -629,18 +639,18 @@ void main() {
           await api.createInstance(
             workflowType: 'equipment-loan',
             initialInstanceData: {'title': 'Loan Alpha'},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
           await api.createInstance(
             workflowType: 'equipment-giveaway',
             initialInstanceData: {'title': 'Giveaway Beta'},
-            personaId: 'member-1',
+            fanId: 'member-1',
           );
 
           // Query — both types share marketplace tab, both sorted by "title".
           final page = await api.queryInstances(
             tabId: 'marketplace',
-            personaId: 'member-1',
+            fanId: 'member-1',
             query: const SurfaceQuery(sort: SortSpec(key: 'title')),
           );
           expect(page.items.length, 2);

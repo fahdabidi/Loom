@@ -10,8 +10,8 @@ void main() {
       'allowedPersonaIds': ['organizer'],
     });
 
-    expect(v4.allowedPersonaIds, ['organizer']);
-    expect(legacy.allowedPersonaIds, isNull);
+    expect(v4.allowedRoleIds, ['organizer']);
+    expect(legacy.allowedRoleIds, isNull);
     expect(WorkflowGuard.jsonKeys, isNot(contains('allowedPersonaIds')));
   });
 
@@ -25,8 +25,8 @@ void main() {
       'byPersonaIds': ['member'],
     });
 
-    expect(v4.byPersonaIds, ['member']);
-    expect(legacy.byPersonaIds, isNull);
+    expect(v4.byRoleIds, ['member']);
+    expect(legacy.byRoleIds, isNull);
     expect(WorkflowAction.jsonKeys, isNot(contains('byPersonaIds')));
   });
 

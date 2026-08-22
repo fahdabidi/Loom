@@ -59,13 +59,13 @@ LocalWorkflowEngineApi _engine() => LocalWorkflowEngineApi(
 
 Future<String> _createNotification(
   LocalWorkflowEngineApi engine, {
-  required String recipientPersonaId,
+  required String recipientFanId,
   required String title,
 }) => engine.createInstance(
   workflowType: NotificationInboxController.workflowType,
-  personaId: 'notification-effect',
+  fanId: 'notification-effect',
   initialInstanceData: {
-    'recipientFanId': recipientPersonaId,
+    'recipientFanId': recipientFanId,
     'title': title,
     'body': '$title body',
     'createdAt': '2026-07-31T12:00:00Z',
@@ -77,7 +77,7 @@ Future<WorkflowInstance> _find(
   String instanceId,
 ) async => (await engine.queryInstances(
   tabId: 'notification-inbox',
-  personaId: _personaA,
+  fanId: _personaA,
   limit: 1000,
 )).items.singleWhere((item) => item.instanceId == instanceId);
 
@@ -88,26 +88,26 @@ void main() {
       final engine = _engine();
       final controllerA = NotificationInboxController(
         engine: engine,
-        personaId: _personaA,
+        fanId: _personaA,
       );
       final controllerB = NotificationInboxController(
         engine: engine,
-        personaId: _personaB,
+        fanId: _personaB,
       );
 
       final aUnreadId = await _createNotification(
         engine,
-        recipientPersonaId: _personaA,
+        recipientFanId: _personaA,
         title: 'A unread',
       );
       final aReadId = await _createNotification(
         engine,
-        recipientPersonaId: _personaA,
+        recipientFanId: _personaA,
         title: 'A read',
       );
       final bUnreadId = await _createNotification(
         engine,
-        recipientPersonaId: _personaB,
+        recipientFanId: _personaB,
         title: 'B unread',
       );
 
@@ -118,12 +118,12 @@ void main() {
       final source = controllerA.live(tabId: 'notification-inbox-test');
       expect(source.engine, same(engine));
       expect(source.workflowType, NotificationInboxController.workflowType);
-      expect(source.personaId, _personaA);
+      expect(source.fanId, _personaA);
       expect(source.tabId, 'notification-inbox-test');
 
       final rawPage = await source.engine.queryInstances(
         tabId: source.tabId,
-        personaId: source.personaId,
+        fanId: source.fanId,
         query: source.query,
         limit: 1000,
       );

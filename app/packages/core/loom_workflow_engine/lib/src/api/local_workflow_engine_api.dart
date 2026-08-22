@@ -140,15 +140,13 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final Map<String, LoomWorkflowStateMachine> _definitions = {};
   Map<String, ResolvedArchetype> _resolvedArchetypes = const {};
 
-  /// Maps individual persona ids to their declared persona type (role).
+  /// Maps individual fan ids to their declared role ids.
   /// Set before any guard-evaluating calls so
-  /// [allowedPersonaIds]-style checks compare the type, not the individual id.
+  /// [allowedRoleIds]-style checks compare the type, not the individual id.
   final Map<String, String> _roleIdByFanId = {};
 
-  /// Registers the persona type for an individual account id.
-  void setPersonaType(String personaId, String personaTypeId) {
-    final fanId = personaId;
-    final roleId = personaTypeId;
+  /// Registers the role for an individual fan account.
+  void setRoleForFan(String fanId, String roleId) {
     _roleIdByFanId[fanId] = roleId;
   }
 
@@ -261,13 +259,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     String? workflowType,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
   }) async {
-    final fanId = personaId;
     await _requireSurfacePermission(fanId: fanId, tabId: tabId);
     final sortKey = query.sort?.key ?? 'title';
 
@@ -312,9 +309,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// case occurred.
   Future<WorkflowInstance?> readVisibleInstance({
     required String instanceId,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final row = await _db.readInstance(instanceId);
     if (row == null || row.communityId != _communityId) return null;
     final candidate = await _hydrateQueryRow(row, fanId);
@@ -429,7 +425,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     workflowType: row.workflowType,
     currentState: row.currentState,
     instanceData: jsonDecode(row.instanceData) as Map<String, dynamic>,
-    createdByPersonaId: row.createdByPersonaId,
+    createdByFanId: row.createdByFanId,
   );
 
   /// Hydrates source fields and computes formulas before any read guard runs.
@@ -447,7 +443,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       workflowType: raw.workflowType,
       currentState: raw.currentState,
       instanceData: _withComputedFields(hydrated, machine, viewerId: fanId),
-      createdByPersonaId: raw.createdByPersonaId,
+      createdByFanId: raw.createdByFanId,
     );
     return _QueryCandidate(row: row, instance: instance, machine: machine);
   }
@@ -480,8 +476,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final lookup = _surfacePermissionLookup;
     if (lookup == null) return;
     final allowed = await lookup(
-      personaId: fanId,
-      personaTypeId: _roleIdByFanId[fanId],
+      fanId: fanId,
+      roleId: _roleIdByFanId[fanId],
       tabId: tabId,
       workflowType: workflowType,
     );
@@ -508,8 +504,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     // than matching an unset viewer. That asymmetry is the whole point of the
     // "all models fail closed" clause -- seed data carrying no identity must
     // render to no one instead of leaking to everyone.
-    if (instance.createdByPersonaId.isNotEmpty &&
-        instance.createdByPersonaId == fanId) {
+    if (instance.createdByFanId.isNotEmpty &&
+        instance.createdByFanId == fanId) {
       return true;
     }
     if (_isVisibleThroughArchetype(instance, machine, fanId)) {
@@ -528,7 +524,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           readGuard,
           fanId,
           instance.instanceData,
-          personaTypeId: _roleIdByFanId[fanId],
+          roleId: _roleIdByFanId[fanId],
           clock: _clock,
         );
     }
@@ -720,9 +716,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
-    String? personaId,
+    String? fanId,
   }) async {
-    final fanId = personaId;
     const supported = {'count', 'sum', 'avg', 'min', 'max', 'countDistinct'};
     if (!supported.contains(op)) {
       throw ArgumentError.value(op, 'op', 'Unsupported aggregate operation');
@@ -780,7 +775,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           workflowType: row.workflowType,
           currentState: row.currentState,
           instanceData: _withComputedFields(hydrated, machine),
-          createdByPersonaId: row.createdByPersonaId,
+          createdByFanId: row.createdByFanId,
         ),
       );
     }
@@ -793,9 +788,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) {
-    final fanId = personaId;
     final defId = '${_communityId}_$workflowType';
     final machine = _definitions[defId];
     if (machine == null) return const [];
@@ -805,7 +799,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       currentState,
       fanId,
       _withComputedFields(instanceData, machine, viewerId: fanId),
-      personaTypeId: _roleIdByFanId[fanId],
+      roleId: _roleIdByFanId[fanId],
       clock: _clock,
     );
   }
@@ -816,22 +810,21 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final machine = await _getDefinition(workflowType);
     if (machine == null) return const [];
     // Cross-workflow guards must use the same live completion projection as
     // applyTransition. Without this read, a just-paid dues instance remains
     // invisible to the UI action resolver even though the mutation is
     // already persisted.
-    final completedWorkflowIds = await completedWorkflowIdsForPersona(fanId);
+    final completedWorkflowIds = await completedWorkflowIdsForFan(fanId);
     final candidates = trans_eval.availableTransitions(
       machine,
       currentState,
       fanId,
       _withComputedFields(instanceData, machine, viewerId: fanId),
-      personaTypeId: _roleIdByFanId[fanId],
+      roleId: _roleIdByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
@@ -857,11 +850,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return result;
   }
 
-  Future<Set<String>> completedWorkflowIdsForPersona(String personaId) async {
-    final fanId = personaId;
-    final rows = await _db.queryInstancesForPersona(
+  Future<Set<String>> completedWorkflowIdsForFan(String fanId) async {
+    final rows = await _db.queryInstancesForFan(
       communityId: _communityId,
-      personaId: fanId,
+      fanId: fanId,
     );
     final completed = <String>{};
     for (final row in rows) {
@@ -888,10 +880,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required String transitionId,
-    required String personaId,
+    required String fanId,
     Map<String, dynamic>? inputs,
   }) async {
-    final fanId = personaId;
     try {
       await _requireSurfacePermission(fanId: fanId, workflowType: workflowType);
       // Resolve guards and GAP-1 inputs before opening a transaction. Besides
@@ -947,7 +938,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (row == null) throw StateError('Instance $instanceId not found');
 
     final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
-    final completedWorkflowIds = await completedWorkflowIdsForPersona(fanId);
+    final completedWorkflowIds = await completedWorkflowIdsForFan(fanId);
     final computedData = _withComputedFields(
       data,
       machine,
@@ -959,7 +950,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       row.currentState,
       fanId,
       computedData,
-      personaTypeId: _roleIdByFanId[fanId],
+      roleId: _roleIdByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
@@ -1086,7 +1077,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// currently active, registered community member.
   ///
   /// Registration is the engine's existing enumerable membership boundary:
-  /// [setPersonaType] supplies account ids, and [_activeMembershipLookup]
+  /// [setRoleForFan] supplies account ids, and [_activeMembershipLookup]
   /// filters them against the same account store used by members-only reads.
   /// No workflow or community JSON supplies identities.
   Future<void> _fanOutEventRsvpResponseRows({
@@ -1165,11 +1156,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
-    required String personaId,
+    required String fanId,
   }) => _createInstanceFromCreateAction(
     workflowType: workflowType,
     initialInstanceData: initialInstanceData,
-    fanId: personaId,
+    fanId: fanId,
   );
 
   /// Creates one row through the singular creation action used by current
@@ -1206,9 +1197,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   Future<List<String>> createInstances({
     required String workflowType,
     required List<Map<String, dynamic>> initialInstanceDataList,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final ids = <String>[];
     await _db.transaction(() async {
       for (final initialInstanceData in initialInstanceDataList) {
@@ -1260,7 +1250,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       workflowType: workflowType,
       currentState: machine.initialState,
       instanceData: initialInstanceData,
-      createdByPersonaId: fanId,
+      createdByFanId: fanId,
     );
 
     final deliveryService = _notificationDeliveryService;
@@ -1270,7 +1260,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         workflowType: workflowType,
         currentState: machine.initialState,
         instanceData: Map<String, dynamic>.from(initialInstanceData),
-        createdByPersonaId: fanId,
+        createdByFanId: fanId,
       );
       unawaited(() async {
         try {
@@ -1312,7 +1302,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         if (existing.communityId != _communityId ||
             existing.workflowType != instance.workflowType ||
             existing.currentState != instance.currentState ||
-            existing.createdByPersonaId != instance.createdByPersonaId ||
+            existing.createdByFanId != instance.createdByFanId ||
             !_deepEquals(existingData, instance.instanceData)) {
           throw StateError(
             'Seed instance ${instance.instanceId} conflicts with existing row',
@@ -1327,7 +1317,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           workflowType: instance.workflowType,
           currentState: instance.currentState,
           instanceData: instance.instanceData,
-          createdByPersonaId: instance.createdByPersonaId,
+          createdByFanId: instance.createdByFanId,
         );
       }
     });
@@ -1376,9 +1366,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required Map<String, dynamic> fieldUpdates,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final machine = await _getDefinition(workflowType);
     if (machine == null) {
       throw StateError('Unknown workflow type: $workflowType');
@@ -1544,7 +1533,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       guard,
       fanId,
       data,
-      personaTypeId: _roleIdByFanId[fanId],
+      roleId: _roleIdByFanId[fanId],
       skipRelatedAggregate: true,
       clock: _clock,
     );
@@ -1640,7 +1629,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       WorkflowGuard(relatedAggregate: related),
       fanId,
       sourceData,
-      personaTypeId: _roleIdByFanId[fanId],
+      roleId: _roleIdByFanId[fanId],
       precomputedRelatedAggregate: aggregate is num ? aggregate : null,
       resolvedRelatedAggregateCompareTo: compareTo,
     );
@@ -2238,9 +2227,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   Map<String, dynamic>? _serializeGuard(WorkflowGuard guard) {
     if (guard.isEmpty) return null;
     final m = <String, dynamic>{};
-    if (guard.allowedPersonaIds != null &&
-        guard.allowedPersonaIds!.isNotEmpty) {
-      m['allowedRoleIds'] = guard.allowedPersonaIds;
+    if (guard.allowedRoleIds != null && guard.allowedRoleIds!.isNotEmpty) {
+      m['allowedRoleIds'] = guard.allowedRoleIds;
     }
     if (guard.actorInList != null) {
       m['actorInList'] = {

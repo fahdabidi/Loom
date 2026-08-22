@@ -7,7 +7,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
     required this.workflowType,
     required this.machine,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.keyPrefix,
     this.onCreated,
     this.title,
@@ -18,7 +18,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
   final String workflowType;
   final LoomWorkflowStateMachine machine;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final String keyPrefix;
   final Future<void> Function(String instanceId)? onCreated;
   final String? title;
@@ -117,7 +117,7 @@ class _GenericWorkflowCreationCardState
       instanceId = await widget.engine.createInstance(
         workflowType: widget.workflowType,
         initialInstanceData: values,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       await widget.onCreated?.call(instanceId);
       if (mounted) Navigator.of(context).pop(true);
@@ -194,7 +194,7 @@ class _GenericWorkflowCreationCardState
         key: editorKey,
         child: AudienceMultiSelectPicker(
           candidates: widget.audienceCandidates,
-          selectedPersonaIds: selected,
+          selectedRoleIds: selected,
           onChanged: (next) =>
               setState(() => _values[key] = next.toList()..sort()),
           label: label,

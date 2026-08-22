@@ -36,11 +36,9 @@ LoomWorkflowStateMachine _machine(
 
 ValidationReport _validateWorkflows(
   Map<String, LoomWorkflowStateMachine> workflows, {
-  Set<String>? knownPersonaIds,
+  Set<String>? knownRoleIds,
 }) {
-  return WorkflowValidator(
-    knownPersonaIds: knownPersonaIds,
-  ).validate(workflows);
+  return WorkflowValidator(knownRoleIds: knownRoleIds).validate(workflows);
 }
 
 bool _hasError(ValidationReport report, String type) =>
@@ -585,7 +583,7 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 4. create-action byPersonaIds dangling persona (uses
+    // 4. create-action byRoleIds dangling persona (uses
     //    dangling_allowed_persona_id)
     // ---------------------------------------------------------------
     test(
@@ -621,7 +619,7 @@ void main() {
 
         final report = _validateWorkflows(
           {'test': machine},
-          knownPersonaIds: {'real-persona'},
+          knownRoleIds: {'real-persona'},
         );
         expect(_hasWarning(report, 'dangling_allowed_persona_id'), isTrue);
       },
@@ -658,7 +656,7 @@ void main() {
 
       final report = _validateWorkflows(
         {'test': machine},
-        knownPersonaIds: {'real-persona'},
+        knownRoleIds: {'real-persona'},
       );
       expect(
         report.warnings.where((f) => f.type == 'dangling_allowed_persona_id'),

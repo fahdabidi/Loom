@@ -126,7 +126,7 @@ void main() {
 
       await api.createInstance(
         workflowType: 'notification',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {
           'recipientFanId': 'member',
           'title': 'A seat opened',
@@ -152,7 +152,7 @@ void main() {
 
     await api.createInstance(
       workflowType: 'event',
-      personaId: 'organizer',
+      fanId: 'organizer',
       initialInstanceData: {'title': 'Friday game night'},
     );
     await _allowFireAndForgetToRun();
@@ -171,7 +171,7 @@ void main() {
 
       await api.createInstance(
         workflowType: 'response',
-        personaId: 'promoted-member',
+        fanId: 'promoted-member',
         initialInstanceData: {
           'eventId': 'event-1',
           'rsvpedAt': '2026-07-01T10:00:00Z',
@@ -180,7 +180,7 @@ void main() {
       );
       final eventId = await api.createInstance(
         workflowType: 'event',
-        personaId: 'organizer',
+        fanId: 'organizer',
         initialInstanceData: {'eventId': 'event-1'},
       );
 
@@ -188,7 +188,7 @@ void main() {
         workflowType: 'event',
         instanceId: eventId,
         transitionId: 'release-seat',
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
       await _allowFireAndForgetToRun();
 
@@ -215,7 +215,7 @@ void main() {
 
       final id = await api.createInstance(
         workflowType: 'notification',
-        personaId: 'member',
+        fanId: 'member',
         initialInstanceData: {
           'recipientFanId': 'member',
           'title': 'Still persisted',
@@ -226,7 +226,7 @@ void main() {
 
       final notification = (await api.queryInstances(
         tabId: 'notifications',
-        personaId: 'member',
+        fanId: 'member',
       )).items.singleWhere((instance) => instance.instanceId == id);
       expect(notification.instanceData['title'], 'Still persisted');
     },

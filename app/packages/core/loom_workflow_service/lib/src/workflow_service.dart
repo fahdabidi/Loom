@@ -420,7 +420,7 @@ class WorkflowService {
             .createInstance(
               workflowType: body.workflowType,
               initialInstanceData: body.instanceData,
-              personaId: identity.fanId,
+              fanId: identity.fanId,
             );
         final created = await _database.readInstance(instanceId);
         if (created == null) {
@@ -612,7 +612,7 @@ class WorkflowService {
             .createInstances(
               workflowType: body.workflowType,
               initialInstanceDataList: body.initialInstanceDataList,
-              personaId: identity.fanId,
+              fanId: identity.fanId,
             );
         final created = <Map<String, dynamic>>[];
         for (final instanceId in instanceIds) {
@@ -769,10 +769,10 @@ class WorkflowService {
         final engine = _authoritativeEngine(communityId);
         // Phase B.3 replaces this fail-closed placeholder with roles resolved
         // by App Access. A fan id must never be treated as a claimed role id.
-        engine.setPersonaType(identity.fanId, _unresolvedRoleId);
+        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
         final page = await engine.queryInstances(
           tabId: 'workflow-service',
-          personaId: identity.fanId,
+          fanId: identity.fanId,
           workflowType: workflowType,
           query: SurfaceQuery(
             sort: sortKey == null ? null : SortSpec(key: sortKey),
@@ -854,14 +854,14 @@ class WorkflowService {
         final engine = _authoritativeEngine(communityId);
         // Phase B.3 replaces this fail-closed placeholder with roles resolved
         // by App Access. A fan id must never be treated as a claimed role id.
-        engine.setPersonaType(identity.fanId, _unresolvedRoleId);
+        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
         final result = await engine.aggregate(
           workflowType: body.workflowType,
           column: body.column,
           op: body.op,
           filter: body.filter,
           groupBy: body.groupBy,
-          personaId: identity.fanId,
+          fanId: identity.fanId,
         );
         return Response.ok(
           jsonEncode({'result': result}),
@@ -941,10 +941,10 @@ class WorkflowService {
     try {
       return await _databaseSerialExecutor.run(() async {
         final engine = _authoritativeEngine(communityId);
-        engine.setPersonaType(identity.fanId, _unresolvedRoleId);
+        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
         final instance = await engine.readVisibleInstance(
           instanceId: instanceId,
-          personaId: identity.fanId,
+          fanId: identity.fanId,
         );
         if (instance == null) {
           return _error(
@@ -960,7 +960,7 @@ class WorkflowService {
           instanceId: instance.instanceId,
           currentState: instance.currentState,
           instanceData: instance.instanceData,
-          personaId: identity.fanId,
+          fanId: identity.fanId,
         );
         return Response.ok(
           jsonEncode({
@@ -1133,7 +1133,7 @@ class WorkflowService {
           workflowType: before.workflowType,
           instanceId: instanceId,
           fieldUpdates: body.fieldUpdates,
-          personaId: identity.fanId,
+          fanId: identity.fanId,
         );
         final after = await _database.readInstance(instanceId);
         if (after == null) {
@@ -1275,7 +1275,7 @@ class WorkflowService {
           workflowType: before.workflowType,
           instanceId: instanceId,
           transitionId: body.transitionId,
-          personaId: identity.fanId,
+          fanId: identity.fanId,
           inputs: body.inputs,
         );
         final after = await _database.readInstance(instanceId);

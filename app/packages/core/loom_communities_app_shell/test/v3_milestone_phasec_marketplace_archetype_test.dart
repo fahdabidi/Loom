@@ -43,7 +43,7 @@ class _MarketplaceCountingEngine implements WorkflowEngineApi {
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
@@ -51,7 +51,7 @@ class _MarketplaceCountingEngine implements WorkflowEngineApi {
     queries++;
     return delegate.queryInstances(
       tabId: tabId,
-      personaId: personaId,
+      fanId: fanId,
       query: query,
       limit: limit,
       cursor: cursor,
@@ -64,13 +64,13 @@ class _MarketplaceCountingEngine implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) => delegate.availableTransitionsAsync(
     workflowType: workflowType,
     instanceId: instanceId,
     currentState: currentState,
     instanceData: instanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -127,21 +127,21 @@ Future<_InstalledTabletop> _install(String extensionId) async {
     final shellAccounts = await activeAuthForCommunity(
       community: community,
       experience: experience,
-      personaTypeId: 'tabletop-member',
+      roleId: 'tabletop-member',
     ).listAccounts(communityExtensionId: community.extensionId);
     final authorizationAccounts = [...accounts, ...shellAccounts];
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+      activeMembershipLookup: (fanId) async => authorizationAccounts.any(
         (account) =>
-            account.accountId == personaId &&
+            account.accountId == fanId &&
             account.status == MembershipStatus.active,
       ),
     );
     if (engine is LocalWorkflowEngineApi) {
       for (final account in authorizationAccounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
     }
     return _InstalledTabletop(community, engine, temp);
@@ -173,8 +173,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 Widget _app(_InstalledTabletop installed) => MaterialApp(
@@ -183,7 +183,7 @@ Widget _app(_InstalledTabletop installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ),
   ),
 );
@@ -202,11 +202,11 @@ Future<void> _selectMarketplace(WidgetTester tester) async {
 Future<WorkflowInstance> _readMarketplaceInstance(
   WorkflowEngineApi engine, {
   required String instanceId,
-  required String personaId,
+  required String fanId,
 }) async {
   final page = await engine.queryInstances(
     tabId: 'marketplace',
-    personaId: personaId,
+    fanId: fanId,
     limit: 100,
   );
   return page.items.singleWhere(
@@ -217,14 +217,14 @@ Future<WorkflowInstance> _readMarketplaceInstance(
 Future<Set<String>> _availableMarketplaceTransitionIds(
   WorkflowEngineApi engine,
   WorkflowInstance instance,
-  String personaId,
+  String fanId,
 ) async {
   final transitions = await engine.availableTransitionsAsync(
     workflowType: instance.workflowType,
     instanceId: instance.instanceId,
     currentState: instance.currentState,
     instanceData: instance.instanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
   return transitions.map((transition) => transition.id).toSet();
 }
@@ -240,7 +240,7 @@ void main() {
             workflowType: 'equipment-loan',
             instanceId: 'listing-catan',
             transitionId: 'borrow',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           ),
           throwsStateError,
         );
@@ -249,7 +249,7 @@ void main() {
           workflowType: 'tabletop-club-dues-payment',
           instanceId: 'dues-2026-q3-member',
           transitionId: 'pay',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         );
         expect(payment.newState, 'paid');
         expect(payment.newInstanceData['receiptStatus'], 'complete');
@@ -258,7 +258,7 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-catan',
           transitionId: 'borrow',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         );
         expect(borrow.newState, 'published');
         expect(borrow.newInstanceData['availabilityState'], 'onLoan');
@@ -266,7 +266,7 @@ void main() {
 
         final marketplace = await installed.engine.queryInstances(
           tabId: 'marketplace',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
           limit: 100,
         );
         final catan = marketplace.items.singleWhere(
@@ -290,7 +290,7 @@ void main() {
         final catanBefore = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-catan',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(catanBefore.instanceData['availabilityState'], 'available');
         expect(catanBefore.instanceData['queuedFanIds'], isEmpty);
@@ -300,7 +300,7 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-catan',
           transitionId: 'join-queue',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(joined.newState, 'published');
         expect(joined.newInstanceData['queuedFanIds'], contains(memberId));
@@ -308,7 +308,7 @@ void main() {
         final catanAfterJoin = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-catan',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(catanAfterJoin.instanceData['queuedFanIds'], contains(memberId));
         expect(catanAfterJoin.instanceData['queueLength'], 1);
@@ -324,7 +324,7 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-catan',
           transitionId: 'leave-queue',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(left.newState, 'published');
         expect(left.newInstanceData['queuedFanIds'], isEmpty);
@@ -332,7 +332,7 @@ void main() {
         final catanAfterLeave = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-catan',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(catanAfterLeave.instanceData['queuedFanIds'], isEmpty);
         expect(catanAfterLeave.instanceData['queueLength'], 0);
@@ -350,7 +350,7 @@ void main() {
         final rootBefore = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-root',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(rootBefore.instanceData['availabilityState'], 'available');
         expect(rootBefore.instanceData['queuedFanIds'], hasLength(2));
@@ -359,14 +359,14 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-root',
           transitionId: 'join-queue',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(rootJoined.newState, 'published');
         expect(rootJoined.newInstanceData['queuedFanIds'], contains(memberId));
         final rootAfter = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-root',
-          personaId: memberId,
+          fanId: memberId,
         );
         expect(rootAfter.instanceData['availabilityState'], 'available');
         expect(rootAfter.instanceData['queuedFanIds'], contains(memberId));
@@ -378,7 +378,7 @@ void main() {
         final wingspanBefore = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-wingspan',
-          personaId: returnerId,
+          fanId: returnerId,
         );
         expect(wingspanBefore.instanceData['availabilityState'], 'onLoan');
         expect(
@@ -397,7 +397,7 @@ void main() {
           workflowType: 'equipment-loan',
           instanceId: 'listing-wingspan',
           transitionId: 'return',
-          personaId: returnerId,
+          fanId: returnerId,
         );
         expect(returned.newState, 'published');
         expect(returned.newInstanceData['availabilityState'], 'available');
@@ -407,7 +407,7 @@ void main() {
         final wingspanAfter = await _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-wingspan',
-          personaId: returnerId,
+          fanId: returnerId,
         );
         expect(wingspanAfter.currentState, 'published');
         expect(wingspanAfter.instanceData['availabilityState'], 'available');
@@ -425,7 +425,7 @@ void main() {
       final before = await _readMarketplaceInstance(
         installed.engine,
         instanceId: 'listing-old-catan',
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
       );
       expect(before.workflowType, 'equipment-giveaway');
       expect(before.currentState, 'available');
@@ -435,7 +435,7 @@ void main() {
         workflowType: 'equipment-giveaway',
         instanceId: 'listing-old-catan',
         transitionId: 'claim',
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
       );
       expect(claimed.newState, 'claimed');
       expect(claimed.newInstanceData['claimedByFanId'], 'tabletop-member');
@@ -446,7 +446,7 @@ void main() {
       final after = await _readMarketplaceInstance(
         installed.engine,
         instanceId: 'listing-old-catan',
-        personaId: 'tabletop-member',
+        fanId: 'tabletop-member',
       );
       expect(after.currentState, 'claimed');
       expect(after.instanceData['claimedByFanId'], 'tabletop-member');
@@ -491,7 +491,7 @@ void main() {
         () => _readMarketplaceInstance(
           installed.engine,
           instanceId: 'listing-old-catan',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         ),
       );
       expect(after!.currentState, 'claimed');
@@ -759,11 +759,11 @@ void main() {
             workflowType: 'tabletop-club-dues-payment',
             instanceId: 'dues-2026-q3-member',
             transitionId: 'pay',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           );
           final page = await installed.engine.queryInstances(
             tabId: 'marketplace',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             limit: 100,
           );
           final catan = page.items.singleWhere(
@@ -774,7 +774,7 @@ void main() {
             instanceId: catan.instanceId,
             currentState: catan.currentState,
             instanceData: catan.instanceData,
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           );
           return actions.any((action) => action.id == 'borrow');
         });
@@ -866,16 +866,18 @@ void main() {
       final organizer = personasForExtensionId(
         experience.extensionId,
         experience: experience,
-      ).singleWhere((persona) => persona.personaId == 'tabletop-organizer');
+      ).singleWhere((persona) => persona.roleId == 'tabletop-organizer');
       final engine = _MarketplaceCountingEngine(installed.engine);
       try {
         await tester.pumpWidget(
           MaterialApp(
             home: ActiveIdentityScope(
               identity: ActiveIdentityContext(
-                accountId: organizer.personaId,
+                // The fixture's organizer account deliberately has the same
+                // string as its role; name the account value independently.
+                accountId: 'tabletop-organizer',
                 authApi: LocalAuthApi(),
-                personaId: organizer.personaId,
+                roleId: organizer.roleId,
               ),
               child: Scaffold(
                 body: SingleChildScrollView(

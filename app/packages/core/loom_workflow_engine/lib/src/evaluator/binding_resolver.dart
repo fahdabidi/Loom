@@ -12,9 +12,8 @@ List<RenderBinding> resolveBindings(
   String currentState,
   Iterable<String> personaRoles, {
   Map<String, dynamic> instanceData = const {},
-  String? personaId,
+  String? fanId,
 }) {
-  final fanId = personaId;
   return machine.renderBindings.where((binding) {
     // Must cover the current state.
     if (!binding.states.contains(currentState)) return false;

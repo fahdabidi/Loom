@@ -6,14 +6,14 @@ import 'transition_evaluator.dart';
 /// workflow [instance] under [machine]'s transition guards.
 ///
 /// Returns a role set containing:
-/// - `'actor'` when [viewerPersonaId] is the resolved actor of the instance.
-/// - `'receiver'` when [viewerPersonaId] is not the actor and passes at least
+/// - `'actor'` when [viewerFanId] is the resolved actor of the instance.
+/// - `'receiver'` when [viewerFanId] is not the actor and passes at least
 ///   one guard from the instance's current-state transitions.
 Set<String> deriveInstanceRoles(
   LoomWorkflowStateMachine machine,
   WorkflowInstance instance, {
-  required String viewerPersonaId,
-  String? viewerPersonaTypeId,
+  required String viewerFanId,
+  String? viewerRoleId,
 }) {
   final Set<String> roles = <String>{};
 
@@ -28,9 +28,9 @@ Set<String> deriveInstanceRoles(
     }
   }
 
-  if (!foundActorEqualsField) actorFanId = instance.createdByPersonaId;
+  if (!foundActorEqualsField) actorFanId = instance.createdByFanId;
 
-  if (viewerPersonaId == actorFanId) {
+  if (viewerFanId == actorFanId) {
     roles.add('actor');
     return roles;
   }
@@ -38,9 +38,9 @@ Set<String> deriveInstanceRoles(
   if (availableTransitions(
     machine,
     instance.currentState,
-    viewerPersonaId,
+    viewerFanId,
     instance.instanceData,
-    personaTypeId: viewerPersonaTypeId,
+    roleId: viewerRoleId,
     skipRelatedAggregate: true,
   ).isNotEmpty) {
     roles.add('receiver');

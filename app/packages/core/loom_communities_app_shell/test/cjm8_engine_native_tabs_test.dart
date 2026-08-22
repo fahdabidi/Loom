@@ -86,13 +86,15 @@ Set<String> _readStringValuesFromList(Object? value) {
 class _SeededInstanceFixtureCheck {
   const _SeededInstanceFixtureCheck({
     required this.extensionId,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.tabId,
     required this.instanceId,
   });
 
   final String extensionId;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final String tabId;
   final String instanceId;
 }
@@ -178,12 +180,12 @@ Future<_EngineNativeCommunityFixture> _installFixture(
 Future<bool> _tabRendersSeededInstance({
   required _EngineNativeCommunityFixture fixture,
   required String tabId,
-  required String personaId,
+  required String fanId,
   required String instanceId,
 }) async {
   final page = await fixture.engine.queryInstances(
     tabId: tabId,
-    personaId: personaId,
+    fanId: fanId,
     limit: 200,
   );
   return page.items.any((instance) => instance.instanceId == instanceId);
@@ -195,16 +197,16 @@ void main() {
     () async {
       for (final extensionId in _fixturesByExtension.keys) {
         final fixture = await _installFixture(extensionId);
-        final personas = _personasByExtension[extensionId]!;
+        final roleIds = _personasByExtension[extensionId]!;
         final allowedTabIds = {
           ..._engineNativeTabIds,
           ...fixture.declaredTabIds,
         };
-        for (final personaId in personas) {
+        for (final roleId in roleIds) {
           final tabIds = [
             for (final tab in appShellTabsFor(
               experience: fixture.experience,
-              personaId: personaId,
+              roleId: roleId,
               appShellConfiguration: fixture.community.appShellConfiguration,
             ))
               tab.tabId,
@@ -214,7 +216,7 @@ void main() {
             tabIds.toSet().difference(allowedTabIds),
             isEmpty,
             reason:
-                'Extension $extensionId persona $personaId has tabs outside home/messages/special + community-declared set: $tabIds',
+                'Extension $extensionId role $roleId has tabs outside home/messages/special + community-declared set: $tabIds',
           );
         }
       }
@@ -227,19 +229,22 @@ void main() {
       final checks = <_SeededInstanceFixtureCheck>[
         const _SeededInstanceFixtureCheck(
           extensionId: 'ext_camera_club',
-          personaId: 'camera-club-member',
+          fanId: 'camera-club-member',
+          roleId: 'camera-club-member',
           tabId: 'home',
           instanceId: 'critique-lighthouse-portrait',
         ),
         const _SeededInstanceFixtureCheck(
           extensionId: 'ext_book_club',
-          personaId: 'book-organizer',
+          fanId: 'book-organizer',
+          roleId: 'book-organizer',
           tabId: 'home',
           instanceId: 'vote-august',
         ),
         const _SeededInstanceFixtureCheck(
           extensionId: 'ext_garden_club',
-          personaId: 'garden-coordinator',
+          fanId: 'garden-coordinator',
+          roleId: 'garden-coordinator',
           tabId: 'home',
           // Renamed by 154493e6 (Garden Club exportWizard integration,
           // Milestone 1.5); this test was not updated with it. Same instance,
@@ -250,16 +255,19 @@ void main() {
 
       for (final check in checks) {
         final fixture = await _installFixture(check.extensionId);
+        if (fixture.engine case final LocalWorkflowEngineApi engine) {
+          engine.setRoleForFan(check.fanId, check.roleId);
+        }
         expect(
           await _tabRendersSeededInstance(
             fixture: fixture,
             tabId: check.tabId,
-            personaId: check.personaId,
+            fanId: check.fanId,
             instanceId: check.instanceId,
           ),
           isTrue,
           reason:
-              '${check.extensionId} does not render seeded instance ${check.instanceId} on tab ${check.tabId} for persona ${check.personaId}.',
+              '${check.extensionId} does not render seeded instance ${check.instanceId} on tab ${check.tabId} for role ${check.roleId}.',
         );
       }
     },

@@ -57,18 +57,18 @@ Future<String> _create(
   Map<String, dynamic>? data,
 }) => api.createInstance(
   workflowType: workflowType,
-  personaId: creator,
+  fanId: creator,
   initialInstanceData: <String, dynamic>{'title': title, ...?data},
 );
 
 Future<List<WorkflowInstance>> _read(
   LocalWorkflowEngineApi api,
-  String personaId, {
+  String fanId, {
   int limit = 25,
   String? cursor,
 }) async => (await api.queryInstances(
   tabId: 'home',
-  personaId: personaId,
+  fanId: fanId,
   limit: limit,
   cursor: cursor,
   query: const SurfaceQuery(sort: SortSpec(key: 'title')),
@@ -123,7 +123,7 @@ void main() {
         creator: 'other-author',
         title: 'other row',
       );
-      api.setPersonaType('reviewer-account', 'reviewer');
+      api.setRoleForFan('reviewer-account', 'reviewer');
 
       expect((await _read(api, 'outsider')), isEmpty);
       expect(
@@ -139,7 +139,7 @@ void main() {
           workflowType: 'guarded',
           column: 'title',
           op: 'count',
-          personaId: 'outsider',
+          fanId: 'outsider',
         ),
         0,
       );
@@ -148,7 +148,7 @@ void main() {
           workflowType: 'guarded',
           column: 'title',
           op: 'count',
-          personaId: 'reviewer-account',
+          fanId: 'reviewer-account',
         ),
         2,
       );
@@ -176,8 +176,8 @@ void main() {
       title: 'state row',
     );
     api
-      ..setPersonaType('reviewer-account', 'reviewer')
-      ..setPersonaType('editor-account', 'editor');
+      ..setRoleForFan('reviewer-account', 'reviewer')
+      ..setRoleForFan('editor-account', 'editor');
 
     expect(await _read(api, 'reviewer-account'), isEmpty);
     expect((await _read(api, 'editor-account')), hasLength(1));
@@ -186,9 +186,9 @@ void main() {
   test('membersOnly uses the injected active-membership lookup', () async {
     final lookups = <String>[];
     final api = _api(
-      activeMembershipLookup: (personaId) {
-        lookups.add(personaId);
-        return personaId == 'active-member';
+      activeMembershipLookup: (fanId) {
+        lookups.add(fanId);
+        return fanId == 'active-member';
       },
     );
     api.registerDefinition(
@@ -253,6 +253,7 @@ void main() {
       'ownership does not widen a guarded instance to other viewers',
       () async {
         final api = _api();
+        api.setRoleForFan('reviewer-01', 'reviewer');
         api.registerDefinition(
           _machine(
             'guarded',
@@ -270,7 +271,7 @@ void main() {
         );
 
         expect(await _read(api, 'author'), hasLength(1));
-        expect(await _read(api, 'reviewer'), hasLength(1));
+        expect(await _read(api, 'reviewer-01'), hasLength(1));
         expect(await _read(api, 'bystander'), isEmpty);
       },
     );
@@ -281,7 +282,7 @@ void main() {
       'admits shared viewers through v4 fan-id fields and refuses others',
       () async {
         final api = _api(
-          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+          activeMembershipLookup: (fanId) => fanId == 'default-reader',
         );
         api.registerDefinition(
           _machine(
@@ -351,7 +352,7 @@ void main() {
       'inherits the responseTable archetype and unions declared fields',
       () async {
         final api = _api(
-          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+          activeMembershipLookup: (fanId) => fanId == 'default-reader',
         );
         api
           ..registerDefinition(
@@ -434,7 +435,7 @@ void main() {
       'admits either named side for both parties archetypes and refuses others',
       () async {
         final api = _api(
-          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+          activeMembershipLookup: (fanId) => fanId == 'default-reader',
         );
         for (final entry in <String, String>{
           'approval': 'approvalQueueItem',
@@ -501,7 +502,7 @@ void main() {
           {'role': 'auditor'},
         ],
       );
-      api.setPersonaType('admin-account', 'finance-admin');
+      api.setRoleForFan('admin-account', 'finance-admin');
 
       expect(await _read(api, 'admin-account'), hasLength(1));
     });
@@ -513,7 +514,7 @@ void main() {
           {'role': 'auditor'},
         ],
       );
-      api.setPersonaType('member-account', 'member');
+      api.setRoleForFan('member-account', 'member');
 
       expect(await _read(api, 'member-account'), isEmpty);
     });
@@ -539,7 +540,7 @@ void main() {
           {'role': 'auditor'},
         ],
       );
-      api.setPersonaType('', 'finance-admin');
+      api.setRoleForFan('', 'finance-admin');
 
       expect(await _read(api, ''), isEmpty);
     });
@@ -553,8 +554,8 @@ void main() {
         data: <String, dynamic>{'payerFanId': 'payer-account'},
       );
       api
-        ..setPersonaType('admin-account', 'finance-admin')
-        ..setPersonaType('member-account', 'member');
+        ..setRoleForFan('admin-account', 'finance-admin')
+        ..setRoleForFan('member-account', 'member');
 
       expect(await _read(api, 'payer-account'), hasLength(1));
       expect(await _read(api, 'admin-account'), hasLength(1));
@@ -589,7 +590,7 @@ void main() {
       );
       final api = _api(activeMembershipLookup: (_) => false)
         ..registerDefinition(machine)
-        ..setPersonaType('viewer', '');
+        ..setRoleForFan('viewer', '');
       await _create(
         api,
         workflowType: 'payment',
@@ -647,7 +648,7 @@ void main() {
       'admits only the addressee while retaining default visibility',
       () async {
         final api = _api(
-          activeMembershipLookup: (personaId) => personaId == 'default-reader',
+          activeMembershipLookup: (fanId) => fanId == 'default-reader',
         );
         api.registerDefinition(
           _machine(
@@ -704,7 +705,7 @@ void main() {
     'absent mappings never infer readers from identity-shaped data',
     () async {
       final api = _api(
-        activeMembershipLookup: (personaId) => personaId == 'default-reader',
+        activeMembershipLookup: (fanId) => fanId == 'default-reader',
       );
       final cases = <(String, String, Map<String, dynamic>)>[
         (
@@ -868,7 +869,7 @@ void main() {
 
     final first = await api.queryInstances(
       tabId: 'home',
-      personaId: 'viewer',
+      fanId: 'viewer',
       limit: 2,
       query: const SurfaceQuery(sort: SortSpec(key: 'title')),
     );
@@ -881,7 +882,7 @@ void main() {
 
     final second = await api.queryInstances(
       tabId: 'home',
-      personaId: 'viewer',
+      fanId: 'viewer',
       limit: 2,
       cursor: first.nextCursor,
       query: const SurfaceQuery(sort: SortSpec(key: 'title')),

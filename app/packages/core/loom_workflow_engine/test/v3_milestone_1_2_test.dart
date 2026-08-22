@@ -97,12 +97,12 @@ void main() {
       );
       final target = await api.createInstance(
         workflowType: 'target',
-        personaId: 'p',
+        fanId: 'p',
         initialInstanceData: {'status': 'new'},
       );
       final source = await api.createInstance(
         workflowType: 'source',
-        personaId: 'p',
+        fanId: 'p',
         initialInstanceData: {'targetId': target, 'votes': 1},
       );
       await expectLater(
@@ -110,7 +110,7 @@ void main() {
           workflowType: 'source',
           instanceId: source,
           transitionId: 'guarded',
-          personaId: 'p',
+          fanId: 'p',
         ),
         throwsStateError,
       );
@@ -118,9 +118,9 @@ void main() {
         workflowType: 'source',
         instanceId: source,
         transitionId: 'run',
-        personaId: 'p',
+        fanId: 'p',
       );
-      final page = await api.queryInstances(tabId: 'x', personaId: 'p');
+      final page = await api.queryInstances(tabId: 'x', fanId: 'p');
       expect(
         page.items.where((item) => item.workflowType == 'child'),
         hasLength(1),
@@ -140,18 +140,18 @@ void main() {
       await api.updateInstanceFields(
         workflowType: 'source',
         instanceId: source,
-        personaId: 'p',
+        fanId: 'p',
         fieldUpdates: {'votes': 2},
       );
       await api.applyTransition(
         workflowType: 'source',
         instanceId: source,
         transitionId: 'guarded',
-        personaId: 'p',
+        fanId: 'p',
       );
       await api.createInstance(
         workflowType: 'target',
-        personaId: 'p',
+        fanId: 'p',
         initialInstanceData: {'status': 'updated'},
       );
       expect(

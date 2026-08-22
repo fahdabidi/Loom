@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
-const _memberPersonaId = 'tabletop-member-01';
+const _memberFanId = 'tabletop-member';
+const _memberRoleId = 'tabletop-member';
 var _extensionSequence = 0;
 
 class _ReminderHarness {
@@ -75,7 +76,7 @@ Map<String, Object?> _configuration({
         'instanceId': currentEventId,
         'workflowType': 'event-rsvp',
         'currentState': 'open',
-        'createdByFanId': _memberPersonaId,
+        'createdByFanId': _memberFanId,
         'instanceData': {
           'title': index == 0
               ? 'Friday game night'
@@ -88,8 +89,8 @@ Map<String, Object?> _configuration({
         'instanceId': currentResponseId,
         'workflowType': 'event-rsvp-response',
         'currentState': responseState,
-        'createdByFanId': _memberPersonaId,
-        'instanceData': {'eventId': currentEventId, 'fanId': _memberPersonaId},
+        'createdByFanId': _memberFanId,
+        'instanceData': {'eventId': currentEventId, 'fanId': _memberFanId},
       });
   }
 
@@ -99,7 +100,7 @@ Map<String, Object?> _configuration({
     'accentColor': '#6B4EFF',
     'roles': [
       {
-        'roleId': _memberPersonaId,
+        'roleId': _memberRoleId,
         'label': 'Member',
         'roleLabel': 'Member',
         'description': 'A synthetic tabletop club member.',
@@ -287,7 +288,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
@@ -300,7 +301,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     }
     final page = await delegate.queryInstances(
       tabId: tabId,
-      personaId: personaId,
+      fanId: fanId,
       query: query,
       limit: limit,
       cursor: cursor,
@@ -326,13 +327,13 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) => delegate.availableTransitions(
     workflowType: workflowType,
     instanceId: instanceId,
     currentState: currentState,
     instanceData: instanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -341,13 +342,13 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) => delegate.availableTransitionsAsync(
     workflowType: workflowType,
     instanceId: instanceId,
     currentState: currentState,
     instanceData: instanceData,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -355,7 +356,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required String transitionId,
-    required String personaId,
+    required String fanId,
     Map<String, dynamic>? inputs,
   }) async {
     transitionIds.add(transitionId);
@@ -364,7 +365,7 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
       workflowType: workflowType,
       instanceId: instanceId,
       transitionId: transitionId,
-      personaId: personaId,
+      fanId: fanId,
       inputs: inputs,
     );
     if (isForeground && !foregroundTransitionCompleted.isCompleted) {
@@ -378,13 +379,13 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
-    required String personaId,
+    required String fanId,
   }) {
     directCreateWorkflowTypes.add(workflowType);
     return delegate.createInstance(
       workflowType: workflowType,
       initialInstanceData: initialInstanceData,
-      personaId: personaId,
+      fanId: fanId,
     );
   }
 
@@ -392,11 +393,11 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
   Future<List<String>> createInstances({
     required String workflowType,
     required List<Map<String, dynamic>> initialInstanceDataList,
-    required String personaId,
+    required String fanId,
   }) => delegate.createInstances(
     workflowType: workflowType,
     initialInstanceDataList: initialInstanceDataList,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -404,12 +405,12 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required Map<String, dynamic> fieldUpdates,
-    required String personaId,
+    required String fanId,
   }) => delegate.updateInstanceFields(
     workflowType: workflowType,
     instanceId: instanceId,
     fieldUpdates: fieldUpdates,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -419,14 +420,14 @@ class _ControlledReminderEngine implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
-    String? personaId,
+    String? fanId,
   }) => delegate.aggregate(
     workflowType: workflowType,
     column: column,
     op: op,
     filter: filter,
     groupBy: groupBy,
-    personaId: personaId,
+    fanId: fanId,
   );
 
   @override
@@ -443,7 +444,7 @@ Widget _calendar(
     identity: ActiveIdentityContext(
       accountId: null,
       authApi: LocalAuthApi(),
-      personaId: harness.experience.personas!.single.personaId,
+      roleId: harness.experience.personas!.single.roleId,
     ),
     child: Scaffold(
       body: SingleChildScrollView(
@@ -473,14 +474,14 @@ Future<void> _settleCalendar(WidgetTester tester) async {
 Future<WorkflowInstance> _response(_ReminderHarness harness) async =>
     (await harness.engine.queryInstances(
       tabId: 'calendar',
-      personaId: _memberPersonaId,
+      fanId: _memberFanId,
       limit: 100,
     )).items.singleWhere((item) => item.instanceId == harness.responseId);
 
 Future<int> _notificationCount(_ReminderHarness harness) async =>
     (await harness.engine.queryInstances(
       tabId: 'notifications',
-      personaId: _memberPersonaId,
+      fanId: _memberFanId,
       limit: 100,
     )).items.where((item) => item.workflowType == 'notification').length;
 
@@ -565,10 +566,10 @@ void main() {
       expect(await _notificationCount(harness), 1);
       final notification = (await harness.engine.queryInstances(
         tabId: 'notifications',
-        personaId: _memberPersonaId,
+        fanId: _memberFanId,
         limit: 100,
       )).items.singleWhere((item) => item.workflowType == 'notification');
-      expect(notification.instanceData['recipientFanId'], _memberPersonaId);
+      expect(notification.instanceData['recipientFanId'], _memberFanId);
       expect(notification.instanceData['title'], 'Reminder: Friday game night');
       expect(
         notification.instanceData['body'],
@@ -761,7 +762,7 @@ void main() {
           workflowType: 'event-rsvp-response',
           instanceId: harness.responseId,
           transitionId: 'send-reminder',
-          personaId: _memberPersonaId,
+          fanId: _memberFanId,
           inputs: {
             'notificationTitle': 'Reminder: Friday game night',
             'notificationBody': 'Starts soon — check Calendar for details.',

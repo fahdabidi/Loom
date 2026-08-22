@@ -6,11 +6,11 @@ class NotificationFab extends StatefulWidget {
   const NotificationFab({
     super.key,
     required this.extensionId,
-    required this.personaId,
+    required this.fanId,
   });
 
   final String extensionId;
-  final String personaId;
+  final String fanId;
 
   @override
   State<NotificationFab> createState() => _NotificationFabState();
@@ -38,7 +38,7 @@ class _NotificationFabState extends State<NotificationFab> {
   void didUpdateWidget(covariant NotificationFab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.extensionId == widget.extensionId &&
-        oldWidget.personaId == widget.personaId) {
+        oldWidget.fanId == widget.fanId) {
       return;
     }
     _controller = null;
@@ -54,7 +54,7 @@ class _NotificationFabState extends State<NotificationFab> {
       if (!mounted || generation != _initializationGeneration) return;
       _controller = NotificationInboxController(
         engine: engine,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       await _refreshUnreadCount();
     } catch (_) {

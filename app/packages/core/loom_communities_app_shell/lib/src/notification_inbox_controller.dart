@@ -10,11 +10,11 @@ class NotificationInboxController {
   static const workflowType = 'notification';
 
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
 
   const NotificationInboxController({
     required this.engine,
-    required this.personaId,
+    required this.fanId,
   });
 
   /// Counts this persona's unread notification instances by their real FSM
@@ -24,8 +24,8 @@ class NotificationInboxController {
       workflowType: workflowType,
       column: 'recipientFanId',
       op: 'count',
-      filter: {'recipientFanId': personaId, r'$state': 'unread'},
-      personaId: personaId,
+      filter: {'recipientFanId': fanId, r'$state': 'unread'},
+      fanId: fanId,
     );
     return (count as num).toInt();
   }
@@ -42,7 +42,7 @@ class NotificationInboxController {
   }) => RepeaterQuerySource(
     engine: engine,
     workflowType: workflowType,
-    personaId: personaId,
+    fanId: fanId,
     query: query,
     tabId: tabId,
   );
@@ -59,7 +59,7 @@ class NotificationInboxController {
   }) async {
     final page = await engine.queryInstances(
       tabId: tabId,
-      personaId: personaId,
+      fanId: fanId,
       query: query,
       limit: limit,
       cursor: cursor,
@@ -77,7 +77,7 @@ class NotificationInboxController {
       .where(
         (item) =>
             item.workflowType == workflowType &&
-            item.instanceData['recipientFanId'] == personaId,
+            item.instanceData['recipientFanId'] == fanId,
       )
       .toList(growable: false);
 
@@ -90,7 +90,7 @@ class NotificationInboxController {
       workflowType: workflowType,
       instanceId: notification.instanceId,
       transitionId: 'mark-read',
-      personaId: personaId,
+      fanId: fanId,
     );
   }
 }

@@ -50,52 +50,56 @@ void main() {
       )..registerDefinition(_machine());
     });
 
-    test('blocks creation of an overlapping booking at the same location',
-        () async {
-      await api.createInstance(
-        workflowType: 'event',
-        initialInstanceData: _event('Main hall', '10:00'),
-        personaId: 'organizer',
-      );
-
-      await expectLater(
-        api.createInstance(
+    test(
+      'blocks creation of an overlapping booking at the same location',
+      () async {
+        await api.createInstance(
           workflowType: 'event',
-          initialInstanceData: _event('Main hall', '11:30'),
-          personaId: 'organizer',
-        ),
-        throwsA(isA<StateError>()),
-      );
-    });
+          initialInstanceData: _event('Main hall', '10:00'),
+          fanId: 'organizer',
+        );
 
-    test('allows adjacent, non-overlapping bookings at the same location',
-        () async {
-      await api.createInstance(
-        workflowType: 'event',
-        initialInstanceData: _event('Main hall', '10:00'),
-        personaId: 'organizer',
-      );
+        await expectLater(
+          api.createInstance(
+            workflowType: 'event',
+            initialInstanceData: _event('Main hall', '11:30'),
+            fanId: 'organizer',
+          ),
+          throwsA(isA<StateError>()),
+        );
+      },
+    );
 
-      final secondId = await api.createInstance(
-        workflowType: 'event',
-        initialInstanceData: _event('Main hall', '12:00'),
-        personaId: 'organizer',
-      );
+    test(
+      'allows adjacent, non-overlapping bookings at the same location',
+      () async {
+        await api.createInstance(
+          workflowType: 'event',
+          initialInstanceData: _event('Main hall', '10:00'),
+          fanId: 'organizer',
+        );
 
-      expect(secondId, isNotEmpty);
-    });
+        final secondId = await api.createInstance(
+          workflowType: 'event',
+          initialInstanceData: _event('Main hall', '12:00'),
+          fanId: 'organizer',
+        );
+
+        expect(secondId, isNotEmpty);
+      },
+    );
 
     test('allows overlapping bookings at different locations', () async {
       await api.createInstance(
         workflowType: 'event',
         initialInstanceData: _event('Main hall', '10:00'),
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       final secondId = await api.createInstance(
         workflowType: 'event',
         initialInstanceData: _event('Community room', '10:30'),
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       expect(secondId, isNotEmpty);
@@ -105,14 +109,14 @@ void main() {
       final instanceId = await api.createInstance(
         workflowType: 'event',
         initialInstanceData: _event('Main hall', '10:00'),
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
 
       await api.updateInstanceFields(
         workflowType: 'event',
         instanceId: instanceId,
         fieldUpdates: {'location': 'Main hall'},
-        personaId: 'organizer',
+        fanId: 'organizer',
       );
     });
   });

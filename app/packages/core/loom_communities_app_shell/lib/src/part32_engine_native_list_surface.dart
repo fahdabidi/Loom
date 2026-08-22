@@ -53,7 +53,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
     if (!hadDefinitions ||
         oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.persona.roleId != widget.persona.roleId ||
         oldWidget.tabId != widget.tabId) {
       _load();
     }
@@ -104,21 +104,21 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
           );
         }
         final engine = snapshot.data!;
-        final personaId = ActiveIdentityScope.of(
+        final fanId = ActiveIdentityScope.of(
           context,
-        ).resolveEnginePersonaId(widget.persona.personaId);
+        ).resolveEngineFanId(widget.persona.fanId);
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,
           tabId: widget.tabId,
-          personaId: personaId,
+          fanId: fanId,
           rolesForInstance:
               widget.rolesForInstance ??
-              (instance, viewerPersonaId) => _deriveActorOrReceiverRolesForInstance(
+              (instance, viewerFanId) => _deriveActorOrReceiverRolesForInstance(
                 definitions,
                 instance,
-                viewerPersonaId,
-                widget.persona.personaId,
+                viewerFanId,
+                widget.persona.roleId,
               ),
           builder: (context, bindings, changed) {
             if (bindings.isEmpty) {
@@ -126,8 +126,8 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                 key: ValueKey('engine-native-list-empty-${widget.tabId}'),
               );
             }
-            final tableBindingsByGroup = <_TableGroupKey,
-                List<EngineNativeResolvedBinding>>{};
+            final tableBindingsByGroup =
+                <_TableGroupKey, List<EngineNativeResolvedBinding>>{};
             for (final resolved in bindings) {
               if (resolved.binding.cardSurfaceFamily != 'table') continue;
               final key = _TableGroupKey(
@@ -157,15 +157,15 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                             workflowType: resolved.machine.workflowType,
                           ).widgetKey,
                         ),
-                        bindings: tableBindingsByGroup[
-                          _TableGroupKey(
-                            tabId: resolved.binding.tabId,
-                            workflowType: resolved.machine.workflowType,
-                          )
-                        ]!,
+                        bindings:
+                            tableBindingsByGroup[_TableGroupKey(
+                              tabId: resolved.binding.tabId,
+                              workflowType: resolved.machine.workflowType,
+                            )]!,
                         engine: engine,
                         communityExtensionId: widget.experience.extensionId,
-                        personaId: personaId,
+                        fanId: fanId,
+                        roleId: widget.persona.roleId,
                         accent: widget.accent,
                         modernTheme: widget.modernTheme,
                         onInstanceChanged: changed,
@@ -181,7 +181,8 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                         resolved: resolved,
                         engine: engine,
                         communityExtensionId: widget.experience.extensionId,
-                        personaId: personaId,
+                        fanId: fanId,
+                        roleId: widget.persona.roleId,
                         accent: widget.accent,
                         onInstanceChanged: changed,
                         onInstanceScopedCreate: widget.onInstanceScopedCreate,
@@ -210,10 +211,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
 enum _WorkflowTableSortDirection { none, ascending, descending }
 
 class _TableGroupKey {
-  const _TableGroupKey({
-    required this.tabId,
-    required this.workflowType,
-  });
+  const _TableGroupKey({required this.tabId, required this.workflowType});
 
   final String tabId;
   final String workflowType;
@@ -233,10 +231,7 @@ class _TableGroupKey {
 }
 
 class _TableColumn {
-  const _TableColumn({
-    required this.field,
-    required this.schema,
-  });
+  const _TableColumn({required this.field, required this.schema});
 
   final String field;
   final InstanceDataField schema;
@@ -248,7 +243,8 @@ class WorkflowTableArchetypeCard extends StatefulWidget {
     required this.bindings,
     required this.engine,
     required this.communityExtensionId,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -258,7 +254,8 @@ class WorkflowTableArchetypeCard extends StatefulWidget {
   final List<EngineNativeResolvedBinding> bindings;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -273,8 +270,7 @@ class _WorkflowTableArchetypeCardState
     extends State<WorkflowTableArchetypeCard> {
   String _search = '';
   String? _sortField;
-  _WorkflowTableSortDirection _sortDirection =
-      _WorkflowTableSortDirection.none;
+  _WorkflowTableSortDirection _sortDirection = _WorkflowTableSortDirection.none;
 
   String get _tableGroupId =>
       '${widget.bindings.first.binding.tabId}-${widget.bindings.first.machine.workflowType}';
@@ -347,9 +343,9 @@ class _WorkflowTableArchetypeCardState
       final compare = leftValue.compareTo(rightValue);
       if (compare != 0) return compare;
     }
-    return _valueText(leftValue).toLowerCase().compareTo(
-      _valueText(rightValue).toLowerCase(),
-    );
+    return _valueText(
+      leftValue,
+    ).toLowerCase().compareTo(_valueText(rightValue).toLowerCase());
   }
 
   List<EngineNativeResolvedBinding> get _orderedBindings {
@@ -361,18 +357,16 @@ class _WorkflowTableArchetypeCardState
     }
     final sortSchema = _machine.instanceDataSchema[sortField];
     if (sortSchema == null) return bindings;
-    bindings.sort(
-      (left, right) {
-        final compare = _compareValues(left, right, sortField, sortSchema);
-        if (compare == 0) {
-          return left.instance.instanceId.compareTo(right.instance.instanceId);
-        }
-        if (_sortDirection == _WorkflowTableSortDirection.ascending) {
-          return compare;
-        }
-        return -compare;
-      },
-    );
+    bindings.sort((left, right) {
+      final compare = _compareValues(left, right, sortField, sortSchema);
+      if (compare == 0) {
+        return left.instance.instanceId.compareTo(right.instance.instanceId);
+      }
+      if (_sortDirection == _WorkflowTableSortDirection.ascending) {
+        return compare;
+      }
+      return -compare;
+    });
     return bindings;
   }
 
@@ -435,10 +429,7 @@ class _WorkflowTableArchetypeCardState
     return '${binding.machine.workflowType} • ${binding.instance.instanceId}';
   }
 
-  void _openDetail(
-    BuildContext context,
-    EngineNativeResolvedBinding resolved,
-  ) {
+  void _openDetail(BuildContext context, EngineNativeResolvedBinding resolved) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -456,7 +447,8 @@ class _WorkflowTableArchetypeCardState
               resolved: resolved,
               engine: widget.engine,
               communityExtensionId: widget.communityExtensionId,
-              personaId: widget.personaId,
+              fanId: widget.fanId,
+              roleId: widget.roleId,
               accent: widget.accent,
               modernTheme: widget.modernTheme,
               displayContext: 'detail',
@@ -523,8 +515,7 @@ class _WorkflowTableArchetypeCardState
                   key: ValueKey('workflow-table-data-$_tableGroupId'),
                   sortColumnIndex: _sortColumnIndex,
                   sortAscending:
-                      _sortDirection !=
-                      _WorkflowTableSortDirection.descending,
+                      _sortDirection != _WorkflowTableSortDirection.descending,
                   columns: [
                     for (final column in columns)
                       DataColumn(
@@ -578,7 +569,8 @@ class _WorkflowTableArchetypeCardState
                                     'workflow-table-cell-$_tableGroupId-${binding.instance.instanceId}-${columns[i].field}',
                                   ),
                                   _valueText(
-                                    binding.instance.instanceData[columns[i].field],
+                                    binding.instance.instanceData[columns[i]
+                                        .field],
                                   ),
                                 ),
                               ),
@@ -607,15 +599,15 @@ String _humanizeFieldName(String key) {
 Iterable<String> _deriveActorOrReceiverRolesForInstance(
   Map<String, LoomWorkflowStateMachine> definitions,
   WorkflowInstance instance,
-  String viewerPersonaId,
-  String viewerPersonaTypeId,
+  String viewerFanId,
+  String viewerRoleId,
 ) {
   final machine = definitions[instance.workflowType];
   if (machine == null) return const <String>{};
   return deriveInstanceRoles(
     machine,
     instance,
-    viewerPersonaId: viewerPersonaId,
-    viewerPersonaTypeId: viewerPersonaTypeId,
+    viewerFanId: viewerFanId,
+    viewerRoleId: viewerRoleId,
   );
 }

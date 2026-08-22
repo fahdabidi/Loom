@@ -15,7 +15,7 @@ void main() {
         _seedJson()..['createdByFanId'] = 'fan-v4',
       );
 
-      expect(seed.createdByPersonaId, 'fan-v4');
+      expect(seed.createdByFanId, 'fan-v4');
     });
 
     test('does not read the legacy createdByPersonaId spelling', () {
@@ -23,7 +23,7 @@ void main() {
         _seedJson()..['createdByPersonaId'] = 'fan-legacy',
       );
 
-      expect(seed.createdByPersonaId, isNull);
+      expect(seed.createdByFanId, isNull);
     });
 
     test('treats an empty v4 creator as absent', () {
@@ -31,13 +31,13 @@ void main() {
         _seedJson()..['createdByFanId'] = '',
       );
 
-      expect(emptyV4.createdByPersonaId, isNull);
+      expect(emptyV4.createdByFanId, isNull);
     });
 
     test('returns null when the creator is absent', () {
       final seed = LoomWorkflowSeedInstance.fromJson(_seedJson());
 
-      expect(seed.createdByPersonaId, isNull);
+      expect(seed.createdByFanId, isNull);
     });
   });
 }

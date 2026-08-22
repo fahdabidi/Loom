@@ -149,7 +149,7 @@ void main() {
     );
 
     testWidgets(
-      'WorkflowFactPillRow renders icon/label schema and hideWhenEmpty for queuedPersonaIds',
+      'WorkflowFactPillRow renders icon/label schema and hideWhenEmpty for queuedFanIds',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(

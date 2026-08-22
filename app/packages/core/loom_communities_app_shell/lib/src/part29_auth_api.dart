@@ -10,7 +10,7 @@ enum InviteStatus { pending, claimed, revoked }
 class LoomCommunityInvite {
   final String inviteId;
   final String communityExtensionId;
-  final String personaTypeId;
+  final String roleId;
   final String issuedByAccountId;
   final String code;
   final InviteStatus status;
@@ -19,7 +19,7 @@ class LoomCommunityInvite {
   const LoomCommunityInvite({
     required this.inviteId,
     required this.communityExtensionId,
-    required this.personaTypeId,
+    required this.roleId,
     required this.issuedByAccountId,
     required this.code,
     required this.status,
@@ -29,19 +29,19 @@ class LoomCommunityInvite {
 
 /// An account represents either a seeded demo individual or a newly
 /// signed-up user.  [accountId] is the stable per-individual id (e.g.
-/// `"tabletop-member-05"`); [personaTypeId] is the *declared persona type*
+/// `"tabletop-member-05"`); [roleId] is the *declared persona type*
 /// this account plays (e.g. `"tabletop-member"` — the same string that
-/// appears in `LoomPersonaDefinition.personaId`).
+/// appears in `LoomPersonaDefinition.roleId`).
 class LoomAccount {
   final String accountId;
   final String displayName;
-  final String personaTypeId;
+  final String roleId;
   final MembershipStatus status;
 
   const LoomAccount({
     required this.accountId,
     required this.displayName,
-    required this.personaTypeId,
+    required this.roleId,
     this.status = MembershipStatus.active,
   });
 
@@ -49,10 +49,10 @@ class LoomAccount {
   bool operator ==(Object other) =>
       other is LoomAccount &&
       other.accountId == accountId &&
-      other.personaTypeId == personaTypeId;
+      other.roleId == roleId;
 
   @override
-  int get hashCode => Object.hash(accountId, personaTypeId);
+  int get hashCode => Object.hash(accountId, roleId);
 }
 
 /// A signed-in session binding one [LoomAccount] to the current user.
@@ -138,7 +138,7 @@ abstract class LoomAuthApi {
   Future<LoomSignUpResult> signUp({
     required String communityExtensionId,
     required String displayName,
-    required String personaTypeId,
+    required String roleId,
   });
 
   /// Redeems a pending invite and starts an active session for the new
@@ -150,7 +150,7 @@ abstract class LoomAuthApi {
 
   /// Issues a pending invite on behalf of an active, admin-capable account.
   Future<LoomCommunityInvite> issueInvite({
-    required String personaTypeId,
+    required String roleId,
     required String issuedByAccountId,
   });
 

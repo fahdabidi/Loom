@@ -2,7 +2,7 @@ part of '../loom_communities_app_shell.dart';
 
 /// Supplies the authoritative roles for one persisted workflow instance.
 typedef EngineNativeRolesForInstance =
-    Iterable<String> Function(WorkflowInstance instance, String personaId);
+    Iterable<String> Function(WorkflowInstance instance, String fanId);
 
 /// Builds the complete successful result. Product surfaces own this layout.
 typedef EngineNativeBindingsBuilder =
@@ -13,11 +13,12 @@ typedef EngineNativeBindingsBuilder =
     );
 
 /// Opens a create action that is owned by a specific rendered instance.
-typedef EngineNativeInstanceScopedCreate = Future<void> Function({
-  required WorkflowAction action,
-  required WorkflowInstance instance,
-  required RenderBinding binding,
-});
+typedef EngineNativeInstanceScopedCreate =
+    Future<void> Function({
+      required WorkflowAction action,
+      required WorkflowInstance instance,
+      required RenderBinding binding,
+    });
 
 @immutable
 class EngineNativeResolvedBinding {
@@ -60,7 +61,7 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
     required this.engine,
     required this.definitions,
     required this.tabId,
-    required this.personaId,
+    required this.fanId,
     required this.builder,
     this.rolesForInstance = _noRolesForInstance,
     this.pageSize = 25,
@@ -69,14 +70,14 @@ class EngineNativeBindingDispatcher extends StatefulWidget {
   final WorkflowEngineApi engine;
   final Map<String, LoomWorkflowStateMachine> definitions;
   final String tabId;
-  final String personaId;
+  final String fanId;
   final EngineNativeBindingsBuilder builder;
   final EngineNativeRolesForInstance rolesForInstance;
   final int pageSize;
 
   static Iterable<String> _noRolesForInstance(
     WorkflowInstance instance,
-    String personaId,
+    String fanId,
   ) => const <String>[];
 
   @override
@@ -102,7 +103,7 @@ class _EngineNativeBindingDispatcherState
     if (!identical(widget.engine, oldWidget.engine) ||
         !identical(widget.definitions, oldWidget.definitions) ||
         widget.tabId != oldWidget.tabId ||
-        widget.personaId != oldWidget.personaId ||
+        widget.fanId != oldWidget.fanId ||
         !identical(widget.rolesForInstance, oldWidget.rolesForInstance) ||
         widget.pageSize != oldWidget.pageSize) {
       // A widget reconfiguration can make the displayed bindings belong to a
@@ -125,7 +126,7 @@ class _EngineNativeBindingDispatcherState
       Map<String, LoomWorkflowStateMachine>.from(widget.definitions),
     );
     final tabId = widget.tabId;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final rolesForInstance = widget.rolesForInstance;
     final pageSize = widget.pageSize;
     setState(() {
@@ -140,7 +141,7 @@ class _EngineNativeBindingDispatcherState
       engine: engine,
       definitions: definitions,
       tabId: tabId,
-      personaId: personaId,
+      fanId: fanId,
       rolesForInstance: rolesForInstance,
       pageSize: pageSize,
     );
@@ -151,7 +152,7 @@ class _EngineNativeBindingDispatcherState
     required WorkflowEngineApi engine,
     required Map<String, LoomWorkflowStateMachine> definitions,
     required String tabId,
-    required String personaId,
+    required String fanId,
     required EngineNativeRolesForInstance rolesForInstance,
     required int pageSize,
   }) async {
@@ -162,7 +163,7 @@ class _EngineNativeBindingDispatcherState
       while (true) {
         final page = await engine.queryInstances(
           tabId: tabId,
-          personaId: personaId,
+          fanId: fanId,
           limit: pageSize,
           cursor: cursor,
         );
@@ -176,7 +177,7 @@ class _EngineNativeBindingDispatcherState
             nextCursor.trim().isEmpty ||
             !seenCursors.add(nextCursor)) {
           throw StateError(
-            'Invalid pagination cursor while loading $tabId for $personaId',
+            'Invalid pagination cursor while loading $tabId for $fanId',
           );
         }
         cursor = nextCursor;
@@ -194,9 +195,9 @@ class _EngineNativeBindingDispatcherState
         final resolved = resolveBindings(
           machine,
           instance.currentState,
-          rolesForInstance(instance, personaId),
+          rolesForInstance(instance, fanId),
           instanceData: instance.instanceData,
-          personaId: personaId,
+          fanId: fanId,
         );
         for (var index = 0; index < machine.renderBindings.length; index++) {
           final binding = machine.renderBindings[index];
@@ -235,17 +236,17 @@ class _EngineNativeBindingDispatcherState
   @override
   Widget build(BuildContext context) {
     final tabId = widget.tabId;
-    final personaId = widget.personaId;
+    final fanId = widget.fanId;
     final error = _error;
     late final Widget child;
     if (error != null) {
       child = Column(
-        key: Key('engine-native-bindings-error-$tabId-$personaId'),
+        key: Key('engine-native-bindings-error-$tabId-$fanId'),
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('$error'),
           TextButton(
-            key: Key('engine-native-bindings-retry-$tabId-$personaId'),
+            key: Key('engine-native-bindings-retry-$tabId-$fanId'),
             onPressed: _startLoad,
             child: const Text('Retry'),
           ),
@@ -255,7 +256,7 @@ class _EngineNativeBindingDispatcherState
       final bindings = _bindings;
       if (bindings == null) {
         child = SizedBox(
-          key: Key('engine-native-bindings-loading-$tabId-$personaId'),
+          key: Key('engine-native-bindings-loading-$tabId-$fanId'),
         );
       } else {
         final generation = _generation;
@@ -265,7 +266,7 @@ class _EngineNativeBindingDispatcherState
         });
         child = bindings.isEmpty
             ? KeyedSubtree(
-                key: Key('engine-native-bindings-empty-$tabId-$personaId'),
+                key: Key('engine-native-bindings-empty-$tabId-$fanId'),
                 child: result,
               )
             : result;
@@ -293,7 +294,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
     required this.resolved,
     required this.engine,
     required this.communityExtensionId,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -309,7 +311,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
   final String communityExtensionId;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -330,7 +333,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           responseMachine: resolved.responseMachine,
           engine: engine,
           communityExtensionId: communityExtensionId,
-          personaId: personaId,
+          fanId: fanId,
+          roleId: roleId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: [
@@ -338,7 +342,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
               if (action.kind == 'create' &&
                   action.scope == 'instance' &&
                   action.presentation == 'button' &&
-                  action.byPersonaIds?.contains(personaId) == true)
+                  action.byRoleIds?.contains(roleId) == true)
                 action,
           ],
           onInstanceScopedCreate: onInstanceScopedCreate == null
@@ -361,7 +365,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
             key: contentKey,
             resolved: resolved,
             engine: engine,
-            personaId: personaId,
+            fanId: fanId,
             accent: accent,
             modernTheme: modernTheme,
             onInstanceChanged: onInstanceChanged,
@@ -372,7 +376,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           instance: resolved.instance,
           machine: resolved.machine,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           displayContext: displayContext,
           showEditors: showEditors,
           visibleFieldKeys: visibleFieldKeys,
@@ -384,7 +388,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
               if (action.kind == 'create' &&
                   action.scope == 'instance' &&
                   action.presentation == 'button' &&
-                  action.byPersonaIds?.contains(personaId) == true)
+                  action.byRoleIds?.contains(roleId) == true)
                 action,
           ],
           onInstanceScopedCreate: onInstanceScopedCreate == null
@@ -400,7 +404,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           key: contentKey,
           resolved: resolved,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           accent: accent,
           modernTheme: modernTheme,
           displayContext: displayContext,
@@ -412,7 +416,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           key: contentKey,
           resolved: resolved,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           accent: accent,
           modernTheme: modernTheme,
           displayContext: displayContext,
@@ -424,7 +428,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           key: contentKey,
           resolved: resolved,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
           modernTheme: modernTheme,
@@ -436,7 +440,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           key: contentKey,
           resolved: resolved,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
           modernTheme: modernTheme,
@@ -449,7 +453,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           instance: resolved.instance,
           machine: resolved.machine,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           displayContext: displayContext,
           showEditors: showEditors,
           visibleFieldKeys: visibleFieldKeys,
@@ -461,7 +465,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
               if (action.kind == 'create' &&
                   action.scope == 'instance' &&
                   action.presentation == 'button' &&
-                  action.byPersonaIds?.contains(personaId) == true)
+                  action.byRoleIds?.contains(roleId) == true)
                 action,
           ],
           onInstanceScopedCreate: onInstanceScopedCreate == null

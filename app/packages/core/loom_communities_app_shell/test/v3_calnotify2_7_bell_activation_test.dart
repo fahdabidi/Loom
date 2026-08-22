@@ -13,7 +13,10 @@ import 'authz_p6_test_helpers.dart';
 
 const _fixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc';
-const _personaId = 'tabletop-member';
+const _memberRoleId = 'tabletop-member';
+// This fixture's default member account and member role deliberately use the
+// same textual id; keep the two typed constants separate at the boundary.
+const _memberFanId = 'tabletop-member';
 
 File _fixtureFile() {
   var directory = Directory.current;
@@ -79,7 +82,7 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: _personaId,
+      roleId: _memberRoleId,
     ),
   ),
 );
@@ -104,10 +107,10 @@ Future<void> _settleBounded(WidgetTester tester) async {
   }
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
+Future<void> _selectPersona(WidgetTester tester, String roleId) async {
   await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpUntil(tester, find.byKey(ValueKey('persona-option-$personaId')));
-  await tester.tap(find.byKey(ValueKey('persona-option-$personaId')));
+  await _pumpUntil(tester, find.byKey(ValueKey('persona-option-$roleId')));
+  await tester.tap(find.byKey(ValueKey('persona-option-$roleId')));
   await _settleBounded(tester);
 }
 
@@ -138,9 +141,9 @@ void main() {
           );
           return engine.createInstance(
             workflowType: 'notification',
-            personaId: 'notification-effect',
+            fanId: 'notification-effect',
             initialInstanceData: const {
-              'recipientFanId': _personaId,
+              'recipientFanId': _memberFanId,
               'title': 'Tournament reminder',
               'body': 'The summer tournament ballot opens soon.',
               'createdAt': '2026-07-31T12:00:00Z',
@@ -154,7 +157,7 @@ void main() {
           find.byKey(const ValueKey('notification-bell-button')),
         );
 
-        await _selectPersona(tester, _personaId);
+        await _selectPersona(tester, _memberRoleId);
         await _pumpUntil(tester, _badgeLabel('2'));
 
         expect(

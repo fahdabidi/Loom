@@ -100,8 +100,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 Future<void> _selectTab(
@@ -124,7 +124,7 @@ Future<WorkflowInstance> _proposalByTitle(
 ) async {
   final page = await engine.queryInstances(
     tabId: 'home',
-    personaId: 'tabletop-member',
+    fanId: 'tabletop-member',
     limit: 100,
   );
   return page.items.firstWhere(
@@ -240,7 +240,7 @@ Future<void> _decideFromAdmin(
     final page = (await tester.runAsync(
       () => engine.queryInstances(
         tabId: 'admin',
-        personaId: 'tabletop-organizer',
+        fanId: 'tabletop-organizer',
         limit: 100,
       ),
     ))!;
@@ -293,7 +293,7 @@ void main() {
 
     final memberTabIds = appShellTabsFor(
       experience: experience,
-      personaId: 'tabletop-member',
+      roleId: 'tabletop-member',
       appShellConfiguration: appShellConfiguration,
       hasActiveMembership: true,
     ).map((tab) => tab.tabId);
@@ -301,7 +301,7 @@ void main() {
 
     final organizerAdmin = appShellTabsFor(
       experience: experience,
-      personaId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
       appShellConfiguration: appShellConfiguration,
       hasActiveMembership: true,
     ).singleWhere((tab) => tab.tabId == 'admin');
@@ -320,7 +320,7 @@ void main() {
       'engine-native-generic-list',
       reason: 'The Admin tab mixes multiple card archetypes.',
     );
-    expect(organizerAdmin.visiblePersonaIds, ['tabletop-organizer']);
+    expect(organizerAdmin.visibleRoleIds, ['tabletop-organizer']);
   });
 
   testWidgets(
@@ -338,7 +338,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-member',
+                roleId: 'tabletop-member',
               ),
             ),
           ),
@@ -388,7 +388,7 @@ void main() {
             instanceId: changesId,
             currentState: 'pending',
             instanceData: initialPending[changesTitle]!.instanceData,
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           ),
         ))!;
         expect(

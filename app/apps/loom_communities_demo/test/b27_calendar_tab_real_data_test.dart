@@ -231,6 +231,7 @@ _writeTabletopClubPackagePair(
     location: 'Community room',
     host: includeHost ? 'Alex Chen (Organizer)' : null,
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     memberRoleId: 'tabletop-member',
     capacity: 20,
     responseSeeds: _goingResponseSeeds(
@@ -248,6 +249,7 @@ _writeTabletopClubPackagePair(
     location: 'Community hall',
     host: includeHost ? 'Alex Chen (Organizer)' : null,
     organizerRoleId: 'tabletop-organizer',
+    organizerFanId: 'tabletop-organizer-01',
     memberRoleId: 'tabletop-member',
     capacity: 20,
   );

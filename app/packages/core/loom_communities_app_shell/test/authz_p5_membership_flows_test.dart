@@ -7,26 +7,30 @@ const _communityId = 'authz-p5-membership-community';
 
 const _personas = [
   LoomPersonaDefinition(
-    personaId: 'admin',
+    fanId: 'admin',
+    roleId: 'admin',
     label: 'Community admin',
     roleLabel: 'Admin',
     description: 'Manages community membership.',
   ),
   LoomPersonaDefinition(
-    personaId: 'member',
+    fanId: 'member',
+    roleId: 'member',
     label: 'Member',
     roleLabel: 'Member',
     description: 'Joins community activities.',
   ),
   LoomPersonaDefinition(
-    personaId: 'applicant',
+    fanId: 'applicant',
+    roleId: 'applicant',
     label: 'Applicant',
     roleLabel: 'Applicant',
     description: 'Requests access to the community.',
     accessMode: LoomPersonaAccessMode.requiresApproval,
   ),
   LoomPersonaDefinition(
-    personaId: 'invited',
+    fanId: 'invited',
+    roleId: 'invited',
     label: 'Invited member',
     roleLabel: 'Member',
     description: 'Joins with an invitation.',
@@ -56,7 +60,7 @@ LoomExperienceDefinition _experience() {
             label: 'Approve membership',
             from: ['pending'],
             to: 'approved',
-            guard: WorkflowGuard(allowedPersonaIds: ['admin']),
+            guard: WorkflowGuard(allowedRoleIds: ['admin']),
           ),
         ],
         renderBindings: const [
@@ -83,12 +87,12 @@ LocalAuthApi _api() {
     LoomAccount(
       accountId: 'admin-1',
       displayName: 'Admin One',
-      personaTypeId: 'admin',
+      roleId: 'admin',
     ),
     LoomAccount(
       accountId: 'member-1',
       displayName: 'Member One',
-      personaTypeId: 'member',
+      roleId: 'member',
     ),
   ]);
   return api;
@@ -115,7 +119,7 @@ void main() {
         final active = await api.signUp(
           communityExtensionId: _communityId,
           displayName: 'Open User',
-          personaTypeId: 'member',
+          roleId: 'member',
         );
         expect(active, isA<LoomActiveSignUpResult>());
         expect(active.account.status, MembershipStatus.active);
@@ -126,7 +130,7 @@ void main() {
         final pending = await api.signUp(
           communityExtensionId: _communityId,
           displayName: 'Applicant User',
-          personaTypeId: 'applicant',
+          roleId: 'applicant',
         );
         expect(pending, isA<LoomPendingApprovalSignUpResult>());
         expect(pending.account.status, MembershipStatus.pendingApproval);
@@ -137,7 +141,7 @@ void main() {
           api.signUp(
             communityExtensionId: _communityId,
             displayName: 'Invite User',
-            personaTypeId: 'invited',
+            roleId: 'invited',
           ),
           throwsA(
             isA<LoomAuthException>().having(
@@ -157,7 +161,7 @@ void main() {
         final pending = await api.signUp(
           communityExtensionId: _communityId,
           displayName: 'Waiting User',
-          personaTypeId: 'applicant',
+          roleId: 'applicant',
         );
 
         await expectLater(
@@ -185,7 +189,7 @@ void main() {
         final api = _api();
         await api.signIn(accountId: 'admin-1');
         final invite = await api.issueInvite(
-          personaTypeId: 'invited',
+          roleId: 'invited',
           issuedByAccountId: 'admin-1',
         );
 
@@ -209,7 +213,7 @@ void main() {
           displayName: 'Invited User',
         );
         expect(session.account.status, MembershipStatus.active);
-        expect(session.account.personaTypeId, 'invited');
+        expect(session.account.roleId, 'invited');
         expect(api.currentSession, same(session));
 
         await expectLater(
@@ -232,7 +236,7 @@ void main() {
         await api.signIn(accountId: 'admin-1');
 
         final invite = await api.issueInvite(
-          personaTypeId: 'invited',
+          roleId: 'invited',
           issuedByAccountId: 'admin-1',
         );
         final invitedSession = await api.redeemInvite(
@@ -245,7 +249,7 @@ void main() {
         final pending = await api.signUp(
           communityExtensionId: _communityId,
           displayName: 'Approval Recipient',
-          personaTypeId: 'applicant',
+          roleId: 'applicant',
         );
         final approved = await api.approveAccount(
           accountId: pending.account.accountId,

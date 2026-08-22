@@ -20,7 +20,7 @@ void main() {
               'title': 'Test notification',
               'body': 'No platform channel is available in this test.',
             },
-            createdByPersonaId: 'member',
+            createdByFanId: 'member',
           ),
         ),
         completes,

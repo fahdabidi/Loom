@@ -13,7 +13,7 @@ class VotePollArchetypeCard extends StatefulWidget {
     super.key,
     required this.resolved,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.onInstanceChanged,
     this.accent,
     this.modernTheme,
@@ -21,7 +21,7 @@ class VotePollArchetypeCard extends StatefulWidget {
 
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final Color? accent;
   final LoomCardTheme? modernTheme;
@@ -49,7 +49,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
     final newInstance = widget.resolved.instance;
     if (oldInstance.instanceId != newInstance.instanceId ||
         oldInstance.currentState != newInstance.currentState ||
-        oldWidget.personaId != widget.personaId ||
+        oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _loadActions();
     }
@@ -71,7 +71,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
         instanceId: instance.instanceId,
         currentState: instance.currentState,
         instanceData: instance.instanceData,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       if (!mounted || request != _actionRequest) return;
       setState(() {
@@ -150,7 +150,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
         workflowType: instance.workflowType,
         instanceId: instance.instanceId,
         transitionId: itemAction.transitionId,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
         inputs: _inputsForItem(candidate),
       );
     });
@@ -163,7 +163,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
         workflowType: instance.workflowType,
         instanceId: instance.instanceId,
         transitionId: 'close-vote',
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
     });
   }

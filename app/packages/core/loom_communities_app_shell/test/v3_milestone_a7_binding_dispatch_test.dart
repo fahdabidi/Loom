@@ -44,7 +44,7 @@ class _CountingEngine implements WorkflowEngineApi {
   _CountingEngine(this.query);
   final Future<InstancePage> Function({
     required String tabId,
-    required String personaId,
+    required String fanId,
     required int limit,
     String? cursor,
   })
@@ -54,18 +54,13 @@ class _CountingEngine implements WorkflowEngineApi {
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
     String? cursor,
   }) {
     queries++;
-    return this.query(
-      tabId: tabId,
-      personaId: personaId,
-      limit: limit,
-      cursor: cursor,
-    );
+    return this.query(tabId: tabId, fanId: fanId, limit: limit, cursor: cursor);
   }
 
   @override
@@ -75,10 +70,10 @@ class _CountingEngine implements WorkflowEngineApi {
 class _DelegatingEngine extends _CountingEngine {
   _DelegatingEngine(this.delegate)
     : super(
-        ({required tabId, required personaId, required limit, cursor}) =>
+        ({required tabId, required fanId, required limit, cursor}) =>
             delegate.queryInstances(
               tabId: tabId,
-              personaId: personaId,
+              fanId: fanId,
               limit: limit,
               cursor: cursor,
             ),
@@ -92,7 +87,7 @@ WorkflowInstance _instance(String id, String type, {String state = 'open'}) =>
       workflowType: type,
       currentState: state,
       instanceData: const {'title': 'controlled'},
-      createdByPersonaId: 'owner',
+      createdByFanId: 'owner',
     );
 
 Future<WorkflowInstance> _read(
@@ -100,7 +95,7 @@ Future<WorkflowInstance> _read(
   String id,
 ) async => (await engine.queryInstances(
   tabId: 'read',
-  personaId: 'reader',
+  fanId: 'reader',
 )).items.singleWhere((item) => item.instanceId == id);
 
 void main() {
@@ -124,14 +119,14 @@ void main() {
         ids.add(
           await local.createInstance(
             workflowType: 'calendar-event',
-            personaId: 'owner',
+            fanId: 'owner',
             initialInstanceData: {'title': title},
           ),
         );
       }
       final hiddenId = await local.createInstance(
         workflowType: 'home-only',
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: const {'title': '04-home-only'},
       );
       final engine = _DelegatingEngine(local);
@@ -142,7 +137,7 @@ void main() {
             engine: engine,
             definitions: {'calendar-event': calendar, 'home-only': homeOnly},
             tabId: 'calendar',
-            personaId: 'viewer',
+            fanId: 'viewer',
             pageSize: 1,
             builder: (_, bindings, __) {
               seen = bindings;
@@ -183,7 +178,7 @@ void main() {
       local.registerDefinition(machine);
       final id = await local.createInstance(
         workflowType: 'roles',
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: const {'title': 'roles'},
       );
       late List<EngineNativeResolvedBinding> seen;
@@ -193,7 +188,7 @@ void main() {
             engine: local,
             definitions: {'roles': machine},
             tabId: 'calendar',
-            personaId: 'viewer',
+            fanId: 'viewer',
             rolesForInstance: (_, __) => const ['alpha', 'beta'],
             builder: (_, bindings, __) {
               seen = bindings;
@@ -236,7 +231,7 @@ void main() {
     local.registerDefinition(machine);
     await local.createInstance(
       workflowType: 'invite',
-      personaId: 'owner',
+      fanId: 'owner',
       initialInstanceData: {
         'title': 'invite',
         'audienceScope': 'selected',
@@ -251,7 +246,7 @@ void main() {
             engine: local,
             definitions: {'invite': machine},
             tabId: 'calendar',
-            personaId: persona,
+            fanId: persona,
             builder: (_, bindings, __) {
               output = bindings;
               return const SizedBox();
@@ -274,7 +269,7 @@ void main() {
     (tester) async {
       for (final tab in [_customTabId]) {
         final engine = _CountingEngine(
-          ({required tabId, required personaId, required limit, cursor}) =>
+          ({required tabId, required fanId, required limit, cursor}) =>
               Future.value(const InstancePage(items: [])),
         );
         var received = -1;
@@ -284,7 +279,7 @@ void main() {
               engine: engine,
               definitions: const {},
               tabId: tab,
-              personaId: 'p',
+              fanId: 'p',
               builder: (_, bindings, __) {
                 received = bindings.length;
                 return const SizedBox();
@@ -314,7 +309,7 @@ void main() {
               engine: engine,
               definitions: const {},
               tabId: 'calendar',
-              personaId: 'p',
+              fanId: 'p',
               builder: (_, __, ___) {
                 successes++;
                 return const SizedBox();
@@ -333,7 +328,7 @@ void main() {
 
       await expectError(
         _CountingEngine(
-          ({required tabId, required personaId, required limit, cursor}) =>
+          ({required tabId, required fanId, required limit, cursor}) =>
               Future.value(
                 InstancePage(items: [_instance('missing-id', 'missing-type')]),
               ),
@@ -341,7 +336,7 @@ void main() {
         'missing-type instance missing-id',
       );
       final blank = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
+        ({required tabId, required fanId, required limit, cursor}) =>
             Future.value(
               const InstancePage(items: [], hasMore: true, nextCursor: '  '),
             ),
@@ -349,13 +344,13 @@ void main() {
       await expectError(blank, 'Invalid pagination cursor');
       expect(blank.queries, 1);
       final nullCursor = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
+        ({required tabId, required fanId, required limit, cursor}) =>
             Future.value(const InstancePage(items: [], hasMore: true)),
       );
       await expectError(nullCursor, 'Invalid pagination cursor');
       expect(nullCursor.queries, 1);
       final repeated = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
+        ({required tabId, required fanId, required limit, cursor}) =>
             Future.value(
               InstancePage(
                 items: const [],
@@ -380,13 +375,13 @@ void main() {
       local.registerDefinition(machine);
       final id = await local.createInstance(
         workflowType: 'retry',
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: const {'title': 'retry'},
       );
       var first = true;
       final engine = _CountingEngine(({
         required tabId,
-        required personaId,
+        required fanId,
         required limit,
         cursor,
       }) {
@@ -396,7 +391,7 @@ void main() {
         }
         return local.queryInstances(
           tabId: tabId,
-          personaId: personaId,
+          fanId: fanId,
           limit: limit,
           cursor: cursor,
         );
@@ -409,7 +404,7 @@ void main() {
             engine: engine,
             definitions: {'retry': machine},
             tabId: 'calendar',
-            personaId: 'p',
+            fanId: 'p',
             builder: (_, bindings, __) {
               calls++;
               seen = bindings;
@@ -456,12 +451,10 @@ void main() {
       final a = Completer<InstancePage>();
       final b = Completer<InstancePage>();
       final engineA = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
-            a.future,
+        ({required tabId, required fanId, required limit, cursor}) => a.future,
       );
       final engineB = _CountingEngine(
-        ({required tabId, required personaId, required limit, cursor}) =>
-            b.future,
+        ({required tabId, required fanId, required limit, cursor}) => b.future,
       );
       final machine = _machine('stale', [
         _binding('calendar'),
@@ -476,7 +469,7 @@ void main() {
           engine: engine,
           definitions: {'stale': machine},
           tabId: tab,
-          personaId: persona,
+          fanId: persona,
           builder: (_, bindings, __) => Text(
             'published-$persona-${bindings.map((b) => b.instance.instanceId).join(",")}',
           ),
@@ -511,7 +504,7 @@ void main() {
       final staleGiving = Completer<InstancePage>();
       final oldWithTwoTabCompletions = _CountingEngine(({
         required tabId,
-        required personaId,
+        required fanId,
         required limit,
         cursor,
       }) {
@@ -611,7 +604,7 @@ void main() {
       await workflowEngineForExtensionId(extensionId);
       final tabs = appShellTabsFor(
         experience: experience,
-        personaId: 'local-member',
+        roleId: 'local-member',
         appShellConfiguration: const {
           'tabs': [
             {'tabId': tabId, 'label': 'Custom schedule'},
@@ -621,7 +614,8 @@ void main() {
       final customTab = tabs.singleWhere((tab) => tab.tabId == tabId);
       expect(customTab.rendererContractId, 'engine-native-generic-list');
       final persona = const LoomPersonaDefinition(
-        personaId: 'local-member',
+        fanId: 'local-member',
+        roleId: 'local-member',
         label: 'Member',
         roleLabel: 'Member',
         description: 'Engine-native test member',
@@ -642,7 +636,7 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              personaId: persona.personaId,
+              roleId: persona.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(
@@ -693,7 +687,7 @@ void main() {
       local.registerDefinition(machine);
       final id = await local.createInstance(
         workflowType: 'transition',
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: const {'title': 'transition'},
       );
       final engine = _DelegatingEngine(local);
@@ -704,7 +698,7 @@ void main() {
           engine: engine,
           definitions: {'transition': machine},
           tabId: 'calendar',
-          personaId: persona,
+          fanId: persona,
           builder: (_, bindings, changed) {
             publications++;
             callback = changed;
@@ -720,7 +714,7 @@ void main() {
         workflowType: 'transition',
         instanceId: id,
         transitionId: 'finish',
-        personaId: 'owner',
+        fanId: 'owner',
       );
       final updated = await _read(local, id);
       oldCallback(_instance('wrong', 'transition'));
@@ -781,7 +775,7 @@ void main() {
       local.registerDefinition(tableMachine);
       final a = await local.createInstance(
         workflowType: workflowType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {
           'rank': 1,
           'playerName': 'Alice',
@@ -791,7 +785,7 @@ void main() {
       );
       final b = await local.createInstance(
         workflowType: workflowType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {
           'rank': 2,
           'playerName': 'Bob',
@@ -801,7 +795,7 @@ void main() {
       );
       final c = await local.createInstance(
         workflowType: workflowType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {
           'rank': 3,
           'playerName': 'Cara',
@@ -894,7 +888,8 @@ void main() {
         },
       );
       const persona = LoomPersonaDefinition(
-        personaId: 'local-member',
+        fanId: 'local-member',
+        roleId: 'local-member',
         label: 'Member',
         roleLabel: 'Member',
         description: 'Test member',
@@ -906,7 +901,7 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              personaId: persona.personaId,
+              roleId: persona.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(
@@ -989,17 +984,17 @@ void main() {
       local.registerDefinition(eventMachine);
       await local.createInstance(
         workflowType: tableType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {'rank': 1, 'title': 'East'},
       );
       final nonTable = await local.createInstance(
         workflowType: eventType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {'title': 'General meeting'},
       );
       await local.createInstance(
         workflowType: tableType,
-        personaId: 'owner',
+        fanId: 'owner',
         initialInstanceData: {'rank': 2, 'title': 'West'},
       );
 
@@ -1050,7 +1045,8 @@ void main() {
         },
       );
       const persona = LoomPersonaDefinition(
-        personaId: 'local-member',
+        fanId: 'local-member',
+        roleId: 'local-member',
         label: 'Member',
         roleLabel: 'Member',
         description: 'Test member',
@@ -1062,7 +1058,7 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              personaId: persona.personaId,
+              roleId: persona.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(

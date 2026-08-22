@@ -105,7 +105,7 @@ class CommunityMigrationDeriver {
         ) {
           final action = binding.actions[actionIndex];
           if (action.kind != 'create') continue;
-          createRoleIds.addAll(action.byPersonaIds ?? const <String>[]);
+          createRoleIds.addAll(action.byRoleIds ?? const <String>[]);
         }
       }
 
@@ -124,7 +124,7 @@ class CommunityMigrationDeriver {
         'grammarVersion': package.specVersion,
         'roles': [
           for (final role in package.personas)
-            {'roleId': role.personaId, 'label': role.roleLabel},
+            {'roleId': role.roleId, 'label': role.roleLabel},
         ],
         'workflows': workflows,
       },

@@ -14,17 +14,17 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _ownerAccountId,
     displayName: 'Morgan Member',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Riley Member',
-    personaTypeId: 'tabletop-member',
+    roleId: 'tabletop-member',
   ),
   LoomAccount(
     accountId: _organizerAccountId,
     displayName: 'Mara Organizer',
-    personaTypeId: 'tabletop-organizer',
+    roleId: 'tabletop-organizer',
   ),
 ];
 
@@ -139,7 +139,7 @@ void main() {
       );
       final afterMute = await engine.queryInstances(
         tabId: 'messages',
-        personaId: _ownerAccountId,
+        fanId: _ownerAccountId,
         limit: 10,
       );
       expect(

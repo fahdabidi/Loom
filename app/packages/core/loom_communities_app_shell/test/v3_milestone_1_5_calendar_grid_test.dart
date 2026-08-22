@@ -100,7 +100,8 @@ void main() {
                 CalendarEventDetail(
                   accent: Colors.blue,
                   workflow: event,
-                  personaId: 'member',
+                  fanId: 'member-01',
+                  roleId: 'member',
                   onTransitionApplied: (_, __) async {},
                 ),
             ],

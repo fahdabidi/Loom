@@ -87,7 +87,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   @override
   Future<InstancePage> queryInstances({
     required String tabId,
-    required String personaId,
+    required String fanId,
     String? workflowType,
     SurfaceQuery query = const SurfaceQuery.empty(),
     int limit = 25,
@@ -124,9 +124,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     }
     return InstancePage(
       items: rawItems
-          .map(
-            (item) => _decodeInstance(item, response, createdByPersonaId: ''),
-          )
+          .map((item) => _decodeInstance(item, response, createdByFanId: ''))
           .toList(),
       nextCursor: nextCursor as String?,
       hasMore: hasMore,
@@ -139,7 +137,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) {
     throw UnsupportedError(
       'RemoteWorkflowEngineApi cannot perform a network round trip from the '
@@ -154,7 +152,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String instanceId,
     required String currentState,
     required Map<String, dynamic> instanceData,
-    required String personaId,
+    required String fanId,
   }) async {
     final response = await _request(
       method: 'GET',
@@ -193,7 +191,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required String transitionId,
-    required String personaId,
+    required String fanId,
     Map<String, dynamic>? inputs,
   }) async {
     final response = await _request(
@@ -209,7 +207,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     final instance = _decodeInstance(
       _decodeObject(response),
       response,
-      createdByPersonaId: '',
+      createdByFanId: '',
     );
     return WorkflowTransitionResult(
       newState: instance.currentState,
@@ -221,9 +219,8 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   Future<String> createInstance({
     required String workflowType,
     required Map<String, dynamic> initialInstanceData,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final response = await _request(
       method: 'POST',
       pathSegments: _instanceCollectionSegments,
@@ -234,7 +231,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     return _decodeInstance(
       _decodeObject(response),
       response,
-      createdByPersonaId: fanId,
+      createdByFanId: fanId,
     ).instanceId;
   }
 
@@ -242,9 +239,8 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   Future<List<String>> createInstances({
     required String workflowType,
     required List<Map<String, dynamic>> initialInstanceDataList,
-    required String personaId,
+    required String fanId,
   }) async {
-    final fanId = personaId;
     final response = await _request(
       method: 'POST',
       pathSegments: [..._instanceCollectionSegments, 'batch'],
@@ -261,7 +257,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
           (instance) => _decodeInstance(
             instance,
             response,
-            createdByPersonaId: fanId,
+            createdByFanId: fanId,
           ).instanceId,
         )
         .toList();
@@ -272,7 +268,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String workflowType,
     required String instanceId,
     required Map<String, dynamic> fieldUpdates,
-    required String personaId,
+    required String fanId,
   }) async {
     final response = await _request(
       method: 'PATCH',
@@ -281,7 +277,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
       includeIdempotencyKey: true,
       expectedStatusCodes: const {200},
     );
-    _decodeInstance(_decodeObject(response), response, createdByPersonaId: '');
+    _decodeInstance(_decodeObject(response), response, createdByFanId: '');
   }
 
   @override
@@ -291,7 +287,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String op,
     Map<String, dynamic>? filter,
     String? groupBy,
-    String? personaId,
+    String? fanId,
   }) async {
     final response = await _request(
       method: 'POST',
@@ -486,7 +482,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   WorkflowInstance _decodeInstance(
     Object? value,
     http.Response response, {
-    required String createdByPersonaId,
+    required String createdByFanId,
   }) {
     if (value is! Map<String, dynamic> ||
         value['instanceId'] is! String ||
@@ -506,7 +502,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
         value['instanceData'] as Map<String, dynamic>,
       ),
       // The OpenAPI projection deliberately does not expose creator identity.
-      createdByPersonaId: createdByPersonaId,
+      createdByFanId: createdByFanId,
     );
   }
 

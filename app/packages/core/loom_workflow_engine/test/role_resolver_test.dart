@@ -17,46 +17,43 @@ WorkflowInstance _instance({
   required String instanceId,
   required String workflowType,
   required String currentState,
-  required String createdByPersonaId,
+  required String createdByFanId,
   Map<String, dynamic> instanceData = const {},
 }) => WorkflowInstance(
   instanceId: instanceId,
   workflowType: workflowType,
   currentState: currentState,
   instanceData: instanceData,
-  createdByPersonaId: createdByPersonaId,
+  createdByFanId: createdByFanId,
 );
 
 void main() {
-  test(
-    'actor derives from createdByPersonaId when no actorEqualsField exists',
-    () {
-      final machine = _machine([
-        <String, dynamic>{
-          'id': 'noop',
-          'label': 'noop',
-          'from': <String>['open'],
-          'to': 'done',
-        },
-      ]);
-      final instance = _instance(
-        instanceId: 'created-by-actor',
-        workflowType: 'test-workflow',
-        currentState: 'open',
-        createdByPersonaId: 'payer-creator',
-      );
-      final roles = deriveInstanceRoles(
-        machine,
-        instance,
-        viewerPersonaId: 'payer-creator',
-        viewerPersonaTypeId: 'payer-type',
-      );
-      expect(roles, {'actor'});
-    },
-  );
+  test('actor derives from createdByFanId when no actorEqualsField exists', () {
+    final machine = _machine([
+      <String, dynamic>{
+        'id': 'noop',
+        'label': 'noop',
+        'from': <String>['open'],
+        'to': 'done',
+      },
+    ]);
+    final instance = _instance(
+      instanceId: 'created-by-actor',
+      workflowType: 'test-workflow',
+      currentState: 'open',
+      createdByFanId: 'payer-creator',
+    );
+    final roles = deriveInstanceRoles(
+      machine,
+      instance,
+      viewerFanId: 'payer-creator',
+      viewerRoleId: 'payer-type',
+    );
+    expect(roles, {'actor'});
+  });
 
   test(
-    'actor uses actorEqualsField when present, even over createdByPersonaId',
+    'actor uses actorEqualsField when present, even over createdByFanId',
     () {
       final machine = _machine([
         <String, dynamic>{
@@ -73,21 +70,21 @@ void main() {
         instanceId: 'actor-equals-field',
         workflowType: 'test-workflow',
         currentState: 'open',
-        createdByPersonaId: 'different-creator',
+        createdByFanId: 'different-creator',
         instanceData: <String, dynamic>{'payerFanId': 'payer-persona'},
       );
       final roles = deriveInstanceRoles(
         machine,
         instance,
-        viewerPersonaId: 'payer-persona',
-        viewerPersonaTypeId: 'payer-type',
+        viewerFanId: 'payer-persona',
+        viewerRoleId: 'payer-type',
       );
       expect(roles, {'actor'});
     },
   );
 
   test(
-    'viewer with matching allowedPersonaIds guard is receiver when not actor',
+    'viewer with matching allowedRoleIds guard is receiver when not actor',
     () {
       final machine = _machine([
         <String, dynamic>{
@@ -104,14 +101,14 @@ void main() {
         instanceId: 'guarded-receiver',
         workflowType: 'test-workflow',
         currentState: 'open',
-        createdByPersonaId: 'creator',
+        createdByFanId: 'creator',
         instanceData: const <String, dynamic>{},
       );
       final roles = deriveInstanceRoles(
         machine,
         instance,
-        viewerPersonaId: 'board-account',
-        viewerPersonaTypeId: 'board-role',
+        viewerFanId: 'board-account',
+        viewerRoleId: 'board-role',
       );
       expect(roles, {'receiver'});
     },
@@ -135,14 +132,14 @@ void main() {
         instanceId: 'blocked-viewer',
         workflowType: 'test-workflow',
         currentState: 'open',
-        createdByPersonaId: 'creator',
+        createdByFanId: 'creator',
         instanceData: const <String, dynamic>{},
       );
       final roles = deriveInstanceRoles(
         machine,
         instance,
-        viewerPersonaId: 'other-account',
-        viewerPersonaTypeId: 'member-role',
+        viewerFanId: 'other-account',
+        viewerRoleId: 'member-role',
       );
       expect(roles, isEmpty);
     },

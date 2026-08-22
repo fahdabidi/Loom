@@ -71,14 +71,14 @@ class RepeaterSurface extends StatefulWidget {
 class RepeaterQuerySource {
   final WorkflowEngineApi engine;
   final String workflowType;
-  final String personaId;
+  final String fanId;
   final SurfaceQuery query;
   final String tabId;
 
   const RepeaterQuerySource({
     required this.engine,
     required this.workflowType,
-    required this.personaId,
+    required this.fanId,
     this.query = const SurfaceQuery.empty(),
     this.tabId = 'repeater',
   });
@@ -113,7 +113,7 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
     if (source == null) return;
     final page = await source.engine.queryInstances(
       tabId: source.tabId,
-      personaId: source.personaId,
+      fanId: source.fanId,
       query: source.query,
       limit: 1000,
     );
@@ -128,7 +128,7 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
         instanceId: item.instanceId,
         currentState: item.currentState,
         instanceData: item.instanceData,
-        personaId: source.personaId,
+        fanId: source.fanId,
       );
     }
     if (!mounted || source != widget.querySource) return;
@@ -211,7 +211,7 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
                 workflowType: instance!.workflowType,
                 instanceId: instance.instanceId,
                 transitionId: transition.id,
-                personaId: widget.querySource!.personaId,
+                fanId: widget.querySource!.fanId,
               );
               await _refresh();
             },

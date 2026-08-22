@@ -14,17 +14,17 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _ownerAccountId,
     displayName: 'Avery Brooks',
-    personaTypeId: 'hoa-homeowner',
+    roleId: 'hoa-homeowner',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Casey Homeowner',
-    personaTypeId: 'hoa-homeowner',
+    roleId: 'hoa-homeowner',
   ),
   LoomAccount(
     accountId: _boardAccountId,
     displayName: 'Board Reviewer',
-    personaTypeId: 'hoa-board',
+    roleId: 'hoa-board',
   ),
 ];
 
@@ -226,7 +226,7 @@ Future<dynamic> _documentRow(String extensionId, String documentId) async {
   final engine = await workflowEngineForExtensionId(extensionId);
   final page = await engine.queryInstances(
     tabId: 'documents',
-    personaId: _ownerAccountId,
+    fanId: _ownerAccountId,
     limit: 20,
   );
   return page.items.singleWhere((item) => item.instanceId == documentId);

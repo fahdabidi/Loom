@@ -124,13 +124,13 @@ class WorkflowValidator {
   /// Declared role IDs that may be used in JSON `allowedRoleIds` guards.
   /// When provided, this drives dangling-role checks.
   /// When omitted, role-id dangling checks are skipped.
-  final Set<String>? knownPersonaIds;
+  final Set<String>? knownRoleIds;
   final Set<String>? declaredTabIds;
 
   WorkflowValidator({
     this.templates,
     this.tableArchetypeConfigs,
-    this.knownPersonaIds,
+    this.knownRoleIds,
     this.declaredTabIds,
   });
 
@@ -176,14 +176,14 @@ class WorkflowValidator {
       _checkTransitionActionsCannotBeTabScoped(machine, findings);
       _checkTransitionActionsCannotSetWorkflowType(machine, findings);
       _checkTransitionActionsCannotSetPrefill(machine, findings);
-      _checkTransitionActionsCannotSetByPersonaIds(machine, findings);
+      _checkTransitionActionsCannotSetByRoleIds(machine, findings);
       _checkUnknownActionInputReferences(machine, findings);
       _checkDuplicateActionTransitionIds(machine, findings);
       _checkCreatablePrefill(machine, workflows, findings);
       _checkResponseTableAndFacets(machine, workflows, findings);
 
-      if (knownPersonaIds != null && knownPersonaIds!.isNotEmpty) {
-        _checkCreatablePersonaIds(machine, findings);
+      if (knownRoleIds != null && knownRoleIds!.isNotEmpty) {
+        _checkCreatableRoleIds(machine, findings);
       }
 
       if (templates != null) {
@@ -710,21 +710,21 @@ class WorkflowValidator {
       // This is a warning, not an error — without a global role registry,
       // a role used by only one workflow in the loaded set may be
       // intentionally scoped, not a typo.
-      if (t.guard.allowedPersonaIds != null) {
+      if (t.guard.allowedRoleIds != null) {
         // If a real role registry is not available, skip this check rather
         // than failing valid fixture references due to reduced context.
-        if (knownPersonaIds == null || knownPersonaIds!.isEmpty) {
+        if (knownRoleIds == null || knownRoleIds!.isEmpty) {
           continue;
         }
 
-        for (final personaId in t.guard.allowedPersonaIds!) {
-          if (!knownPersonaIds!.contains(personaId)) {
+        for (final roleId in t.guard.allowedRoleIds!) {
+          if (!knownRoleIds!.contains(roleId)) {
             findings.add(
               ValidationFinding(
                 type: 'dangling_allowed_persona_id',
                 message:
                     'Transition "${t.id}"\'s guard.allowedRoleIds references '
-                    '"$personaId", which does not appear in the known role '
+                    '"$roleId", which does not appear in the known role '
                     'registry. This may indicate a typo or a role ID that '
                     'was not declared anywhere.',
                 location:
@@ -2335,7 +2335,7 @@ class WorkflowValidator {
     }
   }
 
-  void _checkTransitionActionsCannotSetByPersonaIds(
+  void _checkTransitionActionsCannotSetByRoleIds(
     LoomWorkflowStateMachine machine,
     List<ValidationFinding> findings,
   ) {
@@ -2343,7 +2343,7 @@ class WorkflowValidator {
       for (final action in binding.actions.where(
         (a) => a.kind == 'transition',
       )) {
-        if (action.byPersonaIds == null) continue;
+        if (action.byRoleIds == null) continue;
         findings.add(
           ValidationFinding(
             type: 'transition_action_cannot_set_by_persona_ids',
@@ -2413,21 +2413,21 @@ class WorkflowValidator {
   // ---------------------------------------------------------------------------
   // create-action byRoleIds dangling-role check
   // ---------------------------------------------------------------------------
-  void _checkCreatablePersonaIds(
+  void _checkCreatableRoleIds(
     LoomWorkflowStateMachine machine,
     List<ValidationFinding> findings,
   ) {
-    if (knownPersonaIds == null || knownPersonaIds!.isEmpty) return;
+    if (knownRoleIds == null || knownRoleIds!.isEmpty) return;
 
     for (final binding in machine.renderBindings) {
       for (final action in binding.actions.where((a) => a.kind == 'create')) {
-        for (final personaId in action.byPersonaIds ?? const <String>[]) {
-          if (!knownPersonaIds!.contains(personaId)) {
+        for (final roleId in action.byRoleIds ?? const <String>[]) {
+          if (!knownRoleIds!.contains(roleId)) {
             findings.add(
               ValidationFinding(
                 type: 'dangling_allowed_persona_id',
                 message:
-                    'creatable.byRoleIds references "$personaId", which does '
+                    'creatable.byRoleIds references "$roleId", which does '
                     'not appear in the known role registry. This may indicate '
                     'a typo or a role ID that was not declared anywhere.',
                 location:

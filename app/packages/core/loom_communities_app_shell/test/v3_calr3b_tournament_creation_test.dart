@@ -79,7 +79,7 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ),
   ),
 );
@@ -177,7 +177,7 @@ void main() {
           );
           final page = await engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           return page.items
@@ -203,7 +203,7 @@ void main() {
           );
           final instances = await engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           return instances;

@@ -82,21 +82,21 @@ Future<_InstalledTabletop> _install(
     final shellAccounts = await activeAuthForCommunity(
       community: community,
       experience: experience,
-      personaTypeId: 'tabletop-member',
+      roleId: 'tabletop-member',
     ).listAccounts(communityExtensionId: community.extensionId);
     final authorizationAccounts = [...accounts, ...shellAccounts];
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async => authorizationAccounts.any(
+      activeMembershipLookup: (fanId) async => authorizationAccounts.any(
         (account) =>
-            account.accountId == personaId &&
+            account.accountId == fanId &&
             account.status == MembershipStatus.active,
       ),
     );
     if (engine is LocalWorkflowEngineApi) {
       for (final account in authorizationAccounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
     }
     return _InstalledTabletop(community, experience, engine, temp);
@@ -109,7 +109,7 @@ Future<_InstalledTabletop> _install(
 LoomPersonaDefinition _member(_InstalledTabletop installed) => installed
     .experience
     .personas!
-    .firstWhere((persona) => persona.personaId == 'tabletop-member');
+    .firstWhere((persona) => persona.roleId == 'tabletop-member');
 
 Widget _engineCalendar(
   _InstalledTabletop installed,
@@ -118,9 +118,11 @@ Widget _engineCalendar(
 }) => MaterialApp(
   home: ActiveIdentityScope(
     identity: ActiveIdentityContext(
-      accountId: null,
+      // The frozen fixture defines this concrete demo account separately
+      // from the role with the same string value.
+      accountId: 'tabletop-member',
       authApi: LocalAuthApi(),
-      personaId: 'tabletop-member',
+      roleId: 'tabletop-member',
     ),
     child: Scaffold(
       body: SingleChildScrollView(

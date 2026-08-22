@@ -95,7 +95,7 @@ Future<_InstalledTabletop> _install(
     final shellAuth = activeAuthForCommunity(
       community: community,
       experience: experience,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     );
     final shellAccounts = await shellAuth.listAccounts(
       communityExtensionId: community.extensionId,
@@ -103,10 +103,10 @@ Future<_InstalledTabletop> _install(
     configureEngineAuthorizationForExtensionId(
       extensionId: community.extensionId,
       appShellConfiguration: community.appShellConfiguration,
-      activeMembershipLookup: (personaId) async =>
+      activeMembershipLookup: (fanId) async =>
           [...accounts, ...shellAccounts].any(
             (account) =>
-                account.accountId == personaId &&
+                account.accountId == fanId &&
                 account.status == MembershipStatus.active,
           ),
     );
@@ -116,7 +116,7 @@ Future<_InstalledTabletop> _install(
             !accountIdsToRegister.contains(account.accountId)) {
           continue;
         }
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
         registeredAccountIds.add(account.accountId);
       }
     }
@@ -140,47 +140,59 @@ Widget _appShell(_InstalledTabletop installed) => MaterialApp(
     authApi: activeAuthForCommunity(
       community: installed.community,
       experience: installed.experience,
-      personaTypeId: 'tabletop-organizer',
+      roleId: 'tabletop-organizer',
     ),
   ),
 );
 
 LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
     installed.experience.personas!.firstWhere(
-      (persona) => persona.personaId == id,
+      (persona) => persona.roleId == id,
     );
+
+String _fixtureFanIdForRole(String roleId) => switch (roleId) {
+  'tabletop-organizer' => 'tabletop-organizer',
+  'tabletop-member' => 'tabletop-member',
+  _ => throw ArgumentError('No fixture account is defined for role $roleId'),
+};
 
 Widget _calendar(
   _InstalledTabletop installed,
-  String personaId, {
+  String roleId, {
   int revision = 0,
   String? accountId,
   LoomAuthApi? authApi,
   ScrollController? scrollController,
   ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
-}) => MaterialApp(
-  home: ActiveIdentityScope(
-    identity: ActiveIdentityContext(
-      accountId: accountId,
-      authApi: authApi ?? LocalAuthApi(),
-      personaId: personaId,
-    ),
-    child: Scaffold(
-      body: SingleChildScrollView(
-        controller: scrollController,
-        child: EngineNativeCalendarSurface(
-          key: ValueKey('a8-calendar-$personaId-$revision'),
-          experience: installed.experience,
-          persona: _persona(installed, personaId),
-          accent: Colors.deepPurple,
-          modernTheme: null,
-          engine: installed.engine,
-          onFocusedInstanceChanged: onFocusedInstanceChanged,
+}) {
+  final fanId = accountId ?? _fixtureFanIdForRole(roleId);
+  if (installed.engine case final LocalWorkflowEngineApi engine) {
+    engine.setRoleForFan(fanId, roleId);
+  }
+  return MaterialApp(
+    home: ActiveIdentityScope(
+      identity: ActiveIdentityContext(
+        accountId: fanId,
+        authApi: authApi ?? LocalAuthApi(),
+        roleId: roleId,
+      ),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          controller: scrollController,
+          child: EngineNativeCalendarSurface(
+            key: ValueKey('a8-calendar-$roleId-$revision'),
+            experience: installed.experience,
+            persona: _persona(installed, roleId),
+            accent: Colors.deepPurple,
+            modernTheme: null,
+            engine: installed.engine,
+            onFocusedInstanceChanged: onFocusedInstanceChanged,
+          ),
         ),
       ),
     ),
-  ),
-);
+  );
+}
 
 Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   var lastMatchCount = 0;
@@ -262,13 +274,13 @@ Finder _actionResultFinder(String instanceId, String transitionId) =>
 Future<_PollObservation> _observeInstancesCondition(
   _InstalledTabletop installed, {
   required Iterable<String> instanceIds,
-  String personaId = 'tabletop-organizer',
+  String fanId = 'tabletop-organizer',
   required bool Function(WorkflowInstance) condition,
   required String Function(WorkflowInstance) state,
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: personaId,
+    fanId: fanId,
     limit: 100,
   );
   final instancesById = <String, WorkflowInstance>{
@@ -293,13 +305,13 @@ Future<_PollObservation> _observeInstancesCondition(
 Future<_PollObservation> _observeInstanceCondition(
   _InstalledTabletop installed, {
   required String instanceId,
-  String personaId = 'tabletop-organizer',
+  String fanId = 'tabletop-organizer',
   required bool Function(WorkflowInstance) condition,
   required String Function(WorkflowInstance) state,
 }) => _observeInstancesCondition(
   installed,
   instanceIds: [instanceId],
-  personaId: personaId,
+  fanId: fanId,
   condition: condition,
   state: state,
 );
@@ -311,7 +323,7 @@ Future<_PollObservation> _observeRecurringEvents(
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: 'tabletop-organizer',
+    fanId: 'tabletop-organizer',
     limit: 100,
   );
   final events = page.items
@@ -341,7 +353,7 @@ Future<List<WorkflowInstance>> _allCalendarInstances(
   while (true) {
     final page = await installed.engine.queryInstances(
       tabId: 'calendar',
-      personaId: 'tabletop-organizer',
+      fanId: 'tabletop-organizer',
       limit: 100,
       cursor: cursor,
     );
@@ -376,21 +388,21 @@ Future<WorkflowInstance> _instance(
   WidgetTester tester,
   _InstalledTabletop installed,
   String id, {
-  String personaId = 'tabletop-organizer',
+  String fanId = 'tabletop-organizer',
 }) async => (await tester.runAsync(() async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    personaId: personaId,
+    fanId: fanId,
     limit: 50,
   );
   return page.items.singleWhere((row) => row.instanceId == id);
 }))!;
 
-Map<String, dynamic> _responseFor(WorkflowInstance event, String personaId) =>
+Map<String, dynamic> _responseFor(WorkflowInstance event, String fanId) =>
     (event.instanceData['responses'] as List)
         .whereType<Map<String, dynamic>>()
         .map((response) => Map<String, dynamic>.from(response))
-        .singleWhere((response) => response['fanId'] == personaId);
+        .singleWhere((response) => response['fanId'] == fanId);
 
 Future<void> _tapAction(
   WidgetTester tester,
@@ -1263,7 +1275,7 @@ void main() {
         final events = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           final anchor = page.items.singleWhere(
@@ -1295,7 +1307,7 @@ void main() {
           final responses = (await tester.runAsync(() async {
             final page = await installed.engine.queryInstances(
               tabId: 'calendar',
-              personaId: 'tabletop-organizer',
+              fanId: 'tabletop-organizer',
               limit: 100,
             );
             return page.items
@@ -1326,12 +1338,12 @@ void main() {
         LoomAccount(
           accountId: 'tabletop-organizer',
           displayName: 'Alex T.',
-          personaTypeId: 'tabletop-organizer',
+          roleId: 'tabletop-organizer',
         ),
         LoomAccount(
           accountId: 'tabletop-member-04',
           displayName: 'Sam K.',
-          personaTypeId: 'tabletop-member',
+          roleId: 'tabletop-member',
         ),
       ];
       final installed = (await tester.runAsync(
@@ -1447,7 +1459,7 @@ void main() {
             .map(
               (response) => (
                 eventId: response.instanceData['eventId'] as String,
-                personaId: response.instanceData['fanId'] as String,
+                fanId: response.instanceData['fanId'] as String,
               ),
             )
             .toList();
@@ -1541,7 +1553,7 @@ void main() {
         final dates = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           return page.items
@@ -1616,7 +1628,7 @@ void main() {
         final dates = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           return page.items
@@ -1693,7 +1705,7 @@ void main() {
       expect(
         appShellTabsFor(
           experience: installed.experience,
-          personaId: 'tabletop-member',
+          roleId: 'tabletop-member',
           appShellConfiguration: installed.community.appShellConfiguration,
           hasActiveMembership: true,
         ).map((tab) => tab.tabId),
@@ -2835,7 +2847,7 @@ void main() {
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
           fieldUpdates: const {'eventDate': 'not-a-date'},
-          personaId: 'tabletop-organizer',
+          fanId: 'tabletop-organizer',
         ),
       );
       await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
@@ -2860,7 +2872,7 @@ void main() {
           workflowType: 'event-rsvp',
           instanceId: 'event-friday-game-night',
           fieldUpdates: const {'eventDate': '2026-07-10'},
-          personaId: 'tabletop-organizer',
+          fanId: 'tabletop-organizer',
         ),
       );
       await tester.tap(
@@ -2904,7 +2916,7 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              personaId: 'tabletop-member',
+              roleId: 'tabletop-member',
             ),
             child: Scaffold(
               body: EngineNativeCalendarSurface(
@@ -3219,7 +3231,7 @@ void main() {
             workflowType: 'event-rsvp',
             instanceId: 'event-friday-game-night',
             fieldUpdates: const {'capacity': 11},
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
           );
         });
         await tester.pumpWidget(
@@ -3251,7 +3263,7 @@ void main() {
           tester,
           installed,
           'event-friday-game-night',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(full.instanceData['goingCount'], 11);
         expect(full.instanceData['seatsRemaining'], 0);
@@ -3261,7 +3273,7 @@ void main() {
           tester,
           installed,
           'event-friday-game-night',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(
           _responseFor(waitlisted, 'tabletop-member-14')['\$state'],
@@ -3272,7 +3284,7 @@ void main() {
             workflowType: 'event-rsvp-response',
             instanceId: 'resp-friday-member-03',
             transitionId: 'respond-declined',
-            personaId: 'tabletop-member-03',
+            fanId: 'tabletop-member-03',
           ),
         );
         await tester.pumpWidget(
@@ -3312,7 +3324,7 @@ void main() {
           tester,
           installed,
           'event-friday-game-night',
-          personaId: 'tabletop-member-14',
+          fanId: 'tabletop-member-14',
         );
         expect(_responseFor(open, 'tabletop-member-14')['\$state'], 'going');
         expect(open.instanceData['goingCount'], 11);
@@ -3375,7 +3387,7 @@ void main() {
             workflowType: 'tournament-event',
             instanceId: 'event-summer-tournament',
             transitionId: 'rsvp-going',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           );
         });
         await _tapAction(tester, 'event-summer-tournament', 'rsvp-withdraw');
@@ -3383,7 +3395,7 @@ void main() {
           tester,
           installed,
           'event-summer-tournament',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         );
         expect(
           withdrawn.instanceData['goingFanIds'],
@@ -3420,7 +3432,7 @@ void main() {
           tester,
           installed,
           'event-summer-tournament',
-          personaId: 'tabletop-member',
+          fanId: 'tabletop-member',
         );
         expect(
           restored.instanceData['goingFanIds'],
@@ -3517,7 +3529,7 @@ void main() {
         final seriesMembers = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           final anchor = page.items.singleWhere(
@@ -3560,7 +3572,7 @@ void main() {
         final cancelledMembers = (await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'calendar',
-            personaId: 'tabletop-organizer',
+            fanId: 'tabletop-organizer',
             limit: 100,
           );
           final memberIds = seriesMembers
@@ -3593,7 +3605,7 @@ void main() {
             workflowType: 'event-rsvp',
             instanceId: 'event-friday-game-night',
             transitionId: 'cancel-event',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
           );
         });
         await tester.pumpWidget(

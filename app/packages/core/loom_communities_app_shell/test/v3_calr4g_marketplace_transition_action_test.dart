@@ -80,7 +80,7 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'tabletop-member',
+      roleId: 'tabletop-member',
     ),
   ),
 );
@@ -367,7 +367,7 @@ void main() {
           );
           final home = await engine.queryInstances(
             tabId: 'marketplace',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             limit: 100,
           );
           return home.items

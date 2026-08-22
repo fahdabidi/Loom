@@ -38,7 +38,9 @@ Future<_InstalledFixture> _install(String extensionId) async {
       jsonDecode(stripJsonComments(_fixtureFile().readAsStringSync()))
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
-  final temp = await Directory.systemTemp.createTemp('loom-cjm13-$extensionId-');
+  final temp = await Directory.systemTemp.createTemp(
+    'loom-cjm13-$extensionId-',
+  );
   final init = File('${temp.path}/garden.loom-init.zip');
   final extension = File('${temp.path}/garden.loom-extension.zip');
   await init.writeAsString(jsonEncode(source));
@@ -74,7 +76,7 @@ Widget _app(_InstalledFixture installed) => MaterialApp(
     seedDataFiles: const [],
     authApi: activeAuthForInstalledCommunity(
       community: installed.community,
-      personaTypeId: 'garden-coordinator',
+      roleId: 'garden-coordinator',
     ),
   ),
 );
@@ -114,8 +116,9 @@ void main() {
   testWidgets(
     'calendar content is not overlapped by the community floating action button',
     (tester) async {
-      final installed =
-          (await tester.runAsync(() => _install('cjm13-garden-calendar')))!;
+      final installed = (await tester.runAsync(
+        () => _install('cjm13-garden-calendar'),
+      ))!;
       try {
         await tester.pumpWidget(_app(installed));
         await _selectCalendar(tester);
@@ -134,7 +137,9 @@ void main() {
         expect(agendaItemElements, isNotEmpty);
         final lastAgendaTileKey = agendaItemElements.last.widget.key;
         expect(lastAgendaTileKey, isA<ValueKey<String>>());
-        final lastAgendaTileFinder = find.byKey(lastAgendaTileKey as ValueKey<String>);
+        final lastAgendaTileFinder = find.byKey(
+          lastAgendaTileKey as ValueKey<String>,
+        );
         expect(lastAgendaTileFinder, findsOneWidget);
 
         final scrollFinder = find.byKey(

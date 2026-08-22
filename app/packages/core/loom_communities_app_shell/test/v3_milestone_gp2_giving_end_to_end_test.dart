@@ -99,8 +99,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String personaId) async {
-  await selectTestTabletopPersona(tester, personaId);
+Future<void> _selectPersona(WidgetTester tester, String fanId) async {
+  await selectTestTabletopPersona(tester, fanId);
 }
 
 Future<void> _selectTab(
@@ -128,7 +128,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-member',
+                roleId: 'tabletop-member',
               ),
             ),
           ),
@@ -243,7 +243,7 @@ void main() {
         final paid = await tester.runAsync(() async {
           final page = await installed.engine.queryInstances(
             tabId: 'giving',
-            personaId: 'tabletop-member',
+            fanId: 'tabletop-member',
             limit: 100,
           );
           return page.items.singleWhere(
@@ -274,7 +274,7 @@ void main() {
               seedDataFiles: const [],
               authApi: activeAuthForInstalledCommunity(
                 community: installed.community,
-                personaTypeId: 'tabletop-member',
+                roleId: 'tabletop-member',
               ),
             ),
           ),

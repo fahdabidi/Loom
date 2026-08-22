@@ -10,11 +10,11 @@ class NotificationFixedCard extends StatefulWidget {
   const NotificationFixedCard({
     super.key,
     required this.extensionId,
-    required this.personaId,
+    required this.fanId,
   });
 
   final String extensionId;
-  final String personaId;
+  final String fanId;
 
   @override
   State<NotificationFixedCard> createState() => _NotificationFixedCardState();
@@ -46,7 +46,7 @@ class _NotificationFixedCardState extends State<NotificationFixedCard> {
   void didUpdateWidget(covariant NotificationFixedCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.extensionId == widget.extensionId &&
-        oldWidget.personaId == widget.personaId) {
+        oldWidget.fanId == widget.fanId) {
       return;
     }
     _controller = null;
@@ -65,7 +65,7 @@ class _NotificationFixedCardState extends State<NotificationFixedCard> {
       if (!mounted || generation != _initializationGeneration) return;
       _controller = NotificationInboxController(
         engine: engine,
-        personaId: widget.personaId,
+        fanId: widget.fanId,
       );
       await _refresh();
     } catch (error) {

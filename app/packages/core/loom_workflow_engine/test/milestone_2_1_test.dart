@@ -12,16 +12,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
         label: 'Going',
         from: ['scheduled'],
         to: null,
-        guard: WorkflowGuard(
-          allowedPersonaIds: [
-            'creator',
-            'alice',
-            'bob',
-            'cora',
-            'drew',
-            'erin',
-          ],
-        ),
+        guard: WorkflowGuard(allowedRoleIds: ['member']),
         effects: [
           WorkflowEffect(op: 'set', key: 'rsvpByFan.\$actor', value: 'going'),
         ],
@@ -31,16 +22,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
         label: 'Maybe',
         from: ['scheduled'],
         to: null,
-        guard: WorkflowGuard(
-          allowedPersonaIds: [
-            'creator',
-            'alice',
-            'bob',
-            'cora',
-            'drew',
-            'erin',
-          ],
-        ),
+        guard: WorkflowGuard(allowedRoleIds: ['member']),
         effects: [
           WorkflowEffect(op: 'set', key: 'rsvpByFan.\$actor', value: 'maybe'),
         ],
@@ -50,16 +32,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
         label: 'Not going',
         from: ['scheduled'],
         to: null,
-        guard: WorkflowGuard(
-          allowedPersonaIds: [
-            'creator',
-            'alice',
-            'bob',
-            'cora',
-            'drew',
-            'erin',
-          ],
-        ),
+        guard: WorkflowGuard(allowedRoleIds: ['member']),
         effects: [
           WorkflowEffect(
             op: 'set',
@@ -98,6 +71,16 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
 LocalWorkflowEngineApi _makeApi() {
   final db = WorkflowDatabase.memory();
   final api = LocalWorkflowEngineApi(db: db, communityId: 'calendar');
+  for (final fanId in const [
+    'creator',
+    'alice',
+    'bob',
+    'cora',
+    'drew',
+    'erin',
+  ]) {
+    api.setRoleForFan(fanId, 'member');
+  }
   api.registerDefinition(_calendarInviteMachine());
   return api;
 }
@@ -112,11 +95,11 @@ void main() {
         'scheduled',
         ['receiver'],
         instanceData: {'audienceScope': 'all', 'invitedFanIds': <String>[]},
-        personaId: 'alice',
+        fanId: 'alice',
       );
       expect(allBindings.map((binding) => binding.role), contains('receiver'));
 
-      final selectedMatches = ['alice', 'bob', 'cora'].where((personaId) {
+      final selectedMatches = ['alice', 'bob', 'cora'].where((fanId) {
         return resolveBindings(
           machine,
           'scheduled',
@@ -125,7 +108,7 @@ void main() {
             'audienceScope': 'selected',
             'invitedFanIds': ['alice', 'bob', 'cora'],
           },
-          personaId: personaId,
+          fanId: fanId,
         ).any((binding) => binding.role == 'receiver');
       }).toList();
       expect(selectedMatches, ['alice', 'bob', 'cora']);
@@ -138,14 +121,14 @@ void main() {
           'audienceScope': 'selected',
           'invitedFanIds': ['alice', 'bob', 'cora'],
         },
-        personaId: 'drew',
+        fanId: 'drew',
       );
       expect(
         selectedNonMember.any((binding) => binding.role == 'receiver'),
         isFalse,
       );
 
-      final individualMatches = ['alice', 'bob'].where((personaId) {
+      final individualMatches = ['alice', 'bob'].where((fanId) {
         return resolveBindings(
           machine,
           'scheduled',
@@ -154,7 +137,7 @@ void main() {
             'audienceScope': 'individual',
             'invitedFanIds': ['bob'],
           },
-          personaId: personaId,
+          fanId: fanId,
         ).any((binding) => binding.role == 'receiver');
       }).toList();
       expect(individualMatches, ['bob']);
@@ -169,7 +152,7 @@ void main() {
           'audienceScope': 'selected',
           'invitedFanIds': ['alice', 'bob'],
         },
-        personaId: 'cora',
+        fanId: 'cora',
       );
 
       expect(bindings.where((binding) => binding.role == 'receiver'), isEmpty);
@@ -182,7 +165,7 @@ void main() {
         for (var index = 0; index < 5; index += 1) {
           await api.createInstance(
             workflowType: 'calendar-invite',
-            personaId: 'creator',
+            fanId: 'creator',
             initialInstanceData: {
               'title': 'Invite $index',
               'audienceScope': 'selected',
@@ -196,7 +179,7 @@ void main() {
 
         final page = await api.queryInstances(
           tabId: 'calendar',
-          personaId: 'alice',
+          fanId: 'alice',
           query: const SurfaceQuery(audienceMemberField: 'invitedFanIds'),
         );
 
@@ -212,7 +195,7 @@ void main() {
       final api = _makeApi();
       final instanceId = await api.createInstance(
         workflowType: 'calendar-invite',
-        personaId: 'creator',
+        fanId: 'creator',
         initialInstanceData: {
           'title': 'Game night',
           'audienceScope': 'selected',
@@ -230,7 +213,7 @@ void main() {
             'audienceScope': 'selected',
             'invitedFanIds': ['alice', 'bob'],
           },
-          personaId: invitee,
+          fanId: invitee,
         );
         expect(
           receiveBindings.any((binding) => binding.role == 'receiver'),
@@ -242,18 +225,18 @@ void main() {
         workflowType: 'calendar-invite',
         instanceId: instanceId,
         transitionId: 'rsvp-going',
-        personaId: 'alice',
+        fanId: 'alice',
       );
       await api.applyTransition(
         workflowType: 'calendar-invite',
         instanceId: instanceId,
         transitionId: 'rsvp-maybe',
-        personaId: 'bob',
+        fanId: 'bob',
       );
 
       final creatorPage = await api.queryInstances(
         tabId: 'calendar',
-        personaId: 'creator',
+        fanId: 'creator',
       );
       final instance = creatorPage.items.singleWhere(
         (item) => item.instanceId == instanceId,

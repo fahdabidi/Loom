@@ -77,19 +77,19 @@ void main() {
       configureEngineAuthorizationForExtensionId(
         extensionId: communityExtensionId,
         appShellConfiguration: community.appShellConfiguration,
-        activeMembershipLookup: (personaId) async {
+        activeMembershipLookup: (fanId) async {
           final currentAccounts = await authApi.listAccounts(
             communityExtensionId: communityExtensionId,
           );
           return currentAccounts.any(
             (account) =>
-                account.accountId == personaId &&
+                account.accountId == fanId &&
                 account.status == MembershipStatus.active,
           );
         },
       );
       for (final account in accounts) {
-        engine.setPersonaType(account.accountId, account.personaTypeId);
+        engine.setRoleForFan(account.accountId, account.roleId);
       }
 
       addTearDown(() async => temp.delete(recursive: true));
@@ -102,16 +102,13 @@ void main() {
       );
 
       expect(accounts, isNotEmpty);
-      // Each account must have a distinct individual personaId
+      // Each account must have a distinct individual fanId
       final ids = accounts.map((a) => a.accountId).toSet();
       expect(ids.length, accounts.length);
 
-      // Every account must have a personaTypeId matching a declared persona
+      // Every account must have a roleId matching a declared persona
       for (final account in accounts) {
-        expect(
-          account.personaTypeId,
-          anyOf('tabletop-organizer', 'tabletop-member'),
-        );
+        expect(account.roleId, anyOf('tabletop-organizer', 'tabletop-member'));
         expect(account.displayName, isNotEmpty);
         expect(account.status, MembershipStatus.active);
       }
@@ -120,7 +117,7 @@ void main() {
       final priyaId = 'tabletop-member-05';
       final priya = accounts.firstWhere((a) => a.accountId == priyaId);
       expect(priya.displayName, 'Priya N.');
-      expect(priya.personaTypeId, 'tabletop-member');
+      expect(priya.roleId, 'tabletop-member');
     });
 
     // ── Test 2 ────────────────────────────────────────────────────────
@@ -132,7 +129,7 @@ void main() {
       final session = await authApi.signIn(accountId: 'tabletop-member-05');
       expect(authApi.currentSession, same(session));
       expect(session.account.accountId, 'tabletop-member-05');
-      expect(session.account.personaTypeId, 'tabletop-member');
+      expect(session.account.roleId, 'tabletop-member');
 
       // Sign out
       await authApi.signOut();
@@ -142,10 +139,10 @@ void main() {
       final newSession = await authApi.signUp(
         communityExtensionId: communityExtensionId,
         displayName: 'Test User',
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
       );
       expect(authApi.currentSession, same(newSession));
-      expect(newSession.account.personaTypeId, 'tabletop-member');
+      expect(newSession.account.roleId, 'tabletop-member');
       expect(newSession.account.displayName, 'Test User');
       expect(newSession.account.status, MembershipStatus.active);
       // New account should not collide with seeded ids
@@ -168,7 +165,8 @@ void main() {
           expect(communityExtensionId, communityId);
           return const [
             LoomPersonaDefinition(
-              personaId: 'apartment-event-manager',
+              fanId: 'apartment-event-manager',
+              roleId: 'apartment-event-manager',
               label: 'Event manager',
               roleLabel: 'Manager',
               description: 'Manages apartment events.',
@@ -181,7 +179,7 @@ void main() {
         resolver.signUp(
           communityExtensionId: communityId,
           displayName: 'Wrong Persona',
-          personaTypeId: 'tabletop-member',
+          roleId: 'tabletop-member',
         ),
         throwsA(
           isA<ArgumentError>().having(
@@ -205,10 +203,10 @@ void main() {
         final session = await api.signUp(
           communityExtensionId: 'community-without-a-resolver',
           displayName: 'Legacy User',
-          personaTypeId: 'undeclared-legacy-persona',
+          roleId: 'undeclared-legacy-persona',
         );
 
-        expect(session.account.personaTypeId, 'undeclared-legacy-persona');
+        expect(session.account.roleId, 'undeclared-legacy-persona');
         expect(session.account.displayName, 'Legacy User');
       },
     );
@@ -221,7 +219,7 @@ void main() {
       // Load the share-azul instance
       final page = await engine.queryInstances(
         tabId: 'home',
-        personaId: 'tabletop-member-05',
+        fanId: 'tabletop-member-05',
         limit: 50,
       );
       final azul = page.items.firstWhere((i) => i.instanceId == 'share-azul');
@@ -232,7 +230,7 @@ void main() {
         instanceId: azul.instanceId,
         currentState: azul.currentState,
         instanceData: azul.instanceData,
-        personaId: 'tabletop-member-05',
+        fanId: 'tabletop-member-05',
       );
       final ownerTransitionIds = ownerTransitions.map((t) => t.id).toSet();
       expect(ownerTransitionIds, contains('approve-request'));
@@ -243,7 +241,7 @@ void main() {
       await authApi.signIn(accountId: 'tabletop-member-06');
 
       // Re-register type mapping
-      engine.setPersonaType('tabletop-member-06', 'tabletop-member');
+      engine.setRoleForFan('tabletop-member-06', 'tabletop-member');
 
       // As non-owner, approve-request should NOT be available
       final nonOwnerTransitions = await engine.availableTransitionsAsync(
@@ -251,7 +249,7 @@ void main() {
         instanceId: azul.instanceId,
         currentState: azul.currentState,
         instanceData: azul.instanceData,
-        personaId: 'tabletop-member-06',
+        fanId: 'tabletop-member-06',
       );
       final nonOwnerTransitionIds = nonOwnerTransitions
           .map((t) => t.id)
@@ -268,7 +266,7 @@ void main() {
 
       final grouped = <String, List<LoomAccount>>{};
       for (final account in accounts) {
-        grouped.putIfAbsent(account.personaTypeId, () => []).add(account);
+        grouped.putIfAbsent(account.roleId, () => []).add(account);
       }
 
       // Should have both organizer and member groups
@@ -281,10 +279,10 @@ void main() {
       // Member group has multiple accounts
       expect(grouped['tabletop-member']!.length, greaterThan(1));
 
-      // All accounts in a group share the same personaTypeId
+      // All accounts in a group share the same roleId
       for (final entry in grouped.entries) {
         for (final account in entry.value) {
-          expect(account.personaTypeId, entry.key);
+          expect(account.roleId, entry.key);
         }
       }
     });
@@ -296,7 +294,7 @@ void main() {
         // Verify engine is functional
         final page = await engine.queryInstances(
           tabId: 'home',
-          personaId: 'tabletop-member-05',
+          fanId: 'tabletop-member-05',
           limit: 50,
         );
         expect(page.items, hasLength(28));
@@ -309,7 +307,7 @@ void main() {
           instanceId: azul.instanceId,
           currentState: azul.currentState,
           instanceData: azul.instanceData,
-          personaId: 'tabletop-member-05',
+          fanId: 'tabletop-member-05',
         );
         expect(ownerTransitions, isNotEmpty);
         // The owner-gated transitions must be present
@@ -324,7 +322,7 @@ void main() {
       final invite = LoomCommunityInvite(
         inviteId: 'invite-1',
         communityExtensionId: communityExtensionId,
-        personaTypeId: 'tabletop-member',
+        roleId: 'tabletop-member',
         issuedByAccountId: 'tabletop-organizer',
         code: 'TABLETOP-1',
         status: InviteStatus.pending,
@@ -333,7 +331,7 @@ void main() {
 
       expect(invite.status, InviteStatus.pending);
       expect(invite.createdAt, createdAt);
-      expect(invite.personaTypeId, 'tabletop-member');
+      expect(invite.roleId, 'tabletop-member');
     });
   });
 }

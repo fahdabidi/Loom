@@ -20,20 +20,20 @@ void main() {
           displayName: target.communityName,
         );
         final personas = personasForExtensionId(target.extensionId);
-        final personaIds = personas.map((persona) => persona.personaId).toSet();
+        final roleIds = personas.map((persona) => persona.roleId).toSet();
 
         for (final workflow in experience.workflows) {
           final policy = personaPolicyForWorkflow(
             target.extensionId,
             workflow.workflowId,
           );
-          expect(policy.actorPersonaIds, isNotEmpty);
+          expect(policy.actorRoleIds, isNotEmpty);
 
-          await selectPersona(tester, policy.actorPersonaIds.first);
+          await selectPersona(tester, policy.actorRoleIds.first);
           await completeWorkflow(tester, workflow);
 
-          for (final actorPersonaId in policy.actorPersonaIds.skip(1)) {
-            await selectPersona(tester, actorPersonaId);
+          for (final actorRoleId in policy.actorRoleIds.skip(1)) {
+            await selectPersona(tester, actorRoleId);
             await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
@@ -41,8 +41,8 @@ void main() {
             );
           }
 
-          for (final receiverPersonaId in policy.receiverPersonaIds) {
-            await selectPersona(tester, receiverPersonaId);
+          for (final receiverRoleId in policy.receiverRoleIds) {
+            await selectPersona(tester, receiverRoleId);
             await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(
@@ -53,8 +53,8 @@ void main() {
             await receiveWorkflow(tester, workflow);
           }
 
-          for (final readOnlyPersonaId in policy.readOnlyPersonaIds) {
-            await selectPersona(tester, readOnlyPersonaId);
+          for (final readOnlyRoleId in policy.readOnlyRoleIds) {
+            await selectPersona(tester, readOnlyRoleId);
             await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-read-only-${workflow.workflowId}')),
@@ -62,15 +62,13 @@ void main() {
             );
           }
 
-          final explicitPersonaIds = {
-            ...policy.actorPersonaIds,
-            ...policy.receiverPersonaIds,
-            ...policy.readOnlyPersonaIds,
+          final explicitRoleIds = {
+            ...policy.actorRoleIds,
+            ...policy.receiverRoleIds,
+            ...policy.readOnlyRoleIds,
           };
-          for (final disabledPersonaId in personaIds.difference(
-            explicitPersonaIds,
-          )) {
-            await selectPersona(tester, disabledPersonaId);
+          for (final disabledRoleId in roleIds.difference(explicitRoleIds)) {
+            await selectPersona(tester, disabledRoleId);
             await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-disabled-${workflow.workflowId}')),
@@ -83,4 +81,3 @@ void main() {
     timeout: const Timeout(Duration(minutes: 6)),
   );
 }
-

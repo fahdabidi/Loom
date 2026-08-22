@@ -205,7 +205,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   @override
   void didUpdateWidget(_MessagesTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ((oldWidget.persona.personaId != widget.persona.personaId ||
+    if ((oldWidget.persona.roleId != widget.persona.roleId ||
         oldWidget.persona.accountId != widget.persona.accountId)) {
       _selectedThread = null;
       unawaited(_load());
@@ -215,9 +215,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final threads = await _store.threadsFor(
-        (widget.persona.accountId ?? widget.persona.personaId),
-      );
+      final threads = await _store.threadsFor(widget.persona.fanId);
       if (!mounted) return;
       setState(() {
         _visibleThreadCount = threads.length;
@@ -238,10 +236,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
       setState(() => _selectedThread = null);
       return;
     }
-    await _store.markRead(
-      thread: thread,
-      personaId: (widget.persona.accountId ?? widget.persona.personaId),
-    );
+    await _store.markRead(thread: thread, fanId: widget.persona.fanId);
     if (mounted) setState(() => _selectedThread = thread);
   }
 
@@ -252,12 +247,12 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.postMessage(
       thread: thread,
       body: text,
-      personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      fanId: widget.persona.fanId,
     );
     _composerController.clear();
     final refreshed = await _store.threadById(
       thread.instanceId,
-      (widget.persona.accountId ?? widget.persona.personaId),
+      widget.persona.fanId,
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -267,11 +262,11 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setMuted(
       thread: thread,
       muted: !_store.isMuted(thread),
-      personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      fanId: widget.persona.fanId,
     );
     final refreshed = await _store.threadById(
       thread.instanceId,
-      (widget.persona.accountId ?? widget.persona.personaId),
+      widget.persona.fanId,
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -281,7 +276,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setArchived(
       thread: thread,
       archived: !_store.isArchived(thread),
-      personaId: (widget.persona.accountId ?? widget.persona.personaId),
+      fanId: widget.persona.fanId,
     );
     if (mounted) setState(() => _selectedThread = null);
     await _load();
@@ -309,7 +304,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
         foreground: foreground,
         accent: widget.accent,
         modernTheme: widget.modernTheme,
-        personaId: (widget.persona.accountId ?? widget.persona.personaId),
+        fanId: widget.persona.fanId,
         composerController: _composerController,
         muted: _store.isMuted(selectedThread),
         onSend: _sendReply,
@@ -389,14 +384,12 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           ),
         ),
         RepeaterSurface.live(
-          key: ValueKey(
-            'messages-repeater-${(widget.persona.accountId ?? widget.persona.personaId)}',
-          ),
+          key: ValueKey('messages-repeater-${widget.persona.fanId}'),
           refreshInterval: const Duration(milliseconds: 50),
           querySource: RepeaterQuerySource(
             engine: _store.engine,
             workflowType: _MessagesEngineStore.workflowType,
-            personaId: (widget.persona.accountId ?? widget.persona.personaId),
+            fanId: widget.persona.fanId,
             tabId: 'messages',
           ),
           listShrinkWrap: true,
@@ -404,17 +397,11 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           itemBuilder: (context, item) {
             final instance = item as WorkflowInstance;
             final thread = _store.toThread(instance);
-            if (!_store.isVisibleTo(
-                  instance,
-                  (widget.persona.accountId ?? widget.persona.personaId),
-                ) ||
+            if (!_store.isVisibleTo(instance, widget.persona.fanId) ||
                 _store.isArchived(instance)) {
               return const SizedBox.shrink();
             }
-            final unread = _store.isUnread(
-              instance,
-              (widget.persona.accountId ?? widget.persona.personaId),
-            );
+            final unread = _store.isUnread(instance, widget.persona.fanId);
             final preview = _store.lastPreview(instance);
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -503,7 +490,7 @@ class _ThreadDetailView extends StatelessWidget {
     required this.foreground,
     required this.accent,
     this.modernTheme,
-    required this.personaId,
+    required this.fanId,
     required this.composerController,
     required this.muted,
     required this.onSend,
@@ -516,7 +503,7 @@ class _ThreadDetailView extends StatelessWidget {
   final Color foreground;
   final Color accent;
   final LoomCardTheme? modernTheme;
-  final String personaId;
+  final String fanId;
   final TextEditingController composerController;
   final bool muted;
   final VoidCallback onSend;
@@ -595,7 +582,7 @@ class _ThreadDetailView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
             child: Align(
-              alignment: message.senderPersonaId == personaId
+              alignment: message.senderFanId == fanId
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               child: Container(
@@ -608,7 +595,7 @@ class _ThreadDetailView extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: message.senderPersonaId == personaId
+                  color: message.senderFanId == fanId
                       ? (modernTheme?.accent ?? accent).withValues(alpha: 0.18)
                       : foreground.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(16),
@@ -699,8 +686,8 @@ class _MessagesEngineStore {
   // Real per-account ids (see part30_local_auth_api.dart's
   // _seedTabletopAccounts) -- not the two generic persona-type ids. Seed
   // threads must list actual accounts as participants so an individually
-  // signed-in member's own threadsFor(personaId) query (which checks
-  // participantPersonaIds.contains(personaId) against the real signed-in
+  // signed-in member's own threadsFor(fanId) query (which checks
+  // participantFanIds.contains(fanId) against the real signed-in
   // account id, not the persona type) actually finds them.
   static const _allTabletopAccountIds = [
     'tabletop-organizer',
@@ -721,11 +708,11 @@ class _MessagesEngineStore {
     LoomMessageThread(
       threadId: 'tabletop-campaign-night',
       subject: 'Campaign night: table assignments',
-      participantPersonaIds: _allTabletopAccountIds,
+      participantFanIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-1',
-          senderPersonaId: 'tabletop-organizer',
+          senderFanId: 'tabletop-organizer',
           body: 'Tables are set for Friday. Please confirm your seat.',
           timestamp: DateTime(2026, 7, 10, 18),
         ),
@@ -734,11 +721,11 @@ class _MessagesEngineStore {
     LoomMessageThread(
       threadId: 'tabletop-library',
       subject: 'Library game suggestions',
-      participantPersonaIds: _allTabletopAccountIds,
+      participantFanIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-2',
-          senderPersonaId: 'tabletop-member-03',
+          senderFanId: 'tabletop-member-03',
           body: 'I would love to try Cascadia next month.',
           timestamp: DateTime(2026, 7, 9, 16, 30),
         ),
@@ -747,11 +734,11 @@ class _MessagesEngineStore {
     LoomMessageThread(
       threadId: 'tabletop-volunteers',
       subject: 'Teach-a-game volunteer sign-up',
-      participantPersonaIds: _allTabletopAccountIds,
+      participantFanIds: _allTabletopAccountIds,
       messages: [
         LoomMessage(
           messageId: 'tabletop-3',
-          senderPersonaId: 'tabletop-organizer',
+          senderFanId: 'tabletop-organizer',
           body: 'Thanks for helping new members learn a game.',
           timestamp: DateTime(2026, 7, 8, 12),
         ),
@@ -782,18 +769,16 @@ class _MessagesEngineStore {
     for (final thread in _seedThreads) {
       await _engine.createInstance(
         workflowType: workflowType,
-        personaId:
-            thread.messages.firstOrNull?.senderPersonaId ??
-            'tabletop-organizer',
+        fanId: thread.messages.firstOrNull?.senderFanId ?? 'tabletop-organizer',
         initialInstanceData: {
           'threadId': thread.threadId,
           'subject': thread.subject,
-          'participantFanIds': thread.participantPersonaIds,
+          'participantFanIds': thread.participantFanIds,
           'messages': [
             for (final message in thread.messages)
               {
                 'messageId': message.messageId,
-                'senderFanId': message.senderPersonaId,
+                'senderFanId': message.senderFanId,
                 'body': message.body,
                 'timestamp': message.timestamp.toUtc().toIso8601String(),
               },
@@ -807,11 +792,11 @@ class _MessagesEngineStore {
       for (final message in thread.messages) {
         await _engine.createInstance(
           workflowType: messageWorkflowType,
-          personaId: message.senderPersonaId,
+          fanId: message.senderFanId,
           initialInstanceData: {
             'threadId': thread.threadId,
             'messageId': message.messageId,
-            'senderFanId': message.senderPersonaId,
+            'senderFanId': message.senderFanId,
             'body': message.body,
             'timestamp': message.timestamp.toUtc().toIso8601String(),
           },
@@ -821,11 +806,11 @@ class _MessagesEngineStore {
     _ready = true;
   }
 
-  Future<List<WorkflowInstance>> threadsFor(String personaId) async {
+  Future<List<WorkflowInstance>> threadsFor(String fanId) async {
     await ensureReady();
     final page = await _engine.queryInstances(
       tabId: 'messages',
-      personaId: personaId,
+      fanId: fanId,
       limit: 1000,
       query: const SurfaceQuery(sort: SortSpec(key: 'subject')),
     );
@@ -833,19 +818,16 @@ class _MessagesEngineStore {
         .where(
           (thread) =>
               thread.workflowType == workflowType &&
-              isVisibleTo(thread, personaId) &&
+              isVisibleTo(thread, fanId) &&
               !isArchived(thread),
         )
         .toList(growable: false);
   }
 
-  Future<WorkflowInstance?> threadById(
-    String instanceId,
-    String personaId,
-  ) async {
+  Future<WorkflowInstance?> threadById(String instanceId, String fanId) async {
     final page = await _engine.queryInstances(
       tabId: 'messages',
-      personaId: personaId,
+      fanId: fanId,
       limit: 1000,
     );
     for (final thread in page.items) {
@@ -856,65 +838,65 @@ class _MessagesEngineStore {
 
   Future<void> markRead({
     required WorkflowInstance thread,
-    required String personaId,
+    required String fanId,
   }) => _engine.applyTransition(
     workflowType: workflowType,
     instanceId: thread.instanceId,
     transitionId: 'mark-read',
-    personaId: personaId,
+    fanId: fanId,
   );
 
   Future<void> postMessage({
     required WorkflowInstance thread,
     required String body,
-    required String personaId,
+    required String fanId,
   }) async {
     await _engine.updateInstanceFields(
       workflowType: workflowType,
       instanceId: thread.instanceId,
       fieldUpdates: {'draftBody': body},
-      personaId: personaId,
+      fanId: fanId,
     );
     await _engine.applyTransition(
       workflowType: workflowType,
       instanceId: thread.instanceId,
       transitionId: 'post-message',
-      personaId: personaId,
+      fanId: fanId,
     );
   }
 
   Future<void> setMuted({
     required WorkflowInstance thread,
     required bool muted,
-    required String personaId,
+    required String fanId,
   }) => _engine.updateInstanceFields(
     workflowType: workflowType,
     instanceId: thread.instanceId,
     fieldUpdates: {'muted': muted},
-    personaId: personaId,
+    fanId: fanId,
   );
 
   Future<void> setArchived({
     required WorkflowInstance thread,
     required bool archived,
-    required String personaId,
+    required String fanId,
   }) => _engine.updateInstanceFields(
     workflowType: workflowType,
     instanceId: thread.instanceId,
     fieldUpdates: {'archived': archived},
-    personaId: personaId,
+    fanId: fanId,
   );
 
-  bool isVisibleTo(WorkflowInstance thread, String personaId) =>
+  bool isVisibleTo(WorkflowInstance thread, String fanId) =>
       (thread.instanceData['participantFanIds'] as List? ?? const []).contains(
-        personaId,
+        fanId,
       );
   bool isMuted(WorkflowInstance thread) => thread.instanceData['muted'] == true;
   bool isArchived(WorkflowInstance thread) =>
       thread.instanceData['archived'] == true;
-  bool isUnread(WorkflowInstance thread, String personaId) =>
+  bool isUnread(WorkflowInstance thread, String fanId) =>
       !(thread.instanceData['readByFanIds'] as List? ?? const []).contains(
-        personaId,
+        fanId,
       );
   String lastPreview(WorkflowInstance thread) {
     final messages = _messages(thread);
@@ -925,7 +907,7 @@ class _MessagesEngineStore {
   LoomMessageThread toThread(WorkflowInstance thread) => LoomMessageThread(
     threadId: thread.instanceId,
     subject: '${thread.instanceData['subject'] ?? ''}',
-    participantPersonaIds: [
+    participantFanIds: [
       for (final id
           in thread.instanceData['participantFanIds'] as List? ?? const [])
         '$id',
@@ -940,7 +922,7 @@ class _MessagesEngineStore {
       if (raw is Map)
         LoomMessage(
           messageId: '${raw['messageId'] ?? ''}',
-          senderPersonaId: '${raw['senderFanId'] ?? ''}',
+          senderFanId: '${raw['senderFanId'] ?? ''}',
           body: '${raw['body'] ?? ''}',
           timestamp:
               DateTime.tryParse('${raw['timestamp'] ?? ''}')?.toLocal() ??
@@ -1178,7 +1160,7 @@ class _TabNativeRenderer extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
           onInstanceScopedCreate: onInstanceScopedCreate,
-          rolesForInstance: (instance, viewerPersonaId) {
+          rolesForInstance: (instance, viewerFanId) {
             final definitions = experience.workflowDefinitions;
             if (definitions == null) return const <String>[];
             final machine = definitions[instance.workflowType];
@@ -1186,8 +1168,8 @@ class _TabNativeRenderer extends StatelessWidget {
             return deriveInstanceRoles(
               machine,
               instance,
-              viewerPersonaId: viewerPersonaId,
-              viewerPersonaTypeId: persona.personaId,
+              viewerFanId: viewerFanId,
+              viewerRoleId: persona.roleId,
             );
           },
         );
@@ -1331,7 +1313,8 @@ class CalendarEventDetail extends StatefulWidget {
     required this.workflow,
     this.instance,
     this.machine,
-    required this.personaId,
+    required this.fanId,
+    required this.roleId,
     this.reminderEnabled = false,
     required this.onTransitionApplied,
     this.onToggleReminder,
@@ -1342,7 +1325,8 @@ class CalendarEventDetail extends StatefulWidget {
   final LoomWorkflowDefinition workflow;
   final WorkflowInstance? instance;
   final LoomWorkflowStateMachine? machine;
-  final String personaId;
+  final String fanId;
+  final String roleId;
   final bool reminderEnabled;
   final Future<void> Function(WorkflowInstance instance, String transitionId)
   onTransitionApplied;
@@ -1448,25 +1432,25 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
     WorkflowInstance? instance,
   ) {
     final data = instance?.instanceData ?? const <String, dynamic>{};
-    final responseId = _responseIdForPersona(data, widget.personaId);
+    final responseId = _responseIdForPersona(data, widget.fanId);
     final responseLabel = responseId == null
         ? ''
         : _labelForResponse(responseId);
-    final goingPersonaIds = _stringList(data['goingFanIds']);
-    final waitlistedPersonaIds = _stringList(data['waitlistedFanIds']);
+    final goingFanIds = _stringList(data['goingFanIds']);
+    final waitlistedFanIds = _stringList(data['waitlistedFanIds']);
     final capacity =
         _intData(data['capacity']) ??
         _capacityFromLabel(item.capacityLabel) ??
-        goingPersonaIds.length;
+        goingFanIds.length;
     return {
       'eventDate': data['eventDate'] ?? _formatEventDate(item.dateTime),
       'eventDateTime':
           data['eventDateTime'] ?? _formatEventDateTime(item.dateTime),
       'host': data['host'] ?? item.host ?? '',
       'location': data['location'] ?? item.location ?? '',
-      'capacityLabel': _capacityLabel(goingPersonaIds.length, capacity),
+      'capacityLabel': _capacityLabel(goingFanIds.length, capacity),
       'rsvpStatus': responseLabel,
-      'waitlistedFanIds': waitlistedPersonaIds,
+      'waitlistedFanIds': waitlistedFanIds,
       'reminderState': widget.reminderEnabled ? 'Reminder set' : '',
     };
   }
@@ -1478,15 +1462,16 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
     if (machine == null || instance == null) return const [];
     final currentResponseId = _responseIdForPersona(
       instance.instanceData,
-      widget.personaId,
+      widget.fanId,
     );
     final transitions = machine
         .transitionsFrom(instance.currentState)
         .where(
           (transition) => evaluateGuard(
             transition.guard,
-            widget.personaId,
+            widget.fanId,
             instance.instanceData,
+            roleId: widget.roleId,
           ),
         )
         .where((transition) => transition.id != 'cancel-event')
@@ -1526,13 +1511,10 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
   }
 }
 
-String? _responseIdForPersona(
-  Map<String, dynamic> instanceData,
-  String personaId,
-) {
+String? _responseIdForPersona(Map<String, dynamic> instanceData, String fanId) {
   final responseMap = instanceData['rsvpByPersona'];
   if (responseMap is Map) {
-    final response = responseMap[personaId];
+    final response = responseMap[fanId];
     if (response is String && response.trim().isNotEmpty) {
       return response;
     }

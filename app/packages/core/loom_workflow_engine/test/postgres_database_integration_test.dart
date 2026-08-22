@@ -122,14 +122,14 @@ void main() {
         final instanceId = await api.createInstance(
           workflowType: workflowType,
           initialInstanceData: {'title': 'PostgreSQL write probe'},
-          personaId: 'member',
+          fanId: 'member',
         );
 
         final transition = await api.applyTransition(
           workflowType: workflowType,
           instanceId: instanceId,
           transitionId: 'publish',
-          personaId: 'member',
+          fanId: 'member',
         );
         expect(transition.newState, 'published');
         expect(transition.newInstanceData['status'], 'published');
@@ -206,7 +206,7 @@ void main() {
             workflowType: instance.type,
             currentState: 'draft',
             instanceData: {'title': instance.title},
-            createdByPersonaId: 'member',
+            createdByFanId: 'member',
           );
         }
 

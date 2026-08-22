@@ -1,55 +1,58 @@
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
+const _memberFanId = 'tabletop-member-01';
+const _memberRoleId = 'tabletop-member';
+
 void main() {
   group('Milestone 3.2 cross-workflow dues guard', () {
     test('dues-current member can see and execute borrow', () async {
       final db = WorkflowDatabase.memory();
       final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
       api
+        ..setRoleForFan(_memberFanId, _memberRoleId)
         ..registerDefinition(_duesMachine())
         ..registerDefinition(_loanMachine());
 
       final duesId = await api.createInstance(
         workflowType: 'tabletop-club-dues-payment',
         initialInstanceData: _duesData(),
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       await api.applyTransition(
         workflowType: 'tabletop-club-dues-payment',
         instanceId: duesId,
         transitionId: 'pay',
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       final listingId = await api.createInstance(
         workflowType: 'marketplace-root',
         initialInstanceData: _listingData(),
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       final page = await api.queryInstances(
         tabId: 'marketplace',
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       final listing = page.items.firstWhere(
         (item) => item.instanceId == listingId,
       );
-      final completed = await api.completedWorkflowIdsForPersona(
-        'tabletop-member',
-      );
+      final completed = await api.completedWorkflowIdsForFan(_memberFanId);
 
       final transitions = api.availableTransitions(
         workflowType: listing.workflowType,
         instanceId: listing.instanceId,
         currentState: listing.currentState,
         instanceData: listing.instanceData,
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       expect(completed, contains('tabletop-membership-dues-current'));
       expect(
         evaluateGuard(
           _loanMachine().transitions.single.guard,
-          'tabletop-member',
+          _memberFanId,
           listing.instanceData,
+          roleId: _memberRoleId,
           completedWorkflowIds: completed,
         ),
         isTrue,
@@ -64,7 +67,7 @@ void main() {
         instanceId: listing.instanceId,
         currentState: listing.currentState,
         instanceData: listing.instanceData,
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       expect(
         asyncTransitions.map((transition) => transition.id),
@@ -75,10 +78,10 @@ void main() {
         workflowType: listing.workflowType,
         instanceId: listing.instanceId,
         transitionId: 'borrow',
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       expect(result.newState, 'onLoan');
-      expect(result.newInstanceData['holderFanId'], 'tabletop-member');
+      expect(result.newInstanceData['holderFanId'], _memberFanId);
       db.close();
     });
 
@@ -86,30 +89,29 @@ void main() {
       final db = WorkflowDatabase.memory();
       final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
       api
+        ..setRoleForFan(_memberFanId, _memberRoleId)
         ..registerDefinition(_duesMachine())
         ..registerDefinition(_loanMachine());
 
       await api.createInstance(
         workflowType: 'tabletop-club-dues-payment',
         initialInstanceData: _duesData(),
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
       final listingId = await api.createInstance(
         workflowType: 'marketplace-root',
         initialInstanceData: _listingData(),
-        personaId: 'tabletop-member',
+        fanId: _memberFanId,
       );
 
-      final completed = await api.completedWorkflowIdsForPersona(
-        'tabletop-member',
-      );
+      final completed = await api.completedWorkflowIdsForFan(_memberFanId);
       expect(completed, isNot(contains('tabletop-membership-dues-current')));
       await expectLater(
         api.applyTransition(
           workflowType: 'marketplace-root',
           instanceId: listingId,
           transitionId: 'borrow',
-          personaId: 'tabletop-member',
+          fanId: _memberFanId,
         ),
         throwsStateError,
       );
@@ -126,26 +128,26 @@ void main() {
         final paidDuesId = await api.createInstance(
           workflowType: 'tabletop-club-dues-payment',
           initialInstanceData: _duesData(),
-          personaId: 'tabletop-member',
+          fanId: _memberFanId,
         );
         await api.createInstance(
           workflowType: 'tabletop-club-dues-payment',
           initialInstanceData: _duesData(),
-          personaId: 'other-member',
+          fanId: 'other-member',
         );
         await api.applyTransition(
           workflowType: 'tabletop-club-dues-payment',
           instanceId: paidDuesId,
           transitionId: 'pay',
-          personaId: 'tabletop-member',
+          fanId: _memberFanId,
         );
 
         expect(
-          await api.completedWorkflowIdsForPersona('tabletop-member'),
+          await api.completedWorkflowIdsForFan(_memberFanId),
           contains('tabletop-membership-dues-current'),
         );
         expect(
-          await api.completedWorkflowIdsForPersona('other-member'),
+          await api.completedWorkflowIdsForFan('other-member'),
           isNot(contains('tabletop-membership-dues-current')),
         );
         db.close();
@@ -196,7 +198,7 @@ LoomWorkflowStateMachine _loanMachine() {
         from: ['available'],
         to: 'onLoan',
         guard: WorkflowGuard(
-          allowedPersonaIds: ['tabletop-member'],
+          allowedRoleIds: ['tabletop-member'],
           requiresWorkflowsComplete: ['tabletop-membership-dues-current'],
         ),
         effects: [

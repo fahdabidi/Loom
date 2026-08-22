@@ -2,17 +2,16 @@ import '../models/workflow_models.dart';
 import '../workflow_capabilities.dart';
 
 /// Applies a list of [WorkflowEffect]s to a copy of [instanceData] and returns
-/// the new map. `$actor` in effect values is resolved to [personaId].
+/// the new map. `$actor` in effect values is resolved to [fanId].
 /// `{id}` resolves to [instanceId]. Does not mutate the original map.
 Map<String, dynamic> applyEffects(
   List<WorkflowEffect> effects,
-  String personaId,
+  String fanId,
   Map<String, dynamic> instanceData, {
   Map<String, dynamic>? interpolationData,
   Map<String, dynamic>? inputValues,
   String? instanceId,
 }) {
-  final fanId = personaId;
   final result = Map<String, dynamic>.from(instanceData);
 
   for (final effect in effects) {
@@ -39,12 +38,11 @@ Map<String, dynamic> applyEffects(
 /// passes other values through.
 dynamic resolveEffectValue(
   dynamic value,
-  String personaId,
+  String fanId,
   Map<String, dynamic> instanceData, {
   Map<String, dynamic>? inputValues,
   String? instanceId,
 }) {
-  final fanId = personaId;
   if (value == '\$actor') return fanId;
   if (value is String &&
       inputValues != null &&

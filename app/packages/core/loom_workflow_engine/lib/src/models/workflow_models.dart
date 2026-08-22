@@ -78,7 +78,7 @@ class WorkflowGuard {
     workflowGuardRequiresWorkflowsComplete,
   };
 
-  final List<String>? allowedPersonaIds;
+  final List<String>? allowedRoleIds;
   final ListMembershipGuard? actorInList;
   final ActorEqualsFieldGuard? actorEqualsField;
   final KeyValueGuard? instanceDataEquals;
@@ -92,7 +92,7 @@ class WorkflowGuard {
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
-    this.allowedPersonaIds,
+    this.allowedRoleIds,
     this.actorInList,
     this.actorEqualsField,
     this.instanceDataEquals,
@@ -107,7 +107,7 @@ class WorkflowGuard {
   factory WorkflowGuard.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const WorkflowGuard();
     return WorkflowGuard(
-      allowedPersonaIds: (json[workflowGuardAllowedRoleIds] as List<dynamic>?)
+      allowedRoleIds: (json[workflowGuardAllowedRoleIds] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
       actorInList: json[workflowGuardActorInList] != null
@@ -152,7 +152,7 @@ class WorkflowGuard {
   }
 
   bool get isEmpty =>
-      (allowedPersonaIds == null || allowedPersonaIds!.isEmpty) &&
+      (allowedRoleIds == null || allowedRoleIds!.isEmpty) &&
       actorInList == null &&
       actorEqualsField == null &&
       instanceDataEquals == null &&
@@ -846,7 +846,7 @@ class WorkflowAction {
 
   final String kind;
   final String? label;
-  final List<String>? byPersonaIds;
+  final List<String>? byRoleIds;
   final String? workflowType;
   final String? transitionId;
   final String? scope;
@@ -860,7 +860,7 @@ class WorkflowAction {
   const WorkflowAction({
     required this.kind,
     this.label,
-    this.byPersonaIds,
+    this.byRoleIds,
     this.workflowType,
     this.transitionId,
     this.scope,
@@ -872,7 +872,7 @@ class WorkflowAction {
   factory WorkflowAction.fromJson(Map<String, dynamic> json) => WorkflowAction(
     kind: json['kind'] as String,
     label: json['label'] as String?,
-    byPersonaIds: (json['byRoleIds'] as List<dynamic>?)
+    byRoleIds: (json['byRoleIds'] as List<dynamic>?)
         ?.map((e) => e as String)
         .toList(),
     workflowType: json['workflowType'] as String?,

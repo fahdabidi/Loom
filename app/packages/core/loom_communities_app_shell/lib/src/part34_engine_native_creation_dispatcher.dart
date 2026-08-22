@@ -13,7 +13,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
     required this.workflowType,
     required this.machine,
     required this.engine,
-    required this.personaId,
+    required this.fanId,
     required this.keyPrefix,
     this.onCreated,
     this.title,
@@ -25,7 +25,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
   final String workflowType;
   final LoomWorkflowStateMachine machine;
   final WorkflowEngineApi engine;
-  final String personaId;
+  final String fanId;
   final String keyPrefix;
   final Future<void> Function(String instanceId)? onCreated;
   final String? title;
@@ -44,7 +44,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           workflowType: workflowType,
           machine: machine,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           keyPrefix: keyPrefix,
           onCreated: onCreated,
           title: title,
@@ -56,7 +56,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           workflowType: workflowType,
           machine: machine,
           engine: engine,
-          personaId: personaId,
+          fanId: fanId,
           keyPrefix: keyPrefix,
           onCreated: onCreated,
           title: title,

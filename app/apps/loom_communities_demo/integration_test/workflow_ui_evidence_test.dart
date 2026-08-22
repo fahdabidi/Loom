@@ -196,8 +196,8 @@ void main() {
           target.extensionId,
           prerequisite.workflowId,
         );
-        final prerequisitePersonaId = prerequisitePolicy.actorPersonaIds.first;
-        await selectPersona(tester, prerequisitePersonaId);
+        final prerequisiteRoleId = prerequisitePolicy.actorRoleIds.first;
+        await selectPersona(tester, prerequisiteRoleId);
         await completeWorkflow(tester, prerequisite);
         completedSetupWorkflowIds.add(prerequisiteWorkflowId);
       }
@@ -219,8 +219,8 @@ void main() {
           workflow.workflowId,
         );
         await ensurePrerequisiteChain(workflow);
-        final actorPersonaId = policy.actorPersonaIds.first;
-        await selectPersona(tester, actorPersonaId);
+        final actorRoleId = policy.actorRoleIds.first;
+        await selectPersona(tester, actorRoleId);
         final entry = <String, Object?>{
           'phase': target.phase,
           'appId': target.extensionId,
