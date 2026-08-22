@@ -1282,7 +1282,6 @@
       {
         "tabId": "admin",
         "label": "Admin",
-        "rendererContractId": "engine-native-generic-list",
         "iconKey": "admin_panel_settings",
         "description": "Moderation status and connection-safety audit surfaces.",
         "visibleRoleIds": ["moderator"]
