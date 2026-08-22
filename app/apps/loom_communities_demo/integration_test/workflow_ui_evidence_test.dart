@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:loom_communities_demo/main.dart';
@@ -30,13 +32,30 @@ void main() {
   testWidgets('wf_full-ui-screenshot-evidence-b12-b20', (tester) async {
     await binding.convertFlutterSurfaceToImage();
     binding.reportData ??= <String, dynamic>{};
+    binding.reportData!['walkthroughStatus'] = 'running';
+    binding.reportData!['requestedPhases'] = _requestedEvidencePhases();
+    binding.reportData!['expectedWorkflowCountByPhase'] =
+        _workflowEvidenceEntryCountByPhase();
+    binding.reportData!.addAll(_evidenceDeviceMetadata());
     final entries = <Map<String, Object?>>[];
+    binding.reportData!['workflowEvidence'] = entries;
     final installedExtensionIds = _preloadExampleCommunities
         ? {for (final target in loomEvidenceTargets) target.extensionId}
         : <String>{};
     final screenshotVisibleTextByName = <String, String>{};
+    final screenshotCapture = _ScreenshotCaptureRecorder(
+      binding: binding,
+      reportData: binding.reportData!,
+    );
     final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount();
     var completedWorkflowEvidenceEntries = 0;
+
+    void recordEvidenceEntry(Map<String, Object?> entry) {
+      entries.add(entry);
+      binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
+        entries,
+      );
+    }
 
     void emitProgress(
       String status, {
@@ -67,7 +86,12 @@ void main() {
         'completedWorkflows': completedWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
       });
-      return _capture(binding, tester, screenshotVisibleTextByName, name);
+      return _capture(
+        screenshotCapture,
+        tester,
+        screenshotVisibleTextByName,
+        name,
+      );
     }
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
@@ -147,7 +171,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       await capture('B12_harness_complete');
-      entries.add({
+      recordEvidenceEntry({
         ...harnessEntry,
         'screenshotNames': [
           'B12_harness_start',
@@ -271,7 +295,7 @@ void main() {
         );
         await capture(complete);
 
-        entries.add({
+        recordEvidenceEntry({
           ...entry,
           'screenshotNames': [start, action, complete],
           'status': 'pass',
@@ -341,7 +365,7 @@ void main() {
       await capture('B17_persona_inventory_picker');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      entries.add({
+      recordEvidenceEntry({
         'phase': 'B17',
         'appId': 'persona-role-inventory',
         'workflowId': 'wf_persona-role-inventory-capability-matrix',
@@ -382,7 +406,7 @@ void main() {
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
       await capture('B18_persona_picker_member_selected');
-      entries.add({
+      recordEvidenceEntry({
         'phase': 'B18',
         'appId': mosqueTarget.extensionId,
         'communityId': mosqueTarget.communityId,
@@ -421,7 +445,7 @@ void main() {
       await selectPersona(tester, 'mosque-admin');
       await _scrollToWorkflow(tester, announcement);
       await capture('B19_admin_announcement_actor');
-      entries.add({
+      recordEvidenceEntry({
         'phase': 'B19',
         'appId': mosqueTarget.extensionId,
         'communityId': mosqueTarget.communityId,
@@ -509,7 +533,7 @@ void main() {
       await selectPersona(tester, 'mosque-admin');
       await _selectCommunityTab(tester, 'admin');
       await capture('B20_admin_custom_tab_pinned_surface');
-      entries.add({
+      recordEvidenceEntry({
         'phase': 'B20',
         'appId': mosqueTarget.extensionId,
         'communityId': mosqueTarget.communityId,
@@ -582,7 +606,7 @@ void main() {
         'B20_app_shell_soccer_roster_renderer_expanded',
       );
 
-      entries.add({
+      recordEvidenceEntry({
         'phase': 'B20',
         'appId': 'app-shell-capability-evidence',
         'workflowId': 'wf_app-shell-capability-evidence',
@@ -613,12 +637,12 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    binding.reportData!['workflowEvidenceSchemaVersion'] = 1;
-    binding.reportData!['emulatorName'] = 'emulator-5554';
-    binding.reportData!['deviceClass'] = 'Android emulator';
+    screenshotCapture.finish();
+    binding.reportData!['workflowEvidenceSchemaVersion'] = 2;
     binding.reportData!['workflowEvidence'] = entries;
     binding.reportData!['screenshotVisibleTextByName'] =
         screenshotVisibleTextByName;
+    binding.reportData!['walkthroughStatus'] = 'pass';
     _emitCaptureProgress({
       'status': 'run-complete',
       'completedWorkflows': completedWorkflowEvidenceEntries,
@@ -628,14 +652,87 @@ void main() {
 }
 
 Future<void> _capture(
-  IntegrationTestWidgetsFlutterBinding binding,
+  _ScreenshotCaptureRecorder screenshotCapture,
   WidgetTester tester,
   Map<String, String> screenshotVisibleTextByName,
   String name,
 ) async {
   await tester.pump();
   screenshotVisibleTextByName[name] = _visibleTextFor(tester);
-  await binding.takeScreenshot(name);
+  await screenshotCapture.capture(name);
+}
+
+class _ScreenshotCaptureRecorder {
+  _ScreenshotCaptureRecorder({
+    required this.binding,
+    required this.reportData,
+  }) {
+    _syncReportData();
+  }
+
+  final IntegrationTestWidgetsFlutterBinding binding;
+  final Map<String, dynamic> reportData;
+  final List<String> _requestedNames = <String>[];
+  final List<String> _completedNames = <String>[];
+  final List<String> _unavailableNames = <String>[];
+  String? _unavailableReason;
+  bool _finished = false;
+
+  Future<void> capture(String name) async {
+    _requestedNames.add(name);
+    if (_unavailableReason != null) {
+      _unavailableNames.add(name);
+      _syncReportData();
+      return;
+    }
+
+    try {
+      await binding.takeScreenshot(name);
+      _completedNames.add(name);
+    } on MissingPluginException catch (error) {
+      _unavailableReason = error.toString();
+      _unavailableNames.add(name);
+      debugPrint(
+        'SCREENSHOT_CAPTURE_UNAVAILABLE '
+        'platform=${defaultTargetPlatform.name} method=captureScreenshot '
+        'screenshot=$name error=$_unavailableReason. '
+        'Walkthrough assertions will continue, but completion evidence remains blocked.',
+        wrapWidth: 2048,
+      );
+    }
+    _syncReportData();
+  }
+
+  void finish() {
+    _finished = true;
+    _syncReportData();
+    debugPrint(
+      'SCREENSHOT_CAPTURE_SUMMARY '
+      'status=${_unavailableReason == null ? 'complete' : 'unavailable'} '
+      'platform=${defaultTargetPlatform.name} '
+      'requested=${_requestedNames.length} completed=${_completedNames.length} '
+      'unavailable=${_unavailableNames.length}',
+      wrapWidth: 2048,
+    );
+  }
+
+  void _syncReportData() {
+    reportData['screenshotCapture'] = <String, Object?>{
+      'status': _unavailableReason != null
+          ? 'unavailable'
+          : _finished
+          ? 'complete'
+          : 'in-progress',
+      'platform': defaultTargetPlatform.name,
+      'method': 'captureScreenshot',
+      'requestedCount': _requestedNames.length,
+      'completedCount': _completedNames.length,
+      'unavailableCount': _unavailableNames.length,
+      'requestedScreenshotNames': List<String>.of(_requestedNames),
+      'unavailableScreenshotNames': List<String>.of(_unavailableNames),
+      if (_unavailableReason != null) 'reason': _unavailableReason,
+    };
+  }
 }
 
 String _visibleTextFor(WidgetTester tester) {
@@ -668,10 +765,58 @@ String _phaseForScreenshotName(String name) {
   return separator == -1 ? 'unknown' : name.substring(0, separator);
 }
 
+List<String> _requestedEvidencePhases() {
+  const orderedPhases = <String>[
+    'B12',
+    'B13',
+    'B14',
+    'B15',
+    'B16',
+    'B17',
+    'B18',
+    'B19',
+    'B20',
+  ];
+  return orderedPhases.where(_includePhase).toList(growable: false);
+}
+
+Map<String, Object?> _evidenceDeviceMetadata() {
+  final platform = defaultTargetPlatform.name;
+  return <String, Object?>{
+    'platform': platform,
+    'deviceName': switch (defaultTargetPlatform) {
+      TargetPlatform.android => 'emulator-5554',
+      TargetPlatform.linux => 'linux-desktop',
+      _ => '$platform-device',
+    },
+    'emulatorName': switch (defaultTargetPlatform) {
+      TargetPlatform.android => 'emulator-5554',
+      TargetPlatform.linux => 'linux-desktop',
+      _ => '$platform-device',
+    },
+    'deviceClass': switch (defaultTargetPlatform) {
+      TargetPlatform.android => 'Android emulator',
+      TargetPlatform.linux => 'Linux desktop',
+      _ => '${platform[0].toUpperCase()}${platform.substring(1)} device',
+    },
+    if (defaultTargetPlatform == TargetPlatform.android)
+      'apiLevel': 'Android 16 API 36',
+  };
+}
+
 int _workflowEvidenceEntryCount() {
-  var total = 0;
+  return _workflowEvidenceEntryCountByPhase().values.fold(
+    0,
+    (total, count) => total + count,
+  );
+}
+
+Map<String, int> _workflowEvidenceEntryCountByPhase() {
+  final counts = <String, int>{
+    for (final phase in _requestedEvidencePhases()) phase: 0,
+  };
   if (_includePhase('B12')) {
-    total += 1;
+    counts['B12'] = 1;
   }
   var targetWorkflowOrdinal = 0;
   for (final target in loomEvidenceTargets.where(
@@ -684,23 +829,23 @@ int _workflowEvidenceEntryCount() {
       final workflowOrdinal = targetWorkflowOrdinal;
       targetWorkflowOrdinal += 1;
       if (_includeWorkflowShard(workflowOrdinal)) {
-        total += 1;
+        counts.update(target.phase, (count) => count + 1);
       }
     }
   }
   if (_includePhase('B17')) {
-    total += 1;
+    counts['B17'] = 1;
   }
   if (_includePhase('B18')) {
-    total += 1;
+    counts['B18'] = 1;
   }
   if (_includePhase('B19')) {
-    total += 1;
+    counts['B19'] = 1;
   }
   if (_includePhase('B20')) {
-    total += 2;
+    counts['B20'] = 2;
   }
-  return total;
+  return counts;
 }
 
 String _screenshotName(
