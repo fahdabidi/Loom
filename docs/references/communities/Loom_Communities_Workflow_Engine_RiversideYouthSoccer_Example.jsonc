@@ -12,42 +12,42 @@
   "appShell": {
     "tabs": [
       {
-        "tabId": "home", "label": "Home", "rendererContractId": "engine-native-generic-list",
+        "tabId": "home", "label": "Home",
         "iconKey": "home", "description": "Next practice, registration progress, receipts, roster status, and reminders.",
         "pinnedWorkflowIds": ["soccer-practice-schedule", "soccer-guardian-join-approval", "soccer-registration-payment", "soccer-reminder-notification"]
       },
       {
-        "tabId": "messages", "label": "Messages", "rendererContractId": "engine-native-generic-list",
+        "tabId": "messages", "label": "Messages",
         "iconKey": "forum", "description": "Team discussions for guardians and coaches.",
         "pinnedWorkflowIds": ["soccer-team-discussion"],
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
       },
       {
-        "tabId": "calendar", "label": "Calendar", "rendererContractId": "engine-native-generic-list",
+        "tabId": "calendar", "label": "Calendar",
         "iconKey": "calendar_today", "description": "Practices, attendance, reminders, and calendar-sync requests.",
         "pinnedWorkflowIds": ["soccer-practice-schedule"],
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
       },
       {
-        "tabId": "giving", "label": "Giving", "rendererContractId": "engine-native-generic-list",
+        "tabId": "giving", "label": "Giving",
         "iconKey": "payments", "description": "Registration checkout, payment status, and private receipt access.",
         "pinnedWorkflowIds": ["soccer-registration-payment"],
         "visibleRoleIds": ["soccer-guardian"]
       },
       {
-        "tabId": "admin", "label": "Admin", "rendererContractId": "engine-native-generic-list",
+        "tabId": "admin", "label": "Admin",
         "iconKey": "admin_panel_settings", "description": "Guardian approval, reminder operations, and owner export controls.",
         "pinnedWorkflowIds": ["soccer-guardian-join-approval", "soccer-practice-schedule", "soccer-export-metadata"],
         "visibleRoleIds": ["soccer-coach", "soccer-owner"]
       },
       {
-        "tabId": "team", "label": "Team", "rendererContractId": "engine-native-generic-list",
+        "tabId": "team", "label": "Team",
         "iconKey": "groups", "description": "Protected roster rows and guardian-controlled minor-data consent.",
         "pinnedWorkflowIds": ["soccer-team-roster", "soccer-minor-redaction"],
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
       },
       {
-        "tabId": "documents", "label": "Documents", "rendererContractId": "engine-native-generic-list",
+        "tabId": "documents", "label": "Documents",
         "iconKey": "folder", "description": "Waivers, policies, versions, acknowledgement, and access requests.",
         "pinnedWorkflowIds": ["soccer-waiver-document"],
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
