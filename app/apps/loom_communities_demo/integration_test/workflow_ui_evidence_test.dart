@@ -15,6 +15,14 @@ final Set<String> _phaseFilter = _phaseFilterText
     .map((phase) => phase.trim())
     .where((phase) => phase.isNotEmpty)
     .toSet();
+const _communityFilterText = String.fromEnvironment(
+  'LOOM_EVIDENCE_COMMUNITY_FILTER',
+);
+final Set<String> _communityFilter = _communityFilterText
+    .split(',')
+    .map((extensionId) => extensionId.trim())
+    .where((extensionId) => extensionId.isNotEmpty)
+    .toSet();
 const _workflowShardCount = int.fromEnvironment(
   'LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT',
   defaultValue: 1,
@@ -30,24 +38,40 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('wf_full-ui-screenshot-evidence-b12-b20', (tester) async {
+    final evidenceTargets = _evidenceTargetsForRun();
+    final selectedExtensionIds = {
+      for (final target in evidenceTargets) target.extensionId,
+    };
+    final requestedPhases = _requestedEvidencePhases(evidenceTargets);
+    if (_communityFilter.isNotEmpty && requestedPhases.isEmpty) {
+      final requestedCommunities = _communityFilter.toList()..sort();
+      final requestedPhaseFilter = _phaseFilter.toList()..sort();
+      throw StateError(
+        'LOOM_EVIDENCE_COMMUNITY_FILTER and LOOM_EVIDENCE_PHASE_FILTER '
+        'selected no walkthrough coverage: communities=$requestedCommunities, '
+        'phases=$requestedPhaseFilter.',
+      );
+    }
     await binding.convertFlutterSurfaceToImage();
     binding.reportData ??= <String, dynamic>{};
     binding.reportData!['walkthroughStatus'] = 'running';
-    binding.reportData!['requestedPhases'] = _requestedEvidencePhases();
+    binding.reportData!['requestedPhases'] = requestedPhases;
     binding.reportData!['expectedWorkflowCountByPhase'] =
-        _workflowEvidenceEntryCountByPhase();
+        _workflowEvidenceEntryCountByPhase(evidenceTargets);
     binding.reportData!.addAll(_evidenceDeviceMetadata());
     final entries = <Map<String, Object?>>[];
     binding.reportData!['workflowEvidence'] = entries;
     final installedExtensionIds = _preloadExampleCommunities
-        ? {for (final target in loomEvidenceTargets) target.extensionId}
+        ? {for (final target in evidenceTargets) target.extensionId}
         : <String>{};
     final screenshotVisibleTextByName = <String, String>{};
     final screenshotCapture = _ScreenshotCaptureRecorder(
       binding: binding,
       reportData: binding.reportData!,
     );
-    final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount();
+    final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount(
+      evidenceTargets,
+    );
     var completedWorkflowEvidenceEntries = 0;
 
     void recordEvidenceEntry(Map<String, Object?> entry) {
@@ -188,7 +212,7 @@ void main() {
     }
 
     var targetWorkflowOrdinal = 0;
-    for (final target in loomEvidenceTargets.where(
+    for (final target in evidenceTargets.where(
       (target) => _includePhase(target.phase),
     )) {
       await ensureTargetInstalled(target);
@@ -351,7 +375,8 @@ void main() {
       (workflow) => workflow.workflowId == 'soccer-team-roster',
     );
 
-    if (_includePhase('B17')) {
+    if (_includePhase('B17') &&
+        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
       emitProgress(
         'workflow-start',
         phase: 'B17',
@@ -373,7 +398,7 @@ void main() {
           'all demo communities define two or more personas',
           'all workflow/persona matrix rows have actor, receiver, read-only, or disabled state',
           'receiver rows declare dependency evidence',
-          'matrix rows: ${_personaMatrixRowCount()}',
+          'matrix rows: ${_personaMatrixRowCount(evidenceTargets)}',
         ],
         'screenshotNames': [
           'B17_persona_inventory_active_admin',
@@ -389,7 +414,8 @@ void main() {
       );
     }
 
-    if (_includePhase('B18')) {
+    if (_includePhase('B18') &&
+        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
       emitProgress(
         'workflow-start',
         phase: 'B18',
@@ -431,7 +457,8 @@ void main() {
       );
     }
 
-    if (_includePhase('B19')) {
+    if (_includePhase('B19') &&
+        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
       emitProgress(
         'workflow-start',
         phase: 'B19',
@@ -470,7 +497,8 @@ void main() {
       );
     }
 
-    if (_includePhase('B20')) {
+    if (_includePhase('B20') &&
+        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
       emitProgress(
         'workflow-start',
         phase: 'B20',
@@ -563,7 +591,21 @@ void main() {
         workflowId: 'wf_multi-persona-workflow-evidence',
         communityName: mosqueTarget.communityName,
       );
+    }
 
+    final includeGardenCapability = selectedExtensionIds.contains(
+      gardenTarget.extensionId,
+    );
+    final includeHoaCapability = selectedExtensionIds.contains(
+      hoaTarget.extensionId,
+    );
+    final includeSoccerCapability = selectedExtensionIds.contains(
+      soccerTarget.extensionId,
+    );
+    if (_includePhase('B20') &&
+        (includeGardenCapability ||
+            includeHoaCapability ||
+            includeSoccerCapability)) {
       emitProgress(
         'workflow-start',
         phase: 'B20',
@@ -576,35 +618,43 @@ void main() {
       await capture('B20_app_shell_main_community_list_states');
       capabilityScreenshots.add('B20_app_shell_main_community_list_states');
 
-      await ensureTargetOpen(gardenTarget);
-      await selectPersona(tester, 'garden-member');
-      await _selectCommunityTab(tester, 'home');
-      await _scrollToWorkflow(tester, gardenRsvp);
-      await capture('B20_app_shell_garden_home_medium_minimized_stack');
-      capabilityScreenshots.add(
-        'B20_app_shell_garden_home_medium_minimized_stack',
-      );
-      await _expandCapabilityWorkflowSurface(tester, gardenRsvp);
-      await capture('B20_app_shell_garden_home_expanded_surface');
-      capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
+      if (includeGardenCapability) {
+        await ensureTargetOpen(gardenTarget);
+        await selectPersona(tester, 'garden-member');
+        await _selectCommunityTab(tester, 'home');
+        await _scrollToWorkflow(tester, gardenRsvp);
+        await capture('B20_app_shell_garden_home_medium_minimized_stack');
+        capabilityScreenshots.add(
+          'B20_app_shell_garden_home_medium_minimized_stack',
+        );
+        await _expandCapabilityWorkflowSurface(tester, gardenRsvp);
+        await capture('B20_app_shell_garden_home_expanded_surface');
+        capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
+      }
 
-      await ensureTargetOpen(hoaTarget);
-      await selectPersona(tester, 'hoa-homeowner');
-      await _selectCommunityTab(tester, 'documents');
-      await capture('B20_app_shell_hoa_documents_pinning_policy');
-      capabilityScreenshots.add('B20_app_shell_hoa_documents_pinning_policy');
+      if (includeHoaCapability) {
+        await ensureTargetOpen(hoaTarget);
+        await selectPersona(tester, 'hoa-homeowner');
+        await _selectCommunityTab(tester, 'documents');
+        await capture('B20_app_shell_hoa_documents_pinning_policy');
+        capabilityScreenshots.add('B20_app_shell_hoa_documents_pinning_policy');
+      }
 
-      await ensureTargetOpen(soccerTarget);
-      await selectPersona(tester, 'soccer-coach');
-      await _selectCommunityTab(tester, 'home');
-      await _scrollToWorkflow(tester, soccerRoster);
-      await capture('B20_app_shell_soccer_roster_renderer_medium');
-      capabilityScreenshots.add('B20_app_shell_soccer_roster_renderer_medium');
-      await _expandCapabilityWorkflowSurface(tester, soccerRoster);
-      await capture('B20_app_shell_soccer_roster_renderer_expanded');
-      capabilityScreenshots.add(
-        'B20_app_shell_soccer_roster_renderer_expanded',
-      );
+      if (includeSoccerCapability) {
+        await ensureTargetOpen(soccerTarget);
+        await selectPersona(tester, 'soccer-coach');
+        await _selectCommunityTab(tester, 'home');
+        await _scrollToWorkflow(tester, soccerRoster);
+        await capture('B20_app_shell_soccer_roster_renderer_medium');
+        capabilityScreenshots.add(
+          'B20_app_shell_soccer_roster_renderer_medium',
+        );
+        await _expandCapabilityWorkflowSurface(tester, soccerRoster);
+        await capture('B20_app_shell_soccer_roster_renderer_expanded');
+        capabilityScreenshots.add(
+          'B20_app_shell_soccer_roster_renderer_expanded',
+        );
+      }
 
       recordEvidenceEntry({
         'phase': 'B20',
@@ -614,9 +664,12 @@ void main() {
         'communityName': 'Loom Communities',
         'expectedAssertions': [
           'main community list shows themed launch cards with medium and minimized states',
-          'Garden Club Home tab proves medium/minimized workflow surfaces and tap-to-expanded behavior',
-          'HOA Documents tab proves an explicit pin-first-critical-surface policy with a pinned document/status surface',
-          'Riverside Youth Soccer roster proves renderer selection by card-surface family in medium and expanded states',
+          if (includeGardenCapability)
+            'Garden Club Home tab proves medium/minimized workflow surfaces and tap-to-expanded behavior',
+          if (includeHoaCapability)
+            'HOA Documents tab proves an explicit pin-first-critical-surface policy with a pinned document/status surface',
+          if (includeSoccerCapability)
+            'Riverside Youth Soccer roster proves renderer selection by card-surface family in medium and expanded states',
         ],
         'screenshotNames': capabilityScreenshots,
         'status': 'pass',
@@ -765,7 +818,9 @@ String _phaseForScreenshotName(String name) {
   return separator == -1 ? 'unknown' : name.substring(0, separator);
 }
 
-List<String> _requestedEvidencePhases() {
+List<String> _requestedEvidencePhases(
+  List<LoomEvidenceTarget> evidenceTargets,
+) {
   const orderedPhases = <String>[
     'B12',
     'B13',
@@ -777,7 +832,25 @@ List<String> _requestedEvidencePhases() {
     'B19',
     'B20',
   ];
-  return orderedPhases.where(_includePhase).toList(growable: false);
+  final selectedExtensionIds = {
+    for (final target in evidenceTargets) target.extensionId,
+  };
+  final requestedPhases = <String>{
+    if (_includePhase('B12')) 'B12',
+    for (final target in evidenceTargets)
+      if (_includePhase(target.phase)) target.phase,
+    if (selectedExtensionIds.contains('ext_mosque'))
+      for (final phase in const ['B17', 'B18', 'B19', 'B20'])
+        if (_includePhase(phase)) phase,
+    if (selectedExtensionIds.intersection(const {
+          'ext_garden_club',
+          'ext_hoa',
+          'ext_youth_soccer',
+        }).isNotEmpty &&
+        _includePhase('B20'))
+      'B20',
+  };
+  return orderedPhases.where(requestedPhases.contains).toList(growable: false);
 }
 
 Map<String, Object?> _evidenceDeviceMetadata() {
@@ -804,22 +877,23 @@ Map<String, Object?> _evidenceDeviceMetadata() {
   };
 }
 
-int _workflowEvidenceEntryCount() {
-  return _workflowEvidenceEntryCountByPhase().values.fold(
-    0,
-    (total, count) => total + count,
-  );
+int _workflowEvidenceEntryCount(List<LoomEvidenceTarget> evidenceTargets) {
+  return _workflowEvidenceEntryCountByPhase(
+    evidenceTargets,
+  ).values.fold(0, (total, count) => total + count);
 }
 
-Map<String, int> _workflowEvidenceEntryCountByPhase() {
+Map<String, int> _workflowEvidenceEntryCountByPhase(
+  List<LoomEvidenceTarget> evidenceTargets,
+) {
   final counts = <String, int>{
-    for (final phase in _requestedEvidencePhases()) phase: 0,
+    for (final phase in _requestedEvidencePhases(evidenceTargets)) phase: 0,
   };
   if (_includePhase('B12')) {
     counts['B12'] = 1;
   }
   var targetWorkflowOrdinal = 0;
-  for (final target in loomEvidenceTargets.where(
+  for (final target in evidenceTargets.where(
     (target) => _includePhase(target.phase),
   )) {
     for (final _ in experienceForExtensionId(
@@ -833,19 +907,58 @@ Map<String, int> _workflowEvidenceEntryCountByPhase() {
       }
     }
   }
-  if (_includePhase('B17')) {
+  final selectedExtensionIds = {
+    for (final target in evidenceTargets) target.extensionId,
+  };
+  if (_includePhase('B17') && selectedExtensionIds.contains('ext_mosque')) {
     counts['B17'] = 1;
   }
-  if (_includePhase('B18')) {
+  if (_includePhase('B18') && selectedExtensionIds.contains('ext_mosque')) {
     counts['B18'] = 1;
   }
-  if (_includePhase('B19')) {
+  if (_includePhase('B19') && selectedExtensionIds.contains('ext_mosque')) {
     counts['B19'] = 1;
   }
   if (_includePhase('B20')) {
-    counts['B20'] = 2;
+    if (selectedExtensionIds.contains('ext_mosque')) {
+      counts.update('B20', (count) => count + 1);
+    }
+    if (selectedExtensionIds.intersection(const {
+      'ext_garden_club',
+      'ext_hoa',
+      'ext_youth_soccer',
+    }).isNotEmpty) {
+      counts.update('B20', (count) => count + 1);
+    }
   }
   return counts;
+}
+
+List<LoomEvidenceTarget> _evidenceTargetsForRun() {
+  final availableExtensionIds = {
+    for (final target in loomEvidenceTargets) target.extensionId,
+  };
+  final unknownExtensionIds = _communityFilter.difference(
+    availableExtensionIds,
+  );
+  final filterWasSet = _communityFilterText.trim().isNotEmpty;
+  if ((filterWasSet && _communityFilter.isEmpty) ||
+      unknownExtensionIds.isNotEmpty) {
+    final requested = _communityFilter.toList()..sort();
+    final unknown = unknownExtensionIds.toList()..sort();
+    final available = availableExtensionIds.toList()..sort();
+    throw StateError(
+      'Invalid LOOM_EVIDENCE_COMMUNITY_FILTER: '
+      'requested=${requested.isEmpty ? '[${_communityFilterText.trim()}]' : requested}, '
+      'unknown=$unknown, available=$available.',
+    );
+  }
+  if (_communityFilter.isEmpty) {
+    return loomEvidenceTargets;
+  }
+  return loomEvidenceTargets
+      .where((target) => _communityFilter.contains(target.extensionId))
+      .toList(growable: false);
 }
 
 String _screenshotName(
@@ -945,8 +1058,8 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
   await tester.pumpAndSettle();
 }
 
-int _personaMatrixRowCount() {
-  return loomEvidenceTargets
+int _personaMatrixRowCount(List<LoomEvidenceTarget> evidenceTargets) {
+  return evidenceTargets
       .map(
         (target) =>
             personaWorkflowMatrixForExtensionId(target.extensionId).length,
