@@ -87,6 +87,14 @@ class WorkflowUiEvidenceWriter {
       _stringList(screenshotCapture['requestedScreenshotNames']),
     );
     final expectedScreenshotNames = expectedScreenshotNameSet.toList()..sort();
+    for (final name in expectedScreenshotNames) {
+      final hostCapturedFile = File(
+        '${evidenceRoot.path}/${_phaseFor(name, null)}/screenshots/$name.png',
+      );
+      if (hostCapturedFile.existsSync()) {
+        _screenshotPaths.putIfAbsent(name, () => hostCapturedFile.path);
+      }
+    }
 
     final missingScreenshots =
         expectedScreenshotNames

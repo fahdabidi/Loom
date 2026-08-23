@@ -1,0 +1,1809 @@
+{
+  "schemaVersion": 1,
+  "source": "B25 Semantic Interaction Models product-doc tables",
+  "rowCount": 79,
+  "communities": [
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md"
+    },
+    {
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "extensionId": "ext_camera_club",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md"
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md"
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md"
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md"
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md"
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md"
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md"
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md"
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md"
+    }
+  ],
+  "rows": [
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-member-checkout",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-community-checkout",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-entitlement-status",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-receipt-evidence",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-ad-suppression",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "extensionId": "ext_ad_free_community",
+      "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
+      "workflowId": "ad-off-settlement-utility",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "extensionId": "ext_camera_club",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
+      "workflowId": "photo-walk-rsvp",
+      "role": "member",
+      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "extensionId": "ext_camera_club",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
+      "workflowId": "critique-submission",
+      "role": "member",
+      "expectedDecision": "Participant reviews or submits a concrete critique item with content, author, feedback, and edit/withdraw paths.",
+      "requiredPrimaryActions": [
+        "submit critique",
+        "review critique",
+        "comment"
+      ],
+      "requiredAlternateActions": [
+        "edit critique",
+        "withdraw critique",
+        "request changes",
+        "resubmit"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "extensionId": "ext_camera_club",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
+      "workflowId": "gear-loan-request",
+      "role": "member",
+      "expectedDecision": "Member browses available camera gear, checks current holder/queue, chooses loan or giveaway, and can list/edit/delist their own gear.",
+      "requiredPrimaryActions": [
+        "browse gear",
+        "list gear",
+        "request loan",
+        "join waitlist",
+        "claim giveaway",
+        "schedule pickup"
+      ],
+      "requiredAlternateActions": [
+        "change request",
+        "leave queue",
+        "edit listing",
+        "delist",
+        "report damage",
+        "return gear"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show browse/list views, current holder or privacy-safe unavailable state, queue position, condition, custody history, pickup/return or ownership-transfer result."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-dues-payment",
+      "role": "member",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-member-document",
+      "role": "member",
+      "expectedDecision": "Member decides whether to open, acknowledge, save, or share a concrete document with title, date, owner, and status.",
+      "requiredPrimaryActions": [
+        "open document",
+        "download document",
+        "read document",
+        "acknowledge"
+      ],
+      "requiredAlternateActions": [
+        "save",
+        "share",
+        "close document",
+        "mark unread",
+        "request access"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-facility-reservation",
+      "role": "member",
+      "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
+      "requiredPrimaryActions": [
+        "submit",
+        "save",
+        "send"
+      ],
+      "requiredAlternateActions": [
+        "edit",
+        "change",
+        "undo",
+        "reject",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-architectural-request",
+      "role": "owner",
+      "expectedDecision": "Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.",
+      "requiredPrimaryActions": [
+        "submit request",
+        "approve request",
+        "send request",
+        "review request"
+      ],
+      "requiredAlternateActions": [
+        "reject",
+        "request changes",
+        "revise",
+        "withdraw",
+        "edit request"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-committee-decision",
+      "role": "owner",
+      "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
+      "requiredPrimaryActions": [
+        "submit",
+        "save",
+        "send"
+      ],
+      "requiredAlternateActions": [
+        "edit",
+        "change",
+        "undo",
+        "reject",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-owner-notification",
+      "role": "owner",
+      "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
+      "requiredPrimaryActions": [
+        "submit",
+        "save",
+        "send"
+      ],
+      "requiredAlternateActions": [
+        "edit",
+        "change",
+        "undo",
+        "reject",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-export-evidence",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-local-install-open",
+      "role": "member",
+      "expectedDecision": "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
+      "requiredPrimaryActions": [
+        "record match",
+        "submit score",
+        "save result"
+      ],
+      "requiredAlternateActions": [
+        "edit score",
+        "undo result",
+        "correct result",
+        "dispute result"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-route-home",
+      "role": "member",
+      "expectedDecision": "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
+      "requiredPrimaryActions": [
+        "record match",
+        "submit score",
+        "save result"
+      ],
+      "requiredAlternateActions": [
+        "edit score",
+        "undo result",
+        "correct result",
+        "dispute result"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-match-meetup",
+      "role": "member",
+      "expectedDecision": "Member schedules a match with a concrete opponent after seeing available times, location/board, response state, and reschedule path.",
+      "requiredPrimaryActions": [
+        "propose meetup",
+        "accept match",
+        "add reminder"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "reschedule",
+        "cancel meetup",
+        "suggest new time"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show opponent, time/location/board, invite/response state, calendar/reminder, and reschedule/cancel path."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-match-result",
+      "role": "member",
+      "expectedDecision": "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
+      "requiredPrimaryActions": [
+        "record match",
+        "submit score",
+        "save result"
+      ],
+      "requiredAlternateActions": [
+        "edit score",
+        "undo result",
+        "correct result",
+        "dispute result"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-club-night",
+      "role": "organizer",
+      "expectedDecision": "Organizer decides whether a scheduled club night needs a reminder sent to players.",
+      "requiredPrimaryActions": [
+        "send reminder"
+      ],
+      "requiredAlternateActions": [],
+      "resultAndReceiverState": "Fresh screenshots must show event details, reminder-sent state, and player receiver state.",
+      "alternateRequirementNote": "(none — one-way notification)"
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-discussion-thread",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete discussion thread with sender/message context and reply/archive paths.",
+      "requiredPrimaryActions": [
+        "reply",
+        "send message"
+      ],
+      "requiredAlternateActions": [
+        "archive",
+        "mute"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-export-package",
+      "role": "owner",
+      "expectedDecision": "Admin selects export scope, reviews status, and can roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "generate export"
+      ],
+      "requiredAlternateActions": [
+        "rollback",
+        "change scope"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-pairing-queue",
+      "role": "owner",
+      "expectedDecision": "Organizer reviews the waiting list and assigns a concrete pairing.",
+      "requiredPrimaryActions": [
+        "assign pairing"
+      ],
+      "requiredAlternateActions": [],
+      "resultAndReceiverState": "Fresh screenshots must show queue state, assignment result, and waiting-player receiver state.",
+      "alternateRequirementNote": "(none — single decisive action)"
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-rankings-table",
+      "role": "member",
+      "expectedDecision": "Member reviews concrete rank/score/delta standings after a publish.",
+      "requiredPrimaryActions": [
+        "view rankings"
+      ],
+      "requiredAlternateActions": [],
+      "resultAndReceiverState": "Fresh screenshots must show rank, player, score, delta, and last-updated state.",
+      "alternateRequirementNote": "(none — organizer-only publish)"
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "extensionId": "ext_chess_club",
+      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "workflowId": "chess-rules-documents",
+      "role": "member",
+      "expectedDecision": "Member opens a concrete rules document, chooses embedded or external, and can download it.",
+      "requiredPrimaryActions": [
+        "open document",
+        "launch external",
+        "download"
+      ],
+      "requiredAlternateActions": [],
+      "resultAndReceiverState": "Fresh screenshots must show title, open history, and download state.",
+      "alternateRequirementNote": "(none — no edit path)"
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-import-preview",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-import-replay",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-protected-redaction",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-schema-listing",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-full-bundle",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-redacted-bundle",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-checksum-evidence",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-transfer-verification",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "extensionId": "ext_data_portability_community",
+      "productDocPath": "docs/references/communities/data-portability-community-product-experience.md",
+      "workflowId": "export-transfer-rollback",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "garden-event-rsvp",
+      "role": "member",
+      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "plant-exchange-submission",
+      "role": "member",
+      "expectedDecision": "Member submits a concrete plant offer or request with variety, notes, and pickup window, then a coordinator reviews it for handoff.",
+      "requiredPrimaryActions": [
+        "submit exchange",
+        "offer plant",
+        "request plant"
+      ],
+      "requiredAlternateActions": [
+        "edit draft",
+        "withdraw submission"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show the submitted item, review/handoff state, coordinator receiver state, and the submitter's own status after review."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "garden-tool-loan-giveaway",
+      "role": "member",
+      "expectedDecision": "Member browses available garden tools/items, chooses loan or giveaway, sees current holder/queue, reviews owner/pickup/return or transfer terms, and can list/edit/delist their own item.",
+      "requiredPrimaryActions": [
+        "browse items",
+        "list item",
+        "request loan",
+        "join waitlist",
+        "claim giveaway",
+        "schedule pickup"
+      ],
+      "requiredAlternateActions": [
+        "leave queue",
+        "cancel loan",
+        "edit listing",
+        "pause/delist listing",
+        "mark damaged/lost",
+        "return item"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show browse/list views, loan/giveaway mode, owner/current-holder privacy, queue position, custody/condition state, borrower/claim state, pickup/return or ownership-transfer result."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "garden-export-custom-schemas",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-announcement",
+      "role": "owner",
+      "expectedDecision": "Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.",
+      "requiredPrimaryActions": [
+        "publish announcement",
+        "send announcement",
+        "post announcement",
+        "schedule announcement"
+      ],
+      "requiredAlternateActions": [
+        "edit announcement",
+        "preview announcement",
+        "save draft",
+        "schedule later",
+        "change audience"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-event-rsvp",
+      "role": "member",
+      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-document-resource",
+      "role": "member",
+      "expectedDecision": "Member opens a concrete Masjid document/resource, reviews source/version/access, chooses embedded or external open, and acknowledges if required.",
+      "requiredPrimaryActions": [
+        "open document",
+        "launch external",
+        "download",
+        "acknowledge"
+      ],
+      "requiredAlternateActions": [
+        "request access",
+        "save",
+        "mark unread",
+        "ask follow-up"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show title/source/version, embedded/external open choices, access/acknowledgement state, and audit-safe receiver state."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-volunteer-signup",
+      "role": "member",
+      "expectedDecision": "Member chooses whether to volunteer for a concrete iftar shift after reviewing role, time, location, capacity, protected contact sharing, and coordinator follow-up.",
+      "requiredPrimaryActions": [
+        "sign up",
+        "submit signup",
+        "volunteer",
+        "confirm shift"
+      ],
+      "requiredAlternateActions": [
+        "edit availability",
+        "cancel signup",
+        "change shift",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show role, shift time/location, protected contact, signup confirmation, edit/cancel path, and coordinator receiver state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-donor-visibility",
+      "role": "donor",
+      "expectedDecision": "Donor decides whether their name is public, anonymous, or restricted after seeing donation amount, fund, receipt visibility, and change path.",
+      "requiredPrimaryActions": [
+        "save visibility",
+        "set anonymous",
+        "update donor preference"
+      ],
+      "requiredAlternateActions": [
+        "change visibility",
+        "edit preference",
+        "reveal name",
+        "keep anonymous"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show amount/fund context, visibility choice, receipt visibility, saved preference, and change path."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-donation-payment",
+      "role": "donor",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-care-request",
+      "role": "member",
+      "expectedDecision": "Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.",
+      "requiredPrimaryActions": [
+        "submit request",
+        "approve request",
+        "send request",
+        "review request"
+      ],
+      "requiredAlternateActions": [
+        "reject",
+        "request changes",
+        "revise",
+        "withdraw",
+        "edit request"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-neutral-notification",
+      "role": "member",
+      "expectedDecision": "Member reviews a privacy-safe care notification with sender, message body, timestamp, read state, and no protected details leaked.",
+      "requiredPrimaryActions": [
+        "receive notification",
+        "mark read",
+        "open inbox notice"
+      ],
+      "requiredAlternateActions": [
+        "archive notice",
+        "request follow-up",
+        "keep unread"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show sender, audience, timestamp, message body, read/received state, and protected-detail absence."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-search-ai-citation",
+      "role": "member",
+      "expectedDecision": "Member asks a question and verifies the answer against visible public citation/source context without seeing unauthorized protected data.",
+      "requiredPrimaryActions": [
+        "search",
+        "ask question",
+        "open citation",
+        "save answer"
+      ],
+      "requiredAlternateActions": [
+        "refine query",
+        "hide source",
+        "report stale citation"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show query, answer, citation/source visibility, follow-up action, and permission guard."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "mosque-discussion-thread",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete discussion thread with sender/message context and reply/archive paths.",
+      "requiredPrimaryActions": [
+        "reply",
+        "send message"
+      ],
+      "requiredAlternateActions": [
+        "archive",
+        "mute"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "wf_demo-app-persona-picker",
+      "role": "member",
+      "expectedDecision": "Tester selects the correct Masjid persona and sees how role selection changes available workflows before reviewing the community.",
+      "requiredPrimaryActions": [
+        "choose persona",
+        "switch role",
+        "inspect capabilities"
+      ],
+      "requiredAlternateActions": [
+        "change persona",
+        "cancel picker",
+        "return to default"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show selected persona, role capability explanation, and the resulting available/disabled workflow state."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "wf_community-persona-aware-ux",
+      "role": "member",
+      "expectedDecision": "Member confirms their view contains member-safe workflows and hides/disables admin-only actions with a clear reason.",
+      "requiredPrimaryActions": [
+        "view member workflow",
+        "receive update",
+        "inspect read-only state"
+      ],
+      "requiredAlternateActions": [
+        "change persona",
+        "request access",
+        "leave unchanged"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show member role, allowed workflows, disabled/hidden admin rows, and explanation."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "wf_community-persona-aware-ux",
+      "role": "admin",
+      "expectedDecision": "Admin confirms their view contains publishing/coordination workflows and shows how member receiver state will be created.",
+      "requiredPrimaryActions": [
+        "open admin workflow",
+        "publish/update",
+        "inspect receiver target"
+      ],
+      "requiredAlternateActions": [
+        "preview",
+        "save draft",
+        "switch persona"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show admin role, admin-capable workflows, preview/receiver state, and switch path."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "wf_multi-persona-workflow-evidence",
+      "role": "admin",
+      "expectedDecision": "Admin creates a real announcement handoff and verifies which member persona will receive it.",
+      "requiredPrimaryActions": [
+        "publish announcement",
+        "preview receiver",
+        "switch persona"
+      ],
+      "requiredAlternateActions": [
+        "edit announcement",
+        "save draft",
+        "change audience"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show actor-created announcement state, body/audience/timestamp, persona switch, and receiver target."
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "extensionId": "ext_mosque",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "workflowId": "wf_multi-persona-workflow-evidence",
+      "role": "member",
+      "expectedDecision": "Member receives the admin-created announcement and can read or continue from the receiver state.",
+      "requiredPrimaryActions": [
+        "receive announcement",
+        "mark read",
+        "open inbox"
+      ],
+      "requiredAlternateActions": [
+        "archive",
+        "request follow-up",
+        "keep unread"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show sender/body/timestamp, received/read state, and continuation action."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-messages-entry",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "requiredPrimaryActions": [
+        "send message",
+        "reply",
+        "send invite",
+        "accept invite",
+        "connect"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "block",
+        "mute",
+        "archive",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-connections-entry",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "requiredPrimaryActions": [
+        "send message",
+        "reply",
+        "send invite",
+        "accept invite",
+        "connect"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "block",
+        "mute",
+        "archive",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-connection-invite",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "requiredPrimaryActions": [
+        "send message",
+        "reply",
+        "send invite",
+        "accept invite",
+        "connect"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "block",
+        "mute",
+        "archive",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-blocked-target",
+      "role": "member",
+      "expectedDecision": "Member or moderator evaluates a blocked relationship, sees why contact is prevented, and chooses review/unblock/keep-blocked without exposing protected target details.",
+      "requiredPrimaryActions": [
+        "review block",
+        "confirm block",
+        "prevent invite"
+      ],
+      "requiredAlternateActions": [
+        "unblock",
+        "appeal",
+        "keep blocked",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show blocked target state, disabled invite/message action, safety audit, and protected receiver state."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-message-stream",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "requiredPrimaryActions": [
+        "send message",
+        "reply",
+        "send invite",
+        "accept invite",
+        "connect"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "block",
+        "mute",
+        "archive",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-in-stream-ad",
+      "role": "member",
+      "expectedDecision": "Member sees a sponsored stream item with sponsor identity, disclosure, impression state, and report/dismiss control without confusing it for community content.",
+      "requiredPrimaryActions": [
+        "review ad state",
+        "dismiss sponsored item",
+        "report sponsor"
+      ],
+      "requiredAlternateActions": [
+        "hide ad",
+        "report sponsor",
+        "continue stream"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show sponsor/disclosure/body, impression/click state, report/dismiss, and preserved stream context."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-top-banner-no-fill",
+      "role": "member",
+      "expectedDecision": "Member sees the required top banner slot preserved with a clear no-fill reason and no content overlap or layout jump.",
+      "requiredPrimaryActions": [
+        "review banner state",
+        "reserve slot"
+      ],
+      "requiredAlternateActions": [
+        "refresh slot",
+        "inspect no-fill reason"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show reserved banner space, no-fill reason, no click/impression state, and stable layout."
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "extensionId": "ext_member_social_space",
+      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
+      "workflowId": "platform-sensitive-no-fill",
+      "role": "member",
+      "expectedDecision": "Member sees protected content without ad targeting, with a privacy-safe suppression reason and no visible protected-data leak.",
+      "requiredPrimaryActions": [
+        "review protected no-fill state",
+        "continue content"
+      ],
+      "requiredAlternateActions": [
+        "review policy",
+        "hide explanation"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show protected context, no-fill/suppression reason, no-click state, and preserved content layout."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-nomination",
+      "role": "member",
+      "expectedDecision": "Member decides whether a concrete title belongs on the ballot after reviewing title, author, rationale, genre, nominator, and meeting cycle.",
+      "requiredPrimaryActions": [
+        "submit nomination",
+        "nominate book",
+        "save nomination"
+      ],
+      "requiredAlternateActions": [
+        "edit nomination",
+        "withdraw nomination",
+        "change title"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show title/author/rationale, ballot state, edit path, submitted result, and member receiver state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-vote",
+      "role": "member",
+      "expectedDecision": "Member chooses one nominated book after comparing candidates, vote deadline, current count, selected state, and meeting context.",
+      "requiredPrimaryActions": [
+        "record vote",
+        "vote",
+        "select book"
+      ],
+      "requiredAlternateActions": [
+        "change vote",
+        "clear vote",
+        "choose another book"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show nominated books, selected/winning state, change-vote path, recorded result, and member receiver state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-meeting-rsvp",
+      "role": "member",
+      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-reading-material",
+      "role": "member",
+      "expectedDecision": "Member opens a concrete reading material with title/source/access, chooses embedded or external open, and can save or acknowledge it.",
+      "requiredPrimaryActions": [
+        "open document",
+        "launch external",
+        "save material",
+        "acknowledge"
+      ],
+      "requiredAlternateActions": [
+        "request access",
+        "mark unread",
+        "share within club"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show title/source/version, embedded/external open choices, access/acknowledgement state, and reading-cycle linkage."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-shared-library-item",
+      "role": "member",
+      "expectedDecision": "Member browses books, DVDs, or games, checks current holder/queue/due date, requests a loan or giveaway, and can list/edit/delist their own item.",
+      "requiredPrimaryActions": [
+        "browse library",
+        "list item",
+        "request loan",
+        "join waitlist",
+        "claim giveaway",
+        "return item"
+      ],
+      "requiredAlternateActions": [
+        "leave queue",
+        "edit listing",
+        "delist",
+        "report lost",
+        "renew/extend",
+        "cancel loan"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show item title/format, owner/current-holder privacy, queue position, custody/due/condition state, and return or ownership-transfer result."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-discussion-message",
+      "role": "member",
+      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "requiredPrimaryActions": [
+        "send message",
+        "reply",
+        "send invite",
+        "accept invite",
+        "connect"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "block",
+        "mute",
+        "archive",
+        "cancel invite"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-selection-publish",
+      "role": "owner",
+      "expectedDecision": "Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.",
+      "requiredPrimaryActions": [
+        "publish announcement",
+        "send announcement",
+        "post announcement",
+        "schedule announcement"
+      ],
+      "requiredAlternateActions": [
+        "edit announcement",
+        "preview announcement",
+        "save draft",
+        "schedule later",
+        "change audience"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-search-ai-digest",
+      "role": "member",
+      "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
+      "requiredPrimaryActions": [
+        "submit",
+        "save",
+        "send"
+      ],
+      "requiredAlternateActions": [
+        "edit",
+        "change",
+        "undo",
+        "reject",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "extensionId": "ext_neighborhood_book_club",
+      "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
+      "workflowId": "book-export-metadata",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-guardian-join-approval",
+      "role": "guardian",
+      "expectedDecision": "Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.",
+      "requiredPrimaryActions": [
+        "submit request",
+        "approve request",
+        "send request",
+        "review request"
+      ],
+      "requiredAlternateActions": [
+        "reject",
+        "request changes",
+        "revise",
+        "withdraw",
+        "edit request"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-team-roster",
+      "role": "coach",
+      "expectedDecision": "Coach reviews a concrete team roster with player names, guardian/waiver status, protected minor fields, and edit/history paths.",
+      "requiredPrimaryActions": [
+        "open roster",
+        "update roster",
+        "save roster",
+        "mark waiver"
+      ],
+      "requiredAlternateActions": [
+        "edit player",
+        "request guardian update",
+        "redact field",
+        "undo change"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show roster rows, role-filtered/redacted fields, waiver/status history, and guardian receiver state."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-minor-redaction",
+      "role": "guardian",
+      "expectedDecision": "Guardian reviews which minor fields are protected/redacted, why, and what can be shared with coaches or export packages.",
+      "requiredPrimaryActions": [
+        "review redaction",
+        "confirm privacy",
+        "save consent"
+      ],
+      "requiredAlternateActions": [
+        "change consent",
+        "hide field",
+        "request correction"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show protected field labels, redaction preview, consent state, and unauthorized-hidden behavior."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-registration-payment",
+      "role": "guardian",
+      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "requiredPrimaryActions": [
+        "pay",
+        "donate",
+        "give",
+        "checkout",
+        "subscribe"
+      ],
+      "requiredAlternateActions": [
+        "change amount",
+        "edit payment",
+        "manage",
+        "cancel subscription",
+        "refund",
+        "retry payment"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-practice-schedule",
+      "role": "guardian",
+      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-waiver-document",
+      "role": "guardian",
+      "expectedDecision": "Guardian opens a concrete waiver or policy, reviews version/source, chooses embedded or external open, acknowledges it, and sees season registration impact.",
+      "requiredPrimaryActions": [
+        "open document",
+        "acknowledge waiver",
+        "download document"
+      ],
+      "requiredAlternateActions": [
+        "request access",
+        "open external",
+        "mark unread",
+        "ask coach"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show title/version/source, embedded/external open options, acknowledgement state, access guard, and registration-status linkage."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-reminder-notification",
+      "role": "guardian",
+      "expectedDecision": "Guardian receives a team reminder with sender, audience, practice/event context, delivery channel, timestamp, and read state.",
+      "requiredPrimaryActions": [
+        "receive reminder",
+        "mark read",
+        "open schedule"
+      ],
+      "requiredAlternateActions": [
+        "mute reminders",
+        "keep unread",
+        "request change"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show sender, message body, audience/channel, timestamp, related schedule, and receiver/read state."
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "extensionId": "ext_youth_soccer",
+      "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
+      "workflowId": "soccer-export-metadata",
+      "role": "owner",
+      "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    }
+  ]
+}

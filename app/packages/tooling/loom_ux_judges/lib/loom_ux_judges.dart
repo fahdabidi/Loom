@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:image/image.dart' as img;
+import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
 
 typedef JsonMap = Map<String, Object?>;
 
@@ -1188,10 +1189,13 @@ JsonMap collectB25Evidence({
                 screenshotVisibleTexts[i].trim().isNotEmpty
             ? 'screenshot-visible-text'
             : 'manual-visible-text-review';
-        final role = _roleForEvidence(
-          workflowId: workflowId,
-          communityId: communityId,
-          screenshotName: screenshotName,
+        final role = _asString(
+          workflow['role'],
+          fallback: _roleForEvidence(
+            workflowId: workflowId,
+            communityId: communityId,
+            screenshotName: screenshotName,
+          ),
         );
         final cardSurfaceRegistryEntry =
             _b25CardSurfaceRegistryEntryForWorkflowId(workflowId);
@@ -3216,6 +3220,8 @@ JsonMap _workflowLifecycleScorecard(
       .where((text) => text.isNotEmpty)
       .toList();
   final proof = _workflowLifecycleProofForWorkflow(
+    communityId: _asString(coverage['communityId']),
+    communityName: _asString(coverage['communityName']),
     workflowId: workflowId,
     role: role,
     visibleTextEvidence: visibleTextEvidence,
@@ -3536,6 +3542,8 @@ JsonMap _semanticSurfaceProofForWorkflow({
 }
 
 JsonMap _workflowLifecycleProofForWorkflow({
+  required String communityId,
+  required String communityName,
   required String workflowId,
   required String role,
   required Iterable<String> visibleTextEvidence,
@@ -3545,15 +3553,6 @@ JsonMap _workflowLifecycleProofForWorkflow({
   final requiredGroups = _workflowLifecycleRequirementGroupsForWorkflow(
     workflowId,
   );
-  final interactionModel = _semanticInteractionModelForWorkflow(
-    workflowId: workflowId,
-    role: role,
-    visibleText: text,
-  );
-  final fullRequiredGroups = <JsonMap>[
-    ...requiredGroups,
-    _semanticInteractionModelRequirementGroup(interactionModel),
-  ];
   if (_workflowIsSupportSurface(workflowId)) {
     return <String, Object?>{
       'status': 'pass',
@@ -3567,6 +3566,17 @@ JsonMap _workflowLifecycleProofForWorkflow({
           'Support surface workflow; production workflow lifecycle proof is not required.',
     };
   }
+  final interactionModel = _semanticInteractionModelForWorkflow(
+    communityId: communityId,
+    communityName: communityName,
+    workflowId: workflowId,
+    role: role,
+    visibleText: text,
+  );
+  final fullRequiredGroups = <JsonMap>[
+    ...requiredGroups,
+    _semanticInteractionModelRequirementGroup(interactionModel),
+  ];
   final passed = <String>[];
   final missing = <String>[];
   for (final group in requiredGroups) {
@@ -3660,12 +3670,18 @@ JsonMap _semanticInteractionModelRequirementGroup(JsonMap interactionModel) {
 }
 
 JsonMap _semanticInteractionModelForWorkflow({
+  required String communityId,
+  required String communityName,
   required String workflowId,
   required String role,
   required String visibleText,
 }) {
-  final id = workflowId.toLowerCase();
-  final model = _expectedSemanticInteractionModel(id, role);
+  final model = _expectedSemanticInteractionModel(
+    communityId: communityId,
+    communityName: communityName,
+    workflowId: workflowId,
+    role: role,
+  );
   final primaryActions = _asStringList(model['requiredPrimaryActions']);
   final alternateActions = _asStringList(model['requiredAlternateActions']);
   final genericSubstitutes = _asStringList(
@@ -3692,8 +3708,11 @@ JsonMap _semanticInteractionModelForWorkflow({
   final status = missing.isEmpty && wrongSubstitutes.isEmpty ? 'pass' : 'fail';
   return <String, Object?>{
     'status': status,
+    'communityId': communityId,
+    'communityName': communityName,
     'workflowId': workflowId,
     'role': role,
+    'productDocPath': _asString(model['productDocPath']),
     'expectedDecision': _asString(model['expectedDecision']),
     'requiredPrimaryActions': primaryActions,
     'requiredAlternateActions': alternateActions,
@@ -3703,304 +3722,41 @@ JsonMap _semanticInteractionModelForWorkflow({
     'visibleGenericSubstitutes': visibleGenericSubstitutes,
     'missingActions': missing,
     'wrongGenericSubstitutes': wrongSubstitutes.toSet().toList()..sort(),
-    'productDocRequirement':
-        'The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.',
+    'resultAndReceiverState': _asString(model['resultAndReceiverState']),
+    'alternateRequirementNote': _asString(model['alternateRequirementNote']),
+    'productDocRequirement': _asString(model['productDocPath']),
     'why': status == 'pass'
-        ? 'Visible screenshots show the expected decision and domain-specific action set: ${_asString(model['expectedDecision'])}.'
-        : 'The screenshots do not prove the right semantic interaction model for `${workflowId}` / `${role}`. Missing actions: ${missing.isEmpty ? 'none' : missing.join(', ')}. Generic substitutes present: ${wrongSubstitutes.isEmpty ? 'none' : wrongSubstitutes.toSet().join(', ')}.',
+        ? 'Visible screenshots match `${_asString(model['productDocPath'])}` and show the expected decision and domain-specific action set: ${_asString(model['expectedDecision'])}.'
+        : 'The screenshots do not prove the product-doc interaction model for `${communityName.isEmpty ? communityId : communityName}` / `${workflowId}` / `${role}` from `${_asString(model['productDocPath'])}`. Missing actions: ${missing.isEmpty ? 'none' : missing.join(', ')}. Generic substitutes present: ${wrongSubstitutes.isEmpty ? 'none' : wrongSubstitutes.toSet().join(', ')}.${_asString(model['alternateRequirementNote']).isEmpty ? '' : ' The product-doc alternate cell declares `${_asString(model['alternateRequirementNote'])}`, so the row cannot satisfy the non-happy-path bar as written.'}',
     'requiredFix': status == 'pass'
         ? 'None.'
-        : 'Update the community product experience doc workflow section first if the correct interaction is ambiguous. Then implement the visible domain-specific primary action and alternate/change/reject path listed by this model, recapture screenshots, and rerun the interaction-model judge.',
+        : _asString(model['alternateRequirementNote']).isNotEmpty
+        ? 'Report the product-contract gap: the B25 row declares no alternate/change/reject action. Do not substitute a generic action. After the product requirement is resolved outside this ticket, implement and recapture the documented domain action.'
+        : 'Implement the visible domain-specific primary action and alternate/change/reject path listed by the owning community product doc, recapture fresh screenshots, and rerun the interaction-model judge.',
   };
 }
 
-JsonMap _expectedSemanticInteractionModel(String id, String role) {
-  if (id.contains('announcement') || id.contains('publish')) {
-    return _interactionModel(
-      decision:
-          'Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.',
-      primary: <String>[
-        'publish announcement',
-        'send announcement',
-        'post announcement',
-        'schedule announcement',
-      ],
-      alternate: <String>[
-        'edit announcement',
-        'preview announcement',
-        'save draft',
-        'schedule later',
-        'change audience',
-      ],
+final B25ProductDocInteractionCatalog _b25ProductDocInteractionCatalog =
+    B25ProductDocInteractionCatalog.fromRepositoryRoot(
+      locateB25RepositoryRoot(),
     );
-  }
-  if (id.contains('rsvp') ||
-      id.contains('event') ||
-      id.contains('practice') ||
-      id.contains('photo-walk')) {
-    return _interactionModel(
-      decision:
-          'Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.',
-      primary: <String>[
-        'rsvp',
-        'attend',
-        'going',
-        'reserve spot',
-        'confirm attendance',
-      ],
-      alternate: <String>[
-        'decline',
-        'not attending',
-        'maybe',
-        'change response',
-        'edit response',
-        'cancel rsvp',
-      ],
-    );
-  }
-  if (id.contains('payment') ||
-      id.contains('dues') ||
-      id.contains('donation') ||
-      id.contains('checkout') ||
-      id.contains('ad-off')) {
-    return _interactionModel(
-      decision:
-          'Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.',
-      primary: <String>['pay', 'donate', 'give', 'checkout', 'subscribe'],
-      alternate: <String>[
-        'change amount',
-        'edit payment',
-        'manage',
-        'cancel subscription',
-        'refund',
-        'retry payment',
-      ],
-    );
-  }
-  if (id.contains('document')) {
-    return _interactionModel(
-      decision:
-          'Member decides whether to open, acknowledge, save, or share a concrete document with title, date, owner, and status.',
-      primary: <String>[
-        'open document',
-        'download document',
-        'read document',
-        'acknowledge',
-      ],
-      alternate: <String>[
-        'save',
-        'share',
-        'close document',
-        'mark unread',
-        'request access',
-      ],
-    );
-  }
-  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
-    return _interactionModel(
-      decision:
-          'Member reviews a concrete search or AI digest answer with query, summary, source citations, visibility, and follow-up/save/share paths.',
-      primary: <String>[
-        'save',
-        'save digest',
-        'save answer',
-        'open sources',
-        'share answer',
-        'ask follow-up',
-      ],
-      alternate: <String>[
-        'ask follow-up',
-        'refine query',
-        'change query',
-        'open sources',
-        'share answer',
-      ],
-    );
-  }
-  if (_isAdSurfaceWorkflow(id)) {
-    return _interactionModel(
-      decision:
-          'Member reviews a sponsored or no-fill ad state with sponsor/no-fill reason, layout preservation, disclosure, and dismiss/report/manage paths.',
-      primary: <String>[
-        'review',
-        'inspect',
-        'review ad state',
-        'review banner state',
-        'review protected no-fill',
-        'open sponsor',
-        'review reserved slot',
-      ],
-      alternate: <String>[
-        'dismiss',
-        'report',
-        'manage ads',
-        'refresh slot',
-        'inspect no-fill reason',
-        'hide explanation',
-      ],
-    );
-  }
-  if (id.contains('architectural') ||
-      id.contains('approval') ||
-      id.contains('request')) {
-    return _interactionModel(
-      decision:
-          'Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.',
-      primary: <String>[
-        'submit request',
-        'approve request',
-        'send request',
-        'review request',
-      ],
-      alternate: <String>[
-        'reject',
-        'request changes',
-        'revise',
-        'withdraw',
-        'edit request',
-      ],
-    );
-  }
-  if (id.contains('care')) {
-    return _interactionModel(
-      decision:
-          'Member submits or tracks a care request with privacy indicators, recipient, details, and update/withdraw paths.',
-      primary: <String>['submit care request', 'request care', 'send request'],
-      alternate: <String>[
-        'edit request',
-        'withdraw request',
-        'update privacy',
-        'close request',
-      ],
-    );
-  }
-  if (id.contains('gear')) {
-    return _interactionModel(
-      decision:
-          'Member evaluates a concrete gear item with owner, condition, pickup/return terms, and claim/decline/change paths.',
-      primary: <String>['request gear', 'claim gear', 'reserve gear'],
-      alternate: <String>[
-        'decline',
-        'cancel request',
-        'change request',
-        'return gear',
-        'extend',
-      ],
-    );
-  }
-  if (id.contains('plant-exchange')) {
-    return _interactionModel(
-      decision:
-          'Member evaluates a concrete plant exchange item with owner, pickup details, availability, and claim/cancel paths.',
-      primary: <String>[
-        'claim plant',
-        'request plant',
-        'offer plant',
-        'reserve plant',
-      ],
-      alternate: <String>[
-        'cancel claim',
-        'edit offer',
-        'mark claimed',
-        'mark unavailable',
-      ],
-    );
-  }
-  if (id.contains('critique')) {
-    return _interactionModel(
-      decision:
-          'Participant reviews or submits a concrete critique item with content, author, feedback, and edit/withdraw paths.',
-      primary: <String>['submit critique', 'review critique', 'comment'],
-      alternate: <String>[
-        'edit critique',
-        'withdraw critique',
-        'request changes',
-        'resubmit',
-      ],
-    );
-  }
-  if (id.contains('blocked')) {
-    return _interactionModel(
-      decision:
-          'Member or moderator reviews a blocked contact state with sender/recipient context, safety reason, disabled delivery, and unblock/appeal/keep-blocked paths.',
-      primary: <String>[
-        'review block',
-        'confirm block',
-        'confirm blocked state',
-        'keep blocked',
-      ],
-      alternate: <String>[
-        'unblock',
-        'appeal',
-        'cancel invite',
-        'block',
-        'archive',
-      ],
-    );
-  }
-  if (id.contains('match') || id.contains('chess')) {
-    return _interactionModel(
-      decision:
-          'Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.',
-      primary: <String>['record match', 'submit score', 'save result'],
-      alternate: <String>[
-        'edit score',
-        'undo result',
-        'correct result',
-        'dispute result',
-      ],
-    );
-  }
-  if (id.contains('message') ||
-      id.contains('connection') ||
-      id.contains('invite') ||
-      id.contains('blocked')) {
-    return _interactionModel(
-      decision:
-          'Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.',
-      primary: <String>[
-        'send message',
-        'reply',
-        'send invite',
-        'accept invite',
-        'connect',
-      ],
-      alternate: <String>[
-        'decline',
-        'block',
-        'mute',
-        'archive',
-        'cancel invite',
-      ],
-    );
-  }
-  if (id.contains('export') ||
-      id.contains('transfer') ||
-      id.contains('import')) {
-    return _interactionModel(
-      decision:
-          'Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.',
-      primary: <String>[
-        'export',
-        'download export',
-        'start transfer',
-        'import data',
-      ],
-      alternate: <String>[
-        'change scope',
-        'cancel transfer',
-        'rollback',
-        'retry',
-        'redaction preview',
-      ],
-    );
-  }
-  return _interactionModel(
-    decision:
-        'User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.',
-    primary: <String>['submit', 'save', 'send'],
-    alternate: <String>['edit', 'change', 'undo', 'reject', 'withdraw'],
+
+JsonMap _expectedSemanticInteractionModel({
+  required String communityId,
+  required String communityName,
+  required String workflowId,
+  required String role,
+}) {
+  final model = _b25ProductDocInteractionCatalog.requireModel(
+    communityId: communityId,
+    communityName: communityName,
+    workflowId: workflowId,
+    role: role,
   );
+  return <String, Object?>{
+    ...model.toJson(),
+    'disallowedGenericSubstitutes': b25DisallowedGenericSubstitutes,
+  };
 }
 
 bool _isAdSurfaceWorkflow(String id) {
@@ -4011,27 +3767,6 @@ bool _isAdSurfaceWorkflow(String id) {
       lower.contains('in-stream-ad') ||
       lower.contains('-ad-') ||
       lower.endsWith('-ad');
-}
-
-JsonMap _interactionModel({
-  required String decision,
-  required List<String> primary,
-  required List<String> alternate,
-}) {
-  return <String, Object?>{
-    'expectedDecision': decision,
-    'requiredPrimaryActions': primary,
-    'requiredAlternateActions': alternate,
-    'disallowedGenericSubstitutes': <String>[
-      'accept',
-      'cancel',
-      'ok',
-      'complete workflow',
-      'complete',
-      'confirm',
-      'continue',
-    ],
-  };
 }
 
 List<String> _matchingTerms(String text, Iterable<String> terms) {
@@ -6225,10 +5960,7 @@ String _initialB25PrimarySurfaceType({
 
 bool _workflowIsSupportSurface(String workflowId) {
   final id = workflowId.toLowerCase();
-  return id.contains('wf_demo-app-persona-picker') ||
-      id.contains('actor-identity-inventory') ||
-      id.contains('wf_community-persona-aware-ux') ||
-      id.contains('wf_multi-persona-workflow-evidence') ||
+  return id.contains('actor-identity-inventory') ||
       id.contains('app-shell-capability-evidence');
 }
 

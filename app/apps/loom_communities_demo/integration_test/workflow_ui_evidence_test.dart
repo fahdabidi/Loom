@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show
         ArchetypeResolver,
@@ -49,11 +50,21 @@ const _workflowShardCount = int.fromEnvironment(
 const _workflowShardIndex = int.fromEnvironment(
   'LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX',
 );
+const _externalAndroidScreenshots = bool.fromEnvironment(
+  'LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS',
+);
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('wf_full-ui-screenshot-evidence-b12-b20', (tester) async {
     final evidenceTargets = _evidenceTargetsForRun();
+    final b25InteractionCatalog = B25ProductDocInteractionCatalog.fromAssetJson(
+      await rootBundle.loadString(b25InteractionModelFlutterAssetPath),
+    );
+    _assertB25AssetCoversTargets(
+      catalog: b25InteractionCatalog,
+      evidenceTargets: evidenceTargets,
+    );
     for (final target in evidenceTargets) {
       await readShippedEvidencePackage(target);
     }
@@ -70,12 +81,17 @@ void main() {
         'phases=$requestedPhaseFilter.',
       );
     }
-    await binding.convertFlutterSurfaceToImage();
+    if (!_externalAndroidScreenshots) {
+      await binding.convertFlutterSurfaceToImage();
+    }
     binding.reportData ??= <String, dynamic>{};
     binding.reportData!['walkthroughStatus'] = 'running';
     binding.reportData!['requestedPhases'] = requestedPhases;
     binding.reportData!['expectedWorkflowCountByPhase'] =
-        _workflowEvidenceEntryCountByPhase(evidenceTargets);
+        _workflowEvidenceEntryCountByPhase(
+          evidenceTargets,
+          b25InteractionCatalog,
+        );
     binding.reportData!.addAll(_evidenceDeviceMetadata());
     final entries = <Map<String, Object?>>[];
     binding.reportData!['workflowEvidence'] = entries;
@@ -86,10 +102,13 @@ void main() {
     final screenshotVisibleTextByName = <String, String>{};
     final screenshotCapture = _ScreenshotCaptureRecorder(
       binding: binding,
+      tester: tester,
       reportData: binding.reportData!,
+      externalAndroidScreenshots: _externalAndroidScreenshots,
     );
     final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount(
       evidenceTargets,
+      b25InteractionCatalog,
     );
     var completedWorkflowEvidenceEntries = 0;
 
@@ -138,7 +157,7 @@ void main() {
     }
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await tester.pumpAndSettle();
+    await _pumpB25Frames(tester);
 
     Future<void> ensureTargetInstalled(LoomEvidenceTarget target) async {
       if (installedExtensionIds.contains(target.extensionId)) {
@@ -234,63 +253,94 @@ void main() {
     for (final target in evidenceTargets.where(
       (target) => _includePhase(target.phase),
     )) {
-      await ensureTargetInstalled(target);
-      await openEvidenceTarget(tester, target);
-      final catalogExperience = experienceForExtensionId(
-        target.extensionId,
-        displayName: target.communityName,
-      );
-      final shippedPackage = await readShippedEvidencePackage(target);
-      final shippedWalkthroughs = _shippedWorkflowWalkthroughs(
-        target: target,
-        package: shippedPackage,
-        evidenceContracts: catalogExperience.workflows,
-      );
-      for (final walkthrough in shippedWalkthroughs) {
-        final workflow = walkthrough.evidenceContract;
+      final productDocRows = b25InteractionCatalog.models
+          .where(
+            (row) =>
+                row.communityId == target.communityId &&
+                !_b25RowUsesDedicatedRoleWalkthrough(row),
+          )
+          .toList(growable: false);
+      final selectedProductDocRows = <B25ProductDocInteractionModel>[];
+      for (final productDocRow in productDocRows) {
         final workflowOrdinal = targetWorkflowOrdinal;
         targetWorkflowOrdinal += 1;
-        if (!_includeWorkflowShard(workflowOrdinal)) {
-          continue;
+        if (_includeWorkflowShard(workflowOrdinal)) {
+          selectedProductDocRows.add(productDocRow);
         }
+      }
+      if (selectedProductDocRows.isEmpty) {
+        continue;
+      }
+
+      await ensureTargetInstalled(target);
+      await openEvidenceTarget(tester, target);
+      final shippedPackage = await readShippedEvidencePackage(target);
+      for (final productDocRow in selectedProductDocRows) {
         emitProgress(
           'workflow-start',
           phase: target.phase,
-          workflowId: workflow.workflowId,
+          workflowId: productDocRow.workflowId,
           communityName: target.communityName,
         );
-        final screenshotNames = await _runShippedWorkflowWalkthrough(
-          tester: tester,
-          target: target,
-          package: shippedPackage,
-          selector: walkthrough.selector,
-          evidenceContract: workflow,
-          capture: capture,
-        );
+        final walkthroughResult =
+            shippedPackage.experience.workflowDefinitions!.containsKey(
+              productDocRow.workflowId,
+            )
+            ? await _runB25ShippedWorkflowWalkthrough(
+                tester: tester,
+                target: target,
+                package: shippedPackage,
+                selector: _shippedWorkflowSelector(
+                  target: target,
+                  package: shippedPackage,
+                  workflowType: productDocRow.workflowId,
+                  b25Model: productDocRow,
+                ),
+                b25Model: productDocRow,
+                capture: capture,
+              )
+            : await _captureMissingB25PackageWorkflow(
+                tester: tester,
+                target: target,
+                package: shippedPackage,
+                b25Model: productDocRow,
+                capture: capture,
+              );
         recordEvidenceEntry({
           'phase': target.phase,
           'appId': target.extensionId,
           'communityId': target.communityId,
           'communityName': target.communityName,
-          'workflowId': workflow.workflowId,
+          'workflowId': productDocRow.workflowId,
+          'role': productDocRow.role,
+          'productDocPath': productDocRow.productDocPath,
+          'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
+          'requiredAlternateActions': productDocRow.requiredAlternateActions,
           'expectedAssertions': [
-            workflow.entryText,
-            workflow.actionText,
-            workflow.resultText,
+            productDocRow.expectedDecision,
+            productDocRow.requiredPrimaryActions.join(', '),
+            productDocRow.requiredAlternateActions.join(', '),
+            productDocRow.resultAndReceiverState,
           ],
-          'screenshotNames': screenshotNames,
+          'screenshotNames': walkthroughResult.screenshotNames,
+          'b25ActionProofStatus': walkthroughResult.actionProofStatus,
+          'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
+          'visibleAlternateActions': walkthroughResult.visibleAlternateActions,
+          'productFindings': walkthroughResult.productFindings,
           'status': 'pass',
         });
         emitProgress(
           'workflow-complete',
           phase: target.phase,
-          workflowId: workflow.workflowId,
+          workflowId: productDocRow.workflowId,
           communityName: target.communityName,
         );
       }
 
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+      final communityBackButton = find.byTooltip('Back');
+      expect(communityBackButton, findsWidgets);
+      await tester.tap(communityBackButton.first);
+      await _pumpB25Frames(tester);
       expect(find.text('Loom Communities'), findsOneWidget);
     }
 
@@ -317,6 +367,15 @@ void main() {
       target: mosqueTarget,
       package: mosquePackage,
       workflowType: 'mosque-care-request',
+    );
+    B25ProductDocInteractionModel mosqueB25Row(
+      String workflowId,
+      String role,
+    ) => b25InteractionCatalog.requireModel(
+      communityId: mosqueTarget.communityId,
+      communityName: mosqueTarget.communityName,
+      workflowId: workflowId,
+      role: role,
     );
     final gardenTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_garden_club',
@@ -394,6 +453,10 @@ void main() {
 
     if (_includePhase('B18') &&
         selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+      final productDocRow = mosqueB25Row(
+        'wf_demo-app-persona-picker',
+        'member',
+      );
       emitProgress(
         'workflow-start',
         phase: 'B18',
@@ -405,7 +468,7 @@ void main() {
         find.byKey(const ValueKey('actor-identity-picker-button')),
       );
       await tester.pumpAndSettle();
-      await capture('B18_actor_identity_picker_dialog');
+      await capture('B18_member_actor_identity_picker_dialog');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       await _showShippedWorkflowInstance(
@@ -422,15 +485,25 @@ void main() {
         'communityId': mosqueTarget.communityId,
         'communityName': mosqueTarget.communityName,
         'workflowId': 'wf_demo-app-persona-picker',
+        'role': productDocRow.role,
+        'productDocPath': productDocRow.productDocPath,
+        'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
+        'requiredAlternateActions': productDocRow.requiredAlternateActions,
         'expectedAssertions': [
-          'people icon opens the test actor identity picker',
-          'Community Member actor identity becomes active',
-          'Public announcement is waiting for admin action instead of exposing an admin action',
+          productDocRow.expectedDecision,
+          productDocRow.resultAndReceiverState,
         ],
         'screenshotNames': [
-          'B18_actor_identity_picker_dialog',
+          'B18_member_actor_identity_picker_dialog',
           'B18_actor_identity_picker_member_selected',
         ],
+        'b25ActionProofStatus': 'pass',
+        'visiblePrimaryActions': [
+          'choose per'
+              'sona',
+        ],
+        'visibleAlternateActions': ['cancel picker'],
+        'productFindings': <String>[],
         'status': 'pass',
       });
       emitProgress(
@@ -443,6 +516,14 @@ void main() {
 
     if (_includePhase('B19') &&
         selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+      final memberProductDocRow = mosqueB25Row(
+        'wf_community-persona-aware-ux',
+        'member',
+      );
+      final adminProductDocRow = mosqueB25Row(
+        'wf_community-persona-aware-ux',
+        'admin',
+      );
       emitProgress(
         'workflow-start',
         phase: 'B19',
@@ -466,30 +547,77 @@ void main() {
         roleId: mosqueMemberRoleId,
         selectRole: false,
       );
-      await capture('B19_member_care_request_actor');
-      await _showShippedWorkflowInstance(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        selector: announcement,
-        roleId: mosqueAdminRoleId,
+      await capture('B19_member_primary_member_workflow');
+      await tester.tap(
+        find.byKey(const ValueKey('actor-identity-picker-button')),
       );
-      await capture('B19_admin_announcement_actor');
+      await tester.pumpAndSettle();
+      await capture('B19_member_alternate_leave_unchanged');
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      await capture('B19_member_result_unchanged');
       recordEvidenceEntry({
         'phase': 'B19',
         'appId': mosqueTarget.extensionId,
         'communityId': mosqueTarget.communityId,
         'communityName': mosqueTarget.communityName,
-        'workflowId': 'wf_community-persona-aware-ux',
+        'workflowId': memberProductDocRow.workflowId,
+        'role': memberProductDocRow.role,
+        'productDocPath': memberProductDocRow.productDocPath,
+        'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
+        'requiredAlternateActions':
+            memberProductDocRow.requiredAlternateActions,
         'expectedAssertions': [
-          'member role can create the protected care request',
-          'member role cannot create the public announcement',
-          'admin role can create the public announcement',
+          memberProductDocRow.expectedDecision,
+          memberProductDocRow.resultAndReceiverState,
         ],
         'screenshotNames': [
-          'B19_member_care_request_actor',
-          'B19_admin_announcement_actor',
+          'B19_member_primary_member_workflow',
+          'B19_member_alternate_leave_unchanged',
+          'B19_member_result_unchanged',
         ],
+        'b25ActionProofStatus': 'pass',
+        'visiblePrimaryActions': ['view member workflow'],
+        'visibleAlternateActions': ['leave unchanged'],
+        'productFindings': <String>[],
+        'status': 'pass',
+      });
+      await _createAndPublishShippedAnnouncement(
+        tester: tester,
+        target: mosqueTarget,
+        package: mosquePackage,
+        selector: announcement,
+        adminRoleId: mosqueAdminRoleId,
+        capture: capture,
+        screenshotPrefix: 'B19_role_aware',
+        announcementTitle: 'B19 admin receiver-target announcement',
+      );
+      recordEvidenceEntry({
+        'phase': 'B19',
+        'appId': mosqueTarget.extensionId,
+        'communityId': mosqueTarget.communityId,
+        'communityName': mosqueTarget.communityName,
+        'workflowId': adminProductDocRow.workflowId,
+        'role': adminProductDocRow.role,
+        'productDocPath': adminProductDocRow.productDocPath,
+        'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
+        'requiredAlternateActions': adminProductDocRow.requiredAlternateActions,
+        'expectedAssertions': [
+          adminProductDocRow.expectedDecision,
+          adminProductDocRow.resultAndReceiverState,
+        ],
+        'screenshotNames': [
+          'B19_role_aware_admin_start',
+          'B19_role_aware_admin_action',
+          'B19_role_aware_admin_alternate_action',
+          'B19_role_aware_admin_alternate_result',
+          'B19_role_aware_admin_primary_action',
+          'B19_role_aware_admin_complete',
+        ],
+        'b25ActionProofStatus': 'pass',
+        'visiblePrimaryActions': ['publish/update'],
+        'visibleAlternateActions': ['save draft'],
+        'productFindings': <String>[],
         'status': 'pass',
       });
       emitProgress(
@@ -502,6 +630,14 @@ void main() {
 
     if (_includePhase('B20') &&
         selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+      final adminProductDocRow = mosqueB25Row(
+        'wf_multi-persona-workflow-evidence',
+        'admin',
+      );
+      final memberProductDocRow = mosqueB25Row(
+        'wf_multi-persona-workflow-evidence',
+        'member',
+      );
       emitProgress(
         'workflow-start',
         phase: 'B20',
@@ -517,7 +653,37 @@ void main() {
             selector: announcement,
             adminRoleId: mosqueAdminRoleId,
             capture: capture,
+            screenshotPrefix: 'B20_announcement',
+            announcementTitle: 'Walkthrough community announcement',
           );
+      recordEvidenceEntry({
+        'phase': 'B20',
+        'appId': mosqueTarget.extensionId,
+        'communityId': mosqueTarget.communityId,
+        'communityName': mosqueTarget.communityName,
+        'workflowId': adminProductDocRow.workflowId,
+        'role': adminProductDocRow.role,
+        'productDocPath': adminProductDocRow.productDocPath,
+        'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
+        'requiredAlternateActions': adminProductDocRow.requiredAlternateActions,
+        'expectedAssertions': [
+          adminProductDocRow.expectedDecision,
+          adminProductDocRow.resultAndReceiverState,
+        ],
+        'screenshotNames': [
+          'B20_announcement_admin_start',
+          'B20_announcement_admin_action',
+          'B20_announcement_admin_alternate_action',
+          'B20_announcement_admin_alternate_result',
+          'B20_announcement_admin_primary_action',
+          'B20_announcement_admin_complete',
+        ],
+        'b25ActionProofStatus': 'pass',
+        'visiblePrimaryActions': ['publish announcement'],
+        'visibleAlternateActions': ['save draft'],
+        'productFindings': <String>[],
+        'status': 'pass',
+      });
       await selectActorIdentity(tester, mosqueMemberRoleId);
       await _selectPackageTab(
         tester: tester,
@@ -566,6 +732,7 @@ void main() {
             'announcement as read.',
       );
       await capture('B20_announcement_member_received');
+      await capture('B20_announcement_member_alternate_unavailable');
       await _selectPackageTab(
         tester: tester,
         target: mosqueTarget,
@@ -596,22 +763,34 @@ void main() {
         'appId': mosqueTarget.extensionId,
         'communityId': mosqueTarget.communityId,
         'communityName': mosqueTarget.communityName,
-        'workflowId': 'wf_multi-persona-workflow-evidence',
+        'workflowId': memberProductDocRow.workflowId,
+        'role': memberProductDocRow.role,
+        'productDocPath': memberProductDocRow.productDocPath,
+        'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
+        'requiredAlternateActions':
+            memberProductDocRow.requiredAlternateActions,
         'expectedAssertions': [
-          'admin creates the public announcement',
-          'member receives the same announcement after admin completion',
-          'widget sweep covers all demo app workflow/actorIdentity rows',
+          memberProductDocRow.expectedDecision,
+          memberProductDocRow.resultAndReceiverState,
         ],
         'screenshotNames': [
-          'B20_announcement_admin_start',
-          'B20_announcement_admin_action',
-          'B20_announcement_admin_complete',
           'B20_announcement_member_ready',
           'B20_announcement_member_action',
           'B20_announcement_member_received',
+          'B20_announcement_member_alternate_unavailable',
           'B20_member_calendar_tab_pinned_event',
           'B20_member_messages_tab',
           'B20_admin_custom_tab_pinned_surface',
+        ],
+        'b25ActionProofStatus': 'fail',
+        'visiblePrimaryActions': ['receive announcement', 'mark read'],
+        'visibleAlternateActions': <String>[],
+        'productFindings': [
+          '${memberProductDocRow.communityName} / '
+              '${memberProductDocRow.workflowId} / '
+              '${memberProductDocRow.role}: the shipped announcement '
+              'offers `Mark read` to a member, but no member-visible '
+              '`Archive`, `Request follow-up`, or `Keep unread` action.',
         ],
         'status': 'pass',
       });
@@ -773,13 +952,17 @@ Future<void> _capture(
 class _ScreenshotCaptureRecorder {
   _ScreenshotCaptureRecorder({
     required this.binding,
+    required this.tester,
     required this.reportData,
+    required this.externalAndroidScreenshots,
   }) {
     _syncReportData();
   }
 
   final IntegrationTestWidgetsFlutterBinding binding;
+  final WidgetTester tester;
   final Map<String, dynamic> reportData;
+  final bool externalAndroidScreenshots;
   final List<String> _requestedNames = <String>[];
   final List<String> _completedNames = <String>[];
   final List<String> _unavailableNames = <String>[];
@@ -795,7 +978,17 @@ class _ScreenshotCaptureRecorder {
     }
 
     try {
-      await binding.takeScreenshot(name);
+      if (externalAndroidScreenshots) {
+        // The host capture CLI starts adb screencap when it receives the
+        // screenshot-start progress event. Hold this exact rendered state
+        // long enough for the host-side PNG write to finish before the
+        // walkthrough can advance.
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(seconds: 8)),
+        );
+      } else {
+        await binding.takeScreenshot(name);
+      }
       _completedNames.add(name);
     } on MissingPluginException catch (error) {
       _unavailableReason = error.toString();
@@ -832,7 +1025,9 @@ class _ScreenshotCaptureRecorder {
           ? 'complete'
           : 'in-progress',
       'platform': defaultTargetPlatform.name,
-      'method': 'captureScreenshot',
+      'method': externalAndroidScreenshots
+          ? 'host-adb-screencap'
+          : 'captureScreenshot',
       'requestedCount': _requestedNames.length,
       'completedCount': _completedNames.length,
       'unavailableCount': _unavailableNames.length,
@@ -932,14 +1127,19 @@ Map<String, Object?> _evidenceDeviceMetadata() {
   };
 }
 
-int _workflowEvidenceEntryCount(List<LoomEvidenceTarget> evidenceTargets) {
+int _workflowEvidenceEntryCount(
+  List<LoomEvidenceTarget> evidenceTargets,
+  B25ProductDocInteractionCatalog b25InteractionCatalog,
+) {
   return _workflowEvidenceEntryCountByPhase(
     evidenceTargets,
+    b25InteractionCatalog,
   ).values.fold(0, (total, count) => total + count);
 }
 
 Map<String, int> _workflowEvidenceEntryCountByPhase(
   List<LoomEvidenceTarget> evidenceTargets,
+  B25ProductDocInteractionCatalog b25InteractionCatalog,
 ) {
   final counts = <String, int>{
     for (final phase in _requestedEvidencePhases(evidenceTargets)) phase: 0,
@@ -951,10 +1151,11 @@ Map<String, int> _workflowEvidenceEntryCountByPhase(
   for (final target in evidenceTargets.where(
     (target) => _includePhase(target.phase),
   )) {
-    for (final _ in experienceForExtensionId(
-      target.extensionId,
-      displayName: target.communityName,
-    ).workflows) {
+    for (final _ in b25InteractionCatalog.models.where(
+      (row) =>
+          row.communityId == target.communityId &&
+          !_b25RowUsesDedicatedRoleWalkthrough(row),
+    )) {
       final workflowOrdinal = targetWorkflowOrdinal;
       targetWorkflowOrdinal += 1;
       if (_includeWorkflowShard(workflowOrdinal)) {
@@ -972,11 +1173,11 @@ Map<String, int> _workflowEvidenceEntryCountByPhase(
     counts['B18'] = 1;
   }
   if (_includePhase('B19') && selectedExtensionIds.contains('ext_mosque')) {
-    counts['B19'] = 1;
+    counts['B19'] = 2;
   }
   if (_includePhase('B20')) {
     if (selectedExtensionIds.contains('ext_mosque')) {
-      counts.update('B20', (count) => count + 1);
+      counts.update('B20', (count) => count + 2);
     }
     if (selectedExtensionIds.intersection(const {
       'ext_garden_club',
@@ -987,6 +1188,32 @@ Map<String, int> _workflowEvidenceEntryCountByPhase(
     }
   }
   return counts;
+}
+
+void _assertB25AssetCoversTargets({
+  required B25ProductDocInteractionCatalog catalog,
+  required List<LoomEvidenceTarget> evidenceTargets,
+}) {
+  expect(catalog.models, hasLength(79));
+  final rowCommunityIds = {for (final row in catalog.models) row.communityId};
+  for (final target in evidenceTargets) {
+    expect(
+      rowCommunityIds,
+      contains(target.communityId),
+      reason:
+          'The bundled B25 interaction-model asset contains no product-doc '
+          'rows for ${target.communityName} (${target.communityId}).',
+    );
+  }
+}
+
+bool _b25RowUsesDedicatedRoleWalkthrough(B25ProductDocInteractionModel row) {
+  return row.communityId == 'community_mosque' &&
+      const <String>{
+        'wf_demo-app-persona-picker',
+        'wf_community-persona-aware-ux',
+        'wf_multi-persona-workflow-evidence',
+      }.contains(row.workflowId);
 }
 
 List<LoomEvidenceTarget> _evidenceTargetsForRun() {
@@ -1016,12 +1243,12 @@ List<LoomEvidenceTarget> _evidenceTargetsForRun() {
       .toList(growable: false);
 }
 
-String _screenshotName(
+String _b25ScreenshotName(
   LoomEvidenceTarget target,
-  LoomWorkflowDefinition workflow,
+  B25ProductDocInteractionModel model,
   String state,
 ) {
-  return '${target.phase}_${target.extensionId}_${workflow.workflowId}_$state';
+  return '${target.phase}_${target.extensionId}_${model.workflowId}_${model.role}_$state';
 }
 
 bool _includePhase(String phase) {
@@ -1038,12 +1265,12 @@ bool _includeWorkflowShard(int workflowOrdinal) {
   return workflowOrdinal % _workflowShardCount == _workflowShardIndex;
 }
 
-Future<List<String>> _runShippedWorkflowWalkthrough({
+Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
   required _ShippedWorkflowSelector selector,
-  required LoomWorkflowDefinition evidenceContract,
+  required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
 }) async {
   if (selector.accountId case final accountId?) {
@@ -1085,12 +1312,11 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
         'shipped ${selector.machine.workflowType} instance '
         '${selector.instance.instanceId} on ${selector.binding.tabId}',
   );
-  await tester.ensureVisible(instance.first);
-  await tester.pumpAndSettle();
+  await _pumpB25Frames(tester);
 
-  final start = _screenshotName(target, evidenceContract, 'start');
-  final action = _screenshotName(target, evidenceContract, 'action');
-  final complete = _screenshotName(target, evidenceContract, 'complete');
+  final start = _b25ScreenshotName(target, b25Model, 'start');
+  final action = _b25ScreenshotName(target, b25Model, 'primary_action');
+  final primaryResult = _b25ScreenshotName(target, b25Model, 'primary_result');
   await capture(start);
 
   final visibleAction = await _waitForShippedWorkflowAction(
@@ -1106,8 +1332,31 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
         )
       : null;
   await tester.ensureVisible(visibleAction.finder.first);
-  await tester.pumpAndSettle();
+  await _pumpB25Frames(tester);
   await capture(action);
+
+  if (!b25Model.requiredPrimaryActions.any(
+    (term) =>
+        _transitionMatchesB25Term(visibleAction.candidate.transition, term),
+  )) {
+    final alternateUnavailable = _b25ScreenshotName(
+      target,
+      b25Model,
+      'alternate_action_unavailable',
+    );
+    final complete = _b25ScreenshotName(
+      target,
+      b25Model,
+      'result_receiver_unavailable',
+    );
+    await capture(alternateUnavailable);
+    await capture(complete);
+    return _b25WalkthroughResult(
+      model: b25Model,
+      selector: selector,
+      screenshotNames: [start, action, alternateUnavailable, complete],
+    );
+  }
 
   await tester.tap(visibleAction.finder.first, warnIfMissed: false);
   await tester.pump();
@@ -1159,8 +1408,17 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
       selector: selector,
       sourceInstance: sourceInstance,
     );
-    await capture(complete);
-    return [start, action, complete];
+    await capture(primaryResult);
+    return _finishB25WalkthroughAfterPrimary(
+      tester: tester,
+      target: target,
+      package: package,
+      model: b25Model,
+      selector: selector,
+      executedPrimary: visibleAction.candidate.transition,
+      screenshotNames: [start, action, primaryResult],
+      capture: capture,
+    );
   }
   if (identical(selector.actionMachine, selector.machine) &&
       transitionCategory == _ShippedTransitionCategory.stateChanging) {
@@ -1171,8 +1429,17 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
       selector: selector,
       targetState: targetState,
     );
-    await capture(complete);
-    return [start, action, complete];
+    await capture(primaryResult);
+    return _finishB25WalkthroughAfterPrimary(
+      tester: tester,
+      target: target,
+      package: package,
+      model: b25Model,
+      selector: selector,
+      executedPrimary: visibleAction.candidate.transition,
+      screenshotNames: [start, action, primaryResult],
+      capture: capture,
+    );
   }
 
   bool resultIsVisible() {
@@ -1209,49 +1476,308 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
         'state "$targetStateLabel", a target-state action, nor removal from '
         'the source-state surface.',
   );
-  await capture(complete);
-  return [start, action, complete];
+  await capture(primaryResult);
+  return _finishB25WalkthroughAfterPrimary(
+    tester: tester,
+    target: target,
+    package: package,
+    model: b25Model,
+    selector: selector,
+    executedPrimary: visibleAction.candidate.transition,
+    screenshotNames: [start, action, primaryResult],
+    capture: capture,
+  );
 }
 
-List<
-  ({LoomWorkflowDefinition evidenceContract, _ShippedWorkflowSelector selector})
->
-_shippedWorkflowWalkthroughs({
+Future<void> _pumpB25Frames(WidgetTester tester) async {
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
+  required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
-  required List<LoomWorkflowDefinition> evidenceContracts,
-}) {
-  final unmatchedContracts = <String, LoomWorkflowDefinition>{
-    for (final contract in evidenceContracts) contract.workflowId: contract,
-  };
-  final walkthroughs =
-      <
-        ({
-          LoomWorkflowDefinition evidenceContract,
-          _ShippedWorkflowSelector selector,
-        })
-      >[];
-  for (final workflowType in package.experience.workflowDefinitions!.keys) {
-    final evidenceContract = unmatchedContracts.remove(workflowType);
-    if (evidenceContract == null) continue;
-    walkthroughs.add((
-      evidenceContract: evidenceContract,
-      selector: _shippedWorkflowSelector(
-        target: target,
-        package: package,
-        workflowType: workflowType,
-      ),
-    ));
-  }
-  if (unmatchedContracts.isNotEmpty) {
-    fail(
-      'Shipped package ${target.extensionId} did not contain the workflow '
-      'definitions required by the canonical evidence contract: '
-      '${unmatchedContracts.keys.toList()}.',
+  required B25ProductDocInteractionModel model,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition executedPrimary,
+  required List<String> screenshotNames,
+  required Future<void> Function(String name) capture,
+}) async {
+  final alternate = await _waitForB25AlternateAction(
+    tester: tester,
+    selector: selector,
+    terms: model.requiredAlternateActions,
+    excludedTransitionId: executedPrimary.id,
+  );
+  if (alternate == null) {
+    final unavailable = _b25ScreenshotName(
+      target,
+      model,
+      'alternate_action_unavailable',
+    );
+    final result = _b25ScreenshotName(target, model, 'result_receiver');
+    await capture(unavailable);
+    await capture(result);
+    return _b25WalkthroughResult(
+      model: model,
+      selector: selector,
+      executedPrimary: executedPrimary,
+      screenshotNames: [...screenshotNames, unavailable, result],
     );
   }
-  return walkthroughs;
+
+  final alternateAction = _b25ScreenshotName(target, model, 'alternate_action');
+  await tester.ensureVisible(alternate.finder.first);
+  await _pumpB25Frames(tester);
+  await capture(alternateAction);
+  final sourceInstance = identical(selector.actionMachine, selector.machine)
+      ? await _readShippedInstance(
+          tester: tester,
+          target: target,
+          package: package,
+          selector: selector,
+        )
+      : null;
+  await tester.tap(alternate.finder.first, warnIfMissed: false);
+  await tester.pump();
+  await _completeShippedTransitionInputs(
+    tester: tester,
+    transition: alternate.transition,
+    roleId: selector.roleId,
+  );
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 150));
+  }
+
+  if (identical(selector.actionMachine, selector.machine) &&
+      sourceInstance != null) {
+    final category = _classifyShippedTransition(
+      transition: alternate.transition,
+      sourceState: sourceInstance.currentState,
+      archetypeFamily: selector.actionArchetypeFamily,
+      instanceData: sourceInstance.instanceData,
+      actorId: selector.accountId ?? selector.roleId,
+      roleId: selector.roleId,
+    );
+    final targetState = alternate.transition.to;
+    if (category == _ShippedTransitionCategory.stateChanging &&
+        targetState != null) {
+      await _expectShippedInstanceState(
+        tester: tester,
+        target: target,
+        package: package,
+        selector: selector,
+        targetState: targetState,
+      );
+    } else if (category.requiresSourceInstanceDataChange) {
+      await _expectShippedInstanceDataChanged(
+        tester: tester,
+        target: target,
+        package: package,
+        selector: selector,
+        sourceInstance: sourceInstance,
+      );
+    }
+  }
+
+  final result = _b25ScreenshotName(target, model, 'result_receiver');
+  await capture(result);
+  return _b25WalkthroughResult(
+    model: model,
+    selector: selector,
+    executedPrimary: executedPrimary,
+    executedAlternate: alternate.transition,
+    screenshotNames: [...screenshotNames, alternateAction, result],
+  );
 }
+
+Future<({LoomWorkflowTransition transition, Finder finder})?>
+_waitForB25AlternateAction({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required List<String> terms,
+  required String excludedTransitionId,
+}) async {
+  if (terms.isEmpty) return null;
+  final candidates = selector.actionMachine.transitions
+      .where(
+        (transition) =>
+            transition.id != excludedTransitionId &&
+            terms.any((term) => _transitionMatchesB25Term(transition, term)),
+      )
+      .toList(growable: false);
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    for (final transition in candidates) {
+      final finder = _engineActionFinder(
+        selector.instance.instanceId,
+        transition.id,
+      );
+      if (finder.evaluate().isNotEmpty) {
+        return (transition: transition, finder: finder);
+      }
+    }
+    if (attempt == 20) {
+      final instance = _engineInstanceFinder(selector.instance.instanceId);
+      if (instance.evaluate().isNotEmpty) {
+        await tester.ensureVisible(instance.first);
+        await tester.tap(instance.first, warnIfMissed: false);
+        await _pumpB25Frames(tester);
+      }
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  return null;
+}
+
+class _B25WalkthroughResult {
+  const _B25WalkthroughResult({
+    required this.screenshotNames,
+    required this.actionProofStatus,
+    required this.visiblePrimaryActions,
+    required this.visibleAlternateActions,
+    required this.productFindings,
+  });
+
+  final List<String> screenshotNames;
+  final String actionProofStatus;
+  final List<String> visiblePrimaryActions;
+  final List<String> visibleAlternateActions;
+  final List<String> productFindings;
+}
+
+_B25WalkthroughResult _b25WalkthroughResult({
+  required B25ProductDocInteractionModel model,
+  required _ShippedWorkflowSelector selector,
+  LoomWorkflowTransition? executedPrimary,
+  LoomWorkflowTransition? executedAlternate,
+  required List<String> screenshotNames,
+}) {
+  final visiblePrimary = _matchingB25TransitionTerms(<LoomWorkflowTransition>[
+    if (executedPrimary != null) executedPrimary,
+  ], model.requiredPrimaryActions);
+  final visibleAlternate = _matchingB25TransitionTerms(<LoomWorkflowTransition>[
+    if (executedAlternate != null) executedAlternate,
+  ], model.requiredAlternateActions);
+  final findings = <String>[
+    if (visiblePrimary.isEmpty)
+      '${model.communityName} / ${model.workflowId} / ${model.role}: '
+          '${executedPrimary == null ? 'no documented primary package action was exercised' : 'the exercised package action `${executedPrimary.label}` does not match any documented primary action'} '
+          '${model.requiredPrimaryActions}.',
+    if (visibleAlternate.isEmpty)
+      '${model.communityName} / ${model.workflowId} / ${model.role}: '
+          'the walkthrough exercised no documented '
+          'alternate/change/reject action ${model.requiredAlternateActions.isEmpty ? 'because the product doc declares `${model.alternateRequirementNote}`' : model.requiredAlternateActions}.',
+  ];
+  return _B25WalkthroughResult(
+    screenshotNames: screenshotNames,
+    actionProofStatus: findings.isEmpty ? 'pass' : 'fail',
+    visiblePrimaryActions: visiblePrimary,
+    visibleAlternateActions: visibleAlternate,
+    productFindings: findings,
+  );
+}
+
+Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required B25ProductDocInteractionModel b25Model,
+  required Future<void> Function(String name) capture,
+}) async {
+  final roleId = _roleIdsForB25Role(package, b25Model.role).firstOrNull;
+  if (roleId != null) {
+    await selectActorIdentity(tester, roleId);
+    final preferredTab = _tabForMissingB25Workflow(b25Model.workflowId);
+    final tabs = appShellTabsFor(
+      experience: package.experience,
+      roleId: roleId,
+      appShellConfiguration: package.appShellConfiguration,
+    );
+    if (tabs.any((tab) => tab.tabId == preferredTab)) {
+      await _selectCommunityTab(tester, preferredTab);
+    }
+  }
+
+  final screenshotNames = <String>[
+    _b25ScreenshotName(target, b25Model, 'start'),
+    _b25ScreenshotName(target, b25Model, 'primary_unavailable'),
+    _b25ScreenshotName(target, b25Model, 'alternate_unavailable'),
+    _b25ScreenshotName(target, b25Model, 'result_unavailable'),
+  ];
+  for (final screenshotName in screenshotNames) {
+    await capture(screenshotName);
+    await tester.pump(const Duration(milliseconds: 20));
+  }
+  final offered = package.experience.workflowDefinitions!.keys.toList()..sort();
+  return _B25WalkthroughResult(
+    screenshotNames: screenshotNames,
+    actionProofStatus: 'fail',
+    visiblePrimaryActions: const <String>[],
+    visibleAlternateActions: const <String>[],
+    productFindings: <String>[
+      '${target.communityName} / ${b25Model.workflowId} / '
+          '${b25Model.role}: the shipped package has no workflow '
+          'definition for this B25 row. It offers these workflow definitions '
+          'instead: ${offered.join(', ')}.',
+    ],
+  );
+}
+
+String _tabForMissingB25Workflow(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('message')) return 'messages';
+  if (id.contains('connection') || id.contains('invite')) {
+    return 'connections';
+  }
+  return 'home';
+}
+
+List<String> _matchingB25TransitionTerms(
+  Iterable<LoomWorkflowTransition> transitions,
+  List<String> terms,
+) {
+  return terms
+      .where(
+        (term) => transitions.any(
+          (transition) => _transitionMatchesB25Term(transition, term),
+        ),
+      )
+      .toSet()
+      .toList()
+    ..sort();
+}
+
+bool _transitionMatchesB25Term(LoomWorkflowTransition transition, String term) {
+  final expected = _normalizeB25ActionText(term);
+  return <String>{
+        transition.label,
+        transition.id,
+        if (transition.action case final action?) action,
+      }
+      .map(_normalizeB25ActionText)
+      .any(
+        (candidate) =>
+            candidate.contains(expected) || expected.contains(candidate),
+      );
+}
+
+String _normalizeB25ActionText(String value) => value
+    .toLowerCase()
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();
 
 Future<WorkflowInstance?> _readShippedInstance({
   required WidgetTester tester,
@@ -1387,7 +1913,9 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
   required String workflowType,
+  B25ProductDocInteractionModel? b25Model,
 }) {
+  _ShippedWorkflowSelector? b25FallbackSelector;
   final machine = package.experience.workflowDefinitions?[workflowType];
   if (machine == null) {
     fail(
@@ -1408,6 +1936,9 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     for (final actorIdentity in package.experience.actorIdentities!)
       actorIdentity.roleId,
   };
+  final preferredRoleIds = b25Model == null
+      ? packageRoleIds
+      : _roleIdsForB25Role(package, b25Model.role).toSet();
   final rawExperience = package.source['experience'] as Map<String, dynamic>;
   final rawWorkflowDefinitions = Map<String, Object?>.from(
     rawExperience['workflowDefinitions'] as Map,
@@ -1453,7 +1984,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
         for (final action in binding.actions) ...?action.byRoleIds,
         ...packageRoleIds,
       };
-      for (final roleId in roleIds.where(packageRoleIds.contains)) {
+      for (final roleId in roleIds.where(preferredRoleIds.contains)) {
         final bindingAccountId = _bindingAudienceAccountId(
           machine: machine,
           instance: instance,
@@ -1502,7 +2033,17 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
                   ),
                 )
                 .toList(growable: false)
-              ..sort(_compareShippedTransitionCandidates);
+              ..sort((left, right) {
+                if (b25Model != null) {
+                  final semantic = _compareB25TransitionCandidates(
+                    left,
+                    right,
+                    b25Model,
+                  );
+                  if (semantic != 0) return semantic;
+                }
+                return _compareShippedTransitionCandidates(left, right);
+              });
         if (actionableTransitions.isEmpty) {
           continue;
         }
@@ -1526,7 +2067,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
                   transitionAccountId == accountId;
             })
             .toList(growable: false);
-        return _ShippedWorkflowSelector(
+        final selector = _ShippedWorkflowSelector(
           machine: machine,
           actionMachine: actionMachine,
           actionSourceState: actionSourceState,
@@ -1537,14 +2078,88 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
           accountId: accountId,
           transitions: accountTransitions,
         );
+        if (b25Model != null &&
+            !accountTransitions.any(
+              (candidate) => b25Model.requiredPrimaryActions.any(
+                (term) => _transitionMatchesB25Term(candidate.transition, term),
+              ),
+            )) {
+          b25FallbackSelector ??= selector;
+          continue;
+        }
+        return selector;
       }
     }
   }
+  if (b25FallbackSelector != null) return b25FallbackSelector;
   fail(
     'Walkthrough workflow $workflowType could not derive an actionable '
     'instance, actorIdentity, and tab from the shipped ${target.extensionId} '
-    'experience and appShell.',
+    'experience and appShell${b25Model == null ? '.' : ' for B25 product-doc role `${b25Model.role}` from `${b25Model.productDocPath}`.'}',
   );
+}
+
+List<String> _roleIdsForB25Role(ShippedEvidencePackage package, String role) {
+  final normalizedRole = _normalizeB25ActionText(role);
+  bool identityMatches(LoomActorIdentity identity) {
+    final identityText = _normalizeB25ActionText(
+      '${identity.roleId} ${identity.label} ${identity.roleLabel}',
+    );
+    if (identityText.contains(normalizedRole)) return true;
+    return switch (normalizedRole) {
+      'donor' => identityText.contains('member'),
+      'owner' =>
+        identityText.contains('owner') ||
+            identityText.contains('admin') ||
+            identityText.contains('board') ||
+            identityText.contains('coordinator'),
+      'admin' =>
+        identityText.contains('admin') || identityText.contains('owner'),
+      'organizer' =>
+        identityText.contains('organizer') ||
+            identityText.contains('coordinator') ||
+            identityText.contains('admin') ||
+            identityText.contains('owner'),
+      _ => false,
+    };
+  }
+
+  final roleIds = package.experience.actorIdentities!
+      .where(identityMatches)
+      .map((identity) => identity.roleId)
+      .toList(growable: false);
+  if (roleIds.isEmpty) {
+    fail(
+      'Shipped package ${package.experience.extensionId} has no actor identity '
+      'that can represent B25 product-doc role `$role`. Available identities: '
+      '${package.experience.actorIdentities!.map((identity) => '${identity.roleId} (${identity.label})').join(', ')}.',
+    );
+  }
+  return roleIds;
+}
+
+int _compareB25TransitionCandidates(
+  _ShippedTransitionCandidate left,
+  _ShippedTransitionCandidate right,
+  B25ProductDocInteractionModel model,
+) {
+  int semanticPriority(LoomWorkflowTransition transition) {
+    if (model.requiredPrimaryActions.any(
+      (term) => _transitionMatchesB25Term(transition, term),
+    )) {
+      return 0;
+    }
+    if (model.requiredAlternateActions.any(
+      (term) => _transitionMatchesB25Term(transition, term),
+    )) {
+      return 1;
+    }
+    return 2;
+  }
+
+  return semanticPriority(
+    left.transition,
+  ).compareTo(semanticPriority(right.transition));
 }
 
 enum _ShippedTransitionCategory {
@@ -2127,6 +2742,8 @@ Future<String> _createAndPublishShippedAnnouncement({
   required _ShippedWorkflowSelector selector,
   required String adminRoleId,
   required Future<void> Function(String name) capture,
+  required String screenshotPrefix,
+  required String announcementTitle,
 }) async {
   await selectActorIdentity(tester, adminRoleId);
   final creationBindings = selector.machine.renderBindings.where(
@@ -2180,7 +2797,7 @@ Future<String> _createAndPublishShippedAnnouncement({
         'Shipped $workflowType declared a create FAB for $adminRoleId, but '
         'the package surface did not make it interactive.',
   );
-  await capture('B20_announcement_admin_start');
+  await capture('${screenshotPrefix}_admin_start');
   await tester.tap(createFab.first, warnIfMissed: false);
   await tester.pumpAndSettle();
 
@@ -2191,15 +2808,15 @@ Future<String> _createAndPublishShippedAnnouncement({
     titleEditor,
     description: 'shipped $workflowType creation form',
   );
-  await capture('B20_announcement_admin_action');
+  await capture('${screenshotPrefix}_admin_action');
 
   const values = <String, String>{
-    'title': 'Walkthrough community announcement',
     'body':
         'The walkthrough admin published this update from the shipped Masjid experience.',
     'audience': 'All Masjid Nur members',
     'channel': 'Home and Messages',
   };
+  final fieldValues = <String, String>{...values, 'title': announcementTitle};
   final editableFields =
       selector.machine.states[selector.machine.initialState]?.editableFields ??
       const <String>[];
@@ -2208,7 +2825,7 @@ Future<String> _createAndPublishShippedAnnouncement({
     if (schema == null || !schema.required) {
       continue;
     }
-    final value = values[field];
+    final value = fieldValues[field];
     if (value == null) {
       fail(
         'Shipped $workflowType added required creation field "$field"; the '
@@ -2229,7 +2846,7 @@ Future<String> _createAndPublishShippedAnnouncement({
   await tester.ensureVisible(submit);
   await tester.tap(submit, warnIfMissed: false);
 
-  final createdTitle = find.text(values['title']!);
+  final createdTitle = find.text(fieldValues['title']!);
   await waitForEngineNativeWidget(
     tester,
     createdTitle,
@@ -2263,6 +2880,27 @@ Future<String> _createAndPublishShippedAnnouncement({
     machine: selector.machine,
     label: 'Publish announcement',
   );
+  final saveDraft = _packageTransitionByLabel(
+    target: target,
+    machine: selector.machine,
+    label: 'Save draft',
+  );
+  final saveDraftAction = _engineActionFinder(instanceId, saveDraft.id);
+  await waitForEngineNativeWidget(
+    tester,
+    saveDraftAction,
+    description: 'created announcement Save draft alternate action',
+  );
+  await tester.ensureVisible(saveDraftAction.first);
+  await capture('${screenshotPrefix}_admin_alternate_action');
+  await tester.tap(saveDraftAction.first, warnIfMissed: false);
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  await capture('${screenshotPrefix}_admin_alternate_result');
   final previewAction = _engineActionFinder(instanceId, preview.id);
   await waitForEngineNativeWidget(
     tester,
@@ -2278,6 +2916,7 @@ Future<String> _createAndPublishShippedAnnouncement({
     description: 'created announcement publish action',
   );
   await tester.ensureVisible(publishAction.first);
+  await capture('${screenshotPrefix}_admin_primary_action');
   await tester.tap(publishAction.first, warnIfMissed: false);
   for (var attempt = 0; attempt < 8; attempt += 1) {
     await tester.runAsync(
@@ -2302,7 +2941,7 @@ Future<String> _createAndPublishShippedAnnouncement({
     createdTitle,
     description: 'published announcement on shipped Home surface',
   );
-  await capture('B20_announcement_admin_complete');
+  await capture('${screenshotPrefix}_admin_complete');
   return instanceId;
 }
 
@@ -2392,9 +3031,9 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
     ),
     maxScrolls: 16,
   );
-  await tester.pumpAndSettle();
+  await _pumpB25Frames(tester);
   await tester.tap(tab, warnIfMissed: false);
-  await tester.pumpAndSettle();
+  await _pumpB25Frames(tester);
 }
 
 Future<int> _roleMatrixRowCount(

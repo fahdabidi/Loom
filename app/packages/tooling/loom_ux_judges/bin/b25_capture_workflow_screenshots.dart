@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
+
 const _fullB25Phases = <String>[
   'B12',
   'B13',
@@ -27,6 +29,33 @@ void main(List<String> args) async {
       .map((phase) => phase.trim())
       .where((phase) => phase.isNotEmpty)
       .toList(growable: false);
+  final communities = (_argValue(args, '--communities') ?? '')
+      .split(',')
+      .map((community) => community.trim())
+      .where((community) => community.isNotEmpty)
+      .toList(growable: false);
+  final targetedShardOverrideText = _argValue(args, '--shards');
+  final targetedShardOverride = targetedShardOverrideText == null
+      ? null
+      : int.tryParse(targetedShardOverrideText);
+  final targetedOnlyShardText = _argValue(args, '--only-shard');
+  final targetedOnlyShard = targetedOnlyShardText == null
+      ? null
+      : int.tryParse(targetedOnlyShardText);
+  if (targetedShardOverrideText != null &&
+      (targetedShardOverride == null || targetedShardOverride < 1)) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: --shards must be a positive integer.',
+    );
+    exit(64);
+  }
+  if (targetedOnlyShardText != null &&
+      (targetedOnlyShard == null || targetedOnlyShard < 0)) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: --only-shard must be a non-negative integer.',
+    );
+    exit(64);
+  }
   final fullCoverage = _samePhases(phases, _fullB25Phases);
   if (mode == 'full-b25' && !fullCoverage) {
     stderr.writeln(
@@ -36,8 +65,29 @@ void main(List<String> args) async {
     );
     exit(64);
   }
+  if (mode == 'full-b25' && communities.isNotEmpty) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: canonical B25 evidence cannot filter communities. '
+      'Requested communities=${communities.join(',')}. Use --mode targeted-precheck '
+      'for a community-scoped diagnostic.',
+    );
+    exit(64);
+  }
+  if (mode == 'full-b25' &&
+      (targetedShardOverride != null || targetedOnlyShard != null)) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: canonical B25 sharding is fixed by '
+      'phase so a caller cannot weaken capture reliability. Use --shards or '
+      '--only-shard only '
+      'with --mode targeted-precheck.',
+    );
+    exit(64);
+  }
   final appRoot = Directory.current;
   final repoRoot = appRoot.parent;
+  final interactionModelAsset = generateB25InteractionModelAsset(
+    repositoryRoot: repoRoot,
+  );
   final demoDir = Directory('${appRoot.path}/apps/loom_communities_demo');
   if (!demoDir.existsSync()) {
     stderr.writeln(
@@ -70,7 +120,9 @@ void main(List<String> args) async {
     ..writeln('WORKFLOW_EVIDENCE_ROOT=${evidenceRoot.path}')
     ..writeln('mode=$mode')
     ..writeln('phases=${phases.join(',')}')
+    ..writeln('communities=${communities.join(',')}')
     ..writeln('device=$device')
+    ..writeln('b25InteractionModelAsset=${interactionModelAsset.path}')
     ..writeln('progressReport=$progressReportPath')
     ..writeln();
 
@@ -92,7 +144,14 @@ void main(List<String> args) async {
 
   for (var phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
     final phase = phases[phaseIndex];
-    final shardCount = _shardCountForPhase(phase);
+    final shardCount = targetedShardOverride ?? _shardCountForPhase(phase);
+    if (targetedOnlyShard != null && targetedOnlyShard >= shardCount) {
+      stderr.writeln(
+        'b25_capture_workflow_screenshots: --only-shard '
+        '$targetedOnlyShard is outside 0..${shardCount - 1}.',
+      );
+      exit(64);
+    }
     _writeProgressReport(progressReportPath, {
       'status': 'running',
       'mode': mode,
@@ -113,13 +172,19 @@ void main(List<String> args) async {
     final phaseWorkflows = <Map<String, dynamic>>[];
     Map<String, dynamic>? phaseManifestTemplate;
     for (var shardIndex = 0; shardIndex < shardCount; shardIndex += 1) {
+      if (targetedOnlyShard != null && shardIndex != targetedOnlyShard) {
+        continue;
+      }
       final command = <String>[
         'drive',
         '--driver=test_driver/workflow_ui_evidence_test.dart',
         '--target=integration_test/workflow_ui_evidence_test.dart',
         '-d',
         device,
+        '--dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true',
         '--dart-define=LOOM_EVIDENCE_PHASE_FILTER=$phase',
+        if (communities.isNotEmpty)
+          '--dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=${communities.join(',')}',
         if (shardCount > 1) ...[
           '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=$shardCount',
           '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=$shardIndex',
@@ -139,6 +204,16 @@ void main(List<String> args) async {
           'WORKFLOW_EVIDENCE_COMMAND_OUTPUT': logPath,
         },
         onProgress: (event) {
+          if (event['status'] == 'screenshot-start' &&
+              event['phase'] is String &&
+              event['screenshotName'] is String) {
+            _captureAndroidScreenshot(
+              device: device,
+              evidenceRoot: evidenceRoot,
+              phase: event['phase']! as String,
+              screenshotName: event['screenshotName']! as String,
+            );
+          }
           final completed = event['completedWorkflows'];
           final total = event['totalWorkflows'];
           _writeProgressReport(progressReportPath, {
@@ -380,12 +455,59 @@ bool _samePhases(List<String> actual, List<String> expected) {
   return true;
 }
 
+void _captureAndroidScreenshot({
+  required String device,
+  required Directory evidenceRoot,
+  required String phase,
+  required String screenshotName,
+}) {
+  final safeToken = RegExp(r'^[A-Za-z0-9_-]+$');
+  if (!safeToken.hasMatch(phase) || !safeToken.hasMatch(screenshotName)) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: refusing unsafe screenshot target '
+      'phase=$phase name=$screenshotName.',
+    );
+    return;
+  }
+  final directory = Directory('${evidenceRoot.path}/$phase/screenshots')
+    ..createSync(recursive: true);
+  final file = File('${directory.path}/$screenshotName.png');
+  final result = Process.runSync(
+    'adb',
+    ['-s', device, 'exec-out', 'screencap', '-p'],
+    stdoutEncoding: null,
+    stderrEncoding: utf8,
+  );
+  if (result.exitCode != 0 || result.stdout is! List<int>) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: adb screencap failed for '
+      '$phase/$screenshotName exitCode=${result.exitCode} '
+      'stderr=${result.stderr}',
+    );
+    return;
+  }
+  file.writeAsBytesSync(result.stdout as List<int>, flush: true);
+  stdout.writeln(
+    'b25_capture_workflow_screenshots: captured ${file.path} '
+    'bytes=${file.lengthSync()}',
+  );
+}
+
 int _shardCountForPhase(String phase) {
   switch (phase) {
+    case 'B13':
+      // Four Garden rows. Keep each Android process below the emulator's
+      // reliable screenshot-callback ceiling while retaining fresh evidence.
+      return 2;
     case 'B14':
-      return 4;
+      // Thirty-four product-doc rows across Book, Soccer, HOA, and Masjid.
+      return 17;
+    case 'B15':
+      // Thirteen product-doc rows across Chess and Camera.
+      return 7;
     case 'B16':
-      return 3;
+      // Twenty-three product-doc rows across Social, Ad-Free, and Data.
+      return 12;
     default:
       return 1;
   }
@@ -447,11 +569,12 @@ Future<_StreamingProcessResult> _runProcessStreaming({
 
 Map<String, Object?>? _parseProgressLine(String line) {
   const prefix = 'B25_CAPTURE_PROGRESS ';
-  if (!line.startsWith(prefix)) {
+  final prefixIndex = line.indexOf(prefix);
+  if (prefixIndex < 0) {
     return null;
   }
   try {
-    final decoded = jsonDecode(line.substring(prefix.length));
+    final decoded = jsonDecode(line.substring(prefixIndex + prefix.length));
     if (decoded is Map<String, dynamic>) {
       return decoded;
     }

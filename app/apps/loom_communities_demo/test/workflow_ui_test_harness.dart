@@ -209,7 +209,7 @@ Future<void> openEvidenceTarget(
       continue;
     }
     await tester.tap(tapTarget, warnIfMissed: false);
-    await tester.pumpAndSettle();
+    await _pumpEvidenceFrames(tester);
     if (detail.evaluate().isNotEmpty || targetRoute.evaluate().isNotEmpty) {
       return;
     }
@@ -220,13 +220,22 @@ Future<void> openEvidenceTarget(
   }
   final cardRect = tester.getRect(card);
   await tester.tapAt(cardRect.center);
-  await tester.pumpAndSettle();
+  await _pumpEvidenceFrames(tester);
   if (detail.evaluate().isEmpty && targetRoute.evaluate().isEmpty) {
     fail(
       'Tapped evidence target ${target.communityName} '
       '(${target.communityId}) but ${target.extensionId} did not open. '
       '${_visibleScreenDescription()}',
     );
+  }
+}
+
+Future<void> _pumpEvidenceFrames(WidgetTester tester) async {
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
   }
 }
 

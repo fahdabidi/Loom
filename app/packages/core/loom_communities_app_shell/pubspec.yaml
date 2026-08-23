@@ -42,3 +42,4 @@ flutter:
     - assets/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc
     - assets/Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc
     - assets/Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc
+    - assets/b25_semantic_interaction_models.json
