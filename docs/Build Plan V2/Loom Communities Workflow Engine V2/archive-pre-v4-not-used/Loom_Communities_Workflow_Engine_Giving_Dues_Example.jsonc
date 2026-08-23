@@ -1,3 +1,19 @@
+// ============================================================================
+// ARCHIVED - NOT USED - PRE-specVersion-4 HISTORICAL ARTIFACT
+//
+// This file is a V2-era design record. It is NOT a shipped community package,
+// it is NOT installed, loaded, validated or referenced by any code, and it does
+// NOT conform to the current specVersion 4 grammar. It predates the v4 identity
+// split (roles/roleId/allowedRoleIds) and declares no specVersion at all.
+//
+// Do not copy from it. Do not migrate it -- migrating a V2 record to v4 destroys
+// the history it exists to preserve. The eleven live community packages are in
+// docs/references/communities/ and are the only authoritative source.
+//
+// Archived 2026-08-22 after a sweep found 12 pre-v4 community-shaped files that
+// no validator ever checked. Verified unreferenced by any dart, sh, yaml or
+// reference doc before moving.
+// ============================================================================
 // Giving/dues fixture for Phase 3 Milestone 3.1.
 // Models the Tabletop Club dues checkout as a normal workflow engine state
 // machine with a type-agnostic linked workflow action surface.
