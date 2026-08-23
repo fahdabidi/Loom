@@ -179,7 +179,7 @@ invariant a later file assumes you already know.
 | 11 | `docs/references/reference/permissions.md` | Always — defines the `action` field, which archetypes require it, and the closed action vocabulary for each. Permissions are **derived** from what you author; you never write one. |
 | 11a | `docs/references/reference/identity-types.md` | Always — normative for `specVersion: 4`, the only version this bundle describes. Defines the `roleId`/`fanId` type split: `experience.personas[]`→`roles[]`, `personaId`→`roleId` for role declarations, `guard.allowedPersonaIds`→`allowedRoleIds`, `actions[].byPersonaIds`→`byRoleIds`, `tabs[].visiblePersonaIds`→`visibleRoleIds`, `renderBindings[].role`→`audience`, and every person-shaped instance-data field (`createdByPersonaId`, `goingPersonaIds`, etc.) renames to its `*FanId(s)` equivalent. A legacy key in a `specVersion: 4` package is a validator error — never emit `personaId`-shaped keys alongside `specVersion`. |
 | 11b | `docs/references/archetypes/CONTRACTS.md` | Always — what each archetype **guarantees** as opposed to what you declare: its actions, the per-person bookkeeping it owns, and its visibility model. Then fetch the per-archetype doc (`docs/references/archetypes/<archetype>.md`) for each family you are actually using. |
-| 12 | The target product doc (given to you at dispatch time, see below) | The actual requirements to author against. |
+| 12 | The target product doc (given to you at dispatch time, see below) | Your STARTING POINT, not a frozen specification. You design the experience: perfect this doc first, then derive the package from it, and return both (hard rule 14). |
 
 ## Scope
 
@@ -364,18 +364,22 @@ real enum (fetched at step 7) instead.
     waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
     membership grant itself that must not be one.
 
-14. **Every interaction the package implements must be described in the product doc — if it is
-    not, you must supply the doc text that adds it.** The flow is always product doc -> Skill ->
-    JSON, so the doc is the source of truth. But authoring routinely *discovers* interactions the
-    doc never wrote down: a withdraw path, a cancel, a close, a revise, a retire, an archive. When
-    a transition you author is not described in the doc, the doc is now incomplete, and an
-    undescribed affordance is one the live walkthrough and UX judge will never verify.
+14. **Design the product doc first, then derive the JSON from it, and return BOTH.** Your job on
+    this channel is not "read a doc, emit JSON". You are designing the community's experience.
+    The order is always: perfect the product doc, then write the package from the perfected doc.
+    The two are both your output and neither may drift from the other.
 
-    So for every transition in your package, check it appears in the target product doc's
-    workflow-to-surface mapping, its persona/state matrix, and — most important — the **B25
-    addendum table's required primary and required alternate/change/reject cells**. That B25 table
-    is what the UX judge scores against: an interaction missing from it is invisible to the
-    production bar no matter how well it works.
+    The target doc you are given is a starting point, not a finished specification. Where it is
+    thin, deepen it. Where it is silent about something the experience needs, add it. Where it is
+    WRONG about what the experience should be, correct it — and say plainly in Gaps/assumptions
+    that you did, and why.
+
+    Then make the package express exactly the doc you just perfected. Every transition you author
+    must appear in the doc's workflow-to-surface mapping, its persona/state matrix, and — most
+    important — the **B25 addendum table's required primary and required alternate/change/reject
+    cells**. That B25 table is what the UX judge scores against: an interaction missing from it is
+    invisible to the production bar no matter how well it works, and an interaction in the doc
+    with nothing implementing it is a promise the community does not keep.
 
     **Never leave an alternate cell saying `(none ...)` for a workflow that implements a change,
     reject, withdraw, cancel, close, revise, retire or archive path.** This is not hypothetical.
@@ -385,11 +389,14 @@ real enum (fetched at step 7) instead.
     rows. Four rows could never pass the production bar, and the near-miss fix was to loosen the
     judge — which would have hidden six real affordances instead of proving them.
 
-    Deliver these additions as item 5 of "What to deliver". You do not have repo write access on
-    this channel: produce the exact replacement rows so the dispatching session can apply them
-    verbatim. Additions only — describe what the package genuinely does. Never delete a doc
-    requirement to make your package look complete; a requirement you did not implement belongs in
-    Gaps/assumptions, not in a deleted row.
+    A row whose alternate genuinely has no counterpart is a design smell worth a second look: most
+    real interactions have a way back. If after that second look it truly has none, say so in
+    Gaps/assumptions with the reason, rather than writing `(none)` into the doc as if settled.
+
+    You have no repo write access on this channel, so deliver the doc as item 5 of "What to
+    deliver": the exact replacement text, applied verbatim by the dispatching session. Never
+    delete a doc requirement to make your package look complete — a requirement you did not
+    implement belongs in Gaps/assumptions.
 
 ## Two valid RSVP shapes — pick deliberately
 
@@ -566,12 +573,13 @@ justification. Never describe a validator result you did not actually obtain.
    cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
    listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
    `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
-5. **Product-doc interaction back-fill** (hard rule 14) — for every transition your package
-   implements that the target product doc does not already describe, the exact replacement text
-   for the affected rows: the workflow-to-surface mapping row, the persona/state matrix row, and
-   the B25 addendum row's required-primary and required-alternate cells. Give the full replacement
-   row, not a description of the change, so it can be applied verbatim. If every interaction was
-   already described, say so explicitly — that is a real result, not an omission.
+5. **The updated product doc** (hard rule 14) — you design the doc, so return what it should now
+   say: the exact replacement text for every row you changed or added, across the
+   workflow-to-surface mapping, the persona/state matrix, and the B25 addendum's required-primary
+   and required-alternate cells. Give full replacement rows, not descriptions of changes, so they
+   apply verbatim. State explicitly which rows you deepened, which you corrected and why, and
+   which you left untouched. If the doc genuinely needed nothing, say so — that is a real result,
+   not an omission, but it should be rare on a doc you were asked to improve.
 
 4. Your validation results, per the "On validation" section above: the **final** `/validate` response
    (`status`, `errorCount`, `warningCount`), how many validate-and-fix rounds you took, and every
