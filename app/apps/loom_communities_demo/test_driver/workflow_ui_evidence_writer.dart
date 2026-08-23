@@ -1,12 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
+
 class WorkflowUiEvidenceWriter {
   WorkflowUiEvidenceWriter({
     required this.evidenceRoot,
     required this.commandOutputPath,
   });
 
+  /// Strings that mean a dialog is being rendered INSIDE the Flutter tree.
+  ///
+  /// This is the SECONDARY check, and on its own it is not sufficient: a native
+  /// Android system dialog (ANR, crash, permission prompt) is a window outside
+  /// the Flutter tree, so it never reaches `find.byType(Text)` and can never
+  /// appear here. The primary mechanism is the device-side window check in
+  /// `package:loom_ux_judges/b25_device_dialog_guard.dart`, whose findings this
+  /// writer merges in below. Keep both: this one catches an in-app dialog the
+  /// device check cannot see, because an in-app dialog does not move window
+  /// focus away from the app.
+  ///
+  /// MARKER SAFETY: every entry is matched as a lowercased substring of real
+  /// on-screen product copy, so an entry that occurs inside a shipped string
+  /// would reject valid frames. `'wait'` was removed for exactly that reason --
+  /// it matched `Join waitlist`, a real affordance in five communities. The
+  /// three below were each checked against the shipped copy: no community
+  /// string contains them.
   static const systemDialogMarkers = <String>{
     "isn't responding",
     'close app',
@@ -76,6 +95,7 @@ class WorkflowUiEvidenceWriter {
     final systemDialogFrames = _detectSystemDialogFrames(
       entries: entries,
       screenshotVisibleTextByName: screenshotVisibleTextByName,
+      evidenceRoot: evidenceRoot,
     );
     final screenshotCapture = _stringMap(data?['screenshotCapture']);
     final screenshotUnavailable = screenshotCapture['status'] == 'unavailable';
@@ -413,14 +433,45 @@ String _phaseFor(String name, Map<String, Object?>? args) {
 Map<String, List<_SystemDialogFinding>> _detectSystemDialogFrames({
   required List<Map<String, dynamic>> entries,
   required Map<String, String> screenshotVisibleTextByName,
+  required Directory evidenceRoot,
 }) {
   final findings = <String, List<_SystemDialogFinding>>{};
+  final deviceFindingsByPhase = <String, Map<String, DeviceDialogFinding>>{};
   for (final entry in entries) {
     final workflowId = entry['workflowId']?.toString() ?? '';
     final role = entry['role']?.toString() ?? '';
     final appId = entry['appId']?.toString() ?? '';
     final communityId = entry['communityId']?.toString() ?? '';
     for (final name in _stringList(entry['screenshotNames'])) {
+      // PRIMARY: what the device reported while the host grabbed this frame.
+      // The capture CLI writes these; a native system dialog can only be seen
+      // this way.
+      final phase = _phaseFor(name, null);
+      final deviceFindings = deviceFindingsByPhase.putIfAbsent(
+        phase,
+        () => readDeviceDialogFindings(
+          evidenceRoot: evidenceRoot,
+          phase: phase,
+        ),
+      );
+      final deviceFinding = deviceFindings[name];
+      if (deviceFinding != null) {
+        findings.putIfAbsent(name, () => <_SystemDialogFinding>[]).add(
+          _SystemDialogFinding(
+            frame: name,
+            source: 'device',
+            detected:
+                '${deviceFinding.kind} at ${deviceFinding.stage}: '
+                '${deviceFinding.detail}',
+            workflowId: workflowId,
+            role: role,
+            appId: appId,
+            communityId: communityId,
+          ),
+        );
+      }
+
+      // SECONDARY: an in-app dialog rendered by Flutter itself.
       final visibleText = screenshotVisibleTextByName[name] ?? '';
       final marker = _systemDialogMarkerIn(visibleText);
       if (marker == null) {
@@ -429,7 +480,8 @@ Map<String, List<_SystemDialogFinding>> _detectSystemDialogFrames({
       findings.putIfAbsent(name, () => <_SystemDialogFinding>[]).add(
         _SystemDialogFinding(
           frame: name,
-          marker: marker,
+          source: 'flutter-text',
+          detected: marker,
           workflowId: workflowId,
           role: role,
           appId: appId,
@@ -462,8 +514,10 @@ String? _systemDialogFailureReason(
         final findings = entry.value;
         return findings
             .map(
-              (finding) => 'frame=${finding.frame} marker='
-                  '"${finding.marker}" workflow=${finding.workflowId} '
+              (finding) =>
+                  'frame=${finding.frame} source=${finding.source} '
+                  'detected="${finding.detected}" '
+                  'workflow=${finding.workflowId} '
                   'role=${finding.role} community=${finding.communityId}',
             )
             .join('; ');
@@ -476,7 +530,8 @@ String? _systemDialogFailureReason(
 class _SystemDialogFinding {
   const _SystemDialogFinding({
     required this.frame,
-    required this.marker,
+    required this.source,
+    required this.detected,
     required this.workflowId,
     required this.role,
     required this.appId,
@@ -484,7 +539,11 @@ class _SystemDialogFinding {
   });
 
   final String frame;
-  final String marker;
+
+  /// `device` (the device-side window check) or `flutter-text` (the in-app
+  /// secondary check). Recorded so a report says which mechanism fired.
+  final String source;
+  final String detected;
   final String workflowId;
   final String role;
   final String appId;

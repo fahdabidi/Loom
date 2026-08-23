@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
 import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
 
 const _fullB25Phases = <String>[
@@ -17,6 +18,8 @@ const _fullB25Phases = <String>[
 
 void main(List<String> args) async {
   final device = _argValue(args, '--device') ?? 'emulator-5554';
+  final appPackage =
+      _argValue(args, '--app-package') ?? 'com.example.loom_communities_demo';
   final mode = _argValue(args, '--mode') ?? 'full-b25';
   if (mode != 'full-b25' && mode != 'targeted-precheck') {
     stderr.writeln(
@@ -122,6 +125,7 @@ void main(List<String> args) async {
     ..writeln('phases=${phases.join(',')}')
     ..writeln('communities=${communities.join(',')}')
     ..writeln('device=$device')
+    ..writeln('appPackage=$appPackage')
     ..writeln('b25InteractionModelAsset=${interactionModelAsset.path}')
     ..writeln('progressReport=$progressReportPath')
     ..writeln();
@@ -141,6 +145,11 @@ void main(List<String> args) async {
     'evidenceRoot': evidenceRoot.path,
     'logPath': logPath,
   });
+
+  // Frames the DEVICE refused: a native system dialog owned the screen, so the
+  // frame is not evidence and was never written. Collected across the run and
+  // failed loudly below -- never silently dropped.
+  final deviceRejectedFrames = <GuardedFrameCapture>[];
 
   for (var phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
     final phase = phases[phaseIndex];
@@ -175,6 +184,9 @@ void main(List<String> args) async {
       if (targetedOnlyShard != null && shardIndex != targetedOnlyShard) {
         continue;
       }
+      // A findings file left by an earlier shard or run must never be read as
+      // this run's result.
+      clearDeviceDialogFindings(evidenceRoot: evidenceRoot, phase: phase);
       final command = <String>[
         'drive',
         '--driver=test_driver/workflow_ui_evidence_test.dart',
@@ -207,12 +219,16 @@ void main(List<String> args) async {
           if (event['status'] == 'screenshot-start' &&
               event['phase'] is String &&
               event['screenshotName'] is String) {
-            _captureAndroidScreenshot(
+            final capture = _captureAndroidScreenshot(
               device: device,
+              appPackage: appPackage,
               evidenceRoot: evidenceRoot,
               phase: event['phase']! as String,
               screenshotName: event['screenshotName']! as String,
             );
+            if (capture.finding != null) {
+              deviceRejectedFrames.add(capture);
+            }
           }
           final completed = event['completedWorkflows'];
           final total = event['totalWorkflows'];
@@ -260,6 +276,45 @@ void main(List<String> args) async {
         ..write(result.stderr)
         ..writeln();
       await File(logPath).writeAsString(output.toString(), flush: true);
+
+      if (deviceRejectedFrames.isNotEmpty) {
+        final detail = deviceRejectedFrames
+            .map(
+              (capture) =>
+                  'frame=${capture.screenshotName} phase=${capture.phase} '
+                  '${capture.finding}',
+            )
+            .join(' | ');
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: DEVICE SYSTEM DIALOG DETECTED. '
+          '${deviceRejectedFrames.length} frame(s) were refused and not '
+          'written, so no screenshot count includes them: $detail',
+        );
+        _writeProgressReport(progressReportPath, {
+          'status': 'failed',
+          'mode': mode,
+          'phases': phases,
+          'phaseCount': phases.length,
+          'completedPhases': phaseIndex,
+          'currentPhase': phase,
+          'currentPhaseIndex': phaseIndex + 1,
+          'currentShardIndex': shardIndex,
+          'shardCount': shardCount,
+          'failure': 'device system dialog detected',
+          'deviceRejectedFrames': [
+            for (final capture in deviceRejectedFrames)
+              <String, Object?>{
+                'screenshotName': capture.screenshotName,
+                'phase': capture.phase,
+                ...?capture.finding?.toJson(),
+              },
+          ],
+          'device': device,
+          'evidenceRoot': evidenceRoot.path,
+          'logPath': logPath,
+        });
+        exit(66);
+      }
 
       if (result.exitCode != 0) {
         _writeProgressReport(progressReportPath, {
@@ -455,42 +510,58 @@ bool _samePhases(List<String> actual, List<String> expected) {
   return true;
 }
 
-void _captureAndroidScreenshot({
+/// Grabs one frame with adb, but only after the DEVICE confirms the app under
+/// test -- not an ANR, crash or permission dialog -- owns the screen.
+///
+/// See `b25_device_dialog_guard.dart` for why this device-side check exists in
+/// addition to the Flutter-side text guard in the evidence writer.
+GuardedFrameCapture _captureAndroidScreenshot({
   required String device,
+  required String appPackage,
   required Directory evidenceRoot,
   required String phase,
   required String screenshotName,
 }) {
-  final safeToken = RegExp(r'^[A-Za-z0-9_-]+$');
-  if (!safeToken.hasMatch(phase) || !safeToken.hasMatch(screenshotName)) {
-    stderr.writeln(
-      'b25_capture_workflow_screenshots: refusing unsafe screenshot target '
-      'phase=$phase name=$screenshotName.',
-    );
-    return;
-  }
-  final directory = Directory('${evidenceRoot.path}/$phase/screenshots')
-    ..createSync(recursive: true);
-  final file = File('${directory.path}/$screenshotName.png');
-  final result = Process.runSync(
-    'adb',
-    ['-s', device, 'exec-out', 'screencap', '-p'],
-    stdoutEncoding: null,
-    stderrEncoding: utf8,
+  final capture = captureGuardedAndroidFrame(
+    evidenceRoot: evidenceRoot,
+    phase: phase,
+    screenshotName: screenshotName,
+    appPackage: appPackage,
+    probe: adbDeviceWindowStateProbe(device),
+    grabFrame: () {
+      final result = Process.runSync(
+        'adb',
+        ['-s', device, 'exec-out', 'screencap', '-p'],
+        stdoutEncoding: null,
+        stderrEncoding: utf8,
+      );
+      if (result.exitCode != 0 || result.stdout is! List<int>) {
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: adb screencap failed for '
+          '$phase/$screenshotName exitCode=${result.exitCode} '
+          'stderr=${result.stderr}',
+        );
+        return null;
+      }
+      return result.stdout as List<int>;
+    },
   );
-  if (result.exitCode != 0 || result.stdout is! List<int>) {
-    stderr.writeln(
-      'b25_capture_workflow_screenshots: adb screencap failed for '
-      '$phase/$screenshotName exitCode=${result.exitCode} '
-      'stderr=${result.stderr}',
-    );
-    return;
+  if (capture.error != null) {
+    stderr.writeln('b25_capture_workflow_screenshots: ${capture.error}.');
   }
-  file.writeAsBytesSync(result.stdout as List<int>, flush: true);
-  stdout.writeln(
-    'b25_capture_workflow_screenshots: captured ${file.path} '
-    'bytes=${file.lengthSync()}',
-  );
+  if (capture.finding != null) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: refusing frame '
+      '$phase/$screenshotName -- ${capture.finding}',
+    );
+  }
+  if (capture.captured) {
+    stdout.writeln(
+      'b25_capture_workflow_screenshots: captured ${capture.path} '
+      'bytes=${File(capture.path!).lengthSync()}',
+    );
+  }
+  return capture;
 }
 
 int _shardCountForPhase(String phase) {

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
+import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
 
 import '../test_driver/workflow_ui_evidence_writer.dart';
 import 'workflow_ui_test_harness.dart';
@@ -109,6 +110,119 @@ void main() {
       }
     },
   );
+
+  // The Flutter-side text guard above cannot see a NATIVE Android dialog: it
+  // only reads `Text` widgets, and a system dialog is a window outside the
+  // Flutter tree. The capture CLI asks the device directly and records what it
+  // found; these two tests pin that the writer honours that record.
+  test(
+    'a device-reported system dialog fails the capture and names the row',
+    () async {
+      final temporaryRoot = await Directory.systemTemp.createTemp(
+        'loom-workflow-evidence-device-dialog-',
+      );
+      try {
+        final writer = WorkflowUiEvidenceWriter(
+          evidenceRoot: temporaryRoot,
+          commandOutputPath: 'device-dialog.log',
+        );
+        for (final name in _harnessScreenshotNames) {
+          await writer.recordScreenshot(name, <int>[1, 2, 3]);
+        }
+        recordDeviceDialogFinding(
+          evidenceRoot: temporaryRoot,
+          phase: 'B12',
+          screenshotName: 'B12_harness_action',
+          finding: const DeviceDialogFinding(
+            kind: 'system-dialog',
+            detail: 'an Android system dialog window is present: '
+                '"Application Not Responding: com.google.android.gms"',
+            focusedWindow: 'Application Not Responding: com.google.android.gms',
+            stage: 'after-capture',
+          ),
+        );
+
+        // Nothing on the Flutter side looks wrong; only the device saw it.
+        final responseData = _responseData(screenshotCaptureStatus: 'complete');
+        responseData['screenshotVisibleTextByName'] = <String, String>{
+          ..._harnessVisibleTexts,
+        };
+        responseData['workflowEvidence'] = <Map<String, Object?>>[
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'workflow-ui-evidence-harness',
+            'workflowId': 'workflow-ui-evidence-harness',
+            'role': 'harness-member',
+            'communityId': 'community_workflow_ui_evidence_harness',
+            'screenshotNames': _harnessScreenshotNames,
+            'status': 'pass',
+          },
+        ];
+
+        await expectLater(
+          writer.writeEvidence(responseData),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              allOf(
+                contains('System dialog detected'),
+                contains('B12_harness_action'),
+                contains('source=device'),
+                contains('Application Not Responding'),
+                contains('workflow-ui-evidence-harness'),
+                contains('harness-member'),
+                contains('community_workflow_ui_evidence_harness'),
+              ),
+            ),
+          ),
+        );
+
+        final aggregate = await _readAggregate(temporaryRoot);
+        expect(aggregate['status'], 'fail');
+        expect(aggregate['screenshotCount'], 2);
+        expect(
+          (aggregate['missingScreenshotNames'] as List<dynamic>),
+          contains('B12_harness_action'),
+        );
+        expect(
+          File(
+            '${temporaryRoot.path}/B12/screenshots/B12_harness_action.png',
+          ).existsSync(),
+          isFalse,
+        );
+      } finally {
+        await temporaryRoot.delete(recursive: true);
+      }
+    },
+  );
+
+  test('a clean device report leaves the capture passing', () async {
+    final temporaryRoot = await Directory.systemTemp.createTemp(
+      'loom-workflow-evidence-device-clean-',
+    );
+    try {
+      final writer = WorkflowUiEvidenceWriter(
+        evidenceRoot: temporaryRoot,
+        commandOutputPath: 'device-clean.log',
+      );
+      for (final name in _harnessScreenshotNames) {
+        await writer.recordScreenshot(name, <int>[1, 2, 3]);
+      }
+      clearDeviceDialogFindings(evidenceRoot: temporaryRoot, phase: 'B12');
+
+      await writer.writeEvidence(
+        _responseData(screenshotCaptureStatus: 'complete'),
+      );
+
+      final aggregate = await _readAggregate(temporaryRoot);
+      expect(aggregate['status'], 'pass');
+      expect(aggregate['screenshotCount'], 3);
+      expect(aggregate.containsKey('failureReason'), isFalse);
+    } finally {
+      await temporaryRoot.delete(recursive: true);
+    }
+  });
 
   test('walkthrough target without a shipped package fails loudly', () async {
     const target = LoomEvidenceTarget(
