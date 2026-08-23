@@ -364,6 +364,33 @@ real enum (fetched at step 7) instead.
     waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
     membership grant itself that must not be one.
 
+14. **Every interaction the package implements must be described in the product doc — if it is
+    not, you must supply the doc text that adds it.** The flow is always product doc -> Skill ->
+    JSON, so the doc is the source of truth. But authoring routinely *discovers* interactions the
+    doc never wrote down: a withdraw path, a cancel, a close, a revise, a retire, an archive. When
+    a transition you author is not described in the doc, the doc is now incomplete, and an
+    undescribed affordance is one the live walkthrough and UX judge will never verify.
+
+    So for every transition in your package, check it appears in the target product doc's
+    workflow-to-surface mapping, its persona/state matrix, and — most important — the **B25
+    addendum table's required primary and required alternate/change/reject cells**. That B25 table
+    is what the UX judge scores against: an interaction missing from it is invisible to the
+    production bar no matter how well it works.
+
+    **Never leave an alternate cell saying `(none ...)` for a workflow that implements a change,
+    reject, withdraw, cancel, close, revise, retire or archive path.** This is not hypothetical.
+    The shipped Chess package implemented `withdraw-club-night-rsvp`, `cancel-club-night`,
+    `close-pairing-queue`, `revise-ranking`, `retire-ranking` and `archive-document` while its doc
+    declared `(none — one-way notification)` and `(none — single decisive action)` for those very
+    rows. Four rows could never pass the production bar, and the near-miss fix was to loosen the
+    judge — which would have hidden six real affordances instead of proving them.
+
+    Deliver these additions as item 5 of "What to deliver". You do not have repo write access on
+    this channel: produce the exact replacement rows so the dispatching session can apply them
+    verbatim. Additions only — describe what the package genuinely does. Never delete a doc
+    requirement to make your package look complete; a requirement you did not implement belongs in
+    Gaps/assumptions, not in a deleted row.
+
 ## Two valid RSVP shapes — pick deliberately
 
 - The plain `goingPersonaIds[]`/`maybePersonaIds[]`/`waitlistPersonaIds[]` list pattern (P1 in
@@ -539,6 +566,13 @@ justification. Never describe a validator result you did not actually obtain.
    cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
    listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
    `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
+5. **Product-doc interaction back-fill** (hard rule 14) — for every transition your package
+   implements that the target product doc does not already describe, the exact replacement text
+   for the affected rows: the workflow-to-surface mapping row, the persona/state matrix row, and
+   the B25 addendum row's required-primary and required-alternate cells. Give the full replacement
+   row, not a description of the change, so it can be applied verbatim. If every interaction was
+   already described, say so explicitly — that is a real result, not an omission.
+
 4. Your validation results, per the "On validation" section above: the **final** `/validate` response
    (`status`, `errorCount`, `warningCount`), how many validate-and-fix rounds you took, and every
    warning you left standing with its type and your justification. Plus the manual checks that the
