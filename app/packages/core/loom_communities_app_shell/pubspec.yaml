@@ -38,3 +38,7 @@ flutter:
     - assets/Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc
     - assets/Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc
     - assets/Loom_Communities_Workflow_Engine_Mosque_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc

@@ -155,7 +155,7 @@ void main() {
         (target) => target.extensionId == 'ext_camera_club',
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await installEvidenceTarget(tester, target, useShippedPackage: true);
+      await installShippedEvidenceTarget(tester, target);
       await openEvidenceTarget(tester, target);
       await selectPersona(tester, 'camera-club-member');
       await tapCommunityTab(tester, 'calendar');

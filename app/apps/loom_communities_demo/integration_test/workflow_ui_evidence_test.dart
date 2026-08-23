@@ -49,15 +49,14 @@ const _workflowShardCount = int.fromEnvironment(
 const _workflowShardIndex = int.fromEnvironment(
   'LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX',
 );
-const _preloadExampleCommunities = bool.fromEnvironment(
-  'LOOM_PRELOAD_EXAMPLE_COMMUNITIES',
-);
-
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('wf_full-ui-screenshot-evidence-b12-b20', (tester) async {
     final evidenceTargets = _evidenceTargetsForRun();
+    for (final target in evidenceTargets) {
+      await readShippedEvidencePackage(target);
+    }
     final selectedExtensionIds = {
       for (final target in evidenceTargets) target.extensionId,
     };
@@ -80,13 +79,10 @@ void main() {
     binding.reportData!.addAll(_evidenceDeviceMetadata());
     final entries = <Map<String, Object?>>[];
     binding.reportData!['workflowEvidence'] = entries;
-    final installedExtensionIds = _preloadExampleCommunities
-        ? {
-            for (final target in evidenceTargets)
-              if (!hasShippedEvidencePackage(target.extensionId))
-                target.extensionId,
-          }
-        : <String>{};
+    // Preloaded demo-catalog entries are not evidence that a shipped package
+    // was installed. Every walkthrough target must be installed from its
+    // registered shipped package during this run.
+    final installedExtensionIds = <String>{};
     final screenshotVisibleTextByName = <String, String>{};
     final screenshotCapture = _ScreenshotCaptureRecorder(
       binding: binding,
@@ -148,11 +144,7 @@ void main() {
       if (installedExtensionIds.contains(target.extensionId)) {
         return;
       }
-      await installEvidenceTarget(
-        tester,
-        target,
-        useShippedPackage: hasShippedEvidencePackage(target.extensionId),
-      );
+      await installShippedEvidenceTarget(tester, target);
       installedExtensionIds.add(target.extensionId);
     }
 
@@ -248,172 +240,53 @@ void main() {
         target.extensionId,
         displayName: target.communityName,
       );
-      final shippedPackage = hasShippedEvidencePackage(target.extensionId)
-          ? await readShippedEvidencePackage(target)
-          : null;
-      if (shippedPackage == null) {
-        expect(find.text(catalogExperience.tagline), findsOneWidget);
-      }
-
-      if (shippedPackage != null) {
-        final shippedWalkthroughs = _shippedWorkflowWalkthroughs(
+      final shippedPackage = await readShippedEvidencePackage(target);
+      final shippedWalkthroughs = _shippedWorkflowWalkthroughs(
+        target: target,
+        package: shippedPackage,
+        evidenceContracts: catalogExperience.workflows,
+      );
+      for (final walkthrough in shippedWalkthroughs) {
+        final workflow = walkthrough.evidenceContract;
+        final workflowOrdinal = targetWorkflowOrdinal;
+        targetWorkflowOrdinal += 1;
+        if (!_includeWorkflowShard(workflowOrdinal)) {
+          continue;
+        }
+        emitProgress(
+          'workflow-start',
+          phase: target.phase,
+          workflowId: workflow.workflowId,
+          communityName: target.communityName,
+        );
+        final screenshotNames = await _runShippedWorkflowWalkthrough(
+          tester: tester,
           target: target,
           package: shippedPackage,
-          evidenceContracts: catalogExperience.workflows,
+          selector: walkthrough.selector,
+          evidenceContract: workflow,
+          capture: capture,
         );
-        for (final walkthrough in shippedWalkthroughs) {
-          final workflow = walkthrough.evidenceContract;
-          final workflowOrdinal = targetWorkflowOrdinal;
-          targetWorkflowOrdinal += 1;
-          if (!_includeWorkflowShard(workflowOrdinal)) {
-            continue;
-          }
-          emitProgress(
-            'workflow-start',
-            phase: target.phase,
-            workflowId: workflow.workflowId,
-            communityName: target.communityName,
-          );
-          final screenshotNames = await _runShippedWorkflowWalkthrough(
-            tester: tester,
-            target: target,
-            package: shippedPackage,
-            selector: walkthrough.selector,
-            evidenceContract: workflow,
-            capture: capture,
-          );
-          recordEvidenceEntry({
-            'phase': target.phase,
-            'appId': target.extensionId,
-            'communityId': target.communityId,
-            'communityName': target.communityName,
-            'workflowId': workflow.workflowId,
-            'expectedAssertions': [
-              workflow.entryText,
-              workflow.actionText,
-              workflow.resultText,
-            ],
-            'screenshotNames': screenshotNames,
-            'status': 'pass',
-          });
-          emitProgress(
-            'workflow-complete',
-            phase: target.phase,
-            workflowId: workflow.workflowId,
-            communityName: target.communityName,
-          );
-        }
-      } else {
-        final completedSetupWorkflowIds = <String>{};
-
-        Future<void> ensurePrerequisiteChain(
-          LoomWorkflowDefinition workflow,
-        ) async {
-          final policy = personaPolicyForWorkflow(
-            target.extensionId,
-            workflow.workflowId,
-          );
-          final prerequisiteWorkflowId = policy.prerequisiteWorkflowId;
-          if (prerequisiteWorkflowId == null ||
-              completedSetupWorkflowIds.contains(prerequisiteWorkflowId)) {
-            return;
-          }
-          final prerequisite = catalogExperience.workflows.firstWhere(
-            (candidate) => candidate.workflowId == prerequisiteWorkflowId,
-          );
-          await ensurePrerequisiteChain(prerequisite);
-          final prerequisitePolicy = personaPolicyForWorkflow(
-            target.extensionId,
-            prerequisite.workflowId,
-          );
-          final prerequisiteRoleId = prerequisitePolicy.actorRoleIds.first;
-          await selectPersona(tester, prerequisiteRoleId);
-          await completeWorkflow(tester, prerequisite);
-          completedSetupWorkflowIds.add(prerequisiteWorkflowId);
-        }
-
-        for (final workflow in catalogExperience.workflows) {
-          final workflowOrdinal = targetWorkflowOrdinal;
-          targetWorkflowOrdinal += 1;
-          if (!_includeWorkflowShard(workflowOrdinal)) {
-            continue;
-          }
-          emitProgress(
-            'workflow-start',
-            phase: target.phase,
-            workflowId: workflow.workflowId,
-            communityName: target.communityName,
-          );
-          final policy = personaPolicyForWorkflow(
-            target.extensionId,
-            workflow.workflowId,
-          );
-          await ensurePrerequisiteChain(workflow);
-          final actorRoleId = policy.actorRoleIds.first;
-          await selectPersona(tester, actorRoleId);
-          final entry = <String, Object?>{
-            'phase': target.phase,
-            'appId': target.extensionId,
-            'communityId': target.communityId,
-            'communityName': target.communityName,
-            'workflowId': workflow.workflowId,
-            'expectedAssertions': [
-              workflow.entryText,
-              workflow.actionText,
-              workflow.resultText,
-            ],
-          };
-          final start = _screenshotName(target, workflow, 'start');
-          final action = _screenshotName(target, workflow, 'action');
-          final complete = _screenshotName(target, workflow, 'complete');
-
-          await scrollToWorkflowCard(tester, workflow);
-          await capture(start);
-
-          final workflowButton = find.byKey(
-            ValueKey('workflow-button-${workflow.workflowId}'),
-          );
-          await scrollFinderIntoViewport(tester, workflowButton);
-          await tester.tap(workflowButton, warnIfMissed: false);
-          await tester.pumpAndSettle();
-          expect(
-            find.byKey(
-              ValueKey('workflow-action-surface-${workflow.workflowId}'),
-            ),
-            findsOneWidget,
-          );
-          await capture(action);
-
-          final submitButton = find.byKey(
-            ValueKey('workflow-action-submit-${workflow.workflowId}'),
-          );
-          await scrollFinderIntoViewport(tester, submitButton);
-          await tester.tap(submitButton, warnIfMissed: false);
-          await tester.pumpAndSettle();
-          await scrollToWorkflowCard(tester, workflow);
-          expect(
-            find.byKey(ValueKey('workflow-complete-${workflow.workflowId}')),
-            findsOneWidget,
-          );
-          expect(
-            find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
-            findsOneWidget,
-          );
-          await capture(complete);
-
-          recordEvidenceEntry({
-            ...entry,
-            'screenshotNames': [start, action, complete],
-            'status': 'pass',
-          });
-          completedSetupWorkflowIds.add(workflow.workflowId);
-          emitProgress(
-            'workflow-complete',
-            phase: target.phase,
-            workflowId: workflow.workflowId,
-            communityName: target.communityName,
-          );
-        }
+        recordEvidenceEntry({
+          'phase': target.phase,
+          'appId': target.extensionId,
+          'communityId': target.communityId,
+          'communityName': target.communityName,
+          'workflowId': workflow.workflowId,
+          'expectedAssertions': [
+            workflow.entryText,
+            workflow.actionText,
+            workflow.resultText,
+          ],
+          'screenshotNames': screenshotNames,
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: target.phase,
+          workflowId: workflow.workflowId,
+          communityName: target.communityName,
+        );
       }
 
       await tester.pageBack();
@@ -460,7 +333,7 @@ void main() {
       workflowType: 'garden-event-rsvp',
     );
     final hoaTarget = loomEvidenceTargets.firstWhere(
-      (target) => target.extensionId == 'ext_hoa',
+      (target) => target.extensionId == 'ext_cedar_commons_hoa',
     );
     final soccerTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_youth_soccer',
@@ -1022,7 +895,7 @@ List<String> _requestedEvidencePhases(
         if (_includePhase(phase)) phase,
     if (selectedExtensionIds.intersection(const {
           'ext_garden_club',
-          'ext_hoa',
+          'ext_cedar_commons_hoa',
           'ext_youth_soccer',
         }).isNotEmpty &&
         _includePhase('B20'))
@@ -1103,7 +976,7 @@ Map<String, int> _workflowEvidenceEntryCountByPhase(
     }
     if (selectedExtensionIds.intersection(const {
       'ext_garden_club',
-      'ext_hoa',
+      'ext_cedar_commons_hoa',
       'ext_youth_soccer',
     }).isNotEmpty) {
       counts.update('B20', (count) => count + 1);
@@ -2524,10 +2397,6 @@ Future<int> _personaMatrixRowCount(
 ) async {
   var total = 0;
   for (final target in evidenceTargets) {
-    if (!hasShippedEvidencePackage(target.extensionId)) {
-      total += personaWorkflowMatrixForExtensionId(target.extensionId).length;
-      continue;
-    }
     final package = await readShippedEvidencePackage(target);
     total +=
         package.experience.personas!.length *

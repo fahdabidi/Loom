@@ -12,7 +12,7 @@ void main() {
         (target) => target.extensionId == 'ext_youth_soccer',
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await installEvidenceTarget(tester, target, useShippedPackage: true);
+      await installShippedEvidenceTarget(tester, target);
       await openEvidenceTarget(tester, target);
       await seedEvidenceAccounts(tester, target, const [
         LoomAccount(

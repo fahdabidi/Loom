@@ -71,7 +71,7 @@ void main() {
       (target) => target.extensionId == 'ext_mosque',
     );
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
+    await installMetadataEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
     expect(find.text('Community workflows'), findsNothing);
@@ -121,7 +121,7 @@ void main() {
       (target) => target.extensionId == 'ext_mosque',
     );
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
+    await installMetadataEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
     final workflow = experienceForExtensionId(target.extensionId).workflows
         .firstWhere((workflow) => workflow.workflowId == 'mosque-announcement');
@@ -260,7 +260,7 @@ void main() {
     final target = loomEvidenceTargets.singleWhere(
       (target) => target.extensionId == 'ext_garden_club',
     );
-    await installEvidenceTarget(tester, target);
+    await installMetadataEvidenceTarget(tester, target);
 
     final list = tester.widget<ListView>(
       find.byKey(const ValueKey('community-list')),

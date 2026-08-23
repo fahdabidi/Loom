@@ -5,9 +5,9 @@ import 'workflow_ui_test_harness.dart';
 
 void main() {
   final anchorExtensionIds = {
-    'ext_book_club',
+    'ext_neighborhood_book_club',
     'ext_youth_soccer',
-    'ext_hoa',
+    'ext_cedar_commons_hoa',
     'ext_mosque',
   };
 

@@ -15,6 +15,14 @@ const _bundledAssetToShippedSource = <String, String>{
       'Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc',
   'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc':
       'Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc',
+  'Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc':
+      'Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc',
+  'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc':
+      'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc',
+  'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc':
+      'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc',
+  'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc':
+      'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc',
 };
 
 Directory _repositoryRoot() {

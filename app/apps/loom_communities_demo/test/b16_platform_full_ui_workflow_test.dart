@@ -5,9 +5,9 @@ import 'workflow_ui_test_harness.dart';
 
 void main() {
   final platformExtensionIds = {
-    'ext_platform_social',
-    'ext_ad_off',
-    'ext_export_migration',
+    'ext_member_social_space',
+    'ext_ad_free_community',
+    'ext_data_portability_community',
   };
 
   for (final target in loomEvidenceTargets.where(

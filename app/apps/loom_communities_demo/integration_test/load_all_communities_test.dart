@@ -15,7 +15,7 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final target in loomEvidenceTargets) {
-      await installEvidenceTarget(tester, target);
+      await installShippedEvidenceTarget(tester, target);
     }
 
     for (final target in loomEvidenceTargets) {

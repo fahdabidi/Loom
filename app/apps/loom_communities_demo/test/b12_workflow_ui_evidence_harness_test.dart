@@ -8,6 +8,32 @@ import '../test_driver/workflow_ui_evidence_writer.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
+  test('walkthrough target without a shipped package fails loudly', () async {
+    const target = LoomEvidenceTarget(
+      phase: 'B12',
+      communityId: 'community_missing_package',
+      communityName: 'Missing Package Community',
+      handle: 'missing-package',
+      extensionId: 'ext_missing_package',
+      accentColor: '#000000',
+      seedDataFiles: [],
+    );
+
+    await expectLater(
+      readShippedEvidencePackage(target),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          allOf(
+            contains('Missing Package Community'),
+            contains('ext_missing_package'),
+          ),
+        ),
+      ),
+    );
+  });
+
   test('wf_example-workflow-ux-evidence-harness', () async {
     expect(loomEvidenceTargets, hasLength(10));
     expect(
@@ -33,9 +59,18 @@ void main() {
     const canonicalShippedRoles = <String, Set<String>>{
       'ext_garden_club': {'garden-member', 'garden-coordinator'},
       'ext_camera_club': {'camera-club-member', 'camera-club-organizer'},
+      'ext_neighborhood_book_club': {'book-member', 'book-organizer'},
       'ext_chess_club': {'chess-member', 'chess-organizer'},
       'ext_mosque': {'community-member', 'masjid-admin'},
       'ext_youth_soccer': {'soccer-guardian', 'soccer-coach', 'soccer-owner'},
+      'ext_ad_free_community': {'ad-off-member', 'ad-off-owner'},
+      'ext_cedar_commons_hoa': {'hoa-member', 'hoa-board'},
+      'ext_data_portability_community': {
+        'portability-owner',
+        'portability-member',
+        'portability-receiving-provider',
+      },
+      'ext_member_social_space': {'member', 'moderator'},
     };
     for (final entry in canonicalShippedRoles.entries) {
       final target = loomEvidenceTargets.singleWhere(

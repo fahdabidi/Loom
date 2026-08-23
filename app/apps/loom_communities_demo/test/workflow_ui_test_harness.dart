@@ -64,10 +64,49 @@ const _shippedCommunityPackageLocationsByExtensionId =
             'packages/loom_communities_app_shell/assets/'
             'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
       ),
+      'ext_ad_free_community': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc',
+      ),
+      'ext_cedar_commons_hoa': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc',
+      ),
+      'ext_data_portability_community': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc',
+      ),
+      'ext_member_social_space': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc',
+      ),
     };
 
 bool hasShippedEvidencePackage(String extensionId) =>
     _shippedCommunityPackageLocationsByExtensionId.containsKey(extensionId);
+
+Set<String> get shippedEvidencePackageExtensionIds =>
+    _shippedCommunityPackageLocationsByExtensionId.keys.toSet();
+
+({String repositoryPath, String assetPath})?
+shippedEvidencePackageLocationForExtensionId(String extensionId) =>
+    _shippedCommunityPackageLocationsByExtensionId[extensionId];
 
 File? _repositoryFile(String relativePath) {
   var directory = Directory.current;
@@ -98,15 +137,36 @@ Future<String> _readShippedCommunityPackageSource(
   }
 }
 
-Future<void> installEvidenceTarget(
+Future<void> installShippedEvidenceTarget(
   WidgetTester tester,
   LoomEvidenceTarget target, {
   ValueKey<String> openButtonKey = const ValueKey('add-community-button'),
-  bool useShippedPackage = false,
 }) async {
-  final fixture = useShippedPackage
-      ? await writeEvidencePackagePair(target)
-      : _writeMetadataEvidencePackagePair(target);
+  final fixture = await writeEvidencePackagePair(target);
+  await _installEvidencePackagePair(
+    tester,
+    fixture,
+    openButtonKey: openButtonKey,
+  );
+}
+
+Future<void> installMetadataEvidenceTarget(
+  WidgetTester tester,
+  LoomEvidenceTarget target, {
+  ValueKey<String> openButtonKey = const ValueKey('add-community-button'),
+}) async {
+  await _installEvidencePackagePair(
+    tester,
+    _writeMetadataEvidencePackagePair(target),
+    openButtonKey: openButtonKey,
+  );
+}
+
+Future<void> _installEvidencePackagePair(
+  WidgetTester tester,
+  EvidencePackagePair fixture, {
+  required ValueKey<String> openButtonKey,
+}) async {
   await tester.tap(find.byKey(openButtonKey));
   await tester.pumpAndSettle();
   await tester.enterText(
@@ -788,7 +848,7 @@ Future<void> completeTargetWorkflows(
   LoomEvidenceTarget target,
 ) async {
   await tester.pumpWidget(const LoomCommunitiesDemoApp());
-  await installEvidenceTarget(tester, target);
+  await installMetadataEvidenceTarget(tester, target);
   await openEvidenceTarget(tester, target);
   final experience = experienceForExtensionId(
     target.extensionId,
@@ -871,8 +931,8 @@ Future<ShippedEvidencePackage> readShippedEvidencePackage(
       _shippedCommunityPackageLocationsByExtensionId[target.extensionId];
   if (packageLocation == null) {
     throw StateError(
-      'No shipped community package is registered for '
-      '${target.extensionId}.',
+      'No shipped community package is registered for walkthrough target '
+      '${target.communityName} (extensionId: ${target.extensionId}).',
     );
   }
   final decoded = jsonDecode(

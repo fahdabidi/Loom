@@ -16,7 +16,8 @@ LoomExperienceDefinition experienceForExtensionId(
     _installEngineNativeExperience(extensionId, packageExperience);
     return packageExperience;
   }
-  final known = _experienceByExtensionId[extensionId];
+  final known =
+      _experienceByExtensionId[_legacyDemoCatalogExtensionId(extensionId)];
   if (known != null) {
     return known;
   }
@@ -36,6 +37,20 @@ LoomExperienceDefinition experienceForExtensionId(
     ],
   );
 }
+
+// These aliases preserve legacy metadata-fixture unit coverage only. Android
+// walkthrough targets use the shipped ids and are always installed from the
+// shipped package; these aliases are never a package lookup or fallback.
+const _legacyDemoCatalogExtensionIdByShippedId = <String, String>{
+  'ext_neighborhood_book_club': 'ext_book_club',
+  'ext_cedar_commons_hoa': 'ext_hoa',
+  'ext_member_social_space': 'ext_platform_social',
+  'ext_ad_free_community': 'ext_ad_off',
+  'ext_data_portability_community': 'ext_export_migration',
+};
+
+String _legacyDemoCatalogExtensionId(String extensionId) =>
+    _legacyDemoCatalogExtensionIdByShippedId[extensionId] ?? extensionId;
 
 /// Parses a package-declared `experience` block (from `loom.initialization.json`
 /// or `loom.extension.json`) into a [LoomExperienceDefinition]. Returns null
@@ -416,7 +431,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
     communityId: 'community_book_club',
     communityName: 'Neighborhood Book Club',
     handle: 'book-club',
-    extensionId: 'ext_book_club',
+    extensionId: 'ext_neighborhood_book_club',
     accentColor: '#246B62',
     seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
   ),
@@ -438,7 +453,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
     communityId: 'community_hoa',
     communityName: 'Cedar Commons HOA',
     handle: 'cedar-hoa',
-    extensionId: 'ext_hoa',
+    extensionId: 'ext_cedar_commons_hoa',
     accentColor: '#3E6B8F',
     seedDataFiles: [
       'seed/community.json',
@@ -486,7 +501,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
     communityId: 'community_platform_social',
     communityName: 'Member Social Space',
     handle: 'platform-social',
-    extensionId: 'ext_platform_social',
+    extensionId: 'ext_member_social_space',
     accentColor: '#315C8A',
     seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
   ),
@@ -495,7 +510,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
     communityId: 'community_ad_off',
     communityName: 'Ad-Free Community',
     handle: 'ad-off-demo',
-    extensionId: 'ext_ad_off',
+    extensionId: 'ext_ad_free_community',
     accentColor: '#5B5F97',
     seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
   ),
@@ -504,7 +519,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
     communityId: 'community_export_migration',
     communityName: 'Data Portability Community',
     handle: 'portability-demo',
-    extensionId: 'ext_export_migration',
+    extensionId: 'ext_data_portability_community',
     accentColor: '#536878',
     seedDataFiles: [
       'seed/community.json',

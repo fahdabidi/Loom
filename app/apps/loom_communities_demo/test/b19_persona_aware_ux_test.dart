@@ -21,7 +21,7 @@ void main() {
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target);
+    await installMetadataEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
     await selectPersona(tester, 'mosque-admin');

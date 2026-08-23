@@ -12,7 +12,7 @@ void main() {
         (target) => target.extensionId == 'ext_chess_club',
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
-      await installEvidenceTarget(tester, target, useShippedPackage: true);
+      await installShippedEvidenceTarget(tester, target);
       await openEvidenceTarget(tester, target);
       await _selectPersona(tester, 'chess-member');
 

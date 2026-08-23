@@ -19,7 +19,7 @@ void main() {
     const target = _bookTarget;
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
     await _selectPersona(tester, 'book-member');

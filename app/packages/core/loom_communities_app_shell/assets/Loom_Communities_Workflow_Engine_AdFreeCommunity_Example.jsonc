@@ -1,0 +1,2399 @@
+// Ad-Free Community — specVersion 4 package.
+//
+// The role-like legacy personas are migrated 1:1, preserving their ids.
+// "Ad-Free Viewer" remains a runtime entitlement condition rather than a role:
+// a member becomes ad-free when their entitlement row is active.
+{
+  "specVersion": 4,
+  "packageId": "init_ad_free_community_1",
+  "communityId": "community_ad_free_community",
+  "communityHandle": "ad-free-community",
+  "displayName": "Ad-Free Community",
+  "extensionId": "ext_ad_free_community",
+  "branding": {
+    "accentColor": "#2A6F86"
+  },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-ad-free-community-v4",
+
+  "experience": {
+    "displayName": "Ad-Free Community",
+    "tagline": "Turn off ads with clear purchase, entitlement, receipt, and community-funding proof.",
+    "accentColor": "#2A6F86",
+    "theme": {
+      "accent": "#2A6F86",
+      "tabThemes": {
+        "giving": { "accent": "#2A6F86" },
+        "admin": { "accent": "#31556B" }
+      }
+    },
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
+
+    "roles": [
+      {
+        "roleId": "ad-off-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "Buys personal ad-off and privately manages entitlement, receipts, and suppression proof."
+      },
+      {
+        "roleId": "ad-off-owner",
+        "label": "Owner",
+        "roleLabel": "Owner",
+        "description": "Records payment outcomes, funds community ad-off, and audits settlement and utility allocation."
+      }
+    ],
+
+    "workflowDefinitions": {
+      "ad-off-member-checkout": {
+        "initialState": "offer",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "memberFanId" }
+          },
+          "fields": {
+            "parties": [
+              "memberFanId",
+              { "role": "ad-off-owner" }
+            ]
+          }
+        },
+        "states": {
+          "offer": {
+            "label": "Ad-off offer",
+            "tone": "info",
+            "editableFields": [
+              "priceAmount",
+              "currency",
+              "billingPeriod",
+              "coverageDescription",
+              "paymentMethodLabel",
+              "disclosureAcknowledged"
+            ],
+            "editGuard": {
+              "allowedRoleIds": ["ad-off-member"]
+            }
+          },
+          "reviewing": {
+            "label": "Review payment",
+            "tone": "info"
+          },
+          "payment-pending": {
+            "label": "Payment awaiting verification",
+            "tone": "warning"
+          },
+          "payment-failed": {
+            "label": "Payment failed",
+            "tone": "negative"
+          },
+          "active": {
+            "label": "Ad-off active",
+            "tone": "positive"
+          },
+          "refund-requested": {
+            "label": "Refund requested",
+            "tone": "warning"
+          },
+          "refunded": {
+            "label": "Subscription refunded",
+            "tone": "negative",
+            "isTerminal": true
+          },
+          "cancelled": {
+            "label": "Subscription cancelled",
+            "tone": "negative"
+          }
+        },
+        "transitions": [
+          {
+            "id": "start-checkout",
+            "label": "Turn off ads",
+            "icon": "block",
+            "tone": "primary",
+            "from": ["offer"],
+            "to": "reviewing",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"]
+            },
+            "effects": [
+              { "op": "set", "key": "memberFanId", "value": "$actor" },
+              { "op": "set", "key": "checkoutReferenceId", "value": "{id}" }
+            ]
+          },
+          {
+            "id": "edit-payment",
+            "label": "Edit payment",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "offer",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            }
+          },
+          {
+            "id": "submit-payment",
+            "label": "Checkout",
+            "icon": "payments",
+            "tone": "primary",
+            "from": ["reviewing"],
+            "to": "payment-pending",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" },
+              "formula": "disclosureAcknowledged == true"
+            },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            // NEEDS IMPLEMENTATION (platform service): real payment-gateway processing.
+            // This owner action records an externally verified outcome; it does not charge a card.
+            "id": "record-payment-confirmed",
+            "label": "Record verified payment",
+            "icon": "verified",
+            "tone": "primary",
+            "from": ["payment-pending"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "renewalDate": { "type": "text", "required": true },
+              "expiryDate": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "paymentOutcomeRecordedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-entitlement-status",
+                "fields": {
+                  "memberFanId": "{memberFanId}",
+                  "checkoutInstanceId": "{id}",
+                  "startedAt": "$timestamp",
+                  "renewalDate": "{input.renewalDate}",
+                  "expiryDate": "{input.expiryDate}",
+                  "currentPlan": "{billingPeriod}",
+                  "affectedAdSurfaces": [
+                    "Home feed promotions",
+                    "Giving surfaces",
+                    "Community ad slots"
+                  ]
+                }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-receipt-evidence",
+                "fields": {
+                  "memberFanId": "{memberFanId}",
+                  "checkoutInstanceId": "{id}",
+                  "amount": "{priceAmount}",
+                  "currency": "{currency}",
+                  "issuedAt": "$timestamp",
+                  "refundWindowDays": 14
+                }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-ad-suppression",
+                "fields": {
+                  "memberFanId": "{memberFanId}",
+                  "checkoutInstanceId": "{id}",
+                  "suppressedSurfaces": [
+                    "Home feed promotions",
+                    "Giving surfaces",
+                    "Community ad slots"
+                  ],
+                  "noFillReason": "Ads suppressed because this member has an active ad-off entitlement."
+                }
+              }
+            ]
+          },
+          {
+            "id": "record-payment-failed",
+            "label": "Record payment failure",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["payment-pending"],
+            "to": "payment-failed",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "failureReason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "paymentFailureReason", "value": "{input.failureReason}" },
+              { "op": "set", "key": "paymentOutcomeRecordedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "retry-payment",
+            "label": "Retry payment",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["payment-failed"],
+            "to": "reviewing",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "paymentFailureReason", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-payment-attempt",
+            "label": "Cancel checkout",
+            "icon": "close",
+            "tone": "destructive",
+            "from": ["reviewing", "payment-pending", "payment-failed"],
+            "to": "cancelled",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "cancel-subscription",
+            "label": "Cancel subscription",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["active"],
+            "to": "cancelled",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "active"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "member-deactivate"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "change-requested"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "member-deactivate"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "change-declined"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "member-deactivate"
+              }
+            ]
+          },
+          {
+            "id": "request-refund",
+            "label": "Request refund",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["active"],
+            "to": "refund-requested",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" },
+              "formula": "refundRequestForwardedAt == null"
+            },
+            "effects": [
+              { "op": "set", "key": "refundRequestForwardedAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-receipt-evidence",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "issued"
+                  },
+                  "sortKey": "issuedAt",
+                  "limit": 1
+                },
+                "transitionId": "request-refund"
+              }
+            ]
+          },
+          {
+            "id": "withdraw-refund-request",
+            "label": "Withdraw refund request",
+            "icon": "close",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "refundRequestForwardedAt", "value": null },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-receipt-evidence",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "issuedAt",
+                  "limit": 1
+                },
+                "transitionId": "withdraw-refund-request"
+              }
+            ]
+          },
+          {
+            "id": "record-refunded",
+            "label": "Record verified refund",
+            "icon": "price_check",
+            "tone": "primary",
+            "from": ["refund-requested"],
+            "to": "refunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-receipt-evidence",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "issuedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              }
+            ]
+          },
+          {
+            "id": "decline-refund",
+            "label": "Decline refund",
+            "icon": "do_not_disturb",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "reason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "refundRequestForwardedAt", "value": null },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-receipt-evidence",
+                  "filter": {
+                    "checkoutInstanceId": "{id}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "issuedAt",
+                  "limit": 1
+                },
+                "transitionId": "decline-refund"
+              }
+            ]
+          },
+          {
+            "id": "restart-checkout",
+            "label": "Subscribe again",
+            "icon": "replay",
+            "tone": "primary",
+            "from": ["cancelled"],
+            "to": "offer",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": null },
+              { "op": "set", "key": "paymentOutcomeRecordedAt", "value": null },
+              { "op": "set", "key": "paymentFailureReason", "value": null },
+              { "op": "set", "key": "cancelledAt", "value": null },
+              { "op": "set", "key": "refundRequestForwardedAt", "value": null }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": [
+              "offer",
+              "reviewing",
+              "payment-pending",
+              "payment-failed",
+              "active",
+              "refund-requested",
+              "cancelled"
+            ],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "Buy ad-off",
+                "byRoleIds": ["ad-off-member"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["refunded"],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          },
+          {
+            "states": [
+              "offer",
+              "reviewing",
+              "payment-pending",
+              "payment-failed",
+              "active",
+              "refund-requested",
+              "refunded",
+              "cancelled"
+            ],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "checkoutReferenceId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "priceAmount": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "payments_outlined",
+            "labelTemplate": "Price: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currency": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "currency_exchange",
+            "labelTemplate": "Currency: {value}",
+            "displayContexts": ["detail"]
+          },
+          "billingPeriod": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "autorenew",
+            "labelTemplate": "Plan: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coverageDescription": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 240,
+            "displayIcon": "shield_outlined",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "paymentMethodLabel": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "credit_card",
+            "labelTemplate": "Paying with {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "disclosureAcknowledged": {
+            "type": "bool",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "policy",
+            "labelTemplate": "Disclosure accepted: {value}",
+            "displayContexts": ["detail"]
+          },
+          "submittedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "schedule",
+            "labelTemplate": "Submitted {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "paymentOutcomeRecordedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "fact_check",
+            "labelTemplate": "Outcome recorded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "paymentFailureReason": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "error_outline",
+            "labelTemplate": "Payment issue: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "cancelledAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "refundRequestForwardedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "undo",
+            "labelTemplate": "Refund request forwarded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "refundedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "price_check",
+            "labelTemplate": "Refunded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque payment-confirmation ID generation.
+          // Declared for the product proof, intentionally never seeded or effect-written.
+          "paymentConfirmationId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "fingerprint",
+            "labelTemplate": "Payment confirmation: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      "ad-off-community-checkout": {
+        "initialState": "unfunded",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "payerFanId" }
+          },
+          "fields": {
+            "parties": [
+              "payerFanId",
+              { "role": "ad-off-owner" }
+            ]
+          }
+        },
+        "states": {
+          "unfunded": {
+            "label": "Community ad-off offer",
+            "tone": "info",
+            "editableFields": [
+              "fundedAmount",
+              "currency",
+              "coverageDurationDays",
+              "coverageDescription",
+              "paymentMethodLabel",
+              "utilityImpact",
+              "allocationDetails"
+            ],
+            "editGuard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"]
+            }
+          },
+          "reviewing": {
+            "label": "Review community funding",
+            "tone": "info"
+          },
+          "funding-pending": {
+            "label": "Funding awaiting verification",
+            "tone": "warning"
+          },
+          "funding-failed": {
+            "label": "Funding failed",
+            "tone": "negative"
+          },
+          "funded": {
+            "label": "Community ad-off funded",
+            "tone": "positive"
+          },
+          "refund-requested": {
+            "label": "Community funding refund requested",
+            "tone": "warning"
+          },
+          "refunded": {
+            "label": "Community funding refunded",
+            "tone": "negative",
+            "isTerminal": true
+          },
+          "cancelled": {
+            "label": "Funding attempt cancelled",
+            "tone": "negative"
+          }
+        },
+        "transitions": [
+          {
+            "id": "start-funding",
+            "label": "Give community ad-off",
+            "icon": "volunteer_activism",
+            "tone": "primary",
+            "from": ["unfunded"],
+            "to": "reviewing",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "payerFanId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "edit-funding",
+            "label": "Change amount or payment",
+            "icon": "edit",
+            "tone": "secondary",
+            "from": ["reviewing"],
+            "to": "unfunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            }
+          },
+          {
+            "id": "submit-funding",
+            "label": "Checkout funding",
+            "icon": "payments",
+            "tone": "primary",
+            "from": ["reviewing"],
+            "to": "funding-pending",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            // NEEDS IMPLEMENTATION (platform service): real payment-gateway processing.
+            // This owner action records an externally verified outcome; it does not move money.
+            "id": "record-funding-confirmed",
+            "label": "Record verified funding",
+            "icon": "verified",
+            "tone": "primary",
+            "from": ["funding-pending"],
+            "to": "funded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "coverageEndsAt": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "fundedAt", "value": "$timestamp" },
+              { "op": "set", "key": "coverageEndsAt", "value": "{input.coverageEndsAt}" },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-settlement-utility",
+                "fields": {
+                  "fundingCheckoutId": "{id}",
+                  "fundedAmount": "{fundedAmount}",
+                  "currency": "{currency}",
+                  "fundedAt": "$timestamp",
+                  "coverageEndsAt": "{input.coverageEndsAt}",
+                  "utilityImpact": "{utilityImpact}",
+                  "allocationDetails": "{allocationDetails}"
+                }
+              }
+            ]
+          },
+          {
+            "id": "record-funding-failed",
+            "label": "Record funding failure",
+            "icon": "error_outline",
+            "tone": "secondary",
+            "from": ["funding-pending"],
+            "to": "funding-failed",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "failureReason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "fundingFailureReason", "value": "{input.failureReason}" }
+            ]
+          },
+          {
+            "id": "retry-funding",
+            "label": "Retry payment",
+            "icon": "refresh",
+            "tone": "primary",
+            "from": ["funding-failed"],
+            "to": "reviewing",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "fundingFailureReason", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-funding-attempt",
+            "label": "Cancel funding",
+            "icon": "close",
+            "tone": "destructive",
+            "from": ["reviewing", "funding-pending", "funding-failed"],
+            "to": "cancelled",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "restart-funding",
+            "label": "Try community funding again",
+            "icon": "replay",
+            "tone": "primary",
+            "from": ["cancelled"],
+            "to": "unfunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": null },
+              { "op": "set", "key": "fundingFailureReason", "value": null },
+              { "op": "set", "key": "cancelledAt", "value": null }
+            ]
+          },
+          {
+            "id": "request-community-refund",
+            "label": "Request funding refund",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["funded"],
+            "to": "refund-requested",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "refundRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "withdraw-community-refund",
+            "label": "Withdraw refund request",
+            "icon": "close",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "funded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "actorEqualsField": { "key": "payerFanId" }
+            }
+          },
+          {
+            "id": "record-community-refunded",
+            "label": "Record verified refund",
+            "icon": "price_check",
+            "tone": "primary",
+            "from": ["refund-requested"],
+            "to": "refunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-settlement-utility",
+                  "filter": { "fundingCheckoutId": "{id}", "$state": "allocated" },
+                  "sortKey": "fundedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-settlement-utility",
+                  "filter": { "fundingCheckoutId": "{id}", "$state": "correction-requested" },
+                  "sortKey": "fundedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-settlement-utility",
+                  "filter": { "fundingCheckoutId": "{id}", "$state": "settled" },
+                  "sortKey": "fundedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-settlement-utility",
+                  "filter": { "fundingCheckoutId": "{id}", "$state": "audited" },
+                  "sortKey": "fundedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              }
+            ]
+          },
+          {
+            "id": "decline-community-refund",
+            "label": "Decline funding refund",
+            "icon": "do_not_disturb",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "funded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "reason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "refundDecisionReason", "value": "{input.reason}" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": [
+              "unfunded",
+              "reviewing",
+              "funding-pending",
+              "funding-failed",
+              "cancelled",
+              "refund-requested"
+            ],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "Fund community ad-off",
+                "byRoleIds": ["ad-off-member", "ad-off-owner"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ]
+          },
+          {
+            "states": ["funded", "refunded"],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "payerFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "fundedAmount": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "payments_outlined",
+            "labelTemplate": "Funding amount: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currency": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "currency_exchange",
+            "labelTemplate": "Currency: {value}",
+            "displayContexts": ["detail"]
+          },
+          "coverageDurationDays": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "date_range",
+            "labelTemplate": "Coverage: {value} days",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coverageDescription": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 240,
+            "displayIcon": "shield_outlined",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "paymentMethodLabel": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "displayIcon": "credit_card",
+            "labelTemplate": "Paying with {value}",
+            "displayContexts": ["detail"]
+          },
+          "utilityImpact": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 300,
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "Utility impact: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "allocationDetails": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "maxLength": 300,
+            "displayIcon": "account_tree",
+            "labelTemplate": "Allocation: {value}",
+            "displayContexts": ["detail"]
+          },
+          "submittedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "schedule",
+            "labelTemplate": "Submitted {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "fundedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "event_available",
+            "labelTemplate": "Funded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "coverageEndsAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Coverage ends {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "fundingFailureReason": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "error_outline",
+            "labelTemplate": "Funding issue: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "cancelledAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "cancel_schedule_send",
+            "labelTemplate": "Cancelled {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "refundRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "undo",
+            "labelTemplate": "Refund requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "refundedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "price_check",
+            "labelTemplate": "Refunded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundDecisionReason": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "notes",
+            "labelTemplate": "Refund decision: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque payment-confirmation ID generation.
+          // Declared for audit proof, intentionally never seeded or effect-written.
+          "paymentConfirmationId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "fingerprint",
+            "labelTemplate": "Payment confirmation: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      "ad-off-entitlement-status": {
+        "initialState": "active",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "memberFanId" }
+          },
+          "fields": {
+            "parties": [
+              "memberFanId",
+              { "role": "ad-off-owner" }
+            ]
+          }
+        },
+        "states": {
+          "active": {
+            "label": "Entitlement active",
+            "tone": "positive"
+          },
+          "change-requested": {
+            "label": "Plan change requested",
+            "tone": "warning"
+          },
+          "change-declined": {
+            "label": "Plan change declined",
+            "tone": "negative"
+          },
+          "inactive": {
+            "label": "Entitlement inactive",
+            "tone": "negative"
+          },
+          "restoration-pending": {
+            "label": "Restoration pending",
+            "tone": "warning"
+          }
+        },
+        "transitions": [
+          {
+            "id": "request-plan-change",
+            "label": "Manage subscription",
+            "icon": "manage_accounts",
+            "tone": "primary",
+            "from": ["active"],
+            "to": "change-requested",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "inputs": {
+              "requestedPlan": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "requestedPlan", "value": "{input.requestedPlan}" },
+              { "op": "set", "key": "changeRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "withdraw-plan-change",
+            "label": "Keep current plan",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["change-requested"],
+            "to": "change-declined",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "requestedPlan", "value": null }
+            ]
+          },
+          {
+            "id": "acknowledge-change-decision",
+            "label": "Keep current plan",
+            "icon": "done",
+            "tone": "secondary",
+            "from": ["change-declined"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            }
+          },
+          {
+            "id": "apply-plan-change",
+            "label": "Apply plan change",
+            "icon": "published_with_changes",
+            "tone": "primary",
+            "from": ["change-requested"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "renewalDate": { "type": "text", "required": true },
+              "expiryDate": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "currentPlan", "value": "{requestedPlan}" },
+              { "op": "set", "key": "renewalDate", "value": "{input.renewalDate}" },
+              { "op": "set", "key": "expiryDate", "value": "{input.expiryDate}" },
+              { "op": "set", "key": "requestedPlan", "value": null },
+              { "op": "set", "key": "decisionNote", "value": null }
+            ]
+          },
+          {
+            "id": "decline-plan-change",
+            "label": "Decline plan change",
+            "icon": "do_not_disturb",
+            "tone": "secondary",
+            "from": ["change-requested"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "reason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "decisionNote", "value": "{input.reason}" },
+              { "op": "set", "key": "requestedPlan", "value": null }
+            ]
+          },
+          {
+            "id": "member-deactivate",
+            "label": "Deactivate ad-off",
+            "icon": "toggle_off",
+            "tone": "destructive",
+            "from": ["active", "change-requested", "change-declined"],
+            "to": "inactive",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "requestedPlan", "value": null }
+            ]
+          },
+          {
+            "id": "owner-deactivate",
+            "label": "Record entitlement inactive",
+            "icon": "toggle_off",
+            "tone": "destructive",
+            "from": ["active", "change-requested", "change-declined"],
+            "to": "inactive",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "requestedPlan", "value": null }
+            ]
+          },
+          {
+            "id": "request-restoration",
+            "label": "Restore ad-off",
+            "icon": "restore",
+            "tone": "primary",
+            "from": ["inactive"],
+            "to": "restoration-pending",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "restorationRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "withdraw-restoration",
+            "label": "Cancel restore request",
+            "icon": "close",
+            "tone": "destructive",
+            "from": ["restoration-pending"],
+            "to": "inactive",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            }
+          },
+          {
+            "id": "record-restored",
+            "label": "Record restored entitlement",
+            "icon": "verified",
+            "tone": "primary",
+            "from": ["restoration-pending"],
+            "to": "active",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "renewalDate": { "type": "text", "required": true },
+              "expiryDate": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "renewalDate", "value": "{input.renewalDate}" },
+              { "op": "set", "key": "expiryDate", "value": "{input.expiryDate}" },
+              { "op": "set", "key": "restoredAt", "value": "$timestamp" },
+              { "op": "set", "key": "cancelledAt", "value": null },
+              { "op": "set", "key": "decisionNote", "value": null }
+            ]
+          },
+          {
+            "id": "decline-restoration",
+            "label": "Decline restore request",
+            "icon": "do_not_disturb",
+            "tone": "secondary",
+            "from": ["restoration-pending"],
+            "to": "inactive",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "reason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "decisionNote", "value": "{input.reason}" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["active", "change-requested", "change-declined", "inactive", "restoration-pending"],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["active", "change-requested", "change-declined", "inactive", "restoration-pending"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Entitled member: {value}",
+            "displayContexts": ["detail"]
+          },
+          "checkoutInstanceId": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "link",
+            "labelTemplate": "Purchase record: {value}",
+            "displayContexts": ["detail"]
+          },
+          "startedAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "event_available",
+            "labelTemplate": "Active since {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "renewalDate": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "autorenew",
+            "labelTemplate": "Renews {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "expiryDate": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "event_busy",
+            "labelTemplate": "Entitlement ends {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currentPlan": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "subscriptions",
+            "labelTemplate": "Plan: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "affectedAdSurfaces": {
+            "type": "list",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "view_quilt",
+            "labelTemplate": "Ad-free surfaces: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "requestedPlan": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "edit_calendar",
+            "labelTemplate": "Requested plan: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "changeRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "schedule",
+            "labelTemplate": "Change requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "cancelledAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "toggle_off",
+            "labelTemplate": "Inactive since {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "restorationRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "restore",
+            "labelTemplate": "Restore requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "restoredAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "restore_page",
+            "labelTemplate": "Restored {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "decisionNote": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "notes",
+            "labelTemplate": "Decision: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      "ad-off-receipt-evidence": {
+        "initialState": "issued",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "memberFanId" }
+          },
+          "fields": {
+            "parties": [
+              "memberFanId",
+              { "role": "ad-off-owner" }
+            ]
+          }
+        },
+        "states": {
+          "issued": {
+            "label": "Receipt issued",
+            "tone": "positive"
+          },
+          "refund-requested": {
+            "label": "Refund requested",
+            "tone": "warning"
+          },
+          "refunded": {
+            "label": "Refunded",
+            "tone": "negative"
+          }
+        },
+        "transitions": [
+          {
+            "id": "view-receipt",
+            "label": "View receipt",
+            "icon": "receipt_long",
+            "tone": "secondary",
+            "from": ["issued", "refund-requested", "refunded"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "lastViewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "request-receipt-export",
+            "label": "Export receipt",
+            "icon": "download",
+            "tone": "secondary",
+            "from": ["issued", "refund-requested", "refunded"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "exportRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "attach-receipt-link",
+            "label": "Attach verified receipt link",
+            "icon": "attach_file",
+            "tone": "secondary",
+            "from": ["issued", "refund-requested", "refunded"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "receiptUrl": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "receiptUrl", "value": "{input.receiptUrl}" }
+            ]
+          },
+          {
+            "id": "request-refund",
+            "label": "Request refund",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["issued"],
+            "to": "refund-requested",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" },
+              "formula": "refundEligible"
+            },
+            "effects": [
+              { "op": "set", "key": "refundRequestedAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-member-checkout",
+                  "filter": {
+                    "checkoutReferenceId": "{checkoutInstanceId}",
+                    "$state": "active"
+                  },
+                  "sortKey": "submittedAt",
+                  "limit": 1
+                },
+                "transitionId": "request-refund"
+              }
+            ]
+          },
+          {
+            "id": "withdraw-refund-request",
+            "label": "Withdraw refund request",
+            "icon": "close",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "issued",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-member-checkout",
+                  "filter": {
+                    "checkoutReferenceId": "{checkoutInstanceId}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "submittedAt",
+                  "limit": 1
+                },
+                "transitionId": "withdraw-refund-request"
+              }
+            ]
+          },
+          {
+            "id": "record-refunded",
+            "label": "Record verified refund",
+            "icon": "price_check",
+            "tone": "primary",
+            "from": ["refund-requested"],
+            "to": "refunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{checkoutInstanceId}",
+                    "$state": "active"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "owner-deactivate"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{checkoutInstanceId}",
+                    "$state": "change-declined"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "owner-deactivate"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{checkoutInstanceId}",
+                    "$state": "change-requested"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "owner-deactivate"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-member-checkout",
+                  "filter": {
+                    "checkoutReferenceId": "{checkoutInstanceId}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "submittedAt",
+                  "limit": 1
+                },
+                "transitionId": "record-refunded"
+              }
+            ]
+          },
+          {
+            "id": "decline-refund",
+            "label": "Decline refund",
+            "icon": "do_not_disturb",
+            "tone": "secondary",
+            "from": ["refund-requested"],
+            "to": "issued",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "reason": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "refundDecisionReason", "value": "{input.reason}" },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-member-checkout",
+                  "filter": {
+                    "checkoutReferenceId": "{checkoutInstanceId}",
+                    "$state": "refund-requested"
+                  },
+                  "sortKey": "submittedAt",
+                  "limit": 1
+                },
+                "transitionId": "decline-refund"
+              }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["issued", "refund-requested", "refunded"],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["issued", "refund-requested", "refunded"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Payer: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "checkoutInstanceId": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "link",
+            "labelTemplate": "Entitlement purchase: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "amount": {
+            "type": "number",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "payments_outlined",
+            "labelTemplate": "Amount: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currency": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "currency_exchange",
+            "labelTemplate": "Currency: {value}",
+            "displayContexts": ["detail"]
+          },
+          "issuedAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "calendar_today",
+            "labelTemplate": "Issued {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundWindowDays": {
+            "type": "number",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "timer",
+            "labelTemplate": "Refund window: {value} days",
+            "displayContexts": ["detail"]
+          },
+          "lastViewedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "visibility",
+            "labelTemplate": "Last viewed {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "exportRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "download",
+            "labelTemplate": "Export requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "receiptUrl": {
+            "type": "url?",
+            "writableBy": "effect",
+            "openMode": "choice",
+            "displayIcon": "open_in_new",
+            "labelTemplate": "Open receipt {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "undo",
+            "labelTemplate": "Refund requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "refundedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "price_check",
+            "labelTemplate": "Refunded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundDecisionReason": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "notes",
+            "labelTemplate": "Refund decision: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "daysSinceIssued": {
+            "type": "number",
+            "formula": "daysBetween(issuedAt, now())",
+            "displayContexts": []
+          },
+          "refundEligible": {
+            "type": "bool",
+            "formula": "daysSinceIssued <= refundWindowDays",
+            "displayIcon": "verified_outlined",
+            "labelTemplate": "Refund eligible: {value}",
+            "displayContexts": ["detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque receipt-ID generation.
+          // Declared because the product requires it, intentionally never seeded or effect-written.
+          "receiptId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "fingerprint",
+            "labelTemplate": "Receipt ID: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      "ad-off-ad-suppression": {
+        "initialState": "unreviewed",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "memberFanId" }
+          },
+          "fields": {
+            "parties": [
+              "memberFanId",
+              { "role": "ad-off-owner" }
+            ]
+          }
+        },
+        "states": {
+          "unreviewed": {
+            "label": "Suppression proof ready",
+            "tone": "info"
+          },
+          "reviewed": {
+            "label": "Suppression proof reviewed",
+            "tone": "positive"
+          }
+        },
+        "transitions": [
+          {
+            "id": "acknowledge-proof",
+            "label": "Mark reviewed",
+            "icon": "done",
+            "tone": "primary",
+            "from": ["unreviewed"],
+            "to": "reviewed",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "acknowledgedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "review-again",
+            "label": "Review later",
+            "icon": "history",
+            "tone": "secondary",
+            "from": ["reviewed"],
+            "to": "unreviewed",
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" }
+            }
+          },
+          {
+            "id": "request-restoration",
+            "label": "Restore ad-off",
+            "icon": "restore",
+            "tone": "primary",
+            "from": ["unreviewed", "reviewed"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-member"],
+              "actorEqualsField": { "key": "memberFanId" },
+              "formula": "!isSuppressionActive"
+            },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "ad-off-entitlement-status",
+                  "filter": {
+                    "checkoutInstanceId": "{checkoutInstanceId}",
+                    "$state": "inactive"
+                  },
+                  "sortKey": "startedAt",
+                  "limit": 1
+                },
+                "transitionId": "request-restoration"
+              }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unreviewed", "reviewed"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["unreviewed", "reviewed"],
+            "audience": "any",
+            "tabId": "giving",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "memberFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "checkoutInstanceId": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "suppressedSurfaces": {
+            "type": "list",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "view_quilt",
+            "labelTemplate": "Suppressed ad surfaces: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "noFillReason": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "block",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "acknowledgedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "done_all",
+            "labelTemplate": "Reviewed {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "linkedEntitlements": {
+            "type": "list",
+            "source": "query(ad-off-entitlement-status where checkoutInstanceId == checkoutInstanceId)",
+            "displayContexts": []
+          },
+          "entitlementStateCounts": {
+            "type": "map",
+            "formula": "groupCount(linkedEntitlements, '$state')",
+            "displayContexts": []
+          },
+          "isSuppressionActive": {
+            "type": "bool",
+            "formula": "mapGet(entitlementStateCounts, 'active') + mapGet(entitlementStateCounts, 'change-requested') + mapGet(entitlementStateCounts, 'change-declined') > 0",
+            "displayIcon": "verified_user",
+            "labelTemplate": "Ads suppressed now: {value}",
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      "ad-off-settlement-utility": {
+        "initialState": "allocated",
+        "visibility": {
+          "default": "membersOnly"
+        },
+        "states": {
+          "allocated": {
+            "label": "Utility funding allocated",
+            "tone": "info"
+          },
+          "correction-requested": {
+            "label": "Allocation correction requested",
+            "tone": "warning"
+          },
+          "settled": {
+            "label": "Settlement recorded",
+            "tone": "positive"
+          },
+          "audited": {
+            "label": "Allocation audited",
+            "tone": "positive"
+          },
+          "refunded": {
+            "label": "Community funding refunded",
+            "tone": "negative"
+          }
+        },
+        "transitions": [
+          {
+            "id": "request-allocation-correction",
+            "label": "Request correction",
+            "icon": "edit_note",
+            "tone": "secondary",
+            "from": ["allocated"],
+            "to": "correction-requested",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "correctionNote": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "correctionNote", "value": "{input.correctionNote}" }
+            ]
+          },
+          {
+            "id": "apply-allocation-correction",
+            "label": "Apply correction",
+            "icon": "published_with_changes",
+            "tone": "primary",
+            "from": ["correction-requested"],
+            "to": "allocated",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "utilityImpact": { "type": "text", "required": true },
+              "allocationDetails": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "utilityImpact", "value": "{input.utilityImpact}" },
+              { "op": "set", "key": "allocationDetails", "value": "{input.allocationDetails}" },
+              { "op": "set", "key": "correctionNote", "value": null }
+            ]
+          },
+          {
+            "id": "record-settlement",
+            "label": "Record settlement",
+            "icon": "account_balance",
+            "tone": "primary",
+            "from": ["allocated"],
+            "to": "settled",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "settledAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "mark-audited",
+            "label": "Mark audited",
+            "icon": "fact_check",
+            "tone": "primary",
+            "from": ["settled"],
+            "to": "audited",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "auditedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "record-refunded",
+            "label": "Record refunded allocation",
+            "icon": "price_check",
+            "tone": "destructive",
+            "from": ["allocated", "correction-requested", "settled", "audited"],
+            "to": "refunded",
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" },
+              { "op": "set", "key": "correctionNote", "value": null }
+            ]
+          },
+          {
+            "id": "request-audit-export",
+            "label": "Export audit",
+            "icon": "download",
+            "tone": "secondary",
+            "from": ["allocated", "correction-requested", "settled", "audited", "refunded"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "effects": [
+              { "op": "set", "key": "auditExportRequestedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "attach-audit-link",
+            "label": "Attach verified audit link",
+            "icon": "attach_file",
+            "tone": "secondary",
+            "from": ["allocated", "correction-requested", "settled", "audited", "refunded"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["ad-off-owner"]
+            },
+            "inputs": {
+              "auditDocumentUrl": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "auditDocumentUrl", "value": "{input.auditDocumentUrl}" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["allocated", "correction-requested", "settled", "audited", "refunded"],
+            "audience": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["allocated", "correction-requested", "settled", "audited", "refunded"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "paymentCheckout",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "fundingCheckoutId": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "link",
+            "labelTemplate": "Funding record: {value}",
+            "displayContexts": ["detail"]
+          },
+          "fundedAmount": {
+            "type": "number",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "payments_outlined",
+            "labelTemplate": "Funded amount: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "currency": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "currency_exchange",
+            "labelTemplate": "Currency: {value}",
+            "displayContexts": ["detail"]
+          },
+          "fundedAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "event_available",
+            "labelTemplate": "Funded {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "coverageEndsAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "event_busy",
+            "labelTemplate": "Coverage ends {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "utilityImpact": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "effect",
+            "maxLength": 300,
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "Utility impact: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "allocationDetails": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "effect",
+            "maxLength": 300,
+            "displayIcon": "account_tree",
+            "labelTemplate": "Allocation: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "correctionNote": {
+            "type": "textarea?",
+            "writableBy": "effect",
+            "maxLength": 240,
+            "displayIcon": "edit_note",
+            "labelTemplate": "Correction: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "settledAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "account_balance",
+            "labelTemplate": "Settled {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "auditedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "fact_check",
+            "labelTemplate": "Audited {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "refundedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "price_check",
+            "labelTemplate": "Refunded {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "auditExportRequestedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "download",
+            "labelTemplate": "Audit export requested {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "auditDocumentUrl": {
+            "type": "url?",
+            "writableBy": "effect",
+            "openMode": "choice",
+            "displayIcon": "open_in_new",
+            "labelTemplate": "Open audit {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          // NEEDS IMPLEMENTATION (platform service): opaque settlement-ID generation.
+          // Declared because the product requires it, intentionally never seeded or effect-written.
+          "settlementId": {
+            "type": "text?",
+            "writableBy": "effect",
+            "displayIcon": "fingerprint",
+            "labelTemplate": "Settlement ID: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "ad-off-checkout-active",
+        "workflowType": "ad-off-member-checkout",
+        "currentState": "active",
+        "createdByFanId": "ad-off-member",
+        "instanceData": {
+          "memberFanId": "ad-off-member",
+          "checkoutReferenceId": "ad-off-checkout-active",
+          "priceAmount": 4.99,
+          "currency": "USD",
+          "billingPeriod": "Monthly ad-off",
+          "coverageDescription": "Suppresses eligible ads on Home, Giving, and community ad slots.",
+          "paymentMethodLabel": "Card ending 4242",
+          "disclosureAcknowledged": true,
+          "submittedAt": "2026-08-15T10:00:00Z",
+          "paymentOutcomeRecordedAt": "2026-08-15T10:05:00Z"
+        }
+      },
+      {
+        "instanceId": "ad-off-checkout-retry",
+        "workflowType": "ad-off-member-checkout",
+        "currentState": "payment-failed",
+        "createdByFanId": "ad-off-member",
+        "instanceData": {
+          "memberFanId": "ad-off-member",
+          "checkoutReferenceId": "ad-off-checkout-retry",
+          "priceAmount": 49.00,
+          "currency": "USD",
+          "billingPeriod": "Annual ad-off",
+          "coverageDescription": "Suppresses eligible ads for one annual term.",
+          "paymentMethodLabel": "Card ending 1123",
+          "disclosureAcknowledged": true,
+          "submittedAt": "2026-08-18T12:00:00Z",
+          "paymentOutcomeRecordedAt": "2026-08-18T12:04:00Z",
+          "paymentFailureReason": "Issuer declined the attempted payment."
+        }
+      },
+      {
+        "instanceId": "ad-off-entitlement-active",
+        "workflowType": "ad-off-entitlement-status",
+        "currentState": "active",
+        "createdByFanId": "ad-off-member",
+        "instanceData": {
+          "memberFanId": "ad-off-member",
+          "checkoutInstanceId": "ad-off-checkout-active",
+          "startedAt": "2026-08-15T10:05:00Z",
+          "renewalDate": "2026-09-15",
+          "expiryDate": "2026-10-15",
+          "currentPlan": "Monthly ad-off",
+          "affectedAdSurfaces": [
+            "Home feed promotions",
+            "Giving surfaces",
+            "Community ad slots"
+          ]
+        }
+      },
+      {
+        "instanceId": "ad-off-receipt-issued",
+        "workflowType": "ad-off-receipt-evidence",
+        "currentState": "issued",
+        "createdByFanId": "ad-off-member",
+        "instanceData": {
+          "memberFanId": "ad-off-member",
+          "checkoutInstanceId": "ad-off-checkout-active",
+          "amount": 4.99,
+          "currency": "USD",
+          "issuedAt": "2026-08-15T10:05:00Z",
+          "refundWindowDays": 14
+        }
+      },
+      {
+        "instanceId": "ad-off-suppression-proof",
+        "workflowType": "ad-off-ad-suppression",
+        "currentState": "unreviewed",
+        "createdByFanId": "ad-off-member",
+        "instanceData": {
+          "memberFanId": "ad-off-member",
+          "checkoutInstanceId": "ad-off-checkout-active",
+          "suppressedSurfaces": [
+            "Home feed promotions",
+            "Giving surfaces",
+            "Community ad slots"
+          ],
+          "noFillReason": "Ads suppressed because this member has an active ad-off entitlement."
+        }
+      },
+      {
+        "instanceId": "ad-off-community-funded",
+        "workflowType": "ad-off-community-checkout",
+        "currentState": "funded",
+        "createdByFanId": "ad-off-owner",
+        "instanceData": {
+          "payerFanId": "ad-off-owner",
+          "fundedAmount": 250.00,
+          "currency": "USD",
+          "coverageDurationDays": 90,
+          "coverageDescription": "Community-wide eligible ad suppression for the funded period.",
+          "paymentMethodLabel": "Community operations card",
+          "utilityImpact": "Funds ad-free access while preserving community operations coverage.",
+          "allocationDetails": "Allocated to community ad-serving replacement costs.",
+          "submittedAt": "2026-08-01T09:00:00Z",
+          "fundedAt": "2026-08-01T09:08:00Z",
+          "coverageEndsAt": "2026-10-30"
+        }
+      },
+      {
+        "instanceId": "ad-off-settlement-review",
+        "workflowType": "ad-off-settlement-utility",
+        "currentState": "settled",
+        "createdByFanId": "ad-off-owner",
+        "instanceData": {
+          "fundingCheckoutId": "ad-off-community-funded",
+          "fundedAmount": 250.00,
+          "currency": "USD",
+          "fundedAt": "2026-08-01T09:08:00Z",
+          "coverageEndsAt": "2026-10-30",
+          "utilityImpact": "Funds ad-free access while preserving community operations coverage.",
+          "allocationDetails": "Allocated to community ad-serving replacement costs.",
+          "settledAt": "2026-08-02T15:30:00Z"
+        }
+      }
+    ]
+  },
+
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "giving",
+        "label": "Giving",
+        "iconKey": "payment",
+        "description": "Ad-off purchases, entitlement, receipts, and community funding."
+      },
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin",
+        "description": "Settlement, allocation correction, and audit operations.",
+        "visibleRoleIds": ["ad-off-owner"]
+      }
+    ]
+  }
+}

@@ -88,7 +88,7 @@ const List<String> _orderedSectionTitles = [
 ];
 
 IconData _communityIconFor(String extensionId) {
-  switch (extensionId) {
+  switch (_legacyDemoCatalogExtensionId(extensionId)) {
     case 'ext_garden_club':
       return Icons.local_florist_outlined;
     case 'ext_book_club':

@@ -210,7 +210,7 @@ void main() {
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
     await selectPersona(tester, 'masjid-admin');
@@ -250,7 +250,7 @@ void main() {
     );
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await installEvidenceTarget(tester, target, useShippedPackage: true);
+    await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
     await selectPersona(tester, 'camera-club-member');
 

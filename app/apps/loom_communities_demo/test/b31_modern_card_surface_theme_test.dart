@@ -100,7 +100,7 @@ void main() {
           (target) => target.extensionId == 'ext_garden_club',
         );
         await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await installEvidenceTarget(tester, target);
+        await installMetadataEvidenceTarget(tester, target);
         await openEvidenceTarget(tester, target);
 
         // Hero card identity avatar keeps its exact pre-Pass-2 formula.

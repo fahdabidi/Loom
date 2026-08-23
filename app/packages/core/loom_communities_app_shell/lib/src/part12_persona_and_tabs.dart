@@ -8,7 +8,8 @@ List<LoomPersonaDefinition> personasForExtensionId(
   if (packagePersonas != null && packagePersonas.isNotEmpty) {
     return packagePersonas;
   }
-  return _personasByExtensionId[extensionId] ?? _fallbackPersonas;
+  return _personasByExtensionId[_legacyDemoCatalogExtensionId(extensionId)] ??
+      _fallbackPersonas;
 }
 
 LoomWorkflowPersonaPolicy personaPolicyForWorkflow(
@@ -20,7 +21,7 @@ LoomWorkflowPersonaPolicy personaPolicyForWorkflow(
   if (packagePolicy != null) {
     return packagePolicy;
   }
-  switch (extensionId) {
+  switch (_legacyDemoCatalogExtensionId(extensionId)) {
     case 'ext_garden_club':
       return _gardenPolicy(workflowId);
     case 'ext_book_club':
