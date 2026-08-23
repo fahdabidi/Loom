@@ -8,6 +8,108 @@ import '../test_driver/workflow_ui_evidence_writer.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
+  test('capture fails loudly when a frame shows a system dialog', () async {
+    final temporaryRoot = await Directory.systemTemp.createTemp(
+      'loom-workflow-evidence-system-dialog-',
+    );
+    try {
+      final writer = WorkflowUiEvidenceWriter(
+        evidenceRoot: temporaryRoot,
+        commandOutputPath: 'system-dialog.log',
+      );
+      for (final name in _harnessScreenshotNames) {
+        await writer.recordScreenshot(name, <int>[1, 2, 3]);
+      }
+
+      final responseData = _responseData(screenshotCaptureStatus: 'complete');
+      (responseData['screenshotVisibleTextByName'] = <String, String>{
+        ..._harnessVisibleTexts,
+        'B12_harness_action':
+            'System UI isn\'t responding  Close app  Wait',
+      });
+      responseData['workflowEvidence'] = <Map<String, Object?>>[
+        <String, Object?>{
+          'phase': 'B12',
+          'appId': 'workflow-ui-evidence-harness',
+          'workflowId': 'workflow-ui-evidence-harness',
+          'role': 'harness-member',
+          'screenshotNames': _harnessScreenshotNames,
+          'status': 'pass',
+        },
+      ];
+
+      await expectLater(
+        writer.writeEvidence(responseData),
+        throwsA(
+          isA<StateError>()
+              .having(
+                (error) => error.message,
+                'message',
+                allOf(
+                  contains('System dialog detected'),
+                  contains('B12_harness_action'),
+                  contains("isn't responding"),
+                  contains('workflow-ui-evidence-harness'),
+                  contains('harness-member'),
+                ),
+              )
+        ),
+      );
+
+      final aggregate = await _readAggregate(temporaryRoot);
+      expect(aggregate['status'], 'fail');
+      expect(aggregate['screenshotStatus'], 'partial');
+      expect(aggregate['screenshotCount'], 2);
+      expect(
+        (aggregate['missingScreenshotNames'] as List<dynamic>),
+        contains('B12_harness_action'),
+      );
+    } finally {
+      await temporaryRoot.delete(recursive: true);
+    }
+  });
+
+  test(
+    'capture is not treated as a system dialog when a frame shows Join waitlist',
+    () async {
+      final temporaryRoot = await Directory.systemTemp.createTemp(
+        'loom-workflow-evidence-join-waitlist-',
+      );
+      try {
+        final writer = WorkflowUiEvidenceWriter(
+          evidenceRoot: temporaryRoot,
+          commandOutputPath: 'join-waitlist.log',
+        );
+        for (final name in _harnessScreenshotNames) {
+          await writer.recordScreenshot(name, <int>[1, 2, 3]);
+        }
+
+        final responseData = _responseData(screenshotCaptureStatus: 'complete');
+        (responseData['screenshotVisibleTextByName'] =
+            <String, String>{
+              ..._harnessVisibleTexts,
+              'B12_harness_action': 'Event is full  Join waitlist',
+            });
+
+        await writer.writeEvidence(responseData);
+
+        final aggregate = await _readAggregate(temporaryRoot);
+        expect(aggregate['status'], 'pass');
+        expect(aggregate['walkthroughStatus'], 'pass');
+        expect(aggregate['screenshotStatus'], 'complete');
+        expect(aggregate['completionGateEligible'], isTrue);
+        expect(aggregate['screenshotCount'], 3);
+        expect(
+          (aggregate['missingScreenshotNames'] as List<dynamic>),
+          isEmpty,
+        );
+        expect(aggregate.containsKey('failureReason'), isFalse);
+      } finally {
+        await temporaryRoot.delete(recursive: true);
+      }
+    },
+  );
+
   test('walkthrough target without a shipped package fails loudly', () async {
     const target = LoomEvidenceTarget(
       phase: 'B12',
@@ -192,6 +294,12 @@ const _harnessScreenshotNames = <String>[
   'B12_harness_action',
   'B12_harness_complete',
 ];
+
+const _harnessVisibleTexts = <String, String>{
+  'B12_harness_start': 'Harness start screen',
+  'B12_harness_action': 'Harness action screen',
+  'B12_harness_complete': 'Harness complete screen',
+};
 
 Map<String, dynamic> _responseData({
   required String screenshotCaptureStatus,

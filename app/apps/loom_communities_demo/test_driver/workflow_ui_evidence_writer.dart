@@ -7,6 +7,12 @@ class WorkflowUiEvidenceWriter {
     required this.commandOutputPath,
   });
 
+  static const systemDialogMarkers = <String>{
+    "isn't responding",
+    'close app',
+    'system ui',
+  };
+
   final Directory evidenceRoot;
   final String commandOutputPath;
   final Map<String, String> _screenshotPaths = <String, String>{};
@@ -67,6 +73,10 @@ class WorkflowUiEvidenceWriter {
           (key, value) => MapEntry(key.toString(), value.toString()),
         ) ??
         const <String, String>{};
+    final systemDialogFrames = _detectSystemDialogFrames(
+      entries: entries,
+      screenshotVisibleTextByName: screenshotVisibleTextByName,
+    );
     final screenshotCapture = _stringMap(data?['screenshotCapture']);
     final screenshotUnavailable = screenshotCapture['status'] == 'unavailable';
     final expectedWorkflowCountByPhase = _intMap(
@@ -93,6 +103,18 @@ class WorkflowUiEvidenceWriter {
       );
       if (hostCapturedFile.existsSync()) {
         _screenshotPaths.putIfAbsent(name, () => hostCapturedFile.path);
+      }
+    }
+
+    // A frame showing a system dialog is not evidence: remove it from the
+    // captured set (and delete its PNG) so no screenshot count can include it.
+    for (final name in systemDialogFrames.keys) {
+      final path = _screenshotPaths.remove(name);
+      if (path != null) {
+        final file = File(path);
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
       }
     }
 
@@ -140,6 +162,10 @@ class WorkflowUiEvidenceWriter {
       walkthroughPassed: walkthroughPassed,
       screenshotUnavailable: screenshotUnavailable,
       missingScreenshots: missingScreenshots,
+      systemDialogFrames: systemDialogFrames,
+    );
+    final systemDialogFailureReason = _systemDialogFailureReason(
+      systemDialogFrames,
     );
     final device = _deviceFields(data);
     final phaseSummaries = <Map<String, Object?>>[];
@@ -304,6 +330,9 @@ class WorkflowUiEvidenceWriter {
       'completionGateEligible=${runStatus == 'pass'}',
     );
 
+    if (systemDialogFailureReason != null) {
+      throw StateError(systemDialogFailureReason);
+    }
     if (walkthroughPassed && runStatus == 'fail') {
       throw StateError(failureReason ?? 'Workflow evidence capture failed.');
     }
@@ -327,7 +356,11 @@ String? _failureReason({
   required bool walkthroughPassed,
   required bool screenshotUnavailable,
   required List<String> missingScreenshots,
+  required Map<String, List<_SystemDialogFinding>> systemDialogFrames,
 }) {
+  if (systemDialogFrames.isNotEmpty) {
+    return _systemDialogFailureReason(systemDialogFrames);
+  }
   if (!walkthroughPassed) {
     if (data?['walkthroughStatus'] != 'pass') {
       return 'The walkthrough assertions did not complete successfully; see commandOutputPath.';
@@ -375,6 +408,87 @@ String _phaseFor(String name, Map<String, Object?>? args) {
   }
   final separator = name.indexOf('_');
   return separator == -1 ? 'unknown' : name.substring(0, separator);
+}
+
+Map<String, List<_SystemDialogFinding>> _detectSystemDialogFrames({
+  required List<Map<String, dynamic>> entries,
+  required Map<String, String> screenshotVisibleTextByName,
+}) {
+  final findings = <String, List<_SystemDialogFinding>>{};
+  for (final entry in entries) {
+    final workflowId = entry['workflowId']?.toString() ?? '';
+    final role = entry['role']?.toString() ?? '';
+    final appId = entry['appId']?.toString() ?? '';
+    final communityId = entry['communityId']?.toString() ?? '';
+    for (final name in _stringList(entry['screenshotNames'])) {
+      final visibleText = screenshotVisibleTextByName[name] ?? '';
+      final marker = _systemDialogMarkerIn(visibleText);
+      if (marker == null) {
+        continue;
+      }
+      findings.putIfAbsent(name, () => <_SystemDialogFinding>[]).add(
+        _SystemDialogFinding(
+          frame: name,
+          marker: marker,
+          workflowId: workflowId,
+          role: role,
+          appId: appId,
+          communityId: communityId,
+        ),
+      );
+    }
+  }
+  return findings;
+}
+
+String? _systemDialogMarkerIn(String visibleText) {
+  final normalized = visibleText.toLowerCase();
+  for (final marker in WorkflowUiEvidenceWriter.systemDialogMarkers) {
+    if (normalized.contains(marker)) {
+      return marker;
+    }
+  }
+  return null;
+}
+
+String? _systemDialogFailureReason(
+  Map<String, List<_SystemDialogFinding>> systemDialogFrames,
+) {
+  if (systemDialogFrames.isEmpty) {
+    return null;
+  }
+  final details = systemDialogFrames.entries
+      .map((entry) {
+        final findings = entry.value;
+        return findings
+            .map(
+              (finding) => 'frame=${finding.frame} marker='
+                  '"${finding.marker}" workflow=${finding.workflowId} '
+                  'role=${finding.role} community=${finding.communityId}',
+            )
+            .join('; ');
+      })
+      .join(' | ');
+  return 'System dialog detected on captured frame(s); these frames are not '
+      'valid evidence and were not recorded: $details';
+}
+
+class _SystemDialogFinding {
+  const _SystemDialogFinding({
+    required this.frame,
+    required this.marker,
+    required this.workflowId,
+    required this.role,
+    required this.appId,
+    required this.communityId,
+  });
+
+  final String frame;
+  final String marker;
+  final String workflowId;
+  final String role;
+  final String appId;
+  final String communityId;
 }
 
 String _pretty(Object? value) =>
