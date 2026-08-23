@@ -1,2125 +1,1450 @@
 {
-  "personas": [
-    "guardian",
-    "coach",
-    "owner"
-  ],
-  "templates": {
-    "dashboard": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "guidedProcess": {
-      "steps": [
-        "joinRequest",
-        "waiver",
-        "payment",
-        "roster"
-      ],
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow",
-        "WorkflowFormFieldList"
-      ]
-    },
-    "statusTimeline": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "calendarAgenda": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "stateMachineGrid": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "table": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ],
-      "columns": [
-        {
-          "key": "playerName",
-          "sortable": true
-        },
-        {
-          "key": "ageGroup",
-          "sortable": true
-        },
-        {
-          "key": "waiverStatus",
-          "sortable": true
-        }
-      ]
-    },
-    "protectedDetail": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "paymentCheckout": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "documentLibrary": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "notificationInbox": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "discussionThread": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    },
-    "exportWizard": {
-      "slots": [
-        "WorkflowFactPillRow",
-        "WorkflowActionButtonRow"
-      ]
-    }
+  "specVersion": 4,
+  "packageId": "init_riverside_youth_soccer_v2",
+  "communityId": "community_riverside_youth_soccer",
+  "communityHandle": "riverside-youth-soccer",
+  "displayName": "Riverside Youth Soccer",
+  "extensionId": "ext_youth_soccer",
+  "branding": { "accentColor": "#176B87" },
+  "seedDataFiles": [],
+  "idempotencyKey": "init-riverside-youth-soccer-v2",
+
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "home", "label": "Home",
+        "iconKey": "home", "description": "Next practice, registration progress, receipts, roster status, and reminders.",
+        "pinnedWorkflowIds": ["soccer-practice-schedule", "soccer-guardian-join-approval", "soccer-registration-payment", "soccer-reminder-notification"]
+      },
+      {
+        "tabId": "messages", "label": "Messages",
+        "iconKey": "forum", "description": "Team discussions for guardians and coaches.",
+        "pinnedWorkflowIds": ["soccer-team-discussion"],
+        "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
+      },
+      {
+        "tabId": "calendar", "label": "Calendar",
+        "iconKey": "calendar_today", "description": "Practices, attendance, reminders, and calendar-sync requests.",
+        "pinnedWorkflowIds": ["soccer-practice-schedule"],
+        "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
+      },
+      {
+        "tabId": "giving", "label": "Giving",
+        "iconKey": "payments", "description": "Registration checkout, payment status, and private receipt access.",
+        "pinnedWorkflowIds": ["soccer-registration-payment"],
+        "visibleRoleIds": ["soccer-guardian"]
+      },
+      {
+        "tabId": "admin", "label": "Admin",
+        "iconKey": "admin_panel_settings", "description": "Guardian approval, reminder operations, and owner export controls.",
+        "pinnedWorkflowIds": ["soccer-guardian-join-approval", "soccer-practice-schedule", "soccer-export-metadata"],
+        "visibleRoleIds": ["soccer-coach", "soccer-owner"]
+      },
+      {
+        "tabId": "team", "label": "Team",
+        "iconKey": "groups", "description": "Protected roster rows and guardian-controlled minor-data consent.",
+        "pinnedWorkflowIds": ["soccer-team-roster", "soccer-minor-redaction"],
+        "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
+      },
+      {
+        "tabId": "documents", "label": "Documents",
+        "iconKey": "folder", "description": "Waivers, policies, versions, acknowledgement, and access requests.",
+        "pinnedWorkflowIds": ["soccer-waiver-document"],
+        "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
+      }
+    ]
   },
-  "workflowDefinitions": {
-    "soccer-guardian-join-approval": {
-      "initialState": "joinRequest",
-      "states": {
-        "joinRequest": {
-          "label": "Join request",
-          "editableFields": [
-            "guardianName",
-            "playerName",
-            "ageGroup"
-          ]
-        },
-        "waiver": {
-          "label": "Waiver required"
-        },
-        "payment": {
-          "label": "Payment required"
-        },
-        "roster": {
-          "label": "Roster confirmation"
-        },
-        "approved": {
-          "label": "Approved",
-          "isTerminal": true
-        },
-        "changesRequested": {
-          "label": "Changes requested"
-        },
-        "rejected": {
-          "label": "Rejected",
-          "isTerminal": true
-        }
+
+  "experience": {
+    "displayName": "Riverside Youth Soccer",
+    "tagline": "Registration, schedules, team communication, and protected youth data in one place.",
+    "accentColor": "#176B87",
+    "theme": {
+      "accent": "#176B87",
+      "tabThemes": {
+        "calendar": { "accent": "#2E7D32" },
+        "giving": { "accent": "#B85C00" },
+        "admin": { "accent": "#4051B5" },
+        "team": { "accent": "#176B87" },
+        "documents": { "accent": "#00796B" }
+      }
+    },
+    "creatableAction": { "multiActionStyle": "speedDial", "presentationStyle": "slideOutBottom" },
+    "roles": [
+      {
+        "roleId": "soccer-guardian", "label": "Guardian", "roleLabel": "Guardian",
+        "description": "Registers a player, pays fees, manages consent, follows schedules, and receives reminders."
       },
-      "transitions": [
-        {
-          "id": "submit-join-request",
-          "label": "Submit join request",
-          "icon": "send",
-          "tone": "primary",
-          "from": [
-            "joinRequest"
-          ],
-          "to": "waiver",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
+      {
+        "roleId": "soccer-coach", "label": "Coach", "roleLabel": "Coach",
+        "description": "Reviews guardian requests, manages protected roster rows and schedules, and sends reminders."
+      },
+      {
+        "roleId": "soccer-owner", "label": "League Owner", "roleLabel": "Owner",
+        "description": "Creates redacted, portable league metadata exports."
+      }
+    ],
+
+    "workflowDefinitions": {
+      "soccer-guardian-join-approval": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+          "fields": { "parties": ["guardianFanId", { "role": "soccer-coach" }] }
+        },
+        "states": {
+          "draft": {
+            "label": "Draft registration request", "tone": "info",
+            "editableFields": ["caseTitle", "playerLabel", "requestDetails", "registrationFeeLabel", "waiverTitle", "waiverVersion", "waiverUrl"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          },
+          "submitted": { "label": "Submitted to coach", "tone": "info" },
+          "under-review": { "label": "Under coach review", "tone": "warning" },
+          "missing-info": {
+            "label": "Missing information", "tone": "warning",
+            "editableFields": ["caseTitle", "playerLabel", "requestDetails", "registrationFeeLabel", "waiverTitle", "waiverVersion", "waiverUrl"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          },
+          "approved": { "label": "Approved and added to roster", "tone": "positive" },
+          "rejected": {
+            "label": "Registration rejected", "tone": "negative", "editableFields": ["requestDetails"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          },
+          "withdrawn": {
+            "label": "Withdrawn by guardian", "tone": "info", "editableFields": ["requestDetails"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          }
+        },
+        "transitions": [
+          {
+            "id": "submit-request", "label": "Send registration request", "icon": "send", "tone": "primary",
+            "from": ["draft"], "to": "submitted",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "guardianFanId", "value": "$actor" },
+              { "op": "set", "key": "paymentCheckpoint", "value": "unpaid" },
+              { "op": "set", "key": "waiverCheckpoint", "value": "unread" },
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "append", "key": "history", "value": { "event": "Registration request submitted", "byFanId": "$actor", "at": "$timestamp" } },
+              {
+                "op": "createInstance", "workflowType": "soccer-registration-payment",
+                "fields": {
+                  "registrationCaseId": "{id}", "guardianFanId": "{guardianFanId}", "playerLabel": "{playerLabel}",
+                  "amountLabel": "{registrationFeeLabel}", "purpose": "Riverside season registration",
+                  "consentRequiredLabel": "Guardian payment authorization required", "consentConfirmed": false,
+                  "receiptStatus": "not-issued", "paymentHistory": []
+                }
+              },
+              {
+                "op": "createInstance", "workflowType": "soccer-waiver-document",
+                "fields": {
+                  "registrationCaseId": "{id}", "documentTitle": "{waiverTitle}", "documentVersion": "{waiverVersion}",
+                  "documentUrl": "{waiverUrl}", "sourceLabel": "Riverside Youth Soccer", "guardianFanId": "{guardianFanId}",
+                  "accessLabel": "Members may open; acknowledgement is tracked", "askedCoachFanIds": [], "acknowledgementHistory": []
+                }
+              }
             ]
           },
-          "effects": [
-            {
-              "op": "set",
-              "key": "currentStep",
-              "value": "Waiver acknowledgement"
+          {
+            "id": "review-request", "label": "Review request", "icon": "rate_review", "tone": "primary",
+            "from": ["submitted"], "to": "under-review", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "coachReviewerFanId", "value": "$actor" },
+              { "op": "append", "key": "history", "value": { "event": "Coach review started", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "request-changes", "label": "Request changes", "icon": "edit_note", "tone": "secondary",
+            "from": ["under-review"], "to": "missing-info", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": {
+              "missingItems": { "type": "list", "required": true },
+              "reviewerComment": { "type": "text", "required": true }
             },
-            {
-              "op": "append",
-              "key": "registrationHistory",
-              "value": "Join request submitted"
-            }
-          ]
-        },
-        {
-          "id": "sign-waiver",
-          "label": "Sign waiver",
-          "icon": "verified",
-          "tone": "primary",
-          "from": [
-            "waiver"
-          ],
-          "to": "payment",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
+            "effects": [
+              { "op": "set", "key": "missingItems", "value": "{input.missingItems}" },
+              { "op": "set", "key": "reviewerComment", "value": "{input.reviewerComment}" },
+              { "op": "append", "key": "history", "value": { "event": "Coach requested changes", "comment": "{input.reviewerComment}", "byFanId": "$actor", "at": "$timestamp" } }
             ]
           },
-          "effects": [
-            {
-              "op": "set",
-              "key": "waiverStatus",
-              "value": "Signed"
+          {
+            "id": "revise-request", "label": "Save revision", "icon": "edit", "tone": "secondary",
+            "from": ["missing-info", "rejected"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "append", "key": "history", "value": { "event": "Guardian revised request", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "resubmit-request", "label": "Resubmit request", "icon": "send", "tone": "primary",
+            "from": ["missing-info"], "to": "submitted",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "set", "key": "missingItems", "value": [] },
+              { "op": "append", "key": "history", "value": { "event": "Guardian resubmitted request", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "reject-request", "label": "Reject request", "icon": "cancel", "tone": "destructive",
+            "from": ["under-review"], "to": "rejected", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "reason": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "reviewerComment", "value": "{input.reason}" },
+              { "op": "append", "key": "history", "value": { "event": "Registration request rejected", "comment": "{input.reason}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "approve-request", "label": "Approve and add to roster", "icon": "verified", "tone": "primary",
+            "from": ["under-review"], "to": "approved",
+            "guard": { "allowedRoleIds": ["soccer-coach"], "formula": "waiverCheckpoint == 'acknowledged' && paymentCheckpoint == 'paid'" },
+            "effects": [
+              { "op": "set", "key": "approvedAt", "value": "$timestamp" },
+              { "op": "append", "key": "history", "value": { "event": "Coach approved registration and created roster/privacy rows", "byFanId": "$actor", "at": "$timestamp" } },
+              {
+                "op": "createInstance", "workflowType": "soccer-team-roster",
+                "fields": {
+                  "registrationCaseId": "{id}", "playerDisplayLabel": "{playerLabel}", "guardianFanId": "{guardianFanId}",
+                  "roleLabel": "Player", "approvalState": "approved", "waiverStatus": "{waiverCheckpoint}",
+                  "redactionState": "redacted", "redactedMinorFields": ["Full birth date", "Medical notes", "Home address"],
+                  "previousRedactionState": "redacted", "previousRedactedMinorFields": ["Full birth date", "Medical notes", "Home address"],
+                  "rosterHistory": [{ "event": "Player added automatically from approved registration", "at": "$timestamp" }]
+                }
+              },
+              {
+                "op": "createInstance", "workflowType": "soccer-minor-redaction",
+                "fields": {
+                  "registrationCaseId": "{id}", "playerLabel": "{playerLabel}", "guardianFanId": "{guardianFanId}",
+                  "protectedFieldLabels": ["Full birth date", "Medical notes", "Home address"],
+                  "allowedCoachMetadata": ["Player display label", "Approval status", "Waiver status"],
+                  "redactionPreview": ["Birth date hidden", "Medical notes hidden", "Address hidden"],
+                  "consentChoice": "private-by-default", "consentHistory": []
+                }
+              }
+            ]
+          },
+          {
+            "id": "withdraw-request", "label": "Withdraw request", "icon": "remove_circle_outline", "tone": "destructive",
+            "from": ["draft", "submitted", "under-review", "missing-info"], "to": "withdrawn",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "append", "key": "history", "value": { "event": "Guardian withdrew request", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "attach-registration-document", "label": "Attach registration document", "icon": "attach_file", "tone": "secondary",
+            "from": ["draft", "submitted", "under-review", "missing-info", "approved", "rejected", "withdrawn"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "inputs": {
+              "documentTitle": { "type": "text", "required": true },
+              "documentVersion": { "type": "text", "required": true },
+              "documentUrl": { "type": "text", "required": true }
             },
-            {
-              "op": "set",
-              "key": "currentStep",
-              "value": "Registration payment"
-            }
-          ]
-        },
-        {
-          "id": "confirm-registration-payment",
-          "label": "Confirm registration payment",
-          "icon": "payments",
-          "tone": "primary",
-          "from": [
-            "payment"
-          ],
-          "to": "roster",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
+            "effects": [
+              {
+                "op": "createInstance", "workflowType": "soccer-waiver-document",
+                "fields": {
+                  "registrationCaseId": "{id}", "documentTitle": "{input.documentTitle}", "documentVersion": "{input.documentVersion}",
+                  "documentUrl": "{input.documentUrl}", "sourceLabel": "Guardian registration attachment", "guardianFanId": "{guardianFanId}",
+                  "accessLabel": "Members may open; acknowledgement is tracked", "askedCoachFanIds": [], "acknowledgementHistory": []
+                }
+              },
+              { "op": "append", "key": "history", "value": { "event": "Guardian attached a registration document", "title": "{input.documentTitle}", "byFanId": "$actor", "at": "$timestamp" } }
             ]
           },
-          "effects": [
-            {
-              "op": "set",
-              "key": "paymentStatus",
-              "value": "Receipt pending on Payments tab"
-            },
-            {
-              "op": "set",
-              "key": "currentStep",
-              "value": "Roster confirmation"
-            }
-          ]
-        },
-        {
-          "id": "confirm-roster",
-          "label": "Confirm roster",
-          "icon": "check",
-          "tone": "primary",
-          "from": [
-            "roster"
-          ],
-          "to": "approved",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
+          {
+            "id": "reopen-request", "label": "Reopen registration", "icon": "restart_alt", "tone": "secondary",
+            "from": ["approved", "rejected", "withdrawn"], "to": "submitted",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" },
+              { "op": "append", "key": "history", "value": { "event": "Guardian reopened registration", "byFanId": "$actor", "at": "$timestamp" } }
             ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "rosterStatus",
-              "value": "Confirmed"
-            },
-            {
-              "op": "set",
-              "key": "currentStep",
-              "value": "Approved"
-            }
-          ]
-        },
-        {
-          "id": "request-changes",
-          "label": "Request changes",
-          "icon": "edit",
-          "tone": "secondary",
-          "from": [
-            "waiver",
-            "payment",
-            "roster",
-            "changesRequested"
-          ],
-          "to": "changesRequested",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "missingItems",
-              "value": [
-                "Updated emergency contact"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "approve-registration",
-          "label": "Approve registration",
-          "icon": "check",
-          "tone": "primary",
-          "from": [
-            "roster",
-            "changesRequested"
-          ],
-          "to": "approved",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "reviewStatus",
-              "value": "Approved by club"
-            }
-          ]
-        },
-        {
-          "id": "reject-registration",
-          "label": "Reject registration",
-          "icon": "close",
-          "tone": "destructive",
-          "from": [
-            "joinRequest",
-            "waiver",
-            "payment",
-            "roster",
-            "changesRequested"
-          ],
-          "to": "rejected",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "reviewStatus",
-              "value": "Rejected by club"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "joinRequest",
-            "waiver",
-            "payment",
-            "roster",
-            "approved",
-            "changesRequested"
-          ],
-          "role": "actor",
-          "tabId": "registration",
-          "cardSurfaceFamily": "guidedProcess",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "joinRequest",
-            "waiver",
-            "payment",
-            "roster",
-            "approved",
-            "changesRequested",
-            "rejected"
-          ],
-          "role": "receiver",
-          "tabId": "registration",
-          "cardSurfaceFamily": "statusTimeline",
-          "bindingKind": "summary"
-        },
-        {
-          "states": [
-            "joinRequest",
-            "waiver",
-            "payment",
-            "roster",
-            "approved"
-          ],
-          "role": "any",
-          "tabId": "home",
-          "cardSurfaceFamily": "dashboard",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "guardianName": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "displayIcon": "person",
-          "labelTemplate": "Guardian: {value}"
-        },
-        "playerName": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "displayIcon": "person",
-          "labelTemplate": "Player: {value}"
-        },
-        "ageGroup": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "displayIcon": "groups",
-          "labelTemplate": "{value}"
-        },
-        "currentStep": {
-          "type": "text",
-          "displayIcon": "flag",
-          "labelTemplate": "Step: {value}"
-        },
-        "waiverStatus": {
-          "type": "text",
-          "displayIcon": "description",
-          "labelTemplate": "Waiver: {value}"
-        },
-        "paymentStatus": {
-          "type": "text",
-          "displayIcon": "payments",
-          "labelTemplate": "Payment: {value}"
-        },
-        "rosterStatus": {
-          "type": "text",
-          "displayIcon": "groups",
-          "labelTemplate": "Roster: {value}"
-        },
-        "missingItems": {
-          "type": "list",
-          "displayIcon": "report",
-          "labelTemplate": "Missing: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "registrationHistory": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Updates: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "reviewStatus": {
-          "type": "text",
-          "displayIcon": "verified",
-          "labelTemplate": "{value}"
-        },
-        "guardianPersonaId": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "displayIcon": "person",
-          "labelTemplate": "Guardian persona: {value}"
-        }
-      }
-    },
-    "soccer-practice-schedule": {
-      "initialState": "scheduled",
-      "states": {
-        "scheduled": {
-          "label": "Scheduled"
-        },
-        "going": {
-          "label": "Going"
-        },
-        "maybe": {
-          "label": "Maybe"
-        },
-        "notGoing": {
-          "label": "Not going"
-        },
-        "changed": {
-          "label": "Changed"
-        },
-        "cancelled": {
-          "label": "Cancelled",
-          "isTerminal": true
-        },
-        "reminded": {
-          "label": "Reminder sent"
-        }
-      },
-      "transitions": [
-        {
-          "id": "rsvp-going",
-          "label": "RSVP going",
-          "icon": "check",
-          "tone": "primary",
-          "from": [
-            "scheduled",
-            "maybe",
-            "notGoing",
-            "changed",
-            "reminded"
-          ],
-          "to": "going",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "rsvpStatus",
-              "value": "Going"
-            }
-          ]
-        },
-        {
-          "id": "rsvp-maybe",
-          "label": "RSVP maybe",
-          "icon": "schedule",
-          "tone": "secondary",
-          "from": [
-            "scheduled",
-            "going",
-            "notGoing",
-            "changed",
-            "reminded"
-          ],
-          "to": "maybe",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "rsvpStatus",
-              "value": "Maybe"
-            }
-          ]
-        },
-        {
-          "id": "rsvp-not-going",
-          "label": "RSVP not going",
-          "icon": "close",
-          "tone": "secondary",
-          "from": [
-            "scheduled",
-            "going",
-            "maybe",
-            "changed",
-            "reminded"
-          ],
-          "to": "notGoing",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "rsvpStatus",
-              "value": "Not going"
-            }
-          ]
-        },
-        {
-          "id": "change-practice",
-          "label": "Change practice",
-          "icon": "edit",
-          "tone": "secondary",
-          "from": [
-            "scheduled",
-            "going",
-            "maybe",
-            "notGoing",
-            "reminded"
-          ],
-          "to": "changed",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "practiceTime",
-              "value": "Saturday 10:00 AM"
-            }
-          ]
-        },
-        {
-          "id": "cancel-practice",
-          "label": "Cancel practice",
-          "icon": "delete",
-          "tone": "destructive",
-          "from": [
-            "scheduled",
-            "going",
-            "maybe",
-            "notGoing",
-            "changed",
-            "reminded"
-          ],
-          "to": "cancelled",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "scheduleHistory",
-              "value": "Coach cancelled practice"
-            }
-          ]
-        },
-        {
-          "id": "send-schedule-reminder",
-          "label": "Send schedule reminder",
-          "icon": "notifications",
-          "tone": "primary",
-          "from": [
-            "scheduled",
-            "going",
-            "maybe",
-            "notGoing",
-            "changed"
-          ],
-          "to": "reminded",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "reminderStatus",
-              "value": "Reminder sent"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "scheduled",
-            "going",
-            "maybe",
-            "notGoing",
-            "changed",
-            "cancelled",
-            "reminded"
-          ],
-          "role": "any",
-          "tabId": "schedule",
-          "cardSurfaceFamily": "calendarAgenda",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "scheduled",
-            "changed",
-            "reminded"
-          ],
-          "role": "actor",
-          "tabId": "coach",
-          "cardSurfaceFamily": "dashboard",
-          "bindingKind": "summary"
-        },
-        {
-          "states": [
-            "scheduled",
-            "going",
-            "maybe",
-            "notGoing",
-            "changed",
-            "reminded"
-          ],
-          "role": "any",
-          "tabId": "home",
-          "cardSurfaceFamily": "dashboard",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "eventTitle": {
-          "type": "text",
-          "displayIcon": "event",
-          "labelTemplate": "{value}"
-        },
-        "practiceDate": {
-          "type": "text",
-          "displayIcon": "event",
-          "labelTemplate": "{value}"
-        },
-        "practiceTime": {
-          "type": "text",
-          "displayIcon": "schedule",
-          "labelTemplate": "{value}"
-        },
-        "location": {
-          "type": "text",
-          "displayIcon": "location_on",
-          "labelTemplate": "{value}"
-        },
-        "field": {
-          "type": "text",
-          "displayIcon": "flag",
-          "labelTemplate": "Field: {value}"
-        },
-        "opponent": {
-          "type": "text",
-          "displayIcon": "groups",
-          "labelTemplate": "Opponent: {value}"
-        },
-        "calendarSync": {
-          "type": "text",
-          "displayIcon": "event_available",
-          "labelTemplate": "Calendar: {value}"
-        },
-        "rsvpStatus": {
-          "type": "text",
-          "displayIcon": "check",
-          "labelTemplate": "RSVP: {value}"
-        },
-        "capacity": {
-          "type": "number",
-          "displayIcon": "groups",
-          "labelTemplate": "Capacity {value}"
-        },
-        "attendance": {
-          "type": "number",
-          "displayIcon": "person",
-          "labelTemplate": "Attendance {value}"
-        },
-        "reminderStatus": {
-          "type": "text",
-          "displayIcon": "notifications",
-          "labelTemplate": "{value}"
-        },
-        "scheduleHistory": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Schedule updates: {value.length}",
-          "hideWhenEmpty": true
-        }
-      }
-    },
-    "soccer-team-roster": {
-      "initialState": "active",
-      "states": {
-        "active": {
-          "label": "Active roster",
-          "editableFields": [
-            "playerName",
-            "ageGroup",
-            "waiverStatus"
-          ]
-        },
-        "editing": {
-          "label": "Editing"
-        },
-        "updateRequested": {
-          "label": "Update requested"
-        },
-        "redacted": {
-          "label": "Redacted"
-        }
-      },
-      "transitions": [
-        {
-          "id": "edit-player",
-          "label": "Edit player",
-          "icon": "edit",
-          "tone": "secondary",
-          "from": [
-            "active",
-            "updateRequested",
-            "redacted"
-          ],
-          "to": "editing",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "rosterHistory",
-              "value": "Coach opened roster edit"
-            }
-          ]
-        },
-        {
-          "id": "request-update",
-          "label": "Request guardian update",
-          "icon": "send",
-          "tone": "secondary",
-          "from": [
-            "active",
-            "editing",
-            "redacted"
-          ],
-          "to": "updateRequested",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "rosterHistory",
-              "value": "Update requested"
-            }
-          ]
-        },
-        {
-          "id": "redact-field",
-          "label": "Redact protected field",
-          "icon": "delete",
-          "tone": "destructive",
-          "from": [
-            "active",
-            "editing",
-            "updateRequested"
-          ],
-          "to": "redacted",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "redactionStatus",
-              "value": "Minor medical note hidden for role scope"
-            },
-            {
-              "op": "append",
-              "key": "redactedFields",
-              "value": "medicalNotes"
-            }
-          ]
-        },
-        {
-          "id": "undo-redaction",
-          "label": "Undo redaction",
-          "icon": "undo",
-          "tone": "secondary",
-          "from": [
-            "redacted"
-          ],
-          "to": "active",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "redactionStatus",
-              "value": "Role-appropriate detail restored"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "active",
-            "editing",
-            "updateRequested",
-            "redacted"
-          ],
-          "role": "guardian",
-          "tabId": "team",
-          "cardSurfaceFamily": "stateMachineGrid",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "active",
-            "editing",
-            "updateRequested",
-            "redacted"
-          ],
-          "role": "coach",
-          "tabId": "team",
-          "cardSurfaceFamily": "table",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "active",
-            "editing",
-            "updateRequested",
-            "redacted"
-          ],
-          "role": "any",
-          "tabId": "team",
-          "cardSurfaceFamily": "protectedDetail",
-          "bindingKind": "summary"
-        },
-        {
-          "states": [
-            "active",
-            "editing",
-            "updateRequested",
-            "redacted"
-          ],
-          "role": "coach",
-          "tabId": "coach",
-          "cardSurfaceFamily": "dashboard",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "playerName": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "sortable": true,
-          "displayIcon": "person",
-          "labelTemplate": "Player: {value}"
-        },
-        "ageGroup": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "sortable": true,
-          "displayIcon": "groups",
-          "labelTemplate": "{value}"
-        },
-        "waiverStatus": {
-          "type": "text",
-          "writableBy": "formEntry",
-          "sortable": true,
-          "displayIcon": "description",
-          "labelTemplate": "Waiver: {value}"
-        },
-        "guardianName": {
-          "type": "text",
-          "displayIcon": "person",
-          "labelTemplate": "Guardian: {value}"
-        },
-        "birthDate": {
-          "type": "text",
-          "displayIcon": "verified",
-          "labelTemplate": "DOB: {value}"
-        },
-        "medicalNotes": {
-          "type": "text",
-          "displayIcon": "report",
-          "labelTemplate": "Medical: {value}"
-        },
-        "redactionStatus": {
-          "type": "text",
-          "displayIcon": "privacy_tip",
-          "labelTemplate": "{value}"
-        },
-        "redactedFields": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "privacy_tip",
-          "labelTemplate": "Redacted fields: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "rosterHistory": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Roster updates: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "guardianPersonaId": {
-          "type": "text",
-          "required": true,
-          "writableBy": "formEntry",
-          "displayIcon": "person",
-          "labelTemplate": "Guardian persona: {value}",
-          "sortable": true
-        }
-      }
-    },
-    "soccer-minor-redaction": {
-      "initialState": "redacted",
-      "states": {
-        "redacted": {
-          "label": "Protected detail"
-        },
-        "accessRequested": {
-          "label": "Access requested"
-        },
-        "visible": {
-          "label": "Consent scoped"
-        }
-      },
-      "transitions": [
-        {
-          "id": "request-access",
-          "label": "Request access",
-          "icon": "send",
-          "tone": "secondary",
-          "from": [
-            "redacted"
-          ],
-          "to": "accessRequested",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "auditTrail",
-              "value": "Access request logged"
-            }
-          ]
-        },
-        {
-          "id": "redact-detail",
-          "label": "Redact detail",
-          "icon": "delete",
-          "tone": "destructive",
-          "from": [
-            "visible",
-            "accessRequested"
-          ],
-          "to": "redacted",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "detailStatus",
-              "value": "Redacted for minor privacy"
-            }
-          ]
-        },
-        {
-          "id": "restore-detail",
-          "label": "Restore consent view",
-          "icon": "undo",
-          "tone": "secondary",
-          "from": [
-            "redacted",
-            "accessRequested"
-          ],
-          "to": "visible",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "detailStatus",
-              "value": "Consent scoped view restored"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "redacted",
-            "accessRequested",
-            "visible"
-          ],
-          "role": "any",
-          "tabId": "team",
-          "cardSurfaceFamily": "protectedDetail",
-          "bindingKind": "primary"
-        }
-      ],
-      "instanceDataSchema": {
-        "minorName": {
-          "type": "text",
-          "displayIcon": "person",
-          "labelTemplate": "Minor: {value}"
-        },
-        "birthDateMasked": {
-          "type": "text",
-          "displayIcon": "privacy_tip",
-          "labelTemplate": "Birth date: {value}"
-        },
-        "consentStatus": {
-          "type": "text",
-          "displayIcon": "verified",
-          "labelTemplate": "Consent: {value}"
-        },
-        "redactionReason": {
-          "type": "text",
-          "displayIcon": "report",
-          "labelTemplate": "{value}"
-        },
-        "detailStatus": {
-          "type": "text",
-          "displayIcon": "privacy_tip",
-          "labelTemplate": "{value}"
-        },
-        "auditTrail": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Audit events: {value.length}",
-          "hideWhenEmpty": true
-        }
-      }
-    },
-    "soccer-registration-payment": {
-      "initialState": "unpaid",
-      "states": {
-        "unpaid": {
-          "label": "Unpaid"
-        },
-        "paid": {
-          "label": "Paid"
-        },
-        "failed": {
-          "label": "Failed"
-        },
-        "refunded": {
-          "label": "Refunded"
-        },
-        "subscriptionManaged": {
-          "label": "Subscription managed",
-          "isTerminal": true
-        }
-      },
-      "transitions": [
-        {
-          "id": "pay-registration",
-          "label": "Pay registration",
-          "icon": "payments",
-          "tone": "primary",
-          "from": [
-            "unpaid",
-            "failed"
-          ],
-          "to": "paid",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "paymentStatus",
-              "value": "Paid"
-            },
-            {
-              "op": "set",
-              "key": "receiptId",
-              "value": "RYS-2026-0042"
-            },
-            {
-              "op": "append",
-              "key": "receiptHistory",
-              "value": "Receipt RYS-2026-0042 issued"
-            }
-          ]
-        },
-        {
-          "id": "mark-payment-failed",
-          "label": "Mark failed",
-          "icon": "report",
-          "tone": "secondary",
-          "from": [
-            "unpaid"
-          ],
-          "to": "failed",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "paymentStatus",
-              "value": "Failed"
-            }
-          ]
-        },
-        {
-          "id": "retry-payment",
-          "label": "Retry payment",
-          "icon": "undo",
-          "tone": "primary",
-          "from": [
-            "failed"
-          ],
-          "to": "paid",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "paymentStatus",
-              "value": "Paid after retry"
-            }
-          ]
-        },
-        {
-          "id": "refund-payment",
-          "label": "Refund payment",
-          "icon": "undo",
-          "tone": "secondary",
-          "from": [
-            "paid"
-          ],
-          "to": "refunded",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "paymentStatus",
-              "value": "Refunded"
-            }
-          ]
-        },
-        {
-          "id": "manage-subscription",
-          "label": "Manage subscription",
-          "icon": "settings",
-          "tone": "secondary",
-          "from": [
-            "paid",
-            "refunded",
-            "unpaid"
-          ],
-          "to": "subscriptionManaged",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "subscriptionStatus",
-              "value": "Managed in Loom payments"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "unpaid",
-            "paid",
-            "failed",
-            "refunded",
-            "subscriptionManaged"
-          ],
-          "role": "actor",
-          "tabId": "payments",
-          "cardSurfaceFamily": "paymentCheckout",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "unpaid",
-            "paid",
-            "failed"
-          ],
-          "role": "any",
-          "tabId": "home",
-          "cardSurfaceFamily": "dashboard",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "feeLabel": {
-          "type": "text",
-          "displayIcon": "payments",
-          "labelTemplate": "{value}"
-        },
-        "amount": {
-          "type": "number",
-          "displayIcon": "payments",
-          "labelTemplate": "{value} USD"
-        },
-        "paymentStatus": {
-          "type": "text",
-          "displayIcon": "verified",
-          "labelTemplate": "Status: {value}"
-        },
-        "receiptId": {
-          "type": "text",
-          "displayIcon": "description",
-          "labelTemplate": "Receipt: {value}"
-        },
-        "receiptHistory": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Receipts: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "subscriptionStatus": {
-          "type": "text",
-          "displayIcon": "settings",
-          "labelTemplate": "{value}"
-        }
-      }
-    },
-    "soccer-waiver-document": {
-      "initialState": "available",
-      "states": {
-        "available": {
-          "label": "Available"
-        },
-        "embeddedOpened": {
-          "label": "Embedded opened"
-        },
-        "externalOpened": {
-          "label": "External opened"
-        },
-        "acknowledged": {
-          "label": "Acknowledged",
-          "isTerminal": true
-        },
-        "accessRequested": {
-          "label": "Access requested"
-        }
-      },
-      "transitions": [
-        {
-          "id": "open-embedded-waiver",
-          "label": "Open embedded waiver",
-          "icon": "open_in_browser",
-          "tone": "secondary",
-          "from": [
-            "available",
-            "externalOpened",
-            "accessRequested"
-          ],
-          "to": "embeddedOpened",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "auditTrail",
-              "value": "Embedded waiver opened"
-            }
-          ]
-        },
-        {
-          "id": "open-external-waiver",
-          "label": "Open external waiver",
-          "icon": "open_in_new",
-          "tone": "secondary",
-          "from": [
-            "available",
-            "embeddedOpened",
-            "accessRequested"
-          ],
-          "to": "externalOpened",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "auditTrail",
-              "value": "External source opened"
-            }
-          ]
-        },
-        {
-          "id": "acknowledge-waiver-document",
-          "label": "Acknowledge waiver",
-          "icon": "check",
-          "tone": "primary",
-          "from": [
-            "embeddedOpened",
-            "externalOpened"
-          ],
-          "to": "acknowledged",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "acknowledgementState",
-              "value": "Acknowledged"
-            }
-          ]
-        },
-        {
-          "id": "request-document-access",
-          "label": "Request document access",
-          "icon": "send",
-          "tone": "secondary",
-          "from": [
-            "available"
-          ],
-          "to": "accessRequested",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "auditTrail",
-              "value": "Guardian requested document access"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "available",
-            "embeddedOpened",
-            "externalOpened",
-            "acknowledged",
-            "accessRequested"
-          ],
-          "role": "any",
-          "tabId": "documents",
-          "cardSurfaceFamily": "documentLibrary",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "available",
-            "embeddedOpened",
-            "externalOpened",
-            "acknowledged",
-            "accessRequested"
-          ],
-          "role": "any",
-          "tabId": "team",
-          "cardSurfaceFamily": "documentLibrary",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "documentTitle": {
-          "type": "text",
-          "displayIcon": "description",
-          "labelTemplate": "{value}"
-        },
-        "version": {
-          "type": "text",
-          "displayIcon": "flag",
-          "labelTemplate": "Version {value}"
-        },
-        "source": {
-          "type": "text",
-          "displayIcon": "open_in_new",
-          "labelTemplate": "Source: {value}"
-        },
-        "acknowledgementState": {
-          "type": "text",
-          "displayIcon": "check",
-          "labelTemplate": "{value}"
-        },
-        "auditTrail": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "history",
-          "labelTemplate": "Audit trail: {value.length}",
-          "hideWhenEmpty": true
-        }
-      }
-    },
-    "soccer-reminder-notification": {
-      "initialState": "draft",
-      "states": {
-        "draft": {
-          "label": "Draft"
-        },
-        "scheduled": {
-          "label": "Scheduled"
-        },
-        "published": {
-          "label": "Published"
-        },
-        "read": {
-          "label": "Read",
-          "isTerminal": true
-        },
-        "cancelled": {
-          "label": "Cancelled",
-          "isTerminal": true
-        }
-      },
-      "transitions": [
-        {
-          "id": "schedule-reminder",
-          "label": "Schedule reminder",
-          "icon": "schedule",
-          "tone": "primary",
-          "from": [
-            "draft"
-          ],
-          "to": "scheduled",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "deliveryState",
-              "value": "Scheduled"
-            }
-          ]
-        },
-        {
-          "id": "publish-reminder",
-          "label": "Publish reminder",
-          "icon": "publish",
-          "tone": "primary",
-          "from": [
-            "draft",
-            "scheduled"
-          ],
-          "to": "published",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "deliveryState",
-              "value": "Published"
-            },
-            {
-              "op": "append",
-              "key": "deliveryReceipts",
-              "value": "18 guardians delivered"
-            }
-          ]
-        },
-        {
-          "id": "cancel-reminder",
-          "label": "Cancel reminder",
-          "icon": "delete",
-          "tone": "destructive",
-          "from": [
-            "draft",
-            "scheduled"
-          ],
-          "to": "cancelled",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "deliveryState",
-              "value": "Cancelled"
-            }
-          ]
-        },
-        {
-          "id": "mark-reminder-read",
-          "label": "Mark read",
-          "icon": "check",
-          "tone": "secondary",
-          "from": [
-            "published"
-          ],
-          "to": "read",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "readState",
-              "value": "Read by guardian"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "draft",
-            "scheduled",
-            "published",
-            "read",
-            "cancelled"
-          ],
-          "role": "coach",
-          "tabId": "coach",
-          "cardSurfaceFamily": "notificationInbox",
-          "bindingKind": "primary"
-        },
-        {
-          "states": [
-            "published",
-            "read"
-          ],
-          "role": "guardian",
-          "tabId": "home",
-          "cardSurfaceFamily": "notificationInbox",
-          "bindingKind": "summary"
-        }
-      ],
-      "instanceDataSchema": {
-        "sender": {
-          "type": "text",
-          "displayIcon": "person",
-          "labelTemplate": "Sender: {value}"
-        },
-        "audience": {
-          "type": "text",
-          "displayIcon": "groups",
-          "labelTemplate": "Audience: {value}"
-        },
-        "channel": {
-          "type": "text",
-          "displayIcon": "notifications",
-          "labelTemplate": "Channel: {value}"
-        },
-        "timestamp": {
-          "type": "text",
-          "displayIcon": "schedule",
-          "labelTemplate": "{value}"
-        },
-        "readState": {
-          "type": "text",
-          "displayIcon": "check",
-          "labelTemplate": "{value}"
-        },
-        "deliveryState": {
-          "type": "text",
-          "displayIcon": "publish",
-          "labelTemplate": "{value}"
-        },
-        "deliveryReceipts": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "verified",
-          "labelTemplate": "Receipts: {value.length}",
-          "hideWhenEmpty": true
-        },
-        "message": {
-          "type": "text",
-          "displayIcon": "forum",
-          "labelTemplate": "{value}"
-        }
-      }
-    },
-    "soccer-team-discussion": {
-      "initialState": "open",
-      "states": {
-        "open": {
-          "label": "Open"
-        },
-        "replied": {
-          "label": "Replied"
-        },
-        "archived": {
-          "label": "Archived",
-          "isTerminal": true
-        }
-      },
-      "transitions": [
-        {
-          "id": "reply-thread",
-          "label": "Reply",
-          "icon": "reply",
-          "tone": "primary",
-          "from": [
-            "open"
-          ],
-          "to": "replied",
-          "guard": {
-            "allowedPersonaIds": [
-              "guardian",
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "messages",
-              "value": "Reply added"
-            }
-          ]
-        },
-        {
-          "id": "archive-thread",
-          "label": "Archive thread",
-          "icon": "delete",
-          "tone": "secondary",
-          "from": [
-            "open",
-            "replied"
-          ],
-          "to": "archived",
-          "guard": {
-            "allowedPersonaIds": [
-              "coach"
-            ]
-          },
-          "effects": [
-            {
-              "op": "append",
-              "key": "messages",
-              "value": "Coach archived thread"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "open",
-            "replied",
-            "archived"
-          ],
-          "role": "any",
-          "tabId": "messages",
-          "cardSurfaceFamily": "discussionThread",
-          "bindingKind": "primary"
-        }
-      ],
-      "instanceDataSchema": {
-        "threadTitle": {
-          "type": "text",
-          "displayIcon": "forum",
-          "labelTemplate": "{value}"
-        },
-        "lastMessage": {
-          "type": "text",
-          "displayIcon": "reply",
-          "labelTemplate": "{value}"
-        },
-        "messages": {
-          "type": "list",
-          "writableBy": "effect",
-          "displayIcon": "forum",
-          "labelTemplate": "Messages: {value.length}",
-          "hideWhenEmpty": true
-        }
-      }
-    },
-    "soccer-export-metadata": {
-      "initialState": "ready",
-      "states": {
-        "ready": {
-          "label": "Ready"
-        },
-        "previewed": {
-          "label": "Previewed"
-        },
-        "generated": {
-          "label": "Generated"
-        },
-        "transferred": {
-          "label": "Transferred"
-        },
-        "rolledBack": {
-          "label": "Rolled back"
-        },
-        "retried": {
-          "label": "Retried"
-        }
-      },
-      "transitions": [
-        {
-          "id": "preview-redaction",
-          "label": "Preview redaction",
-          "icon": "privacy_tip",
-          "tone": "primary",
-          "from": [
-            "ready"
-          ],
-          "to": "previewed",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "redactionPreview",
-              "value": "Minor birth dates and medical notes masked"
-            }
-          ]
-        },
-        {
-          "id": "generate-export",
-          "label": "Generate export",
-          "icon": "download",
-          "tone": "primary",
-          "from": [
-            "previewed"
-          ],
-          "to": "generated",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "checksum",
-              "value": "sha256-rys-77a9"
-            }
-          ]
-        },
-        {
-          "id": "transfer-export",
-          "label": "Transfer export",
-          "icon": "send",
-          "tone": "primary",
-          "from": [
-            "generated",
-            "retried"
-          ],
-          "to": "transferred",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "exportStatus",
-              "value": "Transferred"
-            }
-          ]
-        },
-        {
-          "id": "rollback-transfer",
-          "label": "Rollback transfer",
-          "icon": "undo",
-          "tone": "secondary",
-          "from": [
-            "transferred"
-          ],
-          "to": "rolledBack",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "exportStatus",
-              "value": "Rolled back"
-            }
-          ]
-        },
-        {
-          "id": "retry-transfer",
-          "label": "Retry transfer",
-          "icon": "undo",
-          "tone": "primary",
-          "from": [
-            "rolledBack"
-          ],
-          "to": "retried",
-          "guard": {
-            "allowedPersonaIds": [
-              "owner"
-            ]
-          },
-          "effects": [
-            {
-              "op": "set",
-              "key": "exportStatus",
-              "value": "Retry queued"
-            }
-          ]
-        }
-      ],
-      "renderBindings": [
-        {
-          "states": [
-            "ready",
-            "previewed",
-            "generated",
-            "transferred",
-            "rolledBack",
-            "retried"
-          ],
-          "role": "actor",
-          "tabId": "admin",
-          "cardSurfaceFamily": "exportWizard",
-          "bindingKind": "primary"
-        }
-      ],
-      "instanceDataSchema": {
-        "scope": {
-          "type": "text",
-          "displayIcon": "flag",
-          "labelTemplate": "Scope: {value}"
-        },
-        "redactionPreview": {
-          "type": "text",
-          "displayIcon": "privacy_tip",
-          "labelTemplate": "{value}"
-        },
-        "checksum": {
-          "type": "text",
-          "displayIcon": "verified",
-          "labelTemplate": "{value}"
-        },
-        "exportStatus": {
-          "type": "text",
-          "displayIcon": "send",
-          "labelTemplate": "{value}"
-        }
-      }
-    }
-  },
-  "workflowInstances": [
-    {
-      "instanceId": "soccer-registration-main",
-      "workflowType": "soccer-guardian-join-approval",
-      "currentState": "joinRequest",
-      "createdByPersonaId": "guardian",
-      "instanceData": {
-        "guardianName": "Elena Rivera",
-        "playerName": "Sofia Rivera",
-        "ageGroup": "U10 Falcons",
-        "currentStep": "Join request",
-        "waiverStatus": "Unsigned",
-        "paymentStatus": "Not started",
-        "rosterStatus": "Pending",
-        "missingItems": [],
-        "registrationHistory": [],
-        "reviewStatus": "Awaiting reviewer",
-        "guardianPersonaId": "guardian"
-      }
-    },
-    {
-      "instanceId": "soccer-practice-saturday",
-      "workflowType": "soccer-practice-schedule",
-      "currentState": "scheduled",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "eventTitle": "Saturday U10 practice",
-        "practiceDate": "Sat Jul 18",
-        "practiceTime": "Saturday 9:00 AM",
-        "location": "Riverside Park",
-        "field": "Field 3",
-        "opponent": "No opponent - practice",
-        "calendarSync": "Synced",
-        "rsvpStatus": "Not answered",
-        "capacity": 18,
-        "attendance": 12,
-        "reminderStatus": "Ready",
-        "scheduleHistory": []
-      }
-    },
-    {
-      "instanceId": "soccer-roster-sofia",
-      "workflowType": "soccer-team-roster",
-      "currentState": "active",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "playerName": "Sofia Rivera",
-        "ageGroup": "U10",
-        "waiverStatus": "Unsigned",
-        "guardianName": "Elena Rivera",
-        "birthDate": "2016-04-12",
-        "medicalNotes": "Inhaler on file",
-        "redactionStatus": "Guardian sees own child; coach sees role-appropriate fields",
-        "redactedFields": [],
-        "rosterHistory": [],
-        "guardianPersonaId": "guardian"
-      }
-    },
-    {
-      "instanceId": "soccer-roster-ari",
-      "workflowType": "soccer-team-roster",
-      "currentState": "active",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "playerName": "Ari Rivera",
-        "ageGroup": "U12",
-        "waiverStatus": "Signed",
-        "guardianName": "Elena Rivera",
-        "guardianPersonaId": "guardian",
-        "birthDate": "2014-03-18",
-        "medicalNotes": "No restrictions",
-        "redactionStatus": "Guardian-linked roster row visible by relationship",
-        "redactedFields": [],
-        "rosterHistory": []
-      }
-    },
-    {
-      "instanceId": "soccer-roster-miles",
-      "workflowType": "soccer-team-roster",
-      "currentState": "active",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "playerName": "Miles Chen",
-        "ageGroup": "U10",
-        "waiverStatus": "Signed",
-        "guardianName": "Tara Chen",
-        "birthDate": "2016-08-03",
-        "medicalNotes": "Protected",
-        "redactionStatus": "Role-appropriate detail only",
-        "redactedFields": [
-          "medicalNotes"
+          }
         ],
-        "rosterHistory": [],
-        "guardianPersonaId": "guardian-chen"
+        "renderBindings": [
+          {
+            "states": ["draft", "missing-info", "rejected", "withdrawn"], "audience": "any", "tabId": "home",
+            "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
+            "actions": [{
+              "kind": "create", "label": "Register a player", "byRoleIds": ["soccer-guardian"],
+              "scope": "tab", "presentation": "fab",
+              "prefill": { "guardianFanId": "$actor", "missingItems": [], "history": [] }
+            }]
+          },
+          {
+            "states": ["submitted", "under-review", "approved"], "audience": "any", "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary"
+          },
+          {
+            "states": ["submitted", "under-review"], "audience": "receiver", "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary"
+          },
+          {
+            "states": ["approved", "rejected", "withdrawn"], "audience": "any", "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "caseTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "playerLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "sports_soccer", "labelTemplate": "Player: {value}", "displayContexts": ["tile", "detail"] },
+          "requestDetails": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "description", "labelTemplate": "Request: {value}", "displayContexts": ["detail"] },
+          "registrationFeeLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "payments", "labelTemplate": "Fee: {value}", "displayContexts": ["tile", "detail"] },
+          "waiverTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": [] },
+          "waiverVersion": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": [] },
+          "waiverUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayContexts": [] },
+          "guardianFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["tile", "detail"] },
+          "coachReviewerFanId": { "type": "fanId?", "writableBy": "effect", "displayIcon": "sports", "labelTemplate": "Reviewer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "paymentCheckpoint": { "type": "text", "writableBy": "effect", "displayIcon": "paid", "labelTemplate": "Payment: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "waiverCheckpoint": { "type": "text", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Waiver: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "missingItems": { "type": "list", "writableBy": "effect", "displayIcon": "rule", "labelTemplate": "Missing: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "reviewerComment": { "type": "textarea", "writableBy": "effect", "displayIcon": "comment", "labelTemplate": "Coach note: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Submitted {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "approvedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Approved {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "history": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "History: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-team-roster": {
+        "initialState": "active",
+        "visibility": { "default": "guarded", "readGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] } },
+        "states": {
+          "active": {
+            "label": "Active roster row", "tone": "positive",
+            "editableFields": ["playerDisplayLabel", "roleLabel", "approvalState", "waiverStatus"],
+            "editGuard": { "allowedRoleIds": ["soccer-coach"] }
+          },
+          "archived": { "label": "Archived roster row", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "save-roster-update", "label": "Save roster update", "icon": "save", "tone": "primary",
+            "from": ["active"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "changeNote": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "updatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Roster row saved", "note": "{input.changeNote}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "mark-waiver-acknowledged", "label": "Mark waiver acknowledged", "icon": "fact_check", "tone": "secondary",
+            "from": ["active"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "waiverStatus", "value": "acknowledged" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Waiver marked acknowledged", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "request-guardian-update", "label": "Request guardian update", "icon": "contact_support", "tone": "secondary",
+            "from": ["active"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "requestNote": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "approvalState", "value": "update-requested" },
+              { "op": "set", "key": "guardianUpdateRequest", "value": "{input.requestNote}" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Guardian update requested", "note": "{input.requestNote}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "redact-fields", "label": "Redact protected fields", "icon": "visibility_off", "tone": "secondary",
+            "from": ["active"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "fieldsToRedact": { "type": "list", "required": true } },
+            "effects": [
+              { "op": "set", "key": "previousRedactionState", "value": "{redactionState}" },
+              { "op": "set", "key": "previousRedactedMinorFields", "value": "{redactedMinorFields}" },
+              { "op": "set", "key": "redactionState", "value": "redacted" },
+              { "op": "set", "key": "redactedMinorFields", "value": "{input.fieldsToRedact}" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Coach changed roster redaction", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "undo-last-redaction-change", "label": "Undo redaction change", "icon": "undo", "tone": "secondary",
+            "from": ["active"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "redactionState", "value": "{previousRedactionState}" },
+              { "op": "set", "key": "redactedMinorFields", "value": "{previousRedactedMinorFields}" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Coach undid the last redaction change", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "apply-private-consent", "label": "Apply private roster view", "icon": "lock", "tone": "secondary",
+            "from": ["active"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "previousRedactionState", "value": "{redactionState}" },
+              { "op": "set", "key": "previousRedactedMinorFields", "value": "{redactedMinorFields}" },
+              { "op": "set", "key": "redactionState", "value": "redacted" },
+              { "op": "set", "key": "redactedMinorFields", "value": ["Full birth date", "Medical notes", "Home address"] },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Guardian applied private consent", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "apply-shared-consent", "label": "Share approved coach fields", "icon": "shield", "tone": "secondary",
+            "from": ["active"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "previousRedactionState", "value": "{redactionState}" },
+              { "op": "set", "key": "previousRedactedMinorFields", "value": "{redactedMinorFields}" },
+              { "op": "set", "key": "redactionState", "value": "guardian-approved-limited-share" },
+              { "op": "set", "key": "redactedMinorFields", "value": ["Full birth date", "Medical notes", "Home address"] },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Guardian approved limited coach metadata", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "apply-correction-request", "label": "Flag privacy correction", "icon": "report_problem", "tone": "secondary",
+            "from": ["active"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "approvalState", "value": "privacy-correction-requested" },
+              { "op": "append", "key": "rosterHistory", "value": { "event": "Guardian requested a privacy correction", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "archive-roster-row", "label": "Archive roster row", "icon": "archive", "tone": "destructive",
+            "from": ["active"], "to": "archived", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [{ "op": "append", "key": "rosterHistory", "value": { "event": "Roster row archived", "byFanId": "$actor", "at": "$timestamp" } }]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["active"], "audience": "any", "tabId": "team", "cardSurfaceFamily": "table", "bindingKind": "primary" },
+          { "states": ["archived"], "audience": "any", "tabId": "team", "cardSurfaceFamily": "table", "bindingKind": "summary" },
+          { "states": ["active"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "table", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "registrationCaseId": { "type": "text", "required": true, "searchable": true, "displayIcon": "link", "labelTemplate": "Registration case: {value}", "displayContexts": ["detail"] },
+          "playerDisplayLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "sortable": true, "displayIcon": "sports_soccer", "labelTemplate": "Player: {value}", "displayContexts": ["tile", "detail"] },
+          "guardianFanId": { "type": "fanId", "required": true, "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
+          "roleLabel": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "badge", "labelTemplate": "Role: {value}", "displayContexts": ["tile", "detail"] },
+          "approvalState": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "verified_user", "labelTemplate": "Approval: {value}", "displayContexts": ["tile", "detail"] },
+          "waiverStatus": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "fact_check", "labelTemplate": "Waiver: {value}", "displayContexts": ["tile", "detail"] },
+          "redactionState": { "type": "text", "required": true, "writableBy": "effect", "sortable": true, "displayIcon": "privacy_tip", "labelTemplate": "Privacy: {value}", "displayContexts": ["tile", "detail"] },
+          "redactedMinorFields": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "visibility_off", "labelTemplate": "Redacted fields: {value}", "displayContexts": ["tile", "detail"] },
+          "previousRedactionState": { "type": "text", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "previousRedactedMinorFields": { "type": "list", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "guardianUpdateRequest": { "type": "textarea", "writableBy": "effect", "displayIcon": "contact_support", "labelTemplate": "Guardian update: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "updatedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "update", "labelTemplate": "Updated {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "rosterHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Roster history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-minor-redaction": {
+        "initialState": "review-pending",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "guardianFanId" } }
+        },
+        "states": {
+          "review-pending": { "label": "Privacy review pending", "tone": "warning" },
+          "consent-confirmed": { "label": "Privacy consent confirmed", "tone": "positive" },
+          "private-confirmed": { "label": "Privacy consent confirmed — private", "tone": "positive" },
+          "correction-requested": { "label": "Privacy correction requested", "tone": "warning" }
+        },
+        "transitions": [
+          {
+            "id": "confirm-private-consent", "label": "Confirm private roster view", "icon": "lock", "tone": "primary",
+            "from": ["review-pending", "correction-requested", "consent-confirmed"], "to": "private-confirmed",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "consentChoice", "value": "private" },
+              { "op": "set", "key": "confirmedAt", "value": "$timestamp" },
+              { "op": "append", "key": "consentHistory", "value": { "event": "Guardian kept protected fields private", "byFanId": "$actor", "at": "$timestamp" } },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-team-roster", "filter": { "registrationCaseId": "{registrationCaseId}", "$state": "active" }, "limit": 1 }, "transitionId": "apply-private-consent" }
+            ]
+          },
+          {
+            "id": "share-approved-coach-fields", "label": "Share approved coach fields", "icon": "shield", "tone": "primary",
+            "from": ["review-pending", "correction-requested", "private-confirmed"], "to": "consent-confirmed",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "consentChoice", "value": "limited-coach-share" },
+              { "op": "set", "key": "confirmedAt", "value": "$timestamp" },
+              { "op": "append", "key": "consentHistory", "value": { "event": "Guardian approved limited coach metadata", "byFanId": "$actor", "at": "$timestamp" } },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-team-roster", "filter": { "registrationCaseId": "{registrationCaseId}", "$state": "active" }, "limit": 1 }, "transitionId": "apply-shared-consent" }
+            ]
+          },
+          {
+            "id": "change-consent", "label": "Change consent", "icon": "edit", "tone": "secondary",
+            "from": ["consent-confirmed", "private-confirmed"], "to": "review-pending",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "consentHistory", "value": { "event": "Guardian reopened privacy consent", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "hide-protected-field", "label": "Hide protected field", "icon": "visibility_off", "tone": "secondary",
+            "from": ["review-pending", "consent-confirmed", "private-confirmed", "correction-requested"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "inputs": { "fieldLabel": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "appendUnique", "key": "protectedFieldLabels", "value": "{input.fieldLabel}" },
+              { "op": "appendUnique", "key": "redactionPreview", "value": "{input.fieldLabel} hidden" },
+              { "op": "append", "key": "consentHistory", "value": { "event": "Guardian hid an additional protected field", "field": "{input.fieldLabel}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "request-privacy-correction", "label": "Request correction", "icon": "report_problem", "tone": "destructive",
+            "from": ["review-pending", "consent-confirmed", "private-confirmed"], "to": "correction-requested",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "inputs": { "correctionNote": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "correctionNote", "value": "{input.correctionNote}" },
+              { "op": "append", "key": "consentHistory", "value": { "event": "Guardian requested a privacy correction", "note": "{input.correctionNote}", "byFanId": "$actor", "at": "$timestamp" } },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-team-roster", "filter": { "registrationCaseId": "{registrationCaseId}", "$state": "active" }, "limit": 1 }, "transitionId": "apply-correction-request" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["review-pending", "consent-confirmed", "private-confirmed", "correction-requested"], "audience": "any", "tabId": "team", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
+          { "states": ["consent-confirmed", "private-confirmed"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "formEntry", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "registrationCaseId": { "type": "text", "required": true, "searchable": true, "displayIcon": "link", "labelTemplate": "Registration case: {value}", "displayContexts": ["detail"] },
+          "playerLabel": { "type": "text", "required": true, "searchable": true, "displayIcon": "sports_soccer", "labelTemplate": "Player: {value}", "displayContexts": ["tile", "detail"] },
+          "guardianFanId": { "type": "fanId", "required": true, "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
+          "protectedFieldLabels": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "lock", "labelTemplate": "Protected: {value}", "displayContexts": ["tile", "detail"] },
+          "allowedCoachMetadata": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "shield", "labelTemplate": "Coach may see: {value}", "displayContexts": ["tile", "detail"] },
+          "redactionPreview": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "preview", "labelTemplate": "Redaction preview: {value}", "displayContexts": ["tile", "detail"] },
+          "consentChoice": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "privacy_tip", "labelTemplate": "Consent: {value}", "displayContexts": ["tile", "detail"] },
+          "correctionNote": { "type": "textarea", "writableBy": "effect", "displayIcon": "report_problem", "labelTemplate": "Correction: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "confirmedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Confirmed {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "consentHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Consent history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-registration-payment": {
+        "initialState": "unpaid",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "guardianFanId" } },
+          "fields": { "parties": ["guardianFanId", { "role": "soccer-coach" }] }
+        },
+        "states": {
+          "unpaid": {
+            "label": "Registration fee unpaid", "tone": "warning",
+            "editableFields": ["paymentMethodNote"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          },
+          "processing": { "label": "Checkout started", "tone": "info" },
+          "failed": {
+            "label": "Payment failed", "tone": "negative",
+            "editableFields": ["paymentMethodNote"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } }
+          },
+          "paid": { "label": "Registration paid", "tone": "positive" },
+          "refunded": { "label": "Registration payment refunded", "tone": "info" }
+        },
+        "transitions": [
+          {
+            "id": "start-checkout", "label": "Pay registration", "icon": "payment", "tone": "primary",
+            "from": ["unpaid"], "to": "processing",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" }, "instanceDataEquals": { "key": "consentConfirmed", "value": true } },
+            "effects": [
+              { "op": "set", "key": "paymentMethodNote", "value": "Checkout requested" },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Guardian started checkout", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-offline-payment", "label": "Verify offline payment", "icon": "verified", "tone": "primary",
+            "from": ["unpaid", "processing", "failed"], "to": "paid", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "paymentNote": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "paymentMethodNote", "value": "{input.paymentNote}" },
+              { "op": "set", "key": "receiptStatus", "value": "offline-payment-verified" },
+              { "op": "set", "key": "paidAt", "value": "$timestamp" },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Coach verified an offline payment", "note": "{input.paymentNote}", "byFanId": "$actor", "at": "$timestamp" } },
+              { "op": "set", "key": "paymentCheckpoint", "value": "paid", "relatedInstance": "registrationCaseId" }
+            ]
+          },
+          {
+            "id": "mark-payment-failed", "label": "Record payment failure", "icon": "error", "tone": "destructive",
+            "from": ["processing"], "to": "failed", "guard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+            "inputs": { "failureReason": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "failureReason", "value": "{input.failureReason}" },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Payment attempt failed", "reason": "{input.failureReason}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "retry-payment", "label": "Retry payment", "icon": "refresh", "tone": "primary",
+            "from": ["failed"], "to": "processing",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" }, "instanceDataEquals": { "key": "consentConfirmed", "value": true } },
+            "effects": [
+              { "op": "set", "key": "failureReason", "value": null },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Guardian retried payment", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-checkout", "label": "Cancel checkout", "icon": "cancel", "tone": "secondary",
+            "from": ["processing"], "to": "unpaid",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "paymentHistory", "value": { "event": "Guardian cancelled checkout", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "view-receipt", "label": "View receipt", "icon": "receipt_long", "tone": "secondary",
+            "from": ["paid"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "paymentHistory", "value": { "event": "Guardian viewed payment confirmation", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "refund-payment", "label": "Refund payment", "icon": "currency_exchange", "tone": "destructive",
+            "from": ["paid"], "to": "refunded", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "refundNote": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "refundNote", "value": "{input.refundNote}" },
+              { "op": "set", "key": "refundedAt", "value": "$timestamp" },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Registration payment refunded", "note": "{input.refundNote}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "restart-after-refund", "label": "Start replacement payment", "icon": "replay", "tone": "secondary",
+            "from": ["refunded"], "to": "unpaid", "guard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+            "effects": [{ "op": "append", "key": "paymentHistory", "value": { "event": "Replacement payment opened", "byFanId": "$actor", "at": "$timestamp" } }]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["unpaid", "processing", "failed", "paid", "refunded"], "audience": "any", "tabId": "giving", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" },
+          { "states": ["paid", "refunded"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "registrationCaseId": { "type": "text", "required": true, "searchable": true, "displayIcon": "link", "labelTemplate": "Registration case: {value}", "displayContexts": ["detail"] },
+          "guardianFanId": { "type": "fanId", "required": true, "displayIcon": "family_restroom", "labelTemplate": "Payer: {value}", "displayContexts": ["detail"] },
+          "playerLabel": { "type": "text", "required": true, "searchable": true, "displayIcon": "sports_soccer", "labelTemplate": "Player: {value}", "displayContexts": ["tile", "detail"] },
+          "amountLabel": { "type": "text", "required": true, "displayIcon": "payments", "labelTemplate": "Fee: {value}", "displayContexts": ["tile", "detail"] },
+          "purpose": { "type": "text", "required": true, "displayIcon": "description", "labelTemplate": "For: {value}", "displayContexts": ["tile", "detail"] },
+          "consentRequiredLabel": { "type": "text", "required": true, "displayIcon": "policy", "labelTemplate": "Consent: {value}", "displayContexts": ["detail"] },
+          "consentConfirmed": { "type": "bool", "required": true, "displayIcon": "check_circle", "labelTemplate": "Payment authorization: {value}", "displayContexts": ["tile", "detail"] },
+          "paymentMethodNote": { "type": "text", "writableBy": "formEntry", "displayIcon": "credit_card", "labelTemplate": "Payment method: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): wallet/receipt provider must populate a private receipt id; JSON effects must not fabricate it.
+          "receiptId": { "type": "text", "displayContexts": [] },
+          "receiptDisplay": { "type": "text", "formula": "if($viewer == guardianFanId, receiptId, 'Private receipt')", "displayIcon": "receipt", "labelTemplate": "Receipt detail: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "paidAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Paid {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "refundNote": { "type": "text", "writableBy": "effect", "displayIcon": "currency_exchange", "labelTemplate": "Refund: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "refundedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Refunded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "paymentHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Payment history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-practice-schedule": {
+        "initialState": "upcoming",
+        "visibility": { "default": "guarded", "readGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] } },
+        "states": {
+          "upcoming": {
+            "label": "Upcoming practice", "tone": "info",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "fieldName", "opponent", "capacity", "reminderChannel", "reminderBody"],
+            "editGuard": { "allowedRoleIds": ["soccer-coach"] }
+          },
+          "rescheduled": {
+            "label": "Practice rescheduled", "tone": "warning",
+            "editableFields": ["title", "eventDate", "eventTime", "location", "fieldName", "opponent", "capacity", "reminderChannel", "reminderBody"],
+            "editGuard": { "allowedRoleIds": ["soccer-coach"] }
+          },
+          "cancelled": { "label": "Practice cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "publish-practice", "label": "Publish practice and open RSVPs", "icon": "publish", "tone": "primary", "action": "create",
+            "from": ["upcoming", "rescheduled"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-coach"], "instanceDataEquals": { "key": "published", "value": false } },
+            "effects": [
+              { "op": "set", "key": "published", "value": true },
+              { "op": "append", "key": "scheduleHistory", "value": { "event": "Practice published and RSVPs opened", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "save-schedule-update", "label": "Save practice details", "icon": "save", "tone": "primary", "action": "edit",
+            "from": ["upcoming", "rescheduled"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "changeNote": { "type": "text", "required": true } },
+            "effects": [{ "op": "append", "key": "scheduleHistory", "value": { "event": "Practice details updated", "note": "{input.changeNote}", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "mark-rescheduled", "label": "Mark practice rescheduled", "icon": "event_repeat", "tone": "secondary", "action": "edit",
+            "from": ["upcoming", "rescheduled"], "to": "rescheduled", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "rescheduleNote": { "type": "text", "required": true } },
+            "effects": [{ "op": "append", "key": "scheduleHistory", "value": { "event": "Practice rescheduled", "note": "{input.rescheduleNote}", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "send-next-reminder", "label": "Send practice reminder", "icon": "notifications_active", "tone": "primary", "action": "set_reminder",
+            "from": ["upcoming", "rescheduled"], "to": null, "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [{ "op": "append", "key": "reminderHistory", "value": { "event": "Coach queued reminders for RSVP rows", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "request-calendar-sync", "label": "Add to calendar", "icon": "calendar_add_on", "tone": "secondary", "action": "set_reminder",
+            "from": ["upcoming", "rescheduled"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "syncState", "value": "sync-requested" },
+              { "op": "append", "key": "scheduleHistory", "value": { "event": "Calendar sync requested", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-practice", "label": "Cancel practice", "icon": "event_busy", "tone": "destructive", "action": "cancel",
+            "from": ["upcoming", "rescheduled"], "to": "cancelled", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "cancellationReason": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "cancellationReason", "value": "{input.cancellationReason}" },
+              { "op": "append", "key": "scheduleHistory", "value": { "event": "Practice cancelled", "reason": "{input.cancellationReason}", "byFanId": "$actor", "at": "$timestamp" } },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-practice-rsvp-response", "filter": { "eventId": "{id}", "$state": "pending" } }, "transitionId": "event-cancelled" },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-practice-rsvp-response", "filter": { "eventId": "{id}", "$state": "going" } }, "transitionId": "event-cancelled" },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-practice-rsvp-response", "filter": { "eventId": "{id}", "$state": "maybe" } }, "transitionId": "event-cancelled" },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-practice-rsvp-response", "filter": { "eventId": "{id}", "$state": "declined" } }, "transitionId": "event-cancelled" },
+              { "op": "transitionRelated", "relatedQuery": { "workflowType": "soccer-practice-rsvp-response", "filter": { "eventId": "{id}", "$state": "waitlisted" } }, "transitionId": "event-cancelled" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["upcoming", "rescheduled"], "audience": "any", "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+            "actions": [{
+              "kind": "create", "label": "New practice", "byRoleIds": ["soccer-coach"],
+              "prefill": { "published": false, "syncState": "not-synced", "reminderHistory": [], "scheduleHistory": [] }
+            }],
+            "responseTable": { "workflowType": "soccer-practice-rsvp-response", "eventField": "eventId", "pendingStates": ["pending"] }
+          },
+          { "states": ["cancelled"], "audience": "any", "tabId": "calendar", "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" },
+          { "states": ["upcoming", "rescheduled", "cancelled"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" },
+          { "states": ["upcoming", "rescheduled"], "audience": "any", "tabId": "admin", "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary" }
+        ],
+        "instanceDataSchema": {
+          "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "sports_soccer", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "eventDate": { "type": "date", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "displayContexts": ["tile", "detail"] },
+          "eventTime": { "type": "time", "required": true, "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "Time: {value}", "displayContexts": ["tile", "detail"] },
+          "location": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["tile", "detail"] },
+          "fieldName": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "place", "labelTemplate": "Field: {value}", "displayContexts": ["tile", "detail"] },
+          "opponent": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "groups", "labelTemplate": "Opponent/session: {value}", "displayContexts": ["tile", "detail"] },
+          "capacity": { "type": "int", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "groups", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
+          "reminderChannel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "notifications", "labelTemplate": "Reminder: {value}", "displayContexts": ["tile", "detail"] },
+          "reminderBody": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "message", "labelTemplate": "Reminder text: {value}", "displayContexts": ["detail"] },
+          "published": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "RSVPs open: {value}", "displayContexts": ["tile", "detail"] },
+          "syncState": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Calendar: {value}", "displayContexts": ["tile", "detail"] },
+          "cancellationReason": { "type": "text", "writableBy": "effect", "displayIcon": "event_busy", "labelTemplate": "Cancelled: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "responses": { "type": "list", "source": "query(soccer-practice-rsvp-response where eventId == id)", "displayIcon": "how_to_reg", "labelTemplate": "Responses: {value.length}", "displayContexts": ["detail"] },
+          "reminderHistory": { "type": "list", "writableBy": "effect", "displayIcon": "notifications_active", "labelTemplate": "Reminder history: {value.length} entries", "displayContexts": ["detail"] },
+          "scheduleHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Schedule history: {value.length} entries", "displayContexts": ["detail"] }
+        }
+      },
+
+      "soccer-practice-rsvp-response": {
+        "initialState": "pending",
+        "visibility": { "default": "guarded", "readGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] } },
+        "states": {
+          "pending": { "label": "Response pending", "tone": "info" },
+          "going": { "label": "Going", "tone": "positive" },
+          "maybe": { "label": "Maybe", "tone": "warning" },
+          "declined": { "label": "Not attending", "tone": "negative" },
+          "waitlisted": { "label": "Waitlisted", "tone": "warning" },
+          "cancelled": { "label": "Practice cancelled", "tone": "negative", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "respond-going", "label": "Going", "icon": "check_circle", "tone": "primary", "action": "respond",
+            "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "effects": [
+              { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "going", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "respond-maybe", "label": "Maybe", "icon": "help", "tone": "secondary", "action": "respond",
+            "from": ["pending", "going", "declined", "waitlisted"], "to": "maybe",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "effects": [
+              { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "maybe", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "respond-declined", "label": "Not attending", "icon": "cancel", "tone": "secondary", "action": "respond",
+            "from": ["pending", "going", "maybe", "waitlisted"], "to": "declined",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "effects": [
+              { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "declined", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "respond-waitlist", "label": "Join waitlist", "icon": "hourglass_top", "tone": "secondary", "action": "join_waitlist",
+            "from": ["pending", "maybe", "declined"], "to": "waitlisted",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "effects": [
+              { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "waitlisted", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-rsvp", "label": "Cancel RSVP", "icon": "undo", "tone": "secondary", "action": "withdraw_response",
+            "from": ["going", "maybe", "waitlisted"], "to": "pending",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "effects": [
+              { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "withdrawn", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "send-reminder", "label": "Send reminder", "icon": "notifications_active", "tone": "primary", "action": "set_reminder",
+            "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "reminderStatus", "value": "sent" },
+              { "op": "append", "key": "responseHistory", "value": { "response": "reminder-sent", "byFanId": "$actor", "at": "$timestamp" } },
+              {
+                "op": "createInstance", "workflowType": "soccer-reminder-notification",
+                "fields": {
+                  "recipientFanId": "{fanId}", "senderFanId": "$actor", "relatedScheduleId": "{eventId}",
+                  "eventTitle": "{eventTitle}", "eventDate": "{eventDate}", "eventTime": "{eventTime}", "location": "{location}",
+                  "audienceLabel": "Guardian for this practice", "channel": "{reminderChannel}", "messageBody": "{reminderBody}",
+                  "sentAt": "$timestamp", "deliveryStatus": "sent", "changeRequests": []
+                }
+              }
+            ]
+          },
+          {
+            "id": "event-cancelled", "label": "Apply practice cancellation", "icon": "event_busy", "tone": "destructive", "action": "cancel",
+            "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": "cancelled", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [{ "op": "append", "key": "responseHistory", "value": { "response": "event-cancelled", "byFanId": "$actor", "at": "$timestamp" } }]
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "eventId": { "type": "text", "required": true, "searchable": true, "displayContexts": [] },
+          "fanId": { "type": "fanId", "required": true, "displayContexts": [] },
+          "eventTitle": { "type": "text", "required": true, "displayIcon": "sports_soccer", "labelTemplate": "{value}", "displayContexts": ["detail"] },
+          "eventDate": { "type": "date", "required": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "displayContexts": ["detail"] },
+          "eventTime": { "type": "time", "required": true, "displayIcon": "schedule", "labelTemplate": "Time: {value}", "displayContexts": ["detail"] },
+          "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["detail"] },
+          "fieldName": { "type": "text", "required": true, "displayIcon": "place", "labelTemplate": "Field: {value}", "displayContexts": ["detail"] },
+          "reminderChannel": { "type": "text", "required": true, "displayContexts": [] },
+          "reminderBody": { "type": "textarea", "required": true, "displayContexts": [] },
+          "reminderStatus": { "type": "text", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "responseUpdatedAt": { "type": "date", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "responseHistory": { "type": "list", "writableBy": "effect", "displayContexts": [] }
+        }
+      },
+
+      "soccer-waiver-document": {
+        "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedRoleIds": ["soccer-coach"] },
+          "fields": { "sharedWith": "guardianFanId" }
+        },
+        "states": {
+          "unread": {
+            "label": "Unread document", "tone": "info",
+            "editableFields": ["documentTitle", "documentVersion", "documentUrl", "sourceLabel", "accessLabel", "guardianFanId"],
+            "editGuard": { "allowedRoleIds": ["soccer-coach"] }
+          },
+          "read": { "label": "Document read", "tone": "info" },
+          "acknowledged": { "label": "Latest version acknowledged", "tone": "positive" },
+          "access-requested": { "label": "Access requested", "tone": "warning" },
+          "archived": { "label": "Document archived", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "mark-document-read", "label": "Open document", "icon": "open_in_new", "tone": "primary", "action": "open",
+            "from": ["unread", "read", "acknowledged"], "to": "read",
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "lastOpenedAt", "value": "$timestamp" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Document opened", "version": "{documentVersion}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "coach-open-document", "label": "Open document", "icon": "open_in_new", "tone": "primary", "action": "open",
+            "from": ["unread", "read", "acknowledged"], "to": "read", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "lastOpenedAt", "value": "$timestamp" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Coach opened document", "version": "{documentVersion}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "acknowledge-latest-version", "label": "Acknowledge waiver", "icon": "fact_check", "tone": "primary", "action": "acknowledge",
+            "from": ["unread", "read"], "to": "acknowledged", "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "acknowledgedAt", "value": "$timestamp" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Guardian acknowledged latest version", "version": "{documentVersion}", "byFanId": "$actor", "at": "$timestamp" } },
+              {
+                "op": "branch", "if": "if(registrationCaseId == null, false, true)",
+                "then": [{ "op": "set", "key": "waiverCheckpoint", "value": "acknowledged", "relatedInstance": "registrationCaseId" }],
+                "else": []
+              }
+            ]
+          },
+          {
+            "id": "request-document-access", "label": "Request access", "icon": "lock_open", "tone": "secondary", "action": "request_access",
+            "from": ["unread", "read", "acknowledged"], "to": "access-requested", "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "acknowledgementHistory", "value": { "event": "Guardian requested document access", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "grant-document-access", "label": "Grant access", "icon": "verified_user", "tone": "primary", "action": "grant_access",
+            "from": ["access-requested"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [
+              { "op": "set", "key": "accessLabel", "value": "Members may open; acknowledgement is tracked" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Coach granted document access", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "withdraw-access-request", "label": "Withdraw access request", "icon": "undo", "tone": "secondary", "action": "withdraw_access_request",
+            "from": ["access-requested"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "acknowledgementHistory", "value": { "event": "Guardian withdrew document access request", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "mark-document-unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary", "action": "mark_unread",
+            "from": ["read", "acknowledged"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [{ "op": "append", "key": "acknowledgementHistory", "value": { "event": "Document marked unread", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "prepare-new-version", "label": "Publish new waiver version", "icon": "upload_file", "tone": "secondary", "action": "upload",
+            "from": ["unread", "read", "acknowledged"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": {
+              "documentVersion": { "type": "text", "required": true },
+              "documentUrl": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "documentVersion", "value": "{input.documentVersion}" },
+              { "op": "set", "key": "documentUrl", "value": "{input.documentUrl}" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Coach published a new waiver version", "version": "{input.documentVersion}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "ask-coach-about-document", "label": "Ask coach", "icon": "contact_support", "tone": "secondary", "action": "request_follow_up",
+            "from": ["unread", "read", "acknowledged", "access-requested"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "inputs": { "question": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "appendUnique", "key": "askedCoachFanIds", "value": "$actor" },
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Guardian asked coach about the document", "question": "{input.question}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "archive-document", "label": "Archive document", "icon": "archive", "tone": "destructive", "action": "archive",
+            "from": ["unread", "read", "acknowledged", "access-requested"], "to": "archived", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [{ "op": "append", "key": "acknowledgementHistory", "value": { "event": "Document archived", "byFanId": "$actor", "at": "$timestamp" } }]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unread", "read", "acknowledged", "access-requested"], "audience": "any", "tabId": "documents",
+            "cardSurfaceFamily": "documentLibrary", "bindingKind": "primary",
+            "actions": [{ "kind": "create", "label": "Add waiver or policy", "byRoleIds": ["soccer-coach"], "prefill": { "askedCoachFanIds": [], "acknowledgementHistory": [] } }]
+          },
+          { "states": ["archived"], "audience": "any", "tabId": "documents", "cardSurfaceFamily": "documentLibrary", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "registrationCaseId": { "type": "text", "searchable": true, "displayIcon": "link", "labelTemplate": "Registration case: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "documentTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "description", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "documentVersion": { "type": "text", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "history_edu", "labelTemplate": "Version: {value}", "displayContexts": ["tile", "detail"] },
+          "documentUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayIcon": "open_in_new", "labelTemplate": "Open: {value}", "displayContexts": ["tile", "detail"] },
+          "sourceLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["tile", "detail"] },
+          "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "lock_open", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
+          "guardianFanId": { "type": "fanId", "required": true, "writableBy": "formEntry", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
+          "askedCoachFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "contact_support", "labelTemplate": "Coach questions: {value.length}", "displayContexts": ["detail"] },
+          "lastOpenedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Last opened {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "acknowledgedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Acknowledged {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "acknowledgementHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Document history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-reminder-notification": {
+        "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedRoleIds": ["soccer-coach"] },
+          "fields": { "recipient": "recipientFanId" }
+        },
+        "states": {
+          "unread": { "label": "Unread reminder", "tone": "info" },
+          "read": { "label": "Reminder read", "tone": "positive" },
+          "muted": { "label": "Reminders muted", "tone": "warning" }
+        },
+        "transitions": [
+          {
+            "id": "mark-reminder-read", "label": "Mark read", "icon": "done", "tone": "primary",
+            "from": ["unread"], "to": "read", "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [{ "op": "set", "key": "readAt", "value": "$timestamp" }]
+          },
+          {
+            "id": "keep-reminder-unread", "label": "Keep unread", "icon": "mark_email_unread", "tone": "secondary",
+            "from": ["read"], "to": "unread", "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [{ "op": "set", "key": "readAt", "value": null }]
+          },
+          {
+            "id": "mute-reminders", "label": "Mute reminders", "icon": "notifications_off", "tone": "secondary",
+            "from": ["unread", "read"], "to": "muted", "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [{ "op": "set", "key": "mutedAt", "value": "$timestamp" }]
+          },
+          {
+            "id": "unmute-reminders", "label": "Unmute reminders", "icon": "notifications_active", "tone": "secondary",
+            "from": ["muted"], "to": "unread", "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [{ "op": "set", "key": "mutedAt", "value": null }]
+          },
+          {
+            "id": "request-reminder-change", "label": "Request change", "icon": "edit_note", "tone": "secondary",
+            "from": ["unread", "read", "muted"], "to": null, "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "inputs": { "changeRequest": { "type": "text", "required": true } },
+            "effects": [{ "op": "append", "key": "changeRequests", "value": { "request": "{input.changeRequest}", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "open-related-schedule", "label": "Open schedule", "icon": "calendar_today", "tone": "secondary",
+            "from": ["unread", "read", "muted"], "to": null, "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [{ "op": "set", "key": "scheduleOpenedAt", "value": "$timestamp" }]
+          }
+        ],
+        "renderBindings": [
+          { "states": ["unread", "read", "muted"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" },
+          { "states": ["unread", "read", "muted"], "audience": "any", "tabId": "admin", "cardSurfaceFamily": "notificationInbox", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "recipientFanId": { "type": "fanId", "required": true, "displayIcon": "person", "labelTemplate": "Recipient: {value}", "displayContexts": ["detail"] },
+          "senderFanId": { "type": "fanId", "required": true, "displayIcon": "sports", "labelTemplate": "Sent by: {value}", "displayContexts": ["tile", "detail"] },
+          "relatedScheduleId": { "type": "text", "required": true, "searchable": true, "displayIcon": "event", "labelTemplate": "Schedule: {value}", "displayContexts": ["detail"] },
+          "eventTitle": { "type": "text", "required": true, "displayIcon": "sports_soccer", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "eventDate": { "type": "date", "required": true, "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "displayContexts": ["tile", "detail"] },
+          "eventTime": { "type": "time", "required": true, "displayIcon": "schedule", "labelTemplate": "Time: {value}", "displayContexts": ["tile", "detail"] },
+          "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["tile", "detail"] },
+          "audienceLabel": { "type": "text", "required": true, "displayIcon": "groups", "labelTemplate": "Audience: {value}", "displayContexts": ["tile", "detail"] },
+          "channel": { "type": "text", "required": true, "displayIcon": "notifications", "labelTemplate": "Channel: {value}", "displayContexts": ["tile", "detail"] },
+          "messageBody": { "type": "textarea", "required": true, "displayIcon": "message", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "sentAt": { "type": "date", "required": true, "sortable": true, "displayIcon": "schedule", "labelTemplate": "Sent {value}", "displayContexts": ["tile", "detail"] },
+          "deliveryStatus": { "type": "text", "required": true, "displayIcon": "send", "labelTemplate": "Delivery: {value}", "displayContexts": ["tile", "detail"] },
+          "readAt": { "type": "date?", "writableBy": "effect", "displayIcon": "done_all", "labelTemplate": "Read {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "mutedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "notifications_off", "labelTemplate": "Muted {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "scheduleOpenedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "calendar_today", "labelTemplate": "Schedule opened {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "changeRequests": { "type": "list", "writableBy": "effect", "displayIcon": "edit_note", "labelTemplate": "Change requests: {value.length}", "displayContexts": ["detail"] }
+        }
+      },
+
+      "soccer-export-metadata": {
+        "initialState": "draft",
+        "visibility": { "default": "guarded", "readGuard": { "allowedRoleIds": ["soccer-owner"] } },
+        "states": {
+          "draft": {
+            "label": "Draft export", "tone": "info",
+            "editableFields": ["exportTitle"], "editGuard": { "allowedRoleIds": ["soccer-owner"] }
+          },
+          "scope-selected": { "label": "Export scope selected", "tone": "info" },
+          "redaction-reviewed": { "label": "Minor-data redaction reviewed", "tone": "positive" },
+          "generating": { "label": "Export generation in progress", "tone": "warning" },
+          "completed": { "label": "Export ready", "tone": "positive" },
+          "failed": { "label": "Export failed", "tone": "negative" },
+          "cancelled": { "label": "Export cancelled", "tone": "info" },
+          "rolled-back": { "label": "Export rolled back", "tone": "warning" }
+        },
+        "transitions": [
+          {
+            "id": "select-export-scope", "label": "Select export scope", "icon": "checklist", "tone": "primary", "action": "configure_scope",
+            "from": ["draft"], "to": "scope-selected", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "inputs": {
+              "exportScope": { "type": "list", "required": true },
+              "redactedFields": { "type": "list", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "exportScope", "value": "{input.exportScope}" },
+              { "op": "set", "key": "redactedFields", "value": "{input.redactedFields}" },
+              { "op": "set", "key": "redactionConfirmed", "value": false },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner selected export scope", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "change-export-scope", "label": "Change scope", "icon": "edit", "tone": "secondary", "action": "configure_scope",
+            "from": ["scope-selected", "redaction-reviewed"], "to": "scope-selected", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "inputs": {
+              "exportScope": { "type": "list", "required": true },
+              "redactedFields": { "type": "list", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "exportScope", "value": "{input.exportScope}" },
+              { "op": "set", "key": "redactedFields", "value": "{input.redactedFields}" },
+              { "op": "set", "key": "redactionConfirmed", "value": false },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner changed export scope", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "review-redaction-preview", "label": "Confirm redaction preview", "icon": "privacy_tip", "tone": "primary", "action": "approve_redaction",
+            "from": ["scope-selected"], "to": "redaction-reviewed", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "effects": [
+              { "op": "set", "key": "redactionConfirmed", "value": true },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner confirmed minor-data redaction preview", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "start-export", "label": "Start export or transfer", "icon": "outbox", "tone": "primary", "action": "run",
+            "from": ["redaction-reviewed"], "to": "generating",
+            "guard": { "allowedRoleIds": ["soccer-owner"], "instanceDataEquals": { "key": "redactionConfirmed", "value": true }, "formula": "size(exportScope) > 0" },
+            "inputs": { "operationMode": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "operationMode", "value": "{input.operationMode}" },
+              { "op": "set", "key": "startedAt", "value": "$timestamp" },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner started portability operation", "mode": "{input.operationMode}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-export-ready", "label": "Record export ready", "icon": "task_alt", "tone": "primary", "action": "record_outcome",
+            "from": ["generating"], "to": "completed", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "inputs": { "downloadUrl": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "downloadUrl", "value": "{input.downloadUrl}" },
+              { "op": "set", "key": "completedAt", "value": "$timestamp" },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner recorded redacted export as ready", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "mark-export-failed", "label": "Record export failure", "icon": "error", "tone": "destructive", "action": "record_outcome",
+            "from": ["generating"], "to": "failed", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "inputs": { "failureReason": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "failureReason", "value": "{input.failureReason}" },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Export failed", "reason": "{input.failureReason}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "cancel-export", "label": "Cancel export", "icon": "cancel", "tone": "secondary", "action": "cancel",
+            "from": ["draft", "scope-selected", "redaction-reviewed", "generating"], "to": "cancelled", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "effects": [{ "op": "append", "key": "exportHistory", "value": { "event": "Owner cancelled portability operation", "byFanId": "$actor", "at": "$timestamp" } }]
+          },
+          {
+            "id": "retry-export", "label": "Retry export", "icon": "refresh", "tone": "primary", "action": "retry",
+            "from": ["failed", "cancelled", "rolled-back"], "to": "redaction-reviewed", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "effects": [
+              { "op": "set", "key": "failureReason", "value": null },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner reopened export after failure, cancellation, or rollback", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-export-download", "label": "Download export", "icon": "download", "tone": "secondary", "action": "record_outcome",
+            "from": ["completed"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-owner"], "formula": "if(downloadUrl == null, false, true)" },
+            "effects": [
+              { "op": "set", "key": "downloadedAt", "value": "$timestamp" },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner opened export download", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "rollback-export", "label": "Roll back export", "icon": "undo", "tone": "destructive", "action": "rollback",
+            "from": ["completed"], "to": "rolled-back", "guard": { "allowedRoleIds": ["soccer-owner"] },
+            "inputs": { "rollbackReason": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "set", "key": "rollbackReason", "value": "{input.rollbackReason}" },
+              { "op": "set", "key": "rolledBackAt", "value": "$timestamp" },
+              { "op": "append", "key": "exportHistory", "value": { "event": "Owner rolled back export", "reason": "{input.rollbackReason}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft", "scope-selected", "redaction-reviewed", "generating", "completed", "failed", "cancelled", "rolled-back"],
+            "audience": "any", "tabId": "admin", "cardSurfaceFamily": "exportWizard", "bindingKind": "primary",
+            "actions": [{ "kind": "create", "label": "New redacted export", "byRoleIds": ["soccer-owner"], "prefill": { "exportScope": [], "redactedFields": [], "redactionConfirmed": false, "exportHistory": [] } }]
+          },
+          { "states": ["completed", "failed"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "exportWizard", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "exportTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "archive", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "exportScope": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "checklist", "labelTemplate": "Scope: {value}", "displayContexts": ["tile", "detail"] },
+          "redactedFields": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "privacy_tip", "labelTemplate": "Redacted: {value}", "displayContexts": ["tile", "detail"] },
+          "redactionConfirmed": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "verified_user", "labelTemplate": "Redaction approved: {value}", "displayContexts": ["tile", "detail"] },
+          "operationMode": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Mode: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "downloadUrl": { "type": "url", "writableBy": "effect", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): export service must calculate and populate checksum; no JSON effect may fabricate it.
+          "checksum": { "type": "text", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          // NEEDS IMPLEMENTATION (platform service): transfer provider must allocate and populate transferId.
+          "transferId": { "type": "text", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          // NEEDS IMPLEMENTATION (platform service): export service must allocate and populate exportReceiptId.
+          "exportReceiptId": { "type": "text", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Started {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "task_alt", "labelTemplate": "Completed {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Downloaded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "rollbackReason": { "type": "text", "writableBy": "effect", "displayIcon": "undo", "labelTemplate": "Rollback: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "rolledBackAt": { "type": "date?", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Rolled back {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "exportHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Export history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+        }
+      },
+
+      "soccer-team-discussion": {
+        "initialState": "open",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "open": {
+            "label": "Open thread", "tone": "info", "editableFields": ["threadTitle"],
+            "editGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] }
+          },
+          "replied": { "label": "Thread has replies", "tone": "positive" },
+          "archived": { "label": "Thread archived", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "reply-to-thread", "label": "Reply", "icon": "reply", "tone": "primary",
+            "from": ["open"], "to": "replied", "guard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+            "inputs": { "message": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "append", "key": "messages", "value": { "senderFanId": "$actor", "body": "{input.message}", "timestamp": "$timestamp" } },
+              { "op": "set", "key": "lastMessage", "value": "{input.message}" },
+              { "op": "set", "key": "lastReplyAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "reply-again", "label": "Reply", "icon": "reply", "tone": "primary",
+            "from": ["replied"], "to": null, "guard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] },
+            "inputs": { "message": { "type": "text", "required": true } },
+            "effects": [
+              { "op": "append", "key": "messages", "value": { "senderFanId": "$actor", "body": "{input.message}", "timestamp": "$timestamp" } },
+              { "op": "set", "key": "lastMessage", "value": "{input.message}" },
+              { "op": "set", "key": "lastReplyAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "archive-thread", "label": "Archive thread", "icon": "archive", "tone": "destructive",
+            "from": ["open", "replied"], "to": "archived", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "effects": [{ "op": "set", "key": "archivedAt", "value": "$timestamp" }]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["open", "replied"], "audience": "any", "tabId": "messages", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary",
+            "actions": [{ "kind": "create", "label": "New team thread", "byRoleIds": ["soccer-guardian", "soccer-coach"], "prefill": { "messages": [] } }]
+          },
+          { "states": ["archived"], "audience": "any", "tabId": "messages", "cardSurfaceFamily": "discussionThread", "bindingKind": "summary" }
+        ],
+        "instanceDataSchema": {
+          "threadTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "forum", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "lastMessage": { "type": "text", "writableBy": "effect", "displayIcon": "chat_bubble", "labelTemplate": "Latest: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "lastReplyAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Last reply {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "messages": { "type": "list", "writableBy": "effect", "displayIcon": "chat", "labelTemplate": "Messages: {value.length}", "displayContexts": ["tile", "detail"] },
+          "archivedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "archive", "labelTemplate": "Archived {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
+        }
       }
     },
-    {
-      "instanceId": "soccer-minor-detail",
-      "workflowType": "soccer-minor-redaction",
-      "currentState": "redacted",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "minorName": "Sofia Rivera",
-        "birthDateMasked": "2***",
-        "consentStatus": "Guardian consent active for roster only",
-        "redactionReason": "Birth date and medical notes masked outside consent scope",
-        "detailStatus": "Redacted for minor privacy",
-        "auditTrail": []
+
+    "workflowInstances": [
+      {
+        "instanceId": "soccer-registration-case-river",
+        "workflowType": "soccer-guardian-join-approval",
+        "currentState": "under-review",
+        "createdByFanId": "soccer-guardian",
+        "instanceData": {
+          "caseTitle": "River's fall registration",
+          "playerLabel": "River A.",
+          "requestDetails": "U12 registration for the Riverside Rapids.",
+          "registrationFeeLabel": "$185 season fee",
+          "waiverTitle": "2026 Player Safety and Participation Waiver",
+          "waiverVersion": "v3.2",
+          "waiverUrl": "https://riverside.example.org/waivers/player-safety-v3-2",
+          "guardianFanId": "soccer-guardian",
+          "coachReviewerFanId": "soccer-coach",
+          "paymentCheckpoint": "paid",
+          "waiverCheckpoint": "acknowledged",
+          "missingItems": [],
+          "submittedAt": "2026-08-10T16:30:00-07:00",
+          "history": [
+            { "event": "Registration request submitted", "byFanId": "soccer-guardian", "at": "2026-08-10T16:30:00-07:00" },
+            { "event": "Coach review started", "byFanId": "soccer-coach", "at": "2026-08-11T09:00:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-registration-case-jordan",
+        "workflowType": "soccer-guardian-join-approval",
+        "currentState": "approved",
+        "createdByFanId": "soccer-guardian",
+        "instanceData": {
+          "caseTitle": "Jordan's returning-player registration",
+          "playerLabel": "Jordan R.",
+          "requestDetails": "Returning U12 player registration.",
+          "registrationFeeLabel": "$185 season fee",
+          "waiverTitle": "2026 Player Safety and Participation Waiver",
+          "waiverVersion": "v3.2",
+          "waiverUrl": "https://riverside.example.org/waivers/player-safety-v3-2",
+          "guardianFanId": "soccer-guardian",
+          "coachReviewerFanId": "soccer-coach",
+          "paymentCheckpoint": "paid",
+          "waiverCheckpoint": "acknowledged",
+          "missingItems": [],
+          "submittedAt": "2026-08-01T13:00:00-07:00",
+          "approvedAt": "2026-08-03T10:15:00-07:00",
+          "history": [
+            { "event": "Coach approved registration and created roster/privacy rows", "byFanId": "soccer-coach", "at": "2026-08-03T10:15:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-roster-jordan",
+        "workflowType": "soccer-team-roster",
+        "currentState": "active",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "registrationCaseId": "soccer-registration-case-jordan",
+          "playerDisplayLabel": "Jordan R.",
+          "guardianFanId": "soccer-guardian",
+          "roleLabel": "Player",
+          "approvalState": "approved",
+          "waiverStatus": "acknowledged",
+          "redactionState": "guardian-approved-limited-share",
+          "redactedMinorFields": ["Full birth date", "Medical notes", "Home address"],
+          "previousRedactionState": "redacted",
+          "previousRedactedMinorFields": ["Full birth date", "Medical notes", "Home address"],
+          "updatedAt": "2026-08-05T18:00:00-07:00",
+          "rosterHistory": [
+            { "event": "Player added automatically from approved registration", "at": "2026-08-03T10:15:00-07:00" },
+            { "event": "Guardian approved limited coach metadata", "byFanId": "soccer-guardian", "at": "2026-08-05T18:00:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-redaction-jordan",
+        "workflowType": "soccer-minor-redaction",
+        "currentState": "consent-confirmed",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "registrationCaseId": "soccer-registration-case-jordan",
+          "playerLabel": "Jordan R.",
+          "guardianFanId": "soccer-guardian",
+          "protectedFieldLabels": ["Full birth date", "Medical notes", "Home address"],
+          "allowedCoachMetadata": ["Player display label", "Approval status", "Waiver status"],
+          "redactionPreview": ["Full birth date hidden", "Medical notes hidden", "Player display label shared", "Waiver and approval status shared"],
+          "consentChoice": "limited-coach-share",
+          "confirmedAt": "2026-08-05T18:00:00-07:00",
+          "consentHistory": [
+            { "event": "Guardian approved limited coach metadata", "byFanId": "soccer-guardian", "at": "2026-08-05T18:00:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-payment-river",
+        "workflowType": "soccer-registration-payment",
+        "currentState": "paid",
+        "createdByFanId": "soccer-guardian",
+        "instanceData": {
+          "registrationCaseId": "soccer-registration-case-river",
+          "guardianFanId": "soccer-guardian",
+          "playerLabel": "River A.",
+          "amountLabel": "$185 season fee",
+          "purpose": "Riverside fall registration",
+          "consentRequiredLabel": "Guardian payment authorization required",
+          "consentConfirmed": true,
+          "paymentMethodNote": "Paid at the league registration desk",
+          "receiptStatus": "offline-payment-verified",
+          "paidAt": "2026-08-10T17:10:00-07:00",
+          "paymentHistory": [
+            { "event": "Coach verified an offline payment", "byFanId": "soccer-coach", "at": "2026-08-10T17:10:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-practice-aug-18",
+        "workflowType": "soccer-practice-schedule",
+        "currentState": "upcoming",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "title": "Riverside Rapids U12 practice",
+          "eventDate": "2026-08-18",
+          "eventTime": "17:30",
+          "location": "Riverside Sports Complex",
+          "fieldName": "North Field 2",
+          "opponent": "Training session — no opponent",
+          "capacity": 18,
+          "reminderChannel": "In-app reminder center",
+          "reminderBody": "Practice starts at 5:30 PM on North Field 2. Bring water and shin guards.",
+          "published": true,
+          "syncState": "not-synced",
+          "reminderHistory": [],
+          "scheduleHistory": []
+        }
+      },
+      {
+        "instanceId": "soccer-rsvp-river-aug-18",
+        "workflowType": "soccer-practice-rsvp-response",
+        "currentState": "going",
+        "createdByFanId": "soccer-guardian",
+        "instanceData": {
+          "eventId": "soccer-practice-aug-18",
+          "fanId": "soccer-guardian",
+          "eventTitle": "Riverside Rapids U12 practice",
+          "eventDate": "2026-08-18",
+          "eventTime": "17:30",
+          "location": "Riverside Sports Complex",
+          "fieldName": "North Field 2",
+          "reminderChannel": "In-app reminder center",
+          "reminderBody": "Practice starts at 5:30 PM on North Field 2. Bring water and shin guards.",
+          "reminderStatus": "pending",
+          "responseUpdatedAt": "2026-08-12T08:30:00-07:00",
+          "responseHistory": [
+            { "response": "going", "byFanId": "soccer-guardian", "at": "2026-08-12T08:30:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-waiver-river",
+        "workflowType": "soccer-waiver-document",
+        "currentState": "acknowledged",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "registrationCaseId": "soccer-registration-case-river",
+          "documentTitle": "2026 Player Safety and Participation Waiver",
+          "documentVersion": "v3.2",
+          "documentUrl": "https://riverside.example.org/waivers/player-safety-v3-2",
+          "sourceLabel": "Riverside Youth Soccer",
+          "accessLabel": "Members may open; acknowledgement is tracked",
+          "guardianFanId": "soccer-guardian",
+          "askedCoachFanIds": [],
+          "lastOpenedAt": "2026-08-10T16:45:00-07:00",
+          "acknowledgedAt": "2026-08-10T16:50:00-07:00",
+          "acknowledgementHistory": [
+            { "event": "Guardian acknowledged latest version", "version": "v3.2", "byFanId": "soccer-guardian", "at": "2026-08-10T16:50:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-reminder-aug-18",
+        "workflowType": "soccer-reminder-notification",
+        "currentState": "unread",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "recipientFanId": "soccer-guardian",
+          "senderFanId": "soccer-coach",
+          "relatedScheduleId": "soccer-practice-aug-18",
+          "eventTitle": "Riverside Rapids U12 practice",
+          "eventDate": "2026-08-18",
+          "eventTime": "17:30",
+          "location": "Riverside Sports Complex",
+          "audienceLabel": "Guardians for this practice",
+          "channel": "In-app reminder center",
+          "messageBody": "Practice starts at 5:30 PM on North Field 2. Bring water and shin guards.",
+          "sentAt": "2026-08-12T09:00:00-07:00",
+          "deliveryStatus": "sent",
+          "changeRequests": []
+        }
+      },
+      {
+        "instanceId": "soccer-export-fall-2026",
+        "workflowType": "soccer-export-metadata",
+        "currentState": "redaction-reviewed",
+        "createdByFanId": "soccer-owner",
+        "instanceData": {
+          "exportTitle": "Fall 2026 team metadata export",
+          "exportScope": ["Team names", "Player display labels", "Approval status", "Waiver status"],
+          "redactedFields": ["Full birth date", "Medical notes", "Home address", "Private receipt"],
+          "redactionConfirmed": true,
+          "exportHistory": [
+            { "event": "Owner confirmed minor-data redaction preview", "byFanId": "soccer-owner", "at": "2026-08-12T07:45:00-07:00" }
+          ]
+        }
+      },
+      {
+        "instanceId": "soccer-thread-field-change",
+        "workflowType": "soccer-team-discussion",
+        "currentState": "replied",
+        "createdByFanId": "soccer-coach",
+        "instanceData": {
+          "threadTitle": "Saturday field update",
+          "lastMessage": "Thanks — we will use the east parking lot.",
+          "lastReplyAt": "2026-08-11T19:15:00-07:00",
+          "messages": [
+            { "senderFanId": "soccer-coach", "body": "Saturday's scrimmage moved to South Field 1.", "timestamp": "2026-08-11T18:30:00-07:00" },
+            { "senderFanId": "soccer-guardian", "body": "Thanks — we will use the east parking lot.", "timestamp": "2026-08-11T19:15:00-07:00" }
+          ]
+        }
       }
-    },
-    {
-      "instanceId": "soccer-payment-registration",
-      "workflowType": "soccer-registration-payment",
-      "currentState": "unpaid",
-      "createdByPersonaId": "guardian",
-      "instanceData": {
-        "feeLabel": "Registration fee $125.00",
-        "amount": 125,
-        "paymentStatus": "Unpaid",
-        "receiptId": "Pending",
-        "receiptHistory": [],
-        "subscriptionStatus": "Not managed"
-      }
-    },
-    {
-      "instanceId": "soccer-waiver-2026",
-      "workflowType": "soccer-waiver-document",
-      "currentState": "available",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "documentTitle": "2026 Youth Sports Waiver",
-        "version": "v3",
-        "source": "Riverside Parks PDF",
-        "acknowledgementState": "Not acknowledged",
-        "auditTrail": []
-      }
-    },
-    {
-      "instanceId": "soccer-reminder-practice",
-      "workflowType": "soccer-reminder-notification",
-      "currentState": "draft",
-      "createdByPersonaId": "coach",
-      "instanceData": {
-        "sender": "Coach Morgan",
-        "audience": "U10 guardians",
-        "channel": "Push + email",
-        "timestamp": "Draft for Fri 6 PM",
-        "readState": "Unread",
-        "deliveryState": "Draft",
-        "deliveryReceipts": [],
-        "message": "Practice starts at 9 AM"
-      }
-    },
-    {
-      "instanceId": "soccer-thread-weekend",
-      "workflowType": "soccer-team-discussion",
-      "currentState": "open",
-      "createdByPersonaId": "guardian",
-      "instanceData": {
-        "threadTitle": "Weekend snack rotation",
-        "lastMessage": "Can anyone swap snack duty?",
-        "messages": [
-          "Elena: Can anyone swap snack duty?"
-        ]
-      }
-    },
-    {
-      "instanceId": "soccer-export-2026",
-      "workflowType": "soccer-export-metadata",
-      "currentState": "ready",
-      "createdByPersonaId": "owner",
-      "instanceData": {
-        "scope": "Registration, roster, payments, waivers",
-        "redactionPreview": "Minor fields masked before transfer",
-        "checksum": "Pending",
-        "exportStatus": "Ready"
-      }
-    }
-  ]
+    ]
+  }
 }

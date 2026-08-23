@@ -2,37 +2,74 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
 
-const _shippedCommunityPackagePathsByExtensionId = <String, String>{
-  'ext_garden_club':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
-  'ext_camera_club':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
-  'ext_neighborhood_book_club':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc',
-  'ext_chess_club':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
-  'ext_youth_soccer':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc',
-  'ext_mosque':
-      'docs/references/communities/'
-      'Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc',
-};
+typedef _ShippedCommunityPackageLocation = ({
+  String repositoryPath,
+  String assetPath,
+});
+
+const _shippedCommunityPackageLocationsByExtensionId =
+    <String, _ShippedCommunityPackageLocation>{
+      'ext_garden_club': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+      ),
+      'ext_camera_club': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+      ),
+      'ext_neighborhood_book_club': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
+      ),
+      'ext_chess_club': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+      ),
+      'ext_youth_soccer': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
+      ),
+      'ext_mosque': (
+        repositoryPath:
+            'docs/references/communities/'
+            'Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc',
+        assetPath:
+            'packages/loom_communities_app_shell/assets/'
+            'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
+      ),
+    };
 
 bool hasShippedEvidencePackage(String extensionId) =>
-    _shippedCommunityPackagePathsByExtensionId.containsKey(extensionId);
+    _shippedCommunityPackageLocationsByExtensionId.containsKey(extensionId);
 
-File _repositoryFile(String relativePath) {
+File? _repositoryFile(String relativePath) {
   var directory = Directory.current;
   for (var i = 0; i < 8; i++) {
     final file = File('${directory.path}/$relativePath');
@@ -41,7 +78,24 @@ File _repositoryFile(String relativePath) {
     if (parent.path == directory.path) break;
     directory = parent;
   }
-  throw StateError('Fixture not found: $relativePath');
+  return null;
+}
+
+Future<String> _readShippedCommunityPackageSource(
+  _ShippedCommunityPackageLocation location,
+) async {
+  final repositoryFile = _repositoryFile(location.repositoryPath);
+  if (repositoryFile != null) {
+    return repositoryFile.readAsStringSync();
+  }
+  try {
+    return await rootBundle.loadString(location.assetPath);
+  } catch (error) {
+    throw StateError(
+      'Fixture not found: ${location.repositoryPath}. Bundled Flutter asset '
+      '${location.assetPath} could not be loaded: $error',
+    );
+  }
 }
 
 Future<void> installEvidenceTarget(
@@ -51,7 +105,7 @@ Future<void> installEvidenceTarget(
   bool useShippedPackage = false,
 }) async {
   final fixture = useShippedPackage
-      ? writeEvidencePackagePair(target)
+      ? await writeEvidencePackagePair(target)
       : _writeMetadataEvidencePackagePair(target);
   await tester.tap(find.byKey(openButtonKey));
   await tester.pumpAndSettle();
@@ -750,8 +804,10 @@ Future<void> completeTargetWorkflows(
   }
 }
 
-EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
-  final shippedPackage = readShippedEvidencePackage(target);
+Future<EvidencePackagePair> writeEvidencePackagePair(
+  LoomEvidenceTarget target,
+) async {
+  final shippedPackage = await readShippedEvidencePackage(target);
   final decoded = shippedPackage.source;
   final workflowDefinitions = shippedPackage.experience.workflowDefinitions!;
 
@@ -808,17 +864,21 @@ EvidencePackagePair writeEvidencePackagePair(LoomEvidenceTarget target) {
   );
 }
 
-ShippedEvidencePackage readShippedEvidencePackage(LoomEvidenceTarget target) {
-  final packagePath =
-      _shippedCommunityPackagePathsByExtensionId[target.extensionId];
-  if (packagePath == null) {
+Future<ShippedEvidencePackage> readShippedEvidencePackage(
+  LoomEvidenceTarget target,
+) async {
+  final packageLocation =
+      _shippedCommunityPackageLocationsByExtensionId[target.extensionId];
+  if (packageLocation == null) {
     throw StateError(
       'No shipped community package is registered for '
       '${target.extensionId}.',
     );
   }
   final decoded = jsonDecode(
-    stripJsonComments(_repositoryFile(packagePath).readAsStringSync()),
+    stripJsonComments(
+      await _readShippedCommunityPackageSource(packageLocation),
+    ),
   );
   if (decoded is! Map<String, dynamic>) {
     throw StateError('Shipped community package must contain a JSON object.');

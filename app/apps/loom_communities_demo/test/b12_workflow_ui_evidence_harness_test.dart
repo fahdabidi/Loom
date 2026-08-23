@@ -42,7 +42,7 @@ void main() {
         (target) => target.extensionId == entry.key,
       );
       expect(hasShippedEvidencePackage(target.extensionId), isTrue);
-      final package = readShippedEvidencePackage(target);
+      final package = await readShippedEvidencePackage(target);
       expect(package.experience.workflows, isEmpty);
       expect(package.experience.workflowDefinitions, isNotEmpty);
       expect(package.experience.workflowInstances, isNotEmpty);
@@ -52,7 +52,7 @@ void main() {
       );
       expect(package.appShellConfiguration['tabs'], isNotEmpty);
 
-      final pair = writeEvidencePackagePair(target);
+      final pair = await writeEvidencePackagePair(target);
       final initialization =
           jsonDecode(await File(pair.initializationPath).readAsString())
               as Map<String, dynamic>;

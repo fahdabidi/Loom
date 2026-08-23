@@ -1,43 +1,17 @@
 {
   "schemaVersion": 2,
-  "status": "walkthrough-only",
-  "evidenceMode": "walkthrough-only",
-  "walkthroughStatus": "pass",
-  "screenshotStatus": "unavailable",
+  "status": "fail",
+  "evidenceMode": "failed",
+  "walkthroughStatus": "not-completed",
+  "screenshotStatus": "not-captured",
   "completionGateEligible": false,
-  "screenshotUnavailableReason": "MissingPluginException(No implementation found for method captureScreenshot on channel plugins.flutter.io/integration_test)",
-  "phases": [
-    "B12"
-  ],
-  "phaseSummaries": [
-    {
-      "phase": "B12",
-      "status": "walkthrough-only",
-      "walkthroughStatus": "pass",
-      "screenshotStatus": "unavailable",
-      "expectedWorkflowCount": 1,
-      "workflowCount": 1,
-      "requestedScreenshotCount": 3,
-      "screenshotCount": 0
-    }
-  ],
-  "expectedWorkflowCount": 1,
-  "workflowCount": 1,
-  "requestedScreenshotCount": 3,
+  "failureReason": "The walkthrough started but did not return a completed result.",
+  "phases": [],
+  "workflowCount": 0,
+  "requestedScreenshotCount": 0,
   "screenshotCount": 0,
-  "missingScreenshotCount": 3,
-  "missingScreenshotNames": [
-    "B12_harness_action",
-    "B12_harness_complete",
-    "B12_harness_start"
-  ],
-  "workflowEvidenceManifestPaths": [
-    "../../../docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json"
-  ],
-  "deviceName": "linux-desktop",
-  "emulatorName": "linux-desktop",
-  "deviceClass": "Linux desktop",
-  "platform": "linux",
+  "missingScreenshotCount": 0,
+  "workflowEvidenceManifestPaths": [],
   "commandOutputPath": "../../../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "recordedAt": "2026-08-22T14:33:04.777452Z"
+  "startedAt": "2026-08-23T01:00:15.277713Z"
 }

@@ -1,123 +1,1814 @@
+// Camera Club — specVersion 4 community package.
+// Cross-package package, role, tab, and workflow identifiers are preserved from the shipped package.
 {
-  "personas": ["camera-member", "camera-organizer"],
-  "templates": {
-    "dashboard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
-    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
-    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
-    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
-    "discussionThread": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
-    "statusTimeline": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  "specVersion": 4,
+  "packageId": "init_camera_club_1",
+  "communityId": "community_camera_club",
+  "communityHandle": "camera-club",
+  "displayName": "Camera Club",
+  "extensionId": "ext_camera_club",
+  "branding": { "accentColor": "#37474F" },
+  "seedDataFiles": [],
+  "idempotencyKey": "camera-club-spec-v4-2026-08-19",
+
+  "experience": {
+    "displayName": "Camera Club",
+    "tagline": "Photo walks, thoughtful critiques, and camera gear shared by the club.",
+    "accentColor": "#37474F",
+    "theme": {
+      "accent": "#37474F",
+      "tabThemes": {
+        "calendar": { "accent": "#1565C0" },
+        "critique": { "accent": "#6A1B9A" },
+        "marketplace": { "accent": "#2E7D32" },
+        "admin": { "accent": "#455A64" }
+      }
+    },
+    "creatableAction": {
+      "multiActionStyle": "speedDial",
+      "presentationStyle": "slideOutBottom"
+    },
+    "notificationPresentation": { "style": "bell" },
+
+    "roles": [
+      {
+        "roleId": "camera-club-organizer",
+        "label": "Organizer",
+        "roleLabel": "Organizer",
+        "description": "Schedules photo walks, reviews critiques, publishes announcements, and oversees gear custody."
+      },
+      {
+        "roleId": "camera-club-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear."
+      }
+    ],
+
+    "workflowDefinitions": {
+      "photo-walk-rsvp": {
+        "initialState": "draft",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "draft": {
+            "label": "Walk draft",
+            "tone": "info",
+            "editableFields": [
+              "title",
+              "routeName",
+              "eventDate",
+              "eventTime",
+              "location",
+              "organizerName",
+              "capacity",
+              "weatherChecklistNotes"
+            ],
+            "editGuard": { "allowedRoleIds": ["camera-club-organizer"] }
+          },
+          "open": {
+            "label": "RSVP open",
+            "tone": "positive",
+            "editableFields": [
+              "title",
+              "routeName",
+              "eventDate",
+              "eventTime",
+              "location",
+              "organizerName",
+              "capacity",
+              "weatherChecklistNotes"
+            ],
+            "editGuard": { "allowedRoleIds": ["camera-club-organizer"] }
+          },
+          "cancelled": {
+            "label": "Walk cancelled",
+            "tone": "negative",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "publish-walk",
+            "action": "create",
+            "label": "Publish walk",
+            "icon": "publish",
+            "tone": "primary",
+            "from": ["draft"],
+            "to": "open",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] }
+          },
+          {
+            "id": "cancel-walk",
+            "action": "cancel",
+            "label": "Cancel walk",
+            "icon": "cancel",
+            "tone": "destructive",
+            "from": ["draft", "open"],
+            "to": "cancelled",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] },
+            "effects": [
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "pending" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "going" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "maybe" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "declined" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "waitlisted" }
+                },
+                "transitionId": "event-cancelled"
+              },
+              {
+                "op": "transitionRelated",
+                "relatedQuery": {
+                  "workflowType": "photo-walk-response",
+                  "filter": { "eventId": "{id}", "$state": "withdrawn" }
+                },
+                "transitionId": "event-cancelled"
+              }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft", "open"],
+            "audience": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New photo walk",
+                "byRoleIds": ["camera-club-organizer"],
+                "scope": "tab",
+                "presentation": "fab"
+              }
+            ],
+            "responseTable": {
+              "workflowType": "photo-walk-response",
+              "eventField": "eventId",
+              "pendingStates": ["pending", "withdrawn"]
+            }
+          },
+          {
+            "states": ["open"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["cancelled"],
+            "audience": "any",
+            "tabId": "calendar",
+            "cardSurfaceFamily": "event-rsvp",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "routeName": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "displayIcon": "route",
+            "labelTemplate": "Route: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventDate": {
+            "type": "date",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "calendar_today",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "eventTime": {
+            "type": "time",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "schedule",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "location": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "displayIcon": "location_on_outlined",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "organizerName": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Led by {value}",
+            "displayContexts": ["detail"]
+          },
+          "capacity": {
+            "type": "number",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "{value} spots",
+            "displayContexts": ["tile", "detail"]
+          },
+          "weatherChecklistNotes": {
+            "type": "textarea",
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "maxLength": 800,
+            "displayIcon": "checklist",
+            "displayContexts": ["detail"]
+          },
+          "responses": {
+            "type": "list",
+            "source": "query(photo-walk-response where eventId == id)"
+          },
+          "responseCounts": {
+            "type": "map",
+            "formula": "groupCount(responses, '$state')",
+            "displayContexts": []
+          },
+          "goingCount": {
+            "type": "number",
+            "formula": "mapGet(responseCounts, 'going')",
+            "displayIcon": "how_to_reg",
+            "labelTemplate": "Going: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "maybeCount": {
+            "type": "number",
+            "formula": "mapGet(responseCounts, 'maybe')",
+            "displayIcon": "help_outline",
+            "labelTemplate": "Maybe: {value}",
+            "displayContexts": ["detail"]
+          },
+          "waitlistedCount": {
+            "type": "number",
+            "formula": "mapGet(responseCounts, 'waitlisted')",
+            "displayIcon": "hourglass_empty",
+            "labelTemplate": "Waitlist: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "seatsRemaining": {
+            "type": "number",
+            "formula": "capacity - goingCount",
+            "displayIcon": "event_seat",
+            "labelTemplate": "{value} spots left",
+            "displayContexts": ["detail"]
+          },
+          "isFull": { "type": "bool", "formula": "goingCount >= capacity" },
+          "hasWaitlist": { "type": "bool", "formula": "waitlistedCount > 0" }
+        }
+      },
+
+      "photo-walk-response": {
+        "initialState": "pending",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "pending": { "label": "No response yet", "tone": "info" },
+          "going": { "label": "Going", "tone": "positive" },
+          "maybe": { "label": "Maybe", "tone": "info" },
+          "declined": { "label": "Not attending", "tone": "negative" },
+          "waitlisted": { "label": "Waitlisted", "tone": "warning" },
+          "withdrawn": { "label": "RSVP withdrawn", "tone": "warning" },
+          "cancelled": {
+            "label": "Event cancelled",
+            "tone": "negative",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "respond-going",
+            "action": "respond",
+            "label": "Going",
+            "icon": "event_available",
+            "tone": "primary",
+            "from": ["pending", "maybe", "declined", "waitlisted", "withdrawn"],
+            "to": "going",
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "relatedAggregate": {
+                "workflowType": "photo-walk-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": "<",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            "id": "respond-maybe",
+            "action": "respond",
+            "label": "Maybe",
+            "icon": "help_outline",
+            "tone": "secondary",
+            "from": ["pending", "going", "declined", "waitlisted", "withdrawn"],
+            "to": "maybe",
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"]
+            }
+          },
+          {
+            "id": "respond-declined",
+            "action": "respond",
+            "label": "Not attending",
+            "icon": "event_busy",
+            "tone": "secondary",
+            "from": ["pending", "going", "maybe", "waitlisted", "withdrawn"],
+            "to": "declined",
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"]
+            }
+          },
+          {
+            "id": "respond-waitlist",
+            "action": "join_waitlist",
+            "label": "Join waitlist",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "declined", "withdrawn"],
+            "to": "waitlisted",
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "relatedAggregate": {
+                "workflowType": "photo-walk-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count",
+                "comparator": ">=",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            }
+          },
+          {
+            "id": "withdraw-response",
+            "action": "withdraw_response",
+            "label": "Cancel RSVP",
+            "icon": "undo",
+            "tone": "destructive",
+            "from": ["going", "maybe", "waitlisted"],
+            "to": "withdrawn",
+            "guard": { "actorEqualsField": { "key": "fanId" } }
+          },
+          {
+            "id": "set-reminder",
+            "action": "set_reminder",
+            "label": "Add reminder",
+            "icon": "notifications_active",
+            "tone": "secondary",
+            "from": ["pending", "maybe", "going", "waitlisted"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "fanId" } },
+            "inputs": {
+              "offsetHours": { "type": "number", "required": true }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "reminderOffsetHours",
+                "value": "{input.offsetHours}"
+              },
+              {
+                "op": "set",
+                "key": "reminderSetAt",
+                "value": "$timestamp"
+              }
+            ]
+          },
+          {
+            "id": "event-cancelled",
+            "action": "cancel",
+            "label": "Event cancelled",
+            "icon": "event_busy",
+            "tone": "destructive",
+            "from": ["pending", "going", "maybe", "declined", "waitlisted", "withdrawn"],
+            "to": "cancelled",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] }
+          }
+        ],
+        "renderBindings": [],
+        "instanceDataSchema": {
+          "eventId": {
+            "type": "text",
+            "required": true,
+            "storage": "inline"
+          },
+          "fanId": {
+            "type": "fanId",
+            "required": true,
+            "storage": "inline"
+          },
+          "reminderOffsetHours": {
+            "type": "number?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "hideWhenEmpty": true,
+            "displayIcon": "alarm",
+            "labelTemplate": "Remind me {value}h before"
+          },
+          "reminderSetAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "hideWhenEmpty": true,
+            "displayIcon": "notifications_active"
+          }
+        }
+      },
+
+      "critique-submission": {
+        "initialState": "draft",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "authorFanId" } },
+          "fields": {
+            "parties": [
+              "authorFanId",
+              { "role": "camera-club-organizer" }
+            ]
+          }
+        },
+        "states": {
+          "draft": {
+            "label": "Draft critique",
+            "tone": "info",
+            "editableFields": [
+              "photoTitle",
+              "promptOrTopic",
+              "notes",
+              "consentNote",
+              "photoImage"
+            ],
+            "editGuard": { "actorEqualsField": { "key": "authorFanId" } }
+          },
+          "submitted": { "label": "Submitted for critique", "tone": "info" },
+          "changes-requested": {
+            "label": "Changes requested",
+            "tone": "warning",
+            "editableFields": [
+              "photoTitle",
+              "promptOrTopic",
+              "notes",
+              "consentNote",
+              "photoImage"
+            ],
+            "editGuard": { "actorEqualsField": { "key": "authorFanId" } }
+          },
+          "reviewed": {
+            "label": "Critique reviewed",
+            "tone": "positive",
+            "isTerminal": true
+          },
+          "withdrawn": {
+            "label": "Critique withdrawn",
+            "tone": "negative",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "submit",
+            "label": "Submit critique",
+            "icon": "send",
+            "tone": "primary",
+            "from": ["draft", "changes-requested"],
+            "to": "submitted",
+            "guard": { "actorEqualsField": { "key": "authorFanId" } },
+            "effects": [
+              { "op": "set", "key": "submittedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "review",
+            "label": "Complete critique",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["submitted"],
+            "to": "reviewed",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] },
+            "inputs": {
+              "feedback": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "comments",
+                "value": {
+                  "senderFanId": "$actor",
+                  "body": "{input.feedback}",
+                  "timestamp": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "reviewedByFanId", "value": "$actor" },
+              { "op": "set", "key": "reviewedAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "request-changes",
+            "label": "Request changes",
+            "icon": "rate_review",
+            "tone": "secondary",
+            "from": ["submitted"],
+            "to": "changes-requested",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] },
+            "inputs": {
+              "changeNote": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "comments",
+                "value": {
+                  "senderFanId": "$actor",
+                  "body": "{input.changeNote}",
+                  "timestamp": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "add-comment-organizer",
+            "label": "Add critique comment",
+            "icon": "comment",
+            "tone": "secondary",
+            "from": ["submitted", "changes-requested"],
+            "to": null,
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] },
+            "inputs": {
+              "commentBody": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "comments",
+                "value": {
+                  "senderFanId": "$actor",
+                  "body": "{input.commentBody}",
+                  "timestamp": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "add-comment-author",
+            "label": "Reply",
+            "icon": "reply",
+            "tone": "secondary",
+            "from": ["submitted", "changes-requested"],
+            "to": null,
+            "guard": { "actorEqualsField": { "key": "authorFanId" } },
+            "inputs": {
+              "commentBody": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "comments",
+                "value": {
+                  "senderFanId": "$actor",
+                  "body": "{input.commentBody}",
+                  "timestamp": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "withdraw",
+            "label": "Withdraw critique",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["draft", "submitted", "changes-requested"],
+            "to": "withdrawn",
+            "guard": { "actorEqualsField": { "key": "authorFanId" } }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["draft", "changes-requested"],
+            "audience": "actor",
+            "tabId": "critique",
+            "cardSurfaceFamily": "formEntry",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New critique",
+                "byRoleIds": ["camera-club-member", "camera-club-organizer"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "authorFanId": "$actor",
+                  "comments": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["submitted"],
+            "audience": "actor",
+            "tabId": "critique",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["reviewed", "withdrawn"],
+            "audience": "actor",
+            "tabId": "critique",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["draft", "submitted", "changes-requested", "reviewed"],
+            "audience": "actor",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["submitted"],
+            "audience": "receiver",
+            "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["changes-requested", "reviewed"],
+            "audience": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "photoTitle": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "displayIcon": "photo_camera",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "photoImage": {
+            "type": "image",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "reference",
+            "displayIcon": "image",
+            "displayContexts": ["tile", "detail"]
+          },
+          "promptOrTopic": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "topic",
+            "labelTemplate": "Prompt: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "notes": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "maxLength": 1200,
+            "displayIcon": "notes",
+            "displayContexts": ["detail"]
+          },
+          "consentNote": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "maxLength": 500,
+            "displayIcon": "verified_user",
+            "displayContexts": ["detail"]
+          },
+          "authorFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_outline",
+            "labelTemplate": "By {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "submittedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "send",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "reviewedByFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "rate_review",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "reviewedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "event_available",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "comments": {
+            "type": "list",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "comment",
+            "displayContexts": ["detail"]
+          },
+          "commentCount": {
+            "type": "number",
+            "formula": "size(comments)",
+            "displayIcon": "forum",
+            "labelTemplate": "{value} comments",
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      "gear-loan-request": {
+        "initialState": "published",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "published": {
+            "label": "Gear listing",
+            "tone": "positive",
+            "editableFields": ["title", "description", "condition", "listingMode"],
+            "editGuard": { "actorEqualsField": { "key": "ownerFanId" } }
+          },
+          "delisted": {
+            "label": "Delisted",
+            "tone": "negative",
+            "isTerminal": true
+          },
+          "given": {
+            "label": "Ownership transferred",
+            "tone": "positive",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "request-loan",
+            "action": "request",
+            "label": "Request loan",
+            "icon": "front_hand",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "formula": "listingMode == 'loan' && availabilityState == 'available'"
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "requested" },
+              { "op": "set", "key": "requesterFanId", "value": "$actor" }
+            ]
+          },
+          {
+            "id": "approve-loan",
+            "action": "decide_request",
+            "label": "Approve request",
+            "icon": "check_circle",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "requested"
+              }
+            },
+            "inputs": {
+              "pickupBy": { "type": "text", "required": true },
+              "dueDate": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "borrowerClaimHistory",
+                "value": {
+                  "borrowerFanId": "{requesterFanId}",
+                  "approvedAt": "$timestamp",
+                  "mode": "loan"
+                }
+              },
+              { "op": "set", "key": "availabilityState", "value": "reserved" },
+              { "op": "set", "key": "requesterFanId", "value": null },
+              { "op": "set", "key": "pickupBy", "value": "{input.pickupBy}" },
+              { "op": "set", "key": "dueDate", "value": "{input.dueDate}" }
+            ]
+          },
+          {
+            "id": "decline-loan",
+            "action": "decide_request",
+            "label": "Decline request",
+            "icon": "cancel",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "requested"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "requesterFanId", "value": null }
+            ]
+          },
+          {
+            "id": "cancel-request",
+            "action": "withdraw_request",
+            "label": "Cancel request",
+            "icon": "undo",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "requesterFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "requested"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "set", "key": "requesterFanId", "value": null }
+            ]
+          },
+          {
+            "id": "mark-picked-up",
+            "action": "take_custody",
+            "label": "Confirm pickup",
+            "icon": "inventory_2",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "reserved"
+              }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "custodyHistory",
+                "value": {
+                  "event": "picked-up",
+                  "recordedByFanId": "$actor",
+                  "recordedAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "availabilityState", "value": "onLoan" }
+            ]
+          },
+          {
+            "id": "mark-overdue",
+            "action": "report_issue",
+            "label": "Mark overdue",
+            "icon": "event_busy",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "onLoan"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "overdue" },
+              {
+                "op": "append",
+                "key": "issueLog",
+                "value": {
+                  "reporterFanId": "$actor",
+                  "description": "Loan marked overdue",
+                  "reportedAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "return-gear",
+            "action": "return",
+            "label": "Return gear",
+            "icon": "assignment_return",
+            "tone": "primary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "formula": "availabilityState == 'onLoan' || availabilityState == 'overdue'"
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "custodyHistory",
+                "value": {
+                  "event": "returned",
+                  "recordedByFanId": "$actor",
+                  "recordedAt": "$timestamp"
+                }
+              },
+              { "op": "set", "key": "availabilityState", "value": "returned" },
+              { "op": "set", "key": "pickupBy", "value": null },
+              { "op": "set", "key": "dueDate", "value": null }
+            ]
+          },
+          {
+            "id": "relist-returned",
+            "action": "list_item",
+            "label": "Make available again",
+            "icon": "refresh",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "returned"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" }
+            ]
+          },
+          {
+            "id": "join-queue",
+            "action": "join_queue",
+            "label": "Join queue",
+            "icon": "groups",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "formula": "if(availabilityState == 'available', false, true)"
+            }
+          },
+          {
+            "id": "leave-queue",
+            "action": "leave_queue",
+            "label": "Leave queue",
+            "icon": "group_remove",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"]
+            }
+          },
+          {
+            "id": "claim-giveaway",
+            "action": "claim",
+            "label": "Claim giveaway",
+            "icon": "redeem",
+            "tone": "primary",
+            "from": ["published"],
+            "to": "given",
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "formula": "listingMode == 'giveaway' && availabilityState == 'available'"
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "given" },
+              { "op": "set", "key": "newOwnerFanId", "value": "$actor" },
+              { "op": "set", "key": "transferredAt", "value": "$timestamp" },
+              {
+                "op": "append",
+                "key": "borrowerClaimHistory",
+                "value": {
+                  "borrowerFanId": "$actor",
+                  "approvedAt": "$timestamp",
+                  "mode": "giveaway"
+                }
+              }
+            ]
+          },
+          {
+            "id": "report-damage",
+            "action": "report_issue",
+            "label": "Report damage",
+            "icon": "report_problem",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"]
+            },
+            "inputs": {
+              "issueDescription": { "type": "text", "required": true }
+            },
+            "effects": [
+              {
+                "op": "append",
+                "key": "issueLog",
+                "value": {
+                  "reporterFanId": "$actor",
+                  "description": "{input.issueDescription}",
+                  "reportedAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "report-lost",
+            "action": "report_issue",
+            "label": "Report lost",
+            "icon": "warning",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": ["camera-club-member", "camera-club-organizer"],
+              "formula": "availabilityState == 'onLoan' || availabilityState == 'overdue'"
+            },
+            "inputs": {
+              "lossDetails": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "lost" },
+              {
+                "op": "append",
+                "key": "issueLog",
+                "value": {
+                  "reporterFanId": "$actor",
+                  "description": "{input.lossDetails}",
+                  "reportedAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "id": "pause-listing",
+            "action": "pause_listing",
+            "label": "Pause listing",
+            "icon": "pause_circle",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "paused" }
+            ]
+          },
+          {
+            "id": "resume-listing",
+            "action": "list_item",
+            "label": "Resume listing",
+            "icon": "play_circle",
+            "tone": "secondary",
+            "from": ["published"],
+            "to": null,
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "paused"
+              }
+            },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" }
+            ]
+          },
+          {
+            "id": "retire-lost-item",
+            "action": "delist",
+            "label": "Retire lost item",
+            "icon": "remove_circle",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "lost"
+              }
+            }
+          },
+          {
+            "id": "delist",
+            "action": "delist",
+            "label": "Delist",
+            "icon": "delete_outline",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "delisted",
+            "guard": {
+              "actorEqualsField": { "key": "ownerFanId" },
+              "instanceDataEquals": {
+                "key": "availabilityState",
+                "value": "available"
+              }
+            }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["published"],
+            "audience": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "List gear",
+                "byRoleIds": ["camera-club-member", "camera-club-organizer"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "ownerFanId": "$actor",
+                  "availabilityState": "available",
+                  "custodyHistory": [],
+                  "borrowerClaimHistory": [],
+                  "issueLog": []
+                }
+              }
+            ]
+          },
+          {
+            "states": ["published"],
+            "audience": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["published"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          },
+          {
+            "states": ["delisted", "given"],
+            "audience": "any",
+            "tabId": "marketplace",
+            "cardSurfaceFamily": "equipment-loan",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "sortable": true,
+            "displayIcon": "camera_alt",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "description": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "maxLength": 1000,
+            "displayIcon": "description",
+            "displayContexts": ["detail"]
+          },
+          "listingMode": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "swap_horiz",
+            "labelTemplate": "Mode: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "condition": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "displayIcon": "verified_outlined",
+            "labelTemplate": "Condition: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "ownerFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Owner: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "availabilityState": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "info_outline",
+            "labelTemplate": "Status: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "requesterFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "front_hand",
+            "labelTemplate": "Requested by: {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "pickupBy": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "schedule",
+            "labelTemplate": "Pickup by {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "dueDate": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "event_busy",
+            "labelTemplate": "Due back {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "custodyHistory": {
+            "type": "list",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "history",
+            "labelTemplate": "{value.length} custody events",
+            "displayContexts": ["detail"]
+          },
+          "borrowerClaimHistory": {
+            "type": "list",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "groups_outlined",
+            "labelTemplate": "{value.length} borrowers or claimants",
+            "displayContexts": ["tile", "detail"]
+          },
+          "issueLog": {
+            "type": "list",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "report_problem",
+            "labelTemplate": "{value.length} reported issues",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "newOwnerFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_add",
+            "labelTemplate": "Transferred to {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"]
+          },
+          "transferredAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "published_with_changes",
+            "labelTemplate": "Transferred {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "borrowerClaimCount": {
+            "type": "number",
+            "formula": "size(borrowerClaimHistory)",
+            "displayIcon": "format_list_numbered",
+            "labelTemplate": "Borrower/claim count: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "isAvailable": {
+            "type": "bool",
+            "formula": "availabilityState == 'available'"
+          },
+          "hasReportedIssue": {
+            "type": "bool",
+            "formula": "size(issueLog) > 0"
+          }
+        }
+      },
+
+      "camera-validation-report": {
+        "initialState": "pending",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "pending": { "label": "Pending completion review", "tone": "info" },
+          "reviewed": {
+            "label": "Completion reviewed",
+            "tone": "positive",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "review-completion",
+            "label": "Review completion",
+            "icon": "fact_check",
+            "tone": "primary",
+            "from": ["pending"],
+            "to": "reviewed",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] },
+            "effects": [
+              { "op": "set", "key": "reviewedAt", "value": "$timestamp" },
+              { "op": "set", "key": "reviewedByFanId", "value": "$actor" }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["pending", "reviewed"],
+            "audience": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["pending", "reviewed"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "requestedWorkflows": {
+            "type": "list",
+            "required": true,
+            "storage": "inline",
+            "displayIcon": "checklist",
+            "labelTemplate": "{value.length} requested workflows",
+            "displayContexts": ["tile", "detail"]
+          },
+          "implementedWorkflows": {
+            "type": "list",
+            "required": true,
+            "storage": "inline",
+            "displayIcon": "verified",
+            "labelTemplate": "{value.length} implemented workflows",
+            "displayContexts": ["tile", "detail"]
+          },
+          "failedWorkflows": {
+            "type": "list",
+            "required": true,
+            "storage": "inline",
+            "displayIcon": "error_outline",
+            "labelTemplate": "{value.length} failed workflows",
+            "displayContexts": ["tile", "detail"]
+          },
+          "requestedCount": {
+            "type": "number",
+            "formula": "size(requestedWorkflows)"
+          },
+          "implementedCount": {
+            "type": "number",
+            "formula": "size(implementedWorkflows)"
+          },
+          "allImplemented": {
+            "type": "bool",
+            "formula": "size(requestedWorkflows) == size(implementedWorkflows) && size(failedWorkflows) == 0",
+            "displayIcon": "task_alt",
+            "labelTemplate": "All requested workflows complete: {value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "reviewedAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "event_available",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          },
+          "reviewedByFanId": {
+            "type": "fanId?",
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_search",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
+          }
+        }
+      },
+
+      "camera-club-announcement": {
+        "initialState": "published",
+        "visibility": { "default": "membersOnly" },
+        "states": {
+          "published": {
+            "label": "Published announcement",
+            "tone": "info",
+            "editableFields": ["title", "body"],
+            "editGuard": { "allowedRoleIds": ["camera-club-organizer"] }
+          },
+          "archived": {
+            "label": "Archived announcement",
+            "tone": "info",
+            "isTerminal": true
+          }
+        },
+        "transitions": [
+          {
+            "id": "archive-announcement",
+            "label": "Archive announcement",
+            "icon": "archive",
+            "tone": "destructive",
+            "from": ["published"],
+            "to": "archived",
+            "guard": { "allowedRoleIds": ["camera-club-organizer"] }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["published"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary",
+            "actions": [
+              {
+                "kind": "create",
+                "label": "New announcement",
+                "byRoleIds": ["camera-club-organizer"],
+                "scope": "tab",
+                "presentation": "fab",
+                "prefill": {
+                  "authorFanId": "$actor",
+                  "publishedAt": "$timestamp"
+                }
+              }
+            ]
+          },
+          {
+            "states": ["archived"],
+            "audience": "any",
+            "tabId": "admin",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "searchable": true,
+            "displayIcon": "campaign",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "body": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "formEntry",
+            "storage": "inline",
+            "maxLength": 1000,
+            "displayIcon": "notes",
+            "displayContexts": ["tile", "detail"]
+          },
+          "authorFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "displayIcon": "person_outline",
+            "labelTemplate": "Posted by {value}",
+            "displayContexts": ["detail"]
+          },
+          "publishedAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "storage": "inline",
+            "sortable": true,
+            "displayIcon": "schedule",
+            "labelTemplate": "Posted {value}",
+            "displayContexts": ["tile", "detail"]
+          }
+        }
+      }
+    },
+
+    "workflowInstances": [
+      {
+        "instanceId": "walk-golden-gate-sunrise",
+        "workflowType": "photo-walk-rsvp",
+        "currentState": "open",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "title": "Golden Gate sunrise photo walk",
+          "routeName": "Battery Spencer to Kirby Cove overlook",
+          "eventDate": "2026-09-12",
+          "eventTime": "06:15",
+          "location": "Battery Spencer trailhead, Sausalito",
+          "organizerName": "Maya Chen",
+          "capacity": 12,
+          "weatherChecklistNotes": "Bring a tripod and ND filter; pack a lens cloth for marine fog and check the wind forecast before leaving."
+        }
+      },
+      {
+        "instanceId": "resp-golden-gate-organizer",
+        "workflowType": "photo-walk-response",
+        "currentState": "going",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "eventId": "walk-golden-gate-sunrise",
+          "fanId": "camera-club-organizer"
+        }
+      },
+      {
+        "instanceId": "resp-golden-gate-member",
+        "workflowType": "photo-walk-response",
+        "currentState": "maybe",
+        "createdByFanId": "camera-club-member",
+        "instanceData": {
+          "eventId": "walk-golden-gate-sunrise",
+          "fanId": "camera-club-member",
+          "reminderOffsetHours": 24,
+          "reminderSetAt": "2026-08-18T18:30:00Z"
+        }
+      },
+      {
+        "instanceId": "critique-lighthouse-portrait",
+        "workflowType": "critique-submission",
+        "currentState": "submitted",
+        "createdByFanId": "camera-club-member",
+        "instanceData": {
+          "photoTitle": "Lighthouse at dusk",
+          "photoImage": "seed://photos/lighthouse-dusk.jpg",
+          "promptOrTopic": "Weekly theme: silhouettes",
+          "notes": "Shot at f/8, 1/250s, ISO 200. I would like feedback on the exposure balance between the sky and the lighthouse.",
+          "consentNote": "Photographed in a public park; no identifiable people appear in frame.",
+          "authorFanId": "camera-club-member",
+          "submittedAt": "2026-08-17T17:00:00Z",
+          "comments": [
+            {
+              "senderFanId": "camera-club-organizer",
+              "body": "The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line.",
+              "timestamp": "2026-08-18T02:15:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "instanceId": "critique-night-market-reflections",
+        "workflowType": "critique-submission",
+        "currentState": "reviewed",
+        "createdByFanId": "camera-club-member",
+        "instanceData": {
+          "photoTitle": "Night market reflections",
+          "photoImage": "seed://photos/night-market-reflections.jpg",
+          "promptOrTopic": "Color and motion",
+          "notes": "Handheld at 1/30s to retain some motion blur in the crowd.",
+          "consentNote": "Wide public scene; faces are not individually identifiable.",
+          "authorFanId": "camera-club-member",
+          "submittedAt": "2026-08-10T20:00:00Z",
+          "reviewedByFanId": "camera-club-organizer",
+          "reviewedAt": "2026-08-12T19:30:00Z",
+          "comments": [
+            {
+              "senderFanId": "camera-club-organizer",
+              "body": "Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor.",
+              "timestamp": "2026-08-12T19:30:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "instanceId": "gear-canon-70-200mm",
+        "workflowType": "gear-loan-request",
+        "currentState": "published",
+        "createdByFanId": "camera-club-member",
+        "instanceData": {
+          "title": "Canon 70-200mm f/2.8 lens",
+          "description": "Lightly used telephoto zoom with tripod collar and padded case, suited to portraits and wildlife.",
+          "listingMode": "loan",
+          "condition": "Excellent — minor cosmetic wear only",
+          "ownerFanId": "camera-club-member",
+          "availabilityState": "available",
+          "custodyHistory": [],
+          "borrowerClaimHistory": [],
+          "issueLog": []
+        }
+      },
+      {
+        "instanceId": "gear-fuji-x100v-overdue",
+        "workflowType": "gear-loan-request",
+        "currentState": "published",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "title": "Fujifilm X100V walk kit",
+          "description": "Compact street-photography kit with spare battery, wrist strap, and weather-sealing filter.",
+          "listingMode": "loan",
+          "condition": "Good — light finish wear near the strap lug",
+          "ownerFanId": "camera-club-organizer",
+          "availabilityState": "overdue",
+          "pickupBy": "2026-08-03",
+          "dueDate": "2026-08-16",
+          "custodyHistory": [
+            {
+              "event": "picked-up",
+              "recordedByFanId": "camera-club-member",
+              "recordedAt": "2026-08-03T16:00:00Z"
+            }
+          ],
+          "borrowerClaimHistory": [
+            {
+              "borrowerFanId": "camera-club-member",
+              "approvedAt": "2026-08-02T21:00:00Z",
+              "mode": "loan"
+            }
+          ],
+          "issueLog": [
+            {
+              "reporterFanId": "camera-club-organizer",
+              "description": "Loan marked overdue",
+              "reportedAt": "2026-08-17T17:00:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "instanceId": "gear-old-speedlite-giveaway",
+        "workflowType": "gear-loan-request",
+        "currentState": "published",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "title": "Older speedlite flash — free",
+          "description": "Functional manual flash; the battery door is loose but closes with a small strip of tape.",
+          "listingMode": "giveaway",
+          "condition": "Fair — functional with cosmetic wear",
+          "ownerFanId": "camera-club-organizer",
+          "availabilityState": "available",
+          "custodyHistory": [],
+          "borrowerClaimHistory": [],
+          "issueLog": []
+        }
+      },
+      {
+        "instanceId": "camera-validation-report-1",
+        "workflowType": "camera-validation-report",
+        "currentState": "pending",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "requestedWorkflows": [
+            "photo-walk-rsvp",
+            "critique-submission",
+            "gear-loan-request"
+          ],
+          "implementedWorkflows": [
+            "photo-walk-rsvp",
+            "critique-submission",
+            "gear-loan-request"
+          ],
+          "failedWorkflows": []
+        }
+      },
+      {
+        "instanceId": "camera-announcement-september-theme",
+        "workflowType": "camera-club-announcement",
+        "currentState": "published",
+        "createdByFanId": "camera-club-organizer",
+        "instanceData": {
+          "title": "September theme: edges of the city",
+          "body": "Bring one image about boundaries, transitions, or overlooked urban edges to the September critique. Submissions close the evening before the session.",
+          "authorFanId": "camera-club-organizer",
+          "publishedAt": "2026-08-18T16:00:00Z"
+        }
+      }
+    ]
   },
-  "workflowDefinitions": {
-    "photo-walk-rsvp": {
-      "initialState": "open",
-      "states": {
-        "open": { "label": "Open" },
-        "going": { "label": "Going" },
-        "maybe": { "label": "Maybe" },
-        "not-going": { "label": "Not going" }
+
+  "appShell": {
+    "tabs": [
+      {
+        "tabId": "home",
+        "label": "Home",
+        "iconKey": "home",
+        "description": "The next photo walk, critique progress, announcements, available gear, and completion status.",
+        "pinnedWorkflowIds": [
+          "photo-walk-rsvp",
+          "critique-submission",
+          "gear-loan-request"
+        ]
       },
-      "transitions": [
-        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "maybe", "not-going"], "to": "going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Going at $timestamp" }] },
-        { "id": "rsvp-maybe", "label": "RSVP maybe", "icon": "edit", "tone": "secondary", "from": ["open", "going", "not-going"], "to": "maybe", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Maybe" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Maybe at $timestamp" }] },
-        { "id": "rsvp-not-going", "label": "RSVP not going", "icon": "undo", "tone": "destructive", "from": ["open", "going", "maybe"], "to": "not-going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Not going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Not going at $timestamp" }] }
-      ],
-      "renderBindings": [{ "states": ["open", "going", "maybe", "not-going"], "role": "actor", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
-      "instanceDataSchema": {
-        "routeName": { "type": "text", "required": true, "displayContexts": ["tile", "detail"], "displayIcon": "route", "labelTemplate": "{value}" },
-        "eventDateTime": { "type": "text", "required": true, "displayIcon": "schedule", "labelTemplate": "{value}" },
-        "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "{value}" },
-        "capacityLabel": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
-        "rsvpStatus": { "type": "text", "writableBy": "effect" },
-        "walkHistory": { "type": "list", "writableBy": "effect" }
-      }
-    },
-    "critique-submission": {
-      "initialState": "draft",
-      "states": {
-        "draft": { "label": "Draft", "editableFields": ["photoTitle", "critiquePrompt", "consentNote"] },
-        "submitted": { "label": "Submitted" },
-        "reviewed": { "label": "Reviewed" },
-        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      {
+        "tabId": "calendar",
+        "label": "Walks",
+        "iconKey": "calendar_today",
+        "description": "Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders.",
+        "pinnedWorkflowIds": ["photo-walk-rsvp"]
       },
-      "transitions": [
-        { "id": "submit-critique", "label": "Submit critique", "icon": "upload", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} submitted at $timestamp" }] },
-        { "id": "edit-critique", "label": "Edit critique", "icon": "edit", "tone": "secondary", "from": ["submitted"], "to": "draft", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} reopened for edit at $timestamp" }] },
-        { "id": "mark-reviewed", "label": "Mark reviewed", "icon": "verified", "tone": "primary", "from": ["submitted"], "to": "reviewed", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "append", "key": "critiqueComments", "value": "Organizer review completed at $timestamp" }] },
-        { "id": "withdraw-critique", "label": "Withdraw critique", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted", "reviewed"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} withdrawn at $timestamp" }] }
-      ],
-      "renderBindings": [
-        { "states": ["draft"], "role": "actor", "tabId": "critique", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
-        { "states": ["submitted", "reviewed", "withdrawn"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" },
-        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "discussionThread", "bindingKind": "attached" },
-        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "messages", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }
-      ],
-      "instanceDataSchema": {
-        "photoTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "photo", "labelTemplate": "{value}" },
-        "thumbnailLabel": { "type": "text", "required": true, "displayIcon": "photo", "labelTemplate": "{value}" },
-        "critiquePrompt": { "type": "text", "required": true, "writableBy": "formEntry" },
-        "consentNote": { "type": "text", "required": true, "writableBy": "formEntry" },
-        "critiqueComments": { "type": "list", "writableBy": "effect" },
-        "critiqueHistory": { "type": "list", "writableBy": "effect" }
-      }
-    },
-    "gear-loan-request": {
-      "initialState": "available",
-      "states": {
-        "available": { "label": "Available", "editableFields": ["itemTitle", "condition", "pickupWindow"] },
-        "loaned": { "label": "Loaned" },
-        "queued": { "label": "Queued" },
-        "returned": { "label": "Returned", "isTerminal": true },
-        "giveaway": { "label": "Giveaway" },
-        "claimed": { "label": "Claimed", "isTerminal": true },
-        "paused": { "label": "Paused" },
-        "delisted": { "label": "Delisted", "isTerminal": true }
+      {
+        "tabId": "critique",
+        "label": "Critique",
+        "iconKey": "photo_library",
+        "description": "Draft, submit, revise, discuss, and review member photographs.",
+        "pinnedWorkflowIds": ["critique-submission"]
       },
-      "transitions": [
-        { "id": "request-loan", "label": "Request loan", "icon": "handshake", "tone": "primary", "from": ["available"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{actorLabel} borrowed {itemTitle} at $timestamp" }] },
-        { "id": "offer-giveaway", "label": "Offer as giveaway", "icon": "redeem", "tone": "secondary", "from": ["available"], "to": "giveaway", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "mode", "value": "Giveaway" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} offered as giveaway at $timestamp" }] },
-        { "id": "join-queue", "label": "Join queue", "icon": "queue", "tone": "secondary", "from": ["loaned"], "to": "queued", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
-        { "id": "leave-queue", "label": "Leave queue", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
-        { "id": "return-gear", "label": "Return gear", "icon": "assignment_return", "tone": "primary", "from": ["loaned", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
-        { "id": "pause-listing", "label": "Pause listing", "icon": "undo", "tone": "secondary", "from": ["available"], "to": "paused", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} paused at $timestamp" }] },
-        { "id": "delist-gear", "label": "Delist gear", "icon": "delete", "tone": "destructive", "from": ["available", "paused"], "to": "delisted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} delisted at $timestamp" }] },
-        { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "redeem", "tone": "primary", "from": ["giveaway"], "to": "claimed", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} ownership transferred at $timestamp" }] }
-      ],
-      "renderBindings": [{ "states": ["available", "loaned", "queued", "returned", "giveaway", "claimed", "paused", "delisted"], "role": "any", "tabId": "marketplace", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
-      "instanceDataSchema": {
-        "itemTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "inventory_2", "labelTemplate": "{value}" },
-        "mode": { "type": "text", "required": true, "displayIcon": "inventory_2", "labelTemplate": "{value}" },
-        "condition": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified", "labelTemplate": "{value}" },
-        "pickupWindow": { "type": "text", "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "{value}" },
-        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
-        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
-        "custodyHistory": { "type": "list", "writableBy": "effect" }
-      }
-    },
-    "camera-validation-report": {
-      "initialState": "pending",
-      "states": {
-        "pending": { "label": "Pending" },
-        "validated": { "label": "Validated", "isTerminal": true }
+      {
+        "tabId": "marketplace",
+        "label": "Gear",
+        "iconKey": "photo_camera",
+        "description": "Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear.",
+        "pinnedWorkflowIds": ["gear-loan-request"]
       },
-      "transitions": [
-        { "id": "mark-validated", "label": "Mark validated", "icon": "verified", "tone": "primary", "from": ["pending"], "to": "validated", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "set", "key": "passState", "value": "Validated" }, { "op": "append", "key": "validationHistory", "value": "Camera Club validation marked complete at $timestamp" }] }
-      ],
-      "renderBindings": [{ "states": ["pending", "validated"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" }],
-      "instanceDataSchema": {
-        "requestedWorkflows": { "type": "list", "required": true, "displayIcon": "groups", "labelTemplate": "{value.length} requested workflows" },
-        "implementedWorkflows": { "type": "list", "required": true, "displayIcon": "verified", "labelTemplate": "{value.length} implemented workflows" },
-        "packagePaths": { "type": "list", "required": true },
-        "passState": { "type": "text", "required": true, "displayIcon": "verified", "labelTemplate": "{value}" },
-        "validationHistory": { "type": "list", "writableBy": "effect" }
+      {
+        "tabId": "admin",
+        "label": "Admin",
+        "iconKey": "admin_panel_settings",
+        "description": "Critique review, photo-walk attendance, gear custody, announcements, and completion review.",
+        "visibleRoleIds": ["camera-club-organizer"],
+        "pinnedWorkflowIds": [
+          "critique-submission",
+          "photo-walk-rsvp",
+          "gear-loan-request",
+          "camera-validation-report"
+        ]
       }
-    }
-  },
-  "workflowInstances": [
-    { "instanceId": "camera-walk-warehouse", "workflowType": "photo-walk-rsvp", "currentState": "open", "createdByPersonaId": "camera-organizer", "instanceData": { "routeName": "Warehouse District golden-hour walk", "eventDateTime": "Friday, May 8 at 6:30 PM", "location": "Pier 3 mural route", "capacityLabel": "12 of 16 spots", "rsvpStatus": "", "walkHistory": [] } },
-    { "instanceId": "camera-critique-rain", "workflowType": "critique-submission", "currentState": "draft", "createdByPersonaId": "camera-member", "instanceData": { "photoTitle": "Rain reflections", "thumbnailLabel": "Street reflection thumbnail", "critiquePrompt": "Help me choose the strongest crop.", "consentNote": "Model consent captured for club critique.", "critiqueComments": ["Reviewer queue: composition and crop"], "critiqueHistory": [] } },
-    { "instanceId": "camera-gear-lens", "workflowType": "gear-loan-request", "currentState": "available", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "35mm prime lens", "mode": "Loan", "condition": "Excellent", "pickupWindow": "Thu 5-7 PM", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
-    { "instanceId": "camera-gear-tripod", "workflowType": "gear-loan-request", "currentState": "giveaway", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "Travel tripod", "mode": "Giveaway", "condition": "Good", "pickupWindow": "Sat morning", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
-    { "instanceId": "camera-validation", "workflowType": "camera-validation-report", "currentState": "pending", "createdByPersonaId": "camera-organizer", "instanceData": { "requestedWorkflows": ["photo-walk RSVP", "critique composition", "gear loan/giveaway"], "implementedWorkflows": ["Calendar", "Critique", "Gear", "Messages", "Admin", "Home"], "packagePaths": ["ext_camera_club", "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc"], "passState": "Pending validation", "validationHistory": [] } }
-  ]
+    ]
+  }
 }

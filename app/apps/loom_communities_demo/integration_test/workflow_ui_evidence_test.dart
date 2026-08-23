@@ -249,7 +249,7 @@ void main() {
         displayName: target.communityName,
       );
       final shippedPackage = hasShippedEvidencePackage(target.extensionId)
-          ? readShippedEvidencePackage(target)
+          ? await readShippedEvidencePackage(target)
           : null;
       if (shippedPackage == null) {
         expect(find.text(catalogExperience.tagline), findsOneWidget);
@@ -424,7 +424,7 @@ void main() {
     final mosqueTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_mosque',
     );
-    final mosquePackage = readShippedEvidencePackage(mosqueTarget);
+    final mosquePackage = await readShippedEvidencePackage(mosqueTarget);
     final mosqueAdminRoleId = _packageRoleId(
       target: mosqueTarget,
       package: mosquePackage,
@@ -448,7 +448,7 @@ void main() {
     final gardenTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_garden_club',
     );
-    final gardenPackage = readShippedEvidencePackage(gardenTarget);
+    final gardenPackage = await readShippedEvidencePackage(gardenTarget);
     final gardenMemberRoleId = _packageRoleId(
       target: gardenTarget,
       package: gardenPackage,
@@ -465,7 +465,7 @@ void main() {
     final soccerTarget = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_youth_soccer',
     );
-    final soccerPackage = readShippedEvidencePackage(soccerTarget);
+    final soccerPackage = await readShippedEvidencePackage(soccerTarget);
     final soccerCoachRoleId = _packageRoleId(
       target: soccerTarget,
       package: soccerPackage,
@@ -501,7 +501,7 @@ void main() {
           'all demo communities define two or more personas',
           'all workflow/persona matrix rows have actor, receiver, read-only, or disabled state',
           'receiver rows declare dependency evidence',
-          'matrix rows: ${_personaMatrixRowCount(evidenceTargets)}',
+          'matrix rows: ${await _personaMatrixRowCount(evidenceTargets)}',
         ],
         'screenshotNames': [
           'B17_persona_inventory_active_admin',
@@ -2519,15 +2519,19 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
   await tester.pumpAndSettle();
 }
 
-int _personaMatrixRowCount(List<LoomEvidenceTarget> evidenceTargets) {
-  return evidenceTargets
-      .map((target) {
-        if (!hasShippedEvidencePackage(target.extensionId)) {
-          return personaWorkflowMatrixForExtensionId(target.extensionId).length;
-        }
-        final package = readShippedEvidencePackage(target);
-        return package.experience.personas!.length *
-            package.experience.workflowDefinitions!.length;
-      })
-      .fold(0, (total, count) => total + count);
+Future<int> _personaMatrixRowCount(
+  List<LoomEvidenceTarget> evidenceTargets,
+) async {
+  var total = 0;
+  for (final target in evidenceTargets) {
+    if (!hasShippedEvidencePackage(target.extensionId)) {
+      total += personaWorkflowMatrixForExtensionId(target.extensionId).length;
+      continue;
+    }
+    final package = await readShippedEvidencePackage(target);
+    total +=
+        package.experience.personas!.length *
+        package.experience.workflowDefinitions!.length;
+  }
+  return total;
 }
