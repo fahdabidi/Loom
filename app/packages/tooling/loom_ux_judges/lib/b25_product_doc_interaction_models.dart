@@ -211,7 +211,9 @@ class B25ProductDocInteractionCatalog {
           '${file.path}',
         );
       }
-      models.addAll(_parseProductDoc(source, file.readAsStringSync()));
+      models.addAll(
+        parseB25ProductDocInteractionModels(source, file.readAsStringSync()),
+      );
     }
     return B25ProductDocInteractionCatalog._(models);
   }
@@ -317,7 +319,7 @@ File generateB25InteractionModelAsset({Directory? repositoryRoot}) {
   return output;
 }
 
-List<B25ProductDocInteractionModel> _parseProductDoc(
+List<B25ProductDocInteractionModel> parseB25ProductDocInteractionModels(
   B25ProductCommunitySource source,
   String markdown,
 ) {

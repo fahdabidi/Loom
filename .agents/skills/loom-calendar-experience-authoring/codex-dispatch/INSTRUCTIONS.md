@@ -364,39 +364,56 @@ real enum (fetched at step 7) instead.
     waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
     membership grant itself that must not be one.
 
-14. **Design the product doc first, then derive the JSON from it, and return BOTH.** Your job on
-    this channel is not "read a doc, emit JSON". You are designing the community's experience.
-    The order is always: perfect the product doc, then write the package from the perfected doc.
-    The two are both your output and neither may drift from the other.
+14. **The product doc records the experience; the JSON implements it. Perfect the doc first,
+    then write the package from it, and return both.**
 
-    The target doc you are given is a starting point, not a finished specification. Where it is
-    thin, deepen it. Where it is silent about something the experience needs, add it. Where it is
-    WRONG about what the experience should be, correct it — and say plainly in Gaps/assumptions
-    that you did, and why.
+    You may be dispatched two ways: with a target product doc, or with nothing but a prompt
+    ("create me a community for X"). Either way the product doc is a deliverable, not just an
+    input. Starting from a prompt, you write it. Starting from a doc, you extend and correct
+    it. It must end up describing the full experience you are implementing — if the doc does
+    not say something the experience needs, add it.
 
-    Then make the package express exactly the doc you just perfected. Every transition you author
-    must appear in the doc's workflow-to-surface mapping, its persona/state matrix, and — most
-    important — the **B25 addendum table's required primary and required alternate/change/reject
-    cells**. That B25 table is what the UX judge scores against: an interaction missing from it is
-    invisible to the production bar no matter how well it works, and an interaction in the doc
-    with nothing implementing it is a promise the community does not keep.
+    Only once the doc captures the intended experience do you write the corresponding JSON.
+    Every transition you author must appear in the doc's workflow-to-surface mapping, its
+    persona/state matrix, and — most important — the **B25 addendum table's required primary
+    and required alternate/change/reject cells**, because that table is what the UX judge
+    scores against. An interaction missing from it is invisible to the production bar no
+    matter how well it works.
 
-    **Never leave an alternate cell saying `(none ...)` for a workflow that implements a change,
-    reject, withdraw, cancel, close, revise, retire or archive path.** This is not hypothetical.
-    The shipped Chess package implemented `withdraw-club-night-rsvp`, `cancel-club-night`,
-    `close-pairing-queue`, `revise-ranking`, `retire-ranking` and `archive-document` while its doc
-    declared `(none — one-way notification)` and `(none — single decisive action)` for those very
-    rows. Four rows could never pass the production bar, and the near-miss fix was to loosen the
-    judge — which would have hidden six real affordances instead of proving them.
+    **Never leave an alternate cell saying `(none ...)` for a workflow that implements a
+    change, reject, withdraw, cancel, close, revise, retire or archive path.** The shipped
+    Chess package implemented `withdraw-club-night-rsvp`, `cancel-club-night`,
+    `close-pairing-queue`, `revise-ranking`, `retire-ranking` and `archive-document` while its
+    doc declared `(none — one-way notification)` and `(none — single decisive action)` for
+    those very rows. Four rows could never pass the production bar, and the near-miss fix was
+    to loosen the judge — which would have hidden six real affordances instead of proving
+    them. A row that genuinely has no alternate is a design smell worth a second look: most
+    real interactions have a way back.
 
-    A row whose alternate genuinely has no counterpart is a design smell worth a second look: most
-    real interactions have a way back. If after that second look it truly has none, say so in
-    Gaps/assumptions with the reason, rather than writing `(none)` into the doc as if settled.
+14a. **Some of the experience may not be implementable. Say which, and never quietly shrink
+    the doc to fit.** The JSON grammar and the archetype set are finite. You will meet
+    requirements the doc can legitimately state and the package cannot express — a missing
+    `cardSurfaceFamily`, an effect/guard/formula the grammar has no form for, a surface no
+    archetype renders.
 
-    You have no repo write access on this channel, so deliver the doc as item 5 of "What to
-    deliver": the exact replacement text, applied verbatim by the dispatching session. Never
-    delete a doc requirement to make your package look complete — a requirement you did not
-    implement belongs in Gaps/assumptions.
+    When that happens the requirement STAYS IN THE DOC. It describes the experience this
+    community should have, and deleting it destroys the only record that the gap exists.
+    Instead report it explicitly, and say which kind it is:
+
+    - **grammar gap** — name the exact construct the grammar lacks, and what you would need
+      it to express.
+    - **missing archetype** — name the surface the experience needs and the closest existing
+      archetype, saying why the closest one is not adequate.
+
+    Give each a `not_implemented` (or `partial`) row in the requirement traceability table and
+    a line in Gaps/assumptions. This is how platform gaps become visible and get built; a
+    requirement silently dropped, approximated, or quietly deleted from the doc is a gap
+    nobody will ever fix. See also hard rule 7 — never approximate, never silently drop.
+
+    Do NOT invent grammar to close such a gap, and do NOT weaken the doc's requirement so
+    your package looks complete. An honest "the doc asks for X, the grammar cannot express
+    it, here is what would be needed" is a far better result than a package that quietly
+    delivers less than the doc promises.
 
 ## Two valid RSVP shapes — pick deliberately
 
@@ -573,13 +590,17 @@ justification. Never describe a validator result you did not actually obtain.
    cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
    listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
    `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
-5. **The updated product doc** (hard rule 14) — you design the doc, so return what it should now
-   say: the exact replacement text for every row you changed or added, across the
-   workflow-to-surface mapping, the persona/state matrix, and the B25 addendum's required-primary
-   and required-alternate cells. Give full replacement rows, not descriptions of changes, so they
-   apply verbatim. State explicitly which rows you deepened, which you corrected and why, and
-   which you left untouched. If the doc genuinely needed nothing, say so — that is a real result,
-   not an omission, but it should be rare on a doc you were asked to improve.
+5. **The product doc** (hard rules 14 and 14a) — the experience you are implementing, written
+   down. If you were dispatched with only a prompt, this is the whole doc and you authored it.
+   If you were given a doc, this is the exact replacement text for every row you changed or
+   added, across the workflow-to-surface mapping, the persona/state matrix, and the B25
+   addendum's required-primary and required-alternate cells. Give full replacement rows, not
+   descriptions of changes, so they apply verbatim — you have no repo write access here.
+
+   State which rows you deepened, which you corrected and why, and which you left untouched.
+   List separately any requirement the doc states that the package does NOT implement, with
+   its kind (grammar gap or missing archetype) per rule 14a — those requirements stay in the
+   doc; they are reported, never deleted.
 
 4. Your validation results, per the "On validation" section above: the **final** `/validate` response
    (`status`, `errorCount`, `warningCount`), how many validate-and-fix rounds you took, and every

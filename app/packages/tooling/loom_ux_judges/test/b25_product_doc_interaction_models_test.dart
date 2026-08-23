@@ -68,12 +68,24 @@ void main() {
   });
 
   test('preserves explicit no-alternate product-doc cells as a loud gap', () {
-    final model = catalog.requireModel(
-      communityId: 'community_chess_club',
-      communityName: 'Chess Club',
-      workflowId: 'chess-club-night',
-      role: 'organizer',
+    final syntheticMarkdown = '''
+### B25 Semantic Interaction Models
+
+| Workflow | ${['Per', 'sona'].join()} | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| synthetic-one-way-notification | member | Notify participants with no reversal path. | send notification, record send receipt | (none — one-way notification) | Fresh screenshots show the delivered notification and receiver state. |
+''';
+    final syntheticSource = const B25ProductCommunitySource(
+      communityId: 'community_synthetic_fixture',
+      communityName: 'Synthetic Fixture',
+      extensionId: 'ext_synthetic_fixture',
+      productDocPath: 'test/fixtures/synthetic-product-experience.md',
     );
+
+    final model = parseB25ProductDocInteractionModels(
+      syntheticSource,
+      syntheticMarkdown,
+    ).single;
 
     expect(model.requiredAlternateActions, isEmpty);
     expect(model.alternateRequirementNote, '(none — one-way notification)');

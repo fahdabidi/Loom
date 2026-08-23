@@ -538,13 +538,17 @@
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-club-night",
       "role": "organizer",
-      "expectedDecision": "Organizer decides whether a scheduled club night needs a reminder sent to players.",
+      "expectedDecision": "Organizer schedules a concrete club night and reminds players; a player who can no longer attend withdraws, and the organizer can call the whole night off.",
       "requiredPrimaryActions": [
+        "rsvp",
+        "add reminder",
         "send reminder"
       ],
-      "requiredAlternateActions": [],
-      "resultAndReceiverState": "Fresh screenshots must show event details, reminder-sent state, and player receiver state.",
-      "alternateRequirementNote": "(none — one-way notification)"
+      "requiredAlternateActions": [
+        "withdraw rsvp",
+        "cancel club night"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show event details, reminder-sent state, the withdrawn-RSVP state, and the cancelled-night state players receive."
     },
     {
       "communityId": "community_chess_club",
@@ -589,13 +593,14 @@
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-pairing-queue",
       "role": "owner",
-      "expectedDecision": "Organizer reviews the waiting list and assigns a concrete pairing.",
+      "expectedDecision": "Organizer reviews the waiting list, assigns a concrete pairing, and closes the queue once play begins.",
       "requiredPrimaryActions": [
         "assign pairing"
       ],
-      "requiredAlternateActions": [],
-      "resultAndReceiverState": "Fresh screenshots must show queue state, assignment result, and waiting-player receiver state.",
-      "alternateRequirementNote": "(none — single decisive action)"
+      "requiredAlternateActions": [
+        "close queue"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show queue state, assignment result, the closed-queue state, and waiting-player receiver state."
     },
     {
       "communityId": "community_chess_club",
@@ -603,14 +608,16 @@
       "extensionId": "ext_chess_club",
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-rankings-table",
-      "role": "member",
-      "expectedDecision": "Member reviews concrete rank/score/delta standings after a publish.",
+      "role": "owner",
+      "expectedDecision": "Organizer publishes updated ladder standings, and can correct a wrong entry or retire a row that should no longer stand.",
       "requiredPrimaryActions": [
-        "view rankings"
+        "publish rankings"
       ],
-      "requiredAlternateActions": [],
-      "resultAndReceiverState": "Fresh screenshots must show rank, player, score, delta, and last-updated state.",
-      "alternateRequirementNote": "(none — organizer-only publish)"
+      "requiredAlternateActions": [
+        "revise ranking",
+        "retire ranking row"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show rank, player, score, delta, last-updated state, and the revised or retired row members then see."
     },
     {
       "communityId": "community_chess_club",
@@ -619,15 +626,16 @@
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-rules-documents",
       "role": "member",
-      "expectedDecision": "Member opens a concrete rules document, chooses embedded or external, and can download it.",
+      "expectedDecision": "Member opens a concrete rules document, chooses embedded or external, downloads it, and the organizer archives a superseded version.",
       "requiredPrimaryActions": [
         "open document",
-        "launch external",
         "download"
       ],
-      "requiredAlternateActions": [],
-      "resultAndReceiverState": "Fresh screenshots must show title, open history, and download state.",
-      "alternateRequirementNote": "(none — no edit path)"
+      "requiredAlternateActions": [
+        "launch external",
+        "archive document"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show title, open history, download state, and the archived-document state."
     },
     {
       "communityId": "community_export_migration",
